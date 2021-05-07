@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@chainlink/contracts-0.0.10": "npm:@chainlink/contracts@0.0.10",
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.3.0",
+    "ethers": "^5.1.4",
+    "hardhat": "^2.2.1",
+    "openzeppelin-solidity-2.3.0": "npm:openzeppelin-solidity@2.3.0",
+    "synthetix-2.43.1": "npm:synthetix@2.43.1"
+  }
+}

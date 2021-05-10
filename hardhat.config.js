@@ -1,22 +1,25 @@
-require("@nomiclabs/hardhat-waffle");
+'use strict';
+require('dotenv').config();
 
-// This is a sample Hardhat task. To learn how to create your own go to
-// https://hardhat.org/guides/create-task.html
-task("accounts", "Prints the list of accounts", async () => {
-  const accounts = await ethers.getSigners();
+const path = require('path');
 
-  for (const account of accounts) {
-    console.log(account.address);
-  }
-});
+require('./hardhat');
+require('@nomiclabs/hardhat-truffle5');
+require('solidity-coverage');
+require('hardhat-gas-reporter');
 
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
+const {
+  constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },
+} = require('.');
 
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
+const GAS_PRICE = 20e9; // 20 GWEI
+const CACHE_FOLDER = 'cache';
+
 module.exports = {
+  GAS_PRICE,
+  ovm: {
+    solcVersion: '0.5.16',
+  },
   solidity: {
     compilers: [
       {
@@ -27,5 +30,41 @@ module.exports = {
       },
     ],
   },
+  paths: {
+    sources: './contracts',
+    tests: './test/contracts',
+    artifacts: path.join(BUILD_FOLDER, 'artifacts'),
+    cache: path.join(BUILD_FOLDER, CACHE_FOLDER),
+  },
+  astdocs: {
+    path: path.join(BUILD_FOLDER, AST_FOLDER),
+    file: AST_FILENAME,
+    ignores: 'test-helpers',
+  },
+  defaultNetwork: 'hardhat',
+  networks: {
+    hardhat: {
+      gas: 12e6,
+      blockGasLimit: 12e6,
+      allowUnlimitedContractSize: true,
+      gasPrice: GAS_PRICE,
+      initialDate: new Date(inflationStartTimestampInSecs * 1000).toISOString(),
+      // Note: forking settings are injected at runtime by hardhat/tasks/task-node.js
+    },
+    localhost: {
+      gas: 12e6,
+      blockGasLimit: 12e6,
+      url: 'http://localhost:8545',
+    },
+  },
+  gasReporter: {
+    enabled: false,
+    showTimeSpent: true,
+    currency: 'USD',
+    maxMethodDiff: 25, // CI will fail if gas usage is > than this %
+    outputFile: 'test-gas-used.log',
+  },
+  mocha: {
+    timeout: 30e3, // 30s
+  },
 };
-

@@ -119,8 +119,8 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         _updatePrices(longBid, shortBid, initialDeposit);
 
         // Instantiate the options themselves
-        options.long = BinaryOption(_cloneAsMinimalProxy(_manager().binaryOptionMastercopy, "Could not create a Binary Option"));
-        options.short = BinaryOption(_cloneAsMinimalProxy(_manager().binaryOptionMastercopy, "Could not create a Binary Option"));
+        options.long = BinaryOption(_cloneAsMinimalProxy(_manager().binaryOptionMastercopy(), "Could not create a Binary Option"));
+        options.short = BinaryOption(_cloneAsMinimalProxy(_manager().binaryOptionMastercopy(), "Could not create a Binary Option"));
         options.long.initialize(_creator, longBid, "Binary Option Short", "sLONG");
         options.short.initialize(_creator, shortBid, "Binary Option Long", "sSHORT");
 

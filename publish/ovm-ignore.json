@@ -1,0 +1,23 @@
+[
+	"BinaryOption",
+	"BinaryOptionMarket",
+	"BinaryOptionMarketData",
+	"BinaryOptionMarketFactory",
+	"BinaryOptionMarketManager",
+	"BinaryOptionMarketMastercopy",
+	"BinaryOptionMastercopy",
+	"Collateral",
+	"CollateralErc20",
+	"CollateralEth",
+	"CollateralShort",
+	"EtherCollateral",
+	"EtherCollateralsUSD",
+	"ExchangerWithVirtualSynth",
+	"FakeTradingRewards",
+	"MockBinaryOptionMarket",
+	"MockBinaryOptionMarketManager",
+	"MockBinaryOptionMarketMastercopy",
+	"MockBinaryOption",
+	"TestableBinaryOptionMarket",
+	"Synthetix"
+]

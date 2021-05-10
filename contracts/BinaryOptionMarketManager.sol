@@ -98,11 +98,11 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     /* ========== SETTERS ========== */
-    function setBinaryOptionsMasterCopy(address _binaryOptionMastercopy) only_owner {
+    function setBinaryOptionsMasterCopy(address _binaryOptionMastercopy) public onlyOwner {
         binaryOptionMastercopy = _binaryOptionMastercopy;
     }
 
-    function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) only_owner {
+    function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) public onlyOwner {
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
     }
 
@@ -111,15 +111,11 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     /* ---------- Related Contracts ---------- */
 
     function _sUSD() internal view returns (IERC20) {
-        return IERC20(requireAndGetAddress(CONTRACT_SYNTHSUSD, "Synth sUSD contract not found"));
+        return IERC20(resolver.requireAndGetAddress(CONTRACT_SYNTHSUSD, "Synth sUSD contract not found"));
     }
 
     function _exchangeRates() internal view returns (IExchangeRates) {
         return IExchangeRates(resolver.requireAndGetAddress(CONTRACT_EXRATES, "ExchangeRates contract not found"));
-    }
-
-    function _factory() internal view returns (BinaryOptionMarketFactory) {
-        return BinaryOptionMarketFactory(resolver.requireAndGetAddress(CONTRACT_BINARYOPTIONMARKETFACTORY, "BinaryOptionMarketFactory contract not found"));
     }
 
     /* ---------- Market Information ---------- */
@@ -263,8 +259,9 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         // The market itself validates the capital and skew requirements.
 
         BinaryOptionMarket market =
-        _factory().createMarket(
+        BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
             msg.sender,
+            resolver,
             [creatorLimits.capitalRequirement, creatorLimits.skewLimit],
             oracleKey,
             strikePrice,

@@ -29,7 +29,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     struct Fees {
         uint poolFee;
         uint creatorFee;
-        uint refundFee;
     }
 
     struct Durations {
@@ -40,7 +39,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     struct CreatorLimits {
         uint capitalRequirement;
-        uint skewLimit;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -76,10 +74,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint _expiryDuration,
         uint _maxTimeToMaturity,
         uint _creatorCapitalRequirement,
-        uint _creatorSkewLimit,
         uint _poolFee,
-        uint _creatorFee,
-        uint _refundFee
+        uint _creatorFee
     ) public Owned(_owner) Pausable() {
         resolver = _resolver;
 
@@ -90,10 +86,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         setMaxOraclePriceAge(_maxOraclePriceAge);
         setMaxTimeToMaturity(_maxTimeToMaturity);
         setCreatorCapitalRequirement(_creatorCapitalRequirement);
-        setCreatorSkewLimit(_creatorSkewLimit);
         setPoolFee(_poolFee);
         setCreatorFee(_creatorFee);
-        setRefundFee(_refundFee);
         owner = _owner;
     }
 
@@ -151,7 +145,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             }
 
             // and not inverse rates
-            (uint entryPoint, , , ,) = exchangeRates.inversePricing(oracleKey);
+            (uint entryPoint, , , , ) = exchangeRates.inversePricing(oracleKey);
             if (entryPoint != 0) {
                 return false;
             }
@@ -208,12 +202,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         emit CreatorCapitalRequirementUpdated(_creatorCapitalRequirement);
     }
 
-    function setCreatorSkewLimit(uint _creatorSkewLimit) public onlyOwner {
-        require(_creatorSkewLimit <= SafeDecimalMath.unit(), "Creator skew limit must be no greater than 1.");
-        creatorLimits.skewLimit = _creatorSkewLimit;
-        emit CreatorSkewLimitUpdated(_creatorSkewLimit);
-    }
-
     /* ---------- Deposit Management ---------- */
 
     function incrementTotalDeposited(uint delta) external onlyActiveMarkets notPaused {
@@ -234,50 +222,46 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     function createMarket(
         bytes32 oracleKey,
         uint strikePrice,
-        bool refundsEnabled,
-        uint[2] calldata times, // [biddingEnd, maturity]
-        uint[2] calldata bids // [longBid, shortBid]
+        uint calldata maturity,
+        uint calldata initialMint // initial sUSD to mint options for
     )
-    external
-    notPaused
-    returns (
-        IBinaryOptionMarket // no support for returning BinaryOptionMarket polymorphically given the interface
-    )
+        external
+        notPaused
+        returns (
+            IBinaryOptionMarket // no support for returning BinaryOptionMarket polymorphically given the interface
+        )
     {
         require(marketCreationEnabled, "Market creation is disabled");
         require(_isValidKey(oracleKey), "Invalid key");
 
-        (uint biddingEnd, uint maturity) = (times[0], times[1]);
         require(maturity <= now + durations.maxTimeToMaturity, "Maturity too far in the future");
         uint expiry = maturity.add(durations.expiryDuration);
 
-        uint initialDeposit = bids[0].add(bids[1]);
-        require(now < biddingEnd, "End of bidding has passed");
-        require(biddingEnd < maturity, "Maturity predates end of bidding");
+        require(now < maturity, "Maturity has to be in the future");
         // We also require maturity < expiry. But there is no need to check this.
         // Fees being in range are checked in the setters.
         // The market itself validates the capital and skew requirements.
 
         BinaryOptionMarket market =
-        BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
-            msg.sender,
-            resolver,
-            [creatorLimits.capitalRequirement, creatorLimits.skewLimit],
-            oracleKey,
-            strikePrice,
-            refundsEnabled,
-            [biddingEnd, maturity, expiry],
-            bids,
-            [fees.poolFee, fees.creatorFee, fees.refundFee]
-        );
+            BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
+                msg.sender,
+                resolver,
+                creatorLimits.capitalRequirement,
+                oracleKey,
+                strikePrice,
+                refundsEnabled,
+                [maturity, expiry],
+                initialMint,
+                [fees.poolFee, fees.creatorFee]
+            );
         _activeMarkets.add(address(market));
 
         // The debt can't be incremented in the new market's constructor because until construction is complete,
         // the manager doesn't know its address in order to grant it permission.
-        totalDeposited = totalDeposited.add(initialDeposit);
-        _sUSD().transferFrom(msg.sender, address(market), initialDeposit);
+        totalDeposited = totalDeposited.add(initialMint);
+        _sUSD().transferFrom(msg.sender, address(market), initialMint);
 
-        emit MarketCreated(address(market), msg.sender, oracleKey, strikePrice, biddingEnd, maturity, expiry);
+        emit MarketCreated(address(market), msg.sender, oracleKey, strikePrice, maturity, expiry);
         return market;
     }
 
@@ -286,15 +270,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         BinaryOptionMarket(market).resolve();
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
-    }
-
-    function cancelMarket(address market) external notPaused {
-        require(_activeMarkets.contains(market), "Not an active market");
-        address creator = BinaryOptionMarket(market).creator();
-        require(msg.sender == creator, "Sender not market creator");
-        BinaryOptionMarket(market).cancel(msg.sender);
-        _activeMarkets.remove(market);
-        emit MarketCancelled(market);
     }
 
     function expireMarkets(address[] calldata markets) external notPaused {
@@ -307,27 +282,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             // its index is defined and that the list of markets is not empty.
             _maturedMarkets.remove(market);
             emit MarketExpired(market);
-        }
-    }
-
-    /* ---------- Upgrade and Administration ---------- */
-
-    function rebuildMarketCaches(BinaryOptionMarket[] calldata marketsToSync) external {
-        for (uint i = 0; i < marketsToSync.length; i++) {
-            address market = address(marketsToSync[i]);
-
-            // solhint-disable avoid-low-level-calls
-            bytes memory payload = abi.encodeWithSignature("rebuildCache()");
-            (bool success,) = market.call(payload);
-
-            if (!success) {
-                // handle legacy markets that used an old cache rebuilding logic
-                bytes memory payloadForLegacyCache =
-                abi.encodeWithSignature("setResolverAndSyncCache(address)", address(resolver));
-
-                // solhint-disable avoid-low-level-calls
-                market.call(payloadForLegacyCache);
-            }
         }
     }
 
@@ -415,22 +369,17 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         address indexed creator,
         bytes32 indexed oracleKey,
         uint strikePrice,
-        uint biddingEndDate,
         uint maturityDate,
         uint expiryDate
     );
     event MarketExpired(address market);
-    event MarketCancelled(address market);
     event MarketsMigrated(BinaryOptionMarketManager receivingManager, BinaryOptionMarket[] markets);
     event MarketsReceived(BinaryOptionMarketManager migratingManager, BinaryOptionMarket[] markets);
     event MarketCreationEnabledUpdated(bool enabled);
     event MaxOraclePriceAgeUpdated(uint duration);
-    event ExerciseDurationUpdated(uint duration);
     event ExpiryDurationUpdated(uint duration);
     event MaxTimeToMaturityUpdated(uint duration);
     event CreatorCapitalRequirementUpdated(uint value);
-    event CreatorSkewLimitUpdated(uint value);
     event PoolFeeUpdated(uint fee);
     event CreatorFeeUpdated(uint fee);
-    event RefundFeeUpdated(uint fee);
 }

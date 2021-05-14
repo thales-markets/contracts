@@ -17,7 +17,7 @@ interface IBinaryOptionMarketManager {
             uint maxTimeToMaturity
         );
 
-    function creatorLimits() external view returns (uint capitalRequirement);
+    function capitalRequirement() external view returns (uint);
 
     function marketCreationEnabled() external view returns (bool);
 
@@ -36,8 +36,8 @@ interface IBinaryOptionMarketManager {
     function createMarket(
         bytes32 oracleKey,
         uint strikePrice,
-        uint calldata maturity,
-        uint calldata initialMint // initial sUSD to mint options for
+        uint maturity,
+        uint initialMint // initial sUSD to mint options for
     ) external returns (IBinaryOptionMarket);
 
     function resolveMarket(address market) external;

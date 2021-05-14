@@ -39,8 +39,6 @@ contract BinaryOption is IERC20, IBinaryOption {
     bool public initialized = false;
 
     function initialize(
-        address creator,
-        uint initialMint,
         string memory _name,
         string memory _symbol
     ) public {
@@ -49,7 +47,6 @@ contract BinaryOption is IERC20, IBinaryOption {
         name = _name;
         symbol = _symbol;
         market = BinaryOptionMarket(msg.sender);
-        mint(creator, initialMint);
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
@@ -64,8 +61,8 @@ contract BinaryOption is IERC20, IBinaryOption {
         totalSupply = totalSupply.add(amount);
         balanceOf[minter] = balanceOf[minter].add(amount); // Increment rather than assigning since a transfer may have occurred.
 
-        emit Transfer(address(0), claimant, amount);
-        emit Issued(claimant, amount);
+        emit Transfer(address(0), minter, amount);
+        emit Issued(minter, amount);
     }
 
     // This must only be invoked after maturity.

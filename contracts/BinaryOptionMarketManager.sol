@@ -17,7 +17,6 @@ import "synthetix-2.43.1/contracts/interfaces/IExchangeRates.sol";
 import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
 import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
 
-// https://docs.synthetix.io/contracts/source/contracts/binaryoptionmarketmanager
 contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManager {
     /* ========== LIBRARIES ========== */
 
@@ -37,15 +36,13 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint maxTimeToMaturity;
     }
 
-    struct CreatorLimits {
-        uint capitalRequirement;
-    }
-
     /* ========== STATE VARIABLES ========== */
+
+    address public feeAddress;
 
     Fees public fees;
     Durations public durations;
-    CreatorLimits public creatorLimits;
+    uint public capitalRequirement;
 
     bool public marketCreationEnabled = true;
     uint public totalDeposited;
@@ -75,13 +72,15 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint _maxTimeToMaturity,
         uint _creatorCapitalRequirement,
         uint _poolFee,
-        uint _creatorFee
+        uint _creatorFee,
+        address _feeAddress
     ) public Owned(_owner) Pausable() {
         resolver = _resolver;
 
         // Temporarily change the owner so that the setters don't revert.
         owner = msg.sender;
 
+        setFeeAddress(_feeAddress);
         setExpiryDuration(_expiryDuration);
         setMaxOraclePriceAge(_maxOraclePriceAge);
         setMaxTimeToMaturity(_maxTimeToMaturity);
@@ -98,6 +97,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) public onlyOwner {
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
+    }
+
+    function setFeeAddress(address _feeAddress) public onlyOwner {
+        feeAddress = _feeAddress;
     }
 
     /* ========== VIEWS ========== */
@@ -191,14 +194,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         emit CreatorFeeUpdated(_creatorFee);
     }
 
-    function setRefundFee(uint _refundFee) public onlyOwner {
-        require(_refundFee <= SafeDecimalMath.unit(), "Refund fee must be no greater than 100%.");
-        fees.refundFee = _refundFee;
-        emit RefundFeeUpdated(_refundFee);
-    }
-
     function setCreatorCapitalRequirement(uint _creatorCapitalRequirement) public onlyOwner {
-        creatorLimits.capitalRequirement = _creatorCapitalRequirement;
+        capitalRequirement = _creatorCapitalRequirement;
         emit CreatorCapitalRequirementUpdated(_creatorCapitalRequirement);
     }
 
@@ -222,8 +219,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     function createMarket(
         bytes32 oracleKey,
         uint strikePrice,
-        uint calldata maturity,
-        uint calldata initialMint // initial sUSD to mint options for
+        uint maturity,
+        uint initialMint // initial sUSD to mint options for
     )
         external
         notPaused
@@ -246,10 +243,9 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
                 msg.sender,
                 resolver,
-                creatorLimits.capitalRequirement,
+                capitalRequirement,
                 oracleKey,
                 strikePrice,
-                refundsEnabled,
                 [maturity, expiry],
                 initialMint,
                 [fees.poolFee, fees.creatorFee]

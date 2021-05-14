@@ -39,7 +39,7 @@ interface IBinaryOptionMarket {
             uint creatorFee
         );
 
-    function creatorLimits() external view returns (uint capitalRequirement);
+    function capitalRequirement() external view returns (uint capitalRequirement);
 
     function deposited() external view returns (uint);
 
@@ -61,7 +61,7 @@ interface IBinaryOptionMarket {
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
-    function mint(Side side, uint value) external;
+    function mint(uint value) external;
 
     function exerciseOptions() external returns (uint);
 }

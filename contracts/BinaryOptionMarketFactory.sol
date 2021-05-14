@@ -8,7 +8,6 @@ import "synthetix-2.43.1/contracts/Owned.sol";
 import "./BinaryOptionMarket.sol";
 import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
 
-// https://docs.synthetix.io/contracts/source/contracts/binaryoptionmarketfactory
 contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     /* ========== STATE VARIABLES ========== */
     address public binaryOptionMarketManager;
@@ -23,11 +22,11 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     function createMarket(
         address creator,
         IAddressResolver _resolver,
-        uint calldata creatorLimits,
+        uint capitalRequirement,
         bytes32 oracleKey,
         uint strikePrice,
         uint[2] calldata times, // [maturity, expiry]
-        uint calldata initialMint,
+        uint initialMint,
         uint[2] calldata fees // [poolFee, creatorFee]
     ) external returns (BinaryOptionMarket) {
         require(binaryOptionMarketManager == msg.sender, "Only permitted by the manager.");
@@ -40,7 +39,7 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
             binaryOptionMarketManager,
             _resolver,
             creator,
-            creatorLimits,
+            capitalRequirement,
             oracleKey,
             strikePrice,
             times,

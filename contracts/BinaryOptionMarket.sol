@@ -88,8 +88,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         times = Times(_times[0], _times[1]);
 
         _checkCapitalRequirement(_deposit);
-        emit Mint(Side.Long, _creator, _deposit);
-        emit Mint(Side.Short, _creator, _deposit);
 
         deposited = _deposit;
         initialMint = _deposit;

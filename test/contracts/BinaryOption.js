@@ -4,7 +4,13 @@ const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
 const { assert, addSnapshotBeforeRestoreAfterEach } = require('./common');
-const { fastForward, toUnit, currentTime } = require('../utils')();
+const {
+	fastForward,
+	toUnit,
+	currentTime,
+	multiplyDecimalRound,
+	divideDecimalRound,
+} = require('../utils')();
 const { toBytes32 } = require('../..');
 const { setupContract, setupAllContracts } = require('./setup');
 
@@ -92,11 +98,6 @@ contract('BinaryOption', accounts => {
 			from: managerOwner,
 		});
 
-		console.log('Factory address is: ' + factory.address);
-		console.log('Manager address is: ' + manager.address);
-		console.log('BinaryOptionMarketMastercopy address is: ' + binaryOptionMarketMastercopy.address);
-		console.log('BinaryOptionMastercopy address is: ' + binaryOptionMastercopy.address);
-
 		oracle = await exchangeRates.oracle();
 
 		await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
@@ -180,17 +181,17 @@ contract('BinaryOption', accounts => {
 				expiryDate: toBN(now + 200).add(expiryDuration),
 			});
 
-			// const decodedLogs = BinaryOptionMarket.decodeLogs(result.receipt.rawLogs);
-			// assert.eventEqual(decodedLogs[1], 'Mint', {
-			// 	side: Side.Long,
-			// 	account: initialCreator,
-			// 	value: toUnit(2),
-			// });
-			// assert.eventEqual(decodedLogs[2], 'Bid', {
-			// 	side: Side.Short,
-			// 	account: initialCreator,
-			// 	value: toUnit(3),
-			// });
+			const decodedLogs = BinaryOptionMarket.decodeLogs(result.receipt.rawLogs);
+			assert.eventEqual(decodedLogs[1], 'Mint', {
+				side: Side.Long,
+				account: initialCreator,
+				value: toUnit(2),
+			});
+			assert.eventEqual(decodedLogs[2], 'Mint', {
+				side: Side.Short,
+				account: initialCreator,
+				value: toUnit(2),
+			});
 
 			market = await BinaryOptionMarket.at(
 				getEventByName({ tx: result, name: 'MarketCreated' }).args.market
@@ -238,6 +239,24 @@ contract('BinaryOption', accounts => {
 			assert.equal(await long.symbol(), 'sLONG');
 			assert.bnEqual(await long.decimals(), toBN(18));
 			assert.equal(await long.market(), market.address);
+		});
+
+		it('Mint more and check balance', async () => {
+			//need to approve the market itself
+			sUSDSynth.approve(market.address, sUSDQty, { from: initialCreator });
+			await market.mint(toUnit(1), {
+				from: initialCreator,
+			});
+
+			let totalAdditionalMintedNoFees = toUnit(1);
+
+			let fees = await market.fees();
+			console.log('fees are pool:' + fees[0] + ' creator:' + fees[1]);
+			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
+			let valueAfterFees = multiplyDecimalRound(_feeMultiplier, toUnit(1)).add(toUnit(2));
+			console.log('valueAfterFees ' + valueAfterFees);
+			assert.bnEqual(await long.balanceOf(initialCreator), valueAfterFees);
+			assert.bnEqual(await short.balanceOf(initialCreator), valueAfterFees);
 		});
 	});
 });

@@ -5,14 +5,8 @@ const abiDecoder = require('abi-decoder');
 
 // load the data in explicitly (not programmatically) so webpack knows what to bundle
 const data = {
-	kovan: require('./publish/deployed/kovan'),
-	rinkeby: require('./publish/deployed/rinkeby'),
 	ropsten: require('./publish/deployed/ropsten'),
 	mainnet: require('./publish/deployed/mainnet'),
-	goerli: require('./publish/deployed/goerli'),
-	'goerli-ovm': require('./publish/deployed/goerli-ovm'),
-	'kovan-ovm': require('./publish/deployed/kovan-ovm'),
-	'mainnet-ovm': require('./publish/deployed/mainnet-ovm'),
 };
 
 const assets = require('./publish/assets.json');
@@ -20,7 +14,7 @@ const ovmIgnored = require('./publish/ovm-ignore.json');
 const nonUpgradeable = require('./publish/non-upgradeable.json');
 const releases = require('./publish/releases.json');
 
-const networks = ['local', 'kovan', 'rinkeby', 'ropsten', 'mainnet', 'goerli'];
+const networks = ['local', 'ropsten', 'mainnet'];
 
 const chainIdMapping = Object.entries({
 	1: {
@@ -29,15 +23,6 @@ const chainIdMapping = Object.entries({
 	3: {
 		network: 'ropsten',
 	},
-	4: {
-		network: 'rinkeby',
-	},
-	5: {
-		network: 'goerli',
-	},
-	42: {
-		network: 'kovan',
-	},
 
 	// Hardhat fork of mainnet: https://hardhat.org/config/#hardhat-network
 	31337: {
@@ -45,20 +30,6 @@ const chainIdMapping = Object.entries({
 		fork: true,
 	},
 
-	// OVM networks: see https://github.com/ethereum-optimism/regenesis/
-	10: {
-		network: 'mainnet',
-		useOvm: true,
-	},
-	69: {
-		network: 'kovan',
-		useOvm: true,
-	},
-	'-1': {
-		// no chain ID for this currently
-		network: 'goerli',
-		useOvm: true,
-	},
 	// now append any defaults
 }).reduce((memo, [id, body]) => {
 	memo[id] = Object.assign({ useOvm: false, fork: false }, body);

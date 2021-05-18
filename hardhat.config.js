@@ -7,6 +7,7 @@ require('./hardhat');
 require('@nomiclabs/hardhat-truffle5');
 require('solidity-coverage');
 require('hardhat-gas-reporter');
+require("@nomiclabs/hardhat-waffle")
 
 const {
   constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },
@@ -56,6 +57,10 @@ module.exports = {
       blockGasLimit: 12e6,
       url: 'http://localhost:8545',
     },
+    ropsten: {
+      url: "https://ropsten.infura.io/v3/27301cd3b3134269bfb2271a79a5beae",
+      accounts: [`PRIVATE_KEY`]
+    }
   },
   gasReporter: {
     enabled: false,

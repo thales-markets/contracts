@@ -33,7 +33,6 @@ contract BinaryOptionMarketData {
         BinaryOptionMarket.Times times;
         BinaryOptionMarket.OracleDetails oracleDetails;
         BinaryOptionMarketManager.Fees fees;
-        uint capitalRequirement;
     }
 
     struct MarketData {
@@ -61,12 +60,9 @@ contract BinaryOptionMarketData {
                 BinaryOptionMarket.Options(long, short),
                 BinaryOptionMarket.Times(maturityDate, expiryDate),
                 BinaryOptionMarket.OracleDetails(key, strikePrice, finalPrice),
-                BinaryOptionMarketManager.Fees(poolFee, creatorFee),
-                0
+                BinaryOptionMarketManager.Fees(poolFee, creatorFee)
             );
 
-        // Stack too deep otherwise.
-        data.capitalRequirement = market.capitalRequirement();
         return data;
     }
 

@@ -45,7 +45,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     Times public times;
     OracleDetails public oracleDetails;
     BinaryOptionMarketManager.Fees public fees;
-    uint public capitalRequirement;
     IAddressResolver public resolver;
 
     // `deposited` tracks the sum of all deposits minus the withheld fees.
@@ -68,9 +67,9 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     function initialize(
         address _owner,
+        address _binaryOptionMastercopy,
         IAddressResolver _resolver,
         address _creator,
-        uint _capitalRequirement, // [capitalRequirement]
         bytes32 _oracleKey,
         uint _strikePrice,
         uint[2] memory _times, // [maturity, expiry]
@@ -82,12 +81,9 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         initOwner(_owner);
         resolver = _resolver;
         creator = _creator;
-        capitalRequirement = _capitalRequirement;
 
         oracleDetails = OracleDetails(_oracleKey, _strikePrice, 0);
         times = Times(_times[0], _times[1]);
-
-        _checkCapitalRequirement(_deposit);
 
         deposited = _deposit;
         initialMint = _deposit;
@@ -97,19 +93,13 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         _feeMultiplier = SafeDecimalMath.unit().sub(poolFee.add(creatorFee));
 
         // Instantiate the options themselves
-        options.long = BinaryOption(
-            _cloneAsMinimalProxy(_manager().binaryOptionMastercopy(), "Could not create a Binary Option")
-        );
-        options.short = BinaryOption(
-            _cloneAsMinimalProxy(_manager().binaryOptionMastercopy(), "Could not create a Binary Option")
-        );
+        options.long = BinaryOption(_cloneAsMinimalProxy(_binaryOptionMastercopy, "Could not create a Binary Option"));
+        options.short = BinaryOption(_cloneAsMinimalProxy(_binaryOptionMastercopy, "Could not create a Binary Option"));
+        // abi.encodePacked("sLONG: ", _oracleKey)
+        // consider naming the option: sLongBTC>50@2021.12.31
         options.long.initialize("Binary Option Long", "sLONG");
         options.short.initialize("Binary Option Short", "sSHORT");
-        options.long.mint(_creator, _deposit);
-        options.short.mint(_creator, _deposit);
-
-        emit Mint(Side.Long, creator, initialMint);
-        emit Mint(Side.Short, creator, initialMint);
+        _mint(creator, initialMint);
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
         // about initializing its state separately
@@ -223,10 +213,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         return a < b ? 0 : a.sub(b);
     }
 
-    function _checkCapitalRequirement(uint deposit) internal view {
-        require(capitalRequirement <= deposit, "Insufficient capital");
-    }
-
     function _incrementDeposited(uint value) internal returns (uint _deposited) {
         _deposited = deposited.add(value);
         deposited = _deposited;
@@ -258,13 +244,18 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
         uint valueAfterFees = value.multiplyDecimalRound(_feeMultiplier);
 
-        options.long.mint(msg.sender, valueAfterFees);
-        options.short.mint(msg.sender, valueAfterFees);
-        emit Mint(Side.Long, msg.sender, value);
-        emit Mint(Side.Short, msg.sender, value);
+        _mint(msg.sender, valueAfterFees);
 
         _incrementDeposited(value);
-        _sUSD().transferFrom(msg.sender, address(this), value);
+        _manager().transferSusdTo(msg.sender, address(this), value);
+    }
+
+    function _mint(address minter, uint amount) internal {
+        options.long.mint(minter, amount);
+        options.short.mint(minter, amount);
+
+        emit Mint(Side.Long, minter, amount);
+        emit Mint(Side.Short, minter, amount);
     }
 
     /* ---------- Market Resolution ---------- */
@@ -285,9 +276,9 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         // in the contract will be sufficient to cover these transfers.
         IERC20 sUSD = _sUSD();
 
-        uint _deposited = deposited;
-        uint poolFees = _deposited.sub(initialMint).multiplyDecimalRound(fees.poolFee);
-        uint creatorFees = _deposited.sub(initialMint).multiplyDecimalRound(fees.creatorFee);
+        uint _depositedSubMint = deposited.sub(initialMint);
+        uint poolFees = _depositedSubMint.multiplyDecimalRound(fees.poolFee);
+        uint creatorFees = _depositedSubMint.multiplyDecimalRound(fees.creatorFee);
         _decrementDeposited(creatorFees.add(poolFees));
         sUSD.transfer(_manager().feeAddress(), poolFees);
         sUSD.transfer(creator, creatorFees);
@@ -297,8 +288,9 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     /* ---------- Claiming and Exercising Options ---------- */
 
-    function exerciseOptions() external returns (uint) {
+    function exerciseOptions() external afterMaturity returns (uint) {
         // The market must be resolved if it has not been.
+        // the first one to exercise pays the gas fees. Might be worth splitting it up.
         if (!resolved) {
             _manager().resolveMarket(address(this));
         }

@@ -54,7 +54,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     IAddressResolver public resolver;
 
-    address public binaryOptionMastercopy;
     address public binaryOptionMarketFactory;
 
     /* ---------- Address Resolver Configuration ---------- */
@@ -91,10 +90,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     /* ========== SETTERS ========== */
-    function setBinaryOptionsMasterCopy(address _binaryOptionMastercopy) public onlyOwner {
-        binaryOptionMastercopy = _binaryOptionMastercopy;
-    }
-
     function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) public onlyOwner {
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
     }
@@ -202,12 +197,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     /* ---------- Deposit Management ---------- */
 
     function incrementTotalDeposited(uint delta) external onlyActiveMarkets notPaused {
-        require(marketCreationEnabled, "Markets currently disabled");
         totalDeposited = totalDeposited.add(delta);
     }
 
     function decrementTotalDeposited(uint delta) external onlyKnownMarkets notPaused {
-        require(marketCreationEnabled, "Markets currently disabled");
         // NOTE: As individual market debt is not tracked here, the underlying markets
         //       need to be careful never to subtract more debt than they added.
         //       This can't be enforced without additional state/communication overhead.
@@ -239,11 +232,12 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         // Fees being in range are checked in the setters.
         // The market itself validates the capital and skew requirements.
 
+        require(capitalRequirement <= initialMint, "Insufficient capital");
+
         BinaryOptionMarket market =
             BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
                 msg.sender,
                 resolver,
-                capitalRequirement,
                 oracleKey,
                 strikePrice,
                 [maturity, expiry],
@@ -259,6 +253,12 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
         emit MarketCreated(address(market), msg.sender, oracleKey, strikePrice, maturity, expiry);
         return market;
+    }
+
+    function transferSusdTo(address sender, address receiver, uint amount) external {
+        //only to be called by markets themselves
+        require(_isKnownMarket(address(msg.sender)), "Market unknown.");
+        _sUSD().transferFrom(sender, receiver, amount);
     }
 
     function resolveMarket(address market) external {

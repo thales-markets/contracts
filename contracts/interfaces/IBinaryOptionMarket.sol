@@ -39,8 +39,6 @@ interface IBinaryOptionMarket {
             uint creatorFee
         );
 
-    function capitalRequirement() external view returns (uint capitalRequirement);
-
     function deposited() external view returns (uint);
 
     function creator() external view returns (address);

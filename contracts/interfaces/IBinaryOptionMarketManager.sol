@@ -43,4 +43,6 @@ interface IBinaryOptionMarketManager {
     function resolveMarket(address market) external;
 
     function expireMarkets(address[] calldata market) external;
+
+    function transferSusdTo(address sender, address receiver, uint amount) external;
 }

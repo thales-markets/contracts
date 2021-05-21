@@ -12,6 +12,7 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     /* ========== STATE VARIABLES ========== */
     address public binaryOptionMarketManager;
     address public binaryOptionMarketMastercopy;
+    address public binaryOptionMastercopy;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -22,7 +23,6 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     function createMarket(
         address creator,
         IAddressResolver _resolver,
-        uint capitalRequirement,
         bytes32 oracleKey,
         uint strikePrice,
         uint[2] calldata times, // [maturity, expiry]
@@ -37,9 +37,9 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
             );
         bom.initialize(
             binaryOptionMarketManager,
+            binaryOptionMastercopy,
             _resolver,
             creator,
-            capitalRequirement,
             oracleKey,
             strikePrice,
             times,
@@ -56,5 +56,9 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
 
     function setBinaryOptionMarketMastercopy(address _binaryOptionMarketMastercopy) public onlyOwner {
         binaryOptionMarketMastercopy = _binaryOptionMarketMastercopy;
+    }
+
+    function setBinaryOptionMastercopy(address _binaryOptionMastercopy) public onlyOwner {
+        binaryOptionMastercopy = _binaryOptionMastercopy;
     }
 }

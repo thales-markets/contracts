@@ -1,0 +1,13 @@
+--Factory should have both mastercopies, and market should receive it via constructor.
+
+-- lose capitalRequirement from variable from BinaryOptionMarket and move it to manager
+--marketCreationEnabled to be used only to control creating markets
+-- exerciseOptions will call resolver for the first exersizer
+- make all susd transfers from manager _isKnownMarket
+-- mint() to _mint no duplicate code
+
+custom options:
+manipulate oracle results
+For custom question pass the hash String
+
+npx hardhat run --network ropsten scripts/deploy.js

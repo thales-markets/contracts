@@ -91,12 +91,13 @@ contract('BinaryOption', accounts => {
 		}));
 
 		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
-		manager.setBinaryOptionsMasterCopy(binaryOptionMastercopy.address, { from: managerOwner });
+
 
 		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
 		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
 			from: managerOwner,
 		});
+		factory.setBinaryOptionsMasterCopy(binaryOptionMastercopy.address, { from: managerOwner });
 
 		oracle = await exchangeRates.oracle();
 
@@ -242,8 +243,6 @@ contract('BinaryOption', accounts => {
 		});
 
 		it('Mint more and check balance', async () => {
-			//need to approve the market itself
-			sUSDSynth.approve(market.address, sUSDQty, { from: initialCreator });
 			await market.mint(toUnit(1), {
 				from: initialCreator,
 			});

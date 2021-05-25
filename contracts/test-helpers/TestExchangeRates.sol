@@ -11,6 +11,4 @@ import "synthetix-2.43.1/contracts/test-helpers/MockSynth.sol";
 import "synthetix-2.43.1/contracts/test-helpers/GenericMock.sol";
 import "synthetix-2.43.1/contracts/SystemStatus.sol";
 
-contract TestExchangeRates is ExchangeRates {
-
-}
+contract TestExchangeRates is ExchangeRates {}

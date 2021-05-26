@@ -29,7 +29,7 @@ let BinaryOptionMarket,
 	sUSDSynth,
 	binaryOptionMarketMastercopy,
 	binaryOptionMastercopy;
-let market, long, short, BinaryOption;
+let market, long, short, BinaryOption, Synth;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -101,6 +101,10 @@ contract('BinaryOption', accounts => {
 
 	before(async () => {
 		BinaryOptionMarket = artifacts.require('BinaryOptionMarket');
+	});
+
+	before(async () => {
+		Synth = artifacts.require('Synth');
 	});
 
 	before(async () => {
@@ -297,6 +301,10 @@ contract('BinaryOption', accounts => {
 			console.log('valueAfterFees ' + valueAfterFees);
 			assert.bnEqual(await long.balanceOf(initialCreator), valueAfterFees);
 			assert.bnEqual(await short.balanceOf(initialCreator), valueAfterFees);
+
+			const totalSupplies = await market.totalSupplies();
+			assert.bnEqual(totalSupplies.long, valueAfterFees);
+			assert.bnEqual(totalSupplies.short, valueAfterFees);
 		});
 
 		it('Only expected functions are mutative', async () => {
@@ -535,7 +543,6 @@ contract('BinaryOption', accounts => {
 			]);
 
 			const tx = await manager.resolveMarket(market.address);
-			let Synth = artifacts.require('Synth');
 			const logs = Synth.decodeLogs(tx.receipt.rawLogs);
 
 			const [creatorPostbalance, poolPostbalance, postDeposits] = await Promise.all([
@@ -1024,6 +1031,60 @@ contract('BinaryOption', accounts => {
 
 			assert.bnEqual(await sUSDSynth.balanceOf(secondCreator), valueAfterFees);
 			assert.bnEqual(await manager.totalDeposited(), preTotalDeposited.sub(deposited));
+		});
+
+		it('Expired market emits no transfer if there is nothing to remit.', async () => {
+			let now = await currentTime();
+			await createMarketAndMintMore(
+				sAUDKey,
+				initialStrikePrice,
+				now,
+				initialCreator,
+				timeToMaturity
+			);
+
+			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
+			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], await currentTime(), {
+				from: oracle,
+			});
+
+			const marketAddress = market.address;
+			await market.exerciseOptions({ from: initialCreator });
+
+			const creatorBalance = await sUSDSynth.balanceOf(initialCreator);
+			const tx = await manager.expireMarkets([market.address], { from: initialCreator });
+			const postCreatorBalance = await sUSDSynth.balanceOf(initialCreator);
+			assert.bnEqual(postCreatorBalance, creatorBalance);
+
+			const log = tx.receipt.logs[0];
+			assert.eventEqual(log, 'MarketExpired', {
+				market: marketAddress,
+			});
+
+			const logs = Synth.decodeLogs(tx.receipt.rawLogs);
+			assert.equal(logs.length, 0);
+		});
+
+		it('Market cannot be expired if the manager is paused', async () => {
+			let now = await currentTime();
+			await createMarketAndMintMore(
+				sAUDKey,
+				initialStrikePrice,
+				now,
+				initialCreator,
+				timeToMaturity
+			);
+
+			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
+			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], await currentTime(), {
+				from: oracle,
+			});
+			await manager.resolveMarket(market.address);
+			await manager.setPaused(true, { from: accounts[1] });
+			await assert.revert(
+				manager.expireMarkets([market.address], { from: initialCreator }),
+				'This action cannot be performed while the contract is paused'
+			);
 		});
 	});
 });

@@ -5,6 +5,9 @@ const {
 module.exports = {
 	port: 8545,
 	skipFiles: [
+		'BinaryOptionMarketData.sol',
+		'OwnedWithInit.sol',
+		'test-helpers',
 	],
 	providerOptions: {
 		default_balance_ether: 10000000000000, // extra zero just in case (coverage consumes more gas)

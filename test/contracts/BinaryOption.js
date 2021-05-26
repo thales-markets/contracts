@@ -158,7 +158,6 @@ contract('BinaryOption', accounts => {
 
 	describe('Basic Parameters', () => {
 		it('Created the manager', async () => {
-			console.log('Manager is:' + manager.address);
 			assert.notEqual(ZERO_ADDRESS, manager.address);
 		});
 
@@ -189,6 +188,142 @@ contract('BinaryOption', accounts => {
 			});
 		});
 
+		it('Set capital requirement', async () => {
+			const newValue = toUnit(1);
+			const tx = await manager.setCreatorCapitalRequirement(newValue, { from: managerOwner });
+			assert.bnEqual(await manager.capitalRequirement(), newValue);
+			const log = tx.logs[0];
+			assert.equal(log.event, 'CreatorCapitalRequirementUpdated');
+			assert.bnEqual(log.args.value, newValue);
+		});
+
+		it('Only the owner can set the capital requirement', async () => {
+			await onlyGivenAddressCanInvoke({
+				fnc: manager.setCreatorCapitalRequirement,
+				args: [toUnit(1)],
+				accounts,
+				address: managerOwner,
+				reason: 'Only the contract owner may perform this action',
+			});
+		});
+
+		it("Total fee can't be set too high", async () => {
+			await assert.revert(
+				manager.setPoolFee(toUnit(1), { from: managerOwner }),
+				'Total fee must be less than 100%.'
+			);
+			await assert.revert(
+				manager.setCreatorFee(toUnit(1), { from: managerOwner }),
+				'Total fee must be less than 100%.'
+			);
+		});
+
+		it('Total fee must be nonzero.', async () => {
+			await manager.setCreatorFee(toUnit(0), { from: managerOwner });
+			await assert.revert(
+				manager.setPoolFee(toBN(0), { from: managerOwner }),
+				'Total fee must be nonzero.'
+			);
+			await manager.setCreatorFee(toUnit(0.5), { from: managerOwner });
+			await manager.setPoolFee(toUnit(0), { from: managerOwner });
+			await assert.revert(
+				manager.setCreatorFee(toBN(0), { from: managerOwner }),
+				'Total fee must be nonzero.'
+			);
+		});
+
+		it('Set pool fee', async () => {
+			const newFee = toUnit(0.005);
+			const tx = await manager.setPoolFee(newFee, { from: managerOwner });
+			assert.bnEqual((await manager.fees()).poolFee, newFee);
+			const log = tx.logs[0];
+			assert.equal(log.event, 'PoolFeeUpdated');
+			assert.bnEqual(log.args.fee, newFee);
+		});
+
+		it('Only the owner can set the pool fee', async () => {
+			await onlyGivenAddressCanInvoke({
+				fnc: manager.setPoolFee,
+				args: [toUnit(0.005)],
+				accounts,
+				address: managerOwner,
+				reason: 'Only the contract owner may perform this action',
+			});
+		});
+
+		it('Set creator fee', async () => {
+			const newFee = toUnit(0.005);
+			const tx = await manager.setCreatorFee(newFee, { from: managerOwner });
+			assert.bnEqual((await manager.fees()).creatorFee, newFee);
+			const log = tx.logs[0];
+			assert.equal(log.event, 'CreatorFeeUpdated');
+			assert.bnEqual(log.args.fee, newFee);
+		});
+
+		it('Only the owner can set the creator fee', async () => {
+			await onlyGivenAddressCanInvoke({
+				fnc: manager.setCreatorFee,
+				args: [toUnit(0.005)],
+				accounts,
+				address: managerOwner,
+				reason: 'Only the contract owner may perform this action',
+			});
+		});
+
+		it('Set oracle maturity window', async () => {
+			const tx = await manager.setMaxOraclePriceAge(maxOraclePriceAge, { from: managerOwner });
+			assert.bnEqual((await manager.durations()).maxOraclePriceAge, maxOraclePriceAge);
+			const log = tx.logs[0];
+			assert.equal(log.event, 'MaxOraclePriceAgeUpdated');
+			assert.bnEqual(log.args.duration, maxOraclePriceAge);
+		});
+
+		it('Only the owner can set the oracle maturity window', async () => {
+			await onlyGivenAddressCanInvoke({
+				fnc: manager.setMaxOraclePriceAge,
+				args: [maxOraclePriceAge],
+				accounts,
+				address: managerOwner,
+				reason: 'Only the contract owner may perform this action',
+			});
+		});
+
+		it('Set expiry duration', async () => {
+			const tx = await manager.setExpiryDuration(expiryDuration, { from: managerOwner });
+			assert.bnEqual((await manager.durations()).expiryDuration, expiryDuration);
+			assert.eventEqual(tx.logs[0], 'ExpiryDurationUpdated', { duration: expiryDuration });
+		});
+
+		it('Only the owner can set the expiry duration', async () => {
+			await onlyGivenAddressCanInvoke({
+				fnc: manager.setExpiryDuration,
+				args: [expiryDuration],
+				accounts,
+				address: managerOwner,
+				reason: 'Only the contract owner may perform this action',
+			});
+		});
+
+		it('Set max time to maturity', async () => {
+			const tx = await manager.setMaxTimeToMaturity(maxTimeToMaturity, {
+				from: managerOwner,
+			});
+			assert.bnEqual((await manager.durations()).maxTimeToMaturity, maxTimeToMaturity);
+			const log = tx.logs[0];
+			assert.equal(log.event, 'MaxTimeToMaturityUpdated');
+			assert.bnEqual(log.args.duration, maxTimeToMaturity);
+		});
+
+		it('Only the owner can set the max time to maturity', async () => {
+			await onlyGivenAddressCanInvoke({
+				fnc: manager.setMaxTimeToMaturity,
+				args: [maxTimeToMaturity],
+				accounts,
+				address: managerOwner,
+				reason: 'Only the contract owner may perform this action',
+			});
+		});
+
 		it('Static parameters are set properly', async () => {
 			const durations = await manager.durations();
 			assert.bnEqual(durations.expiryDuration, expiryDuration);
@@ -201,7 +336,7 @@ contract('BinaryOption', accounts => {
 
 			const capitalRequirement = await manager.capitalRequirement();
 			assert.bnEqual(capitalRequirement, capitalRequirement);
-			assert.bnEqual(await manager.totalDeposited(), toBN(0));
+			assert.bnEqual(await manager.totalDeposited(), toUnit(0));
 			assert.bnEqual(await manager.marketCreationEnabled(), true);
 			assert.equal(await manager.resolver(), addressResolver.address);
 			assert.equal(await manager.owner(), accounts[1]);
@@ -210,6 +345,38 @@ contract('BinaryOption', accounts => {
 	});
 
 	describe('BinaryOptionMarketFactory', () => {
+		it('createMarket cannot be invoked except by the manager.', async () => {
+			const now = await currentTime();
+			await onlyGivenAddressCanInvoke({
+				fnc: factory.createMarket,
+				args: [
+					initialCreator,
+					addressResolver.address,
+					sAUDKey,
+					toUnit(1),
+					[now + 200, now + expiryDuration + 200],
+					toUnit(2),
+					[initialPoolFee, initialCreatorFee],
+				],
+				accounts,
+				skipPassCheck: true,
+				reason: 'Only permitted by the manager.',
+			});
+		});
+
+		it('Only expected functions are mutative.', async () => {
+			await ensureOnlyExpectedMutativeFunctions({
+				abi: factory.abi,
+				ignoreParents: ['Owned', 'MinimalProxyFactory'],
+				expected: [
+					'createMarket',
+					'setBinaryOptionMarketManager',
+					'setBinaryOptionMarketMastercopy',
+					'setBinaryOptionMastercopy',
+				],
+			});
+		});
+
 		it('Can create a market', async () => {
 			const now = await currentTime();
 
@@ -261,9 +428,227 @@ contract('BinaryOption', accounts => {
 			assert.equal((await manager.maturedMarkets(0, 100)).length, 0);
 		});
 
+		it('Cannot create markets for invalid keys.', async () => {
+			const now = await currentTime();
+
+			const sUSDKey = toBytes32('sUSD');
+			const nonRate = toBytes32('nonExistent');
+
+			await assert.revert(
+				manager.createMarket(sUSDKey, toUnit(1), now + 100, toUnit(2), {
+					from: initialCreator,
+				}),
+				'Invalid key'
+			);
+
+			await exchangeRates.setInversePricing(
+				iAUDKey,
+				toUnit(150),
+				toUnit(200),
+				toUnit(110),
+				false,
+				false,
+				{ from: await exchangeRates.owner() }
+			);
+			await exchangeRates.updateRates([iAUDKey], [toUnit(151)], await currentTime(), {
+				from: oracle,
+			});
+
+			await assert.revert(
+				manager.createMarket(iAUDKey, toUnit(1), now + 100, toUnit(2), {
+					from: initialCreator,
+				}),
+				'Invalid key'
+			);
+
+			await assert.revert(
+				manager.createMarket(nonRate, toUnit(1), now + 100, toUnit(2), {
+					from: initialCreator,
+				}),
+				'Invalid key'
+			);
+		});
+
+		it('Cannot create a market providing insufficient initial mint', async () => {
+			const now = await currentTime();
+			await assert.revert(
+				manager.createMarket(sAUDKey, toUnit(1), now + 100, toUnit(0.1), {
+					from: initialCreator,
+				}),
+				'Insufficient capital'
+			);
+		});
+
+		it('Cannot create a market too far into the future', async () => {
+			const now = await currentTime();
+			await assert.revert(
+				manager.createMarket(sAUDKey, toUnit(1), now + maxTimeToMaturity + 200, toUnit(0.1), {
+					from: initialCreator,
+				}),
+				'Maturity too far in the future'
+			);
+		});
+
+		it('Cannot create a market if the manager is paused', async () => {
+			await manager.setPaused(true, { from: managerOwner });
+			const now = await currentTime();
+			await assert.revert(
+				manager.createMarket(sAUDKey, toUnit(1), now + 200, toUnit(5), {
+					from: initialCreator,
+				}),
+				'This action cannot be performed while the contract is paused'
+			);
+			await manager.setPaused(false, { from: managerOwner });
+		});
+
+		it('Market creation can be enabled and disabled.', async () => {
+			let tx = await manager.setMarketCreationEnabled(false, { from: managerOwner });
+			assert.eventEqual(tx.logs[0], 'MarketCreationEnabledUpdated', {
+				enabled: false,
+			});
+			assert.isFalse(await manager.marketCreationEnabled());
+
+			tx = await manager.setMarketCreationEnabled(true, { from: managerOwner });
+			assert.eventEqual(tx.logs[0], 'MarketCreationEnabledUpdated', {
+				enabled: true,
+			});
+
+			assert.isTrue(await manager.marketCreationEnabled());
+
+			tx = await manager.setMarketCreationEnabled(true, { from: managerOwner });
+			assert.equal(tx.logs.length, 0);
+		});
+
+		it('Cannot create a market if market creation is disabled.', async () => {
+			await manager.setMarketCreationEnabled(false, { from: managerOwner });
+			const now = await currentTime();
+			await assert.revert(
+				manager.createMarket(sAUDKey, toUnit(1), now + 200, toUnit(5), {
+					from: initialCreator,
+				}),
+				'Market creation is disabled'
+			);
+
+			await manager.setMarketCreationEnabled(true, { from: managerOwner });
+			const tx = await manager.createMarket(sAUDKey, toUnit(1), now + 200, toUnit(5), {
+				from: initialCreator,
+			});
+			const localMarket = await BinaryOptionMarket.at(
+				getEventByName({ tx, name: 'MarketCreated' }).args.market
+			);
+
+			assert.bnEqual((await localMarket.oracleDetails()).strikePrice, toUnit(1));
+		});
+
+		it('Cannot create a market if maturity is in the past.', async () => {
+			const now = await currentTime();
+			await assert.revert(
+				manager.createMarket(sAUDKey, toUnit(1), now - 1, toUnit(2), {
+					from: initialCreator,
+				}),
+				'Maturity has to be in the future'
+			);
+		});
+	});
+
+	describe('Market expiry', () => {
+		it('Can expire markets', async () => {
+			const now = await currentTime();
+			const [newMarket, newerMarket] = await Promise.all([
+				createMarket(manager, sAUDKey, toUnit(1), now + 200, toUnit(3), initialCreator),
+				createMarket(manager, sAUDKey, toUnit(1), now + 100, toUnit(1), initialCreator),
+			]);
+
+			assert.bnEqual(await manager.totalDeposited(), toUnit(11));
+
+			const newAddress = newMarket.address;
+			const newerAddress = newerMarket.address;
+
+			await fastForward(expiryDuration.add(toBN(1000)));
+			await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
+				from: oracle,
+			});
+			await manager.resolveMarket(newAddress);
+			await manager.resolveMarket(newerAddress);
+			const tx = await manager.expireMarkets([newAddress, newerAddress], { from: initialCreator });
+
+			assert.eventEqual(tx.logs[0], 'MarketExpired', { market: newAddress });
+			assert.eventEqual(tx.logs[1], 'MarketExpired', { market: newerAddress });
+			assert.equal(await web3.eth.getCode(newAddress), '0x');
+			assert.equal(await web3.eth.getCode(newerAddress), '0x');
+			assert.bnEqual(await manager.totalDeposited(), toUnit(7));
+		});
+
+		it('Cannot expire a market that does not exist', async () => {
+			await assert.revert(manager.expireMarkets([initialCreator], { from: initialCreator }));
+		});
+
+		it('Cannot expire an unresolved market.', async () => {
+			const now = await currentTime();
+			const newMarket = await createMarket(
+				manager,
+				sAUDKey,
+				toUnit(1),
+				now + 200,
+				toUnit(3),
+				initialCreator
+			);
+			await assert.revert(
+				manager.expireMarkets([newMarket.address], { from: initialCreator }),
+				'Unexpired options remaining'
+			);
+
+			it('Cannot expire an unexpired market.', async () => {
+				const now = await currentTime();
+				const newMarket = await createMarket(
+					manager,
+					sAUDKey,
+					toUnit(1),
+					now + 200,
+					toUnit(3),
+					initialCreator
+				);
+
+				await fastForward(300);
+				await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
+					from: oracle,
+				});
+				await manager.resolveMarket(newMarket.address);
+				await assert.revert(
+					manager.expireMarkets([newMarket.address], { from: initialCreator }),
+					'Unexpired options remaining'
+				);
+			});
+
+			it('Cannot expire a market if the manager is paused.', async () => {
+				const now = await currentTime();
+				const newMarket = await createMarket(
+					manager,
+					sAUDKey,
+					toUnit(1),
+					now + 200,
+					toUnit(3),
+					initialCreator
+				);
+				await fastForward(expiryDuration.add(toBN(1000)));
+				await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
+					from: oracle,
+				});
+				await manager.resolveMarket(newMarket.address);
+
+				await manager.setPaused(true, { from: managerOwner });
+				await assert.revert(
+					manager.expireMarkets([newMarket.address], { from: bidder }),
+					'This action cannot be performed while the contract is paused'
+				);
+				await manager.setPaused(false, { from: managerOwner });
+			});
+		});
+	});
+
+	describe('BinaryOptionMarket and balances', () => {
 		it('Total Minted options', async () => {
 			let totalSupplies = await market.totalSupplies();
-			console.log('Total supplies are: ' + totalSupplies[0] + ' and ' + totalSupplies[1]);
 			assert.bnEqual(totalSupplies[0], toUnit(2));
 		});
 
@@ -271,11 +656,38 @@ contract('BinaryOption', accounts => {
 			const options = await market.options();
 			long = await BinaryOption.at(options.long);
 			short = await BinaryOption.at(options.short);
-			console.log('Total long and short addresses are: ' + long.address + ' and ' + short.address);
 			assert.bnEqual(await long.balanceOf(initialCreator), toUnit(2));
 			assert.bnEqual(await short.balanceOf(initialCreator), toUnit(2));
 			assert.bnEqual(await long.totalSupply(), toUnit(2));
 			assert.bnEqual(await short.totalSupply(), toUnit(2));
+		});
+
+		it('Mint more and check balance', async () => {
+			let now = await currentTime();
+			await createMarketAndMintMore(
+				sAUDKey,
+				initialStrikePrice,
+				now,
+				initialCreator,
+				timeToMaturity
+			);
+
+			const options = await market.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+
+			let fees = await market.fees();
+			console.log('Fees are ' + fees[0] + ' ' + fees[1]);
+
+			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
+			let valueAfterFees = multiplyDecimalRound(_feeMultiplier, toUnit(1)).add(toUnit(2));
+			totalDepositedAfterFees = valueAfterFees;
+			assert.bnEqual(await long.balanceOf(initialCreator), valueAfterFees);
+			assert.bnEqual(await short.balanceOf(initialCreator), valueAfterFees);
+
+			const totalSupplies = await market.totalSupplies();
+			assert.bnEqual(totalSupplies.long, valueAfterFees);
+			assert.bnEqual(totalSupplies.short, valueAfterFees);
 		});
 
 		it('Static option parameters are set properly', async () => {
@@ -283,28 +695,6 @@ contract('BinaryOption', accounts => {
 			assert.equal(await long.symbol(), 'sLONG');
 			assert.bnEqual(await long.decimals(), toBN(18));
 			assert.equal(await long.market(), market.address);
-		});
-
-		it('Mint more and check balance', async () => {
-			await market.mint(toUnit(1), {
-				from: initialCreator,
-			});
-
-			let totalAdditionalMintedNoFees = toUnit(1);
-
-			let fees = await market.fees();
-			console.log('fees are pool:' + fees[0] + ' creator:' + fees[1]);
-
-			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
-			let valueAfterFees = multiplyDecimalRound(_feeMultiplier, toUnit(1)).add(toUnit(2));
-			totalDepositedAfterFees = valueAfterFees;
-			console.log('valueAfterFees ' + valueAfterFees);
-			assert.bnEqual(await long.balanceOf(initialCreator), valueAfterFees);
-			assert.bnEqual(await short.balanceOf(initialCreator), valueAfterFees);
-
-			const totalSupplies = await market.totalSupplies();
-			assert.bnEqual(totalSupplies.long, valueAfterFees);
-			assert.bnEqual(totalSupplies.short, valueAfterFees);
 		});
 
 		it('Only expected functions are mutative', async () => {
@@ -315,6 +705,26 @@ contract('BinaryOption', accounts => {
 			});
 		});
 
+		it('BinaryOption instances cannot transfer if the system is suspended or paused', async () => {
+			await manager.setPaused(true, { from: accounts[1] });
+			await assert.revert(
+				long.transfer(market.address, toUnit(1), { from: initialCreator }),
+				'This action cannot be performed while the contract is paused'
+			);
+			await manager.setPaused(false, { from: accounts[1] });
+		});
+
+		it('Bad constructor parameters revert.', async () => {
+			// Insufficient capital
+			let now = await currentTime();
+			await assert.revert(
+				manager.createMarket(sAUDKey, initialStrikePrice, now + timeToMaturity, toUnit(0), {
+					from: initialCreator,
+				}),
+				'Insufficient capital'
+			);
+		});
+
 		it('Current oracle price and timestamp are correct.', async () => {
 			const now = await currentTime();
 			const price = toUnit(0.7);
@@ -323,8 +733,6 @@ contract('BinaryOption', accounts => {
 
 			assert.bnEqual(result.price, price);
 			assert.bnEqual(result.updatedAt, now);
-			console.log('Price ' + result.price);
-			console.log('UpdatedAt ' + result.updatedAt);
 		});
 
 		it('Result can fluctuate while unresolved, but is fixed after resolution.', async () => {
@@ -842,10 +1250,6 @@ contract('BinaryOption', accounts => {
 				contracts: [manager, market, long],
 			});
 
-			console.log('long.address ' + long.address);
-			console.log('exersizer' + exersizer);
-			console.log('dummy' + dummy);
-
 			assert.equal(logs.length, 4);
 			decodedEventEqual({
 				event: 'Transfer',
@@ -896,7 +1300,6 @@ contract('BinaryOption', accounts => {
 
 		it('Unresolved markets cannot be expired', async () => {
 			let now = await currentTime();
-			console.log('Now at beggining ' + now);
 			await createMarketAndMintMore(
 				sAUDKey,
 				initialStrikePrice,
@@ -915,7 +1318,6 @@ contract('BinaryOption', accounts => {
 
 		it('Market cannot be expired before its time', async () => {
 			let now = await currentTime();
-			console.log('Oracle now is ' + now);
 
 			await createMarketAndMintMore(
 				sAUDKey,
@@ -990,7 +1392,6 @@ contract('BinaryOption', accounts => {
 			sUSDSynth.approve(manager.address, toUnit(3), { from: secondCreator });
 
 			const creatorBalance = await sUSDSynth.balanceOf(secondCreator);
-			console.log('preCreatorBalance ' + (await sUSDSynth.balanceOf(secondCreator)));
 
 			let now = await currentTime();
 			await createMarketAndMintMore(
@@ -1021,13 +1422,7 @@ contract('BinaryOption', accounts => {
 			await manager.resolveMarket(market.address);
 			await manager.expireMarkets([market.address], { from: secondCreator });
 
-			console.log('deposited ' + deposited);
-
 			const creatorRecovered = deposited.add(toUnit(1));
-
-			console.log('postCreatorBalance ' + (await sUSDSynth.balanceOf(secondCreator)));
-
-			console.log('valueAfterFees ' + valueAfterFees);
 
 			assert.bnEqual(await sUSDSynth.balanceOf(secondCreator), valueAfterFees);
 			assert.bnEqual(await manager.totalDeposited(), preTotalDeposited.sub(deposited));
@@ -1087,4 +1482,11 @@ contract('BinaryOption', accounts => {
 			);
 		});
 	});
+
+	describe('Market tracking', () => {
+		it('Market resolution fails for unknown markets', async () => {
+			await assert.revert(manager.resolveMarket(initialCreator), 'Not an active market');
+		});
+	});
+
 });

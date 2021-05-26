@@ -8,6 +8,8 @@ module.exports = {
 		'BinaryOptionMarketData.sol',
 		'OwnedWithInit.sol',
 		'test-helpers',
+		'BinaryOptionMarketMastercopy.sol',
+		'BinaryOptionMastercopy.sol'
 	],
 	providerOptions: {
 		default_balance_ether: 10000000000000, // extra zero just in case (coverage consumes more gas)

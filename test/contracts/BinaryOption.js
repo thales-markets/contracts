@@ -1480,6 +1480,7 @@ contract('BinaryOption', accounts => {
 				manager.expireMarkets([market.address], { from: initialCreator }),
 				'This action cannot be performed while the contract is paused'
 			);
+			await manager.setPaused(false, { from: accounts[1] });
 		});
 	});
 
@@ -1487,6 +1488,56 @@ contract('BinaryOption', accounts => {
 		it('Market resolution fails for unknown markets', async () => {
 			await assert.revert(manager.resolveMarket(initialCreator), 'Not an active market');
 		});
+
+		it('Multiple markets can exist simultaneously, and debt is tracked properly across them.', async () => {
+			const now = await currentTime();
+			const markets = await Promise.all(
+				[toUnit(1), toUnit(2), toUnit(3)].map(price =>
+					createMarket(manager, sAUDKey, price, now + 200, toUnit(1), initialCreator)
+				)
+			);
+
+			let beforeDeposit = await manager.totalDeposited();
+			assert.bnEqual(beforeDeposit, toUnit(80.81));
+			await markets[0].mint(toUnit(2), { from: exersizer });
+			let afterDeposit = toUnit(2).add(beforeDeposit);
+
+			assert.bnEqual(await manager.totalDeposited(), afterDeposit);
+
+			await fastForward(expiryDuration + 1000);
+			await exchangeRates.updateRates([sAUDKey], [toUnit(2)], await currentTime(), {
+				from: oracle,
+			});
+			console.log('Before Deposited is ' + (await manager.totalDeposited()));
+			await Promise.all(
+				markets.map(m => {
+					manager.resolveMarket(m.address);
+				})
+			);
+			console.log('Resolved Deposited is ' + (await manager.totalDeposited()));
+
+			assert.bnEqual(await markets[0].result(), toBN(0));
+			assert.bnEqual(await markets[1].result(), toBN(0));
+			assert.bnEqual(await markets[2].result(), toBN(1));
+
+			const feesRemitted = multiplyDecimalRound(initialPoolFee.add(initialCreatorFee), toUnit(2));
+
+			await manager.expireMarkets([markets[0].address], { from: initialCreator });
+			assert.bnEqual(await manager.totalDeposited(), afterDeposit.sub(feesRemitted));
+
+			// await manager.expireMarkets([markets[1].address], { from: initialCreator });
+			// assert.bnEqual(await manager.totalDeposited(), toUnit(4).sub(feesRemitted));
+			// await manager.expireMarkets([markets[2].address], { from: initialCreator });
+			// assert.bnEqual(await manager.totalDeposited(), toUnit(0));
+		});
 	});
 
+	describe('Manager conducts all sUSD transfers', () => {
+		it('Can not be called by non market address', async () => {
+			await assert.revert(
+				manager.transferSusdTo(initialCreator, exersizer, toUnit(1)),
+				'Market unknown'
+			);
+		});
+	});
 });

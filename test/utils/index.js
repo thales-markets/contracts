@@ -593,6 +593,5 @@ module.exports = ({ web3 } = {}) => {
 		loadLocalUsers,
 
 		setupProvider,
-		getContract,
 	};
 };

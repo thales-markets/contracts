@@ -3,17 +3,6 @@
 const w3utils = require('web3-utils');
 const abiDecoder = require('abi-decoder');
 
-// load the data in explicitly (not programmatically) so webpack knows what to bundle
-const data = {
-	ropsten: require('./publish/deployed/ropsten'),
-	mainnet: require('./publish/deployed/mainnet'),
-};
-
-const assets = require('./publish/assets.json');
-const ovmIgnored = require('./publish/ovm-ignore.json');
-const nonUpgradeable = require('./publish/non-upgradeable.json');
-const releases = require('./publish/releases.json');
-
 const networks = ['local', 'ropsten', 'mainnet'];
 
 const chainIdMapping = Object.entries({
@@ -181,20 +170,6 @@ const getFolderNameForNetwork = ({ network, useOvm = false }) => {
 const getPathToNetwork = ({ network = 'mainnet', file = '', useOvm = false, path } = {}) =>
 	path.join(__dirname, 'publish', 'deployed', getFolderNameForNetwork({ network, useOvm }), file);
 
-// Pass in fs and path to avoid webpack wrapping those
-const loadDeploymentFile = ({ network, path, fs, deploymentPath, useOvm = false }) => {
-	if (!deploymentPath && network !== 'local' && (!path || !fs)) {
-		return data[getFolderNameForNetwork({ network, useOvm })].deployment;
-	}
-	const pathToDeployment = deploymentPath
-		? path.join(deploymentPath, constants.DEPLOYMENT_FILENAME)
-		: getPathToNetwork({ network, useOvm, path, file: constants.DEPLOYMENT_FILENAME });
-
-	if (!fs.existsSync(pathToDeployment)) {
-		throw Error(`Cannot find deployment for network: ${network}.`);
-	}
-	return JSON.parse(fs.readFileSync(pathToDeployment));
-};
 
 /**
  * Retrieve the list of targets for the network - returning the name, address, source file and link to etherscan
@@ -226,216 +201,6 @@ const getSource = ({
 	const deployment = loadDeploymentFile({ network, useOvm, path, fs, deploymentPath });
 	if (contract) return deployment.sources[contract];
 	else return deployment.sources;
-};
-
-/**
- * Retrieve the ASTs for the source contracts
- */
-const getAST = ({ source, path, fs, match = /^contracts\// } = {}) => {
-	let fullAST;
-	if (path && fs) {
-		const pathToAST = path.resolve(
-			__dirname,
-			constants.BUILD_FOLDER,
-			constants.AST_FOLDER,
-			constants.AST_FILENAME
-		);
-		if (!fs.existsSync(pathToAST)) {
-			throw Error('Cannot find AST');
-		}
-		fullAST = JSON.parse(fs.readFileSync(pathToAST));
-	} else {
-		// Note: The below cannot be required as the build folder is not stored
-		// in code (only in the published module).
-		// The solution involves tracking these after each commit in another file
-		// somewhere persisted in the codebase - JJM
-		// 		data.ast = require('./build/ast/asts.json'),
-		if (!data.ast) {
-			throw Error('AST currently not supported in browser mode');
-		}
-		fullAST = data.ast;
-	}
-
-	// remove anything not matching the pattern
-	const ast = Object.entries(fullAST)
-		.filter(([astEntryKey]) => match.test(astEntryKey))
-		.reduce((memo, [key, val]) => {
-			memo[key] = val;
-			return memo;
-		}, {});
-
-	if (source && source in ast) {
-		return ast[source];
-	} else if (source) {
-		// try to find the source without a path
-		const [key, entry] =
-			Object.entries(ast).find(([astEntryKey]) => astEntryKey.includes('/' + source)) || [];
-		if (!key || !entry) {
-			throw Error(`Cannot find AST entry for source: ${source}`);
-		}
-		return { [key]: entry };
-	} else {
-		return ast;
-	}
-};
-
-const getFeeds = ({ network, path, fs, deploymentPath, useOvm = false } = {}) => {
-	let feeds;
-
-	if (!deploymentPath && network !== 'local' && (!path || !fs)) {
-		feeds = data[getFolderNameForNetwork({ network, useOvm })].feeds;
-	} else {
-		const pathToFeeds = deploymentPath
-			? path.join(deploymentPath, constants.FEEDS_FILENAME)
-			: getPathToNetwork({
-					network,
-					path,
-					useOvm,
-					file: constants.FEEDS_FILENAME,
-			  });
-		if (!fs.existsSync(pathToFeeds)) {
-			throw Error(`Cannot find feeds file.`);
-		}
-		feeds = JSON.parse(fs.readFileSync(pathToFeeds));
-	}
-
-	const synths = getSynths({ network, useOvm, path, fs, deploymentPath, skipPopulate: true });
-
-	// now mix in the asset data
-	return Object.entries(feeds).reduce((memo, [asset, entry]) => {
-		memo[asset] = Object.assign(
-			// standalone feeds are those without a synth using them
-			// Note: ETH still used as a rate for Depot, can remove the below once the Depot uses sETH rate or is
-			// removed from the system
-			{ standalone: !synths.find(synth => synth.asset === asset) || asset === 'ETH' },
-			assets[asset],
-			entry
-		);
-		return memo;
-	}, {});
-};
-
-/**
- * Retrieve ths list of synths for the network - returning their names, assets underlying, category, sign, description, and
- * optional index and inverse properties
- */
-const getSynths = ({
-	network = 'mainnet',
-	path,
-	fs,
-	deploymentPath,
-	useOvm = false,
-	skipPopulate = false,
-} = {}) => {
-	let synths;
-
-	if (!deploymentPath && network !== 'local' && (!path || !fs)) {
-		synths = data[getFolderNameForNetwork({ network, useOvm })].synths;
-	} else {
-		const pathToSynthList = deploymentPath
-			? path.join(deploymentPath, constants.SYNTHS_FILENAME)
-			: getPathToNetwork({ network, useOvm, path, file: constants.SYNTHS_FILENAME });
-		if (!fs.existsSync(pathToSynthList)) {
-			throw Error(`Cannot find synth list.`);
-		}
-		synths = JSON.parse(fs.readFileSync(pathToSynthList));
-	}
-
-	if (skipPopulate) {
-		return synths;
-	}
-
-	const feeds = getFeeds({ network, useOvm, path, fs, deploymentPath });
-
-	// copy all necessary index parameters from the longs to the corresponding shorts
-	return synths.map(synth => {
-		// mixin the asset details
-		synth = Object.assign({}, assets[synth.asset], synth);
-
-		if (feeds[synth.asset]) {
-			const { feed } = feeds[synth.asset];
-
-			synth = Object.assign({ feed }, synth);
-		}
-
-		if (synth.inverted) {
-			synth.description = `Inverse ${synth.description}`;
-		}
-		// replace an index placeholder with the index details
-		if (typeof synth.index === 'string') {
-			const { index } = synths.find(({ name }) => name === synth.index) || {};
-			if (!index) {
-				throw Error(
-					`While processing ${synth.name}, it's index mapping "${synth.index}" cannot be found - this is an error in the deployment config and should be fixed`
-				);
-			}
-			synth = Object.assign({}, synth, { index });
-		}
-
-		if (synth.index) {
-			synth.index = synth.index.map(indexEntry => {
-				return Object.assign({}, assets[indexEntry.asset], indexEntry);
-			});
-		}
-
-		return synth;
-	});
-};
-
-/**
- * Retrieve the list of staking rewards for the network - returning this names, stakingToken, and rewardToken
- */
-const getStakingRewards = ({
-	network = 'mainnet',
-	useOvm = false,
-	path,
-	fs,
-	deploymentPath,
-} = {}) => {
-	if (!deploymentPath && network !== 'local' && (!path || !fs)) {
-		return data[getFolderNameForNetwork({ network, useOvm })].rewards;
-	}
-
-	const pathToStakingRewardsList = deploymentPath
-		? path.join(deploymentPath, constants.STAKING_REWARDS_FILENAME)
-		: getPathToNetwork({
-				network,
-				path,
-				useOvm,
-				file: constants.STAKING_REWARDS_FILENAME,
-		  });
-	if (!fs.existsSync(pathToStakingRewardsList)) {
-		return [];
-	}
-	return JSON.parse(fs.readFileSync(pathToStakingRewardsList));
-};
-
-/**
- * Retrieve the list of shorting rewards for the network - returning the names and rewardTokens
- */
-const getShortingRewards = ({
-	network = 'mainnet',
-	useOvm = false,
-	path,
-	fs,
-	deploymentPath,
-} = {}) => {
-	if (!deploymentPath && network !== 'local' && (!path || !fs)) {
-		return data[getFolderNameForNetwork({ network, useOvm })]['shorting-rewards'];
-	}
-
-	const pathToShortingRewardsList = deploymentPath
-		? path.join(deploymentPath, constants.SHORTING_REWARDS_FILENAME)
-		: getPathToNetwork({
-				network,
-				path,
-				useOvm,
-				file: constants.SHORTING_REWARDS_FILENAME,
-		  });
-	if (!fs.existsSync(pathToShortingRewardsList)) {
-		return [];
-	}
-	return JSON.parse(fs.readFileSync(pathToShortingRewardsList));
 };
 
 /**
@@ -481,94 +246,6 @@ const getUsers = ({ network = 'mainnet', user, useOvm = false } = {}) => {
 	return user ? users.find(({ name }) => name === user) : users;
 };
 
-const getVersions = ({
-	network = 'mainnet',
-	path,
-	fs,
-	deploymentPath,
-	useOvm,
-	byContract = false,
-} = {}) => {
-	let versions;
-
-	if (!deploymentPath && network !== 'local' && (!path || !fs)) {
-		versions = data[getFolderNameForNetwork({ network, useOvm })].versions;
-	} else {
-		const pathToVersions = deploymentPath
-			? path.join(deploymentPath, constants.VERSIONS_FILENAME)
-			: getPathToNetwork({ network, useOvm, path, file: constants.VERSIONS_FILENAME });
-		if (!fs.existsSync(pathToVersions)) {
-			throw Error(`Cannot find versions for network.`);
-		}
-		versions = JSON.parse(fs.readFileSync(pathToVersions));
-	}
-
-	if (byContract) {
-		// compile from the contract perspective
-		return Object.values(versions).reduce(
-			(memo, { tag, release, date, commit, block, contracts }) => {
-				for (const [contract, contractEntry] of Object.entries(contracts)) {
-					memo[contract] = memo[contract] || [];
-					memo[contract].push(Object.assign({ tag, release, date, commit, block }, contractEntry));
-				}
-				return memo;
-			},
-			{}
-		);
-	}
-	return versions;
-};
-
-const getSuspensionReasons = ({ code = undefined } = {}) => {
-	const suspensionReasonMap = {
-		1: 'System Upgrade',
-		2: 'Market Closure',
-		4: 'iSynth Reprice',
-		55: 'Circuit Breaker (Phase one)', // https://sips.synthetix.io/SIPS/sip-55
-		65: 'Decentralized Circuit Breaker (Phase two)', // https://sips.synthetix.io/SIPS/sip-65
-		99999: 'Emergency',
-	};
-
-	return code ? suspensionReasonMap[code] : suspensionReasonMap;
-};
-
-/**
- * Retrieve the list of tokens used in the Synthetix protocol
- */
-const getTokens = ({ network = 'mainnet', path, fs, useOvm = false } = {}) => {
-	const synths = getSynths({ network, useOvm, path, fs });
-	const targets = getTarget({ network, useOvm, path, fs });
-	const feeds = getFeeds({ network, useOvm, path, fs });
-
-	return [
-		Object.assign(
-			{
-				symbol: 'SNX',
-				asset: 'SNX',
-				name: 'Synthetix',
-				address: targets.ProxyERC20.address,
-				decimals: 18,
-			},
-			feeds['SNX'].feed ? { feed: feeds['SNX'].feed } : {}
-		),
-	].concat(
-		synths
-			.filter(({ category }) => category !== 'internal')
-			.map(synth => ({
-				symbol: synth.name,
-				asset: synth.asset,
-				name: synth.description,
-				address: (targets[`Proxy${synth.name === 'sUSD' ? 'ERC20sUSD' : synth.name}`] || {})
-					.address,
-				index: synth.index,
-				inverted: synth.inverted,
-				decimals: 18,
-				feed: synth.feed,
-			}))
-			.sort((a, b) => (a.symbol > b.symbol ? 1 : -1))
-	);
-};
-
 const decode = ({ network = 'mainnet', fs, path, data, target, useOvm = false } = {}) => {
 	const sources = getSource({ network, path, fs, useOvm });
 	for (const { abi } of Object.values(sources)) {
@@ -609,26 +286,15 @@ module.exports = {
 	constants,
 	decode,
 	defaults,
-	getAST,
 	getNetworkFromId,
 	getPathToNetwork,
 	getSource,
-	getStakingRewards,
-	getShortingRewards,
-	getSuspensionReasons,
-	getFeeds,
-	getSynths,
 	getTarget,
-	getTokens,
 	getUsers,
-	getVersions,
 	networks,
 	networkToChainId,
 	toBytes32,
 	fromBytes32,
 	wrap,
-	ovmIgnored,
-	nonUpgradeable,
-	releases,
 	knownAccounts,
 };

@@ -49,7 +49,12 @@ module.exports = {
 	async flatten({ files, contracts }) {
 		const flattenedContracts = {};
 
+		for (const f in files) {
+			console.log('Files are ' + files[f]);
+		}
+
 		for (const contract of Object.keys(contracts)) {
+			console.log('Contract is ' + contract);
 			const flattened = await solidifier.flatten({
 				files,
 				path: contract,

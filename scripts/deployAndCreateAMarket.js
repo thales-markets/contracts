@@ -1,7 +1,18 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix');
-const { artifacts, contract, web3 } = require('hardhat');
+
+const {
+	fastForward,
+	toUnit,
+	currentTime,
+	multiplyDecimalRound,
+	divideDecimalRound,
+} = require('../test/utils')();
+
+const { toBN } = web3.utils;
+
+const { toBytes32 } = require('..');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -17,6 +28,9 @@ async function main() {
 
 	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
+
+	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
+	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
 
 	// We get the contract to deploy
 	const BinaryOptionMastercopy = await ethers.getContractFactory('BinaryOptionMastercopy');
@@ -51,7 +65,7 @@ async function main() {
 	const maxOraclePriceAge = 120 * 60; // Price updates are accepted from up to two hours before maturity to allow for delayed chainlink heartbeats.
 	const expiryDuration = 26 * 7 * day; // Six months to exercise options before the market is destructible.
 	const maxTimeToMaturity = 730 * day; // Markets may not be deployed more than two years in the future.
-	const creatorCapitalRequirement = w3utils.toWei('1000'); // 1000 sUSD is required to create a new market.
+	const creatorCapitalRequirement = w3utils.toWei('1'); // 1000 sUSD is required to create a new market.
 	const poolFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the pool in the end.
 	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
 	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
@@ -79,12 +93,6 @@ async function main() {
 		binaryOptionMarketManagerDeployed.address
 	);
 
-	const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
-	const binaryOptionMarketData = await BinaryOptionMarketData.deploy();
-	await binaryOptionMarketData.deployed();
-
-	console.log('binaryOptionMarketData deployed to:', binaryOptionMarketData.address);
-
 	await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
 		binaryOptionMarketManagerDeployed.address
 	);
@@ -94,47 +102,31 @@ async function main() {
 	await binaryOptionMarketFactoryDeployed.setBinaryOptionMastercopy(
 		binaryOptionMastercopyDeployed.address
 	);
-
 	await binaryOptionMarketManagerDeployed.setBinaryOptionsMarketFactory(
 		binaryOptionMarketFactoryDeployed.address
 	);
 
-	await hre.run('verify:verify', {
-		address: binaryOptionMarketManagerDeployed.address,
-		constructorArguments: [
-			owner.address,
-			addressResolver.address,
-			maxOraclePriceAge,
-			expiryDuration,
-			maxTimeToMaturity,
-			creatorCapitalRequirement,
-			poolFee,
-			creatorFee,
-			feeAddress,
-		],
-	});
+	console.log('All params set');
 
-	await hre.run('verify:verify', {
-		address: binaryOptionMarketFactoryDeployed.address,
-		constructorArguments: [owner.address],
-	});
+	const sAUDKey = toBytes32('sETH');
+	const initialStrikePrice = w3utils.toWei('1');
+	const now = await currentTime();
 
-	await hre.run('verify:verify', {
-		address: binaryOptionMastercopyDeployed.address,
-		constructorArguments: [],
-		contract: 'contracts/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
+	let abi = ["function approve(address _spender, uint256 _value) public returns (bool success)"]
+	let contract = new ethers.Contract(ProxyERC20sUSD.address, abi, owner);
+	await contract.approve(binaryOptionMarketManagerDeployed.address, initialStrikePrice, {
+		from: owner.address,
 	});
+	console.log('Done approving');
 
-	await hre.run('verify:verify', {
-		address: binaryOptionMarketMastercopyDeployed.address,
-		constructorArguments: [],
-		contract: 'contracts/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
-	});
-
-	await hre.run('verify:verify', {
-		address: binaryOptionMarketData.address,
-		constructorArguments: [],
-	});
+	const result = await binaryOptionMarketManagerDeployed.createMarket(
+		sAUDKey,
+		initialStrikePrice,
+		now + 360,
+		initialStrikePrice,
+		{ gasLimit: 5500000 }
+	);
+	console.log('Market created');
 }
 
 main()

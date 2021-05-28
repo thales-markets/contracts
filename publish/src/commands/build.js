@@ -23,7 +23,6 @@ const DEFAULTS = {
 	buildPath: path.join(__dirname, '..', '..', '..', BUILD_FOLDER),
 	optimizerRuns: 200,
 };
-const overrides = require('../contract-overrides');
 
 const build = async ({
 	buildPath = DEFAULTS.buildPath,
@@ -35,6 +34,16 @@ const build = async ({
 	useOvm,
 	cleanBuild,
 } = {}) => {
+
+	console.log("buildPath=" + buildPath);
+	console.log("optimizerRuns=" + optimizerRuns);
+	console.log("skipUnchanged=" + skipUnchanged);
+	console.log("testHelpers=" + testHelpers);
+	console.log("showWarnings=" + showWarnings);
+	console.log("showContractSize=" + showContractSize);
+	console.log("useOvm=" + useOvm);
+	console.log("cleanBuild=" + cleanBuild);
+
 	console.log(gray(`Starting build${useOvm ? ' using OVM' : ''}...`));
 
 	if (cleanBuild && fs.existsSync(buildPath)) {
@@ -130,9 +139,6 @@ const build = async ({
 			previousSizes.push(prevSizeIfAny);
 		}
 		let runs = parseInt(optimizerRuns); // default, use ParseInt: runs setting must be an unsigned number.
-		if (typeof overrides[contract] === 'object') {
-			runs = overrides[contract].runs;
-		}
 		console.log(
 			gray(
 				`Attempting compile of ${contract}${

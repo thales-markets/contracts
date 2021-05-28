@@ -8,6 +8,7 @@ require('@nomiclabs/hardhat-truffle5');
 require('solidity-coverage');
 require('hardhat-gas-reporter');
 require('@nomiclabs/hardhat-waffle');
+require('@nomiclabs/hardhat-etherscan');
 
 const {
 	constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },
@@ -18,8 +19,14 @@ const CACHE_FOLDER = 'cache';
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const INFURA = process.env.INFURA;
+const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY;
 
 module.exports = {
+	etherscan: {
+		// Your API key for Etherscan
+		// Obtain one at https://etherscan.io/
+		apiKey: ETHERSCAN_KEY,
+	},
 	GAS_PRICE,
 	ovm: {
 		solcVersion: '0.5.16',
@@ -62,7 +69,12 @@ module.exports = {
 		},
 		ropsten: {
 			gasPrice: 'auto',
-			url: 'https://ropsten.infura.io/v3/${INFURA}',
+			url: 'https://ropsten.infura.io/v3/' + INFURA,
+			accounts: [PRIVATE_KEY],
+		},
+		kovan: {
+			gasPrice: 'auto',
+			url: 'https://kovan.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
 	},

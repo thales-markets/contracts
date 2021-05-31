@@ -2,18 +2,10 @@ pragma solidity >=0.4.24;
 
 import "../interfaces/IBinaryOptionMarket.sol";
 
-// https://docs.synthetix.io/contracts/source/interfaces/ibinaryoptionmarketmanager
 interface IBinaryOptionMarketManager {
     /* ========== VIEWS / VARIABLES ========== */
 
-    function fees()
-        external
-        view
-        returns (
-            uint poolFee,
-            uint creatorFee,
-            uint refundFee
-        );
+    function fees() external view returns (uint poolFee, uint creatorFee);
 
     function durations()
         external
@@ -24,7 +16,7 @@ interface IBinaryOptionMarketManager {
             uint maxTimeToMaturity
         );
 
-    function creatorLimits() external view returns (uint capitalRequirement, uint skewLimit);
+    function capitalRequirement() external view returns (uint);
 
     function marketCreationEnabled() external view returns (bool);
 
@@ -43,14 +35,13 @@ interface IBinaryOptionMarketManager {
     function createMarket(
         bytes32 oracleKey,
         uint strikePrice,
-        bool refundsEnabled,
-        uint[2] calldata times, // [biddingEnd, maturity]
-        uint[2] calldata bids // [longBid, shortBid]
+        uint maturity,
+        uint initialMint // initial sUSD to mint options for
     ) external returns (IBinaryOptionMarket);
 
     function resolveMarket(address market) external;
 
-    function cancelMarket(address market) external;
-
     function expireMarkets(address[] calldata market) external;
+
+    function transferSusdTo(address sender, address receiver, uint amount) external;
 }

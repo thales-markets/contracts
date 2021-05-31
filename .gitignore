@@ -110,3 +110,4 @@ cache
 artifacts
 
 /.idea/*
+/coverage.json

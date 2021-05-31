@@ -1,23 +1,25 @@
 pragma solidity ^0.5.16;
 
 // Inheritance
+import "./Owned.sol";
+import "./Pausable.sol";
+import "./MixinResolver.sol";
 import "./interfaces/IBinaryOptionMarketManager.sol";
-import "synthetix-2.43.1/contracts/Owned.sol";
-import "synthetix-2.43.1/contracts/Pausable.sol";
 
 // Libraries
-import "synthetix-2.43.1/contracts/AddressSetLib.sol";
-import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
+import "./AddressSetLib.sol";
+import "./SafeDecimalMath.sol";
 
 // Internal references
 import "./BinaryOptionMarketFactory.sol";
 import "./BinaryOptionMarket.sol";
 import "./interfaces/IBinaryOptionMarket.sol";
-import "synthetix-2.43.1/contracts/interfaces/IExchangeRates.sol";
-import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
-import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
+import "./interfaces/IExchangeRates.sol";
+import "./interfaces/ISystemStatus.sol";
+import "./interfaces/IERC20.sol";
 
-contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManager {
+// https://docs.synthetix.io/contracts/source/contracts/binaryoptionmarketmanager
+contract BinaryOptionMarketManager is Owned, Pausable, MixinResolver, IBinaryOptionMarketManager {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
@@ -28,6 +30,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     struct Fees {
         uint poolFee;
         uint creatorFee;
+        uint refundFee;
     }
 
     struct Durations {
@@ -36,13 +39,16 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint maxTimeToMaturity;
     }
 
-    /* ========== STATE VARIABLES ========== */
+    struct CreatorLimits {
+        uint capitalRequirement;
+        uint skewLimit;
+    }
 
-    address public feeAddress;
+    /* ========== STATE VARIABLES ========== */
 
     Fees public fees;
     Durations public durations;
-    uint public capitalRequirement;
+    CreatorLimits public creatorLimits;
 
     bool public marketCreationEnabled = true;
     uint public totalDeposited;
@@ -52,62 +58,66 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     BinaryOptionMarketManager internal _migratingManager;
 
-    IAddressResolver public resolver;
-
-    address public binaryOptionMarketFactory;
-
     /* ---------- Address Resolver Configuration ---------- */
 
+    bytes32 internal constant CONTRACT_SYSTEMSTATUS = "SystemStatus";
     bytes32 internal constant CONTRACT_SYNTHSUSD = "SynthsUSD";
     bytes32 internal constant CONTRACT_EXRATES = "ExchangeRates";
+    bytes32 internal constant CONTRACT_BINARYOPTIONMARKETFACTORY = "BinaryOptionMarketFactory";
 
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
         address _owner,
-        IAddressResolver _resolver,
+        address _resolver,
         uint _maxOraclePriceAge,
         uint _expiryDuration,
         uint _maxTimeToMaturity,
         uint _creatorCapitalRequirement,
+        uint _creatorSkewLimit,
         uint _poolFee,
         uint _creatorFee,
-        address _feeAddress
-    ) public Owned(_owner) Pausable() {
-        resolver = _resolver;
-
+        uint _refundFee
+    ) public Owned(_owner) Pausable() MixinResolver(_resolver) {
         // Temporarily change the owner so that the setters don't revert.
         owner = msg.sender;
-
-        setFeeAddress(_feeAddress);
         setExpiryDuration(_expiryDuration);
         setMaxOraclePriceAge(_maxOraclePriceAge);
         setMaxTimeToMaturity(_maxTimeToMaturity);
         setCreatorCapitalRequirement(_creatorCapitalRequirement);
+        setCreatorSkewLimit(_creatorSkewLimit);
         setPoolFee(_poolFee);
         setCreatorFee(_creatorFee);
+        setRefundFee(_refundFee);
         owner = _owner;
-    }
-
-    /* ========== SETTERS ========== */
-    function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) public onlyOwner {
-        binaryOptionMarketFactory = _binaryOptionMarketFactory;
-    }
-
-    function setFeeAddress(address _feeAddress) public onlyOwner {
-        feeAddress = _feeAddress;
     }
 
     /* ========== VIEWS ========== */
 
+    function resolverAddressesRequired() public view returns (bytes32[] memory addresses) {
+        addresses = new bytes32[](4);
+        addresses[0] = CONTRACT_SYSTEMSTATUS;
+        addresses[1] = CONTRACT_SYNTHSUSD;
+        addresses[2] = CONTRACT_EXRATES;
+        addresses[3] = CONTRACT_BINARYOPTIONMARKETFACTORY;
+    }
+
     /* ---------- Related Contracts ---------- */
 
+    function _systemStatus() internal view returns (ISystemStatus) {
+        return ISystemStatus(requireAndGetAddress(CONTRACT_SYSTEMSTATUS));
+    }
+
     function _sUSD() internal view returns (IERC20) {
-        return IERC20(resolver.requireAndGetAddress(CONTRACT_SYNTHSUSD, "Synth sUSD contract not found"));
+        return IERC20(requireAndGetAddress(CONTRACT_SYNTHSUSD));
     }
 
     function _exchangeRates() internal view returns (IExchangeRates) {
-        return IExchangeRates(resolver.requireAndGetAddress(CONTRACT_EXRATES, "ExchangeRates contract not found"));
+        return IExchangeRates(requireAndGetAddress(CONTRACT_EXRATES));
+    }
+
+    function _factory() internal view returns (BinaryOptionMarketFactory) {
+        return BinaryOptionMarketFactory(requireAndGetAddress(CONTRACT_BINARYOPTIONMARKETFACTORY));
     }
 
     /* ---------- Market Information ---------- */
@@ -189,18 +199,32 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         emit CreatorFeeUpdated(_creatorFee);
     }
 
+    function setRefundFee(uint _refundFee) public onlyOwner {
+        require(_refundFee <= SafeDecimalMath.unit(), "Refund fee must be no greater than 100%.");
+        fees.refundFee = _refundFee;
+        emit RefundFeeUpdated(_refundFee);
+    }
+
     function setCreatorCapitalRequirement(uint _creatorCapitalRequirement) public onlyOwner {
-        capitalRequirement = _creatorCapitalRequirement;
+        creatorLimits.capitalRequirement = _creatorCapitalRequirement;
         emit CreatorCapitalRequirementUpdated(_creatorCapitalRequirement);
+    }
+
+    function setCreatorSkewLimit(uint _creatorSkewLimit) public onlyOwner {
+        require(_creatorSkewLimit <= SafeDecimalMath.unit(), "Creator skew limit must be no greater than 1.");
+        creatorLimits.skewLimit = _creatorSkewLimit;
+        emit CreatorSkewLimitUpdated(_creatorSkewLimit);
     }
 
     /* ---------- Deposit Management ---------- */
 
     function incrementTotalDeposited(uint delta) external onlyActiveMarkets notPaused {
+        _systemStatus().requireSystemActive();
         totalDeposited = totalDeposited.add(delta);
     }
 
     function decrementTotalDeposited(uint delta) external onlyKnownMarkets notPaused {
+        _systemStatus().requireSystemActive();
         // NOTE: As individual market debt is not tracked here, the underlying markets
         //       need to be careful never to subtract more debt than they added.
         //       This can't be enforced without additional state/communication overhead.
@@ -212,8 +236,9 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     function createMarket(
         bytes32 oracleKey,
         uint strikePrice,
-        uint maturity,
-        uint initialMint // initial sUSD to mint options for
+        bool refundsEnabled,
+        uint[2] calldata times, // [biddingEnd, maturity]
+        uint[2] calldata bids // [longBid, shortBid]
     )
         external
         notPaused
@@ -221,44 +246,42 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             IBinaryOptionMarket // no support for returning BinaryOptionMarket polymorphically given the interface
         )
     {
+        _systemStatus().requireSystemActive();
         require(marketCreationEnabled, "Market creation is disabled");
         require(_isValidKey(oracleKey), "Invalid key");
 
+        (uint biddingEnd, uint maturity) = (times[0], times[1]);
         require(maturity <= now + durations.maxTimeToMaturity, "Maturity too far in the future");
         uint expiry = maturity.add(durations.expiryDuration);
 
-        require(now < maturity, "Maturity has to be in the future");
+        uint initialDeposit = bids[0].add(bids[1]);
+        require(now < biddingEnd, "End of bidding has passed");
+        require(biddingEnd < maturity, "Maturity predates end of bidding");
         // We also require maturity < expiry. But there is no need to check this.
         // Fees being in range are checked in the setters.
         // The market itself validates the capital and skew requirements.
 
-        require(capitalRequirement <= initialMint, "Insufficient capital");
-
         BinaryOptionMarket market =
-            BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
+            _factory().createMarket(
                 msg.sender,
-                resolver,
+                [creatorLimits.capitalRequirement, creatorLimits.skewLimit],
                 oracleKey,
                 strikePrice,
-                [maturity, expiry],
-                initialMint,
-                [fees.poolFee, fees.creatorFee]
+                refundsEnabled,
+                [biddingEnd, maturity, expiry],
+                bids,
+                [fees.poolFee, fees.creatorFee, fees.refundFee]
             );
+        market.rebuildCache();
         _activeMarkets.add(address(market));
 
         // The debt can't be incremented in the new market's constructor because until construction is complete,
         // the manager doesn't know its address in order to grant it permission.
-        totalDeposited = totalDeposited.add(initialMint);
-        _sUSD().transferFrom(msg.sender, address(market), initialMint);
+        totalDeposited = totalDeposited.add(initialDeposit);
+        _sUSD().transferFrom(msg.sender, address(market), initialDeposit);
 
-        emit MarketCreated(address(market), msg.sender, oracleKey, strikePrice, maturity, expiry);
+        emit MarketCreated(address(market), msg.sender, oracleKey, strikePrice, biddingEnd, maturity, expiry);
         return market;
-    }
-
-    function transferSusdTo(address sender, address receiver, uint amount) external {
-        //only to be called by markets themselves
-        require(_isKnownMarket(address(msg.sender)), "Market unknown.");
-        _sUSD().transferFrom(sender, receiver, amount);
     }
 
     function resolveMarket(address market) external {
@@ -266,6 +289,15 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         BinaryOptionMarket(market).resolve();
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
+    }
+
+    function cancelMarket(address market) external notPaused {
+        require(_activeMarkets.contains(market), "Not an active market");
+        address creator = BinaryOptionMarket(market).creator();
+        require(msg.sender == creator, "Sender not market creator");
+        BinaryOptionMarket(market).cancel(msg.sender);
+        _activeMarkets.remove(market);
+        emit MarketCancelled(market);
     }
 
     function expireMarkets(address[] calldata markets) external notPaused {
@@ -278,6 +310,28 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             // its index is defined and that the list of markets is not empty.
             _maturedMarkets.remove(market);
             emit MarketExpired(market);
+        }
+    }
+
+    /* ---------- Upgrade and Administration ---------- */
+
+    function rebuildMarketCaches(BinaryOptionMarket[] calldata marketsToSync) external {
+        for (uint i = 0; i < marketsToSync.length; i++) {
+            address market = address(marketsToSync[i]);
+
+            // solhint-disable avoid-low-level-calls
+            bytes memory payload = abi.encodeWithSignature("rebuildCache()");
+            (bool success, ) = market.call(payload);
+
+            if (!success) {
+                // handle legacy markets that used an old cache rebuilding logic
+                bytes memory payloadForLegacyCache =
+                    abi.encodeWithSignature("setResolverAndSyncCache(address)", address(resolver));
+
+                // solhint-disable avoid-low-level-calls
+                (bool legacySuccess, ) = market.call(payloadForLegacyCache);
+                require(legacySuccess, "Cannot rebuild cache for market");
+            }
         }
     }
 
@@ -365,17 +419,22 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         address indexed creator,
         bytes32 indexed oracleKey,
         uint strikePrice,
+        uint biddingEndDate,
         uint maturityDate,
         uint expiryDate
     );
     event MarketExpired(address market);
+    event MarketCancelled(address market);
     event MarketsMigrated(BinaryOptionMarketManager receivingManager, BinaryOptionMarket[] markets);
     event MarketsReceived(BinaryOptionMarketManager migratingManager, BinaryOptionMarket[] markets);
     event MarketCreationEnabledUpdated(bool enabled);
     event MaxOraclePriceAgeUpdated(uint duration);
+    event ExerciseDurationUpdated(uint duration);
     event ExpiryDurationUpdated(uint duration);
     event MaxTimeToMaturityUpdated(uint duration);
     event CreatorCapitalRequirementUpdated(uint value);
+    event CreatorSkewLimitUpdated(uint value);
     event PoolFeeUpdated(uint fee);
     event CreatorFeeUpdated(uint fee);
+    event RefundFeeUpdated(uint fee);
 }

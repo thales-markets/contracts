@@ -1,64 +1,64 @@
 pragma solidity ^0.5.16;
 
 // Inheritance
-import "synthetix-2.43.1/contracts/MinimalProxyFactory.sol";
-import "synthetix-2.43.1/contracts/Owned.sol";
+import "./Owned.sol";
+import "./MixinResolver.sol";
 
 // Internal references
 import "./BinaryOptionMarket.sol";
-import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
 
-contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
+// https://docs.synthetix.io/contracts/source/contracts/binaryoptionmarketfactory
+contract BinaryOptionMarketFactory is Owned, MixinResolver {
     /* ========== STATE VARIABLES ========== */
-    address public binaryOptionMarketManager;
-    address public binaryOptionMarketMastercopy;
-    address public binaryOptionMastercopy;
+
+    /* ---------- Address Resolver Configuration ---------- */
+
+    bytes32 internal constant CONTRACT_BINARYOPTIONMARKETMANAGER = "BinaryOptionMarketManager";
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(address _owner) public MinimalProxyFactory() Owned(_owner) {}
+    constructor(address _owner, address _resolver) public Owned(_owner) MixinResolver(_resolver) {}
+
+    /* ========== VIEWS ========== */
+
+    function resolverAddressesRequired() public view returns (bytes32[] memory addresses) {
+        addresses = new bytes32[](1);
+        addresses[0] = CONTRACT_BINARYOPTIONMARKETMANAGER;
+    }
+
+    /* ---------- Related Contracts ---------- */
+
+    function _manager() internal view returns (address) {
+        return requireAndGetAddress(CONTRACT_BINARYOPTIONMARKETMANAGER);
+    }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function createMarket(
         address creator,
-        IAddressResolver _resolver,
+        uint[2] calldata creatorLimits,
         bytes32 oracleKey,
         uint strikePrice,
-        uint[2] calldata times, // [maturity, expiry]
-        uint initialMint,
-        uint[2] calldata fees // [poolFee, creatorFee]
+        bool refundsEnabled,
+        uint[3] calldata times, // [biddingEnd, maturity, expiry]
+        uint[2] calldata bids, // [longBid, shortBid]
+        uint[3] calldata fees // [poolFee, creatorFee, refundFee]
     ) external returns (BinaryOptionMarket) {
-        require(binaryOptionMarketManager == msg.sender, "Only permitted by the manager.");
+        address manager = _manager();
+        require(address(manager) == msg.sender, "Only permitted by the manager.");
 
-        BinaryOptionMarket bom =
-            BinaryOptionMarket(
-                _cloneAsMinimalProxy(binaryOptionMarketMastercopy, "Could not create a Binary Option Market")
+        return
+            new BinaryOptionMarket(
+                manager,
+                creator,
+                address(resolver),
+                creatorLimits,
+                oracleKey,
+                strikePrice,
+                refundsEnabled,
+                times,
+                bids,
+                fees
             );
-        bom.initialize(
-            binaryOptionMarketManager,
-            binaryOptionMastercopy,
-            _resolver,
-            creator,
-            oracleKey,
-            strikePrice,
-            times,
-            initialMint,
-            fees
-        );
-        return bom;
-    }
-
-    /* ========== SETTERS ========== */
-    function setBinaryOptionMarketManager(address _binaryOptionMarketManager) public onlyOwner {
-        binaryOptionMarketManager = _binaryOptionMarketManager;
-    }
-
-    function setBinaryOptionMarketMastercopy(address _binaryOptionMarketMastercopy) public onlyOwner {
-        binaryOptionMarketMastercopy = _binaryOptionMarketMastercopy;
-    }
-
-    function setBinaryOptionMastercopy(address _binaryOptionMastercopy) public onlyOwner {
-        binaryOptionMastercopy = _binaryOptionMastercopy;
     }
 }

@@ -18,7 +18,6 @@ import "./interfaces/IExchangeRates.sol";
 import "./interfaces/ISystemStatus.sol";
 import "./interfaces/IERC20.sol";
 
-// https://docs.synthetix.io/contracts/source/contracts/binaryoptionmarketmanager
 contract BinaryOptionMarketManager is Owned, Pausable, MixinResolver, IBinaryOptionMarketManager {
     /* ========== LIBRARIES ========== */
 

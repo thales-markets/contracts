@@ -8,7 +8,9 @@ workflows:
     jobs:
       - node/test:
           version: 13.11.0
-      - node/test:
-          version: 12.16.0
-      - node/test:
-          version: 10.19.0
+      - dotests:
+          steps:
+            # Checkout the code from the branch into the working_directory
+            - checkout
+            # Log the current branch
+            - run: npx hardhat compile --showsize --optimizer

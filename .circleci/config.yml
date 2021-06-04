@@ -12,6 +12,8 @@ jobs:
           cache-path: ~/project/node_modules
           override-ci-command: npm install
       - run: npx hardhat compile --showsize --optimizer
+      - run: npx hardhat test --optimizer
+      - run: npx hardhat coverage
 
 workflows:
   build_and_test:

@@ -5,15 +5,12 @@ version: 2.1 # using 2.1 provides access to orbs and other features
 
 jobs:
   test:
+    executor: node/default
     steps:
       - checkout
       - run: npx hardhat compile --showsize --optimizer
 
 workflows:
-  matrix-tests:
-    jobs:
-      - node/test:
-          version: 13.11.0
   build_and_test:
     jobs:
       - test

@@ -40,6 +40,8 @@ interface IBinaryOptionMarket {
 
     function deposited() external view returns (uint);
 
+    function accumulatedFees() external view returns (uint);
+
     function creator() external view returns (address);
 
     function resolved() external view returns (bool);

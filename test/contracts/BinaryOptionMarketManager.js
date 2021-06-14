@@ -64,7 +64,7 @@ async function createMarketAndMintMore(
 }
 
 contract('BinaryOptionMarketManager', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exersizer, secondCreator] = accounts;
+	const [initialCreator, managerOwner, minter, dummy, exerciser , secondCreator] = accounts;
 
 	const sUSDQty = toUnit(10000);
 
@@ -360,7 +360,7 @@ contract('BinaryOptionMarketManager', accounts => {
 	describe('Manager conducts all sUSD transfers', () => {
 		it('Can not be called by non market address', async () => {
 			await assert.revert(
-				manager.transferSusdTo(initialCreator, exersizer, toUnit(1)),
+				manager.transferSusdTo(initialCreator, exerciser , toUnit(1)),
 				'Market unknown'
 			);
 		});

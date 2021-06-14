@@ -64,7 +64,7 @@ async function createMarketAndMintMore(
 }
 
 contract('BinaryOption', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exersizer, secondCreator] = accounts;
+	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
 
 	const sUSDQty = toUnit(10000);
 
@@ -1100,21 +1100,21 @@ contract('BinaryOption', accounts => {
 			short = await BinaryOption.at(options.short);
 
 			let susdBalance = toUnit(10);
-			await sUSDSynth.issue(exersizer, susdBalance);
-			await sUSDSynth.approve(manager.address, sUSDQty, { from: exersizer });
+			await sUSDSynth.issue(exersicer, susdBalance);
+			await sUSDSynth.approve(manager.address, sUSDQty, { from: exersicer });
 
-			assert.bnEqual(await sUSDSynth.balanceOf(exersizer), susdBalance);
+			assert.bnEqual(await sUSDSynth.balanceOf(exersicer), susdBalance);
 
-			await market.mint(susdBalance, { from: exersizer });
+			await market.mint(susdBalance, { from: exersicer });
 
 			// susd is transfered out after minting and options are in the wallet
-			assert.bnEqual(await sUSDSynth.balanceOf(exersizer), toBN(0));
+			assert.bnEqual(await sUSDSynth.balanceOf(exersicer), toBN(0));
 
 			let fees = await market.fees();
 			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
 			let longBalanceAfterMinting = multiplyDecimalRound(_feeMultiplier, toUnit(10));
 
-			assert.bnEqual(await long.balanceOf(exersizer), longBalanceAfterMinting);
+			assert.bnEqual(await long.balanceOf(exersicer), longBalanceAfterMinting);
 
 			await fastForward(timeToMaturity + 100);
 
@@ -1123,27 +1123,27 @@ contract('BinaryOption', accounts => {
 			await exchangeRates.updateRates([sAUDKey], [price], now, { from: oracle });
 			await manager.resolveMarket(market.address);
 
-			assert.bnEqual(await long.balanceOf(exersizer), longBalanceAfterMinting);
+			assert.bnEqual(await long.balanceOf(exersicer), longBalanceAfterMinting);
 
-			const tx1 = await market.exerciseOptions({ from: exersizer });
+			const tx1 = await market.exerciseOptions({ from: exersicer });
 
 			// options no longer in the wallet
-			assert.bnEqual(await long.balanceOf(exersizer), toBN(0));
+			assert.bnEqual(await long.balanceOf(exersicer), toBN(0));
 
 			let logs = BinaryOption.decodeLogs(tx1.receipt.rawLogs);
 			assert.equal(logs.length, 5);
 			assert.equal(logs[0].address, long.address);
 			assert.equal(logs[0].event, 'Transfer');
-			assert.equal(logs[0].args.from, exersizer);
+			assert.equal(logs[0].args.from, exersicer);
 			assert.equal(logs[0].args.to, '0x' + '0'.repeat(40));
 			assert.bnClose(logs[0].args.value, longBalanceAfterMinting, 1);
 			assert.equal(logs[1].address, long.address);
 			assert.equal(logs[1].event, 'Burned');
-			assert.equal(logs[1].args.account, exersizer);
+			assert.equal(logs[1].args.account, exersicer);
 			assert.bnClose(logs[1].args.value, longBalanceAfterMinting, 1);
 			assert.equal(tx1.logs.length, 1);
 			assert.equal(tx1.logs[0].event, 'OptionsExercised');
-			assert.equal(tx1.logs[0].args.account, exersizer);
+			assert.equal(tx1.logs[0].args.account, exersicer);
 			assert.bnClose(tx1.logs[0].args.value, longBalanceAfterMinting, 1);
 		});
 
@@ -1156,7 +1156,7 @@ contract('BinaryOption', accounts => {
 				initialCreator,
 				timeToMaturity
 			);
-			await market.mint(toUnit(1), { from: exersizer });
+			await market.mint(toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			await exchangeRates.updateRates(
 				[sAUDKey],
@@ -1165,7 +1165,7 @@ contract('BinaryOption', accounts => {
 				{ from: oracle }
 			);
 			assert.isFalse(await market.resolved());
-			await market.exerciseOptions({ from: exersizer });
+			await market.exerciseOptions({ from: exersicer });
 			assert.isTrue(await market.resolved());
 		});
 
@@ -1184,7 +1184,7 @@ contract('BinaryOption', accounts => {
 			await exchangeRates.updateRates([sAUDKey], [price], now, { from: oracle });
 			await manager.resolveMarket(market.address);
 
-			await assert.revert(market.exerciseOptions({ from: exersizer }), 'Nothing to exercise');
+			await assert.revert(market.exerciseOptions({ from: exersicer }), 'Nothing to exercise');
 		});
 
 		it('Options cannot be exercised if the manager is paused.', async () => {
@@ -1197,7 +1197,7 @@ contract('BinaryOption', accounts => {
 				timeToMaturity
 			);
 
-			await market.mint(toUnit(1), { from: exersizer });
+			await market.mint(toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			await exchangeRates.updateRates(
 				[sAUDKey],
@@ -1209,7 +1209,7 @@ contract('BinaryOption', accounts => {
 
 			await manager.setPaused(true, { from: accounts[1] });
 			await assert.revert(
-				market.exerciseOptions({ from: exersizer }),
+				market.exerciseOptions({ from: exersicer }),
 				'This action cannot be performed while the contract is paused'
 			);
 		});
@@ -1225,12 +1225,12 @@ contract('BinaryOption', accounts => {
 				timeToMaturity
 			);
 
-			await market.mint(toUnit(2), { from: exersizer });
+			await market.mint(toUnit(2), { from: exersicer });
 			const options = await market.options();
 			long = await BinaryOption.at(options.long);
 			short = await BinaryOption.at(options.short);
 
-			await long.transfer(dummy, toUnit(1), { from: exersizer });
+			await long.transfer(dummy, toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			now = await currentTime();
 			const price = (await market.oracleDetails()).strikePrice;
@@ -1402,8 +1402,8 @@ contract('BinaryOption', accounts => {
 
 			await sUSDSynth.transfer(market.address, toUnit(1));
 
-			await sUSDSynth.issue(exersizer, sUSDQty);
-			await market.mint(toUnit(1), { from: exersizer });
+			await sUSDSynth.issue(exersicer, sUSDQty);
+			await market.mint(toUnit(1), { from: exersicer });
 
 			const deposited = await market.deposited();
 			const preTotalDeposited = await manager.totalDeposited();

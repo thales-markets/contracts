@@ -50,6 +50,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     // `deposited` tracks the sum of all deposits minus the withheld fees.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
     uint public deposited;
+    uint public accumulatedFees;
     uint public initialMint;
     address public creator;
     bool public resolved;
@@ -243,6 +244,8 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         }
 
         uint valueAfterFees = value.multiplyDecimalRound(_feeMultiplier);
+        uint deductedFees = value.sub(valueAfterFees);
+        accumulatedFees = accumulatedFees.add(deductedFees);
 
         _mint(msg.sender, valueAfterFees);
 
@@ -276,9 +279,11 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         // in the contract will be sufficient to cover these transfers.
         IERC20 sUSD = _sUSD();
 
-        uint _depositedSubMint = deposited.sub(initialMint);
-        uint poolFees = _depositedSubMint.multiplyDecimalRound(fees.poolFee);
-        uint creatorFees = _depositedSubMint.multiplyDecimalRound(fees.creatorFee);
+        uint totalFeesRatio = fees.poolFee.add(fees.creatorFee);
+        uint poolFeesRatio = fees.poolFee.divideDecimalRound(totalFeesRatio);
+        uint creatorFeesRatio = fees.creatorFee.divideDecimalRound(totalFeesRatio);
+        uint poolFees = poolFeesRatio.multiplyDecimalRound(accumulatedFees);
+        uint creatorFees = creatorFeesRatio.multiplyDecimalRound(accumulatedFees);
         _decrementDeposited(creatorFees.add(poolFees));
         sUSD.transfer(_manager().feeAddress(), poolFees);
         sUSD.transfer(creator, creatorFees);

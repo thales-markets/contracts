@@ -283,7 +283,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         uint poolFeesRatio = fees.poolFee.divideDecimalRound(totalFeesRatio);
         uint creatorFeesRatio = fees.creatorFee.divideDecimalRound(totalFeesRatio);
         uint poolFees = poolFeesRatio.multiplyDecimalRound(accumulatedFees);
-        uint creatorFees = creatorFeesRatio.multiplyDecimalRound(accumulatedFees);
+        uint creatorFees = accumulatedFees.sub(poolFees);
         _decrementDeposited(creatorFees.add(poolFees));
         sUSD.transfer(_manager().feeAddress(), poolFees);
         sUSD.transfer(creator, creatorFees);

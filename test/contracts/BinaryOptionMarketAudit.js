@@ -31,66 +31,16 @@ let BinaryOptionMarket,
 	binaryOptionMastercopy;
 let market, long, short, BinaryOption, Synth;
 
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
-
-const Phase = {
-	Trading: toBN(0),
-	Maturity: toBN(1),
-	Expiry: toBN(2),
-};
-
-async function createMarketAndMintMore(
-	sAUDKey,
-	initialStrikePrice,
-	now,
-	initialCreator,
-	timeToMaturityParam
-) {
-	const result = await manager.createMarket(
-		sAUDKey,
-		initialStrikePrice,
-		now + timeToMaturityParam,
-		toUnit(2),
-		{
-			from: initialCreator,
-		}
-	);
-	market = await BinaryOptionMarket.at(
-		getEventByName({ tx: result, name: 'MarketCreated' }).args.market
-	);
-	await market.mint(toUnit(1), {
-		from: initialCreator,
-	});
-}
-
 contract('BinaryOptionMarketManager', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator] = accounts;
 
 	const sUSDQty = toUnit(10000);
-
-	const capitalRequirement = toUnit(2);
-	const skewLimit = toUnit(0.05);
-	const maxOraclePriceAge = toBN(60 * 61);
-	const expiryDuration = toBN(26 * 7 * 24 * 60 * 60);
-	const maxTimeToMaturity = toBN(365 * 24 * 60 * 60);
-
 	const initialStrikePrice = toUnit(100);
 
-	const initialPoolFee = toUnit(0.005);
-	const initialCreatorFee = toUnit(0.005);
-
-	const initialFeeAddress = 0xfeefeefeefeefeefeefeefeefeefeefeefeefeef;
-
 	const sAUDKey = toBytes32('sAUD');
-	const iAUDKey = toBytes32('iAUD');
 
 	let timeToMaturity = 200;
 	let totalDepositedAfterFees;
-
-	const Side = {
-		Long: toBN(0),
-		Short: toBN(1),
-	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man.createMarket(oracleKey, strikePrice, maturity, initialMint, {

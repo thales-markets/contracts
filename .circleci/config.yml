@@ -1,0 +1,21 @@
+orbs: # declare what orbs we are going to use
+  node: circleci/node@3.0.1 # the node orb provides common node-related configuration
+
+version: 2.1 # using 2.1 provides access to orbs and other features
+
+jobs:
+  test:
+    executor: node/default
+    steps:
+      - checkout
+      - node/install-packages:
+          cache-path: ~/project/node_modules
+          override-ci-command: npm install
+      - run: npx hardhat compile --showsize --optimizer
+      - run: npx hardhat test --optimizer
+      - run: npx hardhat coverage
+
+workflows:
+  build_and_test:
+    jobs:
+      - test

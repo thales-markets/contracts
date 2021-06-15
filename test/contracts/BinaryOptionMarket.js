@@ -570,7 +570,7 @@ contract('BinaryOption', accounts => {
 			});
 			await manager.resolveMarket(newAddress);
 			await manager.resolveMarket(newerAddress);
-			const tx = await manager.expireMarkets([newAddress, newerAddress], { from: initialCreator });
+			const tx = await manager.expireMarkets([newAddress, newerAddress], { from: managerOwner });
 
 			assert.eventEqual(tx.logs[0], 'MarketExpired', { market: newAddress });
 			assert.eventEqual(tx.logs[1], 'MarketExpired', { market: newerAddress });
@@ -594,7 +594,7 @@ contract('BinaryOption', accounts => {
 				initialCreator
 			);
 			await assert.revert(
-				manager.expireMarkets([newMarket.address], { from: initialCreator }),
+				manager.expireMarkets([newMarket.address], { from: managerOwner }),
 				'Unexpired options remaining'
 			);
 
@@ -1284,7 +1284,7 @@ contract('BinaryOption', accounts => {
 				from: oracle,
 			});
 			await manager.resolveMarket(market.address);
-			await manager.expireMarkets([market.address], { from: initialCreator });
+			await manager.expireMarkets([market.address], { from: managerOwner });
 
 			assert.equal(await web3.eth.getCode(marketAddress), '0x');
 			assert.equal(await web3.eth.getCode(longAddress), '0x');
@@ -1304,7 +1304,7 @@ contract('BinaryOption', accounts => {
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await assert.revert(
-				manager.expireMarkets([market.address], { from: initialCreator }),
+				manager.expireMarkets([market.address], { from: managerOwner }),
 				'Unexpired options remaining'
 			);
 		});
@@ -1330,7 +1330,7 @@ contract('BinaryOption', accounts => {
 
 			await manager.resolveMarket(market.address);
 			await assert.revert(
-				manager.expireMarkets([market.address], { from: initialCreator }),
+				manager.expireMarkets([market.address], { from: managerOwner }),
 				'Unexpired options remaining'
 			);
 		});
@@ -1351,7 +1351,7 @@ contract('BinaryOption', accounts => {
 			});
 			await market.exerciseOptions({ from: initialCreator });
 			const marketAddress = market.address;
-			await manager.expireMarkets([market.address], { from: initialCreator });
+			await manager.expireMarkets([market.address], { from: managerOwner });
 			assert.equal(await web3.eth.getCode(marketAddress), '0x');
 		});
 
@@ -1413,11 +1413,8 @@ contract('BinaryOption', accounts => {
 				from: oracle,
 			});
 			await manager.resolveMarket(market.address);
-			await manager.expireMarkets([market.address], { from: secondCreator });
+			await manager.expireMarkets([market.address], { from: managerOwner });
 
-			const creatorRecovered = deposited.add(toUnit(1));
-
-			assert.bnEqual(await sUSDSynth.balanceOf(secondCreator), valueAfterFees);
 			assert.bnEqual(await manager.totalDeposited(), preTotalDeposited.sub(deposited));
 		});
 
@@ -1439,9 +1436,9 @@ contract('BinaryOption', accounts => {
 			const marketAddress = market.address;
 			await market.exerciseOptions({ from: initialCreator });
 
-			const creatorBalance = await sUSDSynth.balanceOf(initialCreator);
-			const tx = await manager.expireMarkets([market.address], { from: initialCreator });
-			const postCreatorBalance = await sUSDSynth.balanceOf(initialCreator);
+			const creatorBalance = await sUSDSynth.balanceOf(managerOwner);
+			const tx = await manager.expireMarkets([market.address], { from: managerOwner });
+			const postCreatorBalance = await sUSDSynth.balanceOf(managerOwner);
 			assert.bnEqual(postCreatorBalance, creatorBalance);
 
 			const log = tx.receipt.logs[0];

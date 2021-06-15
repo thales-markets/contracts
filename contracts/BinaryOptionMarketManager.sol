@@ -268,7 +268,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         _maturedMarkets.add(market);
     }
 
-    function expireMarkets(address[] calldata markets) external notPaused {
+    function expireMarkets(address[] calldata markets) external notPaused onlyOwner{
         for (uint i = 0; i < markets.length; i++) {
             address market = markets[i];
 

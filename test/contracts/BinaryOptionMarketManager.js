@@ -64,7 +64,7 @@ async function createMarketAndMintMore(
 }
 
 contract('BinaryOptionMarketManager', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exerciser , secondCreator] = accounts;
+	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator] = accounts;
 
 	const sUSDQty = toUnit(10000);
 
@@ -191,11 +191,11 @@ contract('BinaryOptionMarketManager', accounts => {
 
 			const feesRemitted = multiplyDecimalRound(initialPoolFee.add(initialCreatorFee), toUnit(2));
 
-			await manager.expireMarkets([markets[1].address], { from: initialCreator });
+			await manager.expireMarkets([markets[1].address], { from: managerOwner });
 
 			assert.bnEqual(await manager.totalDeposited(), afterDeposit.sub(feesRemitted).sub(toUnit(1)));
-			await manager.expireMarkets([markets[0].address], { from: initialCreator });
-			await manager.expireMarkets([markets[2].address], { from: initialCreator });
+			await manager.expireMarkets([markets[0].address], { from: managerOwner });
+			await manager.expireMarkets([markets[2].address], { from: managerOwner });
 		});
 
 		it('Market resolution fails for unknown markets', async () => {
@@ -254,7 +254,7 @@ contract('BinaryOptionMarketManager', accounts => {
 			evenMarkets.forEach((p, i) => assert.equal(p, recordedMarkets[i]));
 
 			// Destroy those markets
-			await manager.expireMarkets(evenMarkets);
+			await manager.expireMarkets(evenMarkets, { from: managerOwner });
 
 			// Mature the rest of the markets
 			await Promise.all(oddMarkets.map(m => manager.resolveMarket(m)));
@@ -266,14 +266,14 @@ contract('BinaryOptionMarketManager', accounts => {
 			// Can remove the last market
 			const lastMarket = (await manager.maturedMarkets(numMarkets / 2 - 1, 1))[0];
 			assert.isTrue(remainingMarkets.includes(lastMarket));
-			await manager.expireMarkets([lastMarket], { from: initialCreator });
+			await manager.expireMarkets([lastMarket], { from: managerOwner });
 			remainingMarkets = await manager.maturedMarkets(0, 100);
 			remainingMarketsSorted = [...remainingMarkets].sort();
 			assert.bnEqual(await manager.numMaturedMarkets(), toBN(numMarkets / 2 - 1));
 			assert.isFalse(remainingMarketsSorted.includes(lastMarket));
 
 			// Destroy the remaining markets.
-			await manager.expireMarkets(remainingMarketsSorted);
+			await manager.expireMarkets(remainingMarketsSorted, { from: managerOwner });
 			assert.bnEqual(await manager.numActiveMarkets(), toBN(0));
 			assert.equal((await manager.activeMarkets(0, 100)).length, 0);
 			assert.bnEqual(await manager.numMaturedMarkets(), toBN(0));
@@ -355,12 +355,34 @@ contract('BinaryOptionMarketManager', accounts => {
 				assert.bnEqual((await m.oracleDetails()).strikePrice, toUnit(i + 1));
 			}
 		});
+
+		it('Only owner can expire markets', async () => {
+			const now = await currentTime();
+			const newMarket = await createMarket(
+				manager,
+				sAUDKey,
+				toUnit(1),
+				now + 100,
+				toUnit(3),
+				initialCreator
+			);
+			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
+			await manager.resolveMarket(newMarket.address);
+			await onlyGivenAddressCanInvoke({
+				fnc: manager.expireMarkets,
+				args: [[newMarket.address]],
+				address: managerOwner,
+				accounts,
+				skipPassCheck: true,
+				reason: 'Only the contract owner may perform this action',
+			});
+		});
 	});
 
 	describe('Manager conducts all sUSD transfers', () => {
 		it('Can not be called by non market address', async () => {
 			await assert.revert(
-				manager.transferSusdTo(initialCreator, exerciser , toUnit(1)),
+				manager.transferSusdTo(initialCreator, exerciser, toUnit(1)),
 				'Market unknown'
 			);
 		});
@@ -402,7 +424,7 @@ contract('BinaryOptionMarketManager', accounts => {
 				from: oracle,
 			});
 			await manager.resolveMarket(newMarket.address);
-			await manager.expireMarkets([newMarket.address], { from: initialCreator });
+			await manager.expireMarkets([newMarket.address], { from: managerOwner });
 
 			assert.bnEqual(await manager.totalDeposited(), depositBefore);
 		});

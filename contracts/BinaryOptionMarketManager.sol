@@ -12,6 +12,7 @@ import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
 // Internal references
 import "./BinaryOptionMarketFactory.sol";
 import "./BinaryOptionMarket.sol";
+import "./BinaryOption.sol";
 import "./interfaces/IBinaryOptionMarket.sol";
 import "synthetix-2.43.1/contracts/interfaces/IExchangeRates.sol";
 import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
@@ -251,7 +252,18 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         totalDeposited = totalDeposited.add(initialMint);
         _sUSD().transferFrom(msg.sender, address(market), initialMint);
 
-        emit MarketCreated(address(market), msg.sender, oracleKey, strikePrice, maturity, expiry);
+        (BinaryOption long, BinaryOption short) = market.options();
+
+        emit MarketCreated(
+            address(market),
+            msg.sender,
+            oracleKey,
+            strikePrice,
+            maturity,
+            expiry,
+            address(long),
+            address(short)
+        );
         return market;
     }
 
@@ -376,7 +388,9 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         bytes32 indexed oracleKey,
         uint strikePrice,
         uint maturityDate,
-        uint expiryDate
+        uint expiryDate,
+        address long,
+        address short
     );
     event MarketExpired(address market);
     event MarketsMigrated(BinaryOptionMarketManager receivingManager, BinaryOptionMarket[] markets);

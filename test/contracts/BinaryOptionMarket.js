@@ -384,12 +384,23 @@ contract('BinaryOption', accounts => {
 				from: initialCreator,
 			});
 
+			let createdMarket = await BinaryOptionMarket.at(
+				getEventByName({ tx: result, name: 'MarketCreated' }).args.market
+			);
+			const options = await createdMarket.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+			let longAddress = long.address;
+			let shortAddress = short.address;
+
 			assert.eventEqual(getEventByName({ tx: result, name: 'MarketCreated' }), 'MarketCreated', {
 				creator: initialCreator,
 				oracleKey: sAUDKey,
 				strikePrice: initialStrikePrice,
 				maturityDate: toBN(now + timeToMaturity),
 				expiryDate: toBN(now + timeToMaturity).add(expiryDuration),
+				long: longAddress,
+				short: shortAddress,
 			});
 
 			const decodedLogs = BinaryOptionMarket.decodeLogs(result.receipt.rawLogs);

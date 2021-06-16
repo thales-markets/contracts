@@ -8,6 +8,9 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	if (network == 'homestead') {
+		network = 'mainnet';
+	}
 
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + networkObj.name);

@@ -1,0 +1,3 @@
+npx hardhat run --network ropsten scripts/deploy.js
+npx hardhat test --optimizer
+npx hardhat test test/contracts/BinaryOptionMarketManager.js --optimizer

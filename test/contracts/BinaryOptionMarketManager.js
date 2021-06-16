@@ -494,6 +494,15 @@ contract('BinaryOptionMarketManager', accounts => {
 			await manager.setMigratingManager(initialCreator, { from: managerOwner });
 		});
 
+		it("Can't migrate to self", async () => {
+			await assert.revert(
+				manager.migrateMarkets(manager.address, true, [markets[0].address], {
+					from: managerOwner,
+				}),
+				"Can't migrate to self"
+			);
+		});
+
 		it('Migrating manager can only be set by the manager owner', async () => {
 			await onlyGivenAddressCanInvoke({
 				fnc: manager.setMigratingManager,

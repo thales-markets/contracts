@@ -48,7 +48,7 @@ contract BinaryOptionMarketData {
         OptionValues balances;
     }
 
-    function getMarketParameters(BinaryOptionMarket market) public view returns (MarketParameters memory) {
+    function getMarketParameters(BinaryOptionMarket market) external view returns (MarketParameters memory) {
         (BinaryOption long, BinaryOption short) = market.options();
         (uint maturityDate, uint expiryDate) = market.times();
         (bytes32 key, uint strikePrice, uint finalPrice) = market.oracleDetails();
@@ -66,7 +66,7 @@ contract BinaryOptionMarketData {
         return data;
     }
 
-    function getMarketData(BinaryOptionMarket market) public view returns (MarketData memory) {
+    function getMarketData(BinaryOptionMarket market) external view returns (MarketData memory) {
         (uint price, uint updatedAt) = market.oraclePriceAndTimestamp();
         (uint longSupply, uint shortSupply) = market.totalSupplies();
 
@@ -81,7 +81,7 @@ contract BinaryOptionMarketData {
             );
     }
 
-    function getAccountMarketData(BinaryOptionMarket market, address account) public view returns (AccountData memory) {
+    function getAccountMarketData(BinaryOptionMarket market, address account) external view returns (AccountData memory) {
         (uint longBalance, uint shortBalance) = market.balancesOf(account);
 
         return AccountData(OptionValues(longBalance, shortBalance));

@@ -73,10 +73,10 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         address _creator,
         bytes32 _oracleKey,
         uint _strikePrice,
-        uint[2] memory _times, // [maturity, expiry]
+        uint[2] calldata _times, // [maturity, expiry]
         uint _deposit, // sUSD deposit
-        uint[2] memory _fees // [poolFee, creatorFee]
-    ) public {
+        uint[2] calldata _fees // [poolFee, creatorFee]
+    ) external {
         require(!initialized, "Binary Option Market already initialized");
         initialized = true;
         initOwner(_owner);
@@ -123,11 +123,11 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     /* ---------- Phases ---------- */
 
     function _matured() internal view returns (bool) {
-        return times.maturity < now;
+        return times.maturity < block.timestamp;
     }
 
     function _expired() internal view returns (bool) {
-        return resolved && (times.expiry < now || deposited == 0);
+        return resolved && (times.expiry < block.timestamp || deposited == 0);
     }
 
     function phase() external view returns (Phase) {
@@ -190,29 +190,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     }
 
     /* ---------- Utilities ---------- */
-
-    function _chooseSide(
-        Side side,
-        uint longValue,
-        uint shortValue
-    ) internal pure returns (uint) {
-        if (side == Side.Long) {
-            return longValue;
-        }
-        return shortValue;
-    }
-
-    function _option(Side side) internal view returns (BinaryOption) {
-        if (side == Side.Long) {
-            return options.long;
-        }
-        return options.short;
-    }
-
-    // Returns zero if the result would be negative.
-    function _subToZero(uint a, uint b) internal pure returns (uint) {
-        return a < b ? 0 : a.sub(b);
-    }
 
     function _incrementDeposited(uint value) internal returns (uint _deposited) {
         _deposited = deposited.add(value);
@@ -313,7 +290,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         }
 
         // Only pay out the side that won.
-        uint payout = _chooseSide(_result(), longBalance, shortBalance);
+        uint payout = (_result() == Side.Long) ? longBalance : shortBalance;
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);

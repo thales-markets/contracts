@@ -38,9 +38,9 @@ contract BinaryOption is IERC20, IBinaryOption {
     bool public initialized = false;
 
     function initialize(
-        string memory _name,
-        string memory _symbol
-    ) public {
+        string calldata _name,
+        string calldata _symbol
+    ) external {
         require(!initialized, "Binary Option Market already initialized");
         initialized = true;
         name = _name;

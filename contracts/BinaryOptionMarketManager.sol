@@ -90,7 +90,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     /* ========== SETTERS ========== */
-    function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) public onlyOwner {
+    function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) external onlyOwner {
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
     }
 
@@ -224,10 +224,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         require(marketCreationEnabled, "Market creation is disabled");
         require(_isValidKey(oracleKey), "Invalid key");
 
-        require(maturity <= now + durations.maxTimeToMaturity, "Maturity too far in the future");
+        require(maturity <= block.timestamp + durations.maxTimeToMaturity, "Maturity too far in the future");
         uint expiry = maturity.add(durations.expiryDuration);
 
-        require(now < maturity, "Maturity has to be in the future");
+        require(block.timestamp < maturity, "Maturity has to be in the future");
         // We also require maturity < expiry. But there is no need to check this.
         // Fees being in range are checked in the setters.
         // The market itself validates the capital and skew requirements.
@@ -255,7 +255,11 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         return market;
     }
 
-    function transferSusdTo(address sender, address receiver, uint amount) external {
+    function transferSusdTo(
+        address sender,
+        address receiver,
+        uint amount
+    ) external {
         //only to be called by markets themselves
         require(_isKnownMarket(address(msg.sender)), "Market unknown.");
         _sUSD().transferFrom(sender, receiver, amount);
@@ -268,15 +272,19 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         _maturedMarkets.add(market);
     }
 
-    function expireMarkets(address[] calldata markets) external notPaused onlyOwner{
+    function expireMarkets(address[] calldata markets) external notPaused onlyOwner {
         for (uint i = 0; i < markets.length; i++) {
             address market = markets[i];
 
+            require(_isKnownMarket(address(market)), "Market unknown.");
+
             // The market itself handles decrementing the total deposits.
             BinaryOptionMarket(market).expire(msg.sender);
+
             // Note that we required that the market is known, which guarantees
             // its index is defined and that the list of markets is not empty.
             _maturedMarkets.remove(market);
+
             emit MarketExpired(market);
         }
     }
@@ -297,6 +305,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         bool active,
         BinaryOptionMarket[] calldata marketsToMigrate
     ) external onlyOwner {
+        require(address(receivingManager) != address(this), "Can't migrate to self");
+
         uint _numMarkets = marketsToMigrate.length;
         if (_numMarkets == 0) {
             return;

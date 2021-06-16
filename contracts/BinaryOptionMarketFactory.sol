@@ -52,13 +52,20 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     /* ========== SETTERS ========== */
     function setBinaryOptionMarketManager(address _binaryOptionMarketManager) external onlyOwner {
         binaryOptionMarketManager = _binaryOptionMarketManager;
+        emit BinaryOptionMarketManagerChanged(_binaryOptionMarketManager);
     }
 
     function setBinaryOptionMarketMastercopy(address _binaryOptionMarketMastercopy) external onlyOwner {
         binaryOptionMarketMastercopy = _binaryOptionMarketMastercopy;
+        emit BinaryOptionMarketMastercopyChanged(_binaryOptionMarketMastercopy);
     }
 
     function setBinaryOptionMastercopy(address _binaryOptionMastercopy) external onlyOwner {
         binaryOptionMastercopy = _binaryOptionMastercopy;
+        emit BinaryOptionMastercopyChanged(_binaryOptionMastercopy);
     }
+
+    event BinaryOptionMarketManagerChanged(address _binaryOptionMarketManager);
+    event BinaryOptionMarketMastercopyChanged(address _binaryOptionMarketMastercopy);
+    event BinaryOptionMastercopyChanged(address _binaryOptionMastercopy);
 }

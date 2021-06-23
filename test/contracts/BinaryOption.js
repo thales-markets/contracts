@@ -208,6 +208,150 @@ contract('BinaryOption', accounts => {
 			});
 		});
 	});
+
+	describe('Mints', () => {
+		it('Can mint during trading.', async () => {
+			await market.mint(toUnit(1), { from: minter });
+			let fees = await market.fees();
+			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
+			let longBalanceAfterMinting = multiplyDecimalRound(_feeMultiplier, toUnit(1));
+			assert.bnEqual(await long.balanceOf(minter), longBalanceAfterMinting.add(toUnit(1)));
+
+			assert.bnEqual(await long.totalSupply(), longBalanceAfterMinting.add(toUnit(2)));
+		});
+
+		it('Zero mints are idempotent.', async () => {
+			await market.mint(toUnit(0), { from: minter });
+			let fees = await market.fees();
+			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
+			let longBalanceAfterMinting = multiplyDecimalRound(_feeMultiplier, toUnit(1));
+			assert.bnEqual(await long.balanceOf(minter), longBalanceAfterMinting.add(toUnit(1)), {
+				from: minter,
+			});
+		});
+
+		it('Mint less than one cent fail.', async () => {
+			await assert.revert(market.mint(toUnit(0.0099), { from: minter }), 'Balance < $0.01');
+		});
+
+		it('Mint cannot be done other than from the market.', async () => {
+			await onlyGivenAddressCanInvoke({
+				fnc: long.mint,
+				args: [minter, toUnit(1)],
+				accounts,
+				skipPassCheck: true,
+				reason: 'Only market allowed',
+			});
+		});
+	});
+
+	describe('Transfer events', () => {
+		it('Transfers properly emit events', async () => {
+			// Transfer partial quantity.
+			const tx = await short.transfer(minter, toUnit(1), { from: initialCreator });
+
+			assert.eventEqual(tx.logs[0], 'Transfer', {
+				from: initialCreator,
+				to: minter,
+				value: toUnit(1),
+			});
+		});
+
+		it('Cannot transfer on insufficient balance', async () => {
+			await assert.revert(
+				long.transfer(initialCreator, toUnit(1), { from: exersizer }),
+				'Insufficient balance'
+			);
+		});
+
+		it('Approvals properly update allowance values', async () => {
+			await long.approve(minter, toUnit(10), { from: exersizer });
+			assert.bnEqual(await long.allowance(exersizer, minter), toUnit(10));
+		});
+
+		it('Approvals properly emit events', async () => {
+			const tx = await long.approve(minter, toUnit(10), { from: exersizer });
+
+			assert.eventEqual(tx.logs[0], 'Approval', {
+				owner: exersizer,
+				spender: minter,
+				value: toUnit(10),
+			});
+		});
+
+		it('Can transferFrom tokens.', async () => {
+			let now = await currentTime();
+			market = await createMarket(
+				manager,
+				sAUDKey,
+				toUnit(1),
+				now + 200,
+				toUnit(2),
+				initialCreator
+			);
+			await fastForward(100);
+
+			const options = await market.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+
+			await short.approve(minter, toUnit(10), { from: exersizer });
+			await short.transfer(exersizer, toUnit(1), { from: initialCreator });
+
+			const tx = await short.transferFrom(exersizer, minter, toUnit(1), { from: minter });
+
+			assert.eventEqual(tx.logs[0], 'Transfer', {
+				from: exersizer,
+				to: minter,
+				value: toUnit(1),
+			});
+
+			await assertAllBnEqual(
+				[short.balanceOf(exersizer), short.balanceOf(minter), short.totalSupply()],
+				[toUnit(0), toUnit(1), toUnit(2)]
+			);
+
+			await assert.revert(
+				short.transferFrom(exersizer, minter, toUnit(1), { from: minter }),
+				'Insufficient balance'
+			);
+
+			await assert.revert(
+				short.transferFrom(minter, exersizer, toUnit(1), { from: exersizer }),
+				'Insufficient allowance'
+			);
+		});
+
+		it('Transfers and approvals cannot go to invalid addresses.', async () => {
+			await assert.revert(long.transfer(ZERO_ADDRESS, toBN(0)), 'Invalid address');
+			await assert.revert(
+				long.transferFrom(ZERO_ADDRESS, ZERO_ADDRESS, toBN(0)),
+				'Invalid address'
+			);
+			await assert.revert(long.approve(ZERO_ADDRESS, toBN(100)));
+		});
+	});
+
+	describe('Exercising Options', () => {
+		it('Exercising options updates balances properly', async () => {
+			const totalSupply = await short.totalSupply();
+			await fastForward(200);
+			await market.exerciseOptions({ from: minter });
+			await assertAllBnEqual([short.balanceOf(minter), short.totalSupply()], [toBN(0), toUnit(1)]);
+		});
+	});
+
+	describe('Destruction', () => {
+		it('Binary option can only be destroyed by its parent market', async () => {
+			await onlyGivenAddressCanInvoke({
+				fnc: long.expire,
+				args: [exersizer],
+				accounts,
+				skipPassCheck: true,
+				reason: 'Only market allowed',
+			});
+		});
+	});
 });
 
 async function assertAllPromises(promises, expected, assertion, assertionName) {

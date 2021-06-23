@@ -35,9 +35,21 @@ module.exports = {
 		compilers: [
 			{
 				version: '0.4.25',
+				settings: {
+					optimizer: {
+						enabled: true,
+						runs: 1000,
+					},
+				},
 			},
 			{
 				version: '0.5.16',
+				settings: {
+					optimizer: {
+						enabled: true,
+						runs: 1000,
+					},
+				},
 			},
 		],
 	},
@@ -75,6 +87,11 @@ module.exports = {
 		kovan: {
 			gasPrice: 'auto',
 			url: 'https://kovan.infura.io/v3/' + INFURA,
+			accounts: [PRIVATE_KEY],
+		},
+		mainnet: {
+			gasPrice: 'auto',
+			url: 'https://mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
 	},

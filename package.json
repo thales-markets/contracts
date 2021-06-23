@@ -1,11 +1,16 @@
 {
-  "name": "thales",
-  "version": "0.0.1",
+  "name": "thales-contracts",
+  "version": "0.0.2",
   "license": "MIT",
   "author": "Thales",
   "description": "The smart contracts which make up the Thales system.",
   "directories": {
     "test": "test"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pack": "webpack --mode production",
+    "prepublish": "npm run pack"
   },
   "devDependencies": {
     "@codechecks/client": "0.1.10",

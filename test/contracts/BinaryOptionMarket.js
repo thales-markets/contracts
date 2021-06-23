@@ -64,7 +64,7 @@ async function createMarketAndMintMore(
 }
 
 contract('BinaryOption', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exersizer, secondCreator] = accounts;
+	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
 
 	const sUSDQty = toUnit(10000);
 
@@ -384,12 +384,23 @@ contract('BinaryOption', accounts => {
 				from: initialCreator,
 			});
 
+			let createdMarket = await BinaryOptionMarket.at(
+				getEventByName({ tx: result, name: 'MarketCreated' }).args.market
+			);
+			const options = await createdMarket.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+			let longAddress = long.address;
+			let shortAddress = short.address;
+
 			assert.eventEqual(getEventByName({ tx: result, name: 'MarketCreated' }), 'MarketCreated', {
 				creator: initialCreator,
 				oracleKey: sAUDKey,
 				strikePrice: initialStrikePrice,
 				maturityDate: toBN(now + timeToMaturity),
 				expiryDate: toBN(now + timeToMaturity).add(expiryDuration),
+				long: longAddress,
+				short: shortAddress,
 			});
 
 			const decodedLogs = BinaryOptionMarket.decodeLogs(result.receipt.rawLogs);
@@ -570,7 +581,7 @@ contract('BinaryOption', accounts => {
 			});
 			await manager.resolveMarket(newAddress);
 			await manager.resolveMarket(newerAddress);
-			const tx = await manager.expireMarkets([newAddress, newerAddress], { from: initialCreator });
+			const tx = await manager.expireMarkets([newAddress, newerAddress], { from: managerOwner });
 
 			assert.eventEqual(tx.logs[0], 'MarketExpired', { market: newAddress });
 			assert.eventEqual(tx.logs[1], 'MarketExpired', { market: newerAddress });
@@ -594,7 +605,7 @@ contract('BinaryOption', accounts => {
 				initialCreator
 			);
 			await assert.revert(
-				manager.expireMarkets([newMarket.address], { from: initialCreator }),
+				manager.expireMarkets([newMarket.address], { from: managerOwner }),
 				'Unexpired options remaining'
 			);
 
@@ -1100,21 +1111,21 @@ contract('BinaryOption', accounts => {
 			short = await BinaryOption.at(options.short);
 
 			let susdBalance = toUnit(10);
-			await sUSDSynth.issue(exersizer, susdBalance);
-			await sUSDSynth.approve(manager.address, sUSDQty, { from: exersizer });
+			await sUSDSynth.issue(exersicer, susdBalance);
+			await sUSDSynth.approve(manager.address, sUSDQty, { from: exersicer });
 
-			assert.bnEqual(await sUSDSynth.balanceOf(exersizer), susdBalance);
+			assert.bnEqual(await sUSDSynth.balanceOf(exersicer), susdBalance);
 
-			await market.mint(susdBalance, { from: exersizer });
+			await market.mint(susdBalance, { from: exersicer });
 
 			// susd is transfered out after minting and options are in the wallet
-			assert.bnEqual(await sUSDSynth.balanceOf(exersizer), toBN(0));
+			assert.bnEqual(await sUSDSynth.balanceOf(exersicer), toBN(0));
 
 			let fees = await market.fees();
 			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
 			let longBalanceAfterMinting = multiplyDecimalRound(_feeMultiplier, toUnit(10));
 
-			assert.bnEqual(await long.balanceOf(exersizer), longBalanceAfterMinting);
+			assert.bnEqual(await long.balanceOf(exersicer), longBalanceAfterMinting);
 
 			await fastForward(timeToMaturity + 100);
 
@@ -1123,27 +1134,27 @@ contract('BinaryOption', accounts => {
 			await exchangeRates.updateRates([sAUDKey], [price], now, { from: oracle });
 			await manager.resolveMarket(market.address);
 
-			assert.bnEqual(await long.balanceOf(exersizer), longBalanceAfterMinting);
+			assert.bnEqual(await long.balanceOf(exersicer), longBalanceAfterMinting);
 
-			const tx1 = await market.exerciseOptions({ from: exersizer });
+			const tx1 = await market.exerciseOptions({ from: exersicer });
 
 			// options no longer in the wallet
-			assert.bnEqual(await long.balanceOf(exersizer), toBN(0));
+			assert.bnEqual(await long.balanceOf(exersicer), toBN(0));
 
 			let logs = BinaryOption.decodeLogs(tx1.receipt.rawLogs);
 			assert.equal(logs.length, 5);
 			assert.equal(logs[0].address, long.address);
 			assert.equal(logs[0].event, 'Transfer');
-			assert.equal(logs[0].args.from, exersizer);
+			assert.equal(logs[0].args.from, exersicer);
 			assert.equal(logs[0].args.to, '0x' + '0'.repeat(40));
 			assert.bnClose(logs[0].args.value, longBalanceAfterMinting, 1);
 			assert.equal(logs[1].address, long.address);
 			assert.equal(logs[1].event, 'Burned');
-			assert.equal(logs[1].args.account, exersizer);
+			assert.equal(logs[1].args.account, exersicer);
 			assert.bnClose(logs[1].args.value, longBalanceAfterMinting, 1);
 			assert.equal(tx1.logs.length, 1);
 			assert.equal(tx1.logs[0].event, 'OptionsExercised');
-			assert.equal(tx1.logs[0].args.account, exersizer);
+			assert.equal(tx1.logs[0].args.account, exersicer);
 			assert.bnClose(tx1.logs[0].args.value, longBalanceAfterMinting, 1);
 		});
 
@@ -1156,7 +1167,7 @@ contract('BinaryOption', accounts => {
 				initialCreator,
 				timeToMaturity
 			);
-			await market.mint(toUnit(1), { from: exersizer });
+			await market.mint(toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			await exchangeRates.updateRates(
 				[sAUDKey],
@@ -1165,7 +1176,7 @@ contract('BinaryOption', accounts => {
 				{ from: oracle }
 			);
 			assert.isFalse(await market.resolved());
-			await market.exerciseOptions({ from: exersizer });
+			await market.exerciseOptions({ from: exersicer });
 			assert.isTrue(await market.resolved());
 		});
 
@@ -1184,7 +1195,7 @@ contract('BinaryOption', accounts => {
 			await exchangeRates.updateRates([sAUDKey], [price], now, { from: oracle });
 			await manager.resolveMarket(market.address);
 
-			await assert.revert(market.exerciseOptions({ from: exersizer }), 'Nothing to exercise');
+			await assert.revert(market.exerciseOptions({ from: exersicer }), 'Nothing to exercise');
 		});
 
 		it('Options cannot be exercised if the manager is paused.', async () => {
@@ -1197,7 +1208,7 @@ contract('BinaryOption', accounts => {
 				timeToMaturity
 			);
 
-			await market.mint(toUnit(1), { from: exersizer });
+			await market.mint(toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			await exchangeRates.updateRates(
 				[sAUDKey],
@@ -1209,7 +1220,7 @@ contract('BinaryOption', accounts => {
 
 			await manager.setPaused(true, { from: accounts[1] });
 			await assert.revert(
-				market.exerciseOptions({ from: exersizer }),
+				market.exerciseOptions({ from: exersicer }),
 				'This action cannot be performed while the contract is paused'
 			);
 		});
@@ -1225,12 +1236,12 @@ contract('BinaryOption', accounts => {
 				timeToMaturity
 			);
 
-			await market.mint(toUnit(2), { from: exersizer });
+			await market.mint(toUnit(2), { from: exersicer });
 			const options = await market.options();
 			long = await BinaryOption.at(options.long);
 			short = await BinaryOption.at(options.short);
 
-			await long.transfer(dummy, toUnit(1), { from: exersizer });
+			await long.transfer(dummy, toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			now = await currentTime();
 			const price = (await market.oracleDetails()).strikePrice;
@@ -1284,7 +1295,7 @@ contract('BinaryOption', accounts => {
 				from: oracle,
 			});
 			await manager.resolveMarket(market.address);
-			await manager.expireMarkets([market.address], { from: initialCreator });
+			await manager.expireMarkets([market.address], { from: managerOwner });
 
 			assert.equal(await web3.eth.getCode(marketAddress), '0x');
 			assert.equal(await web3.eth.getCode(longAddress), '0x');
@@ -1304,7 +1315,7 @@ contract('BinaryOption', accounts => {
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await assert.revert(
-				manager.expireMarkets([market.address], { from: initialCreator }),
+				manager.expireMarkets([market.address], { from: managerOwner }),
 				'Unexpired options remaining'
 			);
 		});
@@ -1330,7 +1341,7 @@ contract('BinaryOption', accounts => {
 
 			await manager.resolveMarket(market.address);
 			await assert.revert(
-				manager.expireMarkets([market.address], { from: initialCreator }),
+				manager.expireMarkets([market.address], { from: managerOwner }),
 				'Unexpired options remaining'
 			);
 		});
@@ -1351,7 +1362,7 @@ contract('BinaryOption', accounts => {
 			});
 			await market.exerciseOptions({ from: initialCreator });
 			const marketAddress = market.address;
-			await manager.expireMarkets([market.address], { from: initialCreator });
+			await manager.expireMarkets([market.address], { from: managerOwner });
 			assert.equal(await web3.eth.getCode(marketAddress), '0x');
 		});
 
@@ -1402,8 +1413,8 @@ contract('BinaryOption', accounts => {
 
 			await sUSDSynth.transfer(market.address, toUnit(1));
 
-			await sUSDSynth.issue(exersizer, sUSDQty);
-			await market.mint(toUnit(1), { from: exersizer });
+			await sUSDSynth.issue(exersicer, sUSDQty);
+			await market.mint(toUnit(1), { from: exersicer });
 
 			const deposited = await market.deposited();
 			const preTotalDeposited = await manager.totalDeposited();
@@ -1413,11 +1424,8 @@ contract('BinaryOption', accounts => {
 				from: oracle,
 			});
 			await manager.resolveMarket(market.address);
-			await manager.expireMarkets([market.address], { from: secondCreator });
+			await manager.expireMarkets([market.address], { from: managerOwner });
 
-			const creatorRecovered = deposited.add(toUnit(1));
-
-			assert.bnEqual(await sUSDSynth.balanceOf(secondCreator), valueAfterFees);
 			assert.bnEqual(await manager.totalDeposited(), preTotalDeposited.sub(deposited));
 		});
 
@@ -1439,9 +1447,9 @@ contract('BinaryOption', accounts => {
 			const marketAddress = market.address;
 			await market.exerciseOptions({ from: initialCreator });
 
-			const creatorBalance = await sUSDSynth.balanceOf(initialCreator);
-			const tx = await manager.expireMarkets([market.address], { from: initialCreator });
-			const postCreatorBalance = await sUSDSynth.balanceOf(initialCreator);
+			const creatorBalance = await sUSDSynth.balanceOf(managerOwner);
+			const tx = await manager.expireMarkets([market.address], { from: managerOwner });
+			const postCreatorBalance = await sUSDSynth.balanceOf(managerOwner);
 			assert.bnEqual(postCreatorBalance, creatorBalance);
 
 			const log = tx.receipt.logs[0];

@@ -39,30 +39,6 @@ const Phase = {
 	Expiry: toBN(2),
 };
 
-async function createMarketAndMintMore(
-	sAUDKey,
-	initialStrikePrice,
-	now,
-	initialCreator,
-	timeToMaturityParam
-) {
-	const result = await manager.createMarket(
-		sAUDKey,
-		initialStrikePrice,
-		now + timeToMaturityParam,
-		toUnit(2),
-		{
-			from: initialCreator,
-		}
-	);
-	market = await BinaryOptionMarket.at(
-		getEventByName({ tx: result, name: 'MarketCreated' }).args.market
-	);
-	await market.mint(toUnit(1), {
-		from: initialCreator,
-	});
-}
-
 contract('BinaryOption', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersizer, secondCreator] = accounts;
 

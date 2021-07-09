@@ -40,7 +40,7 @@ async function main() {
 	await binaryOptionMarketMastercopyDeployed.deployed();
 
 	console.log(
-		'binaryOptionMarketMastercopyDeployed deployed to:',
+		'binaryOptionMarketMastercopy deployed to:',
 		binaryOptionMarketMastercopyDeployed.address
 	);
 
@@ -80,10 +80,7 @@ async function main() {
 	);
 	await binaryOptionMarketManagerDeployed.deployed();
 
-	console.log(
-		'binaryOptionMarketManagerDeployed deployed to:',
-		binaryOptionMarketManagerDeployed.address
-	);
+	console.log('binaryOptionMarketManager deployed to:', binaryOptionMarketManagerDeployed.address);
 
 	const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
 	const binaryOptionMarketData = await BinaryOptionMarketData.deploy();

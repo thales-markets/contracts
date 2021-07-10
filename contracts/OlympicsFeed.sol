@@ -13,7 +13,8 @@ contract OlympicsFeed is ChainlinkClient, Owned {
     bytes32 public result;
 
     constructor(address _owner) public Owned(_owner) {
-        setPublicChainlinkToken();
+        //remove for the test
+        //setPublicChainlinkToken();
         oracle = 0x56dd6586DB0D08c6Ce7B2f2805af28616E082455;
         jobId = "aa34467c0b074fb0888c9f42c449547f";
         fee = 1 * 10**18; // (Varies by network and job)

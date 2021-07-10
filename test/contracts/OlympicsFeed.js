@@ -15,11 +15,17 @@ contract('OlympicsFeed', accounts => {
 			await feed.setResult('0x5b22555341222c2243484e222c22474252225d00000000000000000000000000', {
 				from: owner,
 			});
-			let stringResult = await feed.getResultAsString();
+			let stringResult = await feed.resultString();
 			let plainResult = await feed.result();
 			console.log('result is' + stringResult);
 			console.log('result plain is' + plainResult);
 			console.log('result bytes is' + (await feed.bytes32ToString(plainResult)));
+			let firstPlace = await feed.firstPlace();
+			let secondPlace = await feed.secondPlace();
+			let thirdPlace = await feed.thirdPlace();
+			console.log('firstPlace is ' + firstPlace);
+			console.log('secondPlace is ' + secondPlace);
+			console.log('thirdPlace is ' + thirdPlace);
 		});
 	});
 });

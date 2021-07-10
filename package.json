@@ -72,13 +72,16 @@
     "@chainlink/contracts-0.0.10": "npm:@chainlink/contracts@0.0.10",
     "@eth-optimism/contracts": "0.2.8",
     "@eth-optimism/watcher": "0.0.1-alpha.8",
+    "@openzeppelin/test-helpers": "^0.5.11",
     "abi-decoder": "2.3.0",
+    "big.js": "^6.1.1",
     "commander": "5.1.0",
     "openzeppelin-solidity-2.3.0": "npm:openzeppelin-solidity@2.3.0",
     "pretty-error": "^2.1.1",
     "solidity-parser-antlr": "^0.4.11",
     "synthetix": "^2.45.2",
     "synthetix-2.43.1": "npm:synthetix@2.43.1",
+    "synthetix-data": "^2.1.43",
     "web3-utils": "1.2.2"
   }
 }

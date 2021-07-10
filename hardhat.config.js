@@ -87,10 +87,16 @@ module.exports = {
 			gas: 12e6,
 			blockGasLimit: 12e6,
 			url: 'http://localhost:8545',
+			loggingEnabled: true,
 		},
 		ropsten: {
 			gasPrice: 'auto',
 			url: 'https://ropsten.infura.io/v3/' + INFURA,
+			accounts: [PRIVATE_KEY],
+		},
+		goerli: {
+			gasPrice: 'auto',
+			url: 'https://goerli.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
 		kovan: {
@@ -105,7 +111,7 @@ module.exports = {
 		},
 	},
 	gasReporter: {
-		enabled: false,
+		enabled: (process.env.REPORT_GAS) ? true : false,
 		showTimeSpent: true,
 		currency: 'USD',
 		maxMethodDiff: 25, // CI will fail if gas usage is > than this %

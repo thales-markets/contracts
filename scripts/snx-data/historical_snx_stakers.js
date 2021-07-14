@@ -2,12 +2,12 @@
 
 const fs = require('fs');
 const ethers = require('ethers');
-const { feesClaimed } = require('./util.js');
+const { feesClaimed, getXSNXSnapshot } = require('./util.js');
 
 const PROXY_FEE_POOL_ADDRESS = '0xb440dd674e1243644791a4adfe3a2abb0a92d309';
+const XSNX_ADMIN_PROXY = 0x7Cd5E2d0056a7A7F09CBb86e540Ef4f6dCcc97dd;
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY;
 
-let accountsScores = {};
 let txCount = 0;
 let totalScores = 0;
 
@@ -30,6 +30,8 @@ async function getBlocks() {
 }
 
 async function fetchData() {
+    let accountsScores = {};
+
     const blocks = await getBlocks();
 
     for (let i = 0; i < blocks.length; i++) {
@@ -59,16 +61,37 @@ async function fetchData() {
         console.log('min block', blocks[i], 'max block', blocks[i+1], 'diff', blocks[i+1] - blocks[i]);
         txCount += result.length;
     }
+
+     // xSNX snapshot
+     for (let [key, value] of Object.entries(accountsScores)) {
+        if(key == XSNX_ADMIN_PROXY)  {
+            console.log("XSNX_ADMIN_PROXY score", value);
+        
+            let finalValue = 0;
+            const snapshot = await getXSNXSnapshot(value, blocks[blocks.length - 1]);
+            for (let [snapshotKey, snapshotValue] of Object.entries(snapshot)) {
+                accountsScores[snapshotKey] = snapshotValue;
+                finalValue += snapshotValue;
+            }
+
+            // should be roughly the same value as XSNX_ADMIN_PROXY score
+            console.log('finalValue', finalValue);
+
+            accountsScores[key] = 0;
+        }
+    }
+
+    return accountsScores;
 }
 
  async function main() {
-    await fetchData();
+    const data = await fetchData();
 
-    fs.writeFileSync('scripts/snx-data/historical_snx.json', JSON.stringify(accountsScores), function (err) {
+    fs.writeFileSync('scripts/snx-data/historical_snx.json', JSON.stringify(data), function (err) {
         if (err) return console.log(err);
     });
    
-    console.log('accounts scores length', Object.keys(accountsScores).length);
+    console.log('accounts scores length', Object.keys(data).length);
     console.log('tx total count', txCount);
     console.log('total scores', totalScores);
 };

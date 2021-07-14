@@ -1,6 +1,7 @@
 'use strict';
 
 const snxData = require('synthetix-data'); 
+const { getSnapshot } = require('./xsnx-snapshot/getSnapshot');
 
 const MAX_RESULTS = 5000;
 
@@ -40,6 +41,24 @@ const feesClaimed = async (minBlock, maxBlock) => {
         .catch(err => console.error(err));
 }
 
+const getXSNXSnapshot = async (xsnxScore, blockNumber) => {
+    const snapshot = await getSnapshot(blockNumber);
+        
+    let totalValue = 0;
+    for (let [key, value] of Object.entries(snapshot)) {
+        snapshot[key] = value / 1e18;
+        totalValue += value / 1e18;
+    }
+
+    const data = {};
+    for (let [key, value] of Object.entries(snapshot)) {
+        data[key] = (value / totalValue) * xsnxScore;
+    }
+
+    return data;
+}
+
 module.exports = {
-	feesClaimed
+	feesClaimed,
+    getXSNXSnapshot
 };

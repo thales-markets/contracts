@@ -5,13 +5,13 @@ const { toBN } = web3.utils;
 
 const { assert, addSnapshotBeforeRestoreAfterEach } = require('./common');
 
-contract('OlympicsFeed', accounts => {
+contract('SportFeed', accounts => {
 	const [first, owner] = accounts;
 
 	describe('Test feed', () => {
 		it('Parses result properly', async () => {
-			let OlympicsFeedContract = artifacts.require('OlympicsFeed');
-			let feed = await OlympicsFeedContract.new(owner);
+			let SportFeedContract = artifacts.require('SportFeed');
+			let feed = await SportFeedContract.new(owner);
 			await feed.setResult('0x5b22555341222c2243484e222c22474252225d00000000000000000000000000', {
 				from: owner,
 			});
@@ -26,6 +26,12 @@ contract('OlympicsFeed', accounts => {
 			console.log('firstPlace is ' + firstPlace);
 			console.log('secondPlace is ' + secondPlace);
 			console.log('thirdPlace is ' + thirdPlace);
+
+			assert.equal(await feed.isCompetitorAtPlace('USA', 1), true);
+			assert.equal(await feed.isCompetitorAtPlace('CHN', 2), true);
+			assert.equal(await feed.isCompetitorAtPlace('GBR', 3), true);
+
+			assert.equal(await feed.isCompetitorAtPlace('GBR', 1), false);
 		});
 	});
 });

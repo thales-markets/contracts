@@ -51,6 +51,8 @@ async function createMarketAndMintMore(
 		initialStrikePrice,
 		now + timeToMaturityParam,
 		toUnit(2),
+		false,
+		ZERO_ADDRESS,
 		{
 			from: initialCreator,
 		}
@@ -93,9 +95,17 @@ contract('BinaryOption', accounts => {
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.createMarket(oracleKey, strikePrice, maturity, initialMint, {
-			from: creator,
-		});
+		const tx = await man.createMarket(
+			oracleKey,
+			strikePrice,
+			maturity,
+			initialMint,
+			false,
+			ZERO_ADDRESS,
+			{
+				from: creator,
+			}
+		);
 		return BinaryOptionMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);
 	};
 
@@ -380,9 +390,17 @@ contract('BinaryOption', accounts => {
 		it('Can create a market', async () => {
 			const now = await currentTime();
 
-			const result = await manager.createMarket(sAUDKey, initialStrikePrice, now + 200, toUnit(2), {
-				from: initialCreator,
-			});
+			const result = await manager.createMarket(
+				sAUDKey,
+				initialStrikePrice,
+				now + 200,
+				toUnit(2),
+				false,
+				ZERO_ADDRESS,
+				{
+					from: initialCreator,
+				}
+			);
 
 			let createdMarket = await BinaryOptionMarket.at(
 				getEventByName({ tx: result, name: 'MarketCreated' }).args.market
@@ -446,7 +464,7 @@ contract('BinaryOption', accounts => {
 			const nonRate = toBytes32('nonExistent');
 
 			await assert.revert(
-				manager.createMarket(sUSDKey, toUnit(1), now + 100, toUnit(2), {
+				manager.createMarket(sUSDKey, toUnit(1), now + 100, toUnit(2), false, ZERO_ADDRESS, {
 					from: initialCreator,
 				}),
 				'Invalid key'
@@ -466,14 +484,14 @@ contract('BinaryOption', accounts => {
 			});
 
 			await assert.revert(
-				manager.createMarket(iAUDKey, toUnit(1), now + 100, toUnit(2), {
+				manager.createMarket(iAUDKey, toUnit(1), now + 100, toUnit(2), false, ZERO_ADDRESS, {
 					from: initialCreator,
 				}),
 				'Invalid key'
 			);
 
 			await assert.revert(
-				manager.createMarket(nonRate, toUnit(1), now + 100, toUnit(2), {
+				manager.createMarket(nonRate, toUnit(1), now + 100, toUnit(2), false, ZERO_ADDRESS, {
 					from: initialCreator,
 				}),
 				'Invalid key'
@@ -483,7 +501,7 @@ contract('BinaryOption', accounts => {
 		it('Cannot create a market providing insufficient initial mint', async () => {
 			const now = await currentTime();
 			await assert.revert(
-				manager.createMarket(sAUDKey, toUnit(1), now + 100, toUnit(0.1), {
+				manager.createMarket(sAUDKey, toUnit(1), now + 100, toUnit(0.1), false, ZERO_ADDRESS, {
 					from: initialCreator,
 				}),
 				'Insufficient capital'
@@ -493,9 +511,17 @@ contract('BinaryOption', accounts => {
 		it('Cannot create a market too far into the future', async () => {
 			const now = await currentTime();
 			await assert.revert(
-				manager.createMarket(sAUDKey, toUnit(1), now + maxTimeToMaturity + 200, toUnit(0.1), {
-					from: initialCreator,
-				}),
+				manager.createMarket(
+					sAUDKey,
+					toUnit(1),
+					now + maxTimeToMaturity + 200,
+					toUnit(0.1),
+					false,
+					ZERO_ADDRESS,
+					{
+						from: initialCreator,
+					}
+				),
 				'Maturity too far in the future'
 			);
 		});
@@ -504,7 +530,7 @@ contract('BinaryOption', accounts => {
 			await manager.setPaused(true, { from: managerOwner });
 			const now = await currentTime();
 			await assert.revert(
-				manager.createMarket(sAUDKey, toUnit(1), now + 200, toUnit(5), {
+				manager.createMarket(sAUDKey, toUnit(1), now + 200, toUnit(5), false, ZERO_ADDRESS, {
 					from: initialCreator,
 				}),
 				'This action cannot be performed while the contract is paused'
@@ -534,16 +560,24 @@ contract('BinaryOption', accounts => {
 			await manager.setMarketCreationEnabled(false, { from: managerOwner });
 			const now = await currentTime();
 			await assert.revert(
-				manager.createMarket(sAUDKey, toUnit(1), now + 200, toUnit(5), {
+				manager.createMarket(sAUDKey, toUnit(1), now + 200, toUnit(5), false, ZERO_ADDRESS, {
 					from: initialCreator,
 				}),
 				'Market creation is disabled'
 			);
 
 			await manager.setMarketCreationEnabled(true, { from: managerOwner });
-			const tx = await manager.createMarket(sAUDKey, toUnit(1), now + 200, toUnit(5), {
-				from: initialCreator,
-			});
+			const tx = await manager.createMarket(
+				sAUDKey,
+				toUnit(1),
+				now + 200,
+				toUnit(5),
+				false,
+				ZERO_ADDRESS,
+				{
+					from: initialCreator,
+				}
+			);
 			const localMarket = await BinaryOptionMarket.at(
 				getEventByName({ tx, name: 'MarketCreated' }).args.market
 			);
@@ -554,7 +588,7 @@ contract('BinaryOption', accounts => {
 		it('Cannot create a market if maturity is in the past.', async () => {
 			const now = await currentTime();
 			await assert.revert(
-				manager.createMarket(sAUDKey, toUnit(1), now - 1, toUnit(2), {
+				manager.createMarket(sAUDKey, toUnit(1), now - 1, toUnit(2), false, ZERO_ADDRESS, {
 					from: initialCreator,
 				}),
 				'Maturity has to be in the future'
@@ -705,7 +739,14 @@ contract('BinaryOption', accounts => {
 			ensureOnlyExpectedMutativeFunctions({
 				abi: market.abi,
 				ignoreParents: ['MinimalProxyFactory', 'OwnedWithInit'],
-				expected: ['mint', 'resolve', 'exerciseOptions', 'expire', 'initialize'],
+				expected: [
+					'mint',
+					'resolve',
+					'exerciseOptions',
+					'expire',
+					'initialize',
+					'setIOracleInstance',
+				],
 			});
 		});
 
@@ -722,9 +763,17 @@ contract('BinaryOption', accounts => {
 			// Insufficient capital
 			let now = await currentTime();
 			await assert.revert(
-				manager.createMarket(sAUDKey, initialStrikePrice, now + timeToMaturity, toUnit(0), {
-					from: initialCreator,
-				}),
+				manager.createMarket(
+					sAUDKey,
+					initialStrikePrice,
+					now + timeToMaturity,
+					toUnit(0),
+					false,
+					ZERO_ADDRESS,
+					{
+						from: initialCreator,
+					}
+				),
 				'Insufficient capital'
 			);
 		});
@@ -928,7 +977,7 @@ contract('BinaryOption', accounts => {
 			result = await market.oraclePriceAndTimestamp();
 			now = await currentTime();
 			assert.isFalse(await market.canResolve());
-			await assert.revert(manager.resolveMarket(market.address), 'Price is stale');
+			await assert.revert(manager.resolveMarket(market.address), 'Can not resolve market');
 		});
 
 		it('Resolution properly remits the collected fees.', async () => {

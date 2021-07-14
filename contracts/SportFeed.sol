@@ -3,7 +3,7 @@ pragma solidity ^0.5.16;
 import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
 import "synthetix-2.43.1/contracts/Owned.sol";
 
-contract OlympicsFeed is ChainlinkClient, Owned {
+contract SportFeed is ChainlinkClient, Owned {
     using Chainlink for Chainlink.Request;
 
     address private oracle;
@@ -37,8 +37,8 @@ contract OlympicsFeed is ChainlinkClient, Owned {
     /**
      * Initial request
      */
-    function requestOlympicsWinner(string memory season) public {
-        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillOlympicsWinner.selector);
+    function requestSportsWinner(string memory season) public {
+        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillSportsWinner.selector);
         req.add("endpoint", "medals");
         req.add("season", season);
         sendChainlinkRequestTo(oracle, req, fee);
@@ -47,7 +47,7 @@ contract OlympicsFeed is ChainlinkClient, Owned {
     /**
      * Callback function
      */
-    function fulfillOlympicsWinner(bytes32 _requestId, bytes32 _result) public recordChainlinkFulfillment(_requestId) {
+    function fulfillSportsWinner(bytes32 _requestId, bytes32 _result) public recordChainlinkFulfillment(_requestId) {
         setResult(_result);
     }
 
@@ -69,19 +69,29 @@ contract OlympicsFeed is ChainlinkClient, Owned {
         uint endIndex
     ) internal pure returns (string memory) {
         bytes memory strBytes = bytes(str);
-        bytes memory result = new bytes(endIndex - startIndex);
+        bytes memory tresult = new bytes(endIndex - startIndex);
         for (uint i = startIndex; i < endIndex; i++) {
-            result[i - startIndex] = strBytes[i];
+            tresult[i - startIndex] = strBytes[i];
         }
-        return string(result);
+        return string(tresult);
     }
 
-    //    function isCountryAtPlace(string memory country, uint place) external view returns (bool) {
-    //        if(place==1){
-    //            if
-    //        }
-    //        return !resolved && _matured() && _isFreshPriceUpdateTime(updatedAt);
-    //    }
+    function isCompetitorAtPlace(string calldata competitor, uint place) external view returns (bool) {
+        if (place == 1) {
+            return compareStrings(firstPlace, competitor);
+        }
+        if (place == 2) {
+            return compareStrings(secondPlace, competitor);
+        }
+        if (place == 3) {
+            return compareStrings(thirdPlace, competitor);
+        }
+        return false;
+    }
+
+    function compareStrings(string memory a, string memory b) public pure returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+    }
 
     // function withdrawLink() external {} - Implement a withdraw function to avoid locking your LINK in the contract
 }

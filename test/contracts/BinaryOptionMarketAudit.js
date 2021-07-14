@@ -3,6 +3,8 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
+const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+
 const { assert, addSnapshotBeforeRestoreAfterEach } = require('./common');
 const {
 	fastForward,
@@ -43,9 +45,17 @@ contract('BinaryOptionMarketManager', accounts => {
 	let totalDepositedAfterFees;
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.createMarket(oracleKey, strikePrice, maturity, initialMint, {
-			from: creator,
-		});
+		const tx = await man.createMarket(
+			oracleKey,
+			strikePrice,
+			maturity,
+			initialMint,
+			false,
+			ZERO_ADDRESS,
+			{
+				from: creator,
+			}
+		);
 		return BinaryOptionMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);
 	};
 
@@ -119,6 +129,8 @@ contract('BinaryOptionMarketManager', accounts => {
 				initialStrikePrice,
 				now + timeToMaturity,
 				toUnit(2),
+				false,
+				ZERO_ADDRESS,
 				{
 					from: initialCreator,
 				}
@@ -126,7 +138,7 @@ contract('BinaryOptionMarketManager', accounts => {
 			market = await BinaryOptionMarket.at(
 				getEventByName({ tx: result, name: 'MarketCreated' }).args.market
 			);
-			await market.mint(value, { from: exerciser  });
+			await market.mint(value, { from: exerciser });
 			await fastForward(timeToMaturity + 100);
 			await exchangeRates.updateRates(
 				[sAUDKey],
@@ -136,7 +148,7 @@ contract('BinaryOptionMarketManager', accounts => {
 			);
 
 			await market.exerciseOptions({ from: initialCreator });
-			await market.exerciseOptions({ from: exerciser  });
+			await market.exerciseOptions({ from: exerciser });
 
 			await manager.expireMarkets([market.address], { from: managerOwner });
 		});

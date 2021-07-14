@@ -79,6 +79,7 @@
     "openzeppelin-solidity-2.3.0": "npm:openzeppelin-solidity@2.3.0",
     "pretty-error": "^2.1.1",
     "solidity-parser-antlr": "^0.4.11",
+    "solidity-util": "github:willitscale/solidity-util",
     "synthetix": "^2.45.2",
     "synthetix-2.43.1": "npm:synthetix@2.43.1",
     "synthetix-data": "^2.1.43",

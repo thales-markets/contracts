@@ -17,12 +17,32 @@ contract TestSportFeed is ChainlinkClient, Owned {
     string public secondPlace;
     string public thirdPlace;
 
-    constructor(address _owner) public Owned(_owner) {
+    constructor(
+        address _owner,
+        address _oracle,
+        bytes32 _jobId,
+        uint256 _fee
+    ) public Owned(_owner) {
         //remove for the test
         //setPublicChainlinkToken();
-        oracle = 0x56dd6586DB0D08c6Ce7B2f2805af28616E082455;
-        jobId = "aa34467c0b074fb0888c9f42c449547f";
-        fee = 1 * 10**18; // (Varies by network and job)
+        oracle = _oracle;
+        jobId = _jobId;
+        fee = _fee;
+        //        oracle = 0x56dd6586DB0D08c6Ce7B2f2805af28616E082455;
+        //        jobId = "aa34467c0b074fb0888c9f42c449547f";
+        //        fee = 1 * 10**18; // (Varies by network and job)
+    }
+
+    function setOracle(address _oracle) public onlyOwner {
+        oracle = _oracle;
+    }
+
+    function setJobId(bytes32 _jobId) public onlyOwner {
+        jobId = _jobId;
+    }
+
+    function setFee(uint256 _fee) public onlyOwner {
+        fee = _fee;
     }
 
     //0x5b22555341222c2243484e222c22474252225d00000000000000000000000000

@@ -10,7 +10,7 @@ contract('SportFeed', accounts => {
 
 	describe('Test feed', () => {
 		it('Parses result properly', async () => {
-			let SportFeedContract = artifacts.require('SportFeed');
+			let SportFeedContract = artifacts.require('TestSportFeed');
 			let feed = await SportFeedContract.new(owner);
 			await feed.setResult('0x5b22555341222c2243484e222c22474252225d00000000000000000000000000', {
 				from: owner,

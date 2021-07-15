@@ -3,7 +3,7 @@ pragma solidity ^0.5.16;
 import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
 import "synthetix-2.43.1/contracts/Owned.sol";
 
-contract SportFeed is ChainlinkClient, Owned {
+contract TestSportFeed is ChainlinkClient, Owned {
     using Chainlink for Chainlink.Request;
 
     address private oracle;
@@ -19,7 +19,7 @@ contract SportFeed is ChainlinkClient, Owned {
 
     constructor(address _owner) public Owned(_owner) {
         //remove for the test
-        setPublicChainlinkToken();
+        //setPublicChainlinkToken();
         oracle = 0x56dd6586DB0D08c6Ce7B2f2805af28616E082455;
         jobId = "aa34467c0b074fb0888c9f42c449547f";
         fee = 1 * 10**18; // (Varies by network and job)

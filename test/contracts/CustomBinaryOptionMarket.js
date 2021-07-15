@@ -129,7 +129,7 @@ contract('BinaryOption', accounts => {
 
 	describe('Integration test', () => {
 		it('Can create a custom market', async () => {
-			let SportFeedContract = artifacts.require('SportFeed');
+			let SportFeedContract = artifacts.require('TestSportFeed');
 			let feed = await SportFeedContract.new(managerOwner);
 			await feed.setResult('0x5b22555341222c2243484e222c22474252225d00000000000000000000000000', {
 				from: managerOwner,

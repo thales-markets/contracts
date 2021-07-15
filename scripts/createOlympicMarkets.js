@@ -59,11 +59,23 @@ async function main() {
 	// const maxTimeToMaturity = 730 * day; // Markets may not be deployed more than two years in the future.
 
 	await hre.run('verify:verify', {
+		address: integersDeployed.address,
+	});
+
+	await hre.run('verify:verify', {
 		address: sportFeedContractDeployed.address,
+		constructorArguments: [owner.address],
 	});
 
 	await hre.run('verify:verify', {
 		address: sportFeedOracleInstanceContractDeployed.address,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployed.address,
+			'USA',
+			'1',
+			'Olympics Medal Count',
+		],
 	});
 }
 

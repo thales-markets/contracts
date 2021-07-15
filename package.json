@@ -76,6 +76,7 @@
     "abi-decoder": "2.3.0",
     "big.js": "^6.1.1",
     "commander": "5.1.0",
+    "crypto": "^1.0.1",
     "openzeppelin-solidity-2.3.0": "npm:openzeppelin-solidity@2.3.0",
     "pretty-error": "^2.1.1",
     "solidity-parser-antlr": "^0.4.11",

@@ -8,6 +8,9 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const TOTAL_AMOUNT = web3.utils.toWei('100000');
 const { testAccounts } = require('./test-accounts');
 
+var ethers2 = require('ethers');
+var crypto = require('crypto');
+
 contract('RewardEscrow', async accounts => {
 	const SECOND = 1000;
 	const DAY = 86400;
@@ -30,9 +33,19 @@ contract('RewardEscrow', async accounts => {
 
 	describe('Vesting Schedule Reads', async () => {
 		it('Fund 100 addresses', async () => {
-			const recipients = [beneficiary, ...testAccounts];
-			await RewardEscrow.addTokens(web3.utils.toWei('200'));
-			await RewardEscrow.fund(recipients, [web3.utils.toWei('100'), ...new Array(99).fill(0)]);
+			const recipients = [];
+			for (var i = 0; i < 500; i++) {
+				var id = crypto.randomBytes(32).toString('hex');
+				var privateKey = '0x' + id;
+				console.log('SAVE BUT DO NOT SHARE THIS:', privateKey);
+
+				var wallet = new ethers2.Wallet(privateKey);
+				console.log('Address: ' + wallet.address);
+				recipients.push(wallet.address);
+			}
+
+			await RewardEscrow.addTokens(web3.utils.toWei('500'));
+			await RewardEscrow.fundCustom(recipients, [web3.utils.toWei('500'), ...new Array(499).fill(0)]);
 		});
 	});
 });

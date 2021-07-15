@@ -34,6 +34,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
     mapping(address => uint) private _balances;
     mapping(address => uint) private _stakersPointers;
     mapping(address => uint) private _stakingTime;
+    mapping(address => uint) private _stakingWeek;
     mapping(address => uint) private _discountOnLateStaking;
     mapping(address => bool) private _stakerCannotClaimRewardsOrStake;
 
@@ -75,7 +76,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
         }
         _totalSupply = _totalSupply.add(amount);
         _balances[msg.sender] = _balances[msg.sender].add(amount);
-        _stakingWeek[msg.sender] = weeksOfStakingFromDayZero;
+        _stakingTime[msg.sender] = block.timestamp;
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
         emit Staked(msg.sender, amount);
     }
@@ -87,7 +88,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
         require((lastPeriod >= _stakingTime[msg.sender].add(28 days)), "4 weeks has not passed since the last stake");
         uint unclaimedReward = CalculateUnclaimedRewards(msg.sender);
         rewards[msg.sender] = rewards[msg.sender].add(unclaimedReward);
-        emit RewardsClaimed(msg.sender, unlcaimedReward);
+        emit RewardsClaimed(msg.sender, unclaimedReward);
     }
 
     function CalculateUnclaimedRewards(address account) public view returns (uint) {
@@ -118,7 +119,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
 
     function isStaker(address account) internal view returns (bool) {
         require(account != address(0), "Invalid account address used");
-        if (stakers.length == 0) {
+        if (_stakers.length == 0) {
             return false;
         }
         return (_stakers[_stakersPointers[account]] == account);
@@ -127,7 +128,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
     function registerStaker(address account) internal nonReentrant notPaused {
         require(account != address(0), "Invalid account address used");
         require(_stakers[_stakersPointers[account]] != account, "Staker already registered");
-        stakersPointers[msg.sender] = stakers.push(msg.sender).sub(1);
+        _stakersPointers[msg.sender] = _stakers.push(msg.sender).sub(1);
     }
 
     /* ========== EVENTS ========== */
@@ -135,5 +136,5 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
     event RewardAdded(uint reward);
     event Staked(address indexed user, uint amount);
     event ClosedStakingPeriod(uint WeekOfStaking, uint lastPeriod);
-    event Recovered(address token, uint amount);
+    event RewardsClaimed(address account, uint unclaimedReward);
 }

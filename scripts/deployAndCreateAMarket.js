@@ -12,6 +12,8 @@ const {
 
 const { toBN } = web3.utils;
 
+const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+
 const { toBytes32 } = require('..');
 
 async function main() {
@@ -124,6 +126,8 @@ async function main() {
 		initialStrikePrice,
 		now + 360,
 		initialStrikePrice,
+		false,
+		ZERO_ADDRESS,
 		{ gasLimit: 5500000 }
 	);
 	console.log('Market created');

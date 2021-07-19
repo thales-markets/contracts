@@ -34,9 +34,8 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
     uint private _totalRewardsClaimed;
     mapping(address => uint) private _balances;
     mapping(address => uint) private _lastStakingWeek;
-    mapping(address => uint) private _lastRewardsClaimed;
+    mapping(address => uint) private _lastRewardsClaimedWeek;
     mapping(address => bool) private _stakerCannotStake;
-
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -60,14 +59,13 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
     function balanceOf(address account) external view returns (uint) {
         return _balances[account];
     }
-    
+
     function getUnclaimedRewards(address account) external view returns (uint) {
         return calculateUnclaimedRewards(account);
-
     }
+
     function getUnclaimedRewardFees(address account) external view returns (uint) {
         return calculateUnclaimedFees(account);
-
     }
 
     function getAlreadyClaimedRewards(address account) external view returns (uint) {
@@ -90,9 +88,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
 
     function closePeriod() external nonReentrant notPaused {
         require(startTime > 0, "Staking period has not started");
-        require(
-            block.timestamp >= lastPeriod.add(durationPeriod), 
-            "7 days has not passed since the last closed period");
+        require(block.timestamp >= lastPeriod.add(durationPeriod), "7 days has not passed since the last closed period");
 
         lastPeriod = block.timestamp;
         weeksOfStaking = weeksOfStaking.add(1);
@@ -106,13 +102,13 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
     function stake(uint amount) external nonReentrant notPaused {
         require(startTime > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
-        require( 
+        require(
             _stakerCannotStake[msg.sender] == false,
             "Cannot stake, the staker is paused from staking due to withdrawal of rewards"
         );
-        // Check if there are not claimable rewards from last week. 
+        // Check if there are not claimable rewards from last week.
         // Claim them, and add new stake
-        if(_lastRewardsClaimed[msg.sender] < weeksOfStaking) {
+        if (_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) {
             claimReward();
         }
         _totalSupply = _totalSupply.add(amount);
@@ -126,12 +122,12 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
 
     function claimReward() public nonReentrant notPaused {
         require(startTime > 0, "Staking period has not started");
-        
+
         //Calculate rewards
         uint unclaimedReward = calculateUnclaimedRewards(msg.sender);
         uint unclaimedFees = calculateUnclaimedFees(msg.sender);
 
-        if(unclaimedReward > 0) {
+        if (unclaimedReward > 0) {
             _totalRewardsClaimed = _totalRewardsClaimed.add(unclaimedReward);
             // Stake the newly claimed reward:
             _totalSupply = _totalSupply.add(unclaimedReward);
@@ -142,23 +138,22 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
             // Record the total claimed rewards
             stakerRewardsClaimed[msg.sender] = stakerRewardsClaimed[msg.sender].add(unclaimedReward);
             emit RewardsClaimed(msg.sender, unclaimedReward);
-        } if(unclaimedFees > 0) {
+        }
+        if (unclaimedFees > 0) {
             feeToken.transferFrom(address(this), msg.sender, unclaimedFees);
             stakerFeesClaimed[msg.sender] = stakerFeesClaimed[msg.sender].add(unclaimedFees);
             emit FeeRewardsClaimed(msg.sender, unclaimedFees);
         }
         // Update last claiming week
-        _lastRewardsClaimed[msg.sender] = weeksOfStaking;
+        _lastRewardsClaimedWeek[msg.sender] = weeksOfStaking;
     }
-
-
 
     /* ========== INTERNAL FUNCTIONS ========== */
 
-    function calculateUnclaimedRewards(address account) internal view returns (uint){
+    function calculateUnclaimedRewards(address account) internal view returns (uint) {
         require(account != address(0), "Invalid account address used");
         require(_balances[account] > 0, "Account is not a staker");
-        require(_lastRewardsClaimed[account] < weeksOfStaking, "Rewards already claimed for last week");
+        require(_lastRewardsClaimedWeek[account] < weeksOfStaking, "Rewards already claimed for last week");
 
         // return _balances[account].div(1e18).div(_totalSupply).mul(rewardsForLastWeek);
         return _balances[account].div(_totalSupply).mul(rewardsForLastWeek);
@@ -167,7 +162,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
     function calculateUnclaimedFees(address account) internal view returns (uint) {
         require(account != address(0), "Invalid account address used");
         require(_balances[account] > 0, "Account is not a staker");
-        require(_lastRewardsClaimed[account] < weeksOfStaking, "Rewards already claimed for last week");
+        require(_lastRewardsClaimedWeek[account] < weeksOfStaking, "Rewards already claimed for last week");
 
         // return _balances[account].div(1e18).div(_totalSupply).mul(rewardFeesForLastWeek);
         return _balances[account].div(_totalSupply).mul(rewardFeesForLastWeek);
@@ -177,6 +172,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
         //ADD formula
         return 0;
     }
+
     function calculateFeesForWeek(uint week) internal view returns (uint) {
         //ADD formula
         return 0;
@@ -185,7 +181,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
     /* ========== EVENTS ========== */
 
     event RewardAdded(uint reward);
-    event Staked(address indexed user, uint amount);
+    event Staked(address user, uint amount);
     event ClosedPeriod(uint WeekOfStaking, uint lastPeriod);
     event RewardsClaimed(address account, uint unclaimedReward);
     event FeeRewardsClaimed(address account, uint unclaimedFees);

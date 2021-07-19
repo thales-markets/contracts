@@ -3,7 +3,7 @@ pragma solidity ^0.5.16;
 import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
 import "synthetix-2.43.1/contracts/Owned.sol";
 
-contract OlympicsFeed is ChainlinkClient, Owned {
+contract TestSportFeed is ChainlinkClient, Owned {
     using Chainlink for Chainlink.Request;
 
     address private oracle;
@@ -17,12 +17,32 @@ contract OlympicsFeed is ChainlinkClient, Owned {
     string public secondPlace;
     string public thirdPlace;
 
-    constructor(address _owner) public Owned(_owner) {
+    constructor(
+        address _owner,
+        address _oracle,
+        bytes32 _jobId,
+        uint256 _fee
+    ) public Owned(_owner) {
         //remove for the test
         //setPublicChainlinkToken();
-        oracle = 0x56dd6586DB0D08c6Ce7B2f2805af28616E082455;
-        jobId = "aa34467c0b074fb0888c9f42c449547f";
-        fee = 1 * 10**18; // (Varies by network and job)
+        oracle = _oracle;
+        jobId = _jobId;
+        fee = _fee;
+        //        oracle = 0x56dd6586DB0D08c6Ce7B2f2805af28616E082455;
+        //        jobId = "aa34467c0b074fb0888c9f42c449547f";
+        //        fee = 1 * 10**18; // (Varies by network and job)
+    }
+
+    function setOracle(address _oracle) public onlyOwner {
+        oracle = _oracle;
+    }
+
+    function setJobId(bytes32 _jobId) public onlyOwner {
+        jobId = _jobId;
+    }
+
+    function setFee(uint256 _fee) public onlyOwner {
+        fee = _fee;
     }
 
     //0x5b22555341222c2243484e222c22474252225d00000000000000000000000000
@@ -37,8 +57,8 @@ contract OlympicsFeed is ChainlinkClient, Owned {
     /**
      * Initial request
      */
-    function requestOlympicsWinner(string memory season) public {
-        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillOlympicsWinner.selector);
+    function requestSportsWinner(string memory season) public {
+        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillSportsWinner.selector);
         req.add("endpoint", "medals");
         req.add("season", season);
         sendChainlinkRequestTo(oracle, req, fee);
@@ -47,7 +67,7 @@ contract OlympicsFeed is ChainlinkClient, Owned {
     /**
      * Callback function
      */
-    function fulfillOlympicsWinner(bytes32 _requestId, bytes32 _result) public recordChainlinkFulfillment(_requestId) {
+    function fulfillSportsWinner(bytes32 _requestId, bytes32 _result) public recordChainlinkFulfillment(_requestId) {
         setResult(_result);
     }
 
@@ -69,19 +89,29 @@ contract OlympicsFeed is ChainlinkClient, Owned {
         uint endIndex
     ) internal pure returns (string memory) {
         bytes memory strBytes = bytes(str);
-        bytes memory result = new bytes(endIndex - startIndex);
+        bytes memory tresult = new bytes(endIndex - startIndex);
         for (uint i = startIndex; i < endIndex; i++) {
-            result[i - startIndex] = strBytes[i];
+            tresult[i - startIndex] = strBytes[i];
         }
-        return string(result);
+        return string(tresult);
     }
 
-    //    function isCountryAtPlace(string memory country, uint place) external view returns (bool) {
-    //        if(place==1){
-    //            if
-    //        }
-    //        return !resolved && _matured() && _isFreshPriceUpdateTime(updatedAt);
-    //    }
+    function isCompetitorAtPlace(string calldata competitor, uint place) external view returns (bool) {
+        if (place == 1) {
+            return compareStrings(firstPlace, competitor);
+        }
+        if (place == 2) {
+            return compareStrings(secondPlace, competitor);
+        }
+        if (place == 3) {
+            return compareStrings(thirdPlace, competitor);
+        }
+        return false;
+    }
+
+    function compareStrings(string memory a, string memory b) public pure returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+    }
 
     // function withdrawLink() external {} - Implement a withdraw function to avoid locking your LINK in the contract
 }

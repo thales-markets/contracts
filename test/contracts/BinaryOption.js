@@ -70,7 +70,7 @@ contract('BinaryOption', accounts => {
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.createMarket(oracleKey, strikePrice, maturity, initialMint, {
+		const tx = await man.createMarket(oracleKey, strikePrice, maturity, initialMint, false, ZERO_ADDRESS, {
 			from: creator,
 		});
 		return BinaryOptionMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);

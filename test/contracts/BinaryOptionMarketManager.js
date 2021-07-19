@@ -51,6 +51,8 @@ async function createMarketAndMintMore(
 		initialStrikePrice,
 		now + timeToMaturityParam,
 		toUnit(2),
+		false,
+		ZERO_ADDRESS,
 		{
 			from: initialCreator,
 		}
@@ -93,9 +95,17 @@ contract('BinaryOptionMarketManager', accounts => {
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.createMarket(oracleKey, strikePrice, maturity, initialMint, {
-			from: creator,
-		});
+		const tx = await man.createMarket(
+			oracleKey,
+			strikePrice,
+			maturity,
+			initialMint,
+			false,
+			ZERO_ADDRESS,
+			{
+				from: creator,
+			}
+		);
 		return BinaryOptionMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);
 	};
 

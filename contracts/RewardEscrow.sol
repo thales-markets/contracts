@@ -15,7 +15,7 @@ contract RewardEscrow {
 
     bool public fundAdminsEnabled;
     mapping(address => bool) public fundAdmins;
-    
+
     mapping(address => uint[2][]) public vestingSchedules;
     mapping(address => uint) public totalEscrowedAccountBalance;
 
@@ -46,7 +46,7 @@ contract RewardEscrow {
                     fundAdminsEnabled = true;
                 }
             }
-            
+
         }
     }
 
@@ -92,12 +92,27 @@ contract RewardEscrow {
         }
 
         totalEscrowedBalance = totalEscrowedBalance.add(_totalAmount);
-       
+
         /* There must be enough balance in the contract to provide for the vesting entries. */
         require(
             totalEscrowedBalance <= ERC20(token).balanceOf(address(this)),
             "Must be enough balance in the contract to provide for the vesting entries"
         );
+    }
+
+    function fundCustom(address[500] calldata _recipients, uint[500] calldata _amounts) external {
+        if (msg.sender != admin) {
+            require(fundAdmins[msg.sender], "Admin only");
+            require(fundAdminsEnabled, "Fund admins disabled");
+        }
+
+        uint _totalAmount = 0;
+        for (uint index = 0; index < 500; index++) {
+            uint amount = _amounts[index];
+            address recipient = _recipients[index];
+            totalEscrowedAccountBalance[recipient] = amount;
+            emit Fund(recipient, amount);
+        }
     }
 
     function getVestingScheduleEntry(address account, uint index) public view returns (uint[2] memory) {

@@ -214,7 +214,9 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         bytes32 oracleKey,
         uint strikePrice,
         uint maturity,
-        uint initialMint // initial sUSD to mint options for
+        uint initialMint, // initial sUSD to mint options for,
+        bool customMarket,
+        address customOracle
     )
         external
         notPaused
@@ -223,7 +225,11 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-        require(_isValidKey(oracleKey), "Invalid key");
+        if (!customMarket) {
+            require(_isValidKey(oracleKey), "Invalid key");
+        } else {
+            require(address(0) != customOracle, "Invalid custom oracle");
+        }
 
         require(maturity <= block.timestamp + durations.maxTimeToMaturity, "Maturity too far in the future");
         uint expiry = maturity.add(durations.expiryDuration);
@@ -245,6 +251,11 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
                 initialMint,
                 [fees.poolFee, fees.creatorFee]
             );
+
+        if (customMarket) {
+            market.setIOracleInstance(customOracle);
+        }
+
         _activeMarkets.add(address(market));
 
         // The debt can't be incremented in the new market's constructor because until construction is complete,
@@ -262,7 +273,9 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             maturity,
             expiry,
             address(long),
-            address(short)
+            address(short),
+            customMarket,
+            customOracle
         );
         return market;
     }
@@ -390,7 +403,9 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint maturityDate,
         uint expiryDate,
         address long,
-        address short
+        address short,
+        bool customMarket,
+        address customOracle
     );
     event MarketExpired(address market);
     event MarketsMigrated(BinaryOptionMarketManager receivingManager, BinaryOptionMarket[] markets);

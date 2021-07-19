@@ -36,12 +36,18 @@ interface IBinaryOptionMarketManager {
         bytes32 oracleKey,
         uint strikePrice,
         uint maturity,
-        uint initialMint // initial sUSD to mint options for
+        uint initialMint, // initial sUSD to mint options for,
+        bool customMarket,
+        address customOracle // initial sUSD to mint options for
     ) external returns (IBinaryOptionMarket);
 
     function resolveMarket(address market) external;
 
     function expireMarkets(address[] calldata market) external;
 
-    function transferSusdTo(address sender, address receiver, uint amount) external;
+    function transferSusdTo(
+        address sender,
+        address receiver,
+        uint amount
+    ) external;
 }

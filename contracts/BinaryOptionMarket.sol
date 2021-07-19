@@ -4,6 +4,7 @@ pragma solidity ^0.5.16;
 import "synthetix-2.43.1/contracts/MinimalProxyFactory.sol";
 import "./OwnedWithInit.sol";
 import "./interfaces/IBinaryOptionMarket.sol";
+import "./interfaces/IOracleInstance.sol";
 
 // Libraries
 import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
@@ -46,6 +47,9 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     OracleDetails public oracleDetails;
     BinaryOptionMarketManager.Fees public fees;
     IAddressResolver public resolver;
+
+    IOracleInstance public iOracleInstance;
+    bool public customMarket;
 
     // `deposited` tracks the sum of all deposits minus the withheld fees.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
@@ -155,20 +159,28 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         return (times.maturity.sub(maxOraclePriceAge)) <= timestamp;
     }
 
-    function canResolve() external view returns (bool) {
-        (, uint updatedAt) = _oraclePriceAndTimestamp();
-        return !resolved && _matured() && _isFreshPriceUpdateTime(updatedAt);
+    function canResolve() public view returns (bool) {
+        if (customMarket) {
+            return !resolved && _matured() && iOracleInstance.resolvable();
+        } else {
+            (, uint updatedAt) = _oraclePriceAndTimestamp();
+            return !resolved && _matured() && _isFreshPriceUpdateTime(updatedAt);
+        }
     }
 
     function _result() internal view returns (Side) {
-        uint price;
-        if (resolved) {
-            price = oracleDetails.finalPrice;
+        if (customMarket) {
+            return iOracleInstance.getOutcome() ? Side.Long : Side.Short;
         } else {
-            (price, ) = _oraclePriceAndTimestamp();
-        }
+            uint price;
+            if (resolved) {
+                price = oracleDetails.finalPrice;
+            } else {
+                (price, ) = _oraclePriceAndTimestamp();
+            }
 
-        return oracleDetails.strikePrice <= price ? Side.Long : Side.Short;
+            return oracleDetails.strikePrice <= price ? Side.Long : Side.Short;
+        }
     }
 
     function result() external view returns (Side) {
@@ -238,17 +250,21 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         emit Mint(Side.Short, minter, amount);
     }
 
+    /* ---------- Custom oracle configuration ---------- */
+    function setIOracleInstance(address _address) external onlyOwner {
+        customMarket = true;
+        iOracleInstance = IOracleInstance(_address);
+    }
+
     /* ---------- Market Resolution ---------- */
 
     function resolve() external onlyOwner afterMaturity managerNotPaused {
-        require(!resolved, "Market already resolved");
+        require(canResolve(), "Can not resolve market");
 
-        // We don't need to perform stale price checks, so long as the price was
-        // last updated recently enough before the maturity date.
         (uint price, uint updatedAt) = _oraclePriceAndTimestamp();
-        require(_isFreshPriceUpdateTime(updatedAt), "Price is stale");
-
-        oracleDetails.finalPrice = price;
+        if (!customMarket) {
+            oracleDetails.finalPrice = price;
+        }
         resolved = true;
 
         // Now remit any collected fees.

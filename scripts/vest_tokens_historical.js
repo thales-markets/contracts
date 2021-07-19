@@ -19,12 +19,9 @@ const fundingAdmins = [
     ZERO_ADDRESS
 ];
 
-// TODO - put correct addresses here
 const BLACKLIST = [
     "0x000000000000000000000000000000000000dead",
-    "0xe857656b7804ecc0d0d0fd643c6cfb69063a7d1a",
-    "0xbce6d09b800d0bc03f34ef93ed356519faec64d0",
-    "0xe4ffd96b5e6d2b6cdb91030c48cc932756c951b5",
+    "0x7Cd5E2d0056a7A7F09CBb86e540Ef4f6dCcc97dd", // XSNX PROXY ADMIN ADDRESS
 ];
 
 
@@ -46,7 +43,6 @@ async function main() {
     console.log('Thales deployed to:', ThalesDeployed.address);
 
     await vestTokens(owner, fundingAdmins, ThalesDeployed, 1);
-
 }
 
 async function vestTokens(admin, fundingAdmins, token, confs) {
@@ -67,7 +63,11 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
     let vestedPercent = [];
     let totalScore = Big(0);
     for (let [key, value] of Object.entries(historicalData)) {
-        vestedPercent[key.toLowerCase()] = Big(value);
+        if(vestedPercent[key.toLowerCase()]) {
+            vestedPercent[key.toLowerCase()] =  vestedPercent[key.toLowerCase()].add(value);
+        } else {
+            vestedPercent[key.toLowerCase()] = Big(value);
+        }
         totalScore = totalScore.add(value);
     }
 
@@ -82,10 +82,11 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 
     let vestedAmounts = [];
     let finalTotal = Big(0);
-    for(let[key, value] of Object.entries(vestedPercent)) {
+    for(let [key, value] of Object.entries(vestedPercent)) {
         if(value.gt(0)) {
             const newValue = value.times(TOTAL_AMOUNT).div(totalScore).round();
             vestedAmounts[key.toLowerCase()] = newValue;
+            
             finalTotal = finalTotal.plus(newValue);
         }
     }
@@ -110,13 +111,13 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
     });
 
     vestedAmounts = {};
-    for(let[key, value] of Object.entries(accountsValues)) {
+    for(let key of Object.keys(accountsValues)) {
         vestedAmounts[accountsValues[key]['address']] = accountsValues[key]['amount'];
     }
 
     // fix imprecision
     let diffCount = 0;
-    for(let[key, value] of Object.entries(vestedAmounts)) {
+    for(let key of Object.keys(vestedAmounts)) {
         if(diffCount++ >= diff.abs()) break;
         vestedAmounts[key] = diff > 0 ? vestedAmounts[key].sub(1) : vestedAmounts[key].add(1);
     }
@@ -134,7 +135,7 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 
 
     let accounts = [], values = [];
-    for(let[key, value] of Object.entries(vestedAmounts)) {
+    for(let [key, value] of Object.entries(vestedAmounts)) {
         accounts.push(key);
         values.push(numberExponentToLarge(value));
     }

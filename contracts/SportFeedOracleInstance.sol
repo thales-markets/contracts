@@ -10,7 +10,7 @@ contract SportFeedOracleInstance is IOracleInstance, Owned {
     using Chainlink for Chainlink.Request;
     using Integers for uint;
 
-    address private sportFeed;
+    address public sportFeed;
     string public targetName;
     string public targetOutcome;
     string public eventName;

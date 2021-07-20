@@ -3,10 +3,10 @@
 const { contract, web3 } = require('hardhat');
 const Big = require('big.js');
 const { toBN } = web3.utils;
-const { currentTime, fastForward } = require('../utils')();
+const { currentTime, fastForward } = require('../../utils')();
 
 const { time } = require("@openzeppelin/test-helpers");
-const { assert } = require('./common');
+const { assert } = require('../common');
 
 const VESTING_PERIOD = 86400 * 365;
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);

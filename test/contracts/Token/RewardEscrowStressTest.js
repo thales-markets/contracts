@@ -1,8 +1,8 @@
 'use strict';
 
 const { contract, web3 } = require('hardhat');
-const { assert } = require('./common');
-const { currentTime, fastForward, toUnit } = require('../utils')();
+const { assert } = require('../common');
+const { currentTime, fastForward, toUnit } = require('../../utils')();
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const TOTAL_AMOUNT = web3.utils.toWei('100000');

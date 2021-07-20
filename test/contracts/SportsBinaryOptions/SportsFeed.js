@@ -3,9 +3,9 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('./common');
+const { assert, addSnapshotBeforeRestoreAfterEach } = require('../common');
 
-const { toBytes32 } = require('../..');
+const { toBytes32 } = require('../../../index');
 
 const {
 	fastForward,
@@ -13,7 +13,7 @@ const {
 	currentTime,
 	multiplyDecimalRound,
 	divideDecimalRound,
-} = require('../utils')();
+} = require('../../utils')();
 
 contract('SportFeed', accounts => {
 	const [first, owner] = accounts;

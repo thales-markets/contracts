@@ -157,7 +157,7 @@ async function createMarket(
 		{ gasLimit: 5500000 }
 	);
 
-	result.wait().then(function(receipt) {
+	await result.wait().then(function(receipt) {
 		let marketCreationArgs = receipt.events[receipt.events.length - 1].args;
 		for (var key in marketCreationArgs) {
 			if (marketCreationArgs.hasOwnProperty(key)) {

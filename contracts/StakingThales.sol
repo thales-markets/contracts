@@ -134,7 +134,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
             _balances[msg.sender] = _balances[msg.sender].add(unclaimedReward);
             _lastStakingWeek[msg.sender] = weeksOfStaking;
             // Transfer to Escrow contract
-            stakingToken.addToEscrow(msg.sender, unclaimedReward);
+            //stakingToken.addToEscrow(msg.sender, unclaimedReward);
             // Record the total claimed rewards
             stakerRewardsClaimed[msg.sender] = stakerRewardsClaimed[msg.sender].add(unclaimedReward);
             emit RewardsClaimed(msg.sender, unclaimedReward);

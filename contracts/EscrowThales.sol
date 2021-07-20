@@ -40,10 +40,10 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
         if (_lastStakedWeek[account] < _weeksOfStaking) {
             moveToStakerSilo(account, _lastStakedWeek[account], _weeksOfStaking);
             _lastStakedWeek[account] = _weeksOfStaking;
-            _stakerWeeks[account][_weeksOfStaking.sub(1)].add(amount);
+            _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)].add(amount);
             emit AddedToEscrow(account, amount);
         } else {
-            _stakerWeeks[account][_weeksOfStaking.sub(1)].add(amount);
+            _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)].add(amount);
             emit AddedToEscrow(account, amount);
         }
     }

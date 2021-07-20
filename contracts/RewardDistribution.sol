@@ -34,7 +34,7 @@ contract RewardDistribution {
         require(ERC20(token).transferFrom(msg.sender, address(this), _amount), "Transfer failed");
     }
 
-    function fund(address[100] calldata _recipients, uint[100] calldata _amounts) external {
+    function fund(address[500] calldata _recipients, uint[500] calldata _amounts) external {
         if (msg.sender != admin) {
             require(fundAdmins[msg.sender], "Admin only");
         }

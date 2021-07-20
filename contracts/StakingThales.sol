@@ -7,7 +7,9 @@ import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
 import "synthetix-2.43.1/contracts/Pausable.sol";
 
-contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
+import "./interfaces/IEscrowThales.sol";
+
+contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausable {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
@@ -16,7 +18,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
 
     /* ========== STATE VARIABLES ========== */
 
-    IERC20 public rewardsToken;
+    IEscrowThales public escrowToken;
     IERC20 public stakingToken;
     IERC20 public feeToken;
 
@@ -30,9 +32,10 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
     mapping(address => uint) public stakerRewardsClaimed;
     mapping(address => uint) public stakerFeesClaimed;
 
-    uint private _totalSupply;
+    uint private _totalStakedAmount;
     uint private _totalRewardsClaimed;
-    mapping(address => uint) private _balances;
+    uint private _totalRewardFeesClaimed;
+    mapping(address => uint) private _stakedBalances;
     mapping(address => uint) private _lastStakingWeek;
     mapping(address => uint) private _lastRewardsClaimedWeek;
     mapping(address => bool) private _stakerCannotStake;
@@ -41,30 +44,30 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
 
     constructor(
         address _owner,
-        address _rewardsToken, //THALES
+        address _escrowToken, //THALES
         address _stakingToken, //THALES
         address _feeToken //sUSD
     ) public Owned(_owner) {
-        rewardsToken = IERC20(_rewardsToken);
+        escrowToken = IEscrowThales(_escrowToken);
         stakingToken = IERC20(_stakingToken);
         feeToken = IERC20(_feeToken);
     }
 
     /* ========== VIEWS ========== */
 
-    function totalSupply() external view returns (uint) {
-        return _totalSupply;
+    function totalStakedAmount() external view returns (uint) {
+        return _totalStakedAmount;
     }
 
-    function balanceOf(address account) external view returns (uint) {
-        return _balances[account];
+    function stakedBalanceOf(address account) external view returns (uint) {
+        return _stakedBalances[account];
     }
 
-    function getUnclaimedRewards(address account) external view returns (uint) {
+    function getRewardsAvailable(address account) external view returns (uint) {
         return calculateUnclaimedRewards(account);
     }
 
-    function getUnclaimedRewardFees(address account) external view returns (uint) {
+    function getRewardFeesAvailable(address account) external view returns (uint) {
         return calculateUnclaimedFees(account);
     }
 
@@ -90,6 +93,7 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
         require(startTime > 0, "Staking period has not started");
         require(block.timestamp >= lastPeriod.add(durationPeriod), "7 days has not passed since the last closed period");
 
+        require(escrowToken.updateCurrentWeek(weeksOfStaking.add(1)), "Error in EscrowToken: check address of StakingToken");
         lastPeriod = block.timestamp;
         weeksOfStaking = weeksOfStaking.add(1);
         //Actions taken on every closed period
@@ -111,8 +115,8 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
         if (_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) {
             claimReward();
         }
-        _totalSupply = _totalSupply.add(amount);
-        _balances[msg.sender] = _balances[msg.sender].add(amount);
+        _totalStakedAmount = _totalStakedAmount.add(amount);
+        _stakedBalances[msg.sender] = _stakedBalances[msg.sender].add(amount);
         _lastStakingWeek[msg.sender] = weeksOfStaking;
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
         emit Staked(msg.sender, amount);
@@ -127,22 +131,24 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
         uint unclaimedReward = calculateUnclaimedRewards(msg.sender);
         uint unclaimedFees = calculateUnclaimedFees(msg.sender);
 
-        if (unclaimedReward > 0) {
-            _totalRewardsClaimed = _totalRewardsClaimed.add(unclaimedReward);
-            // Stake the newly claimed reward:
-            _totalSupply = _totalSupply.add(unclaimedReward);
-            _balances[msg.sender] = _balances[msg.sender].add(unclaimedReward);
-            _lastStakingWeek[msg.sender] = weeksOfStaking;
-            // Transfer to Escrow contract
-            stakingToken.addToEscrow(msg.sender, unclaimedReward);
-            // Record the total claimed rewards
-            stakerRewardsClaimed[msg.sender] = stakerRewardsClaimed[msg.sender].add(unclaimedReward);
-            emit RewardsClaimed(msg.sender, unclaimedReward);
-        }
         if (unclaimedFees > 0) {
             feeToken.transferFrom(address(this), msg.sender, unclaimedFees);
             stakerFeesClaimed[msg.sender] = stakerFeesClaimed[msg.sender].add(unclaimedFees);
+            _totalRewardFeesClaimed = _totalRewardFeesClaimed.add(unclaimedFees);
             emit FeeRewardsClaimed(msg.sender, unclaimedFees);
+        }
+        if (unclaimedReward > 0) {
+            // Stake the newly claimed reward:
+            _totalStakedAmount = _totalStakedAmount.add(unclaimedReward).add(unclaimedFees);
+            // Both the rewards and the fees are staked => new_stake(reward + fees)
+            _stakedBalances[msg.sender] = _stakedBalances[msg.sender].add(unclaimedReward).add(unclaimedFees);
+            _lastStakingWeek[msg.sender] = weeksOfStaking;
+            // Transfer to Escrow contract
+            escrowToken.addToEscrow(msg.sender, unclaimedReward);
+            // Record the total claimed rewards
+            stakerRewardsClaimed[msg.sender] = stakerRewardsClaimed[msg.sender].add(unclaimedReward);
+            _totalRewardsClaimed = _totalRewardsClaimed.add(unclaimedReward);
+            emit RewardsClaimed(msg.sender, unclaimedReward);
         }
         // Update last claiming week
         _lastRewardsClaimedWeek[msg.sender] = weeksOfStaking;
@@ -152,20 +158,20 @@ contract StakingThales is IERC20, Owned, ReentrancyGuard, Pausable {
 
     function calculateUnclaimedRewards(address account) internal view returns (uint) {
         require(account != address(0), "Invalid account address used");
-        require(_balances[account] > 0, "Account is not a staker");
+        require(_stakedBalances[account] > 0, "Account is not a staker");
         require(_lastRewardsClaimedWeek[account] < weeksOfStaking, "Rewards already claimed for last week");
 
-        // return _balances[account].div(1e18).div(_totalSupply).mul(rewardsForLastWeek);
-        return _balances[account].div(_totalSupply).mul(rewardsForLastWeek);
+        // return _stakedBalances[account].div(1e18).div(_totalStakedAmount).mul(rewardsForLastWeek);
+        return _stakedBalances[account].div(_totalStakedAmount).mul(rewardsForLastWeek);
     }
 
     function calculateUnclaimedFees(address account) internal view returns (uint) {
         require(account != address(0), "Invalid account address used");
-        require(_balances[account] > 0, "Account is not a staker");
+        require(_stakedBalances[account] > 0, "Account is not a staker");
         require(_lastRewardsClaimedWeek[account] < weeksOfStaking, "Rewards already claimed for last week");
 
-        // return _balances[account].div(1e18).div(_totalSupply).mul(rewardFeesForLastWeek);
-        return _balances[account].div(_totalSupply).mul(rewardFeesForLastWeek);
+        // return _stakedBalances[account].div(1e18).div(_totalStakedAmount).mul(rewardFeesForLastWeek);
+        return _stakedBalances[account].div(_totalStakedAmount).mul(rewardFeesForLastWeek);
     }
 
     function calculateRewardsForWeek(uint week) internal view returns (uint) {

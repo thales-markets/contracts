@@ -32,8 +32,9 @@ contract('RewardEscrow', async accounts => {
 	});
 
 	describe('Vesting Schedule Reads', async () => {
-		it('Fund 100 addresses', async () => {
+		it('Fund 500 addresses', async () => {
 			const recipients = [];
+			const ammounts = [];
 			for (var i = 0; i < 500; i++) {
 				var id = crypto.randomBytes(32).toString('hex');
 				var privateKey = '0x' + id;
@@ -42,10 +43,11 @@ contract('RewardEscrow', async accounts => {
 				var wallet = new ethers2.Wallet(privateKey);
 				console.log('Address: ' + wallet.address);
 				recipients.push(wallet.address);
+				ammounts.push(web3.utils.toWei('1'));
 			}
 
 			await RewardEscrow.addTokens(web3.utils.toWei('500'));
-			await RewardEscrow.fundCustom(recipients, [web3.utils.toWei('500'), ...new Array(499).fill(0)]);
+			await RewardEscrow.fundCustom(recipients, ammounts);
 		});
 	});
 });

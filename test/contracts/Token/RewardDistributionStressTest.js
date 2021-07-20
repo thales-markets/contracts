@@ -33,8 +33,7 @@ contract('RewardDistribution', async accounts => {
 	describe('Funding', async () => {
 		it('Fund 1000 addresses', async () => {
 			await RewardDistribution.addTokens(web3.utils.toWei('1000'));
-			await RewardDistribution.fund(recipients.slice(0, 500), new Array(500).fill(web3.utils.toWei('1')));
-			await RewardDistribution.fund(recipients.slice(500, 1000), new Array(500).fill(web3.utils.toWei('1')));
+			await RewardDistribution.fund(recipients.slice(0, 100), new Array(100).fill(web3.utils.toWei('1')));
 		});
 	});
 });

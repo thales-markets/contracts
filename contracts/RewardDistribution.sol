@@ -4,7 +4,6 @@ import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/ERC20.sol";
 import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
 
 contract RewardDistribution {
-
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
@@ -19,20 +18,15 @@ contract RewardDistribution {
 
     mapping(address => uint) public totalVestedAccountBalance;
 
-    constructor(
-        address _token,
-        address[4] memory _fundAdmins
-    ) public {
-
+    constructor(address _token, address[4] memory _fundAdmins) public {
         token = _token;
         admin = msg.sender;
 
         for (uint index = 0; index < _fundAdmins.length; index++) {
             address adminAddress = _fundAdmins[index];
-            if(adminAddress != address(0)) {
+            if (adminAddress != address(0)) {
                 fundAdmins[adminAddress] = true;
             }
-
         }
     }
 
@@ -40,16 +34,16 @@ contract RewardDistribution {
         require(ERC20(token).transferFrom(msg.sender, address(this), _amount), "Transfer failed");
     }
 
-    function fund(address[500] calldata _recipients, uint[500] calldata _amounts) external {
-        if(msg.sender != admin) {
+    function fund(address[100] calldata _recipients, uint[100] calldata _amounts) external {
+        if (msg.sender != admin) {
             require(fundAdmins[msg.sender], "Admin only");
         }
 
         uint _totalAmount = 0;
-        for (uint index = 0; index < 500; index++) {
+        for (uint index = 0; index < _recipients.length; index++) {
             uint amount = _amounts[index];
             address recipient = _recipients[index];
-            if(recipient == address(0)) {
+            if (recipient == address(0)) {
                 break;
             }
 
@@ -73,9 +67,11 @@ contract RewardDistribution {
     }
 
     function claim() external {
-        if(totalEscrowedAccountBalance[msg.sender] != 0) {
+        if (totalEscrowedAccountBalance[msg.sender] != 0) {
             totalEscrowedBalance = totalEscrowedBalance.sub(totalEscrowedAccountBalance[msg.sender]);
-            totalVestedAccountBalance[msg.sender] = totalVestedAccountBalance[msg.sender].add(totalEscrowedAccountBalance[msg.sender]);
+            totalVestedAccountBalance[msg.sender] = totalVestedAccountBalance[msg.sender].add(
+                totalEscrowedAccountBalance[msg.sender]
+            );
             uint totalBalance = totalEscrowedAccountBalance[msg.sender];
             totalEscrowedAccountBalance[msg.sender] = 0;
             ERC20(token).transfer(msg.sender, totalBalance);

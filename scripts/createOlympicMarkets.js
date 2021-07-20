@@ -9,6 +9,9 @@ const { toBytes32 } = require('..');
 
 const util = require('util');
 
+//let managerAddress = '0x30C1d1BE9E33696F8dd9FDf3430c36FCd73436cB'; //kovan
+let managerAddress = '0x71b62b47351c3DcBfb5093A0DE78285d14C71345'; //ropsten
+
 async function main() {
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
@@ -34,9 +37,7 @@ async function main() {
 			SafeDecimalMath: safeDecimalMath.address,
 		},
 	});
-	let manager = await BinaryOptionMarketManager.attach(
-		'0x16a8c0dC77e11BCB25389e6d95eeBB2Fd9c2FdF2'
-	);
+	let manager = await BinaryOptionMarketManager.attach(managerAddress);
 
 	console.log('found manager at:' + manager.address);
 
@@ -74,7 +75,7 @@ async function main() {
 	});
 	console.log('Done approving');
 
-	let oracleAddress = createOracleInstance(
+	let oracleAddress = await createOracleInstance(
 		SportFeedOracleInstanceContract,
 		owner.address,
 		sportFeedContractDeployed.address,
@@ -84,7 +85,7 @@ async function main() {
 	);
 	await createMarket(manager, maturityDate, fundingAmount, oracleAddress);
 
-	oracleAddress = createOracleInstance(
+	oracleAddress = await createOracleInstance(
 		SportFeedOracleInstanceContract,
 		owner.address,
 		sportFeedContractDeployed.address,
@@ -94,11 +95,11 @@ async function main() {
 	);
 	await createMarket(manager, maturityDate, fundingAmount, oracleAddress);
 
-	oracleAddress = createOracleInstance(
+	oracleAddress = await createOracleInstance(
 		SportFeedOracleInstanceContract,
 		owner.address,
 		sportFeedContractDeployed.address,
-		'GBR',
+		'JPN',
 		'1',
 		'Olympics Medal Count'
 	);
@@ -119,15 +120,17 @@ async function main() {
 		contract: 'contracts/SportFeed.sol:SportFeed',
 	});
 
+	console.log('tryng to verify contract SportFeedOracleInstance at address ' + oracleAddress);
 	await hre.run('verify:verify', {
-		address: sportFeedOracleInstanceContractDeployed.address,
+		address: oracleAddress,
 		constructorArguments: [
 			owner.address,
 			sportFeedContractDeployed.address,
-			'USA',
+			'JPN',
 			'1',
 			'Olympics Medal Count',
 		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
 	});
 }
 
@@ -154,15 +157,16 @@ async function createMarket(
 		{ gasLimit: 5500000 }
 	);
 
-	console.log(util.inspect(result, false, null, true /* enable colors */));
-
 	result.wait().then(function(receipt) {
-		console.log('receipt is:');
-		console.log(util.inspect(receipt, false, null, true /* enable colors */));
-		//console.log('Market created at ' + result.address);
+		let marketCreationArgs = receipt.events[receipt.events.length - 1].args;
+		for (var key in marketCreationArgs) {
+			if (marketCreationArgs.hasOwnProperty(key)) {
+				if (key == 'market') {
+					console.log('Market created at ' + marketCreationArgs[key]);
+				}
+			}
+		}
 	});
-
-
 }
 
 async function createOracleInstance(

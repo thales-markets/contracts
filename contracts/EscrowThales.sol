@@ -40,10 +40,10 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
         if (_lastStakedWeek[account] < _weeksOfStaking) {
             moveToStakerSilo(account, _lastStakedWeek[account], _weeksOfStaking);
             _lastStakedWeek[account] = _weeksOfStaking;
-            _stakerWeeks[account][_weeksOfStaking - 1].add(amount);
+            _stakerWeeks[account][_weeksOfStaking.sub(1)].add(amount);
             emit AddedToEscrow(account, amount);
         } else {
-            _stakerWeeks[account][_weeksOfStaking - 1].add(amount);
+            _stakerWeeks[account][_weeksOfStaking.sub(1)].add(amount);
             emit AddedToEscrow(account, amount);
         }
     }
@@ -84,8 +84,8 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
         } else {
             // Move only the difference between
             for (
-                uint i = (lastStakedWeek - 1).mod(_stakerWeeks[account].length);
-                i < (currentWeek - 1).mod(_stakerWeeks[account].length);
+                uint i = (lastStakedWeek.sub(1)).mod(_stakerWeeks[account].length);
+                i < (currentWeek.sub(1)).mod(_stakerWeeks[account].length);
                 i++
             ) {
                 _stakerSilo[account].add(_stakerWeeks[account][i]);

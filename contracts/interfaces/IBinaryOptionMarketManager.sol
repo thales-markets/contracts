@@ -38,7 +38,7 @@ interface IBinaryOptionMarketManager {
         uint maturity,
         uint initialMint, // initial sUSD to mint options for,
         bool customMarket,
-        address customOracle // initial sUSD to mint options for
+        address customOracle
     ) external returns (IBinaryOptionMarket);
 
     function resolveMarket(address market) external;

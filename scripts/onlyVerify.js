@@ -23,10 +23,6 @@ async function main() {
 
 	// We get the contract to deploy
 	const BinaryOptionMastercopy = await ethers.getContractFactory('BinaryOptionMastercopy');
-	const binaryOptionMastercopyDeployed = await BinaryOptionMastercopy.deploy();
-	await binaryOptionMastercopyDeployed.deployed();
-
-	console.log('BinaryOptionMastercopy deployed to:', binaryOptionMastercopyDeployed.address);
 
 	const BinaryOptionMarketMastercopy = await ethers.getContractFactory(
 		'BinaryOptionMarketMastercopy',
@@ -36,19 +32,8 @@ async function main() {
 			},
 		}
 	);
-	const binaryOptionMarketMastercopyDeployed = await BinaryOptionMarketMastercopy.deploy();
-	await binaryOptionMarketMastercopyDeployed.deployed();
-
-	console.log(
-		'binaryOptionMarketMastercopy deployed to:',
-		binaryOptionMarketMastercopyDeployed.address
-	);
 
 	const BinaryOptionMarketFactory = await ethers.getContractFactory('BinaryOptionMarketFactory');
-	const binaryOptionMarketFactoryDeployed = await BinaryOptionMarketFactory.deploy(owner.address);
-	await binaryOptionMarketFactoryDeployed.deployed();
-
-	console.log('BinaryOptionMarketFactory deployed to:', binaryOptionMarketFactoryDeployed.address);
 
 	const day = 24 * 60 * 60;
 	const maxOraclePriceAge = 120 * 60; // Price updates are accepted from up to two hours before maturity to allow for delayed chainlink heartbeats.
@@ -67,44 +52,11 @@ async function main() {
 			SafeDecimalMath: safeDecimalMath.address,
 		},
 	});
-	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
-		owner.address,
-		addressResolver.address,
-		maxOraclePriceAge,
-		expiryDuration,
-		maxTimeToMaturity,
-		creatorCapitalRequirement,
-		poolFee,
-		creatorFee,
-		feeAddress
-	);
-	await binaryOptionMarketManagerDeployed.deployed();
-
-	console.log('binaryOptionMarketManager deployed to:', binaryOptionMarketManagerDeployed.address);
 
 	const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
-	const binaryOptionMarketData = await BinaryOptionMarketData.deploy();
-	await binaryOptionMarketData.deployed();
-
-	console.log('binaryOptionMarketData deployed to:', binaryOptionMarketData.address);
-
-	await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
-		binaryOptionMarketManagerDeployed.address
-	);
-	await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketMastercopy(
-		binaryOptionMarketMastercopyDeployed.address
-	);
-	await binaryOptionMarketFactoryDeployed.setBinaryOptionMastercopy(
-		binaryOptionMastercopyDeployed.address
-	);
-
-	await binaryOptionMarketManagerDeployed.setBinaryOptionsMarketFactory(
-		binaryOptionMarketFactoryDeployed.address
-	);
-
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMarketManagerDeployed.address,
+		address: '0x3e4e650f61c7a747a4badcff5c3b3e2baf37aec3',
 		constructorArguments: [
 			owner.address,
 			addressResolver.address,
@@ -119,24 +71,24 @@ async function main() {
 	});
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMarketFactoryDeployed.address,
+		address: '0x46d9db2830c005e38878b241199bb09d9d355994',
 		constructorArguments: [owner.address],
 	});
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMastercopyDeployed.address,
+		address: '0x782a8aa798ee31c4c248bc2a209c96d625de04f6',
 		constructorArguments: [],
 		contract: 'contracts/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
 	});
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMarketMastercopyDeployed.address,
+		address: '0xf73e5353ea2e50976afe763ce6a483f4124347f3',
 		constructorArguments: [],
 		contract: 'contracts/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
 	});
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMarketData.address,
+		address: '0xd308ff11a3d06b184c68af0b9a003468a4a3c1a5',
 		constructorArguments: [],
 	});
 }
@@ -148,9 +100,8 @@ main()
 		process.exit(1);
 	});
 
-
 function delay(time) {
-	return new Promise(function (resolve) {
+	return new Promise(function(resolve) {
 		setTimeout(resolve, time);
 	});
 }

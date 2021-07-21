@@ -38,6 +38,8 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         bytes32 key;
         uint strikePrice;
         uint finalPrice;
+        bool customMarket;
+        address iOracleInstanceAddress;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -79,7 +81,9 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         uint _strikePrice,
         uint[2] calldata _times, // [maturity, expiry]
         uint _deposit, // sUSD deposit
-        uint[2] calldata _fees // [poolFee, creatorFee]
+        uint[2] calldata _fees, // [poolFee, creatorFee]
+        bool _customMarket,
+        address _iOracleInstanceAddress
     ) external {
         require(!initialized, "Binary Option Market already initialized");
         initialized = true;
@@ -87,7 +91,10 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         resolver = _resolver;
         creator = _creator;
 
-        oracleDetails = OracleDetails(_oracleKey, _strikePrice, 0);
+        oracleDetails = OracleDetails(_oracleKey, _strikePrice, 0, _customMarket, _iOracleInstanceAddress);
+        customMarket = _customMarket;
+        iOracleInstance = IOracleInstance(_iOracleInstanceAddress);
+
         times = Times(_times[0], _times[1]);
 
         deposited = _deposit;
@@ -251,10 +258,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     }
 
     /* ---------- Custom oracle configuration ---------- */
-    function setIOracleInstance(address _address) external onlyOwner {
-        customMarket = true;
-        iOracleInstance = IOracleInstance(_address);
-    }
+    function setIOracleInstance(address _address) external onlyOwner {}
 
     /* ---------- Market Resolution ---------- */
 

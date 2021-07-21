@@ -367,6 +367,8 @@ contract('BinaryOption', accounts => {
 					[now + 200, now + expiryDuration + 200],
 					toUnit(2),
 					[initialPoolFee, initialCreatorFee],
+					false,
+					ZERO_ADDRESS,
 				],
 				accounts,
 				skipPassCheck: true,

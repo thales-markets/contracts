@@ -27,7 +27,9 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
         uint strikePrice,
         uint[2] calldata times, // [maturity, expiry]
         uint initialMint,
-        uint[2] calldata fees // [poolFee, creatorFee]
+        uint[2] calldata fees, // [poolFee, creatorFee]
+        bool customMarket,
+        address customOracle
     ) external returns (BinaryOptionMarket) {
         require(binaryOptionMarketManager == msg.sender, "Only permitted by the manager.");
 
@@ -44,7 +46,9 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
             strikePrice,
             times,
             initialMint,
-            fees
+            fees,
+            customMarket,
+            customOracle
         );
         return bom;
     }

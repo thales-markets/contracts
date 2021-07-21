@@ -249,12 +249,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
                 strikePrice,
                 [maturity, expiry],
                 initialMint,
-                [fees.poolFee, fees.creatorFee]
+                [fees.poolFee, fees.creatorFee],
+                customMarket,
+                customOracle
             );
-
-        if (customMarket) {
-            market.setIOracleInstance(customOracle);
-        }
 
         _activeMarkets.add(address(market));
 

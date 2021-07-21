@@ -5,12 +5,12 @@ const snx = require('synthetix');
 
 const { toBN } = web3.utils;
 
-const { toBytes32 } = require('..');
+const { toBytes32 } = require('../../index');
 
 const util = require('util');
 
 //let managerAddress = '0x30C1d1BE9E33696F8dd9FDf3430c36FCd73436cB'; //kovan
-let managerAddress = '0x71b62b47351c3DcBfb5093A0DE78285d14C71345'; //ropsten
+let managerAddress = '0x3e4E650f61C7A747A4baDCfF5C3b3e2BaF37AEc3'; //ropsten
 
 async function main() {
 	let accounts = await ethers.getSigners();

@@ -13,12 +13,30 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
     using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;
 
+    IERC20 public vestingToken;
+
+    uint private _totalVestingSupply = 0;
     address private _StakingThalesContract;
     uint private _weeksOfStaking = 0;
+    uint private _totalAvailableForVesting = 0;
+    uint private _totalVested = 0;
+
 
     mapping(address => uint) private _lastStakedWeek;
     mapping(address => uint) private _stakerSilo;
     mapping(address => uint[10]) private _stakerWeeks;
+
+    /* ========== CONSTRUCTOR ========== */
+
+    constructor(
+        address _owner,
+        address _vestingToken, //THALES
+        address _stakingThalesContract
+    ) public Owned(_owner) {
+        vestingToken = IERC20(_vestingToken);
+        _StakingThalesContract = _stakingThalesContract;
+    }
+
 
     function claimable(address account) external view returns (uint) {
         require(account != address(0), "Invalid address");
@@ -41,16 +59,37 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
             moveToStakerSilo(account, _lastStakedWeek[account], _weeksOfStaking);
             _lastStakedWeek[account] = _weeksOfStaking;
             _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)].add(amount);
+            _totalVestingSupply = _totalVestingSupply.add(amount);
+            vestingToken.transferFrom(account, address(this), amount);
             emit AddedToEscrow(account, amount);
         } else {
             _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)].add(amount);
+            _totalVestingSupply = _totalVestingSupply.add(amount);
+            vestingToken.transferFrom(account, address(this), amount);
             emit AddedToEscrow(account, amount);
         }
     }
 
-    function claim(uint amount) external nonReentrant notPaused {
-        // CONTINUE HERE
-        emit Claimed(msg.sender, amount);
+    function vest(uint amount) external nonReentrant notPaused returns (bool){
+        require(msg.sender != address(0), "Invalid address");
+        require(amount > 0, "Claimed amount is 0");
+        require(_weeksOfStaking > 0, "Claiming rewards still not available");
+        require(_lastStakedWeek[msg.sender] <= _weeksOfStaking, "Critical error");
+
+        // If user has not recently staked anything, move the older rewards to stakerSilo
+        if (_lastStakedWeek[msg.sender] < _weeksOfStaking) {
+            moveToStakerSilo(msg.sender, _lastStakedWeek[msg.sender], _weeksOfStaking);
+            _lastStakedWeek[msg.sender] = _weeksOfStaking;
+        }
+        // Amount must be lower than the reward
+        require(amount <= _stakerSilo[msg.sender], "Amount exceeds the claimable rewards");
+        _stakerSilo[msg.sender] = _stakerSilo[msg.sender].sub(amount);
+        _totalVestingSupply = _totalVestingSupply.sub(amount);
+        _totalAvailableForVesting = _totalAvailableForVesting.sub(amount);
+        _totalVested = _totalVested.add(amount);
+        vestingToken.transfer(msg.sender, amount);
+        emit Vested(msg.sender, amount);
+        return true;
     }
 
     function updateCurrentWeek(uint currentWeek) external returns (bool) {
@@ -73,22 +112,34 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
         uint currentWeek
     ) internal returns (bool) {
         require(account != address(0), "Invalid account");
+        require(currentWeek > 0, "Current week can not be 0");
         require(lastStakedWeek < currentWeek, "LastStakedWeek not lower than CurrentWeek");
         if (currentWeek.sub(lastStakedWeek) > _stakerWeeks[account].length) {
             // Move all to stakerSilo
             for (uint i = 0; i < _stakerWeeks[account].length; i++) {
                 _stakerSilo[account].add(_stakerWeeks[account][i]);
+                _totalAvailableForVesting = _totalAvailableForVesting.add(_stakerWeeks[account][i]);
                 _stakerWeeks[account][i] = 0;
             }
             return true;
         } else {
+
+            //lastStakedWeek can not be lower than 0, currentWeek is covered by require
+            if(lastStakedWeek == 0) {
+                lastStakedWeek = 0;
+            }
+            else {
+                lastStakedWeek = lastStakedWeek.sub(1);
+            }
+
             // Move only the difference between
             for (
-                uint i = (lastStakedWeek.sub(1)).mod(_stakerWeeks[account].length);
+                uint i = lastStakedWeek.mod(_stakerWeeks[account].length);
                 i < (currentWeek.sub(1)).mod(_stakerWeeks[account].length);
                 i++
             ) {
                 _stakerSilo[account].add(_stakerWeeks[account][i]);
+                _totalAvailableForVesting = _totalAvailableForVesting.add(_stakerWeeks[account][i]);
                 _stakerWeeks[account][i] = 0;
             }
             return true;
@@ -107,5 +158,5 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
     /* ========== EVENTS ========== */
 
     event AddedToEscrow(address acount, uint amount);
-    event Claimed(address account, uint amount);
+    event Vested(address account, uint amount);
 }

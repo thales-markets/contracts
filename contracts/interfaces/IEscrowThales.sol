@@ -7,5 +7,7 @@ interface IEscrowThales {
 
     function claimable(address account) external view returns (uint);
 
+    function vest(uint amount) external returns (bool);
+
     function updateCurrentWeek(uint currentWeek) external returns (bool);
 }

@@ -38,7 +38,7 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
     mapping(address => uint) private _stakedBalances;
     mapping(address => uint) private _lastStakingWeek;
     mapping(address => uint) private _lastRewardsClaimedWeek;
-    mapping(address => bool) private _stakerCannotStake;
+    mapping(address => uint) private _lastUnstakeTime;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -107,8 +107,8 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
         require(startTime > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
         require(
-            _stakerCannotStake[msg.sender] == false,
-            "Cannot stake, the staker is paused from staking due to withdrawal of rewards"
+            _lastUnstakeTime[msg.sender] < block.timestamp.sub(7 days),
+            "Cannot stake, the staker is paused from staking due to unstaking"
         );
         // Check if there are not claimable rewards from last week.
         // Claim them, and add new stake
@@ -122,7 +122,28 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
         emit Staked(msg.sender, amount);
     }
 
-    function unstake() external {}
+    function startUnstake() external {
+        require(msg.sender != address(0), "Invalid address");
+        require(_lastUnstakeTime[msg.sender] < block.timestamp.sub(7 days), "Already initiated unstaking cooldown");
+        _lastUnstakeTime[msg.sender] = block.timestamp;
+        emit UnstakeCooldown(msg.sender, _lastUnstakeTime[msg.sender].add(7 days));
+    }
+
+    function unstake() external {
+        require(msg.sender != address(0), "Invalid address");
+        require(
+            _lastUnstakeTime[msg.sender] < block.timestamp.sub(7 days),
+            "Cannot stake, the staker is paused from staking due to unstaking"
+        );
+
+        _lastUnstakeTime[msg.sender] = block;
+        claimReward();
+        _totalStakedAmount = _totalStakedAmount.sub(_stakedBalances[msg.sender]);
+        uint unstakeAmount = _stakedBalances[msg.sender];
+        _stakedBalances[msg.sender] = 0;
+        stakingToken.transfer(msg.sender, unstakeAmount);
+        emit Unstaked(msg.sender, unstakeAmount);
+    }
 
     function claimReward() public nonReentrant notPaused {
         require(startTime > 0, "Staking period has not started");
@@ -191,4 +212,6 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
     event ClosedPeriod(uint WeekOfStaking, uint lastPeriod);
     event RewardsClaimed(address account, uint unclaimedReward);
     event FeeRewardsClaimed(address account, uint unclaimedFees);
+    event UnstakeCooldown(address account, uint cooldownTime);
+    event Unstaked(address account, uint unstakeAmount);
 }

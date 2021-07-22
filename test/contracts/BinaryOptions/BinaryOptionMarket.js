@@ -194,6 +194,7 @@ contract('BinaryOption', accounts => {
 					'setMigratingManager',
 					'setPoolFee',
 					'transferSusdTo',
+					'setCustomMarketCreationEnabled',
 				],
 			});
 		});

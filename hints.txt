@@ -1,4 +1,9 @@
+Script
 npx hardhat run --network ropsten scripts/deploy.js
+
+test
 npx hardhat test --optimizer
 npx hardhat test test/contracts/BinaryOptionMarketManager.js --optimizer
 npx hardhat test test/contracts/CustomBinaryOptionMarket.js --optimizer
+npx hardhat test test/contracts/SportsBinaryOptions/SportsFeed.js --optimizer
+npx hardhat test test/contracts/SportsBinaryOptions/CustomBinaryOptionMarket.js --optimizer

@@ -46,6 +46,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     uint public capitalRequirement;
 
     bool public marketCreationEnabled = true;
+    bool public customMarketCreationEnabled = false;
     uint public totalDeposited;
 
     AddressSetLib.AddressSet internal _activeMarkets;
@@ -228,6 +229,9 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         if (!customMarket) {
             require(_isValidKey(oracleKey), "Invalid key");
         } else {
+            if (!customMarketCreationEnabled) {
+                require(owner == msg.sender, "Only owner can create custom markets");
+            }
             require(address(0) != customOracle, "Invalid custom oracle");
         }
 
@@ -317,6 +321,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             marketCreationEnabled = enabled;
             emit MarketCreationEnabledUpdated(enabled);
         }
+    }
+
+    function setCustomMarketCreationEnabled(bool enabled) public onlyOwner {
+        customMarketCreationEnabled = enabled;
     }
 
     function setMigratingManager(BinaryOptionMarketManager manager) public onlyOwner {

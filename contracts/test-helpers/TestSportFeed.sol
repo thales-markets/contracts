@@ -17,61 +17,97 @@ contract TestSportFeed is ChainlinkClient, Owned {
     string public secondPlace;
     string public thirdPlace;
 
+    string public endpoint;
+    string public season;
+    string public eventSport;
+    string public gender;
+
     constructor(
         address _owner,
         address _oracle,
         bytes32 _jobId,
-        uint256 _fee
+        uint256 _fee,
+        string memory _endpoint,
+        string memory _season,
+        string memory _event,
+        string memory _gender
     ) public Owned(_owner) {
         //remove for the test
-        //setPublicChainlinkToken();
         oracle = _oracle;
         jobId = _jobId;
         fee = _fee;
-        //        oracle = 0x56dd6586DB0D08c6Ce7B2f2805af28616E082455;
-        //        jobId = "aa34467c0b074fb0888c9f42c449547f";
-        //        fee = 1 * 10**18; // (Varies by network and job)
+        endpoint = _endpoint;
+        season = _season;
+        eventSport = _event;
+        gender = _gender;
     }
 
-    function setOracle(address _oracle) public onlyOwner {
+    function setOracle(address _oracle) external onlyOwner {
         oracle = _oracle;
     }
 
-    function setJobId(bytes32 _jobId) public onlyOwner {
+    function setJobId(bytes32 _jobId) external onlyOwner {
         jobId = _jobId;
     }
 
-    function setFee(uint256 _fee) public onlyOwner {
+    function setFee(uint256 _fee) external onlyOwner {
         fee = _fee;
+    }
+
+    function setSeason(string calldata _season) external onlyOwner {
+        season = _season;
+    }
+
+    function setEventSport(string calldata _event) external onlyOwner {
+        eventSport = _event;
+    }
+
+    function setGender(string calldata _gender) external onlyOwner {
+        gender = _gender;
+    }
+
+    function setEndpoint(string calldata _endpoint) external onlyOwner {
+        endpoint = _endpoint;
     }
 
     //0x5b22555341222c2243484e222c22474252225d00000000000000000000000000
-    function setResult(bytes32 _result) public onlyOwner {
-        result = _result;
-        resultString = bytes32ToString(_result);
-        firstPlace = substring(resultString, 2, 5);
-        secondPlace = substring(resultString, 8, 11);
-        thirdPlace = substring(resultString, 14, 17);
+    function setResult(bytes32 _result) external onlyOwner {
+        _setResult(_result);
+    }
+
+    function isCompetitorAtPlace(string calldata competitor, uint place) external view returns (bool) {
+        if (place == 1) {
+            return compareStrings(firstPlace, competitor);
+        }
+        if (place == 2) {
+            return compareStrings(secondPlace, competitor);
+        }
+        if (place == 3) {
+            return compareStrings(thirdPlace, competitor);
+        }
+        return false;
     }
 
     /**
      * Initial request
      */
-    function requestSportsWinner(string memory season) public {
+    function requestSportsWinner() external {
         Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillSportsWinner.selector);
-        req.add("endpoint", "medals");
+        req.add("endpoint", endpoint);
         req.add("season", season);
+        req.add("event", eventSport);
+        req.add("gender", gender);
         sendChainlinkRequestTo(oracle, req, fee);
     }
 
     /**
      * Callback function
      */
-    function fulfillSportsWinner(bytes32 _requestId, bytes32 _result) public recordChainlinkFulfillment(_requestId) {
-        setResult(_result);
+    function fulfillSportsWinner(bytes32 _requestId, bytes32 _result) external recordChainlinkFulfillment(_requestId) {
+        _setResult(_result);
     }
 
-    function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
+    function bytes32ToString(bytes32 _bytes32) internal pure returns (string memory) {
         uint8 i = 0;
         while (i < 32 && _bytes32[i] != 0) {
             i++;
@@ -96,21 +132,16 @@ contract TestSportFeed is ChainlinkClient, Owned {
         return string(tresult);
     }
 
-    function isCompetitorAtPlace(string calldata competitor, uint place) external view returns (bool) {
-        if (place == 1) {
-            return compareStrings(firstPlace, competitor);
-        }
-        if (place == 2) {
-            return compareStrings(secondPlace, competitor);
-        }
-        if (place == 3) {
-            return compareStrings(thirdPlace, competitor);
-        }
-        return false;
+    function compareStrings(string memory a, string memory b) internal pure returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
     }
 
-    function compareStrings(string memory a, string memory b) public pure returns (bool) {
-        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+    function _setResult(bytes32 _result) internal {
+        result = _result;
+        resultString = bytes32ToString(_result);
+        firstPlace = substring(resultString, 2, 5);
+        secondPlace = substring(resultString, 8, 11);
+        thirdPlace = substring(resultString, 14, 17);
     }
 
     // function withdrawLink() external {} - Implement a withdraw function to avoid locking your LINK in the contract

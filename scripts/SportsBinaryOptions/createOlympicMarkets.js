@@ -52,7 +52,11 @@ async function main() {
 		owner.address,
 		'0x56dd6586db0d08c6ce7b2f2805af28616e082455',
 		toBytes32('aa34467c0b074fb0888c9f42c449547f'),
-		w3utils.toWei('1')
+		w3utils.toWei('1'),
+		'medals',
+		'2020',
+		'',
+		''
 	);
 	await sportFeedContractDeployed.deployed();
 
@@ -81,9 +85,20 @@ async function main() {
 		sportFeedContractDeployed.address,
 		'USA',
 		'1',
-		'Olympics Medal Count'
+		'Olympics Gold Medals Ranking'
 	);
 	await createMarket(manager, maturityDate, fundingAmount, oracleAddress);
+	await hre.run('verify:verify', {
+		address: oracleAddress,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployed.address,
+			'USA',
+			'1',
+			'Olympics Gold Medals Ranking'
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
 
 	oracleAddress = await createOracleInstance(
 		SportFeedOracleInstanceContract,
@@ -91,9 +106,20 @@ async function main() {
 		sportFeedContractDeployed.address,
 		'CHN',
 		'1',
-		'Olympics Medal Count'
+		'Olympics Gold Medals Ranking'
 	);
 	await createMarket(manager, maturityDate, fundingAmount, oracleAddress);
+	await hre.run('verify:verify', {
+		address: oracleAddress,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployed.address,
+			'CHN',
+			'1',
+			'Olympics Gold Medals Ranking'
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
 
 	oracleAddress = await createOracleInstance(
 		SportFeedOracleInstanceContract,
@@ -101,9 +127,99 @@ async function main() {
 		sportFeedContractDeployed.address,
 		'JPN',
 		'1',
-		'Olympics Medal Count'
+		'Olympics Gold Medals Ranking'
 	);
 	await createMarket(manager, maturityDate, fundingAmount, oracleAddress);
+	await hre.run('verify:verify', {
+		address: oracleAddress,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployed.address,
+			'JPN',
+			'1',
+			'Olympics Gold Medals Ranking',
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
+
+	const sportFeedContractDeployedBasketball = await SportFeedContract.deploy(
+		owner.address,
+		'0x56dd6586db0d08c6ce7b2f2805af28616e082455',
+		toBytes32('aa34467c0b074fb0888c9f42c449547f'),
+		w3utils.toWei('1'),
+		'sports',
+		'2020',
+		'BK',
+		'M'
+	);
+	await sportFeedContractDeployedBasketball.deployed();
+	console.log(
+		'sportFeedContractDeployedBasketball deployed to:',
+		sportFeedContractDeployedBasketball.address
+	);
+
+	oracleAddress = await createOracleInstance(
+		SportFeedOracleInstanceContract,
+		owner.address,
+		sportFeedContractDeployedBasketball.address,
+		'USA',
+		'1',
+		'Olympics Basketball Rankings'
+	);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress);
+	await hre.run('verify:verify', {
+		address: oracleAddress,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployedBasketball.address,
+			'USA',
+			'1',
+			'Olympics Basketball Rankings'
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
+
+	oracleAddress = await createOracleInstance(
+		SportFeedOracleInstanceContract,
+		owner.address,
+		sportFeedContractDeployedBasketball.address,
+		'ESP',
+		'1',
+		'Olympics Basketball Rankings'
+	);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress);
+	await hre.run('verify:verify', {
+		address: oracleAddress,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployedBasketball.address,
+			'ESP',
+			'1',
+			'Olympics Basketball Rankings',
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
+
+	oracleAddress = await createOracleInstance(
+		SportFeedOracleInstanceContract,
+		owner.address,
+		sportFeedContractDeployedBasketball.address,
+		'AUS',
+		'1',
+		'Olympics Basketball Rankings'
+	);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress);
+	await hre.run('verify:verify', {
+		address: oracleAddress,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployedBasketball.address,
+			'AUS',
+			'1',
+			'Olympics Basketball Rankings',
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
 
 	await hre.run('verify:verify', {
 		address: integersDeployed.address,
@@ -116,21 +232,27 @@ async function main() {
 			'0x56dd6586db0d08c6ce7b2f2805af28616e082455',
 			toBytes32('aa34467c0b074fb0888c9f42c449547f'),
 			w3utils.toWei('1'),
+			'medals',
+			'2020',
+			'',
+			'',
 		],
 		contract: 'contracts/SportFeed.sol:SportFeed',
 	});
 
-	console.log('tryng to verify contract SportFeedOracleInstance at address ' + oracleAddress);
 	await hre.run('verify:verify', {
-		address: oracleAddress,
+		address: sportFeedContractDeployedBasketball.address,
 		constructorArguments: [
 			owner.address,
-			sportFeedContractDeployed.address,
-			'JPN',
-			'1',
-			'Olympics Medal Count',
+			'0x56dd6586db0d08c6ce7b2f2805af28616e082455',
+			toBytes32('aa34467c0b074fb0888c9f42c449547f'),
+			w3utils.toWei('1'),
+			'sports',
+			'2020',
+			'BK',
+			'M',
 		],
-		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+		contract: 'contracts/SportFeed.sol:SportFeed',
 	});
 }
 

@@ -120,6 +120,8 @@ contract('BinaryOption', accounts => {
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
 			sUSDSynth.approve(manager.address, sUSDQty, { from: initialCreator }),
+			sUSDSynth.issue(managerOwner, sUSDQty),
+			sUSDSynth.approve(manager.address, sUSDQty, { from: managerOwner }),
 			sUSDSynth.issue(minter, sUSDQty),
 			sUSDSynth.approve(manager.address, sUSDQty, { from: minter }),
 			sUSDSynth.issue(dummy, sUSDQty),
@@ -134,7 +136,11 @@ contract('BinaryOption', accounts => {
 				managerOwner,
 				'0x56dd6586db0d08c6ce7b2f2805af28616e082455',
 				toBytes32('aa34467c0b074fb0888c9f42c449547f'),
-				toUnit(1)
+				toUnit(1),
+				'medals',
+				'2016',
+				'',
+				''
 			);
 
 			await feed.setResult('0x5b22555341222c2243484e222c22474252225d00000000000000000000000000', {
@@ -163,7 +169,7 @@ contract('BinaryOption', accounts => {
 				true,
 				customOracle.address,
 				{
-					from: initialCreator,
+					from: managerOwner,
 				}
 			);
 
@@ -177,7 +183,7 @@ contract('BinaryOption', accounts => {
 			let shortAddress = short.address;
 
 			assert.eventEqual(getEventByName({ tx: result, name: 'MarketCreated' }), 'MarketCreated', {
-				creator: initialCreator,
+				creator: managerOwner,
 				oracleKey: toBytes32(''),
 				strikePrice: 0,
 				maturityDate: toBN(now + timeToMaturity),
@@ -222,10 +228,10 @@ contract('BinaryOption', accounts => {
 		});
 
 		it('Exercising options on custom market', async () => {
-			assert.bnEqual(await long.balanceOf(initialCreator), toBN("2000000000000000000"));
-			const tx1 = await customMarket.exerciseOptions({ from: initialCreator });
+			assert.bnEqual(await long.balanceOf(managerOwner), toBN("2000000000000000000"));
+			const tx1 = await customMarket.exerciseOptions({ from: managerOwner });
 			// options no longer in the wallet
-			assert.bnEqual(await long.balanceOf(initialCreator), toBN(0));
+			assert.bnEqual(await long.balanceOf(managerOwner), toBN(0));
 		});
 	});
 });

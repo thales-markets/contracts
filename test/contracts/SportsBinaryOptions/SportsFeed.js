@@ -25,7 +25,11 @@ contract('SportFeed', accounts => {
 				owner,
 				'0x56dd6586db0d08c6ce7b2f2805af28616e082455',
 				toBytes32('aa34467c0b074fb0888c9f42c449547f'),
-				toUnit(1)
+				toUnit(1),
+				'medals',
+				'2016',
+				'',
+				''
 			);
 			await feed.setResult('0x5b22555341222c2243484e222c22474252225d00000000000000000000000000', {
 				from: owner,
@@ -34,7 +38,6 @@ contract('SportFeed', accounts => {
 			let plainResult = await feed.result();
 			console.log('result is' + stringResult);
 			console.log('result plain is' + plainResult);
-			console.log('result bytes is' + (await feed.bytes32ToString(plainResult)));
 			let firstPlace = await feed.firstPlace();
 			let secondPlace = await feed.secondPlace();
 			let thirdPlace = await feed.thirdPlace();
@@ -52,7 +55,11 @@ contract('SportFeed', accounts => {
 				owner,
 				'0x56dd6586db0d08c6ce7b2f2805af28616e082455',
 				toBytes32('aa34467c0b074fb0888c9f42c449547f'),
-				toUnit(1)
+				toUnit(1),
+				'medals',
+				'2016',
+				'',
+				''
 			);
 			let SportFeedOracleInstanceContract = artifacts.require('SportFeedOracleInstance');
 
@@ -75,5 +82,23 @@ contract('SportFeed', accounts => {
 			assert.equal(await customOracle.getOutcome(), true);
 		});
 
+		it('Parses result properly', async () => {
+			let SportFeedContract = artifacts.require('TestSportFeed');
+			let feed = await SportFeedContract.new(
+				owner,
+				'0x56dd6586db0d08c6ce7b2f2805af28616e082455',
+				toBytes32('aa34467c0b074fb0888c9f42c449547f'),
+				toUnit(1),
+				'sports',
+				'2016',
+				'BK',
+				'M'
+			);
+			await feed.setResult('0x5b22555341222c22535242222c22455350225d00000000000000000000000000', {
+				from: owner,
+			});
+			let stringResult = await feed.resultString();
+			console.log('stringResult is ' + stringResult);
+		});
 	});
 });

@@ -33,6 +33,8 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
     mapping(address => uint) public stakerFeesClaimed;
 
     uint private _totalStakedAmount;
+    uint private _totalUnclaimedRewards;
+    uint private _totalUnlcaimedFees;
     uint private _totalRewardsClaimed;
     uint private _totalRewardFeesClaimed;
     mapping(address => uint) private _stakedBalances;
@@ -86,6 +88,11 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
         startTime = block.timestamp;
         weeksOfStaking = 0;
         lastPeriod = startTime;
+        _totalUnclaimedRewards = 0;
+        _totalUnlcaimedFees = 0;
+        _totalRewardsClaimed = 0;
+        _totalRewardFeesClaimed = 0;
+        _totalStakedAmount = 0;
         durationPeriod = 7 days;
     }
 
@@ -94,11 +101,15 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
         require(block.timestamp >= lastPeriod.add(durationPeriod), "7 days has not passed since the last closed period");
 
         require(escrowToken.updateCurrentWeek(weeksOfStaking.add(1)), "Error in EscrowToken: check address of StakingToken");
+                
         lastPeriod = block.timestamp;
         weeksOfStaking = weeksOfStaking.add(1);
         //Actions taken on every closed period
         rewardsForLastWeek = calculateRewardsForWeek(weeksOfStaking);
         rewardFeesForLastWeek = calculateFeesForWeek(weeksOfStaking);
+
+        _totalUnclaimedRewards = _totalUnclaimedRewards.add(rewardsForLastWeek);
+        _totalUnlcaimedFees = _totalUnlcaimedFees.add(rewardFeesForLastWeek);
 
         emit ClosedPeriod(weeksOfStaking, lastPeriod);
     }
@@ -156,6 +167,7 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
             feeToken.transferFrom(address(this), msg.sender, unclaimedFees);
             stakerFeesClaimed[msg.sender] = stakerFeesClaimed[msg.sender].add(unclaimedFees);
             _totalRewardFeesClaimed = _totalRewardFeesClaimed.add(unclaimedFees);
+            _totalUnlcaimedFees = _totalUnlcaimedFees.sub(unclaimedFees);
             emit FeeRewardsClaimed(msg.sender, unclaimedFees);
         }
         if (unclaimedReward > 0) {
@@ -169,6 +181,7 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
             // Record the total claimed rewards
             stakerRewardsClaimed[msg.sender] = stakerRewardsClaimed[msg.sender].add(unclaimedReward);
             _totalRewardsClaimed = _totalRewardsClaimed.add(unclaimedReward);
+            _totalUnclaimedRewards = _totalUnclaimedRewards.sub(unclaimedReward);
             emit RewardsClaimed(msg.sender, unclaimedReward);
         }
         // Update last claiming week
@@ -195,12 +208,22 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
         return _stakedBalances[account].div(_totalStakedAmount).mul(rewardFeesForLastWeek);
     }
 
-    function calculateRewardsForWeek(uint week) internal view returns (uint) {
+    function calculateRewardsForWeek(uint week) internal pure returns (uint) {
         //ADD formula
-        return 0;
+        require(week > 0, "Invalid number for week");
+        if(week == 1) {
+            return 70000;
+        }
+        if(week > 1 && week < 48) {
+            return week.sub(1).mul(2000).add(70000);
+        }
+        else {
+            return 140000;
+        }
+        
     }
 
-    function calculateFeesForWeek(uint week) internal view returns (uint) {
+    function calculateFeesForWeek(uint week) internal pure returns (uint) {
         //ADD formula
         return 0;
     }

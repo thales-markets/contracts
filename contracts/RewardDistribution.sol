@@ -44,28 +44,27 @@ contract RewardDistribution {
         if(msg.sender != admin) {
             require(fundAdmins[msg.sender], "Admin only");
         }
-
-        uint _totalAmount = 0;
+        //uint _totalAmount = 0;
         for (uint index = 0; index < 500; index++) {
             uint amount = _amounts[index];
             address recipient = _recipients[index];
-            if(recipient == address(0)) {
-                break;
-            }
+            // if(recipient == address(0)) {
+            //     break;
+            // }
 
             totalEscrowedAccountBalance[recipient] = totalEscrowedAccountBalance[recipient].add(amount);
 
-            _totalAmount = _totalAmount.add(amount);
+            // _totalAmount = _totalAmount.add(amount);
             emit Fund(recipient, amount);
         }
 
-        totalEscrowedBalance = totalEscrowedBalance.add(_totalAmount);
+        //totalEscrowedBalance = totalEscrowedBalance.add(_totalAmount);
 
         /* There must be enough balance in the contract to provide for the vesting entries. */
-        require(
-            totalEscrowedBalance <= ERC20(token).balanceOf(address(this)),
-            "Must be enough balance in the contract to provide for the reward distribution"
-        );
+        // require(
+        //     totalEscrowedBalance <= ERC20(token).balanceOf(address(this)),
+        //     "Must be enough balance in the contract to provide for the reward distribution"
+        // );
     }
 
     function balanceOf(address _recipient) public view returns (uint) {

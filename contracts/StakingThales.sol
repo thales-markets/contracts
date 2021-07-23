@@ -188,6 +188,10 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
         _lastRewardsClaimedWeek[msg.sender] = weeksOfStaking;
     }
 
+    function selfDestruct(address payable account) external onlyOwner {
+        selfdestruct(account);
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function calculateUnclaimedRewards(address account) internal view returns (uint) {
@@ -227,6 +231,7 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
         //ADD formula
         return 0;
     }
+
 
     /* ========== EVENTS ========== */
 

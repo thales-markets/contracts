@@ -203,7 +203,7 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
 
     function selfDestruct(address payable account) external onlyOwner {
         stakingToken.transfer(account, stakingToken.balanceOf(address(this)));
-        feeToken.transfer(account, stakingToken.balanceOf(address(this)));
+        feeToken.transfer(account, feeToken.balanceOf(address(this)));
         selfdestruct(account);
     }
 

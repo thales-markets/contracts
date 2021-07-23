@@ -147,7 +147,7 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
             "Cannot stake, the staker is paused from staking due to unstaking"
         );
 
-        _lastUnstakeTime[msg.sender] = block;
+        _lastUnstakeTime[msg.sender] = block.timestamp;
         claimReward();
         _totalStakedAmount = _totalStakedAmount.sub(_stakedBalances[msg.sender]);
         uint unstakeAmount = _stakedBalances[msg.sender];

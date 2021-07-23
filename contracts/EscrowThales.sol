@@ -21,7 +21,6 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
     uint private _totalAvailableForVesting = 0;
     uint private _totalVested = 0;
 
-
     mapping(address => uint) private _lastStakedWeek;
     mapping(address => uint) private _stakerSilo;
     mapping(address => uint[10]) private _stakerWeeks;
@@ -37,7 +36,6 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
         _StakingThalesContract = _stakingThalesContract;
     }
 
-
     function claimable(address account) external view returns (uint) {
         require(account != address(0), "Invalid address");
         if (_weeksOfStaking.sub(_lastStakedWeek[account]) > _stakerWeeks[account].length) {
@@ -47,7 +45,7 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
         }
     }
 
-    function addToEscrow(address account, uint amount) external returns (bool) {
+    function addToEscrow(address account, uint amount) external {
         require(account != address(0), "Invalid address");
         require(amount > 0, "Amount is 0");
         require(_weeksOfStaking > 0, "Claiming rewards still not available");
@@ -60,17 +58,19 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
             _lastStakedWeek[account] = _weeksOfStaking;
             _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)].add(amount);
             _totalVestingSupply = _totalVestingSupply.add(amount);
-            vestingToken.transferFrom(account, address(this), amount);
+            //Transfering THALES from StakingThales to EscrowThales
+            vestingToken.transferFrom(msg.sender, address(this), amount);
             emit AddedToEscrow(account, amount);
         } else {
             _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)].add(amount);
             _totalVestingSupply = _totalVestingSupply.add(amount);
-            vestingToken.transferFrom(account, address(this), amount);
+            //Transfering THALES from StakingThales to EscrowThales
+            vestingToken.transferFrom(msg.sender, address(this), amount);
             emit AddedToEscrow(account, amount);
         }
     }
 
-    function vest(uint amount) external nonReentrant notPaused returns (bool){
+    function vest(uint amount) external nonReentrant notPaused returns (bool) {
         require(msg.sender != address(0), "Invalid address");
         require(amount > 0, "Claimed amount is 0");
         require(_weeksOfStaking > 0, "Claiming rewards still not available");
@@ -104,6 +104,11 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
         _StakingThalesContract = StakingThalesContract;
     }
 
+    function selfDestruct(address payable account) external onlyOwner {
+        vestingToken.transfer(account, vestingToken.balanceOf(address(this)));
+        selfdestruct(account);
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function moveToStakerSilo(
@@ -123,12 +128,10 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
             }
             return true;
         } else {
-
             //lastStakedWeek can not be lower than 0, currentWeek is covered by require
-            if(lastStakedWeek == 0) {
+            if (lastStakedWeek == 0) {
                 lastStakedWeek = 0;
-            }
-            else {
+            } else {
                 lastStakedWeek = lastStakedWeek.sub(1);
             }
 

@@ -179,7 +179,7 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
             // Both the rewards and the fees are staked => new_stake(reward + fees)
             _stakedBalances[msg.sender] = _stakedBalances[msg.sender].add(unclaimedReward).add(unclaimedFees);
             _lastStakingWeek[msg.sender] = weeksOfStaking;
-            // Transfer to Escrow contract
+            // Transfer THALES to Escrow contract
             escrowToken.addToEscrow(msg.sender, unclaimedReward);
             // Record the total claimed rewards
             stakerRewardsClaimed[msg.sender] = stakerRewardsClaimed[msg.sender].add(unclaimedReward);
@@ -191,7 +191,19 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
         _lastRewardsClaimedWeek[msg.sender] = weeksOfStaking;
     }
 
+    function depositRewards(uint amount) external onlyOwner {
+        require(amount > 0, "Invalid amount");
+        stakingToken.transferFrom(msg.sender, address(this), amount);
+    }
+
+    function depositFees(uint amount) external onlyOwner {
+        require(amount > 0, "Invalid amount");
+        feeToken.transferFrom(msg.sender, address(this), amount);
+    }
+
     function selfDestruct(address payable account) external onlyOwner {
+        stakingToken.transfer(account, stakingToken.balanceOf(address(this)));
+        feeToken.transfer(account, stakingToken.balanceOf(address(this)));
         selfdestruct(account);
     }
 
@@ -215,22 +227,30 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
         return _stakedBalances[account].div(_totalStakedAmount).mul(rewardFeesForLastWeek);
     }
 
-    function calculateRewardsForWeek(uint week) internal pure returns (uint) {
+    function calculateRewardsForWeek(uint week) internal view returns (uint) {
         //ADD formula
         require(week > 0, "Invalid number for week");
         if (week == 1) {
+            require(stakingToken.balanceOf(address(this)) > 70000, "Low balance in the Smart-contract");
             return 70000;
         }
         if (week > 1 && week < 48) {
+            require(
+                stakingToken.balanceOf(address(this)) >= week.sub(1).mul(2000).add(70000),
+                "Low balance in the Smart-contract"
+            );
             return week.sub(1).mul(2000).add(70000);
         } else {
+            require(stakingToken.balanceOf(address(this)) >= 140000, "Low balance in the Smart-contract");
             return 140000;
         }
     }
 
-    function calculateFeesForWeek(uint week) internal pure returns (uint) {
+    function calculateFeesForWeek(uint week) internal view returns (uint) {
+        require(week > 0, "Invalid number for week");
+        require(feeToken.balanceOf(address(this)) > 0, "No Available fees");
         //ADD formula
-        return 0;
+        return feeToken.balanceOf(address(this));
     }
 
     /* ========== EVENTS ========== */

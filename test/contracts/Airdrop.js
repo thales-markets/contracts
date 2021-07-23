@@ -25,7 +25,7 @@ describe('Contract: Airdrop', async () => {
 				await getReward(1, merkleTree, snapshot, snapshotHashes, airdrop, acc1);
 				await assert.revert(
 					getReward(1, merkleTree, snapshot, snapshotHashes, airdrop, acc1),
-					'Tokens have already been redeemed'
+					'Tokens have already been claimed'
 				);
 			}),
 			it("account different from airdrop recipient shouldn't be able to retrieve reward", async () => {

@@ -101,7 +101,7 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
         require(block.timestamp >= lastPeriod.add(durationPeriod), "7 days has not passed since the last closed period");
 
         require(escrowToken.updateCurrentWeek(weeksOfStaking.add(1)), "Error in EscrowToken: check address of StakingToken");
-                
+
         lastPeriod = block.timestamp;
         weeksOfStaking = weeksOfStaking.add(1);
         //Actions taken on every closed period
@@ -147,8 +147,8 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
             "Cannot stake, the staker is paused from staking due to unstaking"
         );
 
-        _lastUnstakeTime[msg.sender] = block.timestamp;
         claimReward();
+        _lastUnstakeTime[msg.sender] = block.timestamp;
         _totalStakedAmount = _totalStakedAmount.sub(_stakedBalances[msg.sender]);
         uint unstakeAmount = _stakedBalances[msg.sender];
         _stakedBalances[msg.sender] = 0;
@@ -158,7 +158,10 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
 
     function claimReward() public nonReentrant notPaused {
         require(startTime > 0, "Staking period has not started");
-
+        require(
+            _lastUnstakeTime[msg.sender] < block.timestamp.sub(7 days),
+            "Cannot stake, the staker is paused from staking due to unstaking"
+        );
         //Calculate rewards
         uint unclaimedReward = calculateUnclaimedRewards(msg.sender);
         uint unclaimedFees = calculateUnclaimedFees(msg.sender);
@@ -215,23 +218,20 @@ contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausabl
     function calculateRewardsForWeek(uint week) internal pure returns (uint) {
         //ADD formula
         require(week > 0, "Invalid number for week");
-        if(week == 1) {
+        if (week == 1) {
             return 70000;
         }
-        if(week > 1 && week < 48) {
+        if (week > 1 && week < 48) {
             return week.sub(1).mul(2000).add(70000);
-        }
-        else {
+        } else {
             return 140000;
         }
-        
     }
 
     function calculateFeesForWeek(uint week) internal pure returns (uint) {
         //ADD formula
         return 0;
     }
-
 
     /* ========== EVENTS ========== */
 

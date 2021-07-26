@@ -9,7 +9,7 @@ import "synthetix-2.43.1/contracts/Pausable.sol";
 
 import "./interfaces/IEscrowThales.sol";
 
-contract StakingThales is IERC20, IEscrowThales, Owned, ReentrancyGuard, Pausable {
+contract StakingThales is Owned, ReentrancyGuard, Pausable {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;

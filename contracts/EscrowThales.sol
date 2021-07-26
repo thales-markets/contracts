@@ -8,7 +8,8 @@ import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
 import "synthetix-2.43.1/contracts/Pausable.sol";
 import "./interfaces/IEscrowThales.sol";
 
-contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable {
+contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
+
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;
@@ -33,7 +34,7 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
         address _stakingThalesContract
     ) public Owned(_owner) {
         vestingToken = IERC20(_vestingToken);
-        _StakingThalesContract = _stakingThalesContract;
+        _StakingThalesContract = _owner;
     }
 
     function claimable(address account) external view returns (uint) {
@@ -97,6 +98,10 @@ contract EscrowThales is IEscrowThales, Owned, IERC20, ReentrancyGuard, Pausable
         require(currentWeek > 0, "Invalid update value");
         _weeksOfStaking = currentWeek;
         return true;
+    }
+
+    function getStakingThalesContract() external onlyOwner returns (address) {
+        return _StakingThalesContract;
     }
 
     function setStakingThalesContract(address StakingThalesContract) external onlyOwner {

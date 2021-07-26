@@ -7,3 +7,5 @@ npx hardhat test test/contracts/BinaryOptionMarketManager.js --optimizer
 npx hardhat test test/contracts/CustomBinaryOptionMarket.js --optimizer
 npx hardhat test test/contracts/SportsBinaryOptions/SportsFeed.js --optimizer
 npx hardhat test test/contracts/SportsBinaryOptions/CustomBinaryOptionMarket.js --optimizer
+
+npx hardhat coverage

@@ -109,6 +109,16 @@ async function main() {
 	);
 	await createMarket(manager, maturityDate, fundingAmount, oracleAddress2);
 
+	let oracleAddress3 = await createOracleInstance(
+		SportFeedOracleInstanceContract,
+		owner.address,
+		sportFeedContractDeployed.address,
+		'JPN',
+		'1',
+		'Olympics Gold Medals Ranking'
+	);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress3);
+
 	const sportFeedContractDeployedBasketball = await SportFeedContract.deploy(
 		owner.address,
 		oracleContract,
@@ -125,7 +135,7 @@ async function main() {
 		sportFeedContractDeployedBasketball.address
 	);
 
-	let oracleAddress3 = await createOracleInstance(
+	let oracleAddress4 = await createOracleInstance(
 		SportFeedOracleInstanceContract,
 		owner.address,
 		sportFeedContractDeployedBasketball.address,
@@ -133,9 +143,9 @@ async function main() {
 		'1',
 		'Olympics Basketball Rankings (m)'
 	);
-	await createMarket(manager, maturityDate, fundingAmount, oracleAddress3);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress4);
 
-	let oracleAddress4 = await createOracleInstance(
+	let oracleAddress5 = await createOracleInstance(
 		SportFeedOracleInstanceContract,
 		owner.address,
 		sportFeedContractDeployedBasketball.address,
@@ -143,7 +153,27 @@ async function main() {
 		'1',
 		'Olympics Basketball Rankings (m)'
 	);
-	await createMarket(manager, maturityDate, fundingAmount, oracleAddress4);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress5);
+
+	let oracleAddress6 = await createOracleInstance(
+		SportFeedOracleInstanceContract,
+		owner.address,
+		sportFeedContractDeployedBasketball.address,
+		'SLO',
+		'1',
+		'Olympics Basketball Rankings (m)'
+	);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress6);
+
+	let oracleAddress7 = await createOracleInstance(
+		SportFeedOracleInstanceContract,
+		owner.address,
+		sportFeedContractDeployedBasketball.address,
+		'ESP',
+		'1',
+		'Olympics Basketball Rankings (m)'
+	);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress7);
 
 	const sportFeedContractDeployedVolleyball = await SportFeedContract.deploy(
 		owner.address,
@@ -161,15 +191,35 @@ async function main() {
 		sportFeedContractDeployedVolleyball.address
 	);
 
-	let oracleAddress5 = await createOracleInstance(
+	let oracleAddress8 = await createOracleInstance(
 		SportFeedOracleInstanceContract,
 		owner.address,
 		sportFeedContractDeployedVolleyball.address,
-		'RUS',
+		'ROC',
 		'1',
 		'Olympics Volleyball Rankings (m)'
 	);
-	await createMarket(manager, maturityDate, fundingAmount, oracleAddress5);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress8);
+
+	let oracleAddress9 = await createOracleInstance(
+		SportFeedOracleInstanceContract,
+		owner.address,
+		sportFeedContractDeployedVolleyball.address,
+		'POL',
+		'1',
+		'Olympics Volleyball Rankings (m)'
+	);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress9);
+
+	let oracleAddress10 = await createOracleInstance(
+		SportFeedOracleInstanceContract,
+		owner.address,
+		sportFeedContractDeployedVolleyball.address,
+		'USA',
+		'1',
+		'Olympics Volleyball Rankings (m)'
+	);
+	await createMarket(manager, maturityDate, fundingAmount, oracleAddress10);
 
 	//-----verifications
 
@@ -217,6 +267,18 @@ async function main() {
 	});
 
 	await hre.run('verify:verify', {
+		address: oracleAddress3,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployed.address,
+			'JPN',
+			'1',
+			'Olympics Gold Medals Ranking',
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
+
+	await hre.run('verify:verify', {
 		address: sportFeedContractDeployedBasketball.address,
 		constructorArguments: [
 			owner.address,
@@ -232,7 +294,7 @@ async function main() {
 	});
 
 	await hre.run('verify:verify', {
-		address: oracleAddress3,
+		address: oracleAddress4,
 		constructorArguments: [
 			owner.address,
 			sportFeedContractDeployedBasketball.address,
@@ -244,11 +306,35 @@ async function main() {
 	});
 
 	await hre.run('verify:verify', {
-		address: oracleAddress4,
+		address: oracleAddress5,
 		constructorArguments: [
 			owner.address,
 			sportFeedContractDeployedBasketball.address,
 			'AUS',
+			'1',
+			'Olympics Basketball Rankings (m)',
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
+
+	await hre.run('verify:verify', {
+		address: oracleAddress6,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployedBasketball.address,
+			'SLO',
+			'1',
+			'Olympics Basketball Rankings (m)',
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
+
+	await hre.run('verify:verify', {
+		address: oracleAddress7,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployedBasketball.address,
+			'ESP',
 			'1',
 			'Olympics Basketball Rankings (m)',
 		],
@@ -271,11 +357,35 @@ async function main() {
 	});
 
 	await hre.run('verify:verify', {
-		address: oracleAddress5,
+		address: oracleAddress8,
 		constructorArguments: [
 			owner.address,
 			sportFeedContractDeployedVolleyball.address,
-			'RUS',
+			'ROC',
+			'1',
+			'Olympics Volleyball Rankings (m)',
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
+
+	await hre.run('verify:verify', {
+		address: oracleAddress9,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployedVolleyball.address,
+			'POL',
+			'1',
+			'Olympics Volleyball Rankings (m)',
+		],
+		contract: 'contracts/SportFeedOracleInstance.sol:SportFeedOracleInstance',
+	});
+
+	await hre.run('verify:verify', {
+		address: oracleAddress10,
+		constructorArguments: [
+			owner.address,
+			sportFeedContractDeployedVolleyball.address,
+			'USA',
 			'1',
 			'Olympics Volleyball Rankings (m)',
 		],

@@ -10,7 +10,7 @@ const { toBytes32 } = require('../../index');
 const util = require('util');
 
 //let managerAddress = '0x30C1d1BE9E33696F8dd9FDf3430c36FCd73436cB'; //kovan
-let managerAddress = '0x46d9DB2830C005e38878b241199bb09d9d355994'; //ropsten
+let managerAddress = '0x4E48FA3638939D2B8e0acE9ceed724c606FEf608'; //ropsten
 
 //kovan
 let oracleContract = '0x56dd6586db0d08c6ce7b2f2805af28616e082455';

@@ -9,7 +9,6 @@ import "synthetix-2.43.1/contracts/Pausable.sol";
 import "./interfaces/IEscrowThales.sol";
 
 contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
-
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;
@@ -99,7 +98,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         _weeksOfStaking = currentWeek;
         return true;
     }
-    
+
     function getCurrentWeek() external view returns (uint) {
         return _weeksOfStaking;
     }

@@ -41,13 +41,10 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
     uint private _totalRewardsClaimed;
     uint private _totalRewardFeesClaimed;
 
-
     mapping(address => uint) private _stakedBalances;
     mapping(address => uint) private _lastStakingWeek;
     mapping(address => uint) private _lastRewardsClaimedWeek;
     mapping(address => uint) private _lastUnstakeTime;
-
-
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -87,10 +84,11 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
     function getAlreadyClaimedFees(address account) external view returns (uint) {
         return stakerFeesClaimed[account];
     }
-    
+
     function getContractRewardFunds() external view onlyOwner returns (uint) {
         return _rewardFunds;
     }
+
     function getContractFeeFunds() external view onlyOwner returns (uint) {
         return _feeFunds;
     }

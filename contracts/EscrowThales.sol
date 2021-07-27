@@ -34,7 +34,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         address _stakingThalesContract
     ) public Owned(_owner) {
         vestingToken = IERC20(_vestingToken);
-        _StakingThalesContract = _owner;
+        _StakingThalesContract = _stakingThalesContract;
     }
 
     function claimable(address account) external view returns (uint) {
@@ -99,8 +99,12 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         _weeksOfStaking = currentWeek;
         return true;
     }
+    
+    function getCurrentWeek() external view returns (uint) {
+        return _weeksOfStaking;
+    }
 
-    function getStakingThalesContract() external onlyOwner returns (address) {
+    function getStakingThalesContract() external view onlyOwner returns (address) {
         return _StakingThalesContract;
     }
 

@@ -29,6 +29,9 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
     uint public rewardsForLastWeek = 0;
     uint public rewardFeesForLastWeek = 0;
 
+    uint private _rewardFunds = 0;
+    uint private _feeFunds = 0;
+
     mapping(address => uint) public stakerRewardsClaimed;
     mapping(address => uint) public stakerFeesClaimed;
 
@@ -37,10 +40,14 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
     uint private _totalUnlcaimedFees;
     uint private _totalRewardsClaimed;
     uint private _totalRewardFeesClaimed;
+
+
     mapping(address => uint) private _stakedBalances;
     mapping(address => uint) private _lastStakingWeek;
     mapping(address => uint) private _lastRewardsClaimedWeek;
     mapping(address => uint) private _lastUnstakeTime;
+
+
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -80,6 +87,13 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
     function getAlreadyClaimedFees(address account) external view returns (uint) {
         return stakerFeesClaimed[account];
     }
+    
+    function getContractRewardFunds() external view onlyOwner returns (uint) {
+        return _rewardFunds;
+    }
+    function getContractFeeFunds() external view onlyOwner returns (uint) {
+        return _feeFunds;
+    }
 
     /* ========== PUBLIC ========== */
 
@@ -100,7 +114,8 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
         require(startTime > 0, "Staking period has not started");
         require(block.timestamp >= lastPeriod.add(durationPeriod), "7 days has not passed since the last closed period");
 
-        require(escrowToken.updateCurrentWeek(weeksOfStaking.add(1)), "Error in EscrowToken: check address of StakingToken");
+        // require(escrowToken.updateCurrentWeek(weeksOfStaking.add(1)), "Error in EscrowToken: check address of StakingToken");
+        escrowToken.updateCurrentWeek(weeksOfStaking.add(1));
 
         lastPeriod = block.timestamp;
         weeksOfStaking = weeksOfStaking.add(1);
@@ -194,11 +209,13 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
     function depositRewards(uint amount) external onlyOwner {
         require(amount > 0, "Invalid amount");
         stakingToken.transferFrom(msg.sender, address(this), amount);
+        _rewardFunds = _rewardFunds.add(amount);
     }
 
     function depositFees(uint amount) external onlyOwner {
         require(amount > 0, "Invalid amount");
         feeToken.transferFrom(msg.sender, address(this), amount);
+        _feeFunds = _feeFunds.add(amount);
     }
 
     function selfDestruct(address payable account) external onlyOwner {
@@ -231,7 +248,7 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
         //ADD formula
         require(week > 0, "Invalid number for week");
         if (week == 1) {
-            require(stakingToken.balanceOf(address(this)) > 70000, "Low balance in the Smart-contract");
+            require(stakingToken.balanceOf(address(this)) > 70000, "Low THALES balance in the Smart-contract");
             return 70000;
         }
         if (week > 1 && week < 48) {
@@ -241,7 +258,7 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
             );
             return week.sub(1).mul(2000).add(70000);
         } else {
-            require(stakingToken.balanceOf(address(this)) >= 140000, "Low balance in the Smart-contract");
+            require(stakingToken.balanceOf(address(this)) >= 140000, "Low THALES balance in the Smart-contract");
             return 140000;
         }
     }

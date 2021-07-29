@@ -10,7 +10,7 @@ const { toBytes32 } = require('../../index');
 const util = require('util');
 
 //let managerAddress = '0x30C1d1BE9E33696F8dd9FDf3430c36FCd73436cB'; //kovan
-let managerAddress = '0x4D49a1ed7B7F80aC70a6bA47F9cDDFF64FC8fa21'; //ropsten
+let managerAddress = '0x5ed98Ebb66A929758C7Fe5Ac60c979aDF0F4040a'; //ropsten
 
 //kovan
 // let oracleContract = '0x56dd6586db0d08c6ce7b2f2805af28616e082455';
@@ -18,7 +18,7 @@ let managerAddress = '0x4D49a1ed7B7F80aC70a6bA47F9cDDFF64FC8fa21'; //ropsten
 // let medalJobId = 'aa34467c0b074fb0888c9f42c449547f';
 
 //mainnet
-let oracleContract = '0x240BaE5A27233Fd3aC5440B5a598467725F7D1cd';
+let oracleContract = '0x240bae5a27233fd3ac5440b5a598467725f7d1cd';
 let sportsJobId = '91f1c37fc39e4c839afc3c1615c6fcab';
 let medalJobId = 'f3f4feaae7814acfb01f05ce3092b0bd';
 

@@ -36,6 +36,7 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
     mapping(address => uint) public stakerFeesClaimed;
 
     uint private _totalStakedAmount;
+    uint private _totalPendingStake;
     uint private _totalUnclaimedRewards;
     uint private _totalUnlcaimedFees;
     uint private _totalRewardsClaimed;
@@ -45,6 +46,7 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
     mapping(address => uint) private _lastStakingWeek;
     mapping(address => uint) private _lastRewardsClaimedWeek;
     mapping(address => uint) private _lastUnstakeTime;
+    mapping(address => uint) private _pendingStake;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -67,6 +69,18 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
 
     function stakedBalanceOf(address account) external view returns (uint) {
         return _stakedBalances[account];
+    }
+
+    function getLastWeekRewards() external view returns (uint) {
+        return rewardsForLastWeek;
+    }
+
+    function getLastWeekFees() external view returns (uint) {
+        return rewardFeesForLastWeek;
+    }
+
+    function getLastWeekOfClaimedRewards(address account) external view returns (uint) {
+        return _lastRewardsClaimedWeek[account];
     }
 
     function getRewardsAvailable(address account) external view returns (uint) {
@@ -117,6 +131,10 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
 
         lastPeriod = block.timestamp;
         weeksOfStaking = weeksOfStaking.add(1);
+        if (_totalPendingStake > 0) {
+            _totalStakedAmount = _totalStakedAmount.add(_totalPendingStake);
+            _totalPendingStake = 0;
+        }
         //Actions taken on every closed period
         rewardsForLastWeek = calculateRewardsForWeek(weeksOfStaking);
         rewardFeesForLastWeek = calculateFeesForWeek(weeksOfStaking);
@@ -175,6 +193,11 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
             _lastUnstakeTime[msg.sender] < block.timestamp.sub(7 days),
             "Cannot stake, the staker is paused from staking due to unstaking"
         );
+
+        if (_pendingStake[msg.sender] > 0) {
+            _stakedBalances[msg.sender] = _stakedBalances[msg.sender].add(_pendingStake[msg.sender]);
+            _pendingStake[msg.sender] = 0;
+        }
         //Calculate rewards
         uint unclaimedReward = calculateUnclaimedRewards(msg.sender);
         uint unclaimedFees = calculateUnclaimedFees(msg.sender);
@@ -187,10 +210,15 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
             emit FeeRewardsClaimed(msg.sender, unclaimedFees);
         }
         if (unclaimedReward > 0) {
-            // Stake the newly claimed reward:
-            _totalStakedAmount = _totalStakedAmount.add(unclaimedReward).add(unclaimedFees);
-            // Both the rewards and the fees are staked => new_stake(reward + fees)
-            _stakedBalances[msg.sender] = _stakedBalances[msg.sender].add(unclaimedReward).add(unclaimedFees);
+            // Stake the newly claimed reward: NEEDS TO BE UPDATED NEXT WEEK ===>
+            // _totalStakedAmount = _totalStakedAmount.add(unclaimedReward).add(unclaimedFees);
+            // _totalPendingStake = _totalPendingStake.add(unclaimedReward).add(unclaimedFees);
+            _totalPendingStake = _totalPendingStake.add(unclaimedReward);
+
+            // Both the rewards and the fees are staked => new_stake(reward + fees) NEEDS TO BE UPDATED NEXT WEEK ===>
+            // _stakedBalances[msg.sender] = _stakedBalances[msg.sender].add(unclaimedReward).add(unclaimedFees);
+            // _pendingStake[msg.sender] = _pendingStake[msg.sender].add(unclaimedReward).add(unclaimedFees);
+            _pendingStake[msg.sender] = _pendingStake[msg.sender].add(unclaimedReward);
             _lastStakingWeek[msg.sender] = weeksOfStaking;
             // Transfer THALES to Escrow contract
             escrowToken.addToEscrow(msg.sender, unclaimedReward);
@@ -230,7 +258,7 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
         require(_lastRewardsClaimedWeek[account] < weeksOfStaking, "Rewards already claimed for last week");
 
         // return _stakedBalances[account].div(1e18).div(_totalStakedAmount).mul(rewardsForLastWeek);
-        return _stakedBalances[account].div(_totalStakedAmount).mul(rewardsForLastWeek);
+        return _stakedBalances[account].mul(rewardsForLastWeek).div(_totalStakedAmount);
     }
 
     function calculateUnclaimedFees(address account) internal view returns (uint) {
@@ -239,7 +267,7 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
         require(_lastRewardsClaimedWeek[account] < weeksOfStaking, "Rewards already claimed for last week");
 
         // return _stakedBalances[account].div(1e18).div(_totalStakedAmount).mul(rewardFeesForLastWeek);
-        return _stakedBalances[account].div(_totalStakedAmount).mul(rewardFeesForLastWeek);
+        return _stakedBalances[account].mul(rewardFeesForLastWeek).div(_totalStakedAmount);
     }
 
     function calculateRewardsForWeek(uint week) internal view returns (uint) {

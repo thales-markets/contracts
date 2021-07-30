@@ -47,6 +47,10 @@ contract SportFeedOracleInstance is IOracleInstance, Owned {
         forcedOutcome = true;
     }
 
+    function setSportFeed(address _sportFeed) public onlyOwner {
+        sportFeed = _sportFeed;
+    }
+
     function clearOutcome() public onlyOwner {
         forcedOutcome = false;
     }

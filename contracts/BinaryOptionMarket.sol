@@ -258,7 +258,9 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     }
 
     /* ---------- Custom oracle configuration ---------- */
-    function setIOracleInstance(address _address) external onlyOwner {}
+    function setIOracleInstance(address _address) external onlyOwner {
+        iOracleInstance = IOracleInstance(_address);
+    }
 
     /* ---------- Market Resolution ---------- */
 

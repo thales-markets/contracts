@@ -6,9 +6,9 @@ import "synthetix-2.43.1/contracts/Owned.sol";
 contract SportFeed is ChainlinkClient, Owned {
     using Chainlink for Chainlink.Request;
 
-    address private oracle;
-    bytes32 private jobId;
-    uint256 private fee;
+    address public oracle;
+    bytes32 public jobId;
+    uint256 public fee;
 
     bytes32 public result;
 

@@ -177,7 +177,7 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
             _lastUnstakeTime[msg.sender] < block.timestamp.sub(7 days),
             "Cannot stake, the staker is paused from staking due to unstaking"
         );
-        if(_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) {
+        if (_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) {
             claimReward();
         }
         //Lose the pending stake

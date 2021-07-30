@@ -59,10 +59,22 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     function claimable(address account) external view returns (uint) {
         require(account != address(0), "Invalid address");
-        if (_weeksOfStaking.sub(_lastClaimedWeek[account]) > _stakerWeeks[account].length) {
-            return pendingClaimable(account).add(_stakerSilo[account]);
-        } else {
+        require(_weeksOfStaking > 0, "WeeksOfStaking = 0");
+        if(pendingClaimable(account) == 0) {
             return _stakerSilo[account];
+        }
+        else if(_weeksOfStaking.sub(_lastMoveToSilo[account]) > _stakerWeeks[account].length.mul(2)){
+            return pendingClaimable(account).add(_stakerSilo[account]);
+        }
+        else {
+            uint total_pending = 0;
+            if((_lastMoveToSilo[account].mod(_stakerWeeks[account].length)) < (_weeksOfStaking.mod(_stakerWeeks[account].length))) {
+                for(uint i= (_lastMoveToSilo[account].mod(_stakerWeeks[account].length)); i< (_weeksOfStaking.mod(_stakerWeeks[account].length)); i++){
+                    total_pending = total_pending.add(_stakerWeeks[account][i]);
+                }
+            }
+            total_pending = total_pending.add(_stakerSilo[account]);
+            return total_pending;
         }
     }
 
@@ -73,30 +85,36 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         // This can be removed if it is open for different contracts
         require(msg.sender == _StakingThalesContract, "Invalid StakingToken, please update");
         require(_lastClaimedWeek[account] <= _weeksOfStaking, "Critical error");
-        _lastClaimedWeek[account] = _weeksOfStaking;
 
-        if (_weeksOfStaking.sub(_lastMoveToSilo[account]) > _stakerWeeks[account].length) {
-            moveToStakerSilo(account, _lastMoveToSilo[account], _weeksOfStaking);
-            _lastMoveToSilo[account] = _weeksOfStaking;
-            // _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)] = _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)].add(amount);
-            _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)] = _stakerWeeks[account][
-                _weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)
-            ]
-                .add(amount);
-            _totalVestingSupply = _totalVestingSupply.add(amount);
-            //Transfering THALES from StakingThales to EscrowThales
-            vestingToken.transferFrom(msg.sender, address(this), amount);
-            emit AddedToEscrow(account, amount);
-        } else {
-            _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)] = _stakerWeeks[account][
-                _weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)
-            ]
-                .add(amount);
-            _totalVestingSupply = _totalVestingSupply.add(amount);
-            //Transfering THALES from StakingThales to EscrowThales
-            vestingToken.transferFrom(msg.sender, address(this), amount);
-            emit AddedToEscrow(account, amount);
+        if(_weeksOfStaking > _stakerWeeks[account].length) {
+            if(_weeksOfStaking.sub(_lastMoveToSilo[account]) <= _stakerWeeks[account].length.mul(2) ){
+                if((_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)).sub(_lastMoveToSilo[account].mod(_stakerWeeks[account].length)) > 1) {
+                    moveToStakerSilo(account, (_lastMoveToSilo[account].mod(_stakerWeeks[account].length)), _weeksOfStaking.sub(1).mod(_stakerWeeks[account].length));
+                }
+                _lastMoveToSilo[account] = _weeksOfStaking.sub(_stakerWeeks[account].length);
+            }
+            else {
+                moveToStakerSilo(account, 0, _stakerWeeks[account].length);
+                _lastMoveToSilo[account] = _weeksOfStaking;
+            }
         }
+
+        if(_stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)] > 0) {
+                 _stakerSilo[account] = _stakerSilo[account].add(_stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)]);
+                _totalAvailableForVesting = _totalAvailableForVesting.add(_stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)]);
+                _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)] = 0;
+        }
+
+        _lastClaimedWeek[account] = _weeksOfStaking;
+        _stakerWeeks[account][_weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)] = _stakerWeeks[account][
+            _weeksOfStaking.sub(1).mod(_stakerWeeks[account].length)
+        ]
+            .add(amount);
+        _totalVestingSupply = _totalVestingSupply.add(amount);
+        //Transfering THALES from StakingThales to EscrowThales
+        vestingToken.transferFrom(msg.sender, address(this), amount);
+        emit AddedToEscrow(account, amount);
+        
     }
 
     function vest(uint amount) external nonReentrant notPaused returns (bool) {
@@ -131,7 +149,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     function getCurrentWeek() external view returns (uint) {
         return _weeksOfStaking;
     }
-
+    //remove this:
     function getStakingThalesContract() external view onlyOwner returns (address) {
         return _StakingThalesContract;
     }
@@ -150,40 +168,22 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     function moveToStakerSilo(
         address account,
-        uint lastMoveToSilo,
-        uint currentWeek
+        uint start,
+        uint finish
     ) internal returns (bool) {
         require(account != address(0), "Invalid account");
-        require(currentWeek > 0, "Current week can not be 0");
-        require(lastMoveToSilo < currentWeek, "LastStakedWeek not lower than CurrentWeek");
-        // if (currentWeek.sub(lastMoveToSilo) > _stakerWeeks[account].length) {
-        // Move all to stakerSilo
-        for (uint i = 0; i < _stakerWeeks[account].length; i++) {
-            _stakerSilo[account] = _stakerSilo[account].add(_stakerWeeks[account][i]);
-            _totalAvailableForVesting = _totalAvailableForVesting.add(_stakerWeeks[account][i]);
-            _stakerWeeks[account][i] = 0;
-        }
-        return true;
-        // } else {
-        // //lastStakedWeek can not be lower than 0, currentWeek is covered by require
-        // if (lastStakedWeek == 0) {
-        //     lastStakedWeek = 0;
-        // } else {
-        //     lastStakedWeek = lastStakedWeek.sub(1);
-        // }
+        require(start < finish, "Invalid moving fields (start < finish)");
+        for (
+                uint i = start;
+                i < finish;
+                i++
+            ) {
+                _stakerSilo[account] = _stakerSilo[account].add(_stakerWeeks[account][i]);
+                _totalAvailableForVesting = _totalAvailableForVesting.add(_stakerWeeks[account][i]);
+                _stakerWeeks[account][i] = 0;
+            }
+                return true;
 
-        // // Move only the difference between
-        // for (
-        //     uint i = lastStakedWeek.mod(_stakerWeeks[account].length);
-        //     i < (currentWeek.sub(1)).mod(_stakerWeeks[account].length);
-        //     i++
-        // ) {
-        //     _stakerSilo[account] = _stakerSilo[account].add(_stakerWeeks[account][i]);
-        //     _totalAvailableForVesting = _totalAvailableForVesting.add(_stakerWeeks[account][i]);
-        //     _stakerWeeks[account][i] = 0;
-        // }
-        // return true;
-        // }
     }
 
     function pendingClaimable(address account) internal view returns (uint) {

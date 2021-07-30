@@ -111,8 +111,11 @@ contract('StakingThales', accounts => {
 		});
 
 		it('check claimable function', async () => {
-			let answer = await EscrowThalesDeployed.claimable.call(second);
-			assert.equal(answer, 0);
+			await expect(EscrowThalesDeployed.claimable.call(second)).to.be.revertedWith(
+				"WeeksOfStaking = 0"
+			);
+			// let answer = await EscrowThalesDeployed.claimable.call(second);
+			// assert.equal(answer, 0);
 		});
 
 		it('check ZERO address usage for external functions', async () => {
@@ -159,15 +162,15 @@ contract('StakingThales', accounts => {
 		});
 
 		it('Start staking period', async () => {
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
-			assert.equal(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
+			assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
 			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
-			assert.isAbove(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
+			assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
 			assert.equal(
-				toDecimal(await StakingThalesDeployed.startTime.call()),
-				toDecimal(await StakingThalesDeployed.lastPeriod.call())
+				toDecimal(await StakingThalesDeployed.startTimeStamp.call()),
+				toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call())
 			);
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
 		});
 
 		it('Close staking period before 1)staking started and 2) before a week passes', async () => {
@@ -197,16 +200,16 @@ contract('StakingThales', accounts => {
 				'Low THALES balance in the Smart-contract'
 			);
 			// answer = await StakingThalesDeployed.closePeriod({from:owner});
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.lastPeriod.call()), WEEK);
+			// assert.isAbove(toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()), WEEK);
 		});
 
 		it('Stake with first and second account', async () => {
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
-			// assert.equal(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
+			// assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
 			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
-			// assert.equal(toDecimal(await StakingThalesDeployed.startTime.call()), toDecimal(await StakingThalesDeployed.lastPeriod.call()));
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
+			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
+			// assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()));
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
 		});
 	});
 
@@ -224,7 +227,7 @@ contract('StakingThales', accounts => {
 				'Low THALES balance in the Smart-contract'
 			);
 			// answer = await StakingThalesDeployed.closePeriod({from:owner});
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.lastPeriod.call()), WEEK);
+			// assert.isAbove(toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()), WEEK);
 		});
 
 		it('Close staking period after week with low funds (69999) in StakingThales', async () => {
@@ -243,9 +246,9 @@ contract('StakingThales', accounts => {
 			answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 			assert.equal(answer, 69999);
 			// let answer = await StakingThalesDeployed.startStakingPeriod({from:owner});
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
-			// assert.equal(toDecimal(await StakingThalesDeployed.startTime.call()), toDecimal(await StakingThalesDeployed.lastPeriod.call()));
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
+			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
+			// assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()));
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
 		});
 
 		it('Close staking period after week with funds (70001) but NO Fees in StakingThales', async () => {
@@ -265,9 +268,9 @@ contract('StakingThales', accounts => {
 			// answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 			// assert.equal(answer, 70001);
 			// let answer = await StakingThalesDeployed.startStakingPeriod({from:owner});
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
-			// assert.equal(toDecimal(await StakingThalesDeployed.startTime.call()), toDecimal(await StakingThalesDeployed.lastPeriod.call()));
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
+			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
+			// assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()));
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
 		});
 
 		it('Close staking period after week with funds (70001) in StakingThales', async () => {
@@ -285,9 +288,9 @@ contract('StakingThales', accounts => {
 			answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 			assert.equal(answer, 70001);
 			// let answer = await StakingThalesDeployed.startStakingPeriod({from:owner});
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
-			// assert.equal(toDecimal(await StakingThalesDeployed.startTime.call()), toDecimal(await StakingThalesDeployed.lastPeriod.call()));
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
+			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
+			// assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()));
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
 		});
 
 		it('Stake with first account with NO THALES funds and fees', async () => {
@@ -314,9 +317,9 @@ contract('StakingThales', accounts => {
 			// answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 			// assert.equal(answer, 70001);
 			// let answer = await StakingThalesDeployed.startStakingPeriod({from:owner});
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
-			// assert.equal(toDecimal(await StakingThalesDeployed.startTime.call()), toDecimal(await StakingThalesDeployed.lastPeriod.call()));
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
+			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
+			// assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()));
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
 		});
 
 		it('Stake with first account', async () => {
@@ -340,9 +343,9 @@ contract('StakingThales', accounts => {
 			// answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 			// assert.equal(answer, 70001);
 			// let answer = await StakingThalesDeployed.startStakingPeriod({from:owner});
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
-			// assert.equal(toDecimal(await StakingThalesDeployed.startTime.call()), toDecimal(await StakingThalesDeployed.lastPeriod.call()));
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
+			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
+			// assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()));
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
 		});
 
 		it('Stake with first account and claim reward (but no fees available)', async () => {
@@ -411,9 +414,9 @@ contract('StakingThales', accounts => {
 			answer = await StakingThalesDeployed.claimReward({ from: first });
 			// assert.equal(answer.words[0], 70000);
 			// let answer = await StakingThalesDeployed.startStakingPeriod({from:owner});
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
-			// assert.equal(toDecimal(await StakingThalesDeployed.startTime.call()), toDecimal(await StakingThalesDeployed.lastPeriod.call()));
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
+			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
+			// assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()));
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
 		});
 
 		it('Stake with first account, claim reward, then unstake WITHOUT periodClose', async () => {
@@ -478,7 +481,7 @@ contract('StakingThales', accounts => {
 			assert.equal(answer, 1500);
 			answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			// fastForward(2*DAY);
-			await StakingThalesDeployed.depositRewards(1500000, { from: owner });
+			await StakingThalesDeployed.depositRewards(150000, { from: owner });
 			await StakingThalesDeployed.depositFees(5555, { from: owner });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
@@ -592,9 +595,9 @@ contract('StakingThales', accounts => {
 			console.log('Claimable:' + web3.utils.toDecimal(answer));
 			// assert.equal(answer.words[0], 70000);
 			// let answer = await StakingThalesDeployed.startStakingPeriod({from:owner});
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTime.call()), 0);
-			// assert.equal(toDecimal(await StakingThalesDeployed.startTime.call()), toDecimal(await StakingThalesDeployed.lastPeriod.call()));
-			// console.log(toDecimal(await StakingThalesDeployed.startTime.call()));
+			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
+			// assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()));
+			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
 		});
 
 		it('Claim first user', async () => {
@@ -610,7 +613,7 @@ contract('StakingThales', accounts => {
 			assert.equal(answer, 1500);
 			answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			// fastForward(2*DAY);
-			await StakingThalesDeployed.depositRewards(1500000, { from: owner });
+			await StakingThalesDeployed.depositRewards(5500000, { from: owner });
 			await StakingThalesDeployed.depositFees(5555, { from: owner });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
@@ -754,7 +757,7 @@ contract('StakingThales', accounts => {
 			// 	answer = await StakingThalesDeployed.claimReward({ from: first });
 			// }
 
-			for (let i = 0; i < 11; i++) {
+			for (let i = 0; i < 14; i++) {
 				fastForward(WEEK + SECOND);
 				await StakingThalesDeployed.depositFees(5555, { from: owner });
 				await StakingThalesDeployed.closePeriod({ from: second });

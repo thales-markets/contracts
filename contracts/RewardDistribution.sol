@@ -38,7 +38,6 @@ contract RewardDistribution {
         if (msg.sender != admin) {
             require(fundAdmins[msg.sender], "Admin only");
         }
-
         uint _totalAmount = 0;
         for (uint index = 0; index < _recipients.length; index++) {
             uint amount = _amounts[index];

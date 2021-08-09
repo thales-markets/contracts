@@ -32,7 +32,6 @@ async function getBlocks() {
 }
 
 async function fetchData() {
-	// let accountsScores = {};
 
 	const blocks = await getBlocks();
 
@@ -58,12 +57,14 @@ async function fetchData() {
 		}
 
 		if (dataL2.length) {
-			getWeeklyData(data, 0.95, weeklyReward);
-			getWeeklyData(dataL2, 0.5, weeklyRewardL2);
+            // distribute 95% of weekly rewards to L1 and 5% to L2 
+			getWeeklyData(data, 95, weeklyReward);
+			getWeeklyData(dataL2, 5, weeklyRewardL2);
 		} else {
-			getWeeklyData(data, 1, weeklyReward);
+			getWeeklyData(data, 100, weeklyReward);
 		}
 
+        console.log('total scores', totalScores);
 		console.log('tx count for week ' + (i + 1) + ' -', result.length);
 		console.log(
 			'min block',
@@ -114,15 +115,14 @@ async function fetchData() {
 
 function getWeeklyData(data, percent, weeklyReward) {
 	Object.keys(data).map(function(key, index) {
-		const weeklyPercent = (data[index].rewards * 100) / weeklyReward;
+		const weeklyPercent = (data[index].rewards * percent) / weeklyReward;
 
 		if (accountsScores[data[index].account]) {
-			accountsScores[data[index].account] += weeklyPercent * percent;
+			accountsScores[data[index].account] += weeklyPercent;
 		} else {
-			accountsScores[data[index].account] = weeklyPercent * percent;
+			accountsScores[data[index].account] = weeklyPercent;
 		}
-		totalScores += weeklyPercent * percent;
-		// console.log('totalScores', totalScores);
+		totalScores += weeklyPercent;
 	});
 }
 

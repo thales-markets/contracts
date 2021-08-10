@@ -1,5 +1,0 @@
-Ropsten:
-factory:npx hardhat verify --network ropsten 0x9a49a63fd40De14B333387CaC91f0307227A3395 "0xfE5866A9b399650A3F2488dD5481BE1eC0E16ecc"
-npx hardhat verify --network ropsten 0xf60881495E928EB13eE72a56E6f1F8bD6727236D --contract contracts/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy
-npx hardhat verify --network ropsten 0x10Ec0F8814C053Fbe71085Ba04ce79613F026750 --contract contracts/BinaryOptionMastercopy.sol:BinaryOptionMastercopy
-

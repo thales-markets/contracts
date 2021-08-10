@@ -1,10 +1,10 @@
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 const { web3, ethers } = require('hardhat');
-const { deployArgs, bnDecimal, deploy, bn } = require('../../scripts/snx-data/xsnx-snapshot/helpers');
+const { deployArgs, bnDecimal, deploy, bn } = require('../../../scripts/snx-data/xsnx-snapshot/helpers');
 
 // snapshot of user addresses balances of SNX
-const snapshot = require('../../scripts/snx-data/historical_snx.json');
+const snapshot = require('../../../scripts/snx-data/historical_snx.json');
 
 const THALES_AMOUNT = web3.utils.toWei('200');
 

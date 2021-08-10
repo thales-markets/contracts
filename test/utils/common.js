@@ -20,7 +20,7 @@ const {
 	fromUnit,
 	takeSnapshot,
 	restoreSnapshot,
-} = require('../utils')();
+} = require('./index')();
 
 // Helper for logging transactions
 console.logTransaction = transaction => {

@@ -3,9 +3,9 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN, fromBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('./common');
+const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
 
-const { toBytes32 } = require('../..');
+const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { toDecimal } = require('web3-utils');
 const { ethers } = require('ethers');
@@ -18,7 +18,7 @@ const {
 	currentTime,
 	multiplyDecimalRound,
 	divideDecimalRound,
-} = require('../utils')();
+} = require('../../utils')();
 
 contract('StakingThales', accounts => {
 	const [first, second, third, owner] = accounts;
@@ -817,9 +817,9 @@ contract('StakingThales', accounts => {
 			answer = await EscrowThalesDeployed.getStakerWeeksLength.call(second);
 
 			answer = await StakingThalesDeployed.getLastWeekOfClaimedRewards.call(first);
-			console.log(web3.utils.toDecimal(answer));
+			// console.log(web3.utils.toDecimal(answer));
 			answer = await StakingThalesDeployed.getLastWeekOfClaimedRewards.call(second);
-			console.log(web3.utils.toDecimal(answer));
+			// console.log(web3.utils.toDecimal(answer));
 
 			// for (let i = 0; i < 11; i++) {
 			// 	fastForward(WEEK + SECOND);
@@ -908,7 +908,7 @@ contract('StakingThales', accounts => {
 			// console.log('Thales balance of first user:' + web3.utils.toDecimal(answer));
 
 			answer = await ThalesDeployed.balanceOf.call(second);
-			console.log('Thales balance of second user:' + web3.utils.toDecimal(answer));
+			// console.log('Thales balance of second user:' + web3.utils.toDecimal(answer));
 		});
 
 		it('Staking & claiming with 3 users', async () => {
@@ -1270,17 +1270,17 @@ contract('StakingThales', accounts => {
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 				answer = await EscrowThalesDeployed.claimable.call(first);
-				console.log('Claimable for this week: ' + web3.utils.toDecimal(answer));
+				// console.log('Claimable for this week: ' + web3.utils.toDecimal(answer));
 				answer = await EscrowThalesDeployed.getStakerWeeks.call(first);
-				for (let j = 0; j < answer.length; j++) {
-					console.log('First field' + j + ': ' + web3.utils.toDecimal(answer[j]));
-				}
+				// for (let j = 0; j < answer.length; j++) {
+				// 	console.log('First field' + j + ': ' + web3.utils.toDecimal(answer[j]));
+				// }
 			}
 
 			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			let claimable = web3.utils.toDecimal(answer2);
-			console.log('Current claimable: ' + claimable);
+			// console.log('Current claimable: ' + claimable);
 			assert.equal(web3.utils.toDecimal(answer), web3.utils.toDecimal(answer2));
 		});
 		it('Claim first user: 0, 9, 21, 31 weeks', async () => {

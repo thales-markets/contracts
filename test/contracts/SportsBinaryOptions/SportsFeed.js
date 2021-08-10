@@ -3,7 +3,7 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../common');
+const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
 
 const { toBytes32 } = require('../../../index');
 
@@ -37,14 +37,9 @@ contract('SportFeed', accounts => {
 			});
 			let stringResult = await feed.resultString();
 			let plainResult = await feed.result();
-			console.log('result is' + stringResult);
-			console.log('result plain is' + plainResult);
 			let firstPlace = await feed.firstPlace();
 			let secondPlace = await feed.secondPlace();
 			let thirdPlace = await feed.thirdPlace();
-			console.log('firstPlace is ' + firstPlace);
-			console.log('secondPlace is ' + secondPlace);
-			console.log('thirdPlace is ' + thirdPlace);
 
 			assert.equal(await feed.isCompetitorAtPlace('USA', 1), true);
 			assert.equal(await feed.isCompetitorAtPlace('CHN', 2), true);
@@ -99,7 +94,6 @@ contract('SportFeed', accounts => {
 				from: owner,
 			});
 			let stringResult = await feed.resultString();
-			console.log('stringResult is ' + stringResult);
 		});
 	});
 });

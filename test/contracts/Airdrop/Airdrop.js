@@ -1,5 +1,5 @@
 const { deploymentFixture, getReward } = require('./fixture');
-const { assert } = require('./common');
+const { assert } = require('../../utils/common');
 
 // Airdrop tests
 describe('Contract: Airdrop', async () => {

@@ -1,7 +1,7 @@
 'use strict';
 
 const { contract, web3 } = require('hardhat');
-const { currentTime } = require('../utils')();
+const { currentTime } = require('../../utils')();
 
 var ethers2 = require('ethers');
 var crypto = require('crypto');

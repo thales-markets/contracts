@@ -8,7 +8,6 @@ import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
 import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
 
 contract VestingEscrow is ReentrancyGuard {
-
     using Math for uint256;
     using SafeMath for uint256;
 
@@ -37,7 +36,6 @@ contract VestingEscrow is ReentrancyGuard {
         bool _canDisable,
         address[4] memory _fundAdmins
     ) public {
-
         require(_startTime >= block.timestamp, "Start time must be in future");
         require(_endTime > _startTime, "End time must be greater than start time");
 
@@ -50,14 +48,13 @@ contract VestingEscrow is ReentrancyGuard {
         bool _fundAdminsEnabled = false;
         for (uint256 index = 0; index < _fundAdmins.length; index++) {
             address adminAddress = _fundAdmins[index];
-            if(adminAddress != address(0)) {
+            if (adminAddress != address(0)) {
                 fundAdmins[adminAddress] = true;
-                if(!_fundAdminsEnabled) {
+                if (!_fundAdminsEnabled) {
                     _fundAdminsEnabled = true;
                     fundAdminsEnabled = true;
                 }
             }
-            
         }
     }
 
@@ -67,7 +64,7 @@ contract VestingEscrow is ReentrancyGuard {
     }
 
     function fund(address[100] calldata _recipients, uint256[100] calldata _amounts) external {
-        if(msg.sender != admin) {
+        if (msg.sender != admin) {
             require(fundAdmins[msg.sender], "Admin only");
             require(fundAdminsEnabled, "Fund admins disabled");
         }
@@ -76,7 +73,7 @@ contract VestingEscrow is ReentrancyGuard {
         for (uint256 index = 0; index < 100; index++) {
             uint256 amount = _amounts[index];
             address recipient = _recipients[index];
-            if(recipient == address(0)) {
+            if (recipient == address(0)) {
                 break;
             }
             _totalAmount = _totalAmount.add(amount);
@@ -92,14 +89,13 @@ contract VestingEscrow is ReentrancyGuard {
         require(canDisable, "Cannot disable");
 
         bool isDisabled = disabledAt[_recipient] == 0;
-        if(isDisabled) {
+        if (isDisabled) {
             disabledAt[_recipient] = block.timestamp;
         } else {
             disabledAt[_recipient] = 0;
         }
 
         emit ToggleDisable(_recipient, isDisabled);
-
     }
 
     function disableCanDisable() external onlyAdmin {
@@ -110,68 +106,68 @@ contract VestingEscrow is ReentrancyGuard {
         fundAdminsEnabled = false;
     }
 
-    function _totalVestedOf(address _recipient, uint256 _time) internal view returns(uint256) {
+    function _totalVestedOf(address _recipient, uint256 _time) internal view returns (uint256) {
         uint256 start = startTime;
         uint256 end = endTime;
         uint256 locked = initialLocked[_recipient];
 
-        if(_time < start) return 0;
+        if (_time < start) return 0;
         return Math.min(locked.mul(_time.sub(start)).div(end.sub(start)), locked);
     }
 
-    function _totalVested() internal view returns(uint256) {
+    function _totalVested() internal view returns (uint256) {
         uint256 start = startTime;
         uint256 end = endTime;
         uint256 locked = initialLockedSupply;
 
-        if(block.timestamp < start) {
+        if (block.timestamp < start) {
             return 0;
         }
 
         return Math.min(locked.mul(block.timestamp.sub(start)).div(end.sub(start)), locked);
     }
 
-    function vestedSupply() public view returns(uint256) {
+    function vestedSupply() public view returns (uint256) {
         return _totalVested();
     }
 
-    function vestedOf(address _recipient) public view returns(uint256) {
+    function vestedOf(address _recipient) public view returns (uint256) {
         return _totalVestedOf(_recipient, block.timestamp);
     }
 
-    function lockedSupply() public view returns(uint256) {
+    function lockedSupply() public view returns (uint256) {
         return initialLockedSupply.sub(_totalVested());
     }
 
-    function balanceOf(address _recipient) public view returns(uint256) {
+    function balanceOf(address _recipient) public view returns (uint256) {
         return _totalVestedOf(_recipient, block.timestamp).sub(totalClaimed[_recipient]);
     }
 
-    function lockedOf(address _recipient) public view returns(uint256) {
+    function lockedOf(address _recipient) public view returns (uint256) {
         return initialLocked[_recipient].sub(_totalVestedOf(_recipient, block.timestamp));
     }
 
     function claim(address _address) external nonReentrant {
         uint256 t = disabledAt[_address];
-        if(t == 0) {
+        if (t == 0) {
             t = block.timestamp;
         }
 
         uint256 claimable = _totalVestedOf(_address, t).sub(totalClaimed[_address]);
-        totalClaimed[_address] =  totalClaimed[_address].add(claimable);
+        totalClaimed[_address] = totalClaimed[_address].add(claimable);
         require(ERC20(token).transfer(_address, claimable));
 
         emit Claim(_address, claimable);
     }
 
-    function commitTransferOwnership(address _address) external onlyAdmin returns(bool) {
+    function commitTransferOwnership(address _address) external onlyAdmin returns (bool) {
         futureAdmin = _address;
 
         emit CommitOwnership(_address);
         return true;
     }
 
-    function applyTransferOwnership() external onlyAdmin returns(bool) {
+    function applyTransferOwnership() external onlyAdmin returns (bool) {
         address _admin = futureAdmin;
         require(_admin != address(0), "Admin not set");
 

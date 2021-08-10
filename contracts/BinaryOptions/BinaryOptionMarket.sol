@@ -2,9 +2,9 @@ pragma solidity ^0.5.16;
 
 // Inheritance
 import "synthetix-2.43.1/contracts/MinimalProxyFactory.sol";
-import "./OwnedWithInit.sol";
-import "./interfaces/IBinaryOptionMarket.sol";
-import "./interfaces/IOracleInstance.sol";
+import "../OwnedWithInit.sol";
+import "../interfaces/IBinaryOptionMarket.sol";
+import "../interfaces/IOracleInstance.sol";
 
 // Libraries
 import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";

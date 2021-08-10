@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 
 // Inheritance
-import "./interfaces/IBinaryOptionMarketManager.sol";
+import "../interfaces/IBinaryOptionMarketManager.sol";
 import "synthetix-2.43.1/contracts/Owned.sol";
 import "synthetix-2.43.1/contracts/Pausable.sol";
 
@@ -13,7 +13,7 @@ import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
 import "./BinaryOptionMarketFactory.sol";
 import "./BinaryOptionMarket.sol";
 import "./BinaryOption.sol";
-import "./interfaces/IBinaryOptionMarket.sol";
+import "../interfaces/IBinaryOptionMarket.sol";
 import "synthetix-2.43.1/contracts/interfaces/IExchangeRates.sol";
 import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
 import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";

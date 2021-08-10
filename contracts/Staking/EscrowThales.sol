@@ -6,7 +6,7 @@ import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
 import "synthetix-2.43.1/contracts/Pausable.sol";
-import "./interfaces/IEscrowThales.sol";
+import "../interfaces/IEscrowThales.sol";
 
 contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     using SafeMath for uint;

@@ -21,10 +21,8 @@ contract('RewardDistribution', async accounts => {
 		for (var i = 0; i < 1000; i++) {
 			var id = crypto.randomBytes(32).toString('hex');
 			var privateKey = '0x' + id;
-			//console.log('SAVE BUT DO NOT SHARE THIS:', privateKey);
 
 			var wallet = new ethers2.Wallet(privateKey);
-			//console.log('Address: ' + wallet.address);
 			recipients.push(wallet.address);
 		}
 	});

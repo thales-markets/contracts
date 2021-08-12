@@ -33,7 +33,7 @@ async function main() {
 
 	const VestingEscrow = await ethers.getContractFactory('VestingEscrow');
 	const VestingEscrowDeployed = await VestingEscrow.deploy(
-		owner,
+		owner.address,
 		ThalesDeployed.address,
 		startTime,
 		startTime + VESTING_PERIOD
@@ -61,7 +61,12 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: VestingEscrowDeployed.address,
-		constructorArguments: [owner, ThalesDeployed.address, startTime, startTime + VESTING_PERIOD],
+		constructorArguments: [
+			owner.address,
+			ThalesDeployed.address,
+			startTime,
+			startTime + VESTING_PERIOD,
+		],
 	});
 }
 

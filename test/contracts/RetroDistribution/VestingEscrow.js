@@ -328,6 +328,43 @@ contract('VestingEscrow', accounts => {
 			assert.equal(balanceOfAccount, TOTAL_AMOUNT);
 		});
 	});
+
+	describe('Selfdestruct', () => {
+		let startTime, endTime;
+
+		beforeEach(async () => {
+			[admin, beneficiary, revoker] = await ethers.getSigners();
+
+			startTime = (await currentTime()) + 100;
+			endTime = startTime + YEAR;
+
+			Thales = await deployContract('Thales');
+			VestingEscrow = await deployContract('VestingEscrow', [
+				admin.address,
+				Thales.address,
+				startTime.toString(),
+				endTime.toString(),
+			]);
+
+			const recipients = [beneficiary.address, ...new Array(99).fill(ZERO_ADDRESS)];
+
+			await VestingEscrow.addTokens(TOTAL_AMOUNT);
+			await VestingEscrow.fund(recipients, [TOTAL_AMOUNT, ...new Array(99).fill(0)]);
+		});
+
+		it('Cant selfdestruct befor a year passes after end time', async () => {
+			fastForward(YEAR);
+			const REVERT =
+				'VM Exception while processing transaction: revert Contract can only be selfdestruct a year after endtime';
+			await assert.revert(VestingEscrow._selfDestruct(beneficiary.address), REVERT);
+		});
+
+		it('After 3 years everything left goes to admin', async () => {
+			fastForward(YEAR * 3);
+			await VestingEscrow._selfDestruct(beneficiary.address);
+			assert.equal(await Thales.balanceOf(beneficiary.address), TOTAL_AMOUNT);
+		});
+	});
 });
 
 const deployContract = async (name, args) => {

@@ -3,7 +3,7 @@
 const { artifacts, web3, log } = require('hardhat');
 
 const { toWei } = web3.utils;
-const { toUnit } = require('../../utils')();
+const { toUnit } = require('./index')();
 const {
 	toBytes32,
 	getUsers,
@@ -25,7 +25,7 @@ const {
 		CROSS_DOMAIN_ESCROW_GAS_LIMIT,
 		CROSS_DOMAIN_WITHDRAWAL_GAS_LIMIT,
 	},
-} = require('../../../index');
+} = require('../../index');
 
 const SUPPLY_100M = toWei((1e8).toString()); // 100M
 

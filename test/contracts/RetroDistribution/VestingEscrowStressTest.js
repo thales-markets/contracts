@@ -1,7 +1,7 @@
 'use strict';
 
 const { contract, web3 } = require('hardhat');
-const { currentTime } = require('../utils')();
+const { currentTime } = require('../../utils')();
 
 var ethers2 = require('ethers');
 var crypto = require('crypto');
@@ -14,11 +14,10 @@ contract('VestingEscrow', async accounts => {
 		Thales = await deployContract('Thales');
 
 		VestingEscrow = await deployContract('VestingEscrow', [
+			accounts[0],
 			Thales.address,
 			((await currentTime()) + 100).toString(),
 			((await currentTime()) + 100 + YEAR).toString(),
-			true,
-			[accounts[2], accounts[3], accounts[4], accounts[5]],
 		]);
 	});
 
@@ -30,14 +29,13 @@ contract('VestingEscrow', async accounts => {
 				var privateKey = '0x' + id;
 
 				var wallet = new ethers2.Wallet(privateKey);
-				console.log('Address: ' + wallet.address);
 				recipients.push(wallet.address);
 			}
 
 			await VestingEscrow.addTokens(web3.utils.toWei('1000'));
-			for (i = 0; i < 10; i++) {
-				await VestingEscrow.fund(recipients.slice(i * 100, (i + 1) * 100), new Array(100).fill(1));
-			}
+			await VestingEscrow.fund(recipients.slice(0, 200), new Array(200).fill(1));
+			await VestingEscrow.fund(recipients.slice(200, 400), new Array(200).fill(1));
+			await VestingEscrow.fund(recipients.slice(400, 600), new Array(200).fill(1));
 		});
 	});
 });

@@ -5,8 +5,8 @@ const { smockit } = require('@eth-optimism/smock');
 
 const { assert } = require('./common');
 
-const { currentTime, toUnit } = require('../utils')();
-const { toBytes32 } = require('../..');
+const { currentTime, toUnit } = require('./index')();
+const { toBytes32 } = require('../../index');
 
 module.exports = {
 	/**

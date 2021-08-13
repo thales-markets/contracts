@@ -1,6 +1,5 @@
-const { deploymentFixture, getReward } = require('./airdropFixture');
-const { assert } = require('../common');
-
+const { deploymentFixture, getReward } = require('./fixture');
+const { assert } = require('../../utils/common');
 // Airdrop tests
 describe('Contract: Airdrop', async () => {
 	let acc1, acc2, airdrop, merkleTree, snapshot, snapshotHashes;

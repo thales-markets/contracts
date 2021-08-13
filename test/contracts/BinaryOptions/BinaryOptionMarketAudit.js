@@ -5,7 +5,7 @@ const { toBN } = web3.utils;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../common');
+const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
 const {
 	fastForward,
 	toUnit,
@@ -14,7 +14,7 @@ const {
 	divideDecimalRound,
 } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
-const { setupContract, setupAllContracts } = require('../Token/setup');
+const { setupContract, setupAllContracts } = require('../../utils/setup');
 
 const {
 	ensureOnlyExpectedMutativeFunctions,
@@ -22,7 +22,7 @@ const {
 	getEventByName,
 	getDecodedLogs,
 	decodedEventEqual,
-} = require('../helpers');
+} = require('../../utils/helpers');
 
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
 let BinaryOptionMarket,

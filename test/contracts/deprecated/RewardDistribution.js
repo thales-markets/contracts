@@ -1,12 +1,12 @@
 'use strict';
 
 const { contract, web3 } = require('hardhat');
-const { assert } = require('../common');
+const { assert } = require('../../utils/common');
 const { fastForward, toUnit } = require('../../utils')();
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const TOTAL_AMOUNT = web3.utils.toWei('500000');
-const { testAccounts } = require('./test-accounts');
+const { testAccounts } = require('../Token/test-accounts');
 
 contract('RewardDistribution', async accounts => {
 	const WEEK = 604800;

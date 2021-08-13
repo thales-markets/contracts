@@ -45,11 +45,10 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 
 	const VestingEscrow = await ethers.getContractFactory('VestingEscrow');
 	const VestingEscrowDeployed = await VestingEscrow.deploy(
+		owner.address,
 		token.address,
 		startTime,
-		startTime + VESTING_PERIOD,
-		false,
-		fundingAdmins
+		startTime + VESTING_PERIOD
 	);
 	await VestingEscrowDeployed.deployed();
 	console.log('VestingEscrowDeploy deployed to:', VestingEscrowDeployed.address);

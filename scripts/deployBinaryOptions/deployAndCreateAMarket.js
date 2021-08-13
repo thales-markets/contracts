@@ -8,13 +8,13 @@ const {
 	currentTime,
 	multiplyDecimalRound,
 	divideDecimalRound,
-} = require('../test/utils')();
+} = require('../../test/utils')();
 
 const { toBN } = web3.utils;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
-const { toBytes32 } = require('..');
+const { toBytes32 } = require('../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();

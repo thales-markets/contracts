@@ -6,8 +6,9 @@ import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 
 import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
 import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
+import "synthetix-2.43.1/contracts/Owned.sol";
 
-contract VestingEscrow is ReentrancyGuard {
+contract VestingEscrow is ReentrancyGuard, Owned {
     using Math for uint256;
     using SafeMath for uint256;
 
@@ -20,57 +21,28 @@ contract VestingEscrow is ReentrancyGuard {
     uint256 public initialLockedSupply;
     uint256 public unallocatedSupply;
 
-    bool public canDisable;
-    mapping(address => uint256) public disabledAt;
-
-    address public admin;
-    address public futureAdmin;
-
-    bool public fundAdminsEnabled;
-    mapping(address => bool) public fundAdmins;
-
     constructor(
+        address _owner,
         address _token,
         uint256 _startTime,
-        uint256 _endTime,
-        bool _canDisable,
-        address[4] memory _fundAdmins
-    ) public {
+        uint256 _endTime
+    ) public Owned(_owner) {
         require(_startTime >= block.timestamp, "Start time must be in future");
         require(_endTime > _startTime, "End time must be greater than start time");
 
         token = _token;
-        admin = msg.sender;
         startTime = _startTime;
         endTime = _endTime;
-        canDisable = _canDisable;
-
-        bool _fundAdminsEnabled = false;
-        for (uint256 index = 0; index < _fundAdmins.length; index++) {
-            address adminAddress = _fundAdmins[index];
-            if (adminAddress != address(0)) {
-                fundAdmins[adminAddress] = true;
-                if (!_fundAdminsEnabled) {
-                    _fundAdminsEnabled = true;
-                    fundAdminsEnabled = true;
-                }
-            }
-        }
     }
 
-    function addTokens(uint256 _amount) external onlyAdmin {
+    function addTokens(uint256 _amount) external onlyOwner {
         require(ERC20(token).transferFrom(msg.sender, address(this), _amount), "Transfer failed");
         unallocatedSupply = unallocatedSupply.add(_amount);
     }
 
-    function fund(address[100] calldata _recipients, uint256[100] calldata _amounts) external {
-        if (msg.sender != admin) {
-            require(fundAdmins[msg.sender], "Admin only");
-            require(fundAdminsEnabled, "Fund admins disabled");
-        }
-
+    function fund(address[] calldata _recipients, uint256[] calldata _amounts) external onlyOwner {
         uint256 _totalAmount = 0;
-        for (uint256 index = 0; index < 100; index++) {
+        for (uint256 index = 0; index < _recipients.length; index++) {
             uint256 amount = _amounts[index];
             address recipient = _recipients[index];
             if (recipient == address(0)) {
@@ -83,27 +55,6 @@ contract VestingEscrow is ReentrancyGuard {
 
         initialLockedSupply = initialLockedSupply.add(_totalAmount);
         unallocatedSupply -= _totalAmount;
-    }
-
-    function toggleDisable(address _recipient) public onlyAdmin {
-        require(canDisable, "Cannot disable");
-
-        bool isDisabled = disabledAt[_recipient] == 0;
-        if (isDisabled) {
-            disabledAt[_recipient] = block.timestamp;
-        } else {
-            disabledAt[_recipient] = 0;
-        }
-
-        emit ToggleDisable(_recipient, isDisabled);
-    }
-
-    function disableCanDisable() external onlyAdmin {
-        canDisable = false;
-    }
-
-    function disableFundAdmins() external onlyAdmin {
-        fundAdminsEnabled = false;
     }
 
     function _totalVestedOf(address _recipient, uint256 _time) internal view returns (uint256) {
@@ -147,43 +98,29 @@ contract VestingEscrow is ReentrancyGuard {
         return initialLocked[_recipient].sub(_totalVestedOf(_recipient, block.timestamp));
     }
 
-    function claim(address _address) external nonReentrant {
-        uint256 t = disabledAt[_address];
-        if (t == 0) {
-            t = block.timestamp;
+    function _selfDestruct(address payable beneficiary) external onlyOwner {
+        //only callable a year after end time
+        require(block.timestamp > (endTime + 365 days), "Contract can only be selfdestruct a year after endtime");
+
+        // Transfer the balance rather than the deposit value in case there are any synths left over
+        // from direct transfers.
+        uint balance = IERC20(token).balanceOf(address(this));
+        if (balance != 0) {
+            IERC20(token).transfer(beneficiary, balance);
         }
 
-        uint256 claimable = _totalVestedOf(_address, t).sub(totalClaimed[_address]);
-        totalClaimed[_address] = totalClaimed[_address].add(claimable);
-        require(ERC20(token).transfer(_address, claimable));
-
-        emit Claim(_address, claimable);
+        // Destroy the option tokens before destroying the market itself.
+        selfdestruct(beneficiary);
     }
 
-    function commitTransferOwnership(address _address) external onlyAdmin returns (bool) {
-        futureAdmin = _address;
-
-        emit CommitOwnership(_address);
-        return true;
-    }
-
-    function applyTransferOwnership() external onlyAdmin returns (bool) {
-        address _admin = futureAdmin;
-        require(_admin != address(0), "Admin not set");
-
-        admin = _admin;
-        emit ApplyOwnership(_admin);
-        return true;
-    }
-
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Admin only");
-        _;
+    function claim() external nonReentrant {
+        uint256 claimable = balanceOf(msg.sender);
+        require(claimable > 0, "nothing to claim");
+        totalClaimed[msg.sender] = totalClaimed[msg.sender].add(claimable);
+        require(ERC20(token).transfer(msg.sender, claimable));
+        emit Claim(msg.sender, claimable);
     }
 
     event Fund(address indexed _recipient, uint256 _amount);
-    event ToggleDisable(address indexed _recipient, bool _isDisabled);
     event Claim(address indexed _address, uint256 _amount);
-    event CommitOwnership(address indexed _address);
-    event ApplyOwnership(address indexed _address);
 }

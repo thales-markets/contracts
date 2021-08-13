@@ -1,10 +1,10 @@
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 const { web3, ethers } = require('hardhat');
-const { deployArgs, bnDecimal, deploy, bn } = require('../../scripts/snx-data/xsnx-snapshot/helpers');
+const { deployArgs, bnDecimal, deploy, bn } = require('../../../scripts/snx-data/xsnx-snapshot/helpers');
 
 // snapshot of user addresses balances of SNX
-const snapshot = require('../../scripts/snx-data/historical_snx.json');
+const snapshot = require('../../../scripts/snx-data/weekly_rewards.json');
 
 const THALES_AMOUNT = web3.utils.toWei('200');
 
@@ -38,10 +38,10 @@ const deploymentFixture = async () => {
 	// deploy THALES
 	const thales = await deploy('Thales');
 
-	// deploy Airdrop contract
-	const airdrop = await deployArgs('Airdrop', thales.address, root);
+	// deploy OngoingAirdrop contract
+	const ongoingAirdrop = await deployArgs('OngoingAirdrop', thales.address, root);
 	// transfer THALES tokens to airdrop contract
-	await thales.transfer(airdrop.address, totalBalance);
+	await thales.transfer(ongoingAirdrop.address, totalBalance);
 
 	// Impersonate two accounts from snapshot
 	await hre.network.provider.request({
@@ -69,7 +69,7 @@ const deploymentFixture = async () => {
 	return {
 		acc1: userWithReward,
 		acc2: userWithReward2,
-		airdrop,
+		ongoingAirdrop,
 		token: thales,
 		merkleTree,
 		snapshot: userBalance,
@@ -78,7 +78,7 @@ const deploymentFixture = async () => {
 };
 
 // Get the i-th reward from the balance snapshot using the signer
-// Generates merkle proof and sends the redeem transaction to the airdrop contract
+// Generates merkle proof and sends the redeem transaction to the ongoingAirdrop contract
 async function getReward(i, merkleTree, balanceSnapshot, snapshotHashes, airdrop, signer) {
 	let snapshot = balanceSnapshot[i];
 	let leaf = snapshotHashes[i];

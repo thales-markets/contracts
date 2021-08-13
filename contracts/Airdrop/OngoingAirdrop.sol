@@ -9,16 +9,15 @@ import "openzeppelin-solidity-2.3.0/contracts/cryptography/MerkleProof.sol";
  * Based on an account balance snapshot stored in a merkle tree
  */
 contract OngoingAirdrop is Ownable {
-
     IERC20 public token;
 
     bytes32 public root; // merkle tree root
 
     address public admin;
 
-    mapping (uint256 => uint256) public _claimed;
+    mapping(uint256 => uint256) public _claimed;
 
-    constructor (IERC20 _token, bytes32 _root) public {
+    constructor(IERC20 _token, bytes32 _root) public {
         token = _token;
         root = _root;
     }
@@ -37,7 +36,12 @@ contract OngoingAirdrop is Ownable {
 
     // Get airdrop tokens assigned to address
     // Requires sending merkle proof to the function
-    function claim(uint256 index, address recipient, uint256 amount, bytes32[] memory merkleProof) public {
+    function claim(
+        uint256 index,
+        address recipient,
+        uint256 amount,
+        bytes32[] memory merkleProof
+    ) public {
         // Make sure msg.sender is the recipient of this airdrop
         require(msg.sender == recipient, "The reward recipient should be the transaction sender");
 

@@ -32,7 +32,6 @@ async function getBlocks() {
 }
 
 async function fetchData() {
-
 	const blocks = await getBlocks();
 
 	for (let i = 0; i < blocks.length; i++) {
@@ -57,14 +56,14 @@ async function fetchData() {
 		}
 
 		if (dataL2.length) {
-            // distribute 95% of weekly rewards to L1 and 5% to L2 
+			// distribute 95% of weekly rewards to L1 and 5% to L2
 			getWeeklyData(data, 95, weeklyReward);
 			getWeeklyData(dataL2, 5, weeklyRewardL2);
 		} else {
 			getWeeklyData(data, 100, weeklyReward);
 		}
 
-        console.log('total scores', totalScores);
+		console.log('total scores', totalScores);
 		console.log('tx count for week ' + (i + 1) + ' -', result.length);
 		console.log(
 			'min block',

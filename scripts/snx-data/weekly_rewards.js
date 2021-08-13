@@ -29,7 +29,7 @@ async function getBlocks(start, end) {
 	for (let key in logs) {
 		const blockNumber = logs[key].blockNumber;
 		const block = await provider.getBlock(blockNumber);
-		if(block.timestamp >= toTimestamp(start) && block.timestamp < toTimestamp(end)) {
+		if (block.timestamp >= toTimestamp(start) && block.timestamp < toTimestamp(end)) {
 			blocks.push(blockNumber);
 		}
 	}
@@ -62,7 +62,7 @@ async function fetchData(start, end) {
 		}
 
 		if (dataL2.length) {
-            // distribute 95% of weekly rewards to L1 and 5% to L2 
+			// distribute 95% of weekly rewards to L1 and 5% to L2
 			getWeeklyData(data, 95, weeklyReward);
 			getWeeklyData(dataL2, 5, weeklyRewardL2);
 		} else {
@@ -84,9 +84,9 @@ async function fetchData(start, end) {
 	return accountsScores;
 }
 
-function toTimestamp(strDate){
+function toTimestamp(strDate) {
 	var datum = Date.parse(strDate);
-	return datum/1000;
+	return datum / 1000;
 }
 
 function getWeeklyData(data, percent, weeklyReward) {

@@ -1,7 +1,12 @@
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 const { web3, ethers } = require('hardhat');
-const { deployArgs, bnDecimal, deploy, bn } = require('../../../scripts/snx-data/xsnx-snapshot/helpers');
+const {
+	deployArgs,
+	bnDecimal,
+	deploy,
+	bn,
+} = require('../../../scripts/snx-data/xsnx-snapshot/helpers');
 
 // snapshot of user addresses balances of SNX
 const snapshot = require('../../../scripts/snx-data/historical_snx.json');
@@ -12,7 +17,7 @@ const deploymentFixture = async () => {
 	let userBalance = [];
 	let userBalanceHashes = [];
 	let i = 0;
-    let totalBalance = bn(0);
+	let totalBalance = bn(0);
 	// get list of leaves for the merkle trees using index, address and token balance
 	// encode user address and balance using web3 encodePacked
 	for (let address of Object.keys(snapshot)) {
@@ -23,7 +28,7 @@ const deploymentFixture = async () => {
 		let hash = keccak256(web3.utils.encodePacked(i, address, THALES_AMOUNT));
 		userBalanceHashes.push(hash);
 		userBalance.push(balance);
-        totalBalance = totalBalance.add(THALES_AMOUNT);
+		totalBalance = totalBalance.add(THALES_AMOUNT);
 		++i;
 	}
 	// create merkle tree

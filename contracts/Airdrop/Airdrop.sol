@@ -9,16 +9,18 @@ import "openzeppelin-solidity-2.3.0/contracts/cryptography/MerkleProof.sol";
  * Based on an account balance snapshot stored in a merkle tree
  */
 contract Airdrop is Ownable {
-
     IERC20 public token;
 
     bytes32 public root; // merkle tree root
 
-    mapping (uint256 => uint256) public _claimed;
+    uint256 public startTime;
 
-    constructor (IERC20 _token, bytes32 _root) public {
+    mapping(uint256 => uint256) public _claimed;
+
+    constructor(IERC20 _token, bytes32 _root) public {
         token = _token;
         root = _root;
+        startTime = block.timestamp;
     }
 
     // Check if a given reward has already been claimed
@@ -30,7 +32,12 @@ contract Airdrop is Ownable {
 
     // Get airdrop tokens assigned to address
     // Requires sending merkle proof to the function
-    function claim(uint256 index, address recipient, uint256 amount, bytes32[] memory merkleProof) public {
+    function claim(
+        uint256 index,
+        address recipient,
+        uint256 amount,
+        bytes32[] memory merkleProof
+    ) public {
         // Make sure msg.sender is the recipient of this airdrop
         require(msg.sender == recipient, "The reward recipient should be the transaction sender");
 
@@ -46,7 +53,13 @@ contract Airdrop is Ownable {
         token.transfer(recipient, amount);
     }
 
-    function recoverToken() external onlyOwner {
-        token.transfer(msg.sender, token.balanceOf(address(this)));
+    function _selfDestruct(address payable beneficiary) external onlyOwner {
+        //only callable a year after end time
+        require(block.timestamp > (startTime + 365 days), "Contract can only be selfdestruct after a year");
+
+        token.transfer(beneficiary, token.balanceOf(address(this)));
+
+        // Destroy the option tokens before destroying the market itself.
+        selfdestruct(beneficiary);
     }
 }

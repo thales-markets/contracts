@@ -45,7 +45,7 @@ describe('Contract: OndoingAirdrop', async () => {
 			});
 
 		it('should be able to recover token', async () => {
-			await ongoingAirdrop.recoverToken();
+			await ongoingAirdrop._selfDestruct();
 			let balance = await token.balanceOf(ongoingAirdrop.address);
 			assert.equal(balance, 0);
 		});

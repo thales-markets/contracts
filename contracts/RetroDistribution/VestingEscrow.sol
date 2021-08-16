@@ -104,10 +104,7 @@ contract VestingEscrow is ReentrancyGuard, Owned {
 
         // Transfer the balance rather than the deposit value in case there are any synths left over
         // from direct transfers.
-        uint balance = IERC20(token).balanceOf(address(this));
-        if (balance != 0) {
-            IERC20(token).transfer(beneficiary, balance);
-        }
+        IERC20(token).transfer(beneficiary, IERC20(token).balanceOf(address(this)));
 
         // Destroy the option tokens before destroying the market itself.
         selfdestruct(beneficiary);

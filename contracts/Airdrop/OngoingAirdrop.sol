@@ -13,6 +13,8 @@ contract OngoingAirdrop is Ownable {
 
     bytes32 public root; // merkle tree root
 
+    uint256 public startTime;
+
     address public admin;
 
     mapping(uint256 => uint256) public _claimed;
@@ -20,11 +22,13 @@ contract OngoingAirdrop is Ownable {
     constructor(IERC20 _token, bytes32 _root) public {
         token = _token;
         root = _root;
+        startTime = block.timestamp;
     }
 
     // Set root of merkle tree
     function setRoot(bytes32 _root) public onlyOwner {
         root = _root;
+        startTime = block.timestamp;//reset time every week
     }
 
     // Check if a given reward has already been claimed
@@ -57,8 +61,14 @@ contract OngoingAirdrop is Ownable {
         token.transfer(recipient, amount);
     }
 
-    function recoverToken() external onlyOwner {
-        token.transfer(msg.sender, token.balanceOf(address(this)));
+    function _selfDestruct(address payable beneficiary) external onlyOwner {
+        //only callable a year after end time
+        require(block.timestamp > (startTime + 365 days), "Contract can only be selfdestruct after a year");
+
+        token.transfer(beneficiary, token.balanceOf(address(this)));
+
+        // Destroy the option tokens before destroying the market itself.
+        selfdestruct(beneficiary);
     }
 
     modifier onlyAdmin() {

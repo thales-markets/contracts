@@ -3,12 +3,13 @@ pragma solidity ^0.5.16;
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
 import "synthetix-2.43.1/contracts/Owned.sol";
 import "openzeppelin-solidity-2.3.0/contracts/cryptography/MerkleProof.sol";
+import "synthetix-2.43.1/contracts/Pausable.sol";
 
 /**
  * Contract which implements a merkle airdrop for a given token
  * Based on an account balance snapshot stored in a merkle tree
  */
-contract OngoingAirdrop is Owned {
+contract OngoingAirdrop is Owned, Pausable {
     IERC20 public token;
 
     bytes32 public root; // merkle tree root
@@ -23,7 +24,7 @@ contract OngoingAirdrop is Owned {
         address _owner,
         IERC20 _token,
         bytes32 _root
-    ) public Owned(_owner) {
+    ) public Owned(_owner) Pausable() {
         token = _token;
         root = _root;
         startTime = block.timestamp;
@@ -33,6 +34,7 @@ contract OngoingAirdrop is Owned {
     function setRoot(bytes32 _root) public onlyOwner {
         root = _root;
         startTime = block.timestamp; //reset time every week
+        // TODO: reset claim flags
     }
 
     // Check if a given reward has already been claimed
@@ -62,6 +64,8 @@ contract OngoingAirdrop is Owned {
         // verify the proof is valid
         require(MerkleProof.verify(merkleProof, root, leaf), "Proof is not valid");
         // Redeem!
+        // TODO: send to escrow
+        // escrow.addToEscrow
         token.transfer(recipient, amount);
     }
 

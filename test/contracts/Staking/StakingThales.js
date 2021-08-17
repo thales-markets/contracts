@@ -22,7 +22,7 @@ const {
 
 contract('StakingThales', accounts => {
 	const [first, second, third, owner] = accounts;
-	let ThalesDeployed, ThalesFeeDeployed, StakingThalesDeployed, EscrowThalesDeployed;
+	let ThalesDeployed, ThalesFeeDeployed, StakingThalesDeployed, EscrowThalesDeployed, OngoingAirdropDeployed;
 
 	const SECOND = 1000;
 	const DAY = 86400;
@@ -34,9 +34,11 @@ contract('StakingThales', accounts => {
 			let Thales = artifacts.require('Thales');
 			let EscrowThales = artifacts.require('EscrowThales');
 			let StakingThales = artifacts.require('StakingThales');
+			let OngoingAirdrop = artifacts.require('OngoingAirdrop');
 			ThalesDeployed = await Thales.new({ from: owner });
 			ThalesFeeDeployed = await Thales.new({ from: owner });
-			EscrowThalesDeployed = await EscrowThales.new(owner, ThalesDeployed.address, owner, {
+			OngoingAirdropDeployed = await OngoingAirdrop.new(owner, ThalesDeployed.address, toBytes32("random"), {from: owner});
+			EscrowThalesDeployed = await EscrowThales.new(owner, ThalesDeployed.address, owner, OngoingAirdropDeployed.address,  {
 				from: owner,
 			});
 
@@ -54,9 +56,11 @@ contract('StakingThales', accounts => {
 		let Thales = artifacts.require('Thales');
 		let EscrowThales = artifacts.require('EscrowThales');
 		let StakingThales = artifacts.require('StakingThales');
+		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
 		ThalesDeployed = await Thales.new({ from: owner });
 		ThalesFeeDeployed = await Thales.new({ from: owner });
-		EscrowThalesDeployed = await EscrowThales.new(owner, ThalesDeployed.address, owner, {
+		OngoingAirdropDeployed = await OngoingAirdrop.new(owner, ThalesDeployed.address, toBytes32("random"), {from: owner});
+		EscrowThalesDeployed = await EscrowThales.new(owner, ThalesDeployed.address, owner, OngoingAirdropDeployed.address, {
 			from: owner,
 		});
 
@@ -634,7 +638,7 @@ contract('StakingThales', accounts => {
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
 				// console.log('Balance of Escrow:' + web3.utils.toDecimal(answer));
-				answer = await EscrowThalesDeployed.getLastStakedWeek.call(first);
+				answer = await EscrowThalesDeployed.getLastWeekAddedReward.call(first);
 				// console.log('Last claimed week: ' + web3.utils.toDecimal(answer));
 				answer = await EscrowThalesDeployed.getStakerWeeks.call(first);
 				for (let j = 0; j < answer.length; j++) {
@@ -646,7 +650,7 @@ contract('StakingThales', accounts => {
 
 			answer = await EscrowThalesDeployed.getCurrentWeek.call();
 			// console.log('Current week: ' + web3.utils.toDecimal(answer));
-			answer = await EscrowThalesDeployed.getLastStakedWeek.call(first);
+			answer = await EscrowThalesDeployed.getLastWeekAddedReward.call(first);
 			// console.log('Last claimed week: ' + web3.utils.toDecimal(answer));
 
 			answer = await EscrowThalesDeployed.claimable.call(first);
@@ -843,9 +847,9 @@ contract('StakingThales', accounts => {
 				answer = await StakingThalesDeployed.claimReward({ from: second });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
 				// console.log('Balance of Escrow:' + web3.utils.toDecimal(answer));
-				answer = await EscrowThalesDeployed.getLastStakedWeek.call(first);
+				answer = await EscrowThalesDeployed.getLastWeekAddedReward.call(first);
 				// console.log('Last first week: ' + web3.utils.toDecimal(answer));
-				answer = await EscrowThalesDeployed.getLastStakedWeek.call(second);
+				answer = await EscrowThalesDeployed.getLastWeekAddedReward.call(second);
 				// console.log('Last second week: ' + web3.utils.toDecimal(answer));
 				answer = await EscrowThalesDeployed.getStakerWeeks.call(first);
 				for (let j = 0; j < answer.length; j++) {
@@ -1032,11 +1036,11 @@ contract('StakingThales', accounts => {
 				answer = await StakingThalesDeployed.claimReward({ from: third });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
 				// console.log('Balance of Escrow:' + web3.utils.toDecimal(answer));
-				answer = await EscrowThalesDeployed.getLastStakedWeek.call(first);
+				answer = await EscrowThalesDeployed.getLastWeekAddedReward.call(first);
 				// console.log('Last first week: ' + web3.utils.toDecimal(answer));
-				answer = await EscrowThalesDeployed.getLastStakedWeek.call(second);
+				answer = await EscrowThalesDeployed.getLastWeekAddedReward.call(second);
 				// console.log('Last second week: ' + web3.utils.toDecimal(answer));
-				answer = await EscrowThalesDeployed.getLastStakedWeek.call(third);
+				answer = await EscrowThalesDeployed.getLastWeekAddedReward.call(third);
 				// console.log('Last third week: ' + web3.utils.toDecimal(answer));
 				answer = await EscrowThalesDeployed.getStakerWeeks.call(first);
 				for (let j = 0; j < answer.length; j++) {

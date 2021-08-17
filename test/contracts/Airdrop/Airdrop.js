@@ -1,5 +1,7 @@
 const { deploymentFixture, getReward } = require('./airdropFixture');
 const { assert } = require('../../utils/common');
+const { currentTime, fastForward } = require('../../utils')();
+const YEAR = 31556926;
 // Airdrop tests
 describe('Contract: Airdrop', async () => {
 	let acc1, acc2, airdrop, merkleTree, snapshot, snapshotHashes;
@@ -43,8 +45,16 @@ describe('Contract: Airdrop', async () => {
 				);
 			});
 
-		it('should be able to recover token', async () => {
-			await airdrop._selfDestruct();
+		it('self destruct before time', async () => {
+			await assert.revert(
+				airdrop._selfDestruct(acc1.address),
+				'Contract can only be selfdestruct after a year'
+			);
+		});
+
+		it('self destruct', async () => {
+			fastForward(YEAR);
+			await airdrop._selfDestruct(acc1.address);
 			let balance = await token.balanceOf(airdrop.address);
 			assert.equal(balance, 0);
 		});

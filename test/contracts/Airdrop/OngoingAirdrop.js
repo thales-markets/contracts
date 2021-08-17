@@ -1,5 +1,7 @@
 const { deploymentFixture, getReward } = require('./ongoingAirdropFixture');
 const { assert } = require('../../utils/common');
+const { currentTime, fastForward } = require('../../utils')();
+const YEAR = 31556926;
 
 // OngoindAirdrop tests
 describe('Contract: OndoingAirdrop', async () => {
@@ -44,9 +46,17 @@ describe('Contract: OndoingAirdrop', async () => {
 				);
 			});
 
-		it('should be able to recover token', async () => {
-			await ongoingAirdrop._selfDestruct();
-			let balance = await token.balanceOf(ongoingAirdrop.address);
+		it('self destruct before time', async () => {
+			await assert.revert(
+				ongoingAirdrop._selfDestruct(acc1.address),
+				'Contract can only be selfdestruct after a year'
+			);
+		});
+
+		it('self destruct', async () => {
+			fastForward(YEAR);
+			await ongoingAirdrop._selfDestruct(acc1.address);
+			let balance = await token.balanceOf(airdrop.address);
 			assert.equal(balance, 0);
 		});
 	});

@@ -9,7 +9,7 @@ const {
 } = require('../../../scripts/snx-data/xsnx-snapshot/helpers');
 
 // snapshot of user addresses balances of SNX
-const snapshot = require('../../../scripts/snx-data/weekly_rewards.json');
+const snapshot = require('../../../scripts/snx-data/ongoing_distribution.json');
 
 const THALES_AMOUNT = web3.utils.toWei('200');
 

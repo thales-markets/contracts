@@ -192,11 +192,11 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 		let accountsArgument = accounts.slice(i, i + INPUT_SIZE);
 		let valuesArgument = values.slice(i, i + INPUT_SIZE);
 
-		if (i + INPUT_SIZE > accounts.length) {
-			zeroArray = new Array(INPUT_SIZE - accountsArgument.length);
-			accountsArgument = [...accountsArgument, ...zeroArray.fill(ZERO_ADDRESS)];
-			valuesArgument = [...valuesArgument, ...zeroArray.fill('0')];
-		}
+		// if (i + INPUT_SIZE > accounts.length) {
+		// 	zeroArray = new Array(INPUT_SIZE - accountsArgument.length);
+		// 	accountsArgument = [...accountsArgument, ...zeroArray.fill(ZERO_ADDRESS)];
+		// 	valuesArgument = [...valuesArgument, ...zeroArray.fill('0')];
+		// }
 		fundArguments.push([accountsArgument, valuesArgument]);
 	}
 

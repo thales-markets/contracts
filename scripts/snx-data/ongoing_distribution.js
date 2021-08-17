@@ -107,7 +107,7 @@ async function main() {
 
 	const data = await fetchData(args[0], args[1]);
 
-	fs.writeFileSync('scripts/snx-data/weekly_rewards.json', JSON.stringify(data), function(err) {
+	fs.writeFileSync(`scripts/snx-data/ongoing_distribution_${args[0]}_${args[1]}.json`, JSON.stringify(data), function(err) {
 		if (err) return console.log(err);
 	});
 

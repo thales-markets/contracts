@@ -1,14 +1,14 @@
 pragma solidity ^0.5.16;
 
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
+import "synthetix-2.43.1/contracts/Owned.sol";
 import "openzeppelin-solidity-2.3.0/contracts/cryptography/MerkleProof.sol";
 
 /**
  * Contract which implements a merkle airdrop for a given token
  * Based on an account balance snapshot stored in a merkle tree
  */
-contract OngoingAirdrop is Ownable {
+contract OngoingAirdrop is Owned {
     IERC20 public token;
 
     bytes32 public root; // merkle tree root
@@ -19,7 +19,11 @@ contract OngoingAirdrop is Ownable {
 
     mapping(uint256 => uint256) public _claimed;
 
-    constructor(IERC20 _token, bytes32 _root) public {
+    constructor(
+        address _owner,
+        IERC20 _token,
+        bytes32 _root
+    ) public Owned(_owner) {
         token = _token;
         root = _root;
         startTime = block.timestamp;
@@ -28,7 +32,7 @@ contract OngoingAirdrop is Ownable {
     // Set root of merkle tree
     function setRoot(bytes32 _root) public onlyOwner {
         root = _root;
-        startTime = block.timestamp;//reset time every week
+        startTime = block.timestamp; //reset time every week
     }
 
     // Check if a given reward has already been claimed
@@ -70,5 +74,4 @@ contract OngoingAirdrop is Ownable {
         // Destroy the option tokens before destroying the market itself.
         selfdestruct(beneficiary);
     }
-
 }

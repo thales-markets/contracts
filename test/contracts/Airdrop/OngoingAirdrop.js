@@ -56,7 +56,7 @@ describe('Contract: OndoingAirdrop', async () => {
 		it('self destruct', async () => {
 			fastForward(YEAR);
 			await ongoingAirdrop._selfDestruct(acc1.address);
-			let balance = await token.balanceOf(airdrop.address);
+			let balance = await token.balanceOf(ongoingAirdrop.address);
 			assert.equal(balance, 0);
 		});
 	});

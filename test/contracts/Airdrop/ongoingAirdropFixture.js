@@ -14,6 +14,8 @@ const snapshot = require('../../../scripts/snx-data/ongoing_distribution.json');
 const THALES_AMOUNT = web3.utils.toWei('200');
 
 const deploymentFixture = async () => {
+	let [admin] = await ethers.getSigners();
+
 	let userBalance = [];
 	let userBalanceHashes = [];
 	let i = 0;
@@ -44,7 +46,7 @@ const deploymentFixture = async () => {
 	const thales = await deploy('Thales');
 
 	// deploy OngoingAirdrop contract
-	const ongoingAirdrop = await deployArgs('OngoingAirdrop', thales.address, root);
+	const ongoingAirdrop = await deployArgs('OngoingAirdrop', admin.address, thales.address, root);
 	// transfer THALES tokens to airdrop contract
 	await thales.transfer(ongoingAirdrop.address, totalBalance);
 
@@ -62,7 +64,6 @@ const deploymentFixture = async () => {
 	const userWithReward2 = await ethers.getSigner(userBalance[2].address);
 
 	// send eth to second account
-	let [admin] = await ethers.getSigners();
 	let ethSendTx = {
 		to: userBalance[1].address,
 		value: bnDecimal(1),

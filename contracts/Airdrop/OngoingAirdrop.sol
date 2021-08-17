@@ -71,8 +71,4 @@ contract OngoingAirdrop is Ownable {
         selfdestruct(beneficiary);
     }
 
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Admin only");
-        _;
-    }
 }

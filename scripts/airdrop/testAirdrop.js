@@ -74,7 +74,7 @@ async function getReward(i, merkleTree, balanceSnapshot, snapshotHashes, airdrop
 	let leaf = snapshotHashes[i];
 	// get proof
 	let proof = merkleTree.getHexProof(leaf);
-	await airdrop.connect(signer).claim(i, snapshot.address, snapshot.balance, proof);
+	await airdrop.connect(signer).claim(i, snapshot.balance, proof);
 	console.log(snapshot.address, 'got reward of', snapshot.balance / 1e18, 'THALES tokens');
 }
 

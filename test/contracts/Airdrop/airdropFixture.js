@@ -14,6 +14,8 @@ const snapshot = require('../../../scripts/snx-data/historical_snx.json');
 const THALES_AMOUNT = web3.utils.toWei('200');
 
 const deploymentFixture = async () => {
+	let [admin] = await ethers.getSigners();
+
 	let userBalance = [];
 	let userBalanceHashes = [];
 	let i = 0;
@@ -44,7 +46,7 @@ const deploymentFixture = async () => {
 	const thales = await deploy('Thales');
 
 	// deploy Airdrop contract
-	const airdrop = await deployArgs('Airdrop', thales.address, root);
+	const airdrop = await deployArgs('Airdrop', admin.address, thales.address, root);
 	// transfer THALES tokens to airdrop contract
 	await thales.transfer(airdrop.address, totalBalance);
 
@@ -62,7 +64,7 @@ const deploymentFixture = async () => {
 	const userWithReward2 = await ethers.getSigner(userBalance[2].address);
 
 	// send eth to second account
-	let [admin] = await ethers.getSigners();
+
 	let ethSendTx = {
 		to: userBalance[1].address,
 		value: bnDecimal(1),
@@ -89,7 +91,7 @@ async function getReward(i, merkleTree, balanceSnapshot, snapshotHashes, airdrop
 	let leaf = snapshotHashes[i];
 	// get proof
 	let proof = merkleTree.getHexProof(leaf);
-	await airdrop.connect(signer).claim(i, snapshot.address, snapshot.balance, proof);
+	await airdrop.connect(signer).claim(i, snapshot.balance, proof);
 }
 
 module.exports = { deploymentFixture, getReward };

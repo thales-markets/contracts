@@ -3,28 +3,44 @@ const keccak256 = require('keccak256');
 const { web3 } = require('hardhat');
 const { deployArgs, bn } = require('../snx-data/xsnx-snapshot/helpers');
 
-const historicalSnapshot = require('../snx-data/historical_snx.json');
+const historicalSnapshot = require('./airdropSnapshot.json');
 
 const THALES_AMOUNT = web3.utils.toWei('200');
 
-async function deploy() {
-	let userBalance = [];
+const fs = require('fs');
+
+async function deploy_airdrop() {
+	let accounts = await ethers.getSigners();
+	let owner = accounts[0];
+
+	let userBalanceAndHashes = [];
 	let userBalanceHashes = [];
 	let i = 0;
 	let totalBalance = bn(0);
 	// get list of leaves for the merkle trees using index, address and token balance
 	// encode user address and balance using web3 encodePacked
 	for (let address of Object.keys(historicalSnapshot)) {
+		let hash = keccak256(web3.utils.encodePacked(i, address, THALES_AMOUNT));
 		let balance = {
 			address: address,
 			balance: THALES_AMOUNT,
+			hash: hash,
+			index: i,
 		};
-		let hash = keccak256(web3.utils.encodePacked(i, address, THALES_AMOUNT));
 		userBalanceHashes.push(hash);
-		userBalance.push(balance);
+		userBalanceAndHashes.push(balance);
 		totalBalance = totalBalance.add(THALES_AMOUNT);
 		++i;
 	}
+
+	fs.writeFileSync(
+		`scripts/airdrop/airdrop-hashes.json`,
+		JSON.stringify(userBalanceAndHashes),
+		function(err) {
+			if (err) return console.log(err);
+		}
+	);
+
 	// create merkle tree
 	const merkleTree = new MerkleTree(userBalanceHashes, keccak256, {
 		sortLeaves: true,
@@ -35,19 +51,26 @@ async function deploy() {
 	const root = merkleTree.getHexRoot();
 	console.log('tree root:', root);
 
-	const thalesAddress = '0xDCc1fAB7b7B33dCe9b7748B7572F07fac59B0956';
+	const thalesAddress = '0x3Cf560A59aa5Ca6A5294C2606544b08aDa9461a7'; //ropsten
 	console.log('thales address:', thalesAddress);
 
 	// deploy Airdrop contract
-	const airdrop = await deployArgs('Airdrop', thalesAddress, root);
+	const airdrop = await deployArgs('Airdrop', owner.address, thalesAddress, root);
 	await airdrop.deployed();
 	console.log('airdrop deployed at', airdrop.address);
-	let tx = await airdrop.transferOwnership(process.env.OWNER_MULTISIG_ADDRESS);
-	await tx.wait();
-	console.log('transferred ownership');
+
+	const Thales = await ethers.getContractFactory('Thales');
+	let thales = await Thales.attach(thalesAddress);
+
+	await thales.transfer(airdrop.address, totalBalance);
+
+	await hre.run('verify:verify', {
+		address: airdrop.address,
+		constructorArguments: [owner.address, thalesAddress, root],
+	});
 }
 
-deploy()
+deploy_airdrop()
 	.then(() => process.exit(0))
 	.catch(error => {
 		console.error(error);

@@ -48,25 +48,24 @@ contract OngoingAirdrop is Owned, Pausable {
     // Requires sending merkle proof to the function
     function claim(
         uint256 index,
-        address recipient,
         uint256 amount,
         bytes32[] memory merkleProof
     ) public {
         // Make sure msg.sender is the recipient of this airdrop
-        require(msg.sender == recipient, "The reward recipient should be the transaction sender");
 
         // Make sure the tokens have not already been redeemed
         (uint256 claimedBlock, uint256 claimedMask) = claimed(index);
         _claimed[index / 256] = claimedBlock | claimedMask;
 
         // Compute the merkle leaf from index, recipient and amount
-        bytes32 leaf = keccak256(abi.encodePacked(index, recipient, amount));
+        bytes32 leaf = keccak256(abi.encodePacked(index, msg.sender, amount));
         // verify the proof is valid
         require(MerkleProof.verify(merkleProof, root, leaf), "Proof is not valid");
         // Redeem!
         // TODO: send to escrow
         // escrow.addToEscrow
-        token.transfer(recipient, amount);
+        token.transfer(msg.sender, amount);
+        emit Claim(msg.sender, amount, block.timestamp);
     }
 
     function _selfDestruct(address payable beneficiary) external onlyOwner {
@@ -78,4 +77,6 @@ contract OngoingAirdrop is Owned, Pausable {
         // Destroy the option tokens before destroying the market itself.
         selfdestruct(beneficiary);
     }
+
+    event Claim(address claimer, uint256 amount, uint timestamp);
 }

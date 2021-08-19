@@ -34,6 +34,7 @@ contract OngoingAirdrop is Owned, Pausable {
     function setRoot(bytes32 _root) public onlyOwner {
         root = _root;
         startTime = block.timestamp; //reset time every week
+        emit NewRoot(_root, block.timestamp);
         // TODO: reset claim flags
     }
 
@@ -79,4 +80,5 @@ contract OngoingAirdrop is Owned, Pausable {
     }
 
     event Claim(address claimer, uint256 amount, uint timestamp);
+    event NewRoot(bytes32 root, uint timestamp);
 }

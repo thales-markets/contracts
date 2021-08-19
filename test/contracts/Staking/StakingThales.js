@@ -940,6 +940,26 @@ contract('StakingThales', accounts => {
 			let claimable2 = web3.utils.toDecimal(answer2);
 			// console.log('Current claimable second: ' + claimable2);
 
+			await expect(EscrowThalesDeployed.vest(claimable, { from: first })).to.be.revertedWith(
+				'User is still staking. Please unstake before vesting'
+				);
+			await expect(EscrowThalesDeployed.vest(claimable, { from: second })).to.be.revertedWith(
+				'User is still staking. Please unstake before vesting'
+				);
+
+			answer = await StakingThalesDeployed.startUnstake({ from: first });
+			answer = await StakingThalesDeployed.startUnstake({ from: second });
+
+			fastForward(WEEK + 5 * SECOND);
+			// await StakingThalesDeployed.depositFees(1000, { from: owner });
+			await ThalesFeeDeployed.transferFrom(owner, StakingThalesDeployed.address, 1000, {
+				from: owner,
+			});
+			await StakingThalesDeployed.closePeriod({ from: second });
+
+			answer = await StakingThalesDeployed.unstake({ from: first });
+			answer = await StakingThalesDeployed.unstake({ from: second });
+				
 			answer = await EscrowThalesDeployed.vest(claimable, { from: first });
 			// assert.equal(answer, true);
 			console.log(answer.logs[0].event);
@@ -1150,6 +1170,32 @@ contract('StakingThales', accounts => {
 			answer2 = await EscrowThalesDeployed.claimable.call(third);
 			let claimable3 = web3.utils.toDecimal(answer2);
 			// console.log('Current claimable second: ' + claimable3);
+
+			await expect(EscrowThalesDeployed.vest(claimable, { from: first })).to.be.revertedWith(
+				'User is still staking. Please unstake before vesting'
+				);
+			await expect(EscrowThalesDeployed.vest(claimable, { from: second })).to.be.revertedWith(
+				'User is still staking. Please unstake before vesting'
+				);
+			await expect(EscrowThalesDeployed.vest(claimable, { from: third })).to.be.revertedWith(
+				'User is still staking. Please unstake before vesting'
+				);
+
+			answer = await StakingThalesDeployed.startUnstake({ from: first });
+			answer = await StakingThalesDeployed.startUnstake({ from: second });
+			answer = await StakingThalesDeployed.startUnstake({ from: third });
+
+			fastForward(WEEK + 5 * SECOND);
+			// await StakingThalesDeployed.depositFees(1000, { from: owner });
+			await ThalesFeeDeployed.transferFrom(owner, StakingThalesDeployed.address, 1000, {
+				from: owner,
+			});
+			await StakingThalesDeployed.closePeriod({ from: second });
+
+			answer = await StakingThalesDeployed.unstake({ from: first });
+			answer = await StakingThalesDeployed.unstake({ from: second });
+			answer = await StakingThalesDeployed.unstake({ from: third });
+
 
 			answer = await EscrowThalesDeployed.vest(claimable, { from: first });
 			// assert.equal(answer, true);

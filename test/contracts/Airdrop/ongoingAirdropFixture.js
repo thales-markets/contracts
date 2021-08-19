@@ -12,6 +12,7 @@ const {
 const snapshot = require('../../../scripts/snx-data/ongoing_distribution.json');
 
 const THALES_AMOUNT = web3.utils.toWei('200');
+const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const deploymentFixture = async () => {
 	let [admin] = await ethers.getSigners();
@@ -44,10 +45,15 @@ const deploymentFixture = async () => {
 
 	// deploy THALES
 	const thales = await deploy('Thales');
+	//const EscrowThales = await deploy('EscrowThales');
 
 	// deploy OngoingAirdrop contract
 	const ongoingAirdrop = await deployArgs('OngoingAirdrop', admin.address, thales.address, root);
+	const escrowThales = await deployArgs('EscrowThales', admin.address, thales.address, admin.address, ongoingAirdrop.address);
+
+	await escrowThales.updateCurrentWeek(1);
 	// transfer THALES tokens to airdrop contract
+	await ongoingAirdrop.setEscrow(escrowThales.address);
 	await thales.transfer(ongoingAirdrop.address, totalBalance);
 
 	// Impersonate two accounts from snapshot

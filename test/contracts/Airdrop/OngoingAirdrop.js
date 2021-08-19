@@ -3,6 +3,7 @@ const { assert } = require('../../utils/common');
 const { currentTime, fastForward } = require('../../utils')();
 const YEAR = 31556926;
 
+
 // OngoindAirdrop tests
 describe('Contract: OndoingAirdrop', async () => {
 	let acc1, acc2, ongoingAirdrop, merkleTree, snapshot, snapshotHashes;
@@ -33,7 +34,7 @@ describe('Contract: OndoingAirdrop', async () => {
 			it("account different from airdrop recipient shouldn't be able to retrieve reward", async () => {
 				await assert.revert(
 					getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc2),
-					'The reward recipient should be the transaction sender'
+					'Proof is not valid'
 				);
 			}),
 			it("account shouldn't be able to retrieve reward with invalid merkle proof", async () => {

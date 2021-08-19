@@ -41,7 +41,7 @@ contract Airdrop is Owned, Pausable {
         uint256 index,
         uint256 amount,
         bytes32[] memory merkleProof
-    ) public {
+    ) public notPaused {
         require(token.balanceOf(address(this)) > amount, "Contract doesnt have enough tokens");
 
         // Make sure the tokens have not already been redeemed

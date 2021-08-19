@@ -107,9 +107,13 @@ async function main() {
 
 	const data = await fetchData(args[0], args[1]);
 
-	fs.writeFileSync(`scripts/snx-data/ongoing_distribution_${args[0]}_${args[1]}.json`, JSON.stringify(data), function(err) {
-		if (err) return console.log(err);
-	});
+	fs.writeFileSync(
+		'scripts/snx-data/ongoing_distribution.json',
+		JSON.stringify(data),
+		function(err) {
+			if (err) return console.log(err);
+		}
+	);
 
 	console.log('accounts scores length', Object.keys(data).length);
 	console.log('total scores', totalScores);

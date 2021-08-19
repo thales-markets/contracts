@@ -13,6 +13,7 @@ async function receiveAirdrop() {
 	let userBalanceHashes = [];
 	let i = 0;
 	let totalBalance = bn(0);
+	
 	// get list of leaves for the merkle trees using index, address and token balance
 	// encode user address and balance using web3 encodePacked
 	for (let address of Object.keys(historicalSnapshot)) {

@@ -32,7 +32,7 @@ describe('Contract: Airdrop', async () => {
 			// it("account different from airdrop recipient shouldn't be able to retrieve reward", async () => {
 			// 	await assert.revert(
 			// 		getReward(1, merkleTree, snapshot, snapshotHashes, airdrop, acc2),
-			// 		'The reward recipient should be the transaction sender'
+			// 		'Proof is not valid'
 			// 	);
 			// }),
 			it("account shouldn't be able to retrieve reward with invalid merkle proof", async () => {

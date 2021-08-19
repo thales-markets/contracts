@@ -25,6 +25,7 @@ async function deploy_airdrop() {
 			address: address,
 			balance: THALES_AMOUNT,
 			hash: hash,
+			proof: '',
 			index: i,
 		};
 		userBalanceHashes.push(hash);
@@ -33,6 +34,15 @@ async function deploy_airdrop() {
 		++i;
 	}
 
+	// create merkle tree
+	const merkleTree = new MerkleTree(userBalanceHashes, keccak256, {
+		sortLeaves: true,
+		sortPairs: true,
+	});
+
+	for (let ubh in userBalanceAndHashes) {
+		userBalanceAndHashes[ubh].proof = merkleTree.getHexProof(userBalanceAndHashes[ubh].hash);
+	}
 	fs.writeFileSync(
 		`scripts/airdrop/airdrop-hashes.json`,
 		JSON.stringify(userBalanceAndHashes),
@@ -40,12 +50,6 @@ async function deploy_airdrop() {
 			if (err) return console.log(err);
 		}
 	);
-
-	// create merkle tree
-	const merkleTree = new MerkleTree(userBalanceHashes, keccak256, {
-		sortLeaves: true,
-		sortPairs: true,
-	});
 
 	// Get tree root
 	const root = merkleTree.getHexRoot();

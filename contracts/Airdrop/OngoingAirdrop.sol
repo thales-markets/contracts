@@ -4,8 +4,6 @@ import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
 import "synthetix-2.43.1/contracts/Owned.sol";
 import "openzeppelin-solidity-2.3.0/contracts/cryptography/MerkleProof.sol";
 import "synthetix-2.43.1/contracts/Pausable.sol";
-import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
-
 import "../Staking/EscrowThales.sol";
 
 /**
@@ -23,13 +21,9 @@ contract OngoingAirdrop is Owned, Pausable {
 
     uint256 public period;
 
-    //mapping(uint256 => uint256) public _claimed;
     mapping(uint256 => mapping(uint256 => uint256)) public _claimed;
 
     address public escrowThalesContract;
-
-    bytes32 internal constant CONTRACT_ESCROW_THALES = "EscrowThales";
-    IAddressResolver public resolver;
 
     constructor(
         address _owner,

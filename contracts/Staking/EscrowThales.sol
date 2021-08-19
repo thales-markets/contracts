@@ -7,6 +7,7 @@ import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
 import "synthetix-2.43.1/contracts/Pausable.sol";
 import "../interfaces/IEscrowThales.sol";
+import "../interfaces/IStakingThales.sol";
 
 contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     using SafeMath for uint;
@@ -14,15 +15,15 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
 
     IERC20 public vestingToken;
+    IStakingThales public iStakingThales;
+    address public _StakingThalesContract;
+    address public _AirdropContract;
 
     uint private _totalVestingSupply = 0;
-    address private _StakingThalesContract;
-    address private _AirdropContract;
     uint private _weeksOfVesting = 0;
     uint private _totalAvailableForVesting = 0;
     uint private _totalVested = 0;
     uint private _delayedWeeks = 0;
-
 
     mapping(address => uint) private _lastWeekAddedReward;
     mapping(address => uint) private _lastMoveToSilo;
@@ -39,6 +40,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     ) public Owned(_owner) {
         vestingToken = IERC20(_vestingToken);
         _StakingThalesContract = _stakingThalesContract;
+        iStakingThales = IStakingThales(_stakingThalesContract);
         _AirdropContract = _airdropContract;
     }
 
@@ -93,12 +95,15 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         require(amount > 0, "Amount is 0");
         require(_weeksOfVesting > 0, "Claiming rewards still not available");
         // This can be removed if it is open for different contracts
-        require(msg.sender == _StakingThalesContract || msg.sender == _AirdropContract, "Invalid StakingToken, please update");
+        require(
+            msg.sender == _StakingThalesContract || msg.sender == _AirdropContract,
+            "Invalid StakingToken, please update"
+        );
         require(_lastWeekAddedReward[account] <= _weeksOfVesting, "Critical error");
 
-        if(_lastWeekAddedReward[account] < _weeksOfVesting) {
-
+        if (_lastWeekAddedReward[account] < _weeksOfVesting) {
             if (_weeksOfVesting > _stakerWeeks[account].length) {
+                // Move all entries that are older than 11 weeks but less or equal than 20 weeks
                 if (_weeksOfVesting.sub(_lastMoveToSilo[account]) <= _stakerWeeks[account].length.mul(2)) {
                     if (
                         (_weeksOfVesting.sub(1).mod(_stakerWeeks[account].length)) >
@@ -114,13 +119,16 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
                             _weeksOfVesting.sub(1).mod(_stakerWeeks[account].length)
                         );
                     }
+                    // Key line to track the tail of a circular buffer
                     _lastMoveToSilo[account] = _weeksOfVesting.sub(_stakerWeeks[account].length);
                 } else {
+                    // Move all entries older than 20 weeks
                     moveToStakerSilo(account, 0, _stakerWeeks[account].length);
                     _lastMoveToSilo[account] = _weeksOfVesting;
                 }
             }
 
+            // Check if there is a 10-weeks-old entry
             if (_stakerWeeks[account][_weeksOfVesting.sub(1).mod(_stakerWeeks[account].length)] > 0) {
                 _stakerSilo[account] = _stakerSilo[account].add(
                     _stakerWeeks[account][_weeksOfVesting.sub(1).mod(_stakerWeeks[account].length)]
@@ -130,7 +138,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
                 );
                 _stakerWeeks[account][_weeksOfVesting.sub(1).mod(_stakerWeeks[account].length)] = 0;
             }
-
+            // Update last added reward
             _lastWeekAddedReward[account] = _weeksOfVesting;
         }
 
@@ -149,10 +157,25 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         require(amount > 0, "Claimed amount is 0");
         require(_weeksOfVesting > 0, "Claiming rewards still not available");
         require(_lastWeekAddedReward[msg.sender] <= _weeksOfVesting, "Critical error");
+        // User can not vest if it is still staking, or it has staked balance > 0
+        // Needs to unstake, then vest the claimable amount
+        require(iStakingThales.stakedBalanceOf(msg.sender) == 0, "User is still staking. Please unstake before vesting");
 
         // If user has not recently staked anything, move the older rewards to stakerSilo
         if (_weeksOfVesting.sub(_lastMoveToSilo[msg.sender]) > _stakerWeeks[msg.sender].length) {
-            moveToStakerSilo(msg.sender, _lastMoveToSilo[msg.sender], _weeksOfVesting);
+            if (
+                _weeksOfVesting.sub(_lastMoveToSilo[msg.sender]) < _stakerWeeks[msg.sender].length.mul(2) &&
+                (_weeksOfVesting.mod(_stakerWeeks[msg.sender].length)) >
+                (_lastMoveToSilo[msg.sender].mod(_stakerWeeks[msg.sender].length))
+            ) {
+                moveToStakerSilo(
+                    msg.sender,
+                    _lastMoveToSilo[msg.sender].mod(_stakerWeeks[msg.sender].length),
+                    _weeksOfVesting.mod(_stakerWeeks[msg.sender].length)
+                );
+            } else {
+                moveToStakerSilo(msg.sender, 0, _stakerWeeks[msg.sender].length);
+            }
             _lastMoveToSilo[msg.sender] = _weeksOfVesting;
         }
         // Amount must be lower than the reward
@@ -168,27 +191,26 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     function updateCurrentWeek(uint currentWeek) external returns (bool) {
         require(currentWeek > 0, "Invalid update value");
-        require(msg.sender == _StakingThalesContract || msg.sender == _AirdropContract, "Invalid StakingToken, please update");
-        if(msg.sender == _StakingThalesContract) {
-            if(currentWeek == 1 && _weeksOfVesting >= currentWeek) {
+        require(
+            msg.sender == _StakingThalesContract || msg.sender == _AirdropContract,
+            "Invalid StakingToken, please update"
+        );
+        if (msg.sender == _StakingThalesContract) {
+            if (currentWeek == 1 && _weeksOfVesting >= currentWeek) {
                 _delayedWeeks = _weeksOfVesting.sub(currentWeek);
                 return true;
-            }
-            else if(currentWeek.add(_delayedWeeks) > _weeksOfVesting) {
+            } else if (currentWeek.add(_delayedWeeks) > _weeksOfVesting) {
                 _weeksOfVesting = currentWeek.add(_delayedWeeks);
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
-        }
-        else {
+        } else {
             //Staking Contract is still not active, Airdrop can perform updates
-            if(_delayedWeeks == 0 && currentWeek > _weeksOfVesting) {
+            if (_delayedWeeks == 0 && currentWeek > _weeksOfVesting) {
                 _weeksOfVesting = currentWeek;
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         }
@@ -198,14 +220,10 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         return _weeksOfVesting;
     }
 
-    //remove this:
-    function getStakingThalesContract() external view onlyOwner returns (address) {
-        return _StakingThalesContract;
-    }
-
     function setStakingThalesContract(address StakingThalesContract) external onlyOwner {
         require(StakingThalesContract != address(0), "Invalid address set");
         _StakingThalesContract = StakingThalesContract;
+        iStakingThales = IStakingThales(StakingThalesContract);
     }
 
     function setAirdropContract(address AirdropContract) external onlyOwner {

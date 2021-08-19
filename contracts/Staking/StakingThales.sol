@@ -8,8 +8,9 @@ import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
 import "synthetix-2.43.1/contracts/Pausable.sol";
 
 import "../interfaces/IEscrowThales.sol";
+import "../interfaces/IStakingThales.sol";
 
-contract StakingThales is Owned, ReentrancyGuard, Pausable {
+contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
@@ -38,7 +39,6 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
 
     uint private _totalStakedAmount;
     uint private _totalEscrowedAmount;
-    uint private _totalPendingStake;
     uint private _totalUnclaimedRewards;
     uint private _totalUnlcaimedFees;
     uint private _totalRewardsClaimed;
@@ -139,11 +139,7 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
 
         lastPeriodTimeStamp = block.timestamp;
         weeksOfStaking = weeksOfStaking.add(1);
-        if (_totalPendingStake > 0) {
-            // _totalStakedAmount = _totalStakedAmount.add(_totalPendingStake);
-            _totalEscrowedAmount = _totalStakedAmount.add(_totalPendingStake);
-            _totalPendingStake = 0;
-        }
+
         //Actions taken on every closed period
         currentWeekRewards = calculateRewardsForWeek(weeksOfStaking);
         currentWeekFees = calculateFeesForWeek(weeksOfStaking);
@@ -212,6 +208,7 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
 
         if (_pendingStake[msg.sender] > 0) {
             _escrowedBalances[msg.sender] = _escrowedBalances[msg.sender].add(_pendingStake[msg.sender]);
+            _totalEscrowedAmount = _totalEscrowedAmount.add(_pendingStake[msg.sender]);
             _pendingStake[msg.sender] = 0;
         }
         //Calculate rewards
@@ -226,9 +223,6 @@ contract StakingThales is Owned, ReentrancyGuard, Pausable {
             emit FeeRewardsClaimed(msg.sender, unclaimedFees);
         }
         if (unclaimedReward > 0) {
-            // Stake the newly claimed reward: NEEDS TO BE UPDATED NEXT WEEK ===>
-            _totalPendingStake = _totalPendingStake.add(unclaimedReward);
-
             // Both the rewards and the fees are staked => new_stake(reward + fees) NEEDS TO BE UPDATED NEXT WEEK ===>
             _pendingStake[msg.sender] = _pendingStake[msg.sender].add(unclaimedReward);
             _lastStakingWeek[msg.sender] = weeksOfStaking;

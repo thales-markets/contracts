@@ -7,10 +7,15 @@ async function testDeployEscrow() {
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 
-	const escrowThales = await deployArgs('EscrowThales', owner.address, THALES, owner.address, ONGOING_AIRDROP);
+	const escrowThales = await deployArgs(
+		'EscrowThales',
+		owner.address,
+		THALES,
+		owner.address,
+		ONGOING_AIRDROP
+	);
 	await escrowThales.deployed();
 	console.log('escrowThales deployed at', escrowThales.address);
-
 
 	await hre.run('verify:verify', {
 		address: escrowThales.address,

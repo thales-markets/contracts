@@ -16,7 +16,7 @@ const fs = require('fs');
 
 async function deploy_ongoing_airdrop() {
 	let accounts = await ethers.getSigners();
-    let networkObj = await ethers.provider.getNetwork();
+	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	if (network == 'homestead') {
 		network = 'mainnet';
@@ -30,22 +30,24 @@ async function deploy_ongoing_airdrop() {
 	let i = 0;
 	let totalBalance = Big(0);
 
-    let totalScore = Big(0);
+	let totalScore = Big(0);
 	for (let value of Object.values(ongoingRewards)) {
 		totalScore = totalScore.add(value);
 	}
 
-    console.log('totalScore', totalScore.toString());
+	console.log('totalScore', totalScore.toString());
 
 	// get list of leaves for the merkle trees using index, address and token balance
 	// encode user address and balance using web3 encodePacked
 	for (let address of Object.keys(ongoingRewards)) {
-        const amount = Big(ongoingRewards[address])
-            .times(TOTAL_AMOUNT)
-            .div(totalScore)
-            .round();
-    
-		let hash = keccak256(web3.utils.encodePacked(i, address, numberExponentToLarge(amount.toString())));
+		const amount = Big(ongoingRewards[address])
+			.times(TOTAL_AMOUNT)
+			.div(totalScore)
+			.round();
+
+		let hash = keccak256(
+			web3.utils.encodePacked(i, address, numberExponentToLarge(amount.toString()))
+		);
 		let balance = {
 			address: address,
 			balance: numberExponentToLarge(amount.toString()),
@@ -79,13 +81,12 @@ async function deploy_ongoing_airdrop() {
 	const Thales = await ethers.getContractFactory('Thales');
 	let thales = await Thales.attach(THALES);
 
-    const ongoingAirdrop = await deployArgs('OngoingAirdrop', owner.address, thales.address, root);
+	const ongoingAirdrop = await deployArgs('OngoingAirdrop', owner.address, thales.address, root);
 	await ongoingAirdrop.deployed();
 	console.log('ongoingAirdrop deployed at', ongoingAirdrop.address);
 
 	console.log('total balance', totalBalance.toString());
 
-	// send THALES to EscrowThales contract ???
 	await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
 
 	await hre.run('verify:verify', {

@@ -6,7 +6,7 @@
 // - create new merkle tree and set root -
 // - continue contract -
 // - deploy new merkle tree -
-// - EscrowContract update week - 
+// - EscrowContract update week -
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 const { web3 } = require('hardhat');
@@ -35,9 +35,9 @@ async function ongoingAirdrop() {
 
 	const OngoingAirdrop = await ethers.getContractFactory('OngoingAirdrop');
 	let ongoingAirdrop = await OngoingAirdrop.attach(ONGOING_AIRDROP);
- 
-    // set escrow thales address
-    await ongoingAirdrop.setEscrow(ESCROW_THALES);
+
+	// set escrow thales address
+	await ongoingAirdrop.setEscrow(ESCROW_THALES);
 
 	// pause ongoingAirdrop
 	await ongoingAirdrop.setPaused(true);
@@ -53,18 +53,22 @@ async function ongoingAirdrop() {
 	// encode user address and balance using web3 encodePacked
 	for (let address of Object.keys(ongoingRewards)) {
 		// check last period merkle distribution
-        var index = lastMerkleDistribution.map(function(e) { return e.address; }).indexOf(address);
-        var claimed = await ongoingAirdrop.claimed(index);
+		var index = lastMerkleDistribution
+			.map(function(e) {
+				return e.address;
+			})
+			.indexOf(address);
+		var claimed = await ongoingAirdrop.claimed(index);
 
-        let amount = Big(ongoingRewards[address])
+		let amount = Big(ongoingRewards[address])
 			.times(TOTAL_AMOUNT)
 			.div(totalScore)
 			.round();
 
-        // if address hasn't claimed add to amount prev value
-        if(claimed == 0) {
-            amount = amount.add(lastMerkleDistribution[index].balance);
-        }
+		// if address hasn't claimed add to amount prev value
+		if (claimed == 0) {
+			amount = amount.add(lastMerkleDistribution[index].balance);
+		}
 
 		let hash = keccak256(
 			web3.utils.encodePacked(i, address, numberExponentToLarge(amount.toString()))
@@ -102,18 +106,18 @@ async function ongoingAirdrop() {
 	const Thales = await ethers.getContractFactory('Thales');
 	let thales = await Thales.attach(THALES);
 
-    const EscrowThales = await ethers.getContractFactory('EscrowThales');
+	const EscrowThales = await ethers.getContractFactory('EscrowThales');
 	let escrowThales = await EscrowThales.attach(ESCROW_THALES);
 
 	// ongoingAirdrop: set new tree root, unpause contract
 	await ongoingAirdrop.setRoot(root);
 	await ongoingAirdrop.setPaused(false);
 
-    await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
+	await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
 
-    // update current week
-    const currentWeek = await escrowThales.getCurrentWeek();
-    await escrowThales.updateCurrentWeek(currentWeek + 1);
+	// update current week
+	const currentWeek = await escrowThales.getCurrentWeek();
+	await escrowThales.updateCurrentWeek(currentWeek + 1);
 }
 
 ongoingAirdrop()

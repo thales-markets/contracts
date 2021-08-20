@@ -545,7 +545,7 @@ contract('StakingThales', accounts => {
 			answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			// fastForward(2*DAY);
 			// await StakingThalesDeployed.depositRewards(260000, { from: owner });
-			await ThalesDeployed.transferFrom(owner, StakingThalesDeployed.address, 260000, {
+			await ThalesDeployed.transferFrom(owner, StakingThalesDeployed.address, 300000, {
 				from: owner,
 			});
 			await ThalesFeeDeployed.transferFrom(owner, StakingThalesDeployed.address, 5555, {
@@ -657,6 +657,7 @@ contract('StakingThales', accounts => {
 					from: owner,
 				});
 				await StakingThalesDeployed.closePeriod({ from: second });
+				// console.log(i)
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
 				// console.log('Balance of Escrow:' + web3.utils.toDecimal(answer));
@@ -1095,13 +1096,13 @@ contract('StakingThales', accounts => {
 				await StakingThalesDeployed.closePeriod({ from: second });
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
-				// console.log('Balance of Escrow:' + web3.utils.toDecimal(answer));
+				// console.log('Balance of Escrow first:' + web3.utils.toDecimal(answer));
 				answer = await StakingThalesDeployed.claimReward({ from: second });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
-				// console.log('Balance of Escrow:' + web3.utils.toDecimal(answer));
+				// console.log('Balance of Escrow second:' + web3.utils.toDecimal(answer));
 				answer = await StakingThalesDeployed.claimReward({ from: third });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
-				// console.log('Balance of Escrow:' + web3.utils.toDecimal(answer));
+				// console.log('Balance of Escrow third:' + web3.utils.toDecimal(answer));
 				answer = await EscrowThalesDeployed.getLastWeekAddedReward.call(first);
 				// console.log('Last first week: ' + web3.utils.toDecimal(answer));
 				answer = await EscrowThalesDeployed.getLastWeekAddedReward.call(second);

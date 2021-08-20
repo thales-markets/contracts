@@ -942,10 +942,10 @@ contract('StakingThales', accounts => {
 
 			await expect(EscrowThalesDeployed.vest(claimable, { from: first })).to.be.revertedWith(
 				'User is still staking. Please unstake before vesting'
-				);
+			);
 			await expect(EscrowThalesDeployed.vest(claimable, { from: second })).to.be.revertedWith(
 				'User is still staking. Please unstake before vesting'
-				);
+			);
 
 			answer = await StakingThalesDeployed.startUnstake({ from: first });
 			answer = await StakingThalesDeployed.startUnstake({ from: second });
@@ -959,7 +959,7 @@ contract('StakingThales', accounts => {
 
 			answer = await StakingThalesDeployed.unstake({ from: first });
 			answer = await StakingThalesDeployed.unstake({ from: second });
-				
+
 			answer = await EscrowThalesDeployed.vest(claimable, { from: first });
 			// assert.equal(answer, true);
 			console.log(answer.logs[0].event);
@@ -1173,13 +1173,13 @@ contract('StakingThales', accounts => {
 
 			await expect(EscrowThalesDeployed.vest(claimable, { from: first })).to.be.revertedWith(
 				'User is still staking. Please unstake before vesting'
-				);
+			);
 			await expect(EscrowThalesDeployed.vest(claimable, { from: second })).to.be.revertedWith(
 				'User is still staking. Please unstake before vesting'
-				);
+			);
 			await expect(EscrowThalesDeployed.vest(claimable, { from: third })).to.be.revertedWith(
 				'User is still staking. Please unstake before vesting'
-				);
+			);
 
 			answer = await StakingThalesDeployed.startUnstake({ from: first });
 			answer = await StakingThalesDeployed.startUnstake({ from: second });
@@ -1195,7 +1195,6 @@ contract('StakingThales', accounts => {
 			answer = await StakingThalesDeployed.unstake({ from: first });
 			answer = await StakingThalesDeployed.unstake({ from: second });
 			answer = await StakingThalesDeployed.unstake({ from: third });
-
 
 			answer = await EscrowThalesDeployed.vest(claimable, { from: first });
 			// assert.equal(answer, true);

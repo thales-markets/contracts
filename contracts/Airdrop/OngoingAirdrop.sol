@@ -53,7 +53,7 @@ contract OngoingAirdrop is Owned, Pausable {
     // Set EscrowThales contract address
     function setEscrow(address _escrowThalesContract) public onlyOwner {
         escrowThalesContract = _escrowThalesContract;
-        iEscrowThales(escrowThalesContract).updateCurrentWeek(period);
+        iEscrowThales = IEscrowThales(_escrowThalesContract);
     }
 
     // Check if a given reward has already been claimed

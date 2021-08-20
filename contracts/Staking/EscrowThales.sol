@@ -35,13 +35,12 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     constructor(
         address _owner,
         address _vestingToken, //THALES
-        address _stakingThalesContract,
-        address _airdropContract
+        address _stakingThalesContract
     ) public Owned(_owner) {
         vestingToken = IERC20(_vestingToken);
         _StakingThalesContract = _stakingThalesContract;
         iStakingThales = IStakingThales(_stakingThalesContract);
-        _AirdropContract = _airdropContract;
+        _AirdropContract = address(0);
     }
 
     function getStakerWeeks(address account) external view returns (uint[10] memory) {

@@ -30,6 +30,12 @@ describe('Contract: OndoingAirdrop', async () => {
 					'Tokens have already been claimed'
 				);
 			}),
+			it("account different from airdrop recipient shouldn't be able to retrieve reward", async () => {
+				await assert.revert(
+					getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc2),
+					'Proof is not valid'
+				);
+			}),
 			it("account shouldn't be able to retrieve reward with invalid merkle proof", async () => {
 				// Assign the wrong hash to 1st index in order to generate invalid merkle proof
 				snapshotHashes[1] = snapshotHashes[0];

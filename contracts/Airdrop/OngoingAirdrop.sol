@@ -4,6 +4,7 @@ import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
 import "synthetix-2.43.1/contracts/Owned.sol";
 import "openzeppelin-solidity-2.3.0/contracts/cryptography/MerkleProof.sol";
 import "synthetix-2.43.1/contracts/Pausable.sol";
+import "../Staking/EscrowThales.sol";
 
 /**
  * Contract which implements a merkle airdrop for a given token
@@ -18,7 +19,11 @@ contract OngoingAirdrop is Owned, Pausable {
 
     address public admin;
 
-    mapping(uint256 => uint256) public _claimed;
+    uint256 public period;
+
+    mapping(uint256 => mapping(uint256 => uint256)) public _claimed;
+
+    address public escrowThalesContract;
 
     constructor(
         address _owner,
@@ -28,6 +33,7 @@ contract OngoingAirdrop is Owned, Pausable {
         token = _token;
         root = _root;
         startTime = block.timestamp;
+        period = 0;
     }
 
     // Set root of merkle tree
@@ -35,12 +41,17 @@ contract OngoingAirdrop is Owned, Pausable {
         root = _root;
         startTime = block.timestamp; //reset time every week
         emit NewRoot(_root, block.timestamp);
-        // TODO: reset claim flags
+        period = period + 1;
+    }
+
+    // Set EscrowThales contract address
+    function setEscrow(address _escrowThalesContract) public onlyOwner {
+        escrowThalesContract = _escrowThalesContract;
     }
 
     // Check if a given reward has already been claimed
     function claimed(uint256 index) public view returns (uint256 claimedBlock, uint256 claimedMask) {
-        claimedBlock = _claimed[index / 256];
+        claimedBlock = _claimed[period][index / 256];
         claimedMask = (uint256(1) << uint256(index % 256));
         require((claimedBlock & claimedMask) == 0, "Tokens have already been claimed");
     }
@@ -51,21 +62,19 @@ contract OngoingAirdrop is Owned, Pausable {
         uint256 index,
         uint256 amount,
         bytes32[] memory merkleProof
-    ) public {
-        // Make sure msg.sender is the recipient of this airdrop
-
+    ) public notPaused {
         // Make sure the tokens have not already been redeemed
         (uint256 claimedBlock, uint256 claimedMask) = claimed(index);
-        _claimed[index / 256] = claimedBlock | claimedMask;
+        _claimed[period][index / 256] = claimedBlock | claimedMask;
 
         // Compute the merkle leaf from index, recipient and amount
         bytes32 leaf = keccak256(abi.encodePacked(index, msg.sender, amount));
         // verify the proof is valid
         require(MerkleProof.verify(merkleProof, root, leaf), "Proof is not valid");
-        // Redeem!
-        // TODO: send to escrow
-        // escrow.addToEscrow
-        token.transfer(msg.sender, amount);
+
+        // Send to EscrowThales contract
+        EscrowThales(escrowThalesContract).addToEscrow(msg.sender, amount);
+
         emit Claim(msg.sender, amount, block.timestamp);
     }
 

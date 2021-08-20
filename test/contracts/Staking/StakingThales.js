@@ -50,8 +50,6 @@ contract('StakingThales', accounts => {
 			EscrowThalesDeployed = await EscrowThales.new(
 				owner,
 				ThalesDeployed.address,
-				owner,
-				OngoingAirdropDeployed.address,
 				{
 					from: owner,
 				}
@@ -83,8 +81,6 @@ contract('StakingThales', accounts => {
 		EscrowThalesDeployed = await EscrowThales.new(
 			owner,
 			ThalesDeployed.address,
-			owner,
-			OngoingAirdropDeployed.address,
 			{
 				from: owner,
 			}
@@ -100,13 +96,13 @@ contract('StakingThales', accounts => {
 	});
 
 	describe('EscrowThales basic check', () => {
-		it('get if StakingThales address in EscrowThales is equal to owner', async () => {
+		it('get if StakingThales address in EscrowThales is equal to ZERO address', async () => {
 			let getStakingAddress = await EscrowThalesDeployed._StakingThalesContract.call({
 				from: owner,
 			});
 			// console.log("Staking Thaless address: " + getStakingAddress);
 			// console.log("Owner address: " + owner);
-			assert.equal(owner, getStakingAddress);
+			assert.equal(ZERO_ADDRESS, getStakingAddress);
 		});
 
 		it('set StakingThales address in EscrowThales to the actual contract ', async () => {

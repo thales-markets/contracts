@@ -33,7 +33,7 @@ contract OngoingAirdrop is Owned, Pausable {
         token = _token;
         root = _root;
         startTime = block.timestamp;
-        period = 0;
+        period = 1;
     }
 
     // Set root of merkle tree
@@ -48,6 +48,7 @@ contract OngoingAirdrop is Owned, Pausable {
     // Set EscrowThales contract address
     function setEscrow(address _escrowThalesContract) public onlyOwner {
         escrowThalesContract = _escrowThalesContract;
+        EscrowThales(escrowThalesContract).updateCurrentWeek(period);
     }
 
     // Check if a given reward has already been claimed

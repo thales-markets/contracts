@@ -132,6 +132,7 @@ contract('VestingEscrow', accounts => {
 			for (let i = 1; i < 101; i++) {
 				amounts[i - 1] = (i * 10 ** 17).toString();
 			}
+			await Thales.approve(VestingEscrow.address, TOTAL_AMOUNT);
 			await VestingEscrow.addTokens(TOTAL_AMOUNT);
 		});
 
@@ -279,6 +280,7 @@ contract('VestingEscrow', accounts => {
 
 			const recipients = [beneficiary.address, ...new Array(99).fill(ZERO_ADDRESS)];
 
+			await Thales.approve(VestingEscrow.address, TOTAL_AMOUNT);
 			await VestingEscrow.addTokens(TOTAL_AMOUNT);
 			await VestingEscrow.fund(recipients, [TOTAL_AMOUNT, ...new Array(99).fill(0)]);
 		});
@@ -349,6 +351,7 @@ contract('VestingEscrow', accounts => {
 
 			const recipients = [beneficiary.address, ...new Array(99).fill(ZERO_ADDRESS)];
 
+			await Thales.approve(VestingEscrow.address, TOTAL_AMOUNT);
 			await VestingEscrow.addTokens(TOTAL_AMOUNT);
 			await VestingEscrow.fund(recipients, [TOTAL_AMOUNT, ...new Array(99).fill(0)]);
 		});

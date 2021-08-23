@@ -66,7 +66,7 @@ contract('VestingEscrow', accounts => {
 			const lockedSupplyStart = await VestingEscrow.lockedSupply();
 			assert.equal(lockedSupplyStart, TOTAL_AMOUNT);
 
-			fastForward(YEAR + WEEK);
+			await fastForward(YEAR + WEEK);
 
 			const lockedSupplyEnd = await VestingEscrow.lockedSupply();
 			assert.equal(lockedSupplyEnd, 0);
@@ -76,7 +76,7 @@ contract('VestingEscrow', accounts => {
 			const vestedOfStart = await VestingEscrow.vestedOf(beneficiary.address);
 			assert.equal(vestedOfStart, 0);
 
-			fastForward(YEAR + WEEK);
+			await fastForward(YEAR + WEEK);
 
 			const vestedOfEnd = await VestingEscrow.vestedOf(beneficiary.address);
 			assert.equal(vestedOfEnd, amounts[0]);
@@ -86,7 +86,7 @@ contract('VestingEscrow', accounts => {
 			const lockedOfStart = await VestingEscrow.lockedOf(beneficiary.address);
 			assert.equal(lockedOfStart, amounts[0]);
 
-			fastForward(YEAR + WEEK);
+			await fastForward(YEAR + WEEK);
 
 			const lockedOfEnd = await VestingEscrow.lockedOf(beneficiary.address);
 			assert.equal(lockedOfEnd, 0);
@@ -96,7 +96,7 @@ contract('VestingEscrow', accounts => {
 			const balanceOfStart = await VestingEscrow.balanceOf(beneficiary.address);
 			assert.equal(balanceOfStart, 0);
 
-			fastForward(YEAR + WEEK);
+			await fastForward(YEAR + WEEK);
 
 			const balanceOfEnd = await VestingEscrow.balanceOf(beneficiary.address);
 			assert.equal(balanceOfEnd, amounts[0]);

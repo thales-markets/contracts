@@ -14,8 +14,4 @@ contract Thales is ERC20 {
         _mint(msg.sender, INITIAL_TOTAL_SUPPLY * 1e18);
     }
 
-    function transferFrom(address sender, address recipient, uint256 amount) public returns (bool) {
-        _transfer(sender, recipient, amount);
-        return true;
-    }
 }

@@ -35,8 +35,6 @@ contract OngoingAirdrop is Owned, Pausable {
         token = _token;
         root = _root;
         startTime = block.timestamp;
-        iEscrowThales = IEscrowThales(address(0));
-        escrowThalesContract = address(0);
         period = 1;
     }
 
@@ -46,8 +44,8 @@ contract OngoingAirdrop is Owned, Pausable {
         root = _root;
         startTime = block.timestamp; //reset time every week
         emit NewRoot(_root, block.timestamp, period);
-        period = period + 1;
         iEscrowThales.updateCurrentWeek(period);
+        period = period + 1;
     }
 
     // Set EscrowThales contract address

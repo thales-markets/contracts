@@ -161,6 +161,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     function stake(uint amount) external nonReentrant notPaused {
         require(startTimeStamp > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
+        require(stakingToken.allowance(msg.sender, address(this)) >= amount, "No allowance. Please grant StakingThales allowance");
         require(
             _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Cannot stake, the staker is paused from staking due to unstaking"
@@ -223,7 +224,8 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         uint unclaimedFees = calculateUnclaimedFees(msg.sender);
 
         if (unclaimedFees > 0) {
-            feeToken.transferFrom(address(this), msg.sender, unclaimedFees);
+            feeToken.transfer(msg.sender, unclaimedFees);
+            // feeToken.transferFrom(address(this), msg.sender, unclaimedFees);
             stakerFeesClaimed[msg.sender] = stakerFeesClaimed[msg.sender].add(unclaimedFees);
             _totalRewardFeesClaimed = _totalRewardFeesClaimed.add(unclaimedFees);
             _totalUnlcaimedFees = _totalUnlcaimedFees.sub(unclaimedFees);

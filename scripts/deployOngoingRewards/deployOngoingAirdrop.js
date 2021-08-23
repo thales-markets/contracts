@@ -52,12 +52,17 @@ async function deploy_ongoing_airdrop() {
 			address: address,
 			balance: numberExponentToLarge(amount.toString()),
 			hash: hash,
+			proof: '',
 			index: i,
 		};
 		userBalanceHashes.push(hash);
 		userBalanceAndHashes.push(balance);
 		totalBalance = totalBalance.add(amount);
 		++i;
+	}
+
+	for (let ubh in userBalanceAndHashes) {
+		userBalanceAndHashes[ubh].proof = merkleTree.getHexProof(userBalanceAndHashes[ubh].hash);
 	}
 
 	fs.writeFileSync(

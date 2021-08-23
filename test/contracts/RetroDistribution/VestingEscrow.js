@@ -294,7 +294,7 @@ contract('VestingEscrow', accounts => {
 		});
 
 		it('should claim full amount', async () => {
-			fastForward(53 * WEEK);
+			await fastForward(53 * WEEK);
 			await VestingEscrow.connect(beneficiary).claim({ from: beneficiary.address });
 
 			const balanceOfAccount = await Thales.balanceOf(beneficiary.address);
@@ -323,7 +323,7 @@ contract('VestingEscrow', accounts => {
 		it('should be able to claim multiple times', async () => {
 			let balance = 0;
 			for (let i = 0; i < 53; i++) {
-				fastForward(WEEK);
+				await fastForward(WEEK);
 				await VestingEscrow.connect(beneficiary).claim({ from: beneficiary.address });
 				let newBalance = await Thales.balanceOf(beneficiary.address);
 				assert.bnGt(newBalance, balance);
@@ -360,14 +360,14 @@ contract('VestingEscrow', accounts => {
 		});
 
 		it('Cant selfdestruct befor a year passes after end time', async () => {
-			fastForward(YEAR);
+			await fastForward(YEAR);
 			const REVERT =
 				'VM Exception while processing transaction: revert Contract can only be selfdestruct a year after endtime';
 			await assert.revert(VestingEscrow._selfDestruct(beneficiary.address), REVERT);
 		});
 
 		it('After 3 years everything left goes to admin', async () => {
-			fastForward(YEAR * 3);
+			await fastForward(YEAR * 3);
 			await VestingEscrow._selfDestruct(beneficiary.address);
 			assert.equal(await Thales.balanceOf(beneficiary.address), TOTAL_AMOUNT);
 		});

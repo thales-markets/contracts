@@ -85,8 +85,10 @@ async function ongoingAirdrop() {
 		++i;
 	}
 
+	const period = await ongoingAirdrop.getPeriod();
+
 	fs.writeFileSync(
-		'scripts/deployOngoingRewards/ongoing-airdrop-hashes.json',
+		`scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-${period}.json`,
 		JSON.stringify(userBalanceAndHashes),
 		function(err) {
 			if (err) return console.log(err);

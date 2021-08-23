@@ -1438,4 +1438,187 @@ contract('StakingThales', accounts => {
 			assert.equal(web3.utils.toDecimal(answer), web3.utils.toDecimal(answer2));
 		});
 	});
+	describe('Airdrop start, then StakingThales:', () => {
+		it('Airdrop starts Escrow', async () => {
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
+				'Staking period has not started'
+			);
+
+			let weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			// console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+			
+			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {from:owner});
+			await OngoingAirdropDeployed.setEscrow(EscrowThalesDeployed.address, {from:owner});
+
+			await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+			
+			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+
+			for (let n=0; n<5; n++) {
+				fastForward(WEEK + SECOND);
+				await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+			}
+
+			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+
+		});
+		it('Airdrop starts Escrow, then StakingThales starts', async () => {
+			let weeks = [1, 8, 12, 10];
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
+				'Staking period has not started'
+			);
+
+			let weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+			
+			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {from:owner});
+			await OngoingAirdropDeployed.setEscrow(EscrowThalesDeployed.address, {from:owner});
+
+			await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+			
+			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			// console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+
+			for (let n=0; n<5; n++) {
+				fastForward(WEEK + SECOND);
+				await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+			}
+
+			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			console.log("StakingThales starts staking in: ", web3.utils.toDecimal(weeksVesting));
+
+			await ThalesDeployed.transfer(first, 1500, { from: owner });
+			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await ThalesDeployed.transfer(StakingThalesDeployed.address, 5500000, {
+				from: owner,
+			});
+			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
+				from: owner,
+			});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await StakingThalesDeployed.stake(1000, { from: first });
+
+			for (let n = 0; n < weeks.length; n++) {
+				for (let i = 0; i < weeks[n]; i++) {
+					fastForward(WEEK + SECOND);
+					// await StakingThalesDeployed.depositFees(5555, { from: owner });
+					await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
+						from: owner,
+					});
+					await StakingThalesDeployed.closePeriod({ from: second });
+				}
+				answer = await StakingThalesDeployed.claimReward({ from: first });
+				answer = await EscrowThalesDeployed.claimable.call(first);
+				// console.log('Claimable for this week: ' + web3.utils.toDecimal(answer));
+				answer = await EscrowThalesDeployed.getStakerWeeks.call(first);
+				weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+				console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+				// for (let j = 0; j < answer.length; j++) {
+				// 	console.log('First field' + j + ': ' + web3.utils.toDecimal(answer[j]));
+				// }
+			}
+			
+		});
+		it('Airdrop starts Escrow, StakingThales continues, User claims rewards in weeks 0, 9, 21, 31', async () => {
+			let weeks = [1, 8, 12, 10];
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
+				'Staking period has not started'
+			);
+
+			let weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+			
+			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {from:owner});
+			await OngoingAirdropDeployed.setEscrow(EscrowThalesDeployed.address, {from:owner});
+
+			await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+			
+			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			// console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+
+			for (let n=0; n<5; n++) {
+				fastForward(WEEK + SECOND);
+				await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+			}
+
+			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+
+			await ThalesDeployed.transfer(first, 1500, { from: owner });
+			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await ThalesDeployed.transfer(StakingThalesDeployed.address, 5500000, {
+				from: owner,
+			});
+			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
+				from: owner,
+			});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await StakingThalesDeployed.stake(1000, { from: first });
+
+			for (let n = 0; n < weeks.length; n++) {
+				for (let i = 0; i < weeks[n]; i++) {
+					fastForward(WEEK + SECOND);
+					// await StakingThalesDeployed.depositFees(5555, { from: owner });
+					await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
+						from: owner,
+					});
+					await StakingThalesDeployed.closePeriod({ from: second });
+				}
+				answer = await StakingThalesDeployed.claimReward({ from: first });
+				answer = await EscrowThalesDeployed.claimable.call(first);
+				// console.log('Claimable for this week: ' + web3.utils.toDecimal(answer));
+				answer = await EscrowThalesDeployed.getStakerWeeks.call(first);
+				// for (let j = 0; j < answer.length; j++) {
+				// 	console.log('First field' + j + ': ' + web3.utils.toDecimal(answer[j]));
+				// }
+			}
+			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			let answer2 = await EscrowThalesDeployed.claimable.call(first);
+			let claimable = web3.utils.toDecimal(answer2);
+			// console.log('Current claimable: ' + claimable);
+			assert.equal(web3.utils.toDecimal(answer), web3.utils.toDecimal(answer2));
+
+			answer = await StakingThalesDeployed.startUnstake({ from: first });
+
+			fastForward(WEEK + 5 * SECOND);
+			// await StakingThalesDeployed.depositFees(1000, { from: owner });
+			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1000, {
+				from: owner,
+			});
+			await StakingThalesDeployed.closePeriod({ from: second });
+
+			answer = await StakingThalesDeployed.unstake({ from: first });
+
+			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			console.log("Claimable: ", web3.utils.toDecimal(answer));
+			
+			answer = await EscrowThalesDeployed.vest(claimable, { from: first });
+
+			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			console.log("Vested. Current Claimable: ", web3.utils.toDecimal(answer));
+
+			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			// console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+
+			for (let n=0; n<5; n++) {
+				fastForward(WEEK + SECOND);
+				await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+				// console.log("Ongoing Airdrop updates week");
+			}
+
+			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
+			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+		});
+	});
 });

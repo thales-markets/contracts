@@ -19,8 +19,9 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     address public _StakingThalesContract;
     address public _AirdropContract;
 
+    uint public _weeksOfVesting = 0;
+    
     uint private _totalVestingSupply = 0;
-    uint private _weeksOfVesting = 0;
     uint private _totalAvailableForVesting = 0;
     uint private _totalVested = 0;
     uint private _delayedWeeks = 0;

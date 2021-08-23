@@ -32,6 +32,7 @@ contract('VestingEscrow', async accounts => {
 				recipients.push(wallet.address);
 			}
 
+			await Thales.approve(VestingEscrow.address, web3.utils.toWei('1000'));
 			await VestingEscrow.addTokens(web3.utils.toWei('1000'));
 			await VestingEscrow.fund(recipients.slice(0, 200), new Array(200).fill(1));
 			await VestingEscrow.fund(recipients.slice(200, 400), new Array(200).fill(1));

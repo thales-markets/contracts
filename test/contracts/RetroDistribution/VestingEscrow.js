@@ -37,6 +37,7 @@ contract('VestingEscrow', accounts => {
 			const recipients = [beneficiary.address, ...testAccounts];
 			amounts = new Array(100).fill(web3.utils.toWei('150000'));
 
+			await Thales.approve(VestingEscrow.address, TOTAL_AMOUNT);
 			await VestingEscrow.addTokens(TOTAL_AMOUNT);
 			await VestingEscrow.fund(recipients, amounts);
 		});

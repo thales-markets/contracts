@@ -63,6 +63,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         iEscrowThales = IEscrowThales(_iEscrowThales);
         stakingToken = IERC20(_stakingToken);
         feeToken = IERC20(_feeToken);
+        stakingToken.approve(_iEscrowThales, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
     }
 
     /* ========== VIEWS ========== */

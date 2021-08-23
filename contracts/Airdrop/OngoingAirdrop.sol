@@ -52,6 +52,7 @@ contract OngoingAirdrop is Owned, Pausable {
     function setEscrow(address _escrowThalesContract) public onlyOwner {
         escrowThalesContract = _escrowThalesContract;
         iEscrowThales = IEscrowThales(_escrowThalesContract);
+        token.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         iEscrowThales.updateCurrentWeek(period);
     }
 

@@ -21,6 +21,8 @@ describe('Contract: OndoingAirdrop', async () => {
 
 	describe('Ongoing Airdrop rewards', async () => {
 		it('snapshot user should be able to retrieve reward', async () => {
+			let balanceAirdrop = await token.balanceOf(ongoingAirdrop.address);
+			console.log('Balance is: ' + balanceAirdrop);
 			await getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc1);
 		}),
 			it("snapshot user shouldn't be able to retrieve reward twice", async () => {

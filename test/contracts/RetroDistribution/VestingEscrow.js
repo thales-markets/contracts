@@ -47,7 +47,7 @@ contract('VestingEscrow', accounts => {
 			const vestedSupplyBeforeStart = await VestingEscrow.vestedSupply();
 			assert.equal(vestedSupplyBeforeStart, 0);
 
-			fastForward(YEAR + WEEK);
+			await fastForward(YEAR + WEEK);
 
 			const vestedSupplyAfterStart = await VestingEscrow.vestedSupply();
 

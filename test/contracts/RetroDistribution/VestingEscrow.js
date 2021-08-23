@@ -13,6 +13,7 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const TOTAL_AMOUNT = web3.utils.toWei('15000000');
 
 const { testAccounts } = require('../Token/test-accounts');
+const { numberExponentToLarge } = require('../../../scripts/helpers');
 
 contract('VestingEscrow', accounts => {
 	const WEEK = 604800;
@@ -308,13 +309,15 @@ contract('VestingEscrow', accounts => {
 		});
 
 		it('should be able to claim partial', async () => {
-			fastForward(10 * WEEK);
+			await fastForward(10 * WEEK);
 			await VestingEscrow.connect(beneficiary).claim({ from: beneficiary.address });
-			const expectedAmount =
-				TOTAL_AMOUNT * (((await currentTime()) - startTime) / (endTime - startTime));
+			const expectedAmount = Big(TOTAL_AMOUNT)
+				.mul(Big(await currentTime()).sub(startTime))
+				.div(Big(endTime).sub(startTime))
+				.round();
 
 			const balanceOfAccount = await Thales.balanceOf(beneficiary.address);
-			assert.equal(balanceOfAccount, expectedAmount);
+			assert.equal(balanceOfAccount.toString(), numberExponentToLarge(expectedAmount.toString()));
 		});
 
 		it('should be able to claim multiple times', async () => {

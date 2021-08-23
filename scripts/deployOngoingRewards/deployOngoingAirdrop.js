@@ -61,6 +61,16 @@ async function deploy_ongoing_airdrop() {
 		++i;
 	}
 
+	// create merkle tree
+	const merkleTree = new MerkleTree(userBalanceHashes, keccak256, {
+		sortLeaves: true,
+		sortPairs: true,
+	});
+
+	// Get tree root
+	const root = merkleTree.getHexRoot();
+	console.log('tree root:', root);
+
 	for (let ubh in userBalanceAndHashes) {
 		userBalanceAndHashes[ubh].proof = merkleTree.getHexProof(userBalanceAndHashes[ubh].hash);
 	}
@@ -72,16 +82,6 @@ async function deploy_ongoing_airdrop() {
 			if (err) return console.log(err);
 		}
 	);
-
-	// create merkle tree
-	const merkleTree = new MerkleTree(userBalanceHashes, keccak256, {
-		sortLeaves: true,
-		sortPairs: true,
-	});
-
-	// Get tree root
-	const root = merkleTree.getHexRoot();
-	console.log('tree root:', root);
 
 	const Thales = await ethers.getContractFactory('Thales');
 	let thales = await Thales.attach(THALES);

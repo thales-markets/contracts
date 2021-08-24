@@ -19,14 +19,14 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     address public _StakingThalesContract;
     address public _AirdropContract;
 
+    uint public totalEscrowedRewards = 0;
     uint public _weeksOfVesting = 0;
 
-    uint private _totalVestingSupply = 0;
     uint private _totalAvailableForVesting = 0;
     uint private _totalVested = 0;
-    uint private _delayedWeeks = 0;
+    uint public _delayedWeeks = 0;
 
-    mapping(address => uint) private _lastWeekAddedReward;
+    mapping(address => uint) public _lastWeekAddedReward;
     mapping(address => uint) private _lastMoveToSilo;
     mapping(address => uint) private _stakerSilo;
     mapping(address => uint[10]) private _stakerWeeks;
@@ -45,9 +45,27 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         return _stakerWeeks[account];
     }
 
+    function getStakerField(address account, uint index) external view returns (uint) {
+        require(account != address(0), "Invalid account address");
+        require(index < _stakerWeeks[account].length);
+        return _stakerWeeks[account][index];
+    }
+
     function getEscrowedBalance(address account) external view returns (uint) {
-        // TODO: add all 10 weeks plus sile
-        return 0;
+        // add all 10 weeks plus sile
+        return pendingClaimable(account).add(_stakerSilo[account]);
+    }
+
+    function getStakedEscrowedBalance(address account) external view returns (uint) {
+        // add all 10 weeks plus silo minus current field
+        if (_lastWeekAddedReward[account] > 0) {
+            return
+                pendingClaimable(account).add(_stakerSilo[account]).sub(
+                    _stakerWeeks[account][_weeksOfVesting.sub(1).mod(_stakerWeeks[account].length)]
+                );
+        } else {
+            return 0;
+        }
     }
 
     function getLastWeekAddedReward(address account) external view returns (uint) {
@@ -58,6 +76,10 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     function getStakerSilo(address account) external view returns (uint) {
         require(account != address(0), "Invalid account address");
         return _stakerSilo[account];
+    }
+
+    function getTotalEscrowedRewards() external view returns (uint) {
+        return totalEscrowedRewards;
     }
 
     function getStakerWeeksLength(address account) external view returns (uint) {
@@ -147,7 +169,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
             _weeksOfVesting.sub(1).mod(_stakerWeeks[account].length)
         ]
             .add(amount);
-        _totalVestingSupply = _totalVestingSupply.add(amount);
+        totalEscrowedRewards = totalEscrowedRewards.add(amount);
         //Transfering THALES from StakingThales to EscrowThales
         vestingToken.transferFrom(msg.sender, address(this), amount);
         emit AddedToEscrow(account, amount);
@@ -182,7 +204,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         // Amount must be lower than the reward
         require(amount <= _stakerSilo[msg.sender], "Amount exceeds the claimable rewards");
         _stakerSilo[msg.sender] = _stakerSilo[msg.sender].sub(amount);
-        _totalVestingSupply = _totalVestingSupply.sub(amount);
+        totalEscrowedRewards = totalEscrowedRewards.sub(amount);
         _totalAvailableForVesting = _totalAvailableForVesting.sub(amount);
         _totalVested = _totalVested.add(amount);
         vestingToken.transfer(msg.sender, amount);

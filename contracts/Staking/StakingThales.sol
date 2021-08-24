@@ -30,6 +30,8 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     uint public startTimeStamp = 0;
     uint public currentWeekRewards = 0;
     uint public currentWeekFees = 0;
+    bool public distributeFeesEnabled = false;
+    uint public fixedWeeklyReward = 0;
 
     uint private _rewardFunds = 0;
     uint private _feeFunds = 0;
@@ -45,11 +47,11 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     uint private _totalRewardsClaimed;
     uint private _totalRewardFeesClaimed;
 
+    mapping(address => uint) public _lastUnstakeTime;
     mapping(address => uint) private _stakedBalances;
     mapping(address => uint) private _escrowedBalances;
     mapping(address => uint) private _lastStakingWeek;
     mapping(address => uint) private _lastRewardsClaimedWeek;
-    mapping(address => uint) public _lastUnstakeTime;
     mapping(address => uint) private _pendingStake;
 
     /* ========== CONSTRUCTOR ========== */
@@ -112,6 +114,13 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         return feeToken.balanceOf(address(this));
     }
 
+    function setDistributeFeesEnabled(bool _distributeFeesEnabled) external onlyOwner {
+        distributeFeesEnabled = _distributeFeesEnabled;
+    }
+
+    function setFixedWeeklyReward(uint _fixedReward) external onlyOwner {
+        fixedWeeklyReward = _fixedReward;
+    }
     /* ========== PUBLIC ========== */
 
     function startStakingPeriod() external onlyOwner {
@@ -129,6 +138,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         durationPeriod = 7 days;
         unstakeDurationPeriod = 7 days;
     }
+
 
     function closePeriod() external nonReentrant notPaused {
         require(startTimeStamp > 0, "Staking period has not started");
@@ -150,10 +160,12 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
 
         //Actions taken on every closed period
         currentWeekRewards = calculateRewardsForWeek(weeksOfStaking);
-        currentWeekFees = calculateFeesForWeek(weeksOfStaking);
-
         _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentWeekRewards);
-        _totalUnlcaimedFees = _totalUnlcaimedFees.add(currentWeekFees);
+
+        if(distributeFeesEnabled) {
+            currentWeekFees = calculateFeesForWeek(weeksOfStaking);
+            _totalUnlcaimedFees = _totalUnlcaimedFees.add(currentWeekFees);
+        }
 
         emit ClosedPeriod(weeksOfStaking, lastPeriodTimeStamp);
     }
@@ -221,15 +233,16 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         }
         //Calculate rewards
         uint unclaimedReward = calculateUnclaimedRewards(msg.sender);
-        uint unclaimedFees = calculateUnclaimedFees(msg.sender);
-
-        if (unclaimedFees > 0) {
-            feeToken.transfer(msg.sender, unclaimedFees);
-            // feeToken.transferFrom(address(this), msg.sender, unclaimedFees);
-            stakerFeesClaimed[msg.sender] = stakerFeesClaimed[msg.sender].add(unclaimedFees);
-            _totalRewardFeesClaimed = _totalRewardFeesClaimed.add(unclaimedFees);
-            _totalUnlcaimedFees = _totalUnlcaimedFees.sub(unclaimedFees);
-            emit FeeRewardsClaimed(msg.sender, unclaimedFees);
+        if(distributeFeesEnabled) {
+            uint unclaimedFees = calculateUnclaimedFees(msg.sender);
+            if (unclaimedFees > 0) {
+                feeToken.transfer(msg.sender, unclaimedFees);
+                // feeToken.transferFrom(address(this), msg.sender, unclaimedFees);
+                stakerFeesClaimed[msg.sender] = stakerFeesClaimed[msg.sender].add(unclaimedFees);
+                _totalRewardFeesClaimed = _totalRewardFeesClaimed.add(unclaimedFees);
+                _totalUnlcaimedFees = _totalUnlcaimedFees.sub(unclaimedFees);
+                emit FeeRewardsClaimed(msg.sender, unclaimedFees);
+            }
         }
         if (unclaimedReward > 0) {
             // Both the rewards and the fees are staked => new_stake(reward + fees) NEEDS TO BE UPDATED NEXT WEEK ===>
@@ -287,20 +300,22 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     function calculateRewardsForWeek(uint week) internal view returns (uint) {
         //ADD formula
         require(week > 0, "Invalid number for week");
-        if (week == 1) {
-            require(stakingToken.balanceOf(address(this)) > 70000, "Low THALES balance in the Smart-contract");
-            return 70000;
-        }
-        if (week > 1 && week < 48) {
-            require(
-                stakingToken.balanceOf(address(this)) >= week.sub(1).mul(2000).add(70000),
-                "Low balance in the Smart-contract"
-            );
-            return week.sub(1).mul(2000).add(70000);
-        } else {
-            require(stakingToken.balanceOf(address(this)) >= 140000, "Low THALES balance in the Smart-contract");
-            return 140000;
-        }
+        require(stakingToken.balanceOf(address(this)) >= fixedWeeklyReward, "Low THALES balance in the Smart-contract");
+        return fixedWeeklyReward;
+        // if (week == 1) {
+        //     require(stakingToken.balanceOf(address(this)) > 70000, "Low THALES balance in the Smart-contract");
+        //     return 70000;
+        // }
+        // if (week > 1 && week < 48) {
+        //     require(
+        //         stakingToken.balanceOf(address(this)) >= week.sub(1).mul(2000).add(70000),
+        //         "Low balance in the Smart-contract"
+        //     );
+        //     return week.sub(1).mul(2000).add(70000);
+        // } else {
+        //     require(stakingToken.balanceOf(address(this)) >= 140000, "Low THALES balance in the Smart-contract");
+        //     return 140000;
+        // }
     }
 
     function calculateFeesForWeek(uint week) internal view returns (uint) {

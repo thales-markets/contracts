@@ -20,7 +20,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     address public _AirdropContract;
 
     uint public _weeksOfVesting = 0;
-    
+
     uint private _totalVestingSupply = 0;
     uint private _totalAvailableForVesting = 0;
     uint private _totalVested = 0;
@@ -43,6 +43,11 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     function getStakerWeeks(address account) external view returns (uint[10] memory) {
         require(account != address(0), "Invalid account address");
         return _stakerWeeks[account];
+    }
+
+    function getEscrowedBalance(address account) external view returns (uint) {
+        // TODO: add all 10 weeks plus sile
+        return 0;
     }
 
     function getLastWeekAddedReward(address account) external view returns (uint) {

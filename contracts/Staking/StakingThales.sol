@@ -49,7 +49,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     mapping(address => uint) private _escrowedBalances;
     mapping(address => uint) private _lastStakingWeek;
     mapping(address => uint) private _lastRewardsClaimedWeek;
-    mapping(address => uint) private _lastUnstakeTime;
+    mapping(address => uint) public _lastUnstakeTime;
     mapping(address => uint) private _pendingStake;
 
     /* ========== CONSTRUCTOR ========== */
@@ -263,14 +263,14 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         require(_lastRewardsClaimedWeek[account] < weeksOfStaking, "Rewards already claimed for last week");
 
         // return _stakedBalances[account].div(1e18).div(_totalStakedAmount).mul(currentWeekRewards);
-        uint escrowed = 0;
-        uint staked = _stakedBalances[account].mul(currentWeekRewards).div(_totalStakedAmount);
+        uint rewardsThroughEscrow = 0;
+        uint rewardsThroughStake = _stakedBalances[account].mul(currentWeekRewards).div(_totalStakedAmount);
         if (_totalEscrowedAmount > 0) {
-            escrowed = _escrowedBalances[account].mul(currentWeekRewards).div(_totalEscrowedAmount);
-            return staked.add(escrowed).div(2);
+            rewardsThroughEscrow = _escrowedBalances[account].mul(currentWeekRewards).div(_totalEscrowedAmount);
+            return rewardsThroughStake.add(rewardsThroughEscrow).div(2);
         }
         else {
-            return staked;
+            return rewardsThroughStake;
         }
         // return staked;
     }

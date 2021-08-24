@@ -11,6 +11,15 @@ const fs = require('fs');
 
 async function deploy_airdrop() {
 	let accounts = await ethers.getSigners();
+	let networkObj = await ethers.provider.getNetwork();
+	let network = networkObj.name;
+	if (network === 'homestead') {
+		network = 'mainnet';
+	} else if (network === 'unknown') {
+		network = 'localhost';
+	}
+	console.log('Network name:' + network);
+
 	let owner = accounts[0];
 
 	let userBalanceAndHashes = [];
@@ -55,7 +64,7 @@ async function deploy_airdrop() {
 	const root = merkleTree.getHexRoot();
 	console.log('tree root:', root);
 
-	const thalesAddress = '0x3Cf560A59aa5Ca6A5294C2606544b08aDa9461a7'; //ropsten
+	const thalesAddress = getTargetAddress('Thales', network);
 	console.log('thales address:', thalesAddress);
 
 	// deploy Airdrop contract

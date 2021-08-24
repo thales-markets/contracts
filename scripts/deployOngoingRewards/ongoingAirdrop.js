@@ -11,27 +11,35 @@ const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 const { web3 } = require('hardhat');
 const Big = require('big.js');
-const { numberExponentToLarge } = require('../helpers.js');
+const { numberExponentToLarge, getTargetAddress } = require('../helpers.js');
 
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');
 const lastMerkleDistribution = require('./ongoing-airdrop-hashes.json');
 const TOTAL_AMOUNT = web3.utils.toWei('130000');
 
-const ONGOING_AIRDROP = '0xE0A55FeE3a4c20AB47eCdf3ba99F8E73125eF79f'; // localhost
-const ESCROW_THALES = '0xf86163c692D08A4bD82650c19BB60E763A3Bd659'; // localhost
-//const THALES = '0x3Cf560A59aa5Ca6A5294C2606544b08aDa9461a7'; // ropsten
-const THALES = '0x32392bAD285aEf5F3F809c7dE40B47175325cB35'; // localhost
-
 const fs = require('fs');
 
 async function ongoingAirdrop() {
 	let accounts = await ethers.getSigners();
+	let networkObj = await ethers.provider.getNetwork();
+	let network = networkObj.name;
 	let owner = accounts[0];
 
 	let userBalanceAndHashes = [];
 	let userBalanceHashes = [];
 	let i = 0;
 	let totalBalance = Big(0);
+
+	if (network === 'homestead') {
+		network = 'mainnet';
+	} else if (network === 'unknown') {
+		network = 'localhost';
+	}
+	console.log('Network name:' + network);
+
+	const THALES = getTargetAddress('Thales', network);
+	const ONGOING_AIRDROP = getTargetAddress('OngoingAirdrop', network);
+	const ESCROW_THALES = getTargetAddress('EscrowThales', network);
 
 	const OngoingAirdrop = await ethers.getContractFactory('OngoingAirdrop');
 	let ongoingAirdrop = await OngoingAirdrop.attach(ONGOING_AIRDROP);

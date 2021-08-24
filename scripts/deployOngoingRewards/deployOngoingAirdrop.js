@@ -4,13 +4,11 @@ const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 const { web3 } = require('hardhat');
 const Big = require('big.js');
-const { deployArgs, bn } = require('../snx-data/xsnx-snapshot/helpers');
-const { numberExponentToLarge } = require('../helpers.js');
+const { deployArgs } = require('../snx-data/xsnx-snapshot/helpers');
+const { numberExponentToLarge, getTargetAddress, setTargetAddress } = require('../helpers.js');
 
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');
 const TOTAL_AMOUNT = web3.utils.toWei('130000');
-//const THALES = '0x32392bAD285aEf5F3F809c7dE40B47175325cB35'; // localhost
-const THALES = '0x24505B4b0a31A2765FC861dd4D8Dc6157d759b73'; // ropsten
 
 const fs = require('fs');
 
@@ -18,11 +16,14 @@ async function deploy_ongoing_airdrop() {
 	let accounts = await ethers.getSigners();
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	if (network == 'homestead') {
+	if (network === 'homestead') {
 		network = 'mainnet';
+	} else if (network === 'unknown') {
+		network = 'localhost';
 	}
-	console.log('Network name:' + networkObj.name);
+	console.log('Network name:' + network);
 
+	const THALES = getTargetAddress('Thales', network);
 	let owner = accounts[0];
 
 	let userBalanceAndHashes = [];
@@ -89,23 +90,35 @@ async function deploy_ongoing_airdrop() {
 	const ongoingAirdrop = await deployArgs('OngoingAirdrop', owner.address, thales.address, root);
 	await ongoingAirdrop.deployed();
 	console.log('OngoingAirdrop deployed at', ongoingAirdrop.address);
+	// update deployments.json file
+	setTargetAddress('OngoingAirdrop', network, ongoingAirdrop.address);
 
 	console.log('total balance', totalBalance.toString());
 
-	// deploy EscrowThales 
+	// deploy EscrowThales
 	const EscrowThales = await ethers.getContractFactory('EscrowThales');
-	const EscrowThalesDeployed = await EscrowThales.deploy(owner.address, thales.address);
-	await EscrowThalesDeployed.deployed();
-	console.log('EscrowThales deployed at', EscrowThalesDeployed.address);
+	const escrowThales = await EscrowThales.deploy(owner.address, thales.address);
+	await escrowThales.deployed();
+	console.log('EscrowThales deployed at', escrowThales.address);
+	// update deployments.json file
+	setTargetAddress('EscrowThales', network, escrowThales.address);
 
-	// set EscrowThales address
-	
+	// set OngoingAirdrop address
+	await escrowThales.setAirdropContract(ongoingAirdrop.address);
 
 	await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
+
+	// set EscrowThales address
+	await ongoingAirdrop.setEscrow(escrowThales.address);
 
 	await hre.run('verify:verify', {
 		address: ongoingAirdrop.address,
 		constructorArguments: [owner.address, thales.address, root],
+	});
+
+	await hre.run('verify:verify', {
+		address: escrowThales.address,
+		constructorArguments: [owner.address, thales.address],
 	});
 }
 

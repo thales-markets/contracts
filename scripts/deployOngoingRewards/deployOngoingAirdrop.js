@@ -9,9 +9,8 @@ const { numberExponentToLarge } = require('../helpers.js');
 
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');
 const TOTAL_AMOUNT = web3.utils.toWei('130000');
-//const THALES = '0x3Cf560A59aa5Ca6A5294C2606544b08aDa9461a7'; // ropsten
-//const THALES = '0x829828604A09CcC381f3080e4aa5557b42C4c87A'; // localhost
-const THALES = '0x9FC9186AEea43d23637DBC3F12A04e9C2cAe7C02'; // ropsten
+//const THALES = '0x32392bAD285aEf5F3F809c7dE40B47175325cB35'; // localhost
+const THALES = '0x24505B4b0a31A2765FC861dd4D8Dc6157d759b73'; // ropsten
 
 const fs = require('fs');
 
@@ -89,9 +88,18 @@ async function deploy_ongoing_airdrop() {
 
 	const ongoingAirdrop = await deployArgs('OngoingAirdrop', owner.address, thales.address, root);
 	await ongoingAirdrop.deployed();
-	console.log('ongoingAirdrop deployed at', ongoingAirdrop.address);
+	console.log('OngoingAirdrop deployed at', ongoingAirdrop.address);
 
 	console.log('total balance', totalBalance.toString());
+
+	// deploy EscrowThales 
+	const EscrowThales = await ethers.getContractFactory('EscrowThales');
+	const EscrowThalesDeployed = await EscrowThales.deploy(owner.address, thales.address);
+	await EscrowThalesDeployed.deployed();
+	console.log('EscrowThales deployed at', EscrowThalesDeployed.address);
+
+	// set EscrowThales address
+	
 
 	await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
 

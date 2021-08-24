@@ -20,7 +20,7 @@ const TOTAL_AMOUNT = web3.utils.toWei('130000');
 const ONGOING_AIRDROP = '0xE0A55FeE3a4c20AB47eCdf3ba99F8E73125eF79f'; // localhost
 const ESCROW_THALES = '0xf86163c692D08A4bD82650c19BB60E763A3Bd659'; // localhost
 //const THALES = '0x3Cf560A59aa5Ca6A5294C2606544b08aDa9461a7'; // ropsten
-const THALES = '0x829828604A09CcC381f3080e4aa5557b42C4c87A'; // localhost
+const THALES = '0x32392bAD285aEf5F3F809c7dE40B47175325cB35'; // localhost
 
 const fs = require('fs');
 

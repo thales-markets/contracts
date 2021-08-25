@@ -45,13 +45,12 @@ const deploymentFixture = async () => {
 
 	// deploy THALES
 	const thales = await deploy('Thales');
-	//const EscrowThales = await deploy('EscrowThales');
 
 	// deploy OngoingAirdrop contract
 	const ongoingAirdrop = await deployArgs('OngoingAirdrop', admin.address, thales.address, root);
 	const escrowThales = await deployArgs('EscrowThales', admin.address, thales.address);
 
-	escrowThales.setAirdropContract(ongoingAirdrop.address);
+	await escrowThales.setAirdropContract(ongoingAirdrop.address);
 
 	// transfer THALES tokens to airdrop contract
 	await ongoingAirdrop.setEscrow(escrowThales.address);
@@ -100,4 +99,32 @@ async function getReward(i, merkleTree, balanceSnapshot, snapshotHashes, airdrop
 	await airdrop.connect(signer).claim(i, snapshot.balance, proof);
 }
 
-module.exports = { deploymentFixture, getReward };
+async function getRoot() {
+	let userBalance = [];
+	let userBalanceHashes = [];
+	let i = 0;
+	let totalBalance = bn(0);
+	// get list of leaves for the merkle trees using index, address and token balance
+	// encode user address and balance using web3 encodePacked
+	for (let address of Object.keys(snapshot)) {
+		let balance = {
+			address: address,
+			balance: THALES_AMOUNT,
+		};
+		let hash = keccak256(web3.utils.encodePacked(i, address, THALES_AMOUNT));
+		userBalanceHashes.push(hash);
+		userBalance.push(balance);
+		totalBalance = totalBalance.add(THALES_AMOUNT);
+		++i;
+	}
+	// create merkle tree
+	const merkleTree = new MerkleTree(userBalanceHashes, keccak256, {
+		sortLeaves: true,
+		sortPairs: true,
+	});
+
+	return merkleTree.getHexRoot();
+}
+
+
+module.exports = { deploymentFixture, getReward, getRoot };

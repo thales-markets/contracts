@@ -1,4 +1,4 @@
-// First deployment of OngoingAirdrop.js
+// First deployment of OngoingAirdrop.sol
 
 const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
@@ -108,9 +108,6 @@ async function deploy_ongoing_airdrop() {
 
 	await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
 
-	// set EscrowThales address
-	await ongoingAirdrop.setEscrow(escrowThales.address);
-
 	await hre.run('verify:verify', {
 		address: ongoingAirdrop.address,
 		constructorArguments: [owner.address, thales.address, root],
@@ -120,6 +117,10 @@ async function deploy_ongoing_airdrop() {
 		address: escrowThales.address,
 		constructorArguments: [owner.address, thales.address],
 	});
+
+	// set EscrowThales address
+	await ongoingAirdrop.setEscrow(escrowThales.address);
+
 }
 
 deploy_ongoing_airdrop()

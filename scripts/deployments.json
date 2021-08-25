@@ -1,1 +1,42 @@
-{"mainnet":{"Airdrop":"","OngoingAirdrop":"","VestingEscrow":"","EscrowThales":"","StakingThales":"","Thales":""},"ropsten":{"Airdrop":"0xF56Ab113AbE72d75ddfA2f37a8C2986Eb3a0dC54","OngoingAirdrop":"0xFe323C6A4ec6e12BF55552FD939768E4CBA7db60","VestingEscrow":"0x26d5A65c9354b1B4305C995A468670A141aa651c","EscrowThales":"0x61C7f4643DA0506ea9aA10f70Eec0d6B63488820","StakingThales":"0xd6BEd7D753DCbbbb8937Dd009788d6c815aE3094","Thales":"0x24505B4b0a31A2765FC861dd4D8Dc6157d759b73"},"kovan":{"Airdrop":"","OngoingAirdrop":"","VestingEscrow":"0xaF05693d2c336b40055F6531556aB6D0Ebf003D8","EscrowThales":"","StakingThales":"","Thales":"0x6Ffa6BEda785710EA4089B5AB93Eb381da335EF4"},"goerli":{"Airdrop":"","OngoingAirdrop":"","VestingEscrow":"","EscrowThales":"","StakingThales":"","Thales":""},"localhost":{"Airdrop":"","OngoingAirdrop":"0xB74DD224F1652672Fc5d18404Fe5AF120e1e0991","VestingEscrow":"0xE04Fa48Bf6f15E8Ff1317Cd8b896408235A08Df7","EscrowThales":"0x1817e45A781f47b89F5CD498E737Ee96cF743be9","StakingThales":"","Thales":"0xB409df82C52A9f6C39b94eCB90DEE882314126e2"}}
+{
+	"mainnet": {
+		"Airdrop": "",
+		"OngoingAirdrop": "",
+		"VestingEscrow": "",
+		"EscrowThales": "",
+		"StakingThales": "",
+		"Thales": ""
+	},
+	"ropsten": {
+		"Airdrop": "0xF56Ab113AbE72d75ddfA2f37a8C2986Eb3a0dC54",
+		"OngoingAirdrop": "0xFe323C6A4ec6e12BF55552FD939768E4CBA7db60",
+		"VestingEscrow": "0x26d5A65c9354b1B4305C995A468670A141aa651c",
+		"EscrowThales": "0x61C7f4643DA0506ea9aA10f70Eec0d6B63488820",
+		"StakingThales": "0xd6BEd7D753DCbbbb8937Dd009788d6c815aE3094",
+		"Thales": "0x24505B4b0a31A2765FC861dd4D8Dc6157d759b73"
+	},
+	"kovan": {
+		"Airdrop": "",
+		"OngoingAirdrop": "",
+		"VestingEscrow": "0xaF05693d2c336b40055F6531556aB6D0Ebf003D8",
+		"EscrowThales": "",
+		"StakingThales": "",
+		"Thales": "0x6Ffa6BEda785710EA4089B5AB93Eb381da335EF4"
+	},
+	"goerli": {
+		"Airdrop": "",
+		"OngoingAirdrop": "",
+		"VestingEscrow": "",
+		"EscrowThales": "",
+		"StakingThales": "",
+		"Thales": ""
+	},
+	"localhost": {
+		"Airdrop": "",
+		"OngoingAirdrop": "0xB74DD224F1652672Fc5d18404Fe5AF120e1e0991",
+		"VestingEscrow": "0xE04Fa48Bf6f15E8Ff1317Cd8b896408235A08Df7",
+		"EscrowThales": "0x1817e45A781f47b89F5CD498E737Ee96cF743be9",
+		"StakingThales": "",
+		"Thales": "0xB409df82C52A9f6C39b94eCB90DEE882314126e2"
+	}
+}

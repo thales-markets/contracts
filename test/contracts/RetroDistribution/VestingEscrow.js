@@ -31,7 +31,7 @@ contract('VestingEscrow', accounts => {
 			VestingEscrow = await deployContract('VestingEscrow', [
 				admin.address,
 				Thales.address,
-				(now + 1000).toString(),
+				(now + 10000).toString(),
 				(now + YEAR).toString(),
 			]);
 
@@ -53,7 +53,7 @@ contract('VestingEscrow', accounts => {
 
 			let sum = Big(0);
 			for (let i = 0; i < 100; i++) {
-				sum = sum.add(Big(amounts[i]));
+				sum = sum.add(amounts[i]);
 			}
 
 			assert.equal(

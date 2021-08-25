@@ -2,7 +2,7 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const Big = require('big.js');
 const fs = require('fs');
-const { numberExponentToLarge, txLog } = require('./helpers.js');
+const { numberExponentToLarge, txLog, getTargetAddress, setTargetAddress } = require('./helpers.js');
 
 const TOTAL_AMOUNT = w3utils.toWei('13000000');
 const VESTING_PERIOD = 86400 * 365;
@@ -25,17 +25,22 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	if (network === 'homestead') {
+		network = 'mainnet';
+	} else if (network === 'unknown') {
+		network = 'localhost';
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Total amount', TOTAL_AMOUNT);
 
-	// Dev env - deploy Thales.sol; Live env - use Thales.sol contract address
-	const Thales = await ethers.getContractFactory('Thales');
-	const ThalesDeployed = await Thales.deploy();
-	await ThalesDeployed.deployed();
+	const THALES = getTargetAddress('Thales', network);
 
-	console.log('Thales deployed to:', ThalesDeployed.address);
+	const Thales = await ethers.getContractFactory('Thales');
+	const ThalesDeployed = await Thales.attach(THALES);
+
+	console.log('Thales address:', ThalesDeployed.address);
 
 	await vestTokens(owner, fundingAdmins, ThalesDeployed, 1);
 }
@@ -51,7 +56,9 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 		startTime + VESTING_PERIOD
 	);
 	await VestingEscrowDeployed.deployed();
-	console.log('VestingEscrowDeploy deployed to:', VestingEscrowDeployed.address);
+	console.log('VestingEscrow deployed to:', VestingEscrowDeployed.address);
+	// update deployments.json file
+	//setTargetAddress('VestingEscrow', network, VestingEscrowDeployed.address);
 
 	let vestedPercent = [];
 	let totalScore = Big(0);
@@ -177,6 +184,19 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 	tx = await token.approve(VestingEscrowDeployed.address, TOTAL_AMOUNT);
 	txLog(tx, 'Thales.sol: Approve tokens');
 
+	await hre.run('verify:verify', {
+		address: VestingEscrowDeployed.address,
+		constructorArguments: [
+			admin.address,
+			token.address,
+			startTime,
+			startTime + VESTING_PERIOD,
+		],
+	});
+
+	const allowance = await token.allowance(admin.address, VestingEscrowDeployed.address);
+	console.log('allowance', allowance.toString());
+
 	tx = await VestingEscrowDeployed.addTokens(TOTAL_AMOUNT);
 	txLog(tx, 'VestingEscrow.sol: Add tokens');
 
@@ -192,11 +212,11 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 		let accountsArgument = accounts.slice(i, i + INPUT_SIZE);
 		let valuesArgument = values.slice(i, i + INPUT_SIZE);
 
-		// if (i + INPUT_SIZE > accounts.length) {
-		// 	zeroArray = new Array(INPUT_SIZE - accountsArgument.length);
-		// 	accountsArgument = [...accountsArgument, ...zeroArray.fill(ZERO_ADDRESS)];
-		// 	valuesArgument = [...valuesArgument, ...zeroArray.fill('0')];
-		// }
+		if (i + INPUT_SIZE > accounts.length) {
+			zeroArray = new Array(INPUT_SIZE - accountsArgument.length);
+			accountsArgument = [...accountsArgument, ...zeroArray.fill(ZERO_ADDRESS)];
+			valuesArgument = [...valuesArgument, ...zeroArray.fill('0')];
+		}
 		fundArguments.push([accountsArgument, valuesArgument]);
 	}
 
@@ -209,6 +229,12 @@ async function _fundAccounts(account, vestingEscrowContract, fundArguments, conf
 		tx = await vestingEscrowContract.fund(recipients, amounts);
 		txLog(tx, 'VestingEscrow.sol: Fund accounts');
 	}
+}
+
+function delay(time) {
+	return new Promise(function (resolve) {
+		setTimeout(resolve, time);
+	});
 }
 
 main()

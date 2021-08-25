@@ -54,7 +54,7 @@ contract VestingEscrow is ReentrancyGuard, Owned {
         }
 
         initialLockedSupply = initialLockedSupply.add(_totalAmount);
-        unallocatedSupply -= _totalAmount;
+        unallocatedSupply = unallocatedSupply.sub(_totalAmount);
     }
 
     function _totalVestedOf(address _recipient, uint256 _time) internal view returns (uint256) {

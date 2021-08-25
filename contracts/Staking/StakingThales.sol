@@ -147,16 +147,9 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
             "7 days has not passed since the last closed period"
         );
 
-        // require(iEscrowThales.updateCurrentWeek(weeksOfStaking.add(1)), "Error in iEscrowThales: check address of StakingToken");
         iEscrowThales.updateCurrentWeek(weeksOfStaking.add(1));
-
         lastPeriodTimeStamp = block.timestamp;
         weeksOfStaking = weeksOfStaking.add(1);
-
-        // if(_totalPendingStakeAmount > 0) {
-        //     _totalEscrowedAmount = _totalEscrowedAmount.add(_totalPendingStakeAmount);
-        //     _totalPendingStakeAmount = 0;
-        // }
 
         _totalEscrowedAmount = iEscrowThales.getTotalEscrowedRewards();
 
@@ -214,9 +207,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
             _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Cannot stake, the staker is paused from staking due to unstaking"
         );
-        //Lose the pending stake
-        // _pendingStake[msg.sender] = 0;
-        // _totalEscrowedAmount = _totalEscrowedAmount.sub(_escrowedBalances[msg.sender]);
         _escrowedBalances[msg.sender] = 0;
         _totalStakedAmount = _totalStakedAmount.sub(_stakedBalances[msg.sender]);
         uint unstakeAmount = _stakedBalances[msg.sender];
@@ -233,14 +223,8 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         );
 
         if (_lastStakingWeek[msg.sender] < weeksOfStaking) {
-            // } .add(iEscrowThales._delayedWeeks()) == iEscrowThales._weeksOfVesting()) {
             _escrowedBalances[msg.sender] = iEscrowThales.getStakedEscrowedBalance(msg.sender);
         }
-
-        // if (_pendingStake[msg.sender] > 0) {
-        //     _escrowedBalances[msg.sender] = _escrowedBalances[msg.sender].add(_pendingStake[msg.sender]);
-        //     _pendingStake[msg.sender] = 0;
-        // }
         //Calculate rewards
         uint unclaimedReward = calculateUnclaimedRewards(msg.sender);
         if (distributeFeesEnabled) {
@@ -256,8 +240,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         }
         if (unclaimedReward > 0) {
             // Both the rewards and the fees are staked => new_stake(reward + fees) NEEDS TO BE UPDATED NEXT WEEK ===>
-            // _totalPendingStakeAmount = _totalPendingStakeAmount.add(unclaimedReward);
-            // _pendingStake[msg.sender] = _pendingStake[msg.sender].add(unclaimedReward);
             _lastStakingWeek[msg.sender] = weeksOfStaking;
             // Transfer THALES to Escrow contract
             iEscrowThales.addToEscrow(msg.sender, unclaimedReward);
@@ -294,15 +276,12 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         } else {
             return rewardsThroughStake;
         }
-        // return staked;
     }
 
     function calculateUnclaimedFees(address account) internal view returns (uint) {
         require(account != address(0), "Invalid account address used");
         require(_stakedBalances[account] > 0, "Account is not a staker");
         require(_lastRewardsClaimedWeek[account] < weeksOfStaking, "Rewards already claimed for last week");
-
-        // return _stakedBalances[account].div(1e18).div(_totalStakedAmount).mul(currentWeekFees);
         return _stakedBalances[account].mul(currentWeekFees).div(_totalStakedAmount);
     }
 

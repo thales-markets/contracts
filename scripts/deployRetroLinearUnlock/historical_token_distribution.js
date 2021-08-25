@@ -2,7 +2,7 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const Big = require('big.js');
 const fs = require('fs');
-const { numberExponentToLarge, txLog, getTargetAddress, setTargetAddress } = require('./helpers.js');
+const { numberExponentToLarge, txLog, getTargetAddress, setTargetAddress } = require('../helpers.js');
 
 const TOTAL_AMOUNT = w3utils.toWei('13000000');
 const VESTING_PERIOD = 86400 * 365;
@@ -10,7 +10,7 @@ const INPUT_SIZE = 100;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const FLOOR_VALUE = w3utils.toWei('100');
 
-const historicalData = require('./snx-data/historical_snx.json');
+const historicalData = require('../snx-data/historical_snx.json');
 
 // TODO - put correct addresses here
 const fundingAdmins = [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS];

@@ -23,18 +23,30 @@ const {
 
 contract('StakingThales', accounts => {
 	const [first, second, third, owner] = accounts;
+	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
 	let ThalesDeployed,
 		ThalesFeeDeployed,
 		StakingThalesDeployed,
 		EscrowThalesDeployed,
 		OngoingAirdropDeployed;
 
-	const sUSDQty = toUnit(10000);
+	const sUSDQty = toUnit(5555);
+	const sUSD = 5555;
 	const sAUDKey = toBytes32('sAUD');
 	const SECOND = 1000;
 	const DAY = 86400;
 	const WEEK = 604800;
 	const YEAR = 31556926;
+
+	let BinaryOptionMarket = artifacts.require('BinaryOptionMarket');
+	let Synth = artifacts.require('Synth');
+	let BinaryOption = artifacts.require('BinaryOption');
+	let manager, factory, addressResolver;
+	let exchangeRates,
+		oracle,
+		sUSDSynth,
+		binaryOptionMarketMastercopy,
+		binaryOptionMastercopy;
 
 	describe('Deploy Staking Thales', () => {
 		it('deploy all Contracts', async () => {
@@ -67,37 +79,60 @@ contract('StakingThales', accounts => {
 			);
 		});
 	});
+	
+	before(async () => {
+	
+		({
+			BinaryOptionMarketManager: manager,
+			BinaryOptionMarketFactory: factory,
+			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
+			BinaryOptionMastercopy: binaryOptionMastercopy,
+			AddressResolver: addressResolver,
+			ExchangeRates: exchangeRates,
+			SynthsUSD: sUSDSynth,
+		} = await setupAllContracts({
+			accounts,
+			synths: ['sUSD'],
+			contracts: [
+				'FeePool',
+				'ExchangeRates',
+				'BinaryOptionMarketMastercopy',
+				'BinaryOptionMastercopy',
+				'BinaryOptionMarketFactory',
+			],
+		}));
+	
+		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
+	
+		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
+		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
+			from: managerOwner,
+		});
+		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
+	
+		oracle = await exchangeRates.oracle();
+	
+		await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
+			from: oracle,
+		});
+	
+		await Promise.all([
+			sUSDSynth.issue(initialCreator, sUSDQty),
+			sUSDSynth.approve(manager.address, sUSDQty, { from: initialCreator }),
+			sUSDSynth.issue(minter, sUSDQty),
+			sUSDSynth.approve(manager.address, sUSDQty, { from: minter }),
+			sUSDSynth.issue(dummy, sUSDQty),
+			sUSDSynth.approve(manager.address, sUSDQty, { from: dummy }),
+		]);
+	});
 
 	beforeEach(async () => {
 		let Thales = artifacts.require('Thales');
 		let EscrowThales = artifacts.require('EscrowThales');
 		let StakingThales = artifacts.require('StakingThales');
 		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
-		// let Synth = artifacts.require('Synth');
-		// ({
-		// 	SynthsUSD: sUSDSynth,
-		// } = await setupContract({
-		// 	accounts,
-		// 	Synth: ['sUSD'],
-		// 	contracts: [
-		// 		'FeePool',
-		// 		'ExchangeRates'
-		// 	],
-		// }));
-		// oracle = await exchangeRates.oracle();
 
-		// await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-		// 	from: oracle,
-		// });
 
-		// await Promise.all([
-		// 	sUSDSynth.issue(owner, sUSDQty),
-		// 	sUSDSynth.approve(manager.address, sUSDQty, { from: owner }),
-		// 	sUSDSynth.issue(minter, sUSDQty),
-		// 	sUSDSynth.approve(manager.address, sUSDQty, { from: minter }),
-		// 	sUSDSynth.issue(dummy, sUSDQty),
-		// 	sUSDSynth.approve(manager.address, sUSDQty, { from: dummy }),
-		// ]);
 
 		ThalesDeployed = await Thales.new({ from: owner });
 		ThalesFeeDeployed = await Thales.new({ from: owner });
@@ -119,7 +154,7 @@ contract('StakingThales', accounts => {
 			owner,
 			EscrowThalesDeployed.address,
 			ThalesDeployed.address,
-			ThalesFeeDeployed.address,
+			sUSDSynth.address,
 			{ from: owner }
 		);
 
@@ -356,6 +391,11 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 10000, {
 				from: owner,
 			});
+
+			// await sUSDSynth.approve(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
+			await sUSDSynth.issue(initialCreator, sUSDQty);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
+			
 			// await StakingThalesDeployed.depositFees(10000, { from: owner });
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
@@ -476,6 +516,11 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
+
+			await sUSDSynth.issue(initialCreator, sUSD);
+			// await sUSDSynth.approve(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			// await StakingThalesDeployed.depositFees(5555, { from: owner });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
@@ -532,6 +577,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			// await StakingThalesDeployed.depositFees(5555, { from: owner });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
@@ -587,6 +635,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			// await StakingThalesDeployed.depositFees(5555, { from: owner });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
@@ -618,6 +669,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1000, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			await StakingThalesDeployed.closePeriod({ from: second });
 
 			answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -628,6 +682,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1000, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			await StakingThalesDeployed.closePeriod({ from: second });
 
 			answer = await StakingThalesDeployed.unstake({ from: first });
@@ -659,6 +716,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			// await StakingThalesDeployed.depositFees(5555, { from: owner });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
@@ -694,6 +754,9 @@ contract('StakingThales', accounts => {
 				await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 					from: owner,
 				});
+				await sUSDSynth.issue(initialCreator, sUSD);
+				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+	
 				await StakingThalesDeployed.closePeriod({ from: second });
 				// console.log(i)
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -744,6 +807,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
 			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
@@ -778,6 +844,9 @@ contract('StakingThales', accounts => {
 				await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 					from: owner,
 				});
+				await sUSDSynth.issue(initialCreator, sUSD);
+				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+	
 				await StakingThalesDeployed.closePeriod({ from: second });
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 			}
@@ -798,6 +867,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1000, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			await StakingThalesDeployed.closePeriod({ from: second });
 
 			// answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -808,6 +880,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1000, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			await StakingThalesDeployed.closePeriod({ from: second });
 
 			answer = await StakingThalesDeployed.unstake({ from: first });
@@ -853,6 +928,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
 			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
@@ -928,6 +1006,9 @@ contract('StakingThales', accounts => {
 				await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 					from: owner,
 				});
+				await sUSDSynth.issue(initialCreator, sUSD);
+				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+	
 				await StakingThalesDeployed.closePeriod({ from: second });
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
@@ -993,6 +1074,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1000, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			await StakingThalesDeployed.closePeriod({ from: second });
 
 			answer = await StakingThalesDeployed.unstake({ from: first });
@@ -1050,6 +1134,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 6000, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, 6000);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, 6000, { from: initialCreator });
+
 
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
@@ -1137,6 +1224,9 @@ contract('StakingThales', accounts => {
 				await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 6000, {
 					from: owner,
 				});
+				await sUSDSynth.issue(initialCreator, sUSD);
+				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+	
 				await StakingThalesDeployed.closePeriod({ from: second });
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
@@ -1231,6 +1321,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1000, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			await StakingThalesDeployed.closePeriod({ from: second });
 
 			answer = await StakingThalesDeployed.unstake({ from: first });
@@ -1290,6 +1383,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
 			await StakingThalesDeployed.stake(1000, { from: first });
 
@@ -1300,6 +1396,9 @@ contract('StakingThales', accounts => {
 					await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 						from: owner,
 					});
+					await sUSDSynth.issue(initialCreator, sUSD);
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+		
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1337,6 +1436,9 @@ contract('StakingThales', accounts => {
 					await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 						from: owner,
 					});
+					await sUSDSynth.issue(initialCreator, sUSD);
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+		
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1364,6 +1466,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSD);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+
 			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
 			await StakingThalesDeployed.stake(1000, { from: first });
 
@@ -1374,6 +1479,9 @@ contract('StakingThales', accounts => {
 					await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 						from: owner,
 					});
+					await sUSDSynth.issue(initialCreator, sUSD);
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+		
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1410,6 +1518,9 @@ contract('StakingThales', accounts => {
 					await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 						from: owner,
 					});
+					await sUSDSynth.issue(initialCreator, sUSDQty);
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
+		
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1453,6 +1564,9 @@ contract('StakingThales', accounts => {
 					await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 						from: owner,
 					});
+					await sUSDSynth.issue(initialCreator, sUSDQty);
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
+		
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1545,6 +1659,9 @@ contract('StakingThales', accounts => {
 					await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 						from: owner,
 					});
+					await sUSDSynth.issue(initialCreator, sUSDQty);
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
+		
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1605,6 +1722,9 @@ contract('StakingThales', accounts => {
 					await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 						from: owner,
 					});
+					await sUSDSynth.issue(initialCreator, sUSDQty);
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
+		
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1628,6 +1748,9 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1000, {
 				from: owner,
 			});
+			await sUSDSynth.issue(initialCreator, sUSDQty);
+			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
+
 			await StakingThalesDeployed.closePeriod({ from: second });
 
 			answer = await StakingThalesDeployed.unstake({ from: first });

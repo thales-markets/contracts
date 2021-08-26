@@ -38,6 +38,7 @@ contract('StakingThales', accounts => {
 	const WEEK = 604800;
 	const YEAR = 31556926;
 
+
 	let BinaryOptionMarket = artifacts.require('BinaryOptionMarket');
 	let Synth = artifacts.require('Synth');
 	let BinaryOption = artifacts.require('BinaryOption');
@@ -75,6 +76,8 @@ contract('StakingThales', accounts => {
 				EscrowThalesDeployed.address,
 				ThalesDeployed.address,
 				first,
+				WEEK,
+				WEEK,
 				{ from: owner }
 			);
 		});
@@ -155,6 +158,8 @@ contract('StakingThales', accounts => {
 			EscrowThalesDeployed.address,
 			ThalesDeployed.address,
 			sUSDSynth.address,
+			WEEK,
+			WEEK,
 			{ from: owner }
 		);
 

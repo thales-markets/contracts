@@ -60,14 +60,16 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         address _owner,
         address _iEscrowThales, //THALES
         address _stakingToken, //THALES
-        address _feeToken //sUSD
+        address _feeToken, //sUSD
+        uint _durationPeriod,
+        uint _unstakeDurationPeriod
     ) public Owned(_owner) {
         iEscrowThales = IEscrowThales(_iEscrowThales);
         stakingToken = IERC20(_stakingToken);
         feeToken = IERC20(_feeToken);
         stakingToken.approve(_iEscrowThales, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
-        durationPeriod = 1 hours;
-        unstakeDurationPeriod = 1 hours;
+        durationPeriod = _durationPeriod;
+        unstakeDurationPeriod = _unstakeDurationPeriod;
     }
 
     /* ========== VIEWS ========== */

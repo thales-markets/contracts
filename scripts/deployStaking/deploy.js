@@ -4,6 +4,10 @@ const snx = require('synthetix');
 const { artifacts, contract, web3 } = require('hardhat');
 
 const THALES_AMOUNT = web3.utils.toWei('200');
+const SECOND = 1000;
+const DAY = 86400;
+const WEEK = 604800;
+const YEAR = 31556926 
 
 const fs = require('fs');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
@@ -13,10 +17,17 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	let durationPeriod, unstakeDurationPeriod;
 	if (network == 'homestead') {
 		network = 'mainnet';
+		durationPeriod = WEEK;
+		unstakeDurationPeriod = WEEK;
 	} else if (network === 'unknown') {
 		network = 'localhost';
+	}
+	else if(network == 'ropsten') {
+		durationPeriod = DAY;
+		unstakeDurationPeriod = DAY;
 	}
 
 	console.log('Account is:' + owner.address);
@@ -39,7 +50,9 @@ async function main() {
 		owner.address,
 		EscrowThalesAddress,
 		thalesAddress,
-		ProxyERC20sUSD.address
+		ProxyERC20sUSD.address,
+		durationPeriod,
+		unstakeDurationPeriod
 	);
 	await StakingThalesDeployed.deployed();
 
@@ -60,6 +73,8 @@ async function main() {
 			EscrowThalesAddress,
 			thalesAddress,
 			ProxyERC20sUSD.address,
+			durationPeriod,
+			unstakeDurationPeriod
 		],
 	});
 }

@@ -5,7 +5,6 @@ const Big = require('big.js');
 const { numberExponentToLarge, getTargetAddress } = require('../helpers.js');
 
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');
-const lastMerkleDistribution = require('./ongoing-airdrop-hashes.json');
 const TOTAL_AMOUNT = web3.utils.toWei('130000');
 
 const fs = require('fs');
@@ -28,15 +27,19 @@ async function ongoingAirdrop() {
 	}
 	console.log('Network name:' + network);
 
+	// attach contracts
 	const THALES = getTargetAddress('Thales', network);
 	const ONGOING_AIRDROP = getTargetAddress('OngoingAirdrop', network);
-	const ESCROW_THALES = getTargetAddress('EscrowThales', network);
 
 	const OngoingAirdrop = await ethers.getContractFactory('OngoingAirdrop');
 	let ongoingAirdrop = await OngoingAirdrop.attach(ONGOING_AIRDROP);
 
-	// set escrow thales address
-	await ongoingAirdrop.setEscrow(ESCROW_THALES);
+	const Thales = await ethers.getContractFactory('Thales');
+	let thales = await Thales.attach(THALES);
+
+	// get file with previous hashes
+	let ongoingPeriod = await ongoingAirdrop.period();
+	const lastMerkleDistribution = require(`./ongoing-airdrop-hashes-${ongoingPeriod.toString()}.json`);
 
 	// pause ongoingAirdrop
 	await ongoingAirdrop.setPaused(true);
@@ -64,6 +67,9 @@ async function ongoingAirdrop() {
 			.div(totalScore)
 			.round();
 
+		// adding only new amounts to totalBalance value
+		totalBalance = totalBalance.add(amount);
+
 		// if address hasn't claimed add to amount prev value
 		if (claimed == 0) {
 			amount = amount.add(lastMerkleDistribution[index].balance);
@@ -80,19 +86,8 @@ async function ongoingAirdrop() {
 		};
 		userBalanceHashes.push(hash);
 		userBalanceAndHashes.push(balance);
-		totalBalance = totalBalance.add(amount);
 		++i;
 	}
-
-	const period = await ongoingAirdrop.getPeriod();
-
-	fs.writeFileSync(
-		`scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-${period}.json`,
-		JSON.stringify(userBalanceAndHashes),
-		function(err) {
-			if (err) return console.log(err);
-		}
-	);
 
 	// create merkle tree
 	const merkleTree = new MerkleTree(userBalanceHashes, keccak256, {
@@ -104,21 +99,21 @@ async function ongoingAirdrop() {
 	const root = merkleTree.getHexRoot();
 	console.log('tree root:', root);
 
-	const Thales = await ethers.getContractFactory('Thales');
-	let thales = await Thales.attach(THALES);
-
-	const EscrowThales = await ethers.getContractFactory('EscrowThales');
-	let escrowThales = await EscrowThales.attach(ESCROW_THALES);
-
 	// ongoingAirdrop: set new tree root, unpause contract
 	await ongoingAirdrop.setRoot(root);
 	await ongoingAirdrop.setPaused(false);
 
-	await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
+	ongoingPeriod = await ongoingAirdrop.period();
 
-	// update current week
-	const currentWeek = await escrowThales.getCurrentWeek();
-	await escrowThales.updateCurrentWeek(currentWeek + 1);
+	fs.writeFileSync(
+		`scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-${ongoingPeriod.toString()}.json`,
+		JSON.stringify(userBalanceAndHashes),
+		function(err) {
+			if (err) return console.log(err);
+		}
+	);
+
+	await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
 }
 
 ongoingAirdrop()

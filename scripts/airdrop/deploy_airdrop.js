@@ -2,6 +2,7 @@ const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 const { web3 } = require('hardhat');
 const { deployArgs, bn } = require('../snx-data/xsnx-snapshot/helpers');
+const { getTargetAddress, setTargetAddress } = require('../helpers.js');
 
 const historicalSnapshot = require('./airdropSnapshot.json');
 
@@ -71,6 +72,8 @@ async function deploy_airdrop() {
 	const airdrop = await deployArgs('Airdrop', owner.address, thalesAddress, root);
 	await airdrop.deployed();
 	console.log('airdrop deployed at', airdrop.address);
+	// update deployments.json file
+	setTargetAddress('Airdrop', network, airdrop.address);
 
 	const Thales = await ethers.getContractFactory('Thales');
 	let thales = await Thales.attach(thalesAddress);

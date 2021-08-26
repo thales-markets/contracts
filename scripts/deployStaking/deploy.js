@@ -6,7 +6,7 @@ const { artifacts, contract, web3 } = require('hardhat');
 const THALES_AMOUNT = web3.utils.toWei('200');
 
 const fs = require('fs');
-const { getTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();

@@ -164,7 +164,9 @@ contract('StakingThales', accounts => {
 		);
 
 		await StakingThalesDeployed.setDistributeFeesEnabled(true, {from:owner});
+		await StakingThalesDeployed.setClaimEnabled(true, {from:owner});
 		await StakingThalesDeployed.setFixedWeeklyReward(100000, {from:owner});
+
 	});
 
 	describe('EscrowThales basic check', () => {

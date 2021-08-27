@@ -49,6 +49,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     uint private _totalRewardFeesClaimed;
 
     mapping(address => uint) public _lastUnstakeTime;
+    mapping(address => bool) private unstaking;
     mapping(address => uint) private _stakedBalances;
     mapping(address => uint) private _escrowedBalances;
     mapping(address => uint) private _lastStakingWeek;
@@ -189,10 +190,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
             stakingToken.allowance(msg.sender, address(this)) >= amount,
             "No allowance. Please grant StakingThales allowance"
         );
-        require(
-            _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
-            "Cannot stake, the staker is paused from staking due to unstaking"
-        );
+        require(unstaking[msg.sender] == false, "Cannot stake, the staker is paused from staking due to unstaking");
         // Check if there are not claimable rewards from last week.
         // Claim them, and add new stake
         if ((_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) && claimEnabled) {
@@ -211,19 +209,20 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
             _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Already initiated unstaking cooldown"
         );
+        require(unstaking[msg.sender] == false, "Account has already triggered unstake cooldown");
+
         if ((_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) && claimEnabled) {
             claimReward();
         }
         _lastUnstakeTime[msg.sender] = block.timestamp;
+        unstaking[msg.sender] = true;
         emit UnstakeCooldown(msg.sender, _lastUnstakeTime[msg.sender].add(unstakeDurationPeriod));
     }
 
     function unstake() external {
         require(msg.sender != address(0), "Invalid address");
-        require(
-            _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
-            "Cannot stake, the staker is paused from staking due to unstaking"
-        );
+        require(unstaking[msg.sender] == true, "Account has not performed triggered unstake cooldown");
+        unstaking[msg.sender] = false;
         _escrowedBalances[msg.sender] = 0;
         _totalStakedAmount = _totalStakedAmount.sub(_stakedBalances[msg.sender]);
         uint unstakeAmount = _stakedBalances[msg.sender];
@@ -235,10 +234,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     function claimReward() public nonReentrant notPaused {
         require(claimEnabled, "Claiming is not enabled.");
         require(startTimeStamp > 0, "Staking period has not started");
-        require(
-            _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
-            "Cannot stake, the staker is paused from staking due to unstaking"
-        );
+        require(unstaking[msg.sender] == false, "Cannot stake, the staker is paused from staking due to unstaking");
 
         if (_lastStakingWeek[msg.sender] < weeksOfStaking) {
             _escrowedBalances[msg.sender] = iEscrowThales.getStakedEscrowedBalance(msg.sender);
@@ -285,6 +281,9 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         require(_stakedBalances[account] > 0, "Account is not a staker");
         require(_lastRewardsClaimedWeek[account] < weeksOfStaking, "Rewards already claimed for last week");
 
+        if (unstaking[account] == true) {
+            return 0;
+        }
         // return _stakedBalances[account].div(1e18).div(_totalStakedAmount).mul(currentWeekRewards);
         uint rewardsThroughEscrow = 0;
         uint rewardsThroughStake = _stakedBalances[account].mul(currentWeekRewards).div(_totalStakedAmount);

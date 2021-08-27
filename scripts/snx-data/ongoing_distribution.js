@@ -2,10 +2,12 @@
 
 const fs = require('fs');
 const ethers = require('ethers');
-const { feesClaimed } = require('./util.js');
+const { feesClaimed, getXSNXSnapshot, getYearnSnapshot } = require('./util.js');
 const { getL2Snapshot } = require('./l2/script.js');
 
 const PROXY_FEE_POOL_ADDRESS = '0xb440dd674e1243644791a4adfe3a2abb0a92d309';
+const XSNX_ADMIN_PROXY = 0x7cd5e2d0056a7a7f09cbb86e540ef4f6dccc97dd;
+const YEARN_STAKING_ADDRESS = 0xc9a62e09834cedcff8c136f33d0ae3406aea66bd;
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY;
 
 let txCount = 0;
@@ -16,8 +18,11 @@ async function getBlocks(start, end) {
 	const blocks = [];
 	let provider = new ethers.providers.EtherscanProvider('mainnet', ETHERSCAN_KEY);
 
-	console.log('start timestamp', toTimestamp(start));
-	console.log('end timestamp', toTimestamp(end));
+	const startTimestamp = toTimestamp(start); // yyyy-mm-dd 00:00:00
+	const endTimestamp = toTimestamp(end)+24*3600-1; // yyyy-mm-dd 23:59:00
+
+	console.log('start timestamp', startTimestamp);
+	console.log('end timestamp', endTimestamp);
 	// TODO start < end exception
 
 	const filter = {
@@ -29,7 +34,7 @@ async function getBlocks(start, end) {
 	for (let key in logs) {
 		const blockNumber = logs[key].blockNumber;
 		const block = await provider.getBlock(blockNumber);
-		if (block.timestamp >= toTimestamp(start) && block.timestamp < toTimestamp(end)) {
+		if (block.timestamp >= startTimestamp && block.timestamp < endTimestamp) {
 			blocks.push(blockNumber);
 		}
 	}
@@ -79,6 +84,39 @@ async function fetchData(start, end) {
 			blocks[i + 1] - blocks[i]
 		);
 		txCount += result.length;
+
+		// xSNX & Yearn snapshot
+		for (let [key, value] of Object.entries(accountsScores)) {
+			if (key == XSNX_ADMIN_PROXY) {
+				console.log('XSNX_ADMIN_PROXY score', value);
+
+				let finalValue = 0;
+				const snapshot = await getXSNXSnapshot(value, blocks[blocks.length - 1]);
+				for (let [snapshotKey, snapshotValue] of Object.entries(snapshot)) {
+					accountsScores[snapshotKey] = snapshotValue;
+					finalValue += snapshotValue;
+				}
+
+				// should be roughly the same value as XSNX_ADMIN_PROXY score
+				console.log('finalValue', finalValue);
+
+				accountsScores[key] = 0;
+			} else if (key == YEARN_STAKING_ADDRESS) {
+				console.log('YEARN_STAKING_ADDRESS score', value);
+
+				let finalValueYearn = 0;
+				const yearnSnapshot = await getYearnSnapshot(value, 0, blocks[blocks.length - 1]);
+				for (let [snapshotKey, snapshotValue] of Object.entries(yearnSnapshot)) {
+					accountsScores[snapshotKey] = snapshotValue;
+					finalValueYearn += snapshotValue;
+				}
+
+				// should be roughly the same value as YEARN_STAKING_ADDRESS score
+				console.log('finalValue yearn', finalValueYearn);
+
+				accountsScores[key] = 0;
+			}
+		}
 	}
 
 	return accountsScores;
@@ -107,13 +145,11 @@ async function main() {
 
 	const data = await fetchData(args[0], args[1]);
 
-	fs.writeFileSync(
-		'scripts/snx-data/ongoing_distribution.json',
-		JSON.stringify(data),
-		function(err) {
-			if (err) return console.log(err);
-		}
-	);
+	fs.writeFileSync('scripts/snx-data/ongoing_distribution.json', JSON.stringify(data), function(
+		err
+	) {
+		if (err) return console.log(err);
+	});
 
 	console.log('accounts scores length', Object.keys(data).length);
 	console.log('total scores', totalScores);

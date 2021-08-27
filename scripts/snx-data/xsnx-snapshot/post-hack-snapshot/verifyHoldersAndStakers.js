@@ -1,8 +1,8 @@
-const { web3 } = require('hardhat');
+const { Web3 } = require('hardhat');
 const { bn, getNumberNoDecimals } = require('../../../helpers');
 
 const XSNX = require('../xSNX.json');
-
+const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + process.env.INFURA));
 const xsnx = new web3.eth.Contract(XSNX.abi, '0x1cf0f3aabe4d12106b27ab44df5473974279c524');
 let balancerVault = '0xBA12222222228d8Ba445958a75a0704d566BF2C8' // balancer vault (xsnx token holder)
 

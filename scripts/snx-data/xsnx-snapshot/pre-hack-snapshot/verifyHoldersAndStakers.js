@@ -1,8 +1,9 @@
-const { web3 } = require('hardhat');
+const { Web3 } = require('hardhat');
 const { bn, getNumberNoDecimals } = require('../helpers');
 
 const XSNX = require('./xSNX.json');
 
+const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + process.env.INFURA));
 const xsnx = new web3.eth.Contract(XSNX.abi, '0x2367012ab9c3da91290f71590d5ce217721eefe4');
 let balancerXsnxPool = '0xE3f9cF7D44488715361581DD8B3a15379953eB4C' // balancer pool address
 

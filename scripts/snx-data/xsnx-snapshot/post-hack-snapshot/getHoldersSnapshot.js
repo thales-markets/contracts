@@ -1,8 +1,10 @@
-const { web3, ethers } = require('hardhat');
+const { ethers, Web3 } = require('hardhat');
 const fs = require('fs');
 const { getNumberNoDecimals } = require('../helpers');
 
 const XSNX = require('../xSNX.json');
+
+const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + process.env.INFURA));
 
 const xsnx = new web3.eth.Contract(XSNX.abi, '0x1cf0f3aabe4d12106b27ab44df5473974279c524');
 

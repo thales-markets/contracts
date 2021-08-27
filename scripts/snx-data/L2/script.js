@@ -1,5 +1,6 @@
-const { web3 } = require('hardhat');
+//let { web3 } = require('hardhat');
 const fs = require('fs');
+const { Web3 } = require('hardhat');
 const { getNumberNoDecimals, bn } = require('../../snx-data/xsnx-snapshot/helpers');
 
 const SNX_ADDRESS = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
@@ -7,6 +8,8 @@ const L2_NEW_BRIDGE = '0x5fd79d46eba7f351fe49bff9e87cdea6c821ef9f';
 const L2_OLD_BRIDGE = '0x045e507925d2e05D114534D0810a1abD94aca8d6';
 
 const SNX = require('../SNX.json');
+
+const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + process.env.INFURA));
 
 const snx = new web3.eth.Contract(SNX.abi, SNX_ADDRESS);
 

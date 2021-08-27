@@ -1,6 +1,7 @@
-const { web3 } = require('hardhat');
+const { Web3 } = require('hardhat');
 const { bn } = require('../helpers');
 const XSNX = require('../xSNX.json');
+const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + process.env.INFURA));
 const bpt = new web3.eth.Contract(XSNX.abi, '0xEA39581977325C0833694D51656316Ef8A926a62');
 
 

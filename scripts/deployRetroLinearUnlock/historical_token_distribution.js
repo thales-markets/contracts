@@ -2,7 +2,12 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const Big = require('big.js');
 const fs = require('fs');
-const { numberExponentToLarge, txLog, getTargetAddress, setTargetAddress } = require('../helpers.js');
+const {
+	numberExponentToLarge,
+	txLog,
+	getTargetAddress,
+	setTargetAddress,
+} = require('../helpers.js');
 
 const TOTAL_AMOUNT = w3utils.toWei('13000000');
 const VESTING_PERIOD = 86400 * 365;
@@ -11,6 +16,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const FLOOR_VALUE = w3utils.toWei('100');
 
 const historicalData = require('../snx-data/historical_snx.json');
+const investitors = require('../snx-data/investitors.json');
 
 // TODO - put correct addresses here
 const fundingAdmins = [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS];
@@ -101,20 +107,8 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 		throw new Error('Imprecision!!! Distribution amounts are too far off!');
 	}
 
-	// sort vested amounts
-	let accountsValues = [];
-	for (let [key, value] of Object.entries(vestedAmounts)) {
-		accountsValues.push({ address: key, amount: value });
-	}
-
-	accountsValues.sort(function(a, b) {
-		return a['amount'].minus(b['amount']);
-	});
-
-	vestedAmounts = {};
-	for (let key of Object.keys(accountsValues)) {
-		vestedAmounts[accountsValues[key]['address']] = accountsValues[key]['amount'];
-	}
+	// sort vested amounts;
+	vestedAmounts = sortAmounts(vestedAmounts);
 
 	// fix imprecision
 	let diffCount = 0;
@@ -172,7 +166,23 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 			diffAfterRedistribution > 0 ? vestedAmounts[key].sub(1) : vestedAmounts[key].add(1);
 	}
 
-	// write FINAL fixed amounts to a file
+	let investitorsTotalAmount = Big(0);
+	for (let [key, value] of Object.entries(investitors)) {
+		if (vestedAmounts[key]) {
+			vestedAmounts[key] = vestedAmounts[key].add(web3.utils.toWei(value + ''));
+		} else {
+			vestedAmounts[key] = Big(web3.utils.toWei(value + ''));
+		}
+
+		investitorsTotalAmount = investitorsTotalAmount.add(vestedAmounts[key]);
+	}
+
+	console.log('investitors total amount', investitorsTotalAmount.toString());
+
+	// sort vested amounts;
+	vestedAmounts = sortAmounts(vestedAmounts);
+
+	// write FINAL fixed amounts to a file including investitors
 	fs.writeFileSync(
 		'scripts/snx-data/sorted_historical_stakers_after_floor.json',
 		JSON.stringify(vestedAmounts),
@@ -181,23 +191,25 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 		}
 	);
 
-	tx = await token.approve(VestingEscrowDeployed.address, TOTAL_AMOUNT);
+	// total amount to be transferred to VestingEscrow contract
+	const tokenAmount = numberExponentToLarge(
+		Big(TOTAL_AMOUNT)
+			.add(investitorsTotalAmount)
+			.toString()
+	);
+
+	tx = await token.approve(VestingEscrowDeployed.address, tokenAmount);
 	txLog(tx, 'Thales.sol: Approve tokens');
 
 	await hre.run('verify:verify', {
 		address: VestingEscrowDeployed.address,
-		constructorArguments: [
-			admin.address,
-			token.address,
-			startTime,
-			startTime + VESTING_PERIOD,
-		],
+		constructorArguments: [admin.address, token.address, startTime, startTime + VESTING_PERIOD],
 	});
 
 	const allowance = await token.allowance(admin.address, VestingEscrowDeployed.address);
 	console.log('allowance', allowance.toString());
 
-	tx = await VestingEscrowDeployed.addTokens(TOTAL_AMOUNT);
+	tx = await VestingEscrowDeployed.addTokens(tokenAmount);
 	txLog(tx, 'VestingEscrow.sol: Add tokens');
 
 	let accounts = [],
@@ -232,9 +244,27 @@ async function _fundAccounts(account, vestingEscrowContract, fundArguments, conf
 }
 
 function delay(time) {
-	return new Promise(function (resolve) {
+	return new Promise(function(resolve) {
 		setTimeout(resolve, time);
 	});
+}
+
+function sortAmounts(amounts) {
+	const accountsValues = [];
+	for (let [key, value] of Object.entries(amounts)) {
+		accountsValues.push({ address: key, amount: value });
+	}
+
+	accountsValues.sort(function(a, b) {
+		return a['amount'].minus(b['amount']);
+	});
+
+	amounts = {};
+	for (let key of Object.keys(accountsValues)) {
+		amounts[accountsValues[key]['address']] = accountsValues[key]['amount'];
+	}
+
+	return amounts;
 }
 
 main()

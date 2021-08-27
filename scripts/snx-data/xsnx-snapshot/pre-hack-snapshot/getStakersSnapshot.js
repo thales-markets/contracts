@@ -1,10 +1,10 @@
-const { web3, ethers } = require('hardhat');
+const { Web3, ethers } = require('hardhat');
 const fs = require('fs');
 
 const { getStakingRewardsStakers } = require('./getStakingRewardsStakers');
 
 const XSNX = require('./xSNX.json');
-
+const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + process.env.INFURA));
 const xsnx = new web3.eth.Contract(XSNX.abi, '0x2367012ab9c3da91290f71590d5ce217721eefe4');
 const bpt = new web3.eth.Contract(XSNX.abi, '0xe3f9cf7d44488715361581dd8b3a15379953eb4c');
 

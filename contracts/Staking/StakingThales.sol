@@ -140,6 +140,12 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         unstakeDurationPeriod = _unstakeDurationPeriod;
     }
 
+    // Set EscrowThales contract address
+    function setEscrow(address _escrowThalesContract) public onlyOwner {
+        stakingToken.approve(address(iEscrowThales), 0);
+        iEscrowThales = IEscrowThales(_escrowThalesContract);
+        stakingToken.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+    }
     /* ========== PUBLIC ========== */
 
     function startStakingPeriod() external onlyOwner {

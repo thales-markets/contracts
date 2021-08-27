@@ -25,8 +25,6 @@ contract OngoingAirdrop is Owned, Pausable {
 
     mapping(uint256 => mapping(uint256 => uint256)) public _claimed;
 
-    address public escrowThalesContract;
-
     constructor(
         address _owner,
         IERC20 _token,
@@ -40,7 +38,7 @@ contract OngoingAirdrop is Owned, Pausable {
 
     // Set root of merkle tree
     function setRoot(bytes32 _root) public onlyOwner {
-        require(escrowThalesContract != address(0), "Set Escrow Thales address");
+        require(address(iEscrowThales) != address(0), "Set Escrow Thales address");
         root = _root;
         startTime = block.timestamp; //reset time every week
         emit NewRoot(_root, block.timestamp, period);
@@ -50,7 +48,7 @@ contract OngoingAirdrop is Owned, Pausable {
 
     // Set EscrowThales contract address
     function setEscrow(address _escrowThalesContract) public onlyOwner {
-        escrowThalesContract = _escrowThalesContract;
+        token.approve(address(iEscrowThales), 0);
         iEscrowThales = IEscrowThales(_escrowThalesContract);
         token.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         iEscrowThales.updateCurrentWeek(period);

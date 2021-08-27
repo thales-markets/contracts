@@ -32,6 +32,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     uint public currentWeekFees = 0;
     bool public distributeFeesEnabled = false;
     uint public fixedWeeklyReward = 0;
+    bool public claimEnabled = false;
 
     uint private _rewardFunds = 0;
     uint private _feeFunds = 0;
@@ -126,6 +127,18 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         fixedWeeklyReward = _fixedReward;
     }
 
+    function setClaimEnabled(bool _claimEnabled) external onlyOwner {
+        claimEnabled = _claimEnabled;
+    }
+
+    function setDurationPeriod(uint _durationPeriod) external onlyOwner {
+        durationPeriod = _durationPeriod;
+    }
+
+    function setUnstakeDurationPeriod(uint _unstakeDurationPeriod) external onlyOwner {
+        unstakeDurationPeriod = _unstakeDurationPeriod;
+    }
+
     /* ========== PUBLIC ========== */
 
     function startStakingPeriod() external onlyOwner {
@@ -182,7 +195,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         );
         // Check if there are not claimable rewards from last week.
         // Claim them, and add new stake
-        if (_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) {
+        if (_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking && claimEnabled) {
             claimReward();
         }
         _totalStakedAmount = _totalStakedAmount.add(amount);
@@ -198,7 +211,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
             _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Already initiated unstaking cooldown"
         );
-        if (_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) {
+        if (_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking && claimEnabled) {
             claimReward();
         }
         _lastUnstakeTime[msg.sender] = block.timestamp;
@@ -220,6 +233,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     }
 
     function claimReward() public nonReentrant notPaused {
+        require(claimEnabled, "Claiming is not enabled.");
         require(startTimeStamp > 0, "Staking period has not started");
         require(
             _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),

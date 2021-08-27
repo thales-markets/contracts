@@ -234,7 +234,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     function claimReward() public nonReentrant notPaused {
         require(claimEnabled, "Claiming is not enabled.");
         require(startTimeStamp > 0, "Staking period has not started");
-        require(unstaking[msg.sender] == false, "Cannot stake, the staker is paused from staking due to unstaking");
+        require(unstaking[msg.sender] == false, "Cannot claim rewards, the staker is paused from staking due to unstaking");
 
         if (_lastStakingWeek[msg.sender] < weeksOfStaking) {
             _escrowedBalances[msg.sender] = iEscrowThales.getStakedEscrowedBalance(msg.sender);

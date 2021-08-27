@@ -49,7 +49,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     uint private _totalRewardFeesClaimed;
 
     mapping(address => uint) public _lastUnstakeTime;
-    mapping(address => bool) private unstaking;
+    mapping(address => bool) public unstaking;
     mapping(address => uint) private _stakedBalances;
     mapping(address => uint) private _escrowedBalances;
     mapping(address => uint) private _lastStakingWeek;

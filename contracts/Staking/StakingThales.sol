@@ -216,6 +216,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         }
         _lastUnstakeTime[msg.sender] = block.timestamp;
         unstaking[msg.sender] = true;
+        _totalStakedAmount = _totalStakedAmount.sub(_stakedBalances[msg.sender]);
         emit UnstakeCooldown(msg.sender, _lastUnstakeTime[msg.sender].add(unstakeDurationPeriod));
     }
 
@@ -224,7 +225,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         require(unstaking[msg.sender] == true, "Account has not performed triggered unstake cooldown");
         unstaking[msg.sender] = false;
         _escrowedBalances[msg.sender] = 0;
-        _totalStakedAmount = _totalStakedAmount.sub(_stakedBalances[msg.sender]);
         uint unstakeAmount = _stakedBalances[msg.sender];
         _stakedBalances[msg.sender] = 0;
         stakingToken.transfer(msg.sender, unstakeAmount);

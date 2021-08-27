@@ -195,7 +195,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         );
         // Check if there are not claimable rewards from last week.
         // Claim them, and add new stake
-        if (_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking && claimEnabled) {
+        if ((_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) && claimEnabled) {
             claimReward();
         }
         _totalStakedAmount = _totalStakedAmount.add(amount);
@@ -211,7 +211,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
             _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Already initiated unstaking cooldown"
         );
-        if (_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking && claimEnabled) {
+        if ((_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) && claimEnabled) {
             claimReward();
         }
         _lastUnstakeTime[msg.sender] = block.timestamp;

@@ -142,12 +142,13 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
 
     // Set EscrowThales contract address
     function setEscrow(address _escrowThalesContract) public onlyOwner {
-        if(address(iEscrowThales) != address(0)) {
+        if (address(iEscrowThales) != address(0)) {
             stakingToken.approve(address(iEscrowThales), 0);
         }
         iEscrowThales = IEscrowThales(_escrowThalesContract);
         stakingToken.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
     }
+
     /* ========== PUBLIC ========== */
 
     function startStakingPeriod() external onlyOwner {
@@ -214,7 +215,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     function startUnstake() external {
         require(msg.sender != address(0), "Invalid address");
         require(
-            _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
+            _lastUnstakeTime[msg.sender] == 0 || _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Already initiated unstaking cooldown"
         );
         require(unstaking[msg.sender] == false, "Account has already triggered unstake cooldown");
@@ -225,7 +226,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         _lastUnstakeTime[msg.sender] = block.timestamp;
         unstaking[msg.sender] = true;
         _totalStakedAmount = _totalStakedAmount.sub(_stakedBalances[msg.sender]);
-        emit UnstakeCooldown(msg.sender, _lastUnstakeTime[msg.sender].add(unstakeDurationPeriod));
+        emit UnstakeCooldown(msg.sender, _lastUnstakeTime[msg.sender].add(unstakeDurationPeriod), _stakedBalances[msg.sender]);
     }
 
     function unstake() external {
@@ -331,6 +332,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     event ClosedPeriod(uint WeekOfStaking, uint lastPeriodTimeStamp);
     event RewardsClaimed(address account, uint unclaimedReward);
     event FeeRewardsClaimed(address account, uint unclaimedFees);
-    event UnstakeCooldown(address account, uint cooldownTime);
+    event UnstakeCooldown(address account, uint cooldownTime, uint amount);
     event Unstaked(address account, uint unstakeAmount);
 }

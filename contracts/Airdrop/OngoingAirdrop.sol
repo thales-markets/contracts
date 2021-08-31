@@ -91,7 +91,6 @@ contract OngoingAirdrop is Owned, Pausable {
 
         token.transfer(beneficiary, token.balanceOf(address(this)));
 
-        // Destroy the option tokens before destroying the market itself.
         selfdestruct(beneficiary);
     }
 

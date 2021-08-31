@@ -1,0 +1,150 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "loanID",
+        "type": "uint256"
+      }
+    ],
+    "name": "closeLoan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "loanID",
+        "type": "uint256"
+      }
+    ],
+    "name": "depositCollateral",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_loanCreatorsAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_loanID",
+        "type": "uint256"
+      }
+    ],
+    "name": "liquidateUnclosedLoan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_loanAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "openLoan",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "loanID",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_loanCreatorsAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_loanID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_repayAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "repayLoan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalIssuedSynths",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalLoansCreated",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalOpenLoanCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "loanID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "withdrawAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

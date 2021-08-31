@@ -1,0 +1,297 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "section",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "accessControl",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "canSuspend",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "canResume",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "exchangeSuspension",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "suspended",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint248",
+        "name": "reason",
+        "type": "uint248"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "synths",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "getSynthExchangeSuspensions",
+    "outputs": [
+      {
+        "internalType": "bool[]",
+        "name": "exchangeSuspensions",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "reasons",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "synths",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "getSynthSuspensions",
+    "outputs": [
+      {
+        "internalType": "bool[]",
+        "name": "suspensions",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "reasons",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "issuanceSuspension",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "suspended",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint248",
+        "name": "reason",
+        "type": "uint248"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "requireExchangeActive",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "sourceCurrencyKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "destinationCurrencyKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "requireExchangeBetweenSynthsAllowed",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "requireIssuanceActive",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "requireSynthActive",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "sourceCurrencyKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "destinationCurrencyKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "requireSynthsActive",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "requireSystemActive",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "reason",
+        "type": "uint256"
+      }
+    ],
+    "name": "suspendSynth",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "synthExchangeSuspension",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "suspended",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint248",
+        "name": "reason",
+        "type": "uint248"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "synthSuspension",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "suspended",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint248",
+        "name": "reason",
+        "type": "uint248"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "systemSuspension",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "suspended",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint248",
+        "name": "reason",
+        "type": "uint248"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "section",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "canSuspend",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "canResume",
+        "type": "bool"
+      }
+    ],
+    "name": "updateAccessControl",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

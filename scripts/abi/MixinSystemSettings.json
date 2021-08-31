@@ -1,0 +1,87 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_resolver",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "name",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "destination",
+        "type": "address"
+      }
+    ],
+    "name": "CacheUpdated",
+    "type": "event"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "isResolverCached",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "rebuildCache",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "resolver",
+    "outputs": [
+      {
+        "internalType": "contract AddressResolver",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "resolverAddressesRequired",
+    "outputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "addresses",
+        "type": "bytes32[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

@@ -9,6 +9,7 @@ require('solidity-coverage');
 require('hardhat-gas-reporter');
 require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-etherscan');
+require('hardhat-abi-exporter');
 
 const {
 	constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },
@@ -120,4 +121,11 @@ module.exports = {
 	mocha: {
 		timeout: 30e3, // 30s
 	},
+	abiExporter: {
+		path: './scripts/abi',
+		clear: true,
+		flat: true,
+		only: [],
+		spacing: 2
+	  }
 };

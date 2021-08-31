@@ -10,3 +10,7 @@ npx hardhat test test/contracts/SportsBinaryOptions/CustomBinaryOptionMarket.js 
 npx hardhat test test/contracts/RetroDistribution/VestingEscrowStressTest.js --optimizer --gas
 
 npx hardhat coverage
+
+
+sports:
+npx hardhat run --network kovan scripts/SportsBinaryOptions/createUSOpenMarkets.js

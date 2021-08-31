@@ -38,16 +38,11 @@ contract('StakingThales', accounts => {
 	const WEEK = 604800;
 	const YEAR = 31556926;
 
-
 	let BinaryOptionMarket = artifacts.require('BinaryOptionMarket');
 	let Synth = artifacts.require('Synth');
 	let BinaryOption = artifacts.require('BinaryOption');
 	let manager, factory, addressResolver;
-	let exchangeRates,
-		oracle,
-		sUSDSynth,
-		binaryOptionMarketMastercopy,
-		binaryOptionMastercopy;
+	let exchangeRates, oracle, sUSDSynth, binaryOptionMarketMastercopy, binaryOptionMastercopy;
 
 	describe('Deploy Staking Thales', () => {
 		it('deploy all Contracts', async () => {
@@ -63,13 +58,9 @@ contract('StakingThales', accounts => {
 				toBytes32('random'),
 				{ from: owner }
 			);
-			EscrowThalesDeployed = await EscrowThales.new(
-				owner,
-				ThalesDeployed.address,
-				{
-					from: owner,
-				}
-			);
+			EscrowThalesDeployed = await EscrowThales.new(owner, ThalesDeployed.address, {
+				from: owner,
+			});
 
 			StakingThalesDeployed = await StakingThales.new(
 				owner,
@@ -82,9 +73,8 @@ contract('StakingThales', accounts => {
 			);
 		});
 	});
-	
+
 	before(async () => {
-	
 		({
 			BinaryOptionMarketManager: manager,
 			BinaryOptionMarketFactory: factory,
@@ -104,21 +94,21 @@ contract('StakingThales', accounts => {
 				'BinaryOptionMarketFactory',
 			],
 		}));
-	
+
 		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
-	
+
 		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
 		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
 			from: managerOwner,
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
-	
+
 		oracle = await exchangeRates.oracle();
-	
+
 		await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
 			from: oracle,
 		});
-	
+
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
 			sUSDSynth.approve(manager.address, sUSDQty, { from: initialCreator }),
@@ -135,8 +125,6 @@ contract('StakingThales', accounts => {
 		let StakingThales = artifacts.require('StakingThales');
 		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
 
-
-
 		ThalesDeployed = await Thales.new({ from: owner });
 		ThalesFeeDeployed = await Thales.new({ from: owner });
 		OngoingAirdropDeployed = await OngoingAirdrop.new(
@@ -145,13 +133,9 @@ contract('StakingThales', accounts => {
 			toBytes32('random'),
 			{ from: owner }
 		);
-		EscrowThalesDeployed = await EscrowThales.new(
-			owner,
-			ThalesDeployed.address,
-			{
-				from: owner,
-			}
-		);
+		EscrowThalesDeployed = await EscrowThales.new(owner, ThalesDeployed.address, {
+			from: owner,
+		});
 
 		StakingThalesDeployed = await StakingThales.new(
 			owner,
@@ -163,10 +147,9 @@ contract('StakingThales', accounts => {
 			{ from: owner }
 		);
 
-		await StakingThalesDeployed.setDistributeFeesEnabled(true, {from:owner});
-		await StakingThalesDeployed.setClaimEnabled(true, {from:owner});
-		await StakingThalesDeployed.setFixedWeeklyReward(100000, {from:owner});
-
+		await StakingThalesDeployed.setDistributeFeesEnabled(true, { from: owner });
+		await StakingThalesDeployed.setClaimEnabled(true, { from: owner });
+		await StakingThalesDeployed.setFixedWeeklyReward(100000, { from: owner });
 	});
 
 	describe('EscrowThales basic check', () => {
@@ -196,7 +179,7 @@ contract('StakingThales', accounts => {
 			let stakingWeek = await EscrowThalesDeployed.getCurrentWeek.call({ from: owner });
 			assert.equal(0, stakingWeek);
 		});
-		it('set CurrentStakingWeek to 20 and check', async () => {
+		it('set CurrentStakingWeek to 1 and check', async () => {
 			let setStakingAddress = await EscrowThalesDeployed.setStakingThalesContract(first, {
 				from: owner,
 			});
@@ -205,9 +188,9 @@ contract('StakingThales', accounts => {
 			});
 			assert.equal(first, getStakingAddress);
 
-			let setWeek = await EscrowThalesDeployed.updateCurrentWeek('20', { from: first });
+			let setWeek = await EscrowThalesDeployed.updateCurrentWeek({ from: first });
 			let stakingWeek = await EscrowThalesDeployed.getCurrentWeek.call();
-			assert.equal(20, stakingWeek);
+			assert.equal(1, stakingWeek);
 		});
 
 		it('check claimable function', async () => {
@@ -402,7 +385,7 @@ contract('StakingThales', accounts => {
 			// await sUSDSynth.approve(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
 			await sUSDSynth.issue(initialCreator, sUSDQty);
 			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
-			
+
 			// await StakingThalesDeployed.depositFees(10000, { from: owner });
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
@@ -462,7 +445,7 @@ contract('StakingThales', accounts => {
 				from: owner,
 			});
 			// await StakingThalesDeployed.depositRewards(70001, { from: owner });
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
@@ -493,7 +476,7 @@ contract('StakingThales', accounts => {
 				from: owner,
 			});
 			// await StakingThalesDeployed.depositRewards(150000, { from: owner });
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
@@ -531,7 +514,7 @@ contract('StakingThales', accounts => {
 			// await StakingThalesDeployed.depositFees(5555, { from: owner });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
@@ -590,7 +573,7 @@ contract('StakingThales', accounts => {
 			// await StakingThalesDeployed.depositFees(5555, { from: owner });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
@@ -648,7 +631,7 @@ contract('StakingThales', accounts => {
 			// await StakingThalesDeployed.depositFees(5555, { from: owner });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
@@ -729,7 +712,7 @@ contract('StakingThales', accounts => {
 			// await StakingThalesDeployed.depositFees(5555, { from: owner });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
@@ -750,7 +733,7 @@ contract('StakingThales', accounts => {
 			assert.equal(web3.utils.toDecimal(answer), 5555);
 
 			answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
-			// console.log('Balance of Escrow:' + web3.utils.toDecimal(answer));
+			console.log('Balance of Escrow:' + web3.utils.toDecimal(answer));
 
 			answer = await StakingThalesDeployed.claimReward({ from: first });
 			answer = await EscrowThalesDeployed.getStakerWeeksLength.call(first);
@@ -763,7 +746,7 @@ contract('StakingThales', accounts => {
 				});
 				await sUSDSynth.issue(initialCreator, sUSD);
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
-	
+
 				await StakingThalesDeployed.closePeriod({ from: second });
 				// console.log(i)
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -775,8 +758,8 @@ contract('StakingThales', accounts => {
 				for (let j = 0; j < answer.length; j++) {
 					// console.log('Staker field' + j + ': ' + web3.utils.toDecimal(answer[j]));
 				}
-				answer = await EscrowThalesDeployed.getStakerSilo.call(first);
-				// console.log('Staker silo: ' + web3.utils.toDecimal(answer));
+				answer = await EscrowThalesDeployed.claimable.call(first);
+				// console.log('Claimable: ' + web3.utils.toDecimal(answer));
 			}
 
 			answer = await EscrowThalesDeployed.getCurrentWeek.call();
@@ -819,7 +802,7 @@ contract('StakingThales', accounts => {
 
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
@@ -853,12 +836,12 @@ contract('StakingThales', accounts => {
 				});
 				await sUSDSynth.issue(initialCreator, sUSD);
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
-	
+
 				await StakingThalesDeployed.closePeriod({ from: second });
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 			}
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			assert.equal(web3.utils.toDecimal(answer), web3.utils.toDecimal(answer2));
 
@@ -904,7 +887,7 @@ contract('StakingThales', accounts => {
 			console.log(answer.logs[0].event);
 			// console.log('Claimed: ' + web3.utils.toDecimal(answer.logs[0].args.amount));
 			assert.equal(answer.logs[0].args.account, first);
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			// console.log('New claimable: ' + web3.utils.toDecimal(answer));
 
 			answer = await ThalesDeployed.balanceOf.call(first);
@@ -940,7 +923,7 @@ contract('StakingThales', accounts => {
 
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
@@ -949,7 +932,7 @@ contract('StakingThales', accounts => {
 			);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(second);
 			assert.equal(answer, 0);
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:second});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: second });
 			await StakingThalesDeployed.stake(1000, { from: second });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(second);
 			assert.equal(answer, 1000);
@@ -1015,7 +998,7 @@ contract('StakingThales', accounts => {
 				});
 				await sUSDSynth.issue(initialCreator, sUSD);
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
-	
+
 				await StakingThalesDeployed.closePeriod({ from: second });
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
@@ -1031,25 +1014,25 @@ contract('StakingThales', accounts => {
 				for (let j = 0; j < answer.length; j++) {
 					// console.log('First field' + j + ': ' + web3.utils.toDecimal(answer[j]));
 				}
-				answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+				answer = await EscrowThalesDeployed.claimable.call(first);
 				// console.log('First silo: ' + web3.utils.toDecimal(answer));
 				answer = await EscrowThalesDeployed.getStakerWeeks.call(second);
 				for (let j = 0; j < answer.length; j++) {
 					// console.log('Second field' + j + ': ' + web3.utils.toDecimal(answer[j]));
 				}
-				answer = await EscrowThalesDeployed.getStakerSilo.call(second);
+				answer = await EscrowThalesDeployed.claimable.call(second);
 				// console.log('Second silo: ' + web3.utils.toDecimal(answer));
 			}
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			// console.log('Silo balance first:' + web3.utils.toDecimal(answer));
-			answer = await EscrowThalesDeployed.getStakerSilo.call(second);
+			answer = await EscrowThalesDeployed.claimable.call(second);
 			// console.log('Silo balance second:' + web3.utils.toDecimal(answer));
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			assert.equal(web3.utils.toDecimal(answer), web3.utils.toDecimal(answer2));
-			answer = await EscrowThalesDeployed.getStakerSilo.call(second);
+			answer = await EscrowThalesDeployed.claimable.call(second);
 			answer2 = await EscrowThalesDeployed.claimable.call(second);
 			assert.equal(web3.utils.toDecimal(answer), web3.utils.toDecimal(answer2));
 
@@ -1101,10 +1084,10 @@ contract('StakingThales', accounts => {
 			// console.log('Claimed second: ' + web3.utils.toDecimal(answer2.logs[0].args.amount));
 			assert.equal(answer2.logs[0].args.account, second);
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			// console.log('New first claimable: ' + web3.utils.toDecimal(answer));
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(second);
+			answer = await EscrowThalesDeployed.claimable.call(second);
 			// console.log('New second claimable: ' + web3.utils.toDecimal(answer));
 
 			answer = await ThalesDeployed.balanceOf.call(first);
@@ -1144,10 +1127,9 @@ contract('StakingThales', accounts => {
 			await sUSDSynth.issue(initialCreator, 6000);
 			await sUSDSynth.transfer(StakingThalesDeployed.address, 6000, { from: initialCreator });
 
-
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 0);
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
@@ -1156,7 +1138,7 @@ contract('StakingThales', accounts => {
 			);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(second);
 			assert.equal(answer, 0);
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:second});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: second });
 			await StakingThalesDeployed.stake(1000, { from: second });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(second);
 			assert.equal(answer, 1000);
@@ -1165,7 +1147,7 @@ contract('StakingThales', accounts => {
 			);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(third);
 			assert.equal(answer, 0);
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:third});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: third });
 			await StakingThalesDeployed.stake(1000, { from: third });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(third);
 			assert.equal(answer, 1000);
@@ -1233,7 +1215,7 @@ contract('StakingThales', accounts => {
 				});
 				await sUSDSynth.issue(initialCreator, sUSD);
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
-	
+
 				await StakingThalesDeployed.closePeriod({ from: second });
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
@@ -1254,37 +1236,37 @@ contract('StakingThales', accounts => {
 				for (let j = 0; j < answer.length; j++) {
 					// console.log('First field' + j + ': ' + web3.utils.toDecimal(answer[j]));
 				}
-				answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+				answer = await EscrowThalesDeployed.claimable.call(first);
 				// console.log('First silo: ' + web3.utils.toDecimal(answer));
 				answer = await EscrowThalesDeployed.getStakerWeeks.call(second);
 				for (let j = 0; j < answer.length; j++) {
 					// console.log('Second field' + j + ': ' + web3.utils.toDecimal(answer[j]));
 				}
-				answer = await EscrowThalesDeployed.getStakerSilo.call(second);
+				answer = await EscrowThalesDeployed.claimable.call(second);
 				// console.log('Second silo: ' + web3.utils.toDecimal(answer));
 				answer = await EscrowThalesDeployed.getStakerWeeks.call(third);
 				for (let j = 0; j < answer.length; j++) {
 					// console.log('Third field' + j + ': ' + web3.utils.toDecimal(answer[j]));
 				}
-				answer = await EscrowThalesDeployed.getStakerSilo.call(third);
+				answer = await EscrowThalesDeployed.claimable.call(third);
 				// console.log('Third silo: ' + web3.utils.toDecimal(answer));
 			}
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			// console.log('Silo balance first:' + web3.utils.toDecimal(answer));
-			answer = await EscrowThalesDeployed.getStakerSilo.call(second);
+			answer = await EscrowThalesDeployed.claimable.call(second);
 			// console.log('Silo balance second:' + web3.utils.toDecimal(answer));
-			answer = await EscrowThalesDeployed.getStakerSilo.call(third);
+			answer = await EscrowThalesDeployed.claimable.call(third);
 			// console.log('Silo balance second:' + web3.utils.toDecimal(answer));
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			assert.equal(web3.utils.toDecimal(answer), web3.utils.toDecimal(answer2));
-			answer = await EscrowThalesDeployed.getStakerSilo.call(second);
+			answer = await EscrowThalesDeployed.claimable.call(second);
 			answer2 = await EscrowThalesDeployed.claimable.call(second);
 			assert.equal(web3.utils.toDecimal(answer), web3.utils.toDecimal(answer2));
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(third);
+			answer = await EscrowThalesDeployed.claimable.call(third);
 			answer2 = await EscrowThalesDeployed.claimable.call(third);
 			assert.equal(web3.utils.toDecimal(answer), web3.utils.toDecimal(answer2));
 
@@ -1355,13 +1337,13 @@ contract('StakingThales', accounts => {
 			// console.log('Claimed third: ' + web3.utils.toDecimal(answer2.logs[0].args.amount));
 			assert.equal(answer2.logs[0].args.account, third);
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			// console.log('New first claimable: ' + web3.utils.toDecimal(answer));
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(second);
+			answer = await EscrowThalesDeployed.claimable.call(second);
 			// console.log('New second claimable: ' + web3.utils.toDecimal(answer));
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(third);
+			answer = await EscrowThalesDeployed.claimable.call(third);
 			// console.log('New third claimable: ' + web3.utils.toDecimal(answer));
 
 			answer = await ThalesDeployed.balanceOf.call(first);
@@ -1393,7 +1375,7 @@ contract('StakingThales', accounts => {
 			await sUSDSynth.issue(initialCreator, sUSD);
 			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 
 			for (let n = 0; n < weeks.length; n++) {
@@ -1405,12 +1387,12 @@ contract('StakingThales', accounts => {
 					});
 					await sUSDSynth.issue(initialCreator, sUSD);
 					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
-		
+
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 			}
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			let claimable = web3.utils.toDecimal(answer2);
 			console.log('Current claimable: ' + claimable);
@@ -1433,7 +1415,7 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 
 			for (let n = 0; n < weeks.length; n++) {
@@ -1445,12 +1427,12 @@ contract('StakingThales', accounts => {
 					});
 					await sUSDSynth.issue(initialCreator, sUSD);
 					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
-		
+
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 			}
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			let claimable = web3.utils.toDecimal(answer2);
 			console.log('Current claimable: ' + claimable);
@@ -1476,7 +1458,7 @@ contract('StakingThales', accounts => {
 			await sUSDSynth.issue(initialCreator, sUSD);
 			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 
 			for (let n = 0; n < weeks.length; n++) {
@@ -1488,12 +1470,12 @@ contract('StakingThales', accounts => {
 					});
 					await sUSDSynth.issue(initialCreator, sUSD);
 					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
-		
+
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 			}
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			let claimable = web3.utils.toDecimal(answer2);
 			console.log('Current claimable: ' + claimable);
@@ -1515,7 +1497,7 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 
 			for (let n = 0; n < weeks.length; n++) {
@@ -1526,8 +1508,10 @@ contract('StakingThales', accounts => {
 						from: owner,
 					});
 					await sUSDSynth.issue(initialCreator, sUSDQty);
-					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
-		
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, {
+						from: initialCreator,
+					});
+
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1539,7 +1523,7 @@ contract('StakingThales', accounts => {
 				// }
 			}
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			let claimable = web3.utils.toDecimal(answer2);
 			// console.log('Current claimable: ' + claimable);
@@ -1561,7 +1545,7 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 
 			for (let n = 0; n < weeks.length; n++) {
@@ -1572,8 +1556,10 @@ contract('StakingThales', accounts => {
 						from: owner,
 					});
 					await sUSDSynth.issue(initialCreator, sUSDQty);
-					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
-		
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, {
+						from: initialCreator,
+					});
+
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1584,7 +1570,7 @@ contract('StakingThales', accounts => {
 				// 	console.log('First field' + j + ': ' + web3.utils.toDecimal(answer[j]));
 				// }
 			}
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			let claimable = web3.utils.toDecimal(answer2);
 			// console.log('Current claimable: ' + claimable);
@@ -1602,23 +1588,24 @@ contract('StakingThales', accounts => {
 
 			let weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
 			// console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
-			
-			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {from:owner});
-			await OngoingAirdropDeployed.setEscrow(EscrowThalesDeployed.address, {from:owner});
 
-			await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
-			
+			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {
+				from: owner,
+			});
+			await OngoingAirdropDeployed.setEscrow(EscrowThalesDeployed.address, { from: owner });
+
+			await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
+
 			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
-			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+			console.log('Staking weeks: ', web3.utils.toDecimal(weeksVesting));
 
-			for (let n=0; n<5; n++) {
+			for (let n = 0; n < 5; n++) {
 				fastForward(WEEK + SECOND);
-				await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+				await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 			}
 
 			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
-			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
-
+			console.log('Staking weeks: ', web3.utils.toDecimal(weeksVesting));
 		});
 		it('Airdrop starts Escrow, then StakingThales starts', async () => {
 			let weeks = [1, 8, 12, 10];
@@ -1630,23 +1617,25 @@ contract('StakingThales', accounts => {
 			);
 
 			let weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
-			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
-			
-			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {from:owner});
-			await OngoingAirdropDeployed.setEscrow(EscrowThalesDeployed.address, {from:owner});
+			console.log('Staking weeks: ', web3.utils.toDecimal(weeksVesting));
 
-			await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
-			
+			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {
+				from: owner,
+			});
+			await OngoingAirdropDeployed.setEscrow(EscrowThalesDeployed.address, { from: owner });
+
+			await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
+
 			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
 			// console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
 
-			for (let n=0; n<5; n++) {
+			for (let n = 0; n < 5; n++) {
 				fastForward(WEEK + SECOND);
-				await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+				await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 			}
 
 			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
-			console.log("StakingThales starts staking in: ", web3.utils.toDecimal(weeksVesting));
+			console.log('StakingThales starts staking in: ', web3.utils.toDecimal(weeksVesting));
 
 			await ThalesDeployed.transfer(first, 1500, { from: owner });
 			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
@@ -1656,7 +1645,7 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 
 			for (let n = 0; n < weeks.length; n++) {
@@ -1667,8 +1656,10 @@ contract('StakingThales', accounts => {
 						from: owner,
 					});
 					await sUSDSynth.issue(initialCreator, sUSDQty);
-					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
-		
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, {
+						from: initialCreator,
+					});
+
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1676,12 +1667,11 @@ contract('StakingThales', accounts => {
 				// console.log('Claimable for this week: ' + web3.utils.toDecimal(answer));
 				answer = await EscrowThalesDeployed.getStakerWeeks.call(first);
 				weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
-				console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+				console.log('Staking weeks: ', web3.utils.toDecimal(weeksVesting));
 				// for (let j = 0; j < answer.length; j++) {
 				// 	console.log('First field' + j + ': ' + web3.utils.toDecimal(answer[j]));
 				// }
 			}
-			
 		});
 		it('Airdrop starts Escrow, StakingThales continues, User claims rewards in weeks 0, 9, 21, 31', async () => {
 			let weeks = [1, 8, 12, 10];
@@ -1693,23 +1683,25 @@ contract('StakingThales', accounts => {
 			);
 
 			let weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
-			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
-			
-			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {from:owner});
-			await OngoingAirdropDeployed.setEscrow(EscrowThalesDeployed.address, {from:owner});
+			console.log('Staking weeks: ', web3.utils.toDecimal(weeksVesting));
 
-			await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
-			
+			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {
+				from: owner,
+			});
+			await OngoingAirdropDeployed.setEscrow(EscrowThalesDeployed.address, { from: owner });
+
+			await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
+
 			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
 			// console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
 
-			for (let n=0; n<5; n++) {
+			for (let n = 0; n < 5; n++) {
 				fastForward(WEEK + SECOND);
-				await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+				await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 			}
 
 			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
-			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+			console.log('Staking weeks: ', web3.utils.toDecimal(weeksVesting));
 
 			await ThalesDeployed.transfer(first, 1500, { from: owner });
 			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
@@ -1719,7 +1711,7 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, {from:first});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 
 			for (let n = 0; n < weeks.length; n++) {
@@ -1730,8 +1722,10 @@ contract('StakingThales', accounts => {
 						from: owner,
 					});
 					await sUSDSynth.issue(initialCreator, sUSDQty);
-					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
-		
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, {
+						from: initialCreator,
+					});
+
 					await StakingThalesDeployed.closePeriod({ from: second });
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
@@ -1742,7 +1736,7 @@ contract('StakingThales', accounts => {
 				// 	console.log('First field' + j + ': ' + web3.utils.toDecimal(answer[j]));
 				// }
 			}
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
+			answer = await EscrowThalesDeployed.claimable.call(first);
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			let claimable = web3.utils.toDecimal(answer2);
 			// console.log('Current claimable: ' + claimable);
@@ -1762,25 +1756,25 @@ contract('StakingThales', accounts => {
 
 			answer = await StakingThalesDeployed.unstake({ from: first });
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
-			console.log("Claimable: ", web3.utils.toDecimal(answer));
-			
+			answer = await EscrowThalesDeployed.claimable.call(first);
+			console.log('Claimable: ', web3.utils.toDecimal(answer));
+
 			answer = await EscrowThalesDeployed.vest(claimable, { from: first });
 
-			answer = await EscrowThalesDeployed.getStakerSilo.call(first);
-			console.log("Vested. Current Claimable: ", web3.utils.toDecimal(answer));
+			answer = await EscrowThalesDeployed.claimable.call(first);
+			console.log('Vested. Current Claimable: ', web3.utils.toDecimal(answer));
 
 			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
 			// console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
 
-			for (let n=0; n<5; n++) {
+			for (let n = 0; n < 5; n++) {
 				fastForward(WEEK + SECOND);
-				await OngoingAirdropDeployed.setRoot(toBytes32("start"), {from:owner});
+				await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 				// console.log("Ongoing Airdrop updates week");
 			}
 
 			weeksVesting = await EscrowThalesDeployed._weeksOfVesting.call();
-			console.log("Staking weeks: ", web3.utils.toDecimal(weeksVesting));
+			console.log('Staking weeks: ', web3.utils.toDecimal(weeksVesting));
 		});
 	});
 });

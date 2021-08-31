@@ -42,8 +42,10 @@ contract OngoingAirdrop is Owned, Pausable {
         root = _root;
         startTime = block.timestamp; //reset time every week
         emit NewRoot(_root, block.timestamp, period);
-        iEscrowThales.updateCurrentWeek(period);
-        period = period + 1;
+        // iEscrowThales.updateCurrentWeek(period);
+        // period = period + 1;
+        period = iEscrowThales.getCurrentWeek();
+
     }
 
     // Set EscrowThales contract address
@@ -53,7 +55,7 @@ contract OngoingAirdrop is Owned, Pausable {
         }
         iEscrowThales = IEscrowThales(_escrowThalesContract);
         token.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
-        iEscrowThales.updateCurrentWeek(period);
+        // iEscrowThales.updateCurrentWeek(period);
     }
 
     // Check if a given reward has already been claimed

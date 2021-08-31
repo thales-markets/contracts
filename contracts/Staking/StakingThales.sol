@@ -174,9 +174,9 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
             "7 days has not passed since the last closed period"
         );
 
-        iEscrowThales.updateCurrentWeek(weeksOfStaking.add(1));
+        iEscrowThales.updateCurrentWeek();
         lastPeriodTimeStamp = block.timestamp;
-        weeksOfStaking = weeksOfStaking.add(1);
+        weeksOfStaking = iEscrowThales.getCurrentWeek();
 
         _totalEscrowedAmount = iEscrowThales.getTotalEscrowedRewards();
 
@@ -202,7 +202,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         require(unstaking[msg.sender] == false, "Cannot stake, the staker is paused from staking due to unstaking");
         // Check if there are not claimable rewards from last week.
         // Claim them, and add new stake
-        if ((_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) && claimEnabled) {
+        if ((_lastRewardsClaimedWeek[msg.sender] < weeksOfStaking) && claimEnabled && _stakedBalances[msg.sender] > 0) {
             claimReward();
         }
         _totalStakedAmount = _totalStakedAmount.add(amount);
@@ -214,6 +214,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
 
     function startUnstake() external {
         require(msg.sender != address(0), "Invalid address");
+        require(_stakedBalances[msg.sender] > 0, "Account has nothing to unstake");
         require(
             _lastUnstakeTime[msg.sender] == 0 || _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Already initiated unstaking cooldown"
@@ -226,7 +227,11 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         _lastUnstakeTime[msg.sender] = block.timestamp;
         unstaking[msg.sender] = true;
         _totalStakedAmount = _totalStakedAmount.sub(_stakedBalances[msg.sender]);
-        emit UnstakeCooldown(msg.sender, _lastUnstakeTime[msg.sender].add(unstakeDurationPeriod), _stakedBalances[msg.sender]);
+        emit UnstakeCooldown(
+            msg.sender,
+            _lastUnstakeTime[msg.sender].add(unstakeDurationPeriod),
+            _stakedBalances[msg.sender]
+        );
     }
 
     function unstake() external {

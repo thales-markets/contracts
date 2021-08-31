@@ -6,8 +6,6 @@ interface IEscrowThales {
 
     function getStakerWeeks(address account) external view returns (uint[10] memory);
 
-    function getStakerSilo(address account) external view returns (uint);
-
     function getEscrowedBalance(address account) external view returns (uint);
 
     function getStakedEscrowedBalance(address account) external view returns (uint);
@@ -16,11 +14,14 @@ interface IEscrowThales {
 
     function getTotalEscrowedRewards() external view returns (uint);
 
+    function getCurrentWeek() external view returns (uint);
+
+    function updateCurrentWeek() external returns (bool);
+    
     function claimable(address account) external view returns (uint);
 
     function addToEscrow(address account, uint amount) external;
 
     function vest(uint amount) external returns (bool);
 
-    function updateCurrentWeek(uint currentWeek) external returns (bool);
 }

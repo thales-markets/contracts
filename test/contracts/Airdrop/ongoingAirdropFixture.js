@@ -51,6 +51,8 @@ const deploymentFixture = async () => {
 	const escrowThales = await deployArgs('EscrowThales', admin.address, thales.address);
 
 	await escrowThales.setAirdropContract(ongoingAirdrop.address);
+	await escrowThales.setStakingThalesContract(admin.address);
+	await escrowThales.updateCurrentWeek();
 
 	// transfer THALES tokens to airdrop contract
 	await ongoingAirdrop.setEscrow(escrowThales.address);
@@ -79,9 +81,11 @@ const deploymentFixture = async () => {
 	await admin.sendTransaction(ethSendTx);
 
 	return {
+		admin,
 		acc1: userWithReward,
 		acc2: userWithReward2,
 		ongoingAirdrop,
+		escrowThales,
 		token: thales,
 		merkleTree,
 		snapshot: userBalance,

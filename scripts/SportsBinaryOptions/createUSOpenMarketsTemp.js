@@ -10,7 +10,7 @@ const { toBytes32 } = require('../../index');
 const util = require('util');
 
 //let managerAddress = '0x46d9DB2830C005e38878b241199bb09d9d355994'; //kovan
-let managerAddress = '0x46d9DB2830C005e38878b241199bb09d9d355994'; //ropsten
+let managerAddress = '0x5ed98Ebb66A929758C7Fe5Ac60c979aDF0F4040a'; //ropsten
 
 //mainnet
 let oracleContract = '0x240bae5a27233fd3ac5440b5a598467725f7d1cd';
@@ -27,67 +27,20 @@ async function main() {
 		fundingAmount = w3utils.toWei('1000');
 	}
 
-	console.log('Account is:' + owner.address);
-	console.log('Network name:' + networkObj.name);
-
-	const addressResolver = snx.getTarget({ network, contract: 'ReadProxyAddressResolver' });
-	console.log('Found address resolver at:' + addressResolver.address);
-
-	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
-	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
-
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', {
-		libraries: {
-			SafeDecimalMath: safeDecimalMath.address,
-		},
-	});
-	let manager = await BinaryOptionMarketManager.attach(managerAddress);
-
-	console.log('found manager at:' + manager.address);
-
-	let USOpenFeed = await ethers.getContractFactory('USOpenFeed');
-	const USOpenFeedDeployed = await USOpenFeed.attach('0xcbb917a76fce89575b3fcf7e51d6666ee0f5d2c8');
-
-	console.log('USOpenFeedDeployed deployed to:', USOpenFeedDeployed.address);
-
-	let USOpenFeedInstanceContract = await ethers.getContractFactory('USOpenFeedInstance');
-
-	let maturityDate = Math.round(Date.parse('13 SEP 2021 00:00:00 GMT') / 1000);
-
-	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
-	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
-	let contract = new ethers.Contract(ProxyERC20sUSD.address, abi, owner);
-	await contract.approve(manager.address, w3utils.toWei('10000'), {
-		from: owner.address,
-	});
-	console.log('Done approving');
-
-	let oracleAddress1 = await createOracleInstance(
-		USOpenFeedInstanceContract,
-		owner.address,
-		USOpenFeedDeployed.address,
-		w3utils.toWei('605658'),
-		'Dominic Thiem',
-		'1',
-		'US Open 2020 winner'
-	);
-	await createMarket(manager, maturityDate, fundingAmount, oracleAddress1);
-
 	//-----verifications
 
 	await hre.run('verify:verify', {
-		address: oracleAddress1,
+		address: '0xcbb917a76FCE89575b3fCf7E51D6666ee0F5D2c8',
 		constructorArguments: [
 			owner.address,
-			USOpenFeedDeployed.address,
-			w3utils.toWei('605658'),
-			'Dominic Thiem',
-			'1',
-			'US Open 2020 winner',
+			oracleContract,
+			toBytes32(sportsJobId),
+			w3utils.toWei('1'),
+			'2020',
 		],
-		contract: 'contracts/SportOracles/USOpenFeedInstance.sol:USOpenFeedInstance',
+		contract: 'contracts/SportOracles/USOpenFeed.sol:USOpenFeed',
 	});
+
 }
 
 main()

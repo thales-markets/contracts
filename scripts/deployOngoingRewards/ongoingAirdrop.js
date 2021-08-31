@@ -210,21 +210,20 @@ async function ongoingAirdrop() {
 	console.log('tree root:', root);
 
 	// ongoingAirdrop: set new tree root, unpause contract
-	//await ongoingAirdrop.setRoot(root);
+	await ongoingAirdrop.setRoot(root);
 	await ongoingAirdrop.setPaused(false);
 
 	ongoingPeriod = await ongoingAirdrop.period();
 
 	fs.writeFileSync(
-		`scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-${ongoingPeriod.toString() +
-			1}.json`,
+		`scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-${ongoingPeriod.toString()}.json`,
 		JSON.stringify(userBalanceAndHashes),
 		function(err) {
 			if (err) return console.log(err);
 		}
 	);
 
-	//await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
+	await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
 }
 
 ongoingAirdrop()

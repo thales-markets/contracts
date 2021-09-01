@@ -102,6 +102,21 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "NUM_WEEKS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "_AirdropContract",
     "outputs": [
       {
@@ -123,21 +138,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "_delayedWeeks",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "payable": false,
@@ -322,7 +322,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getStakerField",
+    "name": "getStakerAmounts",
     "outputs": [
       {
         "internalType": "uint256",
@@ -341,14 +341,19 @@
         "internalType": "address",
         "name": "account",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
       }
     ],
-    "name": "getStakerWeeks",
+    "name": "getStakerWeek",
     "outputs": [
       {
-        "internalType": "uint256[10]",
+        "internalType": "uint256",
         "name": "",
-        "type": "uint256[10]"
+        "type": "uint256"
       }
     ],
     "payable": false,

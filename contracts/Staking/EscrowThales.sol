@@ -34,7 +34,6 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     mapping(address => uint) public _lastWeekAddedReward;
     mapping(address => uint) private _matureWeek;
     mapping(address => uint) private _totalEscrowedAmount;
-    mapping(address => uint[NUM_WEEKS]) private _stakerWeeks;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -79,10 +78,6 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         return totalEscrowedRewards;
     }
 
-    function getStakerWeeksLength(address account) external view returns (uint) {
-        require(account != address(0), "Invalid account address");
-        return _stakerWeeks[account].length;
-    }
 
     function claimable(address account) external view returns (uint) {
         require(account != address(0), "Invalid address");
@@ -115,7 +110,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     function vest(uint amount) external nonReentrant notPaused returns (bool) {
         require(msg.sender != address(0), "Invalid address");
         require(amount > 0, "Claimed amount is 0");
-        require(_weeksOfVesting > _stakerWeeks[msg.sender].length, "Vesting rewards still not available");
+        require(_weeksOfVesting > NUM_WEEKS, "Vesting rewards still not available");
         require(_lastWeekAddedReward[msg.sender] <= _weeksOfVesting, "Critical error");
         // User can not vest if it is still staking, or it has staked balance > 0
         // Needs to unstake, then vest the claimable amount

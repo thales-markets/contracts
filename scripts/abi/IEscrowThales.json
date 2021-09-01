@@ -100,7 +100,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getStakerField",
+    "name": "getStakerAmounts",
     "outputs": [
       {
         "internalType": "uint256",
@@ -117,28 +117,14 @@
         "internalType": "address",
         "name": "account",
         "type": "address"
-      }
-    ],
-    "name": "getStakerWeeks",
-    "outputs": [
+      },
       {
-        "internalType": "uint256[10]",
-        "name": "",
-        "type": "uint256[10]"
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "getStakerWeeksLength",
+    "name": "getStakerWeek",
     "outputs": [
       {
         "internalType": "uint256",

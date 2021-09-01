@@ -2,15 +2,13 @@ pragma solidity >=0.4.24;
 
 interface IEscrowThales {
     /* ========== VIEWS / VARIABLES ========== */
-    function getStakerField(address account, uint index) external view returns (uint);
+    function getStakerWeek(address account, uint index) external view returns (uint);
 
-    function getStakerWeeks(address account) external view returns (uint[10] memory);
+    function getStakerAmounts(address account, uint index) external view returns (uint);
 
     function getEscrowedBalance(address account) external view returns (uint);
 
     function getStakedEscrowedBalance(address account) external view returns (uint);
-
-    function getStakerWeeksLength(address account) external view returns (uint);
 
     function getTotalEscrowedRewards() external view returns (uint);
 

@@ -32,7 +32,6 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     mapping(address => VestingEntry[NUM_WEEKS]) private vestingEntry;
     mapping(address => uint) public _lastWeekAddedReward;
-    mapping(address => uint) private _matureWeek;
     mapping(address => uint) private _totalEscrowedAmount;
 
     /* ========== CONSTRUCTOR ========== */

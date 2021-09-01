@@ -237,6 +237,10 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     function unstake() external {
         require(msg.sender != address(0), "Invalid address");
         require(unstaking[msg.sender] == true, "Account has not performed triggered unstake cooldown");
+        require(
+            _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
+            "Cannot unstake yet, cooldown not expired."
+        );
         unstaking[msg.sender] = false;
         _escrowedBalances[msg.sender] = 0;
         uint unstakeAmount = _stakedBalances[msg.sender];

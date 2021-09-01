@@ -99,7 +99,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         _totalEscrowedAmount[account] = _totalEscrowedAmount[account].add(amount);
 
         vestingEntry[account][_weeksOfVesting.mod(NUM_WEEKS)].amount = amount;
-        vestingEntry[account][_weeksOfVesting.mod(NUM_WEEKS)].vesting_week = _weeksOfVesting.add(NUM_WEEKS.mul(1 weeks));
+        vestingEntry[account][_weeksOfVesting.mod(NUM_WEEKS)].vesting_week = _weeksOfVesting.add(NUM_WEEKS);
         
         totalEscrowedRewards = totalEscrowedRewards.add(amount);
         //Transfering THALES from StakingThales to EscrowThales

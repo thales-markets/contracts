@@ -41,6 +41,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "newAddress",
+        "type": "address"
+      }
+    ],
+    "name": "AirdropContractChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -86,6 +99,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "newAddress",
+        "type": "address"
+      }
+    ],
+    "name": "StakingThalesContractChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "account",
         "type": "address"
       },
@@ -102,73 +128,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "NUM_WEEKS",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "_AirdropContract",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "_StakingThalesContract",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "_lastWeekAddedReward",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "_weeksOfVesting",
+    "name": "NUM_PERIODS",
     "outputs": [
       {
         "internalType": "uint256",
@@ -211,19 +171,13 @@
   },
   {
     "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "claimable",
+    "inputs": [],
+    "name": "airdropContract",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "address",
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
     "payable": false,
@@ -232,8 +186,14 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "getCurrentWeek",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "claimable",
     "outputs": [
       {
         "internalType": "uint256",
@@ -275,7 +235,7 @@
         "type": "address"
       }
     ],
-    "name": "getLastWeekAddedReward",
+    "name": "getLastPeriodAddedReward",
     "outputs": [
       {
         "internalType": "uint256",
@@ -348,7 +308,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getStakerWeek",
+    "name": "getStakerPeriod",
     "outputs": [
       {
         "internalType": "uint256",
@@ -394,6 +354,27 @@
     "constant": true,
     "inputs": [],
     "name": "lastPauseTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "lastPeriodAddedReward",
     "outputs": [
       {
         "internalType": "uint256",
@@ -459,6 +440,21 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "periodsOfVesting",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -543,7 +539,7 @@
   {
     "constant": false,
     "inputs": [],
-    "name": "updateCurrentWeek",
+    "name": "updateCurrentPeriod",
     "outputs": [
       {
         "internalType": "bool",

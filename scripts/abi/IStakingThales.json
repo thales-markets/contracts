@@ -65,7 +65,7 @@
   },
   {
     "inputs": [],
-    "name": "getLastWeekFees",
+    "name": "getLastPeriodFees",
     "outputs": [
       {
         "internalType": "uint256",
@@ -84,7 +84,7 @@
         "type": "address"
       }
     ],
-    "name": "getLastWeekOfClaimedRewards",
+    "name": "getLastPeriodOfClaimedRewards",
     "outputs": [
       {
         "internalType": "uint256",
@@ -97,7 +97,7 @@
   },
   {
     "inputs": [],
-    "name": "getLastWeekRewards",
+    "name": "getLastPeriodRewards",
     "outputs": [
       {
         "internalType": "uint256",

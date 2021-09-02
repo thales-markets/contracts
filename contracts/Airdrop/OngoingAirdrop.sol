@@ -40,22 +40,18 @@ contract OngoingAirdrop is Owned, Pausable {
     function setRoot(bytes32 _root) public onlyOwner {
         require(address(iEscrowThales) != address(0), "Set Escrow Thales address");
         root = _root;
-        startTime = block.timestamp; //reset time every week
+        startTime = block.timestamp; //reset time every period
         emit NewRoot(_root, block.timestamp, period);
-        // iEscrowThales.updateCurrentWeek(period);
-        // period = period + 1;
-        period = iEscrowThales.getCurrentWeek();
-
+        period = period + 1;
     }
 
     // Set EscrowThales contract address
     function setEscrow(address _escrowThalesContract) public onlyOwner {
-        if(address(iEscrowThales) != address(0)) {
+        if (address(iEscrowThales) != address(0)) {
             token.approve(address(iEscrowThales), 0);
         }
         iEscrowThales = IEscrowThales(_escrowThalesContract);
         token.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
-        // iEscrowThales.updateCurrentWeek(period);
     }
 
     // Check if a given reward has already been claimed

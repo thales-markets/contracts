@@ -8,11 +8,11 @@ interface IStakingThales {
 
     function stakedBalanceOf(address account) external view returns (uint); 
 
-    function getLastWeekRewards() external view returns (uint);
+    function getLastPeriodRewards() external view returns (uint);
 
-    function getLastWeekFees() external view returns (uint);
+    function getLastPeriodFees() external view returns (uint);
 
-    function getLastWeekOfClaimedRewards(address account) external view returns (uint);
+    function getLastPeriodOfClaimedRewards(address account) external view returns (uint);
 
     function getRewardsAvailable(address account) external view returns (uint);
 

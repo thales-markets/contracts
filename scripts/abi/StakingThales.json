@@ -41,8 +41,21 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "ClaimEnabled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
-        "name": "WeekOfStaking",
+        "name": "PeriodOfStaking",
         "type": "uint256"
       },
       {
@@ -53,6 +66,45 @@
       }
     ],
     "name": "ClosedPeriod",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "DistributeFeesEnabled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "DurationPeriodChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newEscrow",
+        "type": "address"
+      }
+    ],
+    "name": "EscrowChanged",
     "type": "event"
   },
   {
@@ -72,6 +124,19 @@
       }
     ],
     "name": "FeeRewardsClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "FixedPeriodRewardChanged",
     "type": "event"
   },
   {
@@ -172,6 +237,12 @@
   },
   {
     "anonymous": false,
+    "inputs": [],
+    "name": "StakingPeriodStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
     "inputs": [
       {
         "indexed": false,
@@ -193,6 +264,19 @@
       }
     ],
     "name": "UnstakeCooldown",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "UnstakeDurationPeriodChanged",
     "type": "event"
   },
   {
@@ -280,7 +364,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "currentWeekFees",
+    "name": "currentPeriodFees",
     "outputs": [
       {
         "internalType": "uint256",
@@ -295,7 +379,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "currentWeekRewards",
+    "name": "currentPeriodRewards",
     "outputs": [
       {
         "internalType": "uint256",
@@ -355,7 +439,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "fixedWeeklyReward",
+    "name": "fixedPeriodReward",
     "outputs": [
       {
         "internalType": "uint256",
@@ -442,7 +526,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "getLastWeekFees",
+    "name": "getLastPeriodFees",
     "outputs": [
       {
         "internalType": "uint256",
@@ -463,7 +547,7 @@
         "type": "address"
       }
     ],
-    "name": "getLastWeekOfClaimedRewards",
+    "name": "getLastPeriodOfClaimedRewards",
     "outputs": [
       {
         "internalType": "uint256",
@@ -478,7 +562,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "getLastWeekRewards",
+    "name": "getLastPeriodRewards",
     "outputs": [
       {
         "internalType": "uint256",
@@ -638,6 +722,21 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "periodsOfStaking",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -721,7 +820,7 @@
         "type": "uint256"
       }
     ],
-    "name": "setFixedWeeklyReward",
+    "name": "setFixedPeriodReward",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -937,21 +1036,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "weeksOfStaking",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "payable": false,

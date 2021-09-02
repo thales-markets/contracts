@@ -37,19 +37,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getCurrentWeek",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -124,7 +111,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getStakerWeek",
+    "name": "getStakerPeriod",
     "outputs": [
       {
         "internalType": "uint256",
@@ -150,7 +137,20 @@
   },
   {
     "inputs": [],
-    "name": "updateCurrentWeek",
+    "name": "periodsOfVesting",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "updateCurrentPeriod",
     "outputs": [
       {
         "internalType": "bool",

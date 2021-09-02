@@ -2,7 +2,7 @@ pragma solidity >=0.4.24;
 
 interface IEscrowThales {
     /* ========== VIEWS / VARIABLES ========== */
-    function getStakerWeek(address account, uint index) external view returns (uint);
+    function getStakerPeriod(address account, uint index) external view returns (uint);
 
     function getStakerAmounts(address account, uint index) external view returns (uint);
 
@@ -12,9 +12,9 @@ interface IEscrowThales {
 
     function getTotalEscrowedRewards() external view returns (uint);
 
-    function getCurrentWeek() external view returns (uint);
+    function periodsOfVesting() external view returns (uint);
 
-    function updateCurrentWeek() external returns (bool);
+    function updateCurrentPeriod() external returns (bool);
     
     function claimable(address account) external view returns (uint);
 

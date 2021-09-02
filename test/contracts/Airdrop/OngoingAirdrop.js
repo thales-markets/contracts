@@ -9,11 +9,11 @@ describe('Contract: OndoingAirdrop', async () => {
 
 	beforeEach(async () => {
 		({
-            admin,
+			admin,
 			acc1,
 			acc2,
 			ongoingAirdrop,
-            escrowThales,
+			escrowThales,
 			token,
 			merkleTree,
 			snapshot,
@@ -25,20 +25,20 @@ describe('Contract: OndoingAirdrop', async () => {
 		it('snapshot user should be able to retrieve reward', async () => {
 			await getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc1);
 		}),
-			it('snapshot user shouldn\'t be able to retrieve reward twice', async () => {
+			it("snapshot user shouldn't be able to retrieve reward twice", async () => {
 				await getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc1);
 				await assert.revert(
 					getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc1),
 					'Tokens have already been claimed'
 				);
 			}),
-			it('account different from airdrop recipient shouldn\'t be able to retrieve reward', async () => {
+			it("account different from airdrop recipient shouldn't be able to retrieve reward", async () => {
 				await assert.revert(
 					getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc2),
 					'Proof is not valid'
 				);
 			}),
-			it('account shouldn\'t be able to retrieve reward with invalid merkle proof', async () => {
+			it("account shouldn't be able to retrieve reward with invalid merkle proof", async () => {
 				// Assign the wrong hash to 1st index in order to generate invalid merkle proof
 				snapshotHashes[1] = snapshotHashes[0];
 
@@ -51,7 +51,7 @@ describe('Contract: OndoingAirdrop', async () => {
 			const root = await getRoot();
 			const period = await ongoingAirdrop.period();
 
-            await escrowThales.connect(admin).updateCurrentPeriod();
+			await escrowThales.connect(admin).updateCurrentPeriod();
 			await ongoingAirdrop.setRoot(root);
 
 			assert.equal(await ongoingAirdrop.root(), root);
@@ -60,14 +60,14 @@ describe('Contract: OndoingAirdrop', async () => {
 			it('snapshot user should be able to retrieve reward in new staking period', async () => {
 				const root = await getRoot();
 
-                await escrowThales.connect(admin).updateCurrentPeriod();
+				await escrowThales.connect(admin).updateCurrentPeriod();
 				await ongoingAirdrop.setRoot(root);
 				await getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc1);
 			}),
-			it('snapshot user shouldn\'t be able to retrieve reward twice in new staking period', async () => {
+			it("snapshot user shouldn't be able to retrieve reward twice in new staking period", async () => {
 				const root = await getRoot();
 
-                await escrowThales.connect(admin).updateCurrentPeriod();
+				await escrowThales.connect(admin).updateCurrentPeriod();
 				await ongoingAirdrop.setRoot(root);
 				await getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc1);
 				await assert.revert(

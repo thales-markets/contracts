@@ -52,7 +52,7 @@ const deploymentFixture = async () => {
 
 	await escrowThales.setAirdropContract(ongoingAirdrop.address);
 	await escrowThales.setStakingThalesContract(admin.address);
-	await escrowThales.updateCurrentWeek();
+	await escrowThales.updateCurrentPeriod();
 
 	// transfer THALES tokens to airdrop contract
 	await ongoingAirdrop.setEscrow(escrowThales.address);

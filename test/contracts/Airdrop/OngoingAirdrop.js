@@ -51,7 +51,7 @@ describe('Contract: OndoingAirdrop', async () => {
 			const root = await getRoot();
 			const period = await ongoingAirdrop.period();
 
-            await escrowThales.connect(admin).updateCurrentWeek();
+            await escrowThales.connect(admin).updateCurrentPeriod();
 			await ongoingAirdrop.setRoot(root);
 
 			assert.equal(await ongoingAirdrop.root(), root);
@@ -60,14 +60,14 @@ describe('Contract: OndoingAirdrop', async () => {
 			it('snapshot user should be able to retrieve reward in new staking period', async () => {
 				const root = await getRoot();
 
-                await escrowThales.connect(admin).updateCurrentWeek();
+                await escrowThales.connect(admin).updateCurrentPeriod();
 				await ongoingAirdrop.setRoot(root);
 				await getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc1);
 			}),
 			it('snapshot user shouldn\'t be able to retrieve reward twice in new staking period', async () => {
 				const root = await getRoot();
 
-                await escrowThales.connect(admin).updateCurrentWeek();
+                await escrowThales.connect(admin).updateCurrentPeriod();
 				await ongoingAirdrop.setRoot(root);
 				await getReward(1, merkleTree, snapshot, snapshotHashes, ongoingAirdrop, acc1);
 				await assert.revert(

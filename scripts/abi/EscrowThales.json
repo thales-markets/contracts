@@ -207,6 +207,21 @@
   },
   {
     "constant": true,
+    "inputs": [],
+    "name": "currentVestingPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [
       {
         "internalType": "address",
@@ -235,28 +250,7 @@
         "type": "address"
       }
     ],
-    "name": "getLastPeriodAddedReward",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "getStakedEscrowedBalance",
+    "name": "getStakedEscrowedBalanceForRewards",
     "outputs": [
       {
         "internalType": "uint256",
@@ -309,21 +303,6 @@
       }
     ],
     "name": "getStakerPeriod",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getTotalEscrowedRewards",
     "outputs": [
       {
         "internalType": "uint256",
@@ -440,21 +419,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "periodsOfVesting",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "payable": false,

@@ -37,6 +37,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "currentVestingPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -63,7 +76,7 @@
         "type": "address"
       }
     ],
-    "name": "getStakedEscrowedBalance",
+    "name": "getStakedEscrowedBalanceForRewards",
     "outputs": [
       {
         "internalType": "uint256",
@@ -124,20 +137,7 @@
   },
   {
     "inputs": [],
-    "name": "getTotalEscrowedRewards",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "periodsOfVesting",
+    "name": "totalEscrowedRewards",
     "outputs": [
       {
         "internalType": "uint256",

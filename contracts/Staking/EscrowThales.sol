@@ -20,7 +20,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     uint public constant NUM_PERIODS = 10;
     uint public totalEscrowedRewards = 0;
-    uint public periodsOfVesting = 0;
+    uint public currentVestingPeriod = 0;
 
     uint private _totalVested = 0;
 
@@ -47,7 +47,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         require(account != address(0), "Invalid account address");
         return vestingEntry[account][index].vesting_period;
     }
-    
+
     function getStakerAmounts(address account, uint index) external view returns (uint) {
         require(account != address(0), "Invalid account address");
         return vestingEntry[account][index].amount;
@@ -57,44 +57,37 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         return _totalEscrowedAmount[account];
     }
 
-    function getStakedEscrowedBalance(address account) external view returns (uint) {
-        if (lastPeriodAddedReward[account] > 0) {
+    function getStakedEscrowedBalanceForRewards(address account) external view returns (uint) {
+        if (lastPeriodAddedReward[account]== currentVestingPeriod) {
             return
                 _totalEscrowedAmount[account].sub(
-                    vestingEntry[account][periodsOfVesting.mod(NUM_PERIODS)].amount
+                    vestingEntry[account][currentVestingPeriod.mod(NUM_PERIODS)].amount
                 );
         } else {
-            return 0;
+            return _totalEscrowedAmount[account];
         }
-    }
-
-    function getLastPeriodAddedReward(address account) external view returns (uint) {
-        require(account != address(0), "Invalid account address");
-        return lastPeriodAddedReward[account];
     }
 
     function claimable(address account) external view returns (uint) {
         require(account != address(0), "Invalid address");
-        require(periodsOfVesting > 0, "periodsOfVesting = 0");
         return _totalEscrowedAmount[msg.sender].sub(_getVestingNotAvailable(account));
     }
 
     function addToEscrow(address account, uint amount) external {
         require(account != address(0), "Invalid address");
         require(amount > 0, "Amount is 0");
-        require(periodsOfVesting > 0, "Claiming rewards still not available");
-        // This can be removed if it is open for different contracts
         require(
             msg.sender == address(iStakingThales)  || msg.sender == airdropContract,
             "Invalid StakingToken, please update"
         );
-        require(lastPeriodAddedReward[account] <= periodsOfVesting, "Critical error");
 
         _totalEscrowedAmount[account] = _totalEscrowedAmount[account].add(amount);
 
-        vestingEntry[account][periodsOfVesting.mod(NUM_PERIODS)].amount = amount;
-        vestingEntry[account][periodsOfVesting.mod(NUM_PERIODS)].vesting_period = periodsOfVesting.add(NUM_PERIODS);
-        
+        lastPeriodAddedReward[account] = currentVestingPeriod;
+
+        vestingEntry[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
+        vestingEntry[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(NUM_PERIODS);
+
         totalEscrowedRewards = totalEscrowedRewards.add(amount);
         //Transfering THALES from StakingThales to EscrowThales
         vestingToken.safeTransferFrom(msg.sender, address(this), amount);
@@ -104,11 +97,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     function vest(uint amount) external nonReentrant notPaused returns (bool) {
         require(msg.sender != address(0), "Invalid address");
         require(amount > 0, "Claimed amount is 0");
-        require(periodsOfVesting > NUM_PERIODS, "Vesting rewards still not available");
-        require(lastPeriodAddedReward[msg.sender] <= periodsOfVesting, "Critical error");
-        // User can not vest if it is still staking, or it has staked balance > 0
-        // Needs to unstake, then vest the claimable amount
-        require(iStakingThales.stakedBalanceOf(msg.sender) == 0, "User is still staking. Please unstake before vesting");
+        require(currentVestingPeriod > NUM_PERIODS, "Vesting rewards still not available");
 
         uint vestingAmount = 0;
         vestingAmount = _totalEscrowedAmount[msg.sender].sub(_getVestingNotAvailable(msg.sender));
@@ -124,7 +113,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     function updateCurrentPeriod() external returns (bool) {
         require(msg.sender == address(iStakingThales) , "Invalid StakingToken, please update");
-        periodsOfVesting = periodsOfVesting.add(1);
+        currentVestingPeriod = currentVestingPeriod.add(1);
         return true;
     }
 
@@ -150,7 +139,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     function _getVestingNotAvailable(address account) internal view returns (uint) {
         uint vesting_not_available = 0;
         for (uint i=0; i< NUM_PERIODS; i++) {
-            if(vestingEntry[account][i].vesting_period >= periodsOfVesting) {
+            if(vestingEntry[account][i].vesting_period >= currentVestingPeriod) {
                 vesting_not_available = vesting_not_available.add(vestingEntry[account][i].amount);
             }
         }

@@ -172,7 +172,7 @@ contract('StakingThales', accounts => {
 		});
 
 		it('get if CurrentStakingPeriod is 0', async () => {
-			let stakingPeriod = await EscrowThalesDeployed.periodsOfVesting.call({ from: owner });
+			let stakingPeriod = await EscrowThalesDeployed.currentVestingPeriod.call({ from: owner });
 			assert.equal(0, stakingPeriod);
 		});
 		it('set CurrentStakingPeriod to 1 and check', async () => {
@@ -183,16 +183,13 @@ contract('StakingThales', accounts => {
 			assert.equal(first, getStakingAddress);
 
 			let setPeriod = await EscrowThalesDeployed.updateCurrentPeriod({ from: first });
-			let stakingPeriod = await EscrowThalesDeployed.periodsOfVesting.call();
+			let stakingPeriod = await EscrowThalesDeployed.currentVestingPeriod.call();
 			assert.equal(1, stakingPeriod);
 		});
 
 		it('check claimable function', async () => {
-			await expect(EscrowThalesDeployed.claimable.call(second)).to.be.revertedWith(
-				'periodsOfVesting = 0'
-			);
-			// let answer = await EscrowThalesDeployed.claimable.call(second);
-			// assert.equal(answer, 0);
+			let answer = await EscrowThalesDeployed.claimable.call(second);
+			assert.equal(answer, 0);
 		});
 
 		it('check ZERO address usage for external functions', async () => {
@@ -487,7 +484,10 @@ contract('StakingThales', accounts => {
 			answer = await ThalesDeployed.balanceOf.call(first);
 			// console.log('First account Thales balance: ' + web3.utils.toDecimal(answer));
 			answer = await StakingThalesDeployed.claimReward({ from: first });
-			answer = await StakingThalesDeployed.startUnstake({ from: first });
+			answer = await StakingThalesDeployed.startUnstake(
+				await StakingThalesDeployed.stakedBalanceOf(first),
+				{ from: first }
+			);
 			await fastForward(WEEK + 5 * SECOND);
 
 			answer = await StakingThalesDeployed.unstake({ from: first });
@@ -555,7 +555,10 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.closePeriod({ from: second });
 
 			answer = await StakingThalesDeployed.claimReward({ from: first });
-			answer = await StakingThalesDeployed.startUnstake({ from: first });
+			answer = await StakingThalesDeployed.startUnstake(
+				await StakingThalesDeployed.stakedBalanceOf(first),
+				{ from: first }
+			);
 
 			await fastForward(WEEK + 5 * SECOND);
 			// await StakingThalesDeployed.depositFees(1000, { from: owner });
@@ -641,12 +644,12 @@ contract('StakingThales', accounts => {
 				// console.log(i)
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
-				answer = await EscrowThalesDeployed.getLastPeriodAddedReward.call(first);
+				answer = await EscrowThalesDeployed.lastPeriodAddedReward.call(first);
 				answer = await EscrowThalesDeployed.claimable.call(first);
 			}
 
-			answer = await EscrowThalesDeployed.periodsOfVesting.call();
-			answer = await EscrowThalesDeployed.getLastPeriodAddedReward.call(first);
+			answer = await EscrowThalesDeployed.currentVestingPeriod.call();
+			answer = await EscrowThalesDeployed.lastPeriodAddedReward.call(first);
 
 			answer = await EscrowThalesDeployed.claimable.call(first);
 		});
@@ -733,7 +736,10 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.closePeriod({ from: second });
 
 			// answer = await StakingThalesDeployed.claimReward({ from: first });
-			answer = await StakingThalesDeployed.startUnstake({ from: first });
+			answer = await StakingThalesDeployed.startUnstake(
+				await StakingThalesDeployed.stakedBalanceOf(first),
+				{ from: first }
+			);
 
 			await fastForward(WEEK + 5 * SECOND);
 			// await StakingThalesDeployed.depositFees(1000, { from: owner });
@@ -850,8 +856,8 @@ contract('StakingThales', accounts => {
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
 				answer = await StakingThalesDeployed.claimReward({ from: second });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
-				answer = await EscrowThalesDeployed.getLastPeriodAddedReward.call(first);
-				answer = await EscrowThalesDeployed.getLastPeriodAddedReward.call(second);
+				answer = await EscrowThalesDeployed.lastPeriodAddedReward.call(first);
+				answer = await EscrowThalesDeployed.lastPeriodAddedReward.call(second);
 				answer = await EscrowThalesDeployed.claimable.call(first);
 				answer = await EscrowThalesDeployed.claimable.call(second);
 			}
@@ -877,15 +883,14 @@ contract('StakingThales', accounts => {
 			answer2 = await EscrowThalesDeployed.claimable.call(second);
 			let claimable2 = web3.utils.toDecimal(answer2);
 
-			await expect(EscrowThalesDeployed.vest(claimable, { from: first })).to.be.revertedWith(
-				'User is still staking. Please unstake before vesting'
+			answer = await StakingThalesDeployed.startUnstake(
+				await StakingThalesDeployed.stakedBalanceOf(first),
+				{ from: first }
 			);
-			await expect(EscrowThalesDeployed.vest(claimable, { from: second })).to.be.revertedWith(
-				'User is still staking. Please unstake before vesting'
+			answer = await StakingThalesDeployed.startUnstake(
+				await StakingThalesDeployed.stakedBalanceOf(second),
+				{ from: second }
 			);
-
-			answer = await StakingThalesDeployed.startUnstake({ from: first });
-			answer = await StakingThalesDeployed.startUnstake({ from: second });
 
 			await fastForward(WEEK + 5 * SECOND);
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 1000, {
@@ -1042,9 +1047,9 @@ contract('StakingThales', accounts => {
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
 				answer = await StakingThalesDeployed.claimReward({ from: third });
 				answer = await ThalesDeployed.balanceOf.call(EscrowThalesDeployed.address);
-				answer = await EscrowThalesDeployed.getLastPeriodAddedReward.call(first);
-				answer = await EscrowThalesDeployed.getLastPeriodAddedReward.call(second);
-				answer = await EscrowThalesDeployed.getLastPeriodAddedReward.call(third);
+				answer = await EscrowThalesDeployed.lastPeriodAddedReward.call(first);
+				answer = await EscrowThalesDeployed.lastPeriodAddedReward.call(second);
+				answer = await EscrowThalesDeployed.lastPeriodAddedReward.call(third);
 				answer = await EscrowThalesDeployed.claimable.call(first);
 				answer = await EscrowThalesDeployed.claimable.call(second);
 				answer = await EscrowThalesDeployed.claimable.call(third);
@@ -1080,19 +1085,18 @@ contract('StakingThales', accounts => {
 			answer2 = await EscrowThalesDeployed.claimable.call(third);
 			let claimable3 = web3.utils.toDecimal(answer2);
 
-			await expect(EscrowThalesDeployed.vest(claimable, { from: first })).to.be.revertedWith(
-				'User is still staking. Please unstake before vesting'
+			answer = await StakingThalesDeployed.startUnstake(
+				await StakingThalesDeployed.stakedBalanceOf(first),
+				{ from: first }
 			);
-			await expect(EscrowThalesDeployed.vest(claimable, { from: second })).to.be.revertedWith(
-				'User is still staking. Please unstake before vesting'
+			answer = await StakingThalesDeployed.startUnstake(
+				await StakingThalesDeployed.stakedBalanceOf(second),
+				{ from: second }
 			);
-			await expect(EscrowThalesDeployed.vest(claimable, { from: third })).to.be.revertedWith(
-				'User is still staking. Please unstake before vesting'
+			answer = await StakingThalesDeployed.startUnstake(
+				await StakingThalesDeployed.stakedBalanceOf(third),
+				{ from: third }
 			);
-
-			answer = await StakingThalesDeployed.startUnstake({ from: first });
-			answer = await StakingThalesDeployed.startUnstake({ from: second });
-			answer = await StakingThalesDeployed.startUnstake({ from: third });
 
 			await fastForward(WEEK + 5 * SECOND);
 			// await StakingThalesDeployed.depositFees(1000, { from: owner });
@@ -1350,7 +1354,7 @@ contract('StakingThales', accounts => {
 				'Staking period has not started'
 			);
 
-			let periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			let periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 			// console.log("Staking periods: ", web3.utils.toDecimal(periodsVesting));
 
 			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {
@@ -1360,7 +1364,7 @@ contract('StakingThales', accounts => {
 
 			await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 
-			periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 			console.log('Staking periods: ', web3.utils.toDecimal(periodsVesting));
 
 			for (let n = 0; n < 5; n++) {
@@ -1368,7 +1372,7 @@ contract('StakingThales', accounts => {
 				await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 			}
 
-			periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 			console.log('Staking periods: ', web3.utils.toDecimal(periodsVesting));
 		});
 		it('Airdrop starts Escrow, then StakingThales starts', async () => {
@@ -1380,7 +1384,7 @@ contract('StakingThales', accounts => {
 				'Staking period has not started'
 			);
 
-			let periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			let periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 			console.log('Staking periods: ', web3.utils.toDecimal(periodsVesting));
 
 			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {
@@ -1390,7 +1394,7 @@ contract('StakingThales', accounts => {
 
 			await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 
-			periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 			// console.log("Staking periods: ", web3.utils.toDecimal(periodsVesting));
 
 			for (let n = 0; n < 5; n++) {
@@ -1398,7 +1402,7 @@ contract('StakingThales', accounts => {
 				await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 			}
 
-			periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 			console.log('StakingThales starts staking in: ', web3.utils.toDecimal(periodsVesting));
 
 			await ThalesDeployed.transfer(first, 1500, { from: owner });
@@ -1428,7 +1432,7 @@ contract('StakingThales', accounts => {
 				}
 				answer = await StakingThalesDeployed.claimReward({ from: first });
 				answer = await EscrowThalesDeployed.claimable.call(first);
-				periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+				periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 				console.log('Staking periods: ', web3.utils.toDecimal(periodsVesting));
 			}
 		});
@@ -1441,7 +1445,7 @@ contract('StakingThales', accounts => {
 				'Staking period has not started'
 			);
 
-			let periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			let periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 			console.log('Staking periods: ', web3.utils.toDecimal(periodsVesting));
 
 			await EscrowThalesDeployed.setAirdropContract(OngoingAirdropDeployed.address, {
@@ -1451,14 +1455,14 @@ contract('StakingThales', accounts => {
 
 			await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 
-			periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 
 			for (let n = 0; n < 5; n++) {
 				fastForward(WEEK + SECOND);
 				await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 			}
 
-			periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 			console.log('Staking periods: ', web3.utils.toDecimal(periodsVesting));
 
 			await ThalesDeployed.transfer(first, 1500, { from: owner });
@@ -1495,7 +1499,10 @@ contract('StakingThales', accounts => {
 			// console.log('Current claimable: ' + claimable);
 			assert.equal(web3.utils.toDecimal(answer), web3.utils.toDecimal(answer2));
 
-			answer = await StakingThalesDeployed.startUnstake({ from: first });
+			answer = await StakingThalesDeployed.startUnstake(
+				await StakingThalesDeployed.stakedBalanceOf(first),
+				{ from: first }
+			);
 
 			fastForward(WEEK + 5 * SECOND);
 			// await StakingThalesDeployed.depositFees(1000, { from: owner });
@@ -1517,14 +1524,14 @@ contract('StakingThales', accounts => {
 			answer = await EscrowThalesDeployed.claimable.call(first);
 			console.log('Vested. Current Claimable: ', web3.utils.toDecimal(answer));
 
-			periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 
 			for (let n = 0; n < 5; n++) {
 				fastForward(WEEK + SECOND);
 				await OngoingAirdropDeployed.setRoot(toBytes32('start'), { from: owner });
 			}
 
-			periodsVesting = await EscrowThalesDeployed.periodsOfVesting.call();
+			periodsVesting = await EscrowThalesDeployed.currentVestingPeriod.call();
 			console.log('Staking periods: ', web3.utils.toDecimal(periodsVesting));
 		});
 	});

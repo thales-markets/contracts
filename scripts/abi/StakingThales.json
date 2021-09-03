@@ -892,7 +892,7 @@
         "type": "address"
       }
     ],
-    "name": "stakerRewardsClaimed",
+    "name": "stakerLifetimeRewardsClaimed",
     "outputs": [
       {
         "internalType": "uint256",
@@ -945,7 +945,13 @@
   },
   {
     "constant": false,
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
     "name": "startUnstake",
     "outputs": [],
     "payable": false,

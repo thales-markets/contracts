@@ -140,7 +140,29 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.stake(1000, { from: first });
 
 			fastForward(DAY + 5 * SECOND);
-			answer = await StakingThalesDeployed.startUnstake({ from: first });
+			answer = await StakingThalesDeployed.startUnstake(
+				(await StakingThalesDeployed.stakedBalanceOf(first)) / 2,
+				{ from: first }
+			);
+
+			fastForward(DAY + 5 * SECOND);
+
+			await expect(StakingThalesDeployed.unstake({ from: first })).to.be.revertedWith(
+				'Cannot unstake yet, cooldown not expired'
+			);
+
+			fastForward(WEEK);
+			await StakingThalesDeployed.unstake({ from: first });
+
+			let balanceAfterFirstUnstake = await StakingThalesDeployed.stakedBalanceOf(first);
+			console.log('Balance after first unstake is ' + balanceAfterFirstUnstake);
+
+			assert.equal(balanceAfterFirstUnstake, 500);
+
+			answer = await StakingThalesDeployed.startUnstake(
+				(await StakingThalesDeployed.stakedBalanceOf(first)) / 2,
+				{ from: first }
+			);
 
 			fastForward(DAY + 5 * SECOND);
 

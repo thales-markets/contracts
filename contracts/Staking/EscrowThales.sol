@@ -73,11 +73,6 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         return lastPeriodAddedReward[account];
     }
 
-    function getTotalEscrowedRewards() external view returns (uint) {
-        return totalEscrowedRewards;
-    }
-
-
     function claimable(address account) external view returns (uint) {
         require(account != address(0), "Invalid address");
         require(periodsOfVesting > 0, "periodsOfVesting = 0");

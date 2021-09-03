@@ -1,4 +1,4 @@
-# thales-markets/contracts/contracts/scripts/
+# thales-markets/contracts/scripts/
 
 Deployment scripts instructions for Thales contracts.
 

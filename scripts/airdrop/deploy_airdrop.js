@@ -5,8 +5,9 @@ const { deployArgs, bn } = require('../snx-data/xsnx-snapshot/helpers');
 const { getTargetAddress, setTargetAddress } = require('../helpers.js');
 
 const historicalSnapshot = require('./airdropSnapshot.json');
+const airdropAdditional = require('./airdrop-additional.json')
 
-const THALES_AMOUNT = web3.utils.toWei('200');
+const THALES_AMOUNT = web3.utils.toWei('130');
 
 const fs = require('fs');
 
@@ -27,9 +28,12 @@ async function deploy_airdrop() {
 	let userBalanceHashes = [];
 	let i = 0;
 	let totalBalance = bn(0);
+
+	// merge all addresses into final snapshot
+	const airdropSnapshotFinal = Object.assign(historicalSnapshot, airdropAdditional); 
 	// get list of leaves for the merkle trees using index, address and token balance
 	// encode user address and balance using web3 encodePacked
-	for (let address of Object.keys(historicalSnapshot)) {
+	for (let address of Object.keys(airdropSnapshotFinal)) {
 		let hash = keccak256(web3.utils.encodePacked(i, address, THALES_AMOUNT));
 		let balance = {
 			address: address,

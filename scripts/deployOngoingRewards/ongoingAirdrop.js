@@ -48,40 +48,67 @@ async function ongoingAirdrop() {
 	// get stakers from StakingThales from last period
 	let stakers = [];
 	const stakingRewards = [];
-	const stakingTimestamp = await stakingThales.startTimeStamp();
-	if (stakingTimestamp.toString() > 0) {
-		// check if staking has begun
-		const closedPeriodEvents = await stakingThalesContract.getPastEvents('ClosedPeriod', {
-			fromBlock: 0,
-			toBlock: 'latest',
-		});
-		let lastClosedPeriodBlockNumber = 0;
+	if (STAKING_THALES) {
+		const stakingTimestamp = await stakingThales.startTimeStamp();
+		if (stakingTimestamp.toString() > 0) {
+			// check if staking has begun
+			const closedPeriodEvents = await stakingThalesContract.getPastEvents('ClosedPeriod', {
+				fromBlock: 0,
+				toBlock: 'latest',
+			});
+			let lastClosedPeriodBlockNumber = 0;
 
-		if (closedPeriodEvents.length) {
-			lastClosedPeriodBlockNumber = closedPeriodEvents[closedPeriodEvents.length - 1].blockNumber; // get last ClosedPeriod event block number
-		}
-
-		// TODO: closePeriod() logic
-
-		const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
-			fromBlock: lastClosedPeriodBlockNumber,
-			toBlock: 'latest',
-		});
-
-		for (let i = 0; i < stakedEvents.length; ++i) {
-			stakers.push(stakedEvents[i].returnValues.user);
-		}
-
-		stakers = [...new Set(stakers)]; // ensure uniqueness
-
-		for (let staker of stakers) {
-			try {
-				const reward = await stakingThales.getRewardsAvailable(staker);
-				console.log('available rewards for ', staker, ' - ', reward.toString());
-				stakingRewards[staker] = reward.toString();
-			} catch (e) {
-				continue; // rewards already claimed, continue
+			if (closedPeriodEvents.length) {
+				lastClosedPeriodBlockNumber = closedPeriodEvents[closedPeriodEvents.length - 1].blockNumber; // get last ClosedPeriod event block number
 			}
+
+			// closePeriod() logic
+			try {
+				const lastPeriodTimeStamp = (await stakingThales.lastPeriodTimeStamp()).toString();
+				const durationPeriod = (await stakingThales.durationPeriod()).toString();
+				const closingDate = new Date(lastPeriodTimeStamp * 1000.0 + durationPeriod * 1000.0);
+				const now = new Date();
+
+				console.log('lastPeriodTS', lastPeriodTimeStamp);
+				console.log('durationPeriod', durationPeriod);
+				console.log('closingDate', closingDate.getTime());
+
+				if (now.getTime() > closingDate.getTime()) {
+					let tx = await stakingThales.closePeriod();
+					await tx.wait().then(e => {
+						console.log('StakingThales: period closed');
+					});
+
+					const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
+						fromBlock: lastClosedPeriodBlockNumber,
+						toBlock: 'latest',
+					});
+		
+					for (let i = 0; i < stakedEvents.length; ++i) {
+						stakers.push(stakedEvents[i].returnValues.user);
+					}
+		
+					stakers = [...new Set(stakers)]; // ensure uniqueness
+		
+					console.log('stakers', stakers);
+		
+					for (let staker of stakers) {
+						try {
+							const reward = await stakingThales.getRewardsAvailable(staker);
+							console.log('available rewards for ', staker, ' - ', reward.toString());
+							stakingRewards[staker] = parseInt(reward.toString());
+						} catch (e) {
+							continue; // rewards already claimed, continue
+						}
+					}
+				} else {
+					console.log("StakingThales: it's not time yet to close period");
+				}
+			} catch (e) {
+				console.log('StakingThales: failed to close the period', e);
+			}
+
+			console.log('stakin rewards', stakingRewards);
 		}
 	}
 
@@ -122,16 +149,16 @@ async function ongoingAirdrop() {
 			.round();
 
 		// check if the address is in stakingRewards
-		const stakingReward = stakingRewards[address];
+		const stakingReward = stakingRewards[address] ? stakingRewards[address] : 0;
 		if (stakingReward > 0) {
 			amount = amount.add(stakingReward);
 		}
 
 		// adding only new amounts to totalBalance value
 		totalBalance = totalBalance.add(amount);
-
+		let previousBalance = 0;
 		// if address hasn't claimed add to amount prev value
-		if (claimed == 0) {
+		if (claimed == 0 && lastMerkleDistribution[index]) {
 			amount = amount.add(lastMerkleDistribution[index].balance);
 		}
 
@@ -139,10 +166,11 @@ async function ongoingAirdrop() {
 			web3.utils.encodePacked(i, address, numberExponentToLarge(amount.toString()))
 		);
 		let balance = {
-			address: address,
+			address,
 			balance: numberExponentToLarge(amount.toString()),
-			stakingBalance: numberExponentToLarge(stakingReward),
-			hash: hash,
+			stakingBalance: stakingReward,
+			previousBalance,
+			hash,
 			index: i,
 		};
 
@@ -156,7 +184,7 @@ async function ongoingAirdrop() {
 		++i;
 	}
 
-	// Staking rewards
+	// Add staking rewards to merkle tree
 	for (let address of Object.keys(stakingRewards)) {
 		if (stakingRewards[address] == 0) continue;
 		// check last period merkle distribution
@@ -174,12 +202,14 @@ async function ongoingAirdrop() {
 		}
 
 		let amount = stakingRewards[address];
+		let previousBalance = 0;
 		// adding only new amounts to totalBalance value
 		totalBalance = totalBalance.add(amount);
 
 		// if address hasn't claimed add to amount prev value
-		if (claimed == 0) {
+		if (claimed == 0 && lastMerkleDistribution[index]) {
 			amount = amount.add(lastMerkleDistribution[index].balance);
+			previousBalance = lastMerkleDistribution[index].balance;
 		}
 
 		console.log('staking', address, numberExponentToLarge(amount.toString()));
@@ -188,10 +218,11 @@ async function ongoingAirdrop() {
 			web3.utils.encodePacked(i, address, numberExponentToLarge(amount.toString()))
 		);
 		let balance = {
-			address: address,
+			address,
 			balance: numberExponentToLarge(amount.toString()),
-			stakingBalance: numberExponentToLarge(amount.toString()),
-			hash: hash,
+			stakingBalance: stakingRewards[address],
+			previousBalance,
+			hash,
 			index: i,
 		};
 		userBalanceHashes.push(hash);

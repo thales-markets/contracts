@@ -173,7 +173,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         lastPeriodTimeStamp = block.timestamp;
         periodsOfStaking = iEscrowThales.periodsOfVesting();
 
-        _totalEscrowedAmount = iEscrowThales.getTotalEscrowedRewards();
+        _totalEscrowedAmount = iEscrowThales.totalEscrowedRewards();
 
         //Actions taken on every closed period
         currentPeriodRewards = fixedPeriodReward;

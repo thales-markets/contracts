@@ -10,7 +10,7 @@ interface IEscrowThales {
 
     function getStakedEscrowedBalance(address account) external view returns (uint);
 
-    function getTotalEscrowedRewards() external view returns (uint);
+    function totalEscrowedRewards() external view returns (uint);
 
     function periodsOfVesting() external view returns (uint);
 

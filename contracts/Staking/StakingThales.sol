@@ -34,9 +34,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     uint public fixedPeriodReward = 0;
     bool public claimEnabled = false;
 
-    uint private _rewardFunds = 0;
-    uint private _feeFunds = 0;
-
     mapping(address => uint) public stakerRewardsClaimed;
     mapping(address => uint) public stakerFeesClaimed;
 
@@ -51,7 +48,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     mapping(address => uint) public _lastUnstakeTime;
     mapping(address => bool) public unstaking;
     mapping(address => uint) private _stakedBalances;
-    mapping(address => uint) private _escrowedBalances;
     mapping(address => uint) private _lastStakingPeriod;
     mapping(address => uint) private _lastRewardsClaimedPeriod;
     mapping(address => uint) private _pendingStake;
@@ -82,14 +78,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
 
     function stakedBalanceOf(address account) external view returns (uint) {
         return _stakedBalances[account];
-    }
-
-    function getLastPeriodRewards() external view returns (uint) {
-        return currentPeriodRewards;
-    }
-
-    function getLastPeriodFees() external view returns (uint) {
-        return currentPeriodFees;
     }
 
     function getLastPeriodOfClaimedRewards(address account) external view returns (uint) {
@@ -188,11 +176,11 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         _totalEscrowedAmount = iEscrowThales.getTotalEscrowedRewards();
 
         //Actions taken on every closed period
-        currentPeriodRewards = _calculateRewardsForPeriod(periodsOfStaking);
+        currentPeriodRewards = fixedPeriodReward;
         _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards);
 
         if (distributeFeesEnabled) {
-            currentPeriodFees = _calculateFeesForPeriod(periodsOfStaking);
+            currentPeriodFees = feeToken.balanceOf(address(this));
             _totalUnclaimedFees = _totalUnclaimedFees.add(currentPeriodFees);
         }
 
@@ -243,7 +231,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
             "Cannot unstake yet, cooldown not expired."
         );
         unstaking[msg.sender] = false;
-        _escrowedBalances[msg.sender] = 0;
         uint unstakeAmount = _stakedBalances[msg.sender];
         _stakedBalances[msg.sender] = 0;
         stakingToken.safeTransfer(msg.sender, unstakeAmount);
@@ -255,11 +242,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         require(startTimeStamp > 0, "Staking period has not started");
         require(unstaking[msg.sender] == false, "Cannot claim rewards, the staker is paused from staking due to unstaking");
 
-        if (_lastStakingPeriod[msg.sender] < periodsOfStaking) {
-            _escrowedBalances[msg.sender] = iEscrowThales.getStakedEscrowedBalance(msg.sender);
-        }
         //Calculate rewards
-        uint unclaimedReward = _calculateUnclaimedRewards(msg.sender);
         if (distributeFeesEnabled) {
             uint unclaimedFees = _calculateUnclaimedFees(msg.sender);
             if (unclaimedFees > 0) {
@@ -270,8 +253,8 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
                 emit FeeRewardsClaimed(msg.sender, unclaimedFees);
             }
         }
+        uint unclaimedReward = _calculateUnclaimedRewards(msg.sender);
         if (unclaimedReward > 0) {
-            // Both the rewards and the fees are staked => new_stake(reward + fees) NEEDS TO BE UPDATED NEXT PERIOD ===>
             _lastStakingPeriod[msg.sender] = periodsOfStaking;
             // Transfer THALES to Escrow contract
             iEscrowThales.addToEscrow(msg.sender, unclaimedReward);
@@ -303,34 +286,20 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
             return 0;
         }
         // return _stakedBalances[account].div(1e18).div(_totalStakedAmount).mul(currentPeriodRewards);
-        uint rewardsThroughEscrow = 0;
-        uint rewardsThroughStake = _stakedBalances[account].mul(currentPeriodRewards).div(_totalStakedAmount);
-        if (_totalEscrowedAmount > 0) {
-            rewardsThroughEscrow = _escrowedBalances[account].mul(currentPeriodRewards).div(_totalEscrowedAmount);
-            return rewardsThroughStake.add(rewardsThroughEscrow).div(2);
-        } else {
-            return rewardsThroughStake;
-        }
+        return
+            _stakedBalances[account].add(iEscrowThales.getStakedEscrowedBalance(account)).mul(currentPeriodRewards).div(
+                _totalStakedAmount.add(_totalEscrowedAmount)
+            );
     }
 
     function _calculateUnclaimedFees(address account) internal view returns (uint) {
         require(account != address(0), "Invalid account address used");
         require(_stakedBalances[account] > 0, "Account is not a staker");
         require(_lastRewardsClaimedPeriod[account] < periodsOfStaking, "Rewards already claimed for last period");
-        return _stakedBalances[account].mul(currentPeriodFees).div(_totalStakedAmount);
-    }
-
-    function _calculateRewardsForPeriod(uint period) internal view returns (uint) {
-        require(period > 0, "Invalid number for period");
-        require(stakingToken.balanceOf(address(this)) >= fixedPeriodReward, "Low THALES balance in the Smart-contract");
-        return fixedPeriodReward;
-    }
-
-    function _calculateFeesForPeriod(uint period) internal view returns (uint) {
-        require(period > 0, "Invalid number for period");
-        uint balance = feeToken.balanceOf(address(this));
-        require(balance > 0, "No Available fees");
-        return balance;
+        return
+            _stakedBalances[account].add(iEscrowThales.getStakedEscrowedBalance(account)).mul(currentPeriodFees).div(
+                _totalStakedAmount.add(_totalEscrowedAmount)
+            );
     }
 
     /* ========== EVENTS ========== */

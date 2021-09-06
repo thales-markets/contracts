@@ -30,7 +30,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     }
 
     mapping(address => VestingEntry[NUM_PERIODS]) public vestingEntries;
-    mapping(address => uint) private _totalEscrowedAmount;
+    mapping(address => uint) public totalAccountEscrowedAmount;
 
     mapping(address => uint) public lastPeriodAddedReward;
 
@@ -53,24 +53,20 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         return vestingEntries[account][index].amount;
     }
 
-    function getEscrowedBalance(address account) external view returns (uint) {
-        return _totalEscrowedAmount[account];
-    }
-
     function getStakedEscrowedBalanceForRewards(address account) external view returns (uint) {
         if (lastPeriodAddedReward[account]== currentVestingPeriod) {
             return
-                _totalEscrowedAmount[account].sub(
+                totalAccountEscrowedAmount[account].sub(
                     vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount
                 );
         } else {
-            return _totalEscrowedAmount[account];
+            return totalAccountEscrowedAmount[account];
         }
     }
 
     function claimable(address account) external view returns (uint) {
         require(account != address(0), "Invalid address");
-        return _totalEscrowedAmount[msg.sender].sub(_getVestingNotAvailable(account));
+        return totalAccountEscrowedAmount[msg.sender].sub(_getVestingNotAvailable(account));
     }
 
     function addToEscrow(address account, uint amount) external {
@@ -81,7 +77,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
             "Invalid StakingToken, please update"
         );
 
-        _totalEscrowedAmount[account] = _totalEscrowedAmount[account].add(amount);
+        totalAccountEscrowedAmount[account] = totalAccountEscrowedAmount[account].add(amount);
 
         lastPeriodAddedReward[account] = currentVestingPeriod;
 
@@ -100,10 +96,10 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         require(currentVestingPeriod > NUM_PERIODS, "Vesting rewards still not available");
 
         uint vestingAmount = 0;
-        vestingAmount = _totalEscrowedAmount[msg.sender].sub(_getVestingNotAvailable(msg.sender));
+        vestingAmount = totalAccountEscrowedAmount[msg.sender].sub(_getVestingNotAvailable(msg.sender));
         // Amount must be lower than the reward
         require(amount <= vestingAmount, "Amount exceeds the claimable rewards");
-        _totalEscrowedAmount[msg.sender] = _totalEscrowedAmount[msg.sender].sub(amount);
+        totalAccountEscrowedAmount[msg.sender] = totalAccountEscrowedAmount[msg.sender].sub(amount);
         totalEscrowedRewards = totalEscrowedRewards.sub(amount);
         _totalVested = _totalVested.add(amount);
         vestingToken.safeTransfer(msg.sender, amount);

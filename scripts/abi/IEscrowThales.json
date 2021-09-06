@@ -57,25 +57,6 @@
         "type": "address"
       }
     ],
-    "name": "getEscrowedBalance",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
     "name": "getStakedEscrowedBalanceForRewards",
     "outputs": [
       {
@@ -125,6 +106,25 @@
       }
     ],
     "name": "getStakerPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "totalEscrowedAmounts",
     "outputs": [
       {
         "internalType": "uint256",

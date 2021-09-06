@@ -29,7 +29,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         uint vesting_period;
     }
 
-    mapping(address => VestingEntry[NUM_PERIODS]) private vestingEntry;
+    mapping(address => VestingEntry[NUM_PERIODS]) public vestingEntries;
     mapping(address => uint) private _totalEscrowedAmount;
 
     mapping(address => uint) public lastPeriodAddedReward;
@@ -45,12 +45,12 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     function getStakerPeriod(address account, uint index) external view returns (uint) {
         require(account != address(0), "Invalid account address");
-        return vestingEntry[account][index].vesting_period;
+        return vestingEntries[account][index].vesting_period;
     }
 
     function getStakerAmounts(address account, uint index) external view returns (uint) {
         require(account != address(0), "Invalid account address");
-        return vestingEntry[account][index].amount;
+        return vestingEntries[account][index].amount;
     }
 
     function getEscrowedBalance(address account) external view returns (uint) {
@@ -61,7 +61,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         if (lastPeriodAddedReward[account]== currentVestingPeriod) {
             return
                 _totalEscrowedAmount[account].sub(
-                    vestingEntry[account][currentVestingPeriod.mod(NUM_PERIODS)].amount
+                    vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount
                 );
         } else {
             return _totalEscrowedAmount[account];
@@ -85,8 +85,8 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
         lastPeriodAddedReward[account] = currentVestingPeriod;
 
-        vestingEntry[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
-        vestingEntry[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(NUM_PERIODS);
+        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
+        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(NUM_PERIODS);
 
         totalEscrowedRewards = totalEscrowedRewards.add(amount);
         //Transfering THALES from StakingThales to EscrowThales
@@ -139,8 +139,8 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     function _getVestingNotAvailable(address account) internal view returns (uint) {
         uint vesting_not_available = 0;
         for (uint i=0; i< NUM_PERIODS; i++) {
-            if(vestingEntry[account][i].vesting_period >= currentVestingPeriod) {
-                vesting_not_available = vesting_not_available.add(vestingEntry[account][i].amount);
+            if(vestingEntries[account][i].vesting_period >= currentVestingPeriod) {
+                vesting_not_available = vesting_not_available.add(vestingEntries[account][i].amount);
             }
         }
         return vesting_not_available;

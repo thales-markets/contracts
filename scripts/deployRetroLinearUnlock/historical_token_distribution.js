@@ -232,6 +232,8 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 		fundArguments.push([accountsArgument, valuesArgument]);
 	}
 
+	console.log("started funding");
+
 	await _fundAccounts(admin, VestingEscrowDeployed, fundArguments, 1);
 }
 

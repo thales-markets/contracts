@@ -60,12 +60,6 @@ async function main() {
 	// update deployments.json file
 	setTargetAddress('StakingThales', network, StakingThalesDeployed.address);
 
-	const Thales = await ethers.getContractFactory('Thales');
-	let thales = await Thales.attach(thalesAddress);
-	let amount = web3.utils.toWei('2000000');
-	await thales.transfer(StakingThalesDeployed.address, amount);
-	console.log("Transfered ", amount, "THALES to Staking contract");
-
 	await hre.run('verify:verify', {
 		address: StakingThalesDeployed.address,
 		constructorArguments: [
@@ -77,6 +71,9 @@ async function main() {
 			unstakeDurationPeriod
 		],
 	});
+
+	await StakingThalesDeployed.startStakingPeriod({from:owner.address});
+	console.log("Staking has been started");
 }
 
 main()

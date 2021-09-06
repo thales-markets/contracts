@@ -55,3 +55,11 @@ Run the maintenance script with following command:
 npx hardhat run --network ropsten scripts/deployOngoingRewards/ongoingAirdrop.js
 ```
 The script will generate `ongoing-airdrop-hashes-period-(PERIOD+1).json`, input for the next maintenance cycle.
+
+### 5. StakingThales contract
+
+Run StakingThales deployment script with the following command: 
+```bash
+npx hardhat run --network ropsten scripts/deployStaking/deploy.js
+```
+The script enables the staking process from the beginning (runs `startStaking()` on deployment).

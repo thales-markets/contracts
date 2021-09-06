@@ -277,7 +277,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         if (unstaking[account] == true) {
             return 0;
         }
-        // return _stakedBalances[account].div(1e18).div(_totalStakedAmount).mul(currentPeriodRewards);
         return
             _stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))

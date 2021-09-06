@@ -1,4 +1,4 @@
-const { web3 } = require('hardhat');
+const { Web3 } = require('hardhat');
 const fs = require('fs');
 const { getNumberNoDecimals, bn } = require('../xsnx-snapshot/helpers');
 
@@ -6,6 +6,8 @@ const SNX_ADDRESS = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
 const SNX_YEARN_VAULT = '0xF29AE508698bDeF169B89834F76704C3B205aedf';
 
 const SNX = require('../SNX.json');
+
+const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + process.env.INFURA));
 
 const snx = new web3.eth.Contract(SNX.abi, SNX_ADDRESS);
 

@@ -9,8 +9,8 @@ const {
 	setTargetAddress,
 } = require('../helpers.js');
 
-const TOTAL_AMOUNT = w3utils.toWei('13000000');
-const VESTING_PERIOD = 86400 * 365;
+const TOTAL_AMOUNT = w3utils.toWei('15000000');//15m
+const VESTING_PERIOD = 86400 * 7 * 100;//100 weeks
 const INPUT_SIZE = 100;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const FLOOR_VALUE = w3utils.toWei('100');
@@ -18,7 +18,7 @@ const FLOOR_VALUE = w3utils.toWei('100');
 const historicalData = require('../snx-data/historical_snx.json');
 const investitors = require('../snx-data/investitors.json');
 
-// TODO - put correct addresses here
+// only one fund admin
 const fundingAdmins = [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS];
 
 const BLACKLIST = [

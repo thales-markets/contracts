@@ -4,6 +4,14 @@ Deployment scripts instructions for Thales contracts.
 
 ## Process Overview
 
+### 0. Deploying Thales token contract  
+
+```bash
+npx hardhat run --network ropsten scripts/thales/deploy_thales.js
+```  
+
+This will create the THALES token and mint 100m into owners wallet. 
+
 ### 1. Deploying VestingEscrow contract
 
 The first step is to run historical SNX stakers script with following command:
@@ -17,7 +25,11 @@ This script will generate JSON file - [`historical_snx.json`](./snx-data/histori
 npx hardhat run --network ropsten scripts/deployRetroLinearUnlock/historical_token_distribution.js
 ```
 
-Deployment scripts will also update [`deployments.json`](./deployments.json) file with addresses of deployed contracts.
+Deployment scripts will also update [`deployments.json`](./deployments.json) file with addresses of deployed contracts.  
+
+Sanity check files:
+- Distribution before floor and investors scripts/snx-data/sorted_historical_stakers.json
+- Final distribution with floor and investors scripts/snx-data/sorted_historical_stakers_after_floor.json
 
 ### 2. Deploying Airdrop contract
 

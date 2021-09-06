@@ -8,7 +8,7 @@ const historicalSnapshot = require('./airdropSnapshot.json');
 const airdropAdditional = require('./airdrop-additional.json');
 
 // maybe just calculate this based on the number od addreeses, total amount is 2 million
-const THALES_AMOUNT = web3.utils.toWei('130');
+const THALES_AMOUNT = web3.utils.toWei('137');
 
 const fs = require('fs');
 

@@ -199,18 +199,14 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 	);
 
 	tx = await token.approve(VestingEscrowDeployed.address, tokenAmount);
-	txLog(tx, 'Thales.sol: Approve tokens');
-
-	await hre.run('verify:verify', {
-		address: VestingEscrowDeployed.address,
-		constructorArguments: [admin.address, token.address, startTime, startTime + VESTING_PERIOD],
+	await tx.wait().then(e => {
+		txLog(tx, 'Thales.sol: Approve tokens');
 	});
 
-	const allowance = await token.allowance(admin.address, VestingEscrowDeployed.address);
-	console.log('allowance', allowance.toString());
-
 	tx = await VestingEscrowDeployed.addTokens(tokenAmount);
-	txLog(tx, 'VestingEscrow.sol: Add tokens');
+	await tx.wait().then(e => {
+		txLog(tx, 'VestingEscrow.sol: Add tokens');
+	});
 
 	let accounts = [],
 		values = [];
@@ -229,26 +225,21 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 	console.log('started funding');
 
 	await _fundAccounts(admin, VestingEscrowDeployed, fundArguments, 1);
+
+	await hre.run('verify:verify', {
+		address: VestingEscrowDeployed.address,
+		constructorArguments: [admin.address, token.address, startTime, startTime + VESTING_PERIOD],
+	});
 }
 
 async function _fundAccounts(account, vestingEscrowContract, fundArguments, confs) {
 	for (let i = 0; i < fundArguments.length; i++) {
 		const [recipients, amounts] = fundArguments[i];
-		for (let r in recipients) {
-			console.log('funding recipient ' + recipients[r]);
-		}
-		for (let a in amounts) {
-			console.log('funding amounts  ' + amounts[a]);
-		}
 		tx = await vestingEscrowContract.fund(recipients, amounts);
-		txLog(tx, 'VestingEscrow.sol: Fund accounts');
+		await tx.wait().then(e => {
+			txLog(tx, 'VestingEscrow.sol: Fund accounts');
+		});
 	}
-}
-
-function delay(time) {
-	return new Promise(function(resolve) {
-		setTimeout(resolve, time);
-	});
 }
 
 function sortAmounts(amounts) {

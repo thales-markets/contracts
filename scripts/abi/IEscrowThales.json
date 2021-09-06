@@ -124,7 +124,7 @@
         "type": "address"
       }
     ],
-    "name": "totalEscrowedAmounts",
+    "name": "totalAccountEscrowedAmount",
     "outputs": [
       {
         "internalType": "uint256",

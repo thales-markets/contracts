@@ -47,12 +47,12 @@ async function fetchData() {
 			weeklyRewardL2 = 0;
 		for (var element in result) {
 			weeklyReward += result[element].rewards;
-			data.push({ account: result[element].account, rewards: result[element].rewards });
+			data.push({ account: result[element].account.toLowerCase(), rewards: result[element].rewards });
 		}
 
 		for (let [key, value] of Object.entries(resultL2)) {
 			weeklyRewardL2 += value / 1e18;
-			dataL2.push({ account: key, rewards: value / 1e18 });
+			dataL2.push({ account: key.toLowerCase(), rewards: value / 1e18 });
 		}
 
 		if (dataL2.length) {
@@ -84,7 +84,7 @@ async function fetchData() {
 			let finalValue = 0;
 			const snapshot = await getXSNXSnapshot(value, blocks[blocks.length - 1]);
 			for (let [snapshotKey, snapshotValue] of Object.entries(snapshot)) {
-				accountsScores[snapshotKey] = snapshotValue;
+				accountsScores[snapshotKey.toLowerCase()] = snapshotValue;
 				finalValue += snapshotValue;
 			}
 
@@ -98,7 +98,7 @@ async function fetchData() {
 			let finalValueYearn = 0;
 			const yearnSnapshot = await getYearnSnapshot(value, 0, blocks[blocks.length - 1]);
 			for (let [snapshotKey, snapshotValue] of Object.entries(yearnSnapshot)) {
-				accountsScores[snapshotKey] = snapshotValue;
+				accountsScores[snapshotKey.toLowerCase()] = snapshotValue;
 				finalValueYearn += snapshotValue;
 			}
 

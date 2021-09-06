@@ -9,8 +9,8 @@ const {
 	setTargetAddress,
 } = require('../helpers.js');
 
-const TOTAL_AMOUNT = w3utils.toWei('15000000');//15m
-const VESTING_PERIOD = 86400 * 7 * 100;//100 weeks
+const TOTAL_AMOUNT = w3utils.toWei('15000000'); //15m
+const VESTING_PERIOD = 86400 * 7 * 100; //100 weeks
 const INPUT_SIZE = 100;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const FLOOR_VALUE = w3utils.toWei('100');
@@ -174,7 +174,7 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 			vestedAmounts[key] = Big(web3.utils.toWei(value + ''));
 		}
 
-		investitorsTotalAmount = investitorsTotalAmount.add(vestedAmounts[key]);
+		investitorsTotalAmount = investitorsTotalAmount.add(web3.utils.toWei(value + ''));
 	}
 
 	console.log('investitors total amount', investitorsTotalAmount.toString());
@@ -223,16 +223,10 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 	for (let i = 0; i < accounts.length; i += INPUT_SIZE) {
 		let accountsArgument = accounts.slice(i, i + INPUT_SIZE);
 		let valuesArgument = values.slice(i, i + INPUT_SIZE);
-
-		if (i + INPUT_SIZE > accounts.length) {
-			zeroArray = new Array(INPUT_SIZE - accountsArgument.length);
-			accountsArgument = [...accountsArgument, ...zeroArray.fill(ZERO_ADDRESS)];
-			valuesArgument = [...valuesArgument, ...zeroArray.fill('0')];
-		}
 		fundArguments.push([accountsArgument, valuesArgument]);
 	}
 
-	console.log("started funding");
+	console.log('started funding');
 
 	await _fundAccounts(admin, VestingEscrowDeployed, fundArguments, 1);
 }
@@ -240,6 +234,12 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 async function _fundAccounts(account, vestingEscrowContract, fundArguments, confs) {
 	for (let i = 0; i < fundArguments.length; i++) {
 		const [recipients, amounts] = fundArguments[i];
+		for (let r in recipients) {
+			console.log('funding recipient ' + recipients[r]);
+		}
+		for (let a in amounts) {
+			console.log('funding amounts  ' + amounts[a]);
+		}
 		tx = await vestingEscrowContract.fund(recipients, amounts);
 		txLog(tx, 'VestingEscrow.sol: Fund accounts');
 	}

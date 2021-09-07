@@ -58,7 +58,7 @@ async function ongoingAirdrop() {
 	// get stakers from StakingThales from last period
 	let stakers = [];
 	const stakingRewards = [];
-	if (STAKING_THALES&&includeStakingRewards) {
+	if (STAKING_THALES && includeStakingRewards) {
 		const stakingTimestamp = await stakingThales.startTimeStamp();
 		if (stakingTimestamp.toString() > 0) {
 			// check if staking has begun
@@ -171,7 +171,7 @@ async function ongoingAirdrop() {
 			.round();
 
 		// check if the address is in stakingRewards
-		const stakingReward = stakingRewards[address] ? stakingRewards[address] : 0;
+		const stakingReward = Big(stakingRewards[address] ? stakingRewards[address] : 0);
 		if (stakingReward > 0) {
 			amount = amount.add(stakingReward);
 		}
@@ -190,7 +190,7 @@ async function ongoingAirdrop() {
 		let balance = {
 			address,
 			balance: numberExponentToLarge(amount.toString()),
-			stakingBalance: stakingReward,
+			stakingBalance: numberExponentToLarge(stakingReward),
 			previousBalance,
 			proof: '',
 			hash,
@@ -243,7 +243,7 @@ async function ongoingAirdrop() {
 		let balance = {
 			address,
 			balance: numberExponentToLarge(amount.toString()),
-			stakingBalance: stakingRewards[address],
+			stakingBalance: numberExponentToLarge(Big(stakingRewards[address])),
 			previousBalance,
 			hash,
 			proof: '',

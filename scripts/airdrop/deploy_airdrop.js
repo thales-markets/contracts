@@ -4,8 +4,7 @@ const { web3 } = require('hardhat');
 const { deployArgs, bn } = require('../snx-data/xsnx-snapshot/helpers');
 const { getTargetAddress, setTargetAddress } = require('../helpers.js');
 
-const historicalSnapshot = require('./airdropSnapshot.json');
-const airdropAdditional = require('./airdrop-additional.json');
+const historicalSnapshot = require('./finalSnapshot.json');
 
 // maybe just calculate this based on the number od addreeses, total amount is 2 million
 const THALES_AMOUNT = web3.utils.toWei('137');
@@ -31,11 +30,10 @@ async function deploy_airdrop() {
 	let totalBalance = bn(0);
 
 	// merge all addresses into final snapshot
-	const airdropSnapshotFinal = Object.assign(historicalSnapshot, airdropAdditional);
 	// get list of leaves for the merkle trees using index, address and token balance
 	// encode user address and balance using web3 encodePacked
 	let duplicateCheckerSet = new Set();
-	for (let address of Object.keys(airdropSnapshotFinal)) {
+	for (let address of Object.keys(historicalSnapshot)) {
 		if (duplicateCheckerSet.has(address)) {
 			// dont airdrop same address more than once
 			continue;

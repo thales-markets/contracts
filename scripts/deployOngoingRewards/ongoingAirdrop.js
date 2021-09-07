@@ -94,7 +94,7 @@ async function ongoingAirdrop() {
 						});
 
 					const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
-						fromBlock: lastClosedPeriodBlockNumber,
+						fromBlock: 0,
 						toBlock: 'latest',
 					});
 
@@ -220,7 +220,7 @@ async function ongoingAirdrop() {
 			claimed = 1; // tx returned error - address already claimed
 		}
 
-		let amount = stakingRewards[address];
+		let amount = Big(stakingRewards[address]);
 		let previousBalance = 0;
 		// adding only new amounts to totalBalance value
 		totalBalance = totalBalance.add(amount);

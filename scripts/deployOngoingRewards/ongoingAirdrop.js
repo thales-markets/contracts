@@ -110,7 +110,7 @@ async function ongoingAirdrop() {
 						try {
 							const reward = await stakingThales.getRewardsAvailable(staker);
 							console.log('available rewards for ', staker, ' - ', reward.toString());
-							stakingRewards[staker] = parseInt(reward.toString());
+							stakingRewards[staker.toLowerCase()] = parseInt(reward.toString());
 						} catch (e) {
 							continue; // rewards already claimed, continue
 						}
@@ -140,7 +140,7 @@ async function ongoingAirdrop() {
 
 	let totalScore = Big(0);
 	for (let value of Object.values(ongoingRewards)) {
-		totalScore = totalScore.add(value);
+		totalScore = totalScore.add(value.toLowerCase());
 	}
 
 	console.log('totalScore', totalScore.toString());
@@ -148,6 +148,7 @@ async function ongoingAirdrop() {
 	// get list of leaves for the merkle trees using index, address and token balance
 	// encode user address and balance using web3 encodePacked
 	for (let address of Object.keys(ongoingRewards)) {
+		address = address.toLowerCase();
 		// check last period merkle distribution
 		var index = lastMerkleDistribution
 			.map(function(e) {

@@ -50,7 +50,7 @@ async function deploy_ongoing_airdrop() {
 			web3.utils.encodePacked(i, address, numberExponentToLarge(amount.toString()))
 		);
 		let balance = {
-			address: address,
+			address: address.toLowerCase(),
 			balance: numberExponentToLarge(amount.toString()),
 			hash: hash,
 			proof: '',
@@ -109,7 +109,10 @@ async function deploy_ongoing_airdrop() {
 		console.log('EscrowThales: setAirdropContract');
 	});
 
-	tx = await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
+	tx = await thales.transfer(
+		ongoingAirdrop.address,
+		numberExponentToLarge(totalBalance.toString())
+	);
 	await tx.wait().then(e => {
 		console.log('Thales: transfer');
 	});
@@ -129,7 +132,6 @@ async function deploy_ongoing_airdrop() {
 		address: escrowThales.address,
 		constructorArguments: [owner.address, thales.address],
 	});
-
 }
 
 deploy_ongoing_airdrop()

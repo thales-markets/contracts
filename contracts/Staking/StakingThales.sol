@@ -31,7 +31,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     uint public currentPeriodRewards = 0;
     uint public currentPeriodFees = 0;
     bool public distributeFeesEnabled = false;
-    uint public fixedPeriodReward = 0;
+    uint public fixedPeriodReward = 100000;
     bool public claimEnabled = false;
 
     mapping(address => uint) public stakerLifetimeRewardsClaimed;
@@ -155,8 +155,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         _totalStakedAmount = 0;
         _totalEscrowedAmount = 0;
         _totalPendingStakeAmount = 0;
-        durationPeriod = 7 days;
-        unstakeDurationPeriod = 7 days;
         emit StakingPeriodStarted();
     }
 

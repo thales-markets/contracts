@@ -2,12 +2,18 @@ const { MerkleTree } = require('merkletreejs');
 const keccak256 = require('keccak256');
 const { web3 } = require('hardhat');
 const Big = require('big.js');
-const { numberExponentToLarge, getTargetAddress } = require('../helpers.js');
+
+const {
+	numberExponentToLarge,
+	txLog,
+	getTargetAddress,
+	setTargetAddress,
+} = require('../helpers.js');
 
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');
 const TOTAL_AMOUNT = web3.utils.toWei('125000');
 const TOTAL_AMOUNT_STAKING = web3.utils.toWei('100000');
-const TOTAL_AMOUNT_TO_TRANSFER= web3.utils.toWei('225000');
+const TOTAL_AMOUNT_TO_TRANSFER = web3.utils.toWei('225000');
 
 const fs = require('fs');
 
@@ -77,23 +83,29 @@ async function ongoingAirdrop() {
 
 				if (now.getTime() > closingDate.getTime()) {
 					let tx = await stakingThales.closePeriod();
-					await tx.wait().then(e => {
-						console.log('StakingThales: period closed');
-					});
+					await tx
+						.wait()
+						.then(e => {
+							console.log('StakingThales: period closed');
+						})
+						.catch(e => {
+							console.err(e);
+							return;
+						});
 
 					const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
 						fromBlock: lastClosedPeriodBlockNumber,
 						toBlock: 'latest',
 					});
-		
+
 					for (let i = 0; i < stakedEvents.length; ++i) {
 						stakers.push(stakedEvents[i].returnValues.user);
 					}
-		
+
 					stakers = [...new Set(stakers)]; // ensure uniqueness
-		
+
 					console.log('stakers', stakers);
-		
+
 					for (let staker of stakers) {
 						try {
 							const reward = await stakingThales.getRewardsAvailable(staker);
@@ -105,9 +117,11 @@ async function ongoingAirdrop() {
 					}
 				} else {
 					console.log("StakingThales: it's not time yet to close period");
+					return;
 				}
 			} catch (e) {
 				console.log('StakingThales: failed to close the period', e);
+				return;
 			}
 
 			console.log('stakin rewards', stakingRewards);
@@ -243,7 +257,10 @@ async function ongoingAirdrop() {
 	console.log('tree root:', root);
 
 	// ongoingAirdrop: set new tree root, unpause contract
-	await ongoingAirdrop.setRoot(root);
+	let tx = await ongoingAirdrop.setRoot(root);
+	await tx.wait().then(e => {
+		txLog(tx, 'New root set');
+	});
 	await ongoingAirdrop.setPaused(false);
 
 	ongoingPeriod = await ongoingAirdrop.period();

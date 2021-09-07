@@ -5,6 +5,7 @@ const { artifacts, contract, web3 } = require('hardhat');
 
 const THALES_AMOUNT = web3.utils.toWei('200');
 const SECOND = 1000;
+const MINUTE = 60;
 const HOUR = 3600;
 const DAY = 86400;
 const WEEK = 604800;
@@ -20,14 +21,14 @@ async function main() {
 	let network = networkObj.name;
 	let durationPeriod, unstakeDurationPeriod;
 	if (network == 'homestead') {
+		console.log('Setting duration to WEEK');
 		network = 'mainnet';
 		durationPeriod = WEEK;
 		unstakeDurationPeriod = WEEK;
-	} else if (network === 'unknown') {
-		network = 'localhost';
-	} else if (network == 'ropsten') {
-		durationPeriod = HOUR;
-		unstakeDurationPeriod = HOUR;
+	} else {
+		console.log('Setting duration to MINUTE');
+		durationPeriod = MINUTE;
+		unstakeDurationPeriod = MINUTE;
 	}
 
 	console.log('Account is:' + owner.address);
@@ -35,6 +36,9 @@ async function main() {
 
 	const thalesAddress = getTargetAddress('Thales', network);
 	const EscrowThalesAddress = getTargetAddress('EscrowThales', network);
+
+	const EscrowThales = await ethers.getContractFactory('EscrowThales');
+	let EscrowThalesAttached = await EscrowThales.attach(EscrowThalesAddress);
 
 	console.log('Thales address: ', thalesAddress);
 
@@ -55,6 +59,8 @@ async function main() {
 		unstakeDurationPeriod
 	);
 	await StakingThalesDeployed.deployed();
+
+	await EscrowThalesAttached.setStakingThalesContract(StakingThalesDeployed.address);
 
 	console.log('StakingThales deployed to: ', StakingThalesDeployed.address);
 	// update deployments.json file

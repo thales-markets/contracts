@@ -140,7 +140,7 @@ async function ongoingAirdrop() {
 
 	let totalScore = Big(0);
 	for (let value of Object.values(ongoingRewards)) {
-		totalScore = totalScore.add(value.toLowerCase());
+		totalScore = totalScore.add(value);
 	}
 
 	console.log('totalScore', totalScore.toString());

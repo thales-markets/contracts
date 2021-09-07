@@ -48,7 +48,7 @@ Input for the deployment script is [`ongoing_distribution.json`](./snx-data/ongo
 ```bash
 node scripts/snx-data/ongoing_distribution.js start_date end_date
 ```
-Arguments (`start_date`, `end_date`) are in format `yyyy-mm-dd` and also represent one week period (ideally Wednesday to Wednesday - to include the last two Synthetix `FeePeriodClosed` events).
+Arguments (`start_date`, `end_date`) are in format `yyyy-mm-dd` and also represent one week period (ideally Wednesday 00:00:00 to Wednesday 23:59:59 - to include the last two Synthetix `FeePeriodClosed` events).
 
 Run initial deployment script with following command: 
 ```bash

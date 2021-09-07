@@ -18,7 +18,7 @@ async function getBlocks(start, end) {
 	let provider = new ethers.providers.EtherscanProvider('mainnet', ETHERSCAN_KEY);
 
 	const startTimestamp = toTimestamp(start); // yyyy-mm-dd 00:00:00
-	const endTimestamp = toTimestamp(end) + 24 * 3600 - 1; // yyyy-mm-dd 23:59:00
+	const endTimestamp = toTimestamp(end) + 24 * 3600 - 1; // yyyy-mm-dd 23:59:59
 
 	console.log('start timestamp', startTimestamp);
 	console.log('end timestamp', endTimestamp);

@@ -17,6 +17,8 @@ const TOTAL_AMOUNT_TO_TRANSFER = web3.utils.toWei('225000');
 
 const fs = require('fs');
 
+let includeStakingRewards = true;
+
 async function ongoingAirdrop() {
 	let accounts = await ethers.getSigners();
 	let networkObj = await ethers.provider.getNetwork();
@@ -56,7 +58,7 @@ async function ongoingAirdrop() {
 	// get stakers from StakingThales from last period
 	let stakers = [];
 	const stakingRewards = [];
-	if (STAKING_THALES) {
+	if (STAKING_THALES&&includeStakingRewards) {
 		const stakingTimestamp = await stakingThales.startTimeStamp();
 		if (stakingTimestamp.toString() > 0) {
 			// check if staking has begun

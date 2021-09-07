@@ -133,7 +133,10 @@ async function ongoingAirdrop() {
 	const lastMerkleDistribution = require(`./ongoing-airdrop-hashes-period-${ongoingPeriod.toString()}.json`);
 
 	// pause ongoingAirdrop
-	await ongoingAirdrop.setPaused(true);
+	let pauseTX = await ongoingAirdrop.setPaused(true);
+	await pauseTX.wait().then(e => {
+		txLog(pauseTX, 'Airdrop paused');
+	});
 
 	let totalScore = Big(0);
 	for (let value of Object.values(ongoingRewards)) {
@@ -261,7 +264,10 @@ async function ongoingAirdrop() {
 	await tx.wait().then(e => {
 		txLog(tx, 'New root set');
 	});
-	await ongoingAirdrop.setPaused(false);
+	pauseTX = await ongoingAirdrop.setPaused(false);
+	await pauseTX.wait().then(e => {
+		txLog(pauseTX, 'Airdrop unpaused');
+	});
 
 	ongoingPeriod = await ongoingAirdrop.period();
 

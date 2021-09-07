@@ -157,7 +157,7 @@ contract('StakingThales', accounts => {
 				await sUSDSynth.issue(initialCreator, sUSD);
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.equal(web3.utils.toDecimal(answer), 0);
+				assert.equal(web3.utils.toDecimal(answer), 100000);
 				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.equal(web3.utils.toDecimal(answer), fixedReward);
@@ -242,7 +242,7 @@ contract('StakingThales', accounts => {
 				await sUSDSynth.issue(initialCreator, sUSD);
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.equal(web3.utils.toDecimal(answer), 0);
+				assert.equal(web3.utils.toDecimal(answer), 100000);
 				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.equal(web3.utils.toDecimal(answer), fixedReward);
@@ -315,7 +315,7 @@ contract('StakingThales', accounts => {
 			}
 		);
 
-		weeksOfStakingToTest = 78;
+		weeksOfStakingToTest = 45;
 		fixedReward = 4563;
 		let users = [first, second, third];
 		let stakes = [12331, 2121, 32123];
@@ -347,7 +347,7 @@ contract('StakingThales', accounts => {
 				await sUSDSynth.issue(initialCreator, sUSD);
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 				let answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.equal(web3.utils.toDecimal(answer), 0);
+				assert.equal(web3.utils.toDecimal(answer), 100000);
 				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.equal(web3.utils.toDecimal(answer), fixedReward);

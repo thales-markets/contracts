@@ -192,6 +192,7 @@ async function ongoingAirdrop() {
 			balance: numberExponentToLarge(amount.toString()),
 			stakingBalance: stakingReward,
 			previousBalance,
+			proof: '',
 			hash,
 			index: i,
 		};
@@ -245,6 +246,7 @@ async function ongoingAirdrop() {
 			stakingBalance: stakingRewards[address],
 			previousBalance,
 			hash,
+			proof: '',
 			index: i,
 		};
 		userBalanceHashes.push(hash);
@@ -261,6 +263,10 @@ async function ongoingAirdrop() {
 	// Get tree root
 	const root = merkleTree.getHexRoot();
 	console.log('tree root:', root);
+
+	for (let ubh in userBalanceAndHashes) {
+		userBalanceAndHashes[ubh].proof = merkleTree.getHexProof(userBalanceAndHashes[ubh].hash);
+	}
 
 	// ongoingAirdrop: set new tree root, unpause contract
 	let tx = await ongoingAirdrop.setRoot(root);

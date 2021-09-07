@@ -6,6 +6,8 @@ const { numberExponentToLarge, getTargetAddress } = require('../helpers.js');
 
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');
 const TOTAL_AMOUNT = web3.utils.toWei('125000');
+const TOTAL_AMOUNT_STAKING = web3.utils.toWei('100000');
+const TOTAL_AMOUNT_TO_TRANSFER= web3.utils.toWei('225000');
 
 const fs = require('fs');
 
@@ -254,7 +256,7 @@ async function ongoingAirdrop() {
 		}
 	);
 
-	await thales.transfer(ongoingAirdrop.address, numberExponentToLarge(totalBalance.toString()));
+	await thales.transfer(ongoingAirdrop.address, TOTAL_AMOUNT_TO_TRANSFER);
 }
 
 ongoingAirdrop()

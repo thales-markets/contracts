@@ -5,7 +5,7 @@ const Big = require('big.js');
 const { numberExponentToLarge, getTargetAddress } = require('../helpers.js');
 
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');
-const TOTAL_AMOUNT = web3.utils.toWei('130000');
+const TOTAL_AMOUNT = web3.utils.toWei('125000');
 
 const fs = require('fs');
 

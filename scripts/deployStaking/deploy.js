@@ -5,9 +5,10 @@ const { artifacts, contract, web3 } = require('hardhat');
 
 const THALES_AMOUNT = web3.utils.toWei('200');
 const SECOND = 1000;
+const HOUR = 3600;
 const DAY = 86400;
 const WEEK = 604800;
-const YEAR = 31556926 
+const YEAR = 31556926;
 
 const fs = require('fs');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
@@ -24,10 +25,9 @@ async function main() {
 		unstakeDurationPeriod = WEEK;
 	} else if (network === 'unknown') {
 		network = 'localhost';
-	}
-	else if(network == 'ropsten') {
-		durationPeriod = DAY;
-		unstakeDurationPeriod = DAY;
+	} else if (network == 'ropsten') {
+		durationPeriod = HOUR;
+		unstakeDurationPeriod = HOUR;
 	}
 
 	console.log('Account is:' + owner.address);
@@ -68,12 +68,12 @@ async function main() {
 			thalesAddress,
 			ProxyERC20sUSD.address,
 			durationPeriod,
-			unstakeDurationPeriod
+			unstakeDurationPeriod,
 		],
 	});
 
-	await StakingThalesDeployed.startStakingPeriod({from:owner.address});
-	console.log("Staking has been started");
+	await StakingThalesDeployed.startStakingPeriod({ from: owner.address });
+	console.log('Staking has been started');
 }
 
 main()

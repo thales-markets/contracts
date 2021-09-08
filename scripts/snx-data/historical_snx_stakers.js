@@ -82,7 +82,8 @@ async function fetchData() {
 			console.log('XSNX_ADMIN_PROXY score', value);
 
 			let finalValue = 0;
-			const snapshot = await getXSNXSnapshot(value, blocks[blocks.length - 1]);
+			//const snapshot = await getXSNXSnapshot(value, blocks[blocks.length - 1]);
+			const snapshot = await getXSNXSnapshot(value, 13118314);
 			for (let [snapshotKey, snapshotValue] of Object.entries(snapshot)) {
 				accountsScores[snapshotKey.toLowerCase()] = snapshotValue;
 				finalValue += snapshotValue;

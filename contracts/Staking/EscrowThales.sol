@@ -35,6 +35,8 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     mapping(address => uint) public lastPeriodAddedReward;
 
+    bool private testMode = false;
+
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
@@ -124,16 +126,18 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     function addTotalEscrowBalanceNotIncludedInStaking(uint amount) external {
         require(msg.sender == address(iStakingThales), "Invalid StakingToken, please update");
-        totalEscrowBalanceNotIncludedInStaking.add(amount);
+        totalEscrowBalanceNotIncludedInStaking = totalEscrowBalanceNotIncludedInStaking.add(amount);
     }
 
     function subtractTotalEscrowBalanceNotIncludedInStaking(uint amount) external {
         require(msg.sender == address(iStakingThales), "Invalid StakingToken, please update");
-        totalEscrowBalanceNotIncludedInStaking.sub(amount);
+        totalEscrowBalanceNotIncludedInStaking = totalEscrowBalanceNotIncludedInStaking.sub(amount);
     }
 
     function updateCurrentPeriod() external returns (bool) {
-        require(msg.sender == address(iStakingThales), "Invalid StakingToken, please update");
+        if (!testMode) {
+            require(msg.sender == address(iStakingThales), "Invalid StakingToken, please update");
+        }
         currentVestingPeriod = currentVestingPeriod.add(1);
         return true;
     }
@@ -142,6 +146,10 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         require(StakingThalesContract != address(0), "Invalid address set");
         iStakingThales = IStakingThales(StakingThalesContract);
         emit StakingThalesContractChanged(StakingThalesContract);
+    }
+
+    function enableTestMode() external onlyOwner {
+        testMode = true;
     }
 
     function setAirdropContract(address AirdropContract) external onlyOwner {

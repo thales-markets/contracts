@@ -51,12 +51,24 @@ const deploymentFixture = async () => {
 	const escrowThales = await deployArgs('EscrowThales', admin.address, thales.address);
 
 	await escrowThales.setAirdropContract(ongoingAirdrop.address);
-	await escrowThales.setStakingThalesContract(admin.address);
+	await escrowThales.enableTestMode({ from: admin.address });
 	await escrowThales.updateCurrentPeriod();
 
 	// transfer THALES tokens to airdrop contract
 	await ongoingAirdrop.setEscrow(escrowThales.address);
 	await thales.transfer(ongoingAirdrop.address, totalBalance);
+
+	let StakingThales = artifacts.require('StakingThales');
+	let StakingThalesDeployed = await StakingThales.new(
+		admin.address,
+		escrowThales.address,
+		thales.address,
+		thales.address,
+		604800,
+		604800,
+		{ from: admin.address }
+	);
+	await escrowThales.setStakingThalesContract(StakingThalesDeployed.address);
 
 	// Impersonate two accounts from snapshot
 	await hre.network.provider.request({
@@ -129,6 +141,5 @@ async function getRoot() {
 
 	return merkleTree.getHexRoot();
 }
-
 
 module.exports = { deploymentFixture, getReward, getRoot };

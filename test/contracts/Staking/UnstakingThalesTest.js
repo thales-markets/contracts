@@ -123,10 +123,67 @@ contract('StakingThales', accounts => {
 	});
 
 	describe('Unstaking', () => {
-		it('User cant unstake if the cooldown period did not pass', async () => {
+		// it('User cant unstake if the cooldown period did not pass', async () => {
+		// 	// await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
+		// 	// 	'Staking period has not started'
+		// 	// );
+		//
+		// 	await ThalesDeployed.transfer(first, 1500, { from: owner });
+		// 	let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
+		// 	await ThalesDeployed.transfer(StakingThalesDeployed.address, 5500000, {
+		// 		from: owner,
+		// 	});
+		// 	await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
+		// 		from: owner,
+		// 	});
+		// 	await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
+		// 	await StakingThalesDeployed.stake(1000, { from: first });
+		//
+		// 	fastForward(DAY + 5 * SECOND);
+		// 	answer = await StakingThalesDeployed.startUnstake(
+		// 		(await StakingThalesDeployed.stakedBalanceOf(first)) / 2,
+		// 		{ from: first }
+		// 	);
+		//
+		// 	fastForward(DAY + 5 * SECOND);
+		//
+		// 	await expect(StakingThalesDeployed.unstake({ from: first })).to.be.revertedWith(
+		// 		'Cannot unstake yet, cooldown not expired'
+		// 	);
+		//
+		// 	fastForward(WEEK);
+		// 	await StakingThalesDeployed.unstake({ from: first });
+		//
+		// 	let balanceAfterFirstUnstake = await StakingThalesDeployed.stakedBalanceOf(first);
+		// 	console.log('Balance after first unstake is ' + balanceAfterFirstUnstake);
+		//
+		// 	assert.equal(balanceAfterFirstUnstake, 500);
+		//
+		// 	answer = await StakingThalesDeployed.startUnstake(
+		// 		(await StakingThalesDeployed.stakedBalanceOf(first)) / 2,
+		// 		{ from: first }
+		// 	);
+		//
+		// 	fastForward(DAY + 5 * SECOND);
+		//
+		// 	await expect(StakingThalesDeployed.unstake({ from: first })).to.be.revertedWith(
+		// 		'Cannot unstake yet, cooldown not expired'
+		// 	);
+		//
+		// 	fastForward(WEEK);
+		// 	await StakingThalesDeployed.unstake({ from: first });
+		//
+		//
+		// });
+
+		it('Proper escrow calculation', async () => {
 			// await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
 			// 	'Staking period has not started'
 			// );
+
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
 
 			await ThalesDeployed.transfer(first, 1500, { from: owner });
 			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
@@ -139,39 +196,54 @@ contract('StakingThales', accounts => {
 			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 
-			fastForward(DAY + 5 * SECOND);
+			await fastForward(WEEK + 5 * SECOND);
+			await StakingThalesDeployed.closePeriod({ from: first });
+
+			let rewardsAvailable = await StakingThalesDeployed.getRewardsAvailable(first);
+			console.log('rewards available:' + rewardsAvailable);
+			answer = await StakingThalesDeployed.claimReward({ from: first });
+
+			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
+			console.log('totalAccountEscrowedAmount' + totalAccountEscrowedAmount);
+
+			let totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			console.log(
+				'totalEscrowBalanceNotIncludedInStaking ' + totalEscrowBalanceNotIncludedInStaking
+			);
+
+			let stakedBalanceOf = await StakingThalesDeployed.stakedBalanceOf(first);
+			console.log('stakedBalanceOf before' + stakedBalanceOf);
+
 			answer = await StakingThalesDeployed.startUnstake(
-				(await StakingThalesDeployed.stakedBalanceOf(first)) / 2,
+				await StakingThalesDeployed.stakedBalanceOf(first),
 				{ from: first }
 			);
 
-			fastForward(DAY + 5 * SECOND);
+			stakedBalanceOf = await StakingThalesDeployed.stakedBalanceOf(first);
+			console.log('stakedBalanceOf after ' + stakedBalanceOf);
 
-			await expect(StakingThalesDeployed.unstake({ from: first })).to.be.revertedWith(
-				'Cannot unstake yet, cooldown not expired'
+			totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			console.log(
+				'totalEscrowBalanceNotIncludedInStaking ' + totalEscrowBalanceNotIncludedInStaking
 			);
 
-			fastForward(WEEK);
-			await StakingThalesDeployed.unstake({ from: first });
+			await fastForward(WEEK + 5 * SECOND);
 
-			let balanceAfterFirstUnstake = await StakingThalesDeployed.stakedBalanceOf(first);
-			console.log('Balance after first unstake is ' + balanceAfterFirstUnstake);
+			answer = await StakingThalesDeployed.unstake({ from: first });
 
-			assert.equal(balanceAfterFirstUnstake, 500);
+			for (var i = 0; i < 11; i++) {
+				await fastForward(WEEK);
+				await StakingThalesDeployed.closePeriod({ from: first });
+			}
 
-			answer = await StakingThalesDeployed.startUnstake(
-				(await StakingThalesDeployed.stakedBalanceOf(first)) / 2,
-				{ from: first }
-			);
+			let answer2 = await EscrowThalesDeployed.claimable.call(first);
+			let claimable = web3.utils.toDecimal(answer2);
+			console.log('claimable available:' + claimable);
 
-			fastForward(DAY + 5 * SECOND);
+			totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
+			console.log('totalAccountEscrowedAmount' + totalAccountEscrowedAmount);
 
-			await expect(StakingThalesDeployed.unstake({ from: first })).to.be.revertedWith(
-				'Cannot unstake yet, cooldown not expired'
-			);
-
-			fastForward(WEEK);
-			await StakingThalesDeployed.unstake({ from: first });
+			answer = await EscrowThalesDeployed.vest(claimable, { from: first });
 		});
 	});
 });

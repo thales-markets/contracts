@@ -236,6 +236,15 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [],
+    "name": "enableTestMode",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [
       {

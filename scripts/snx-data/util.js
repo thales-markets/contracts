@@ -38,6 +38,42 @@ const feesClaimed = async (minBlock, maxBlock) => {
 		.catch(err => console.error(err));
 };
 
+const issued = async (minBlock, maxBlock) => {
+	return snxData.pageResults({
+		api: snxData.graphAPIEndpoints.snx,
+		max: MAX_RESULTS,
+		query: {
+			entity: 'issueds',
+			selection: {
+				orderBy: 'timestamp',
+				orderDirection: 'desc',
+				where: {
+					block_gte: minBlock || undefined,
+					block_lte: maxBlock || undefined,
+				},
+			},
+			properties: [
+				'id', // the transaction hash
+				'account', // the address of the burner
+				'timestamp', // the timestamp when this transaction happened
+				'block', // the block in which this transaction happened
+				'value', // the issued amount in sUSD
+			],
+		},
+	})
+		.then(results =>
+			results.map(({ id, account, timestamp, block, value }) => ({
+				hash: getHashFromId(id),
+				account,
+				timestamp: Number(timestamp * 1000),
+				block: Number(block),
+				value: value / 1e18,
+				type: 'issued',
+			})),
+		)
+		.catch(err => console.error(err));
+}
+
 const getXSNXSnapshot = async (xsnxScore, blockNumber) => {
 	const snapshot = await getSnapshot(blockNumber);
 
@@ -74,6 +110,7 @@ const getYearnSnapshot = async (yearnScore, minBlockNumber, maxBlockNumber) => {
 
 module.exports = {
 	feesClaimed,
+	issued,
 	getXSNXSnapshot,
 	getYearnSnapshot,
 };

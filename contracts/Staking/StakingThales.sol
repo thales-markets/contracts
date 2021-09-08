@@ -228,7 +228,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         _stakedBalances[msg.sender] = _stakedBalances[msg.sender].sub(amount);
 
         // on full unstake add his escrowed balance to totalEscrowBalanceNotIncludedInStaking
-        if (_stakedBalances[msg.sender] > 0) {
+        if (_stakedBalances[msg.sender] == 0) {
             if (iEscrowThales.totalAccountEscrowedAmount(msg.sender) > 0) {
                 iEscrowThales.addTotalEscrowBalanceNotIncludedInStaking(
                     iEscrowThales.totalAccountEscrowedAmount(msg.sender)

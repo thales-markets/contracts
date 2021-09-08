@@ -44,10 +44,10 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     uint private _totalRewardsClaimed;
     uint private _totalRewardFeesClaimed;
 
-    mapping(address => uint) public _lastUnstakeTime;
+    mapping(address => uint) public lastUnstakeTime;
     mapping(address => bool) public unstaking;
+    mapping(address => uint) public unstakingAmount;
     mapping(address => uint) private _stakedBalances;
-    mapping(address => uint) private _unstakingAmount;
     mapping(address => uint) private _lastStakingPeriod;
     mapping(address => uint) private _lastRewardsClaimedPeriod;
 
@@ -169,7 +169,9 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         lastPeriodTimeStamp = block.timestamp;
         periodsOfStaking = iEscrowThales.currentVestingPeriod();
 
-        _totalEscrowedAmount = iEscrowThales.totalEscrowedRewards();
+        _totalEscrowedAmount = iEscrowThales.totalEscrowedRewards().sub(
+            iEscrowThales.totalEscrowBalanceNotIncludedInStaking()
+        );
 
         //Actions taken on every closed period
         currentPeriodRewards = fixedPeriodReward;
@@ -193,10 +195,21 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         if ((_lastRewardsClaimedPeriod[msg.sender] < periodsOfStaking) && claimEnabled && _stakedBalances[msg.sender] > 0) {
             claimReward();
         }
+
+        // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
+        if (_stakedBalances[msg.sender] == 0) {
+            if (iEscrowThales.totalAccountEscrowedAmount(msg.sender) > 0) {
+                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
+                    iEscrowThales.totalAccountEscrowedAmount(msg.sender)
+                );
+            }
+        }
+
         _totalStakedAmount = _totalStakedAmount.add(amount);
         _stakedBalances[msg.sender] = _stakedBalances[msg.sender].add(amount);
         _lastStakingPeriod[msg.sender] = periodsOfStaking;
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
+
         emit Staked(msg.sender, amount);
     }
 
@@ -208,24 +221,34 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         if ((_lastRewardsClaimedPeriod[msg.sender] < periodsOfStaking) && claimEnabled) {
             claimReward();
         }
-        _lastUnstakeTime[msg.sender] = block.timestamp;
+        lastUnstakeTime[msg.sender] = block.timestamp;
         unstaking[msg.sender] = true;
         _totalStakedAmount = _totalStakedAmount.sub(amount);
-        _unstakingAmount[msg.sender] = amount;
+        unstakingAmount[msg.sender] = amount;
         _stakedBalances[msg.sender] = _stakedBalances[msg.sender].sub(amount);
-        emit UnstakeCooldown(msg.sender, _lastUnstakeTime[msg.sender].add(unstakeDurationPeriod), amount);
+
+        // on full unstake add his escrowed balance to totalEscrowBalanceNotIncludedInStaking
+        if (_stakedBalances[msg.sender] > 0) {
+            if (iEscrowThales.totalAccountEscrowedAmount(msg.sender) > 0) {
+                iEscrowThales.addTotalEscrowBalanceNotIncludedInStaking(
+                    iEscrowThales.totalAccountEscrowedAmount(msg.sender)
+                );
+            }
+        }
+
+        emit UnstakeCooldown(msg.sender, lastUnstakeTime[msg.sender].add(unstakeDurationPeriod), amount);
     }
 
     function unstake() external {
         require(unstaking[msg.sender] == true, "Account has not triggered unstake cooldown");
         require(
-            _lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
+            lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Cannot unstake yet, cooldown not expired."
         );
         unstaking[msg.sender] = false;
-        uint unstakeAmount = _unstakingAmount[msg.sender];
+        uint unstakeAmount = unstakingAmount[msg.sender];
         stakingToken.safeTransfer(msg.sender, unstakeAmount);
-        _unstakingAmount[msg.sender] = 0;
+        unstakingAmount[msg.sender] = 0;
         emit Unstaked(msg.sender, unstakeAmount);
     }
 

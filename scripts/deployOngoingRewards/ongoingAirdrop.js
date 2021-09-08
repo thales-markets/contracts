@@ -17,6 +17,8 @@ const TOTAL_AMOUNT_TO_TRANSFER = web3.utils.toWei('225000');
 
 const fs = require('fs');
 
+let includeStakingRewards = true;
+
 async function ongoingAirdrop() {
 	let accounts = await ethers.getSigners();
 	let networkObj = await ethers.provider.getNetwork();
@@ -56,7 +58,7 @@ async function ongoingAirdrop() {
 	// get stakers from StakingThales from last period
 	let stakers = [];
 	const stakingRewards = [];
-	if (STAKING_THALES) {
+	if (STAKING_THALES && includeStakingRewards) {
 		const stakingTimestamp = await stakingThales.startTimeStamp();
 		if (stakingTimestamp.toString() > 0) {
 			// check if staking has begun
@@ -169,7 +171,7 @@ async function ongoingAirdrop() {
 			.round();
 
 		// check if the address is in stakingRewards
-		const stakingReward = stakingRewards[address] ? stakingRewards[address] : 0;
+		const stakingReward = Big(stakingRewards[address] ? stakingRewards[address] : 0);
 		if (stakingReward > 0) {
 			amount = amount.add(stakingReward);
 		}
@@ -188,8 +190,9 @@ async function ongoingAirdrop() {
 		let balance = {
 			address,
 			balance: numberExponentToLarge(amount.toString()),
-			stakingBalance: stakingReward,
+			stakingBalance: numberExponentToLarge(stakingReward),
 			previousBalance,
+			proof: '',
 			hash,
 			index: i,
 		};
@@ -240,9 +243,10 @@ async function ongoingAirdrop() {
 		let balance = {
 			address,
 			balance: numberExponentToLarge(amount.toString()),
-			stakingBalance: stakingRewards[address],
+			stakingBalance: numberExponentToLarge(Big(stakingRewards[address])),
 			previousBalance,
 			hash,
+			proof: '',
 			index: i,
 		};
 		userBalanceHashes.push(hash);
@@ -259,6 +263,10 @@ async function ongoingAirdrop() {
 	// Get tree root
 	const root = merkleTree.getHexRoot();
 	console.log('tree root:', root);
+
+	for (let ubh in userBalanceAndHashes) {
+		userBalanceAndHashes[ubh].proof = merkleTree.getHexProof(userBalanceAndHashes[ubh].hash);
+	}
 
 	// ongoingAirdrop: set new tree root, unpause contract
 	let tx = await ongoingAirdrop.setRoot(root);

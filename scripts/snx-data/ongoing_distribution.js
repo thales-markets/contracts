@@ -57,12 +57,12 @@ async function fetchData(start, end) {
 			weeklyRewardL2 = 0;
 		for (var element in result) {
 			weeklyReward += result[element].rewards;
-			data.push({ account: result[element].account, rewards: result[element].rewards });
+			data.push({ account: result[element].account.toLowerCase(), rewards: result[element].rewards });
 		}
 
 		for (let [key, value] of Object.entries(resultL2)) {
 			weeklyRewardL2 += value / 1e18;
-			dataL2.push({ account: key, rewards: value / 1e18 });
+			dataL2.push({ account: key.toLowerCase(), rewards: value / 1e18 });
 		}
 
 		if (dataL2.length) {
@@ -116,10 +116,10 @@ function getWeeklyData(data, percent, weeklyReward) {
 	Object.keys(data).map(function(key, index) {
 		const weeklyPercent = (data[index].rewards * percent) / weeklyReward;
 
-		if (accountsScores[data[index].account]) {
-			accountsScores[data[index].account] += weeklyPercent;
+		if (accountsScores[data[index].account.toLowerCase()]) {
+			accountsScores[data[index].account.toLowerCase()] += weeklyPercent;
 		} else {
-			accountsScores[data[index].account] = weeklyPercent;
+			accountsScores[data[index].account.toLowerCase()] = weeklyPercent;
 		}
 		totalScores += weeklyPercent;
 	});

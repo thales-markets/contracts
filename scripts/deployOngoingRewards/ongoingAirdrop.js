@@ -182,6 +182,7 @@ async function ongoingAirdrop() {
 		// if address hasn't claimed add to amount prev value
 		if (claimed == 0 && lastMerkleDistribution[index]) {
 			amount = amount.add(lastMerkleDistribution[index].balance);
+			previousBalance = lastMerkleDistribution[index].balance;
 		}
 
 		let hash = keccak256(

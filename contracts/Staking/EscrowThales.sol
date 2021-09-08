@@ -20,6 +20,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     uint public constant NUM_PERIODS = 10;
     uint public totalEscrowedRewards = 0;
+    uint public totalEscrowBalanceNotIncludedInStaking = 0;
     uint public currentVestingPeriod = 0;
 
     uint private _totalVested = 0;
@@ -54,7 +55,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     }
 
     function getStakedEscrowedBalanceForRewards(address account) external view returns (uint) {
-        if (lastPeriodAddedReward[account]== currentVestingPeriod) {
+        if (lastPeriodAddedReward[account] == currentVestingPeriod) {
             return
                 totalAccountEscrowedAmount[account].sub(
                     vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount
@@ -73,7 +74,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         require(account != address(0), "Invalid address");
         require(amount > 0, "Amount is 0");
         require(
-            msg.sender == address(iStakingThales)  || msg.sender == airdropContract,
+            msg.sender == address(iStakingThales) || msg.sender == airdropContract,
             "Invalid StakingToken, please update"
         );
 
@@ -82,11 +83,19 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         lastPeriodAddedReward[account] = currentVestingPeriod;
 
         vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
-        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(NUM_PERIODS);
+        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(
+            NUM_PERIODS
+        );
 
         totalEscrowedRewards = totalEscrowedRewards.add(amount);
         //Transfering THALES from StakingThales to EscrowThales
         vestingToken.safeTransferFrom(msg.sender, address(this), amount);
+
+        // add to totalEscrowBalanceNotIncludedInStaking if user is not staking
+        if (!(iStakingThales.stakedBalanceOf(account) > 0)) {
+            totalEscrowBalanceNotIncludedInStaking.add(amount);
+        }
+
         emit AddedToEscrow(account, amount);
     }
 
@@ -103,12 +112,28 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         totalEscrowedRewards = totalEscrowedRewards.sub(amount);
         _totalVested = _totalVested.add(amount);
         vestingToken.safeTransfer(msg.sender, amount);
+
+        // subtract from totalEscrowBalanceNotIncludedInStaking if user is not staking
+        if (!(iStakingThales.stakedBalanceOf(msg.sender) > 0)) {
+            totalEscrowBalanceNotIncludedInStaking.sub(amount);
+        }
+
         emit Vested(msg.sender, amount);
         return true;
     }
 
+    function addTotalEscrowBalanceNotIncludedInStaking(uint amount) external {
+        require(msg.sender == address(iStakingThales), "Invalid StakingToken, please update");
+        totalEscrowBalanceNotIncludedInStaking.add(amount);
+    }
+
+    function subtractTotalEscrowBalanceNotIncludedInStaking(uint amount) external {
+        require(msg.sender == address(iStakingThales), "Invalid StakingToken, please update");
+        totalEscrowBalanceNotIncludedInStaking.sub(amount);
+    }
+
     function updateCurrentPeriod() external returns (bool) {
-        require(msg.sender == address(iStakingThales) , "Invalid StakingToken, please update");
+        require(msg.sender == address(iStakingThales), "Invalid StakingToken, please update");
         currentVestingPeriod = currentVestingPeriod.add(1);
         return true;
     }
@@ -134,14 +159,13 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     function _getVestingNotAvailable(address account) internal view returns (uint) {
         uint vesting_not_available = 0;
-        for (uint i=0; i< NUM_PERIODS; i++) {
-            if(vestingEntries[account][i].vesting_period >= currentVestingPeriod) {
+        for (uint i = 0; i < NUM_PERIODS; i++) {
+            if (vestingEntries[account][i].vesting_period >= currentVestingPeriod) {
                 vesting_not_available = vesting_not_available.add(vestingEntries[account][i].amount);
             }
         }
         return vesting_not_available;
     }
-
 
     /* ========== EVENTS ========== */
 

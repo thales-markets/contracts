@@ -12,14 +12,19 @@ interface IEscrowThales {
 
     function totalEscrowedRewards() external view returns (uint);
 
+    function totalEscrowBalanceNotIncludedInStaking() external view returns (uint);
+
     function currentVestingPeriod() external view returns (uint);
 
     function updateCurrentPeriod() external returns (bool);
-    
+
     function claimable(address account) external view returns (uint);
 
     function addToEscrow(address account, uint amount) external;
 
     function vest(uint amount) external returns (bool);
 
+    function addTotalEscrowBalanceNotIncludedInStaking(uint amount) external;
+
+    function subtractTotalEscrowBalanceNotIncludedInStaking(uint amount) external;
 }

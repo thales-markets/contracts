@@ -288,7 +288,11 @@ async function ongoingAirdrop() {
 		}
 	);
 
-	await thales.transfer(ongoingAirdrop.address, TOTAL_AMOUNT_TO_TRANSFER);
+	if (includeStakingRewards) {
+		await thales.transfer(ongoingAirdrop.address, TOTAL_AMOUNT_TO_TRANSFER);
+	} else {
+		await thales.transfer(ongoingAirdrop.address, TOTAL_AMOUNT);
+	}
 }
 
 ongoingAirdrop()

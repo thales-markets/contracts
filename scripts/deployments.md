@@ -39,7 +39,8 @@ The file [`historical_snx.json`](./snx-data/historical_snx.json) is also input f
 ```bash
 npx hardhat run --network ropsten scripts/airdrop/deploy_airdrop.js
 ```
-Deployment script will generate [`airdrop-hashes.json`](./airdrop/airdrop-hashes.json).
+Deployment script will generate [`airdrop-hashes.json`](./airdrop/airdrop-hashes.json).  
+This file needs to be added in the dapp manually.
 
 
 ### 3. Deploying OngoingAirdrop and EscrowThales contract

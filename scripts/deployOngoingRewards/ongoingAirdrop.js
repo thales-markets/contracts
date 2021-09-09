@@ -165,6 +165,7 @@ async function ongoingAirdrop() {
 			claimed = 1; // tx returned error - address already claimed
 		}
 
+		console.log('checking address: ' + address);
 		let amount = Big(ongoingRewards[address])
 			.times(TOTAL_AMOUNT)
 			.div(totalScore)

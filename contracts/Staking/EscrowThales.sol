@@ -94,8 +94,8 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         vestingToken.safeTransferFrom(msg.sender, address(this), amount);
 
         // add to totalEscrowBalanceNotIncludedInStaking if user is not staking
-        if (!(iStakingThales.stakedBalanceOf(account) > 0)) {
-            totalEscrowBalanceNotIncludedInStaking.add(amount);
+        if (iStakingThales.stakedBalanceOf(account) == 0) {
+            totalEscrowBalanceNotIncludedInStaking = totalEscrowBalanceNotIncludedInStaking.add(amount);
         }
 
         emit AddedToEscrow(account, amount);
@@ -117,7 +117,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
         // subtract from totalEscrowBalanceNotIncludedInStaking if user is not staking
         if (iStakingThales.stakedBalanceOf(msg.sender) == 0) {
-            totalEscrowBalanceNotIncludedInStaking.sub(amount);
+            totalEscrowBalanceNotIncludedInStaking = totalEscrowBalanceNotIncludedInStaking.sub(amount);
         }
 
         emit Vested(msg.sender, amount);

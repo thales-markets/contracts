@@ -69,7 +69,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     function claimable(address account) external view returns (uint) {
         require(account != address(0), "Invalid address");
-        return totalAccountEscrowedAmount[msg.sender].sub(_getVestingNotAvailable(account));
+        return totalAccountEscrowedAmount[account].sub(_getVestingNotAvailable(account));
     }
 
     function addToEscrow(address account, uint amount) external {
@@ -102,7 +102,6 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     }
 
     function vest(uint amount) external nonReentrant notPaused returns (bool) {
-        require(msg.sender != address(0), "Invalid address");
         require(amount > 0, "Claimed amount is 0");
         require(currentVestingPeriod > NUM_PERIODS, "Vesting rewards still not available");
 

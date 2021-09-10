@@ -15,7 +15,7 @@ const INPUT_SIZE = 100;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const FLOOR_VALUE = w3utils.toWei('100');
 
-const historicalData = require('../snx-data/historical_snx.json');
+let historicalData = require('../snx-data/historical_snx.json');
 const investitors = require('../snx-data/investitors.json');
 
 // only one fund admin
@@ -35,6 +35,10 @@ async function main() {
 		network = 'mainnet';
 	} else if (network === 'unknown') {
 		network = 'localhost';
+	}
+
+	if (network !== 'mainnet') {
+		historicalData = require('../snx-data/historical_snx_test.json');
 	}
 
 	console.log('Account is: ' + owner.address);

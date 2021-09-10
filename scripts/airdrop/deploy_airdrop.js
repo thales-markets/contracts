@@ -4,7 +4,7 @@ const { web3 } = require('hardhat');
 const { deployArgs, bn } = require('../snx-data/xsnx-snapshot/helpers');
 const { getTargetAddress, setTargetAddress } = require('../helpers.js');
 
-const historicalSnapshot = require('./finalSnapshot.json');
+let historicalSnapshot = require('./finalSnapshot.json');
 
 // maybe just calculate this based on the number od addreeses, total amount is 2 million
 const THALES_AMOUNT = web3.utils.toWei('137');
@@ -20,6 +20,11 @@ async function deploy_airdrop() {
 	} else if (network === 'unknown') {
 		network = 'localhost';
 	}
+
+	if (network !== 'mainnet') {
+		historicalSnapshot = require('./finalSnapshot_forTest.json');
+	}
+
 	console.log('Network name:' + network);
 
 	let owner = accounts[0];

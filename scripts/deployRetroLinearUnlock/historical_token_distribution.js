@@ -48,10 +48,10 @@ async function main() {
 
 	console.log('Thales address:', ThalesDeployed.address);
 
-	await vestTokens(owner, fundingAdmins, ThalesDeployed, 1);
+	await vestTokens(owner, fundingAdmins, ThalesDeployed, 1, network);
 }
 
-async function vestTokens(admin, fundingAdmins, token, confs) {
+async function vestTokens(admin, fundingAdmins, token, confs, network) {
 	const startTime = (await ethers.provider.getBlock()).timestamp + 1000; // hardcoded
 
 	const VestingEscrow = await ethers.getContractFactory('VestingEscrow');
@@ -64,7 +64,7 @@ async function vestTokens(admin, fundingAdmins, token, confs) {
 	await VestingEscrowDeployed.deployed();
 	console.log('VestingEscrow deployed to:', VestingEscrowDeployed.address);
 	// update deployments.json file
-	//setTargetAddress('VestingEscrow', network, VestingEscrowDeployed.address);
+	setTargetAddress('VestingEscrow', network, VestingEscrowDeployed.address);
 
 	let vestedPercent = [];
 	let totalScore = Big(0);

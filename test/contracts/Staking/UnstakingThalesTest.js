@@ -193,7 +193,7 @@ contract('StakingThales', accounts => {
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
 				from: owner,
 			});
-			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 2000, { from: first });
 			await StakingThalesDeployed.stake(1000, { from: first });
 
 			await fastForward(WEEK + 5 * SECOND);
@@ -201,6 +201,7 @@ contract('StakingThales', accounts => {
 
 			let rewardsAvailable = await StakingThalesDeployed.getRewardsAvailable(first);
 			console.log('rewards available:' + rewardsAvailable);
+			await StakingThalesDeployed.stake(500, { from: first });
 			answer = await StakingThalesDeployed.claimReward({ from: first });
 
 			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);

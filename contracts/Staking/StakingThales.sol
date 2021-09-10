@@ -193,7 +193,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         // Check if there are not claimable rewards from last period.
         // Claim them, and add new stake
         if ((_lastRewardsClaimedPeriod[msg.sender] < periodsOfStaking) && claimEnabled && _stakedBalances[msg.sender] > 0) {
-            claimReward();
+            _claimReward(msg.sender);
         }
 
         // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
@@ -253,33 +253,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     }
 
     function claimReward() public nonReentrant notPaused {
-        require(claimEnabled, "Claiming is not enabled.");
-        require(startTimeStamp > 0, "Staking period has not started");
-
-        //Calculate rewards
-        if (distributeFeesEnabled) {
-            uint availableFeesToClaim = _calculateAvailableFeesToClaim(msg.sender);
-            if (availableFeesToClaim > 0) {
-                feeToken.safeTransfer(msg.sender, availableFeesToClaim);
-                stakerFeesClaimed[msg.sender] = stakerFeesClaimed[msg.sender].add(availableFeesToClaim);
-                _totalRewardFeesClaimed = _totalRewardFeesClaimed.add(availableFeesToClaim);
-                emit FeeRewardsClaimed(msg.sender, availableFeesToClaim);
-            }
-        }
-        uint availableRewardsToClaim = _calculateAvailableRewardsToClaim(msg.sender);
-        if (availableRewardsToClaim > 0) {
-            _lastStakingPeriod[msg.sender] = periodsOfStaking;
-            // Transfer THALES to Escrow contract
-            iEscrowThales.addToEscrow(msg.sender, availableRewardsToClaim);
-            // Record the total claimed rewards
-            stakerLifetimeRewardsClaimed[msg.sender] = stakerLifetimeRewardsClaimed[msg.sender].add(availableRewardsToClaim);
-            _totalRewardsClaimed = _totalRewardsClaimed.add(availableRewardsToClaim);
-            _totalUnclaimedRewards = _totalUnclaimedRewards.sub(availableRewardsToClaim);
-
-            emit RewardsClaimed(msg.sender, availableRewardsToClaim);
-        }
-        // Update last claiming period
-        _lastRewardsClaimedPeriod[msg.sender] = periodsOfStaking;
+        _claimReward(msg.sender);
     }
 
     function selfDestruct(address payable account) external onlyOwner {
@@ -289,6 +263,36 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
+
+    function _claimReward(address account) internal notPaused {
+        require(claimEnabled, "Claiming is not enabled.");
+        require(startTimeStamp > 0, "Staking period has not started");
+
+        //Calculate rewards
+        if (distributeFeesEnabled) {
+            uint availableFeesToClaim = _calculateAvailableFeesToClaim(account);
+            if (availableFeesToClaim > 0) {
+                feeToken.safeTransfer(account, availableFeesToClaim);
+                stakerFeesClaimed[account] = stakerFeesClaimed[account].add(availableFeesToClaim);
+                _totalRewardFeesClaimed = _totalRewardFeesClaimed.add(availableFeesToClaim);
+                emit FeeRewardsClaimed(account, availableFeesToClaim);
+            }
+        }
+        uint availableRewardsToClaim = _calculateAvailableRewardsToClaim(account);
+        if (availableRewardsToClaim > 0) {
+            _lastStakingPeriod[account] = periodsOfStaking;
+            // Transfer THALES to Escrow contract
+            iEscrowThales.addToEscrow(account, availableRewardsToClaim);
+            // Record the total claimed rewards
+            stakerLifetimeRewardsClaimed[account] = stakerLifetimeRewardsClaimed[account].add(availableRewardsToClaim);
+            _totalRewardsClaimed = _totalRewardsClaimed.add(availableRewardsToClaim);
+            _totalUnclaimedRewards = _totalUnclaimedRewards.sub(availableRewardsToClaim);
+
+            emit RewardsClaimed(account, availableRewardsToClaim);
+        }
+        // Update last claiming period
+        _lastRewardsClaimedPeriod[account] = periodsOfStaking;
+    }
 
     function _calculateAvailableRewardsToClaim(address account) internal view returns (uint) {
         if (

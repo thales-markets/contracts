@@ -218,12 +218,10 @@ contract('StakingThales', accounts => {
 			assert.equal(answer, 0);
 			answer = await StakingThalesDeployed.getContractFeeFunds.call({ from: owner });
 			assert.equal(answer, 0);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(first)).to.be.revertedWith(
-				'Account is not a staker'
-			);
-			await expect(StakingThalesDeployed.getRewardFeesAvailable.call(first)).to.be.revertedWith(
-				'Account is not a staker'
-			);
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 		});
 
 		it('Deposit funds to the StakingThales', async () => {
@@ -422,9 +420,10 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(first)).to.be.revertedWith(
-				'Rewards already claimed for last period'
-			);
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 
 			await fastForward(WEEK + 5 * SECOND);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
@@ -466,9 +465,10 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(first)).to.be.revertedWith(
-				'Rewards already claimed for last period'
-			);
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 
 			await fastForward(WEEK + 5 * SECOND);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
@@ -525,9 +525,10 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(first)).to.be.revertedWith(
-				'Rewards already claimed for last period'
-			);
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 
 			await fastForward(WEEK + 5 * SECOND);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
@@ -609,9 +610,10 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(first)).to.be.revertedWith(
-				'Rewards already claimed for last period'
-			);
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 
 			await fastForward(WEEK + 5 * SECOND);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
@@ -681,9 +683,10 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(first)).to.be.revertedWith(
-				'Rewards already claimed for last period'
-			);
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 
 			await fastForward(WEEK + 5 * SECOND);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
@@ -800,18 +803,20 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(first)).to.be.revertedWith(
-				'Rewards already claimed for last period'
-			);
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(second);
 			assert.equal(answer, 0);
 			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: second });
 			await StakingThalesDeployed.stake(1000, { from: second });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(second);
 			assert.equal(answer, 1000);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(second)).to.be.revertedWith(
-				'Rewards already claimed for last period'
-			);
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 
 			await fastForward(WEEK + 5 * SECOND);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
@@ -957,28 +962,30 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.stake(1000, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(first)).to.be.revertedWith(
-				'Rewards already claimed for last period'
-			);
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(second);
 			assert.equal(answer, 0);
 			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: second });
 			await StakingThalesDeployed.stake(1000, { from: second });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(second);
 			assert.equal(answer, 1000);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(second)).to.be.revertedWith(
-				'Rewards already claimed for last period'
-			);
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(third);
 			assert.equal(answer, 0);
 			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: third });
 			await StakingThalesDeployed.stake(1000, { from: third });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(third);
 			assert.equal(answer, 1000);
-			await expect(StakingThalesDeployed.getRewardsAvailable.call(third)).to.be.revertedWith(
-				'Rewards already claimed for last period'
-			);
-
+			answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			assert.equal(answer, 0);
+			answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+			assert.equal(answer, 0);
 			await fastForward(WEEK + 5 * SECOND);
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.equal(answer, 1000);

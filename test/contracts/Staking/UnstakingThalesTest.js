@@ -123,58 +123,58 @@ contract('StakingThales', accounts => {
 	});
 
 	describe('Unstaking', () => {
-		// it('User cant unstake if the cooldown period did not pass', async () => {
-		// 	// await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
-		// 	// 	'Staking period has not started'
-		// 	// );
-		//
-		// 	await ThalesDeployed.transfer(first, 1500, { from: owner });
-		// 	let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
-		// 	await ThalesDeployed.transfer(StakingThalesDeployed.address, 5500000, {
-		// 		from: owner,
-		// 	});
-		// 	await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
-		// 		from: owner,
-		// 	});
-		// 	await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
-		// 	await StakingThalesDeployed.stake(1000, { from: first });
-		//
-		// 	fastForward(DAY + 5 * SECOND);
-		// 	answer = await StakingThalesDeployed.startUnstake(
-		// 		(await StakingThalesDeployed.stakedBalanceOf(first)) / 2,
-		// 		{ from: first }
-		// 	);
-		//
-		// 	fastForward(DAY + 5 * SECOND);
-		//
-		// 	await expect(StakingThalesDeployed.unstake({ from: first })).to.be.revertedWith(
-		// 		'Cannot unstake yet, cooldown not expired'
-		// 	);
-		//
-		// 	fastForward(WEEK);
-		// 	await StakingThalesDeployed.unstake({ from: first });
-		//
-		// 	let balanceAfterFirstUnstake = await StakingThalesDeployed.stakedBalanceOf(first);
-		// 	console.log('Balance after first unstake is ' + balanceAfterFirstUnstake);
-		//
-		// 	assert.equal(balanceAfterFirstUnstake, 500);
-		//
-		// 	answer = await StakingThalesDeployed.startUnstake(
-		// 		(await StakingThalesDeployed.stakedBalanceOf(first)) / 2,
-		// 		{ from: first }
-		// 	);
-		//
-		// 	fastForward(DAY + 5 * SECOND);
-		//
-		// 	await expect(StakingThalesDeployed.unstake({ from: first })).to.be.revertedWith(
-		// 		'Cannot unstake yet, cooldown not expired'
-		// 	);
-		//
-		// 	fastForward(WEEK);
-		// 	await StakingThalesDeployed.unstake({ from: first });
-		//
-		//
-		// });
+		it('User cant unstake if the cooldown period did not pass', async () => {
+			// await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
+			// 	'Staking period has not started'
+			// );
+
+			await ThalesDeployed.transfer(first, 1500, { from: owner });
+			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await ThalesDeployed.transfer(StakingThalesDeployed.address, 5500000, {
+				from: owner,
+			});
+			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {
+				from: owner,
+			});
+			await ThalesDeployed.approve(StakingThalesDeployed.address, 1000, { from: first });
+			await StakingThalesDeployed.stake(1000, { from: first });
+
+			fastForward(DAY + 5 * SECOND);
+			answer = await StakingThalesDeployed.startUnstake(
+				(await StakingThalesDeployed.stakedBalanceOf(first)) / 2,
+				{ from: first }
+			);
+
+			fastForward(DAY + 5 * SECOND);
+
+			await expect(StakingThalesDeployed.unstake({ from: first })).to.be.revertedWith(
+				'Cannot unstake yet, cooldown not expired'
+			);
+
+			fastForward(WEEK);
+			await StakingThalesDeployed.unstake({ from: first });
+
+			let balanceAfterFirstUnstake = await StakingThalesDeployed.stakedBalanceOf(first);
+			console.log('Balance after first unstake is ' + balanceAfterFirstUnstake);
+
+			assert.equal(balanceAfterFirstUnstake, 500);
+
+			answer = await StakingThalesDeployed.startUnstake(
+				(await StakingThalesDeployed.stakedBalanceOf(first)) / 2,
+				{ from: first }
+			);
+
+			fastForward(DAY + 5 * SECOND);
+
+			await expect(StakingThalesDeployed.unstake({ from: first })).to.be.revertedWith(
+				'Cannot unstake yet, cooldown not expired'
+			);
+
+			fastForward(WEEK);
+			await StakingThalesDeployed.unstake({ from: first });
+
+
+		});
 
 		it('Proper escrow calculation', async () => {
 			// await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
@@ -235,6 +235,11 @@ contract('StakingThales', accounts => {
 				await fastForward(WEEK);
 				await StakingThalesDeployed.closePeriod({ from: first });
 			}
+
+			let answerRewards = await StakingThalesDeployed.getRewardsAvailable(first);
+			let answerRewardsthird = await StakingThalesDeployed.getRewardsAvailable(third);
+			console.log("answerRewards" + answerRewards);
+			console.log("answerRewardsthird" + answerRewardsthird);
 
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			let claimable = web3.utils.toDecimal(answer2);

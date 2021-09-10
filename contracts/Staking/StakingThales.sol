@@ -291,11 +291,11 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _calculateAvailableRewardsToClaim(address account) internal view returns (uint) {
-        require(account != address(0), "Invalid account address used");
-        require(_stakedBalances[account] > 0, "Account is not a staker");
-        require(_lastRewardsClaimedPeriod[account] < periodsOfStaking, "Rewards already claimed for last period");
-
-        if (unstaking[account] == true) {
+        if (
+            (_stakedBalances[account] == 0) ||
+            (_lastRewardsClaimedPeriod[account] == periodsOfStaking) ||
+            (unstaking[account])
+        ) {
             return 0;
         }
         return
@@ -306,9 +306,13 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     }
 
     function _calculateAvailableFeesToClaim(address account) internal view returns (uint) {
-        require(account != address(0), "Invalid account address used");
-        require(_stakedBalances[account] > 0, "Account is not a staker");
-        require(_lastRewardsClaimedPeriod[account] < periodsOfStaking, "Rewards already claimed for last period");
+        if (
+            (_stakedBalances[account] == 0) ||
+            (_lastRewardsClaimedPeriod[account] == periodsOfStaking) ||
+            (unstaking[account])
+        ) {
+            return 0;
+        }
         return
             _stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))

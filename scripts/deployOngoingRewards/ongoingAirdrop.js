@@ -11,6 +11,7 @@ const {
 } = require('../helpers.js');
 
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');
+
 const TOTAL_AMOUNT = web3.utils.toWei('125000');
 const TOTAL_AMOUNT_STAKING = web3.utils.toWei('100000');
 const TOTAL_AMOUNT_TO_TRANSFER = web3.utils.toWei('225000');
@@ -133,6 +134,12 @@ async function ongoingAirdrop() {
 	// get file with previous hashes
 	let ongoingPeriod = await ongoingAirdrop.period();
 	const lastMerkleDistribution = require(`./ongoing-airdrop-hashes-period-${ongoingPeriod.toString()}.json`);
+
+	lastMerkleDistribution.forEach(l => {
+		if (!ongoingRewards.hasOwnProperty(l.address)) {
+			ongoingRewards[l.address] = 0;
+		}
+	});
 
 	// pause ongoingAirdrop
 	let pauseTX = await ongoingAirdrop.setPaused(true);

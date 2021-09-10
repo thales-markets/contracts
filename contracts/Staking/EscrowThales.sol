@@ -77,7 +77,7 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         require(amount > 0, "Amount is 0");
         require(
             msg.sender == address(iStakingThales) || msg.sender == airdropContract,
-            "Invalid StakingToken, please update"
+            "Add to escrow can only be called from staking or ongoing airdrop contracts"
         );
 
         totalAccountEscrowedAmount[account] = totalAccountEscrowedAmount[account].add(amount);
@@ -124,18 +124,18 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     }
 
     function addTotalEscrowBalanceNotIncludedInStaking(uint amount) external {
-        require(msg.sender == address(iStakingThales), "Invalid StakingToken, please update");
+        require(msg.sender == address(iStakingThales), "Can only be called from staking contract");
         totalEscrowBalanceNotIncludedInStaking = totalEscrowBalanceNotIncludedInStaking.add(amount);
     }
 
     function subtractTotalEscrowBalanceNotIncludedInStaking(uint amount) external {
-        require(msg.sender == address(iStakingThales), "Invalid StakingToken, please update");
+        require(msg.sender == address(iStakingThales), "Can only be called from staking contract");
         totalEscrowBalanceNotIncludedInStaking = totalEscrowBalanceNotIncludedInStaking.sub(amount);
     }
 
     function updateCurrentPeriod() external returns (bool) {
         if (!testMode) {
-            require(msg.sender == address(iStakingThales), "Invalid StakingToken, please update");
+            require(msg.sender == address(iStakingThales), "Can only be called from staking contract");
         }
         currentVestingPeriod = currentVestingPeriod.add(1);
         return true;

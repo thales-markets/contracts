@@ -29,10 +29,17 @@ contract Airdrop is Owned, Pausable {
     }
 
     // Check if a given reward has already been claimed
-    function claimed(uint256 index) public view returns (uint256 claimedBlock, uint256 claimedMask) {
+    function claimed(uint256 index) internal view returns (uint256 claimedBlock, uint256 claimedMask) {
         claimedBlock = _claimed[index / 256];
         claimedMask = (uint256(1) << uint256(index % 256));
         require((claimedBlock & claimedMask) == 0, "Tokens have already been claimed");
+    }
+
+    // helper for the dapp
+    function canClaim(uint256 index) external view returns (bool) {
+        uint256 claimedBlock = _claimed[index / 256];
+        uint256 claimedMask = (uint256(1) << uint256(index % 256));
+        return ((claimedBlock & claimedMask) == 0);
     }
 
     // Get airdrop tokens assigned to address

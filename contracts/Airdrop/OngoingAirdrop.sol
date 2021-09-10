@@ -61,6 +61,13 @@ contract OngoingAirdrop is Owned, Pausable {
         require((claimedBlock & claimedMask) == 0, "Tokens have already been claimed");
     }
 
+    // helper for the dapp
+    function canClaim(uint256 index) external view returns (bool) {
+        uint256 claimedBlock = _claimed[period][index / 256];
+        uint256 claimedMask = (uint256(1) << uint256(index % 256));
+        return ((claimedBlock & claimedMask) == 0);
+    }
+
     // Get airdrop tokens assigned to address
     // Requires sending merkle proof to the function
     function claim(

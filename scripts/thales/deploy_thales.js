@@ -6,8 +6,12 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	if(network === 'unknown') {
+	if (network === 'unknown') {
 		network = 'localhost';
+	}
+
+	if (network == 'homestead') {
+		network = 'mainnet';
 	}
 
 	console.log('Account is: ' + owner.address);
@@ -21,7 +25,6 @@ async function main() {
 	setTargetAddress('Thales', network, ThalesDeployed.address);
 
 	console.log('Thales deployed to:', ThalesDeployed.address);
-
 
 	await hre.run('verify:verify', {
 		address: ThalesDeployed.address,

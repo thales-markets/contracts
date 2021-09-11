@@ -1,11 +1,11 @@
 {
 	"mainnet": {
-		"Airdrop": "",
+		"Airdrop": "0x0f33af99f3C124189B8dA7C7BE6Dc08C77a9ddc7",
 		"OngoingAirdrop": "",
 		"VestingEscrow": "",
 		"EscrowThales": "",
 		"StakingThales": "",
-		"Thales": ""
+		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc"
 	},
 	"ropsten": {
 		"Airdrop": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",

@@ -22,6 +22,7 @@ async function deploy_airdrop() {
 	}
 
 	if (network !== 'mainnet') {
+		console.log("using test final snapshot");
 		historicalSnapshot = require('./finalSnapshot_forTest.json');
 	}
 

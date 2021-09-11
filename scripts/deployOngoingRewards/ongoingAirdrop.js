@@ -154,10 +154,14 @@ async function ongoingAirdrop() {
 
 	console.log('totalScore', totalScore.toString());
 
+	let addressesToSkip = new Set();
+
 	// get list of leaves for the merkle trees using index, address and token balance
 	// encode user address and balance using web3 encodePacked
 	for (let address of Object.keys(ongoingRewards)) {
 		address = address.toLowerCase();
+		console.log('processing address: ' + address);
+		addressesToSkip.add(address);
 		// check last period merkle distribution
 		var index = lastMerkleDistribution
 			.map(function(e) {
@@ -208,9 +212,7 @@ async function ongoingAirdrop() {
 
 		console.log('ongoing', address, numberExponentToLarge(amount.toString()));
 
-		if (stakingReward) {
-			stakingReward[address] = 0;
-		}
+		stakingReward[address] = 0;
 		userBalanceHashes.push(hash);
 		userBalanceAndHashes.push(balance);
 		++i;
@@ -219,7 +221,10 @@ async function ongoingAirdrop() {
 	// Add staking rewards to merkle tree
 	for (let address of Object.keys(stakingRewards)) {
 		address = address.toLowerCase();
-		if (stakingRewards[address] == 0) continue;
+		if (addressesToSkip.has(address)) {
+			console.log('skipping address: ' + address);
+			continue;
+		}
 		// check last period merkle distribution
 		var index = lastMerkleDistribution
 			.map(function(e) {

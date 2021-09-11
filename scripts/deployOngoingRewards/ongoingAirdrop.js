@@ -136,8 +136,8 @@ async function ongoingAirdrop() {
 	const lastMerkleDistribution = require(`./ongoing-airdrop-hashes-period-${ongoingPeriod.toString()}.json`);
 
 	lastMerkleDistribution.forEach(l => {
-		if (!ongoingRewards.hasOwnProperty(l.address)) {
-			ongoingRewards[l.address] = 0;
+		if (!ongoingRewards.hasOwnProperty(l.address.toLowerCase())) {
+			ongoingRewards[l.address.toLowerCase()] = 0;
 		}
 	});
 

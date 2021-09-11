@@ -295,11 +295,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     }
 
     function _calculateAvailableRewardsToClaim(address account) internal view returns (uint) {
-        if (
-            (_stakedBalances[account] == 0) ||
-            (_lastRewardsClaimedPeriod[account] == periodsOfStaking) ||
-            (unstaking[account])
-        ) {
+        if ((_stakedBalances[account] == 0) || (_lastRewardsClaimedPeriod[account] == periodsOfStaking)) {
             return 0;
         }
         return
@@ -310,11 +306,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     }
 
     function _calculateAvailableFeesToClaim(address account) internal view returns (uint) {
-        if (
-            (_stakedBalances[account] == 0) ||
-            (_lastRewardsClaimedPeriod[account] == periodsOfStaking) ||
-            (unstaking[account])
-        ) {
+        if ((_stakedBalances[account] == 0) || (_lastRewardsClaimedPeriod[account] == periodsOfStaking)) {
             return 0;
         }
         return

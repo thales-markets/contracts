@@ -102,7 +102,7 @@ async function ongoingAirdrop() {
 					});
 
 					for (let i = 0; i < stakedEvents.length; ++i) {
-						stakers.push(stakedEvents[i].returnValues.user);
+						stakers.push(stakedEvents[i].returnValues.user.toLowerCase());
 					}
 
 					stakers = [...new Set(stakers)]; // ensure uniqueness
@@ -218,6 +218,7 @@ async function ongoingAirdrop() {
 
 	// Add staking rewards to merkle tree
 	for (let address of Object.keys(stakingRewards)) {
+		address = address.toLowerCase();
 		if (stakingRewards[address] == 0) continue;
 		// check last period merkle distribution
 		var index = lastMerkleDistribution

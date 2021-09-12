@@ -2,7 +2,7 @@
 	"mainnet": {
 		"Airdrop": "0x0f33af99f3C124189B8dA7C7BE6Dc08C77a9ddc7",
 		"OngoingAirdrop": "",
-		"VestingEscrow": "",
+		"VestingEscrow": "0xbaE14FAf280FB293e6f3D6c0b5E80eD5D477b161",
 		"EscrowThales": "",
 		"StakingThales": "",
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc"

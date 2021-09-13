@@ -47,7 +47,10 @@ async function fetchData() {
 			weeklyRewardL2 = 0;
 		for (var element in result) {
 			weeklyReward += result[element].rewards;
-			data.push({ account: result[element].account.toLowerCase(), rewards: result[element].rewards });
+			data.push({
+				account: result[element].account.toLowerCase(),
+				rewards: result[element].rewards,
+			});
 		}
 
 		for (let [key, value] of Object.entries(resultL2)) {
@@ -85,7 +88,11 @@ async function fetchData() {
 			//const snapshot = await getXSNXSnapshot(value, blocks[blocks.length - 1]);
 			const snapshot = await getXSNXSnapshot(value, 13118314);
 			for (let [snapshotKey, snapshotValue] of Object.entries(snapshot)) {
-				accountsScores[snapshotKey.toLowerCase()] = snapshotValue;
+				if (accountsScores[snapshotKey.toLowerCase()]) {
+					accountsScores[snapshotKey.toLowerCase()] += snapshotValue;
+				} else {
+					accountsScores[snapshotKey.toLowerCase()] = snapshotValue;
+				}
 				finalValue += snapshotValue;
 			}
 
@@ -99,7 +106,11 @@ async function fetchData() {
 			let finalValueYearn = 0;
 			const yearnSnapshot = await getYearnSnapshot(value, 0, blocks[blocks.length - 1]);
 			for (let [snapshotKey, snapshotValue] of Object.entries(yearnSnapshot)) {
-				accountsScores[snapshotKey.toLowerCase()] = snapshotValue;
+				if (accountsScores[snapshotKey.toLowerCase()]) {
+					accountsScores[snapshotKey.toLowerCase()] += snapshotValue;
+				} else {
+					accountsScores[snapshotKey.toLowerCase()] = snapshotValue;
+				}
 				finalValueYearn += snapshotValue;
 			}
 
@@ -122,6 +133,7 @@ function getWeeklyData(data, percent, weeklyReward) {
 		} else {
 			accountsScores[data[index].account] = weeklyPercent;
 		}
+
 		totalScores += weeklyPercent;
 	});
 }
@@ -129,7 +141,7 @@ function getWeeklyData(data, percent, weeklyReward) {
 async function main() {
 	const data = await fetchData();
 
-	fs.writeFileSync('scripts/snx-data/historical_snx.json', JSON.stringify(data), function(err) {
+	fs.writeFileSync('scripts/snx-data/historical_snx_new.json', JSON.stringify(data), function(err) {
 		if (err) return console.log(err);
 	});
 

@@ -92,7 +92,11 @@ async function fetchData(start, end) {
 				let finalValueYearn = 0;
 				const yearnSnapshot = await getYearnSnapshot(value, 0, blocks[blocks.length - 1]);
 				for (let [snapshotKey, snapshotValue] of Object.entries(yearnSnapshot)) {
-					accountsScores[snapshotKey] = snapshotValue;
+					if (accountsScores[snapshotKey.toLowerCase()]) {
+						accountsScores[snapshotKey.toLowerCase()] += snapshotValue;
+					} else {
+						accountsScores[snapshotKey.toLowerCase()] = snapshotValue;
+					}
 					finalValueYearn += snapshotValue;
 				}
 

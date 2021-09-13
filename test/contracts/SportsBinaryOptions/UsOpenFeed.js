@@ -20,6 +20,7 @@ contract('USopenfeed', accounts => {
 
 	describe('Test feed', () => {
 		it('Parses result properly', async () => {
+			console.log("new job d54a00e693d34ea3b441508286d4468f id is " + toBytes32('d54a00e693d34ea3b441508286d4468f'));
 			let USOpenFeed = artifacts.require('TestUSOpenFeed');
 			let feed = await USOpenFeed.new(
 				owner,

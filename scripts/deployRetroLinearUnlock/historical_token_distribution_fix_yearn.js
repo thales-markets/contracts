@@ -50,7 +50,7 @@ async function vestTokens(admin, fundingAdmins, token, confs, network) {
 	);
 	console.log('VestingEscrow deployed to:', VestingEscrowDeployed.address);
 
-	let vestedAmounts = require('../snx-data/sorted_historical_stakers_after_floor_fixed.json');
+	let vestedAmounts = require('../snx-data/sorted_historical_stakers_after_floor_fixed_yearn.json');
 	// write fixed amounts to a file
 	fs.writeFileSync(
 		'scripts/snx-data/sorted_historical_stakers_below_floor_sanity_yearn.json',
@@ -62,16 +62,16 @@ async function vestTokens(admin, fundingAdmins, token, confs, network) {
 
 	// redistribution after flooring
 	//
-	// const TOTAL_AMOUNT = w3utils.toWei('81620');
-	// tx = await token.approve(VestingEscrowDeployed.address, TOTAL_AMOUNT);
-	// await tx.wait().then(e => {
-	// 	txLog(tx, 'Thales.sol: Approve tokens');
-	// });
-	//
-	// tx = await VestingEscrowDeployed.addTokens(TOTAL_AMOUNT);
-	// await tx.wait().then(e => {
-	// 	txLog(tx, 'VestingEscrow.sol: Add tokens');
-	// });
+	const TOTAL_AMOUNT = w3utils.toWei('300000');
+	tx = await token.approve(VestingEscrowDeployed.address, TOTAL_AMOUNT);
+	await tx.wait().then(e => {
+		txLog(tx, 'Thales.sol: Approve tokens');
+	});
+
+	tx = await VestingEscrowDeployed.addTokens(TOTAL_AMOUNT);
+	await tx.wait().then(e => {
+		txLog(tx, 'VestingEscrow.sol: Add tokens');
+	});
 
 	let accounts = [],
 		values = [];
@@ -90,7 +90,6 @@ async function vestTokens(admin, fundingAdmins, token, confs, network) {
 	console.log('started funding');
 
 	await _fundAccounts(admin, VestingEscrowDeployed, fundArguments, 1);
-
 }
 
 async function _fundAccounts(account, vestingEscrowContract, fundArguments, confs) {

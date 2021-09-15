@@ -858,7 +858,7 @@ contract('StakingThales', accounts => {
 			}
 		});
 
-		it('Staking 2 users 1500 stake, unstake with one user 1499, vest again', async () => {
+		it('Staking 2 users 1500 stake, vest all on week 11, unstake with one user 1499, vest again', async () => {
 			let deposit = toUnit(100000);
 			let stake = [toUnit(1500), toUnit(1500)];
 			let users = [first, second];

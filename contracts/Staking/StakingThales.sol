@@ -48,7 +48,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     mapping(address => bool) public unstaking;
     mapping(address => uint) public unstakingAmount;
     mapping(address => uint) private _stakedBalances;
-    mapping(address => uint) private _lastStakingPeriod;
     mapping(address => uint) private _lastRewardsClaimedPeriod;
 
     /* ========== CONSTRUCTOR ========== */
@@ -207,7 +206,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
 
         _totalStakedAmount = _totalStakedAmount.add(amount);
         _stakedBalances[msg.sender] = _stakedBalances[msg.sender].add(amount);
-        _lastStakingPeriod[msg.sender] = periodsOfStaking;
         stakingToken.safeTransferFrom(msg.sender, address(this), amount);
 
         emit Staked(msg.sender, amount);
@@ -280,7 +278,6 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         }
         uint availableRewardsToClaim = _calculateAvailableRewardsToClaim(account);
         if (availableRewardsToClaim > 0) {
-            _lastStakingPeriod[account] = periodsOfStaking;
             // Transfer THALES to Escrow contract
             iEscrowThales.addToEscrow(account, availableRewardsToClaim);
             // Record the total claimed rewards

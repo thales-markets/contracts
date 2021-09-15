@@ -130,7 +130,7 @@ contract('StakingThales', accounts => {
 	});
 
 	describe('Staking:', () => {
-		let weeksOfStakingToTest = toBN(25)
+		let weeksOfStakingToTest = toBN(25);
 		let fixedReward = toUnit(1000);
 		let userStake = toUnit(875);
 		let stakedEscrowed = toBN(0);
@@ -144,9 +144,9 @@ contract('StakingThales', accounts => {
 			async () => {
 				let period = 0;
 
-				await ThalesDeployed.transfer(first, (userStake), { from: owner });
+				await ThalesDeployed.transfer(first, userStake, { from: owner });
 				let answer = await ThalesDeployed.balanceOf.call(first);
-				assert.bnEqual(answer, (userStake));
+				assert.bnEqual(answer, userStake);
 
 				// Set amounts in account and StakingThales
 				await ThalesDeployed.transfer(
@@ -163,9 +163,9 @@ contract('StakingThales', accounts => {
 				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, toUnit(100000));
-				await StakingThalesDeployed.setFixedPeriodReward((fixedReward), { from: owner });
+				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.bnEqual(answer, (fixedReward));
+				assert.bnEqual(answer, fixedReward);
 
 				answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 				assert.bnEqual(answer, fixedReward.mul(weeksOfStakingToTest));
@@ -173,12 +173,12 @@ contract('StakingThales', accounts => {
 				//Staking
 				answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 				assert.bnEqual(answer, 0);
-				await ThalesDeployed.approve(StakingThalesDeployed.address, (userStake), {
+				await ThalesDeployed.approve(StakingThalesDeployed.address, userStake, {
 					from: first,
 				});
-				await StakingThalesDeployed.stake((userStake), { from: first });
+				await StakingThalesDeployed.stake(userStake, { from: first });
 				answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
-				assert.bnEqual(answer, (userStake));
+				assert.bnEqual(answer, userStake);
 
 				answer = await StakingThalesDeployed.getRewardsAvailable(first);
 				assert.equal(answer, 0);
@@ -187,7 +187,7 @@ contract('StakingThales', accounts => {
 
 				await fastForward(WEEK + 5 * SECOND);
 				answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
-				assert.bnEqual(answer, (userStake));
+				assert.bnEqual(answer, userStake);
 
 				answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 				assert.bnEqual(answer, userStake.add(fixedReward.mul(weeksOfStakingToTest)));
@@ -203,7 +203,7 @@ contract('StakingThales', accounts => {
 					assert.bnEqual(answer, period);
 
 					answer = await StakingThalesDeployed.getRewardsAvailable(first);
-					assert.bnEqual(answer, (fixedReward));
+					assert.bnEqual(answer, fixedReward);
 
 					await StakingThalesDeployed.claimReward({ from: first });
 
@@ -234,9 +234,9 @@ contract('StakingThales', accounts => {
 			async () => {
 				let period = 0;
 
-				await ThalesDeployed.transfer(first, (userStake), { from: owner });
+				await ThalesDeployed.transfer(first, userStake, { from: owner });
 				let answer = await ThalesDeployed.balanceOf.call(first);
-				assert.bnEqual(answer, (userStake));
+				assert.bnEqual(answer, userStake);
 
 				// Set amounts in account and StakingThales
 				await ThalesDeployed.transfer(
@@ -253,9 +253,9 @@ contract('StakingThales', accounts => {
 				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, toUnit(100000));
-				await StakingThalesDeployed.setFixedPeriodReward((fixedReward), { from: owner });
+				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.bnEqual(answer, (fixedReward));
+				assert.bnEqual(answer, fixedReward);
 
 				answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 				assert.bnEqual(answer, fixedReward.mul(weeksOfStakingToTest));
@@ -263,12 +263,12 @@ contract('StakingThales', accounts => {
 				//Staking
 				answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 				assert.bnEqual(answer, 0);
-				await ThalesDeployed.approve(StakingThalesDeployed.address, (userStake), {
+				await ThalesDeployed.approve(StakingThalesDeployed.address, userStake, {
 					from: first,
 				});
-				await StakingThalesDeployed.stake((userStake), { from: first });
+				await StakingThalesDeployed.stake(userStake, { from: first });
 				answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
-				assert.bnEqual(answer, (userStake));
+				assert.bnEqual(answer, userStake);
 
 				answer = await StakingThalesDeployed.getRewardsAvailable(first);
 				assert.equal(answer, 0);
@@ -277,7 +277,7 @@ contract('StakingThales', accounts => {
 
 				await fastForward(WEEK + 5 * SECOND);
 				answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
-				assert.bnEqual(answer, (userStake));
+				assert.bnEqual(answer, userStake);
 
 				answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 				assert.bnEqual(answer, userStake.add(fixedReward.mul(weeksOfStakingToTest)));
@@ -295,7 +295,7 @@ contract('StakingThales', accounts => {
 					assert.bnEqual(answer, period);
 
 					answer = await StakingThalesDeployed.getRewardsAvailable(first);
-					assert.bnEqual(answer, (fixedReward));
+					assert.bnEqual(answer, fixedReward);
 
 					await StakingThalesDeployed.claimReward({ from: first });
 
@@ -312,7 +312,7 @@ contract('StakingThales', accounts => {
 				await fastForward(WEEK + SECOND);
 				period++;
 
-				answer = StakingThalesDeployed.startUnstake((partialUnstake), { from: first });
+				answer = StakingThalesDeployed.startUnstake(partialUnstake, { from: first });
 				let unstakeCooldown = period + 7;
 				await expect(StakingThalesDeployed.unstake({ from: first })).to.be.revertedWith(
 					'Cannot unstake yet, cooldown not expired.'
@@ -324,11 +324,11 @@ contract('StakingThales', accounts => {
 				assert.bnEqual(answer, 0);
 				await StakingThalesDeployed.unstake({ from: first });
 				answer = await ThalesDeployed.balanceOf(first);
-				assert.bnEqual(answer, (partialUnstake));
+				assert.bnEqual(answer, partialUnstake);
 			}
 		);
-//3___________________________________________________________________________________________________
-		weeksOfStakingToTest = toBN(45)
+		//3___________________________________________________________________________________________________
+		weeksOfStakingToTest = toBN(45);
 		fixedReward = toUnit(4563);
 		let users = [first, second, third];
 		let stakes = [toUnit(12331), toUnit(2121), toUnit(32123)];
@@ -349,7 +349,7 @@ contract('StakingThales', accounts => {
 				']',
 			async () => {
 				let period = 0;
-			
+
 				await ThalesDeployed.transfer(
 					StakingThalesDeployed.address,
 					fixedReward.mul(weeksOfStakingToTest),
@@ -369,18 +369,18 @@ contract('StakingThales', accounts => {
 				assert.bnEqual(answer, fixedReward.mul(weeksOfStakingToTest));
 
 				for (let i = 0; i < users.length; i++) {
-					await ThalesDeployed.transfer(users[i], (stakes[i]), { from: owner });
+					await ThalesDeployed.transfer(users[i], stakes[i], { from: owner });
 					answer = await ThalesDeployed.balanceOf.call(users[i]);
-					assert.bnEqual(answer, (stakes[i]));
+					assert.bnEqual(answer, stakes[i]);
 
 					answer = await StakingThalesDeployed.stakedBalanceOf.call(users[i]);
 					assert.bnEqual(answer, 0);
-					await ThalesDeployed.approve(StakingThalesDeployed.address, (stakes[i]), {
+					await ThalesDeployed.approve(StakingThalesDeployed.address, stakes[i], {
 						from: users[i],
 					});
-					await StakingThalesDeployed.stake((stakes[i]), { from: users[i] });
+					await StakingThalesDeployed.stake(stakes[i], { from: users[i] });
 					answer = await StakingThalesDeployed.stakedBalanceOf.call(users[i]);
-					assert.bnEqual(answer, (stakes[i]));
+					assert.bnEqual(answer, stakes[i]);
 
 					answer = await StakingThalesDeployed.getRewardsAvailable(first);
 					assert.equal(answer, 0);
@@ -392,8 +392,8 @@ contract('StakingThales', accounts => {
 				let totalStaked = toBN(0);
 				for (let i = 0; i < users.length; i++) {
 					answer = await StakingThalesDeployed.stakedBalanceOf.call(users[i]);
-					assert.bnEqual(answer, (stakes[i]));
-					totalStaked = totalStaked.add((stakes[i]));
+					assert.bnEqual(answer, stakes[i]);
+					totalStaked = totalStaked.add(stakes[i]);
 				}
 				answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 				let sum_rewards = toBN(0);
@@ -409,7 +409,7 @@ contract('StakingThales', accounts => {
 				for (let i = 0; i < users.length; i++) {
 					stakePortions[i] = stakes[i] / totalStaked;
 				}
-				let claimableFirstWeek = [toUnit(0),toUnit(0),toUnit(0)];
+				let claimableFirstWeek = [toUnit(0), toUnit(0), toUnit(0)];
 				while (period < weeksOfStakingToTest) {
 					await fastForward(WEEK + SECOND);
 					await StakingThalesDeployed.closePeriod({ from: second });
@@ -426,7 +426,10 @@ contract('StakingThales', accounts => {
 						answer = await StakingThalesDeployed.getRewardsAvailable(users[i]);
 						// console.log("rewards available:", answer.toNumber());
 						let reward = toBN(0);
-						reward = stakes[i].add(stakedEscrowedBalances[i]).mul(fixedReward).div(totalStaked.add(totalEscrowed));
+						reward = stakes[i]
+							.add(stakedEscrowedBalances[i])
+							.mul(fixedReward)
+							.div(totalStaked.add(totalEscrowed));
 						// console.log("period|portion: ",period, portion*fixedReward )
 						assert.bnEqual(answer, reward);
 						await StakingThalesDeployed.claimReward({ from: users[i] });
@@ -439,14 +442,13 @@ contract('StakingThales', accounts => {
 						let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(users[i]);
 						assert.bnEqual(stakedEscrowedBalances[i], answer2);
 						stakedEscrowedBalances[i] = stakedEscrowedBalances[i].add(reward);
-						
 					}
 				}
 
 				await fastForward(WEEK + SECOND);
 				period++;
 				for (let i = 0; i < users.length; i++) {
-					answer = StakingThalesDeployed.startUnstake((partialUnstakes[i]), {
+					answer = StakingThalesDeployed.startUnstake(partialUnstakes[i], {
 						from: users[i],
 					});
 
@@ -462,13 +464,13 @@ contract('StakingThales', accounts => {
 					assert.bnEqual(web3.utils.toDecimal(answer), 0);
 					await StakingThalesDeployed.unstake({ from: users[i] });
 					answer = await ThalesDeployed.balanceOf(users[i]);
-					assert.bnEqual(answer, (partialUnstakes[i]));
+					assert.bnEqual(answer, partialUnstakes[i]);
 				}
 			}
 		);
 
-//4 _____________________________________________________________________________________________________		
-		weeksOfStakingToTest = toBN(25)
+		//4 _____________________________________________________________________________________________________
+		weeksOfStakingToTest = toBN(25);
 		fixedReward = toUnit(1000);
 		users = [first, second, third];
 		stakes = [toUnit(200), toUnit(200), toUnit(200)];
@@ -484,200 +486,202 @@ contract('StakingThales', accounts => {
 				' weeks of claiming, checkClaimable: up to 11th week, fixed reward: ' +
 				fixedReward +
 				' vesting 1st week, ' +
-				'unstakes: [' +partialUnstakes +				']'
-				,
+				'unstakes: [' +
+				partialUnstakes +
+				']',
 			async () => {
 				let period = 0;
-				if(weeksOfStakingToTest < 10) {
-					console.log("Please put at least 10 weeks of staking for testing");
-
-				}
-				else {
-
-				
-				await ThalesDeployed.transfer(
-					StakingThalesDeployed.address,
-					fixedReward.mul(weeksOfStakingToTest),
-					{
-						from: owner,
-					}
-				);
-				await sUSDSynth.issue(initialCreator, sUSD);
-				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
-				let answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.bnEqual(answer, toUnit(100000));
-				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
-				answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.bnEqual(answer, fixedReward);
-
-				answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
-				assert.bnEqual(answer, fixedReward.mul(weeksOfStakingToTest));
-
-				for (let i = 0; i < users.length; i++) {
-					await ThalesDeployed.transfer(users[i], (stakes[i]), { from: owner });
-					answer = await ThalesDeployed.balanceOf.call(users[i]);
-					assert.bnEqual(answer, (stakes[i]));
-
-					answer = await StakingThalesDeployed.stakedBalanceOf.call(users[i]);
-					assert.bnEqual(answer, 0);
-					await ThalesDeployed.approve(StakingThalesDeployed.address, (stakes[i]), {
-						from: users[i],
-					});
-					await StakingThalesDeployed.stake((stakes[i]), { from: users[i] });
-					answer = await StakingThalesDeployed.stakedBalanceOf.call(users[i]);
-					assert.bnEqual(answer, (stakes[i]));
-
-					answer = await StakingThalesDeployed.getRewardsAvailable(first);
-					assert.equal(answer, 0);
-					answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
-					assert.equal(answer, 0);
-				}
-
-				await fastForward(WEEK + 5 * SECOND);
-				let totalStaked = toBN(0);
-				for (let i = 0; i < users.length; i++) {
-					answer = await StakingThalesDeployed.stakedBalanceOf.call(users[i]);
-					assert.bnEqual(answer, (stakes[i]));
-					totalStaked = totalStaked.add((stakes[i]));
-					// console.log(stakes[i].toString())
-				}
-				answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
-				let sum_rewards = toBN(0);
-				sum_rewards = fixedReward.mul(weeksOfStakingToTest);
-				sum_rewards = sum_rewards.add(totalStaked);
-				assert.bnEqual(answer, sum_rewards);
-
-				answer = await StakingThalesDeployed.periodsOfStaking.call();
-				assert.bnEqual(answer, period);
-
-				let totalEscrowed = toBN(0);
-				let alreadyClaimed = [toUnit(0), toUnit(0), toUnit(0)];
-				for (let i = 0; i < users.length; i++) {
-					stakePortions[i] = stakes[i] / totalStaked;
-				}
-				stakedEscrowedBalances = [toUnit(0), toUnit(0), toUnit(0)];
-				let claimableFirstWeek = [toUnit(0),toUnit(0),toUnit(0)];
-				while (period < 10) {
-					await fastForward(WEEK + SECOND);
-					await StakingThalesDeployed.closePeriod({ from: second });
-					period++;
-					answer = await StakingThalesDeployed.periodsOfStaking.call();
-					assert.bnEqual(answer, period);
-					totalEscrowed = toBN(0);
-
-					for (let i = 0; i < users.length; i++) {
-						totalEscrowed = totalEscrowed.add(stakedEscrowedBalances[i]);
-					}
-
-					for (let i = 0; i < users.length; i++) {
-						answer = await StakingThalesDeployed.getRewardsAvailable(users[i]);
-						// console.log("rewards available:", answer.toNumber());
-						let reward = toBN(0);
-						reward = stakes[i].add(stakedEscrowedBalances[i]).mul(fixedReward).div(totalStaked.add(totalEscrowed));
-						// console.log("period|portion: ",period, portion*fixedReward )
-						assert.bnEqual(answer, reward);
-						await StakingThalesDeployed.claimReward({ from: users[i] });
-
-						alreadyClaimed[i] = alreadyClaimed[i].add(reward);
-						answer = await StakingThalesDeployed.getAlreadyClaimedRewards(users[i]);
-						assert.bnEqual(answer, alreadyClaimed[i]);
-
-						//Check if total Escrowed are bnEqual to AlreadyClaimedRewards
-						let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(users[i]);
-						assert.bnEqual(stakedEscrowedBalances[i], answer2);
-						stakedEscrowedBalances[i] = stakedEscrowedBalances[i].add(reward);
-						if(period == 1) {
-							claimableFirstWeek[i] = stakedEscrowedBalances[i];
+				if (weeksOfStakingToTest < 10) {
+					console.log('Please put at least 10 weeks of staking for testing');
+				} else {
+					await ThalesDeployed.transfer(
+						StakingThalesDeployed.address,
+						fixedReward.mul(weeksOfStakingToTest),
+						{
+							from: owner,
 						}
-						answer = await EscrowThalesDeployed.claimable(users[i], {from:second});
-						assert.bnEqual(answer,0);
+					);
+					await sUSDSynth.issue(initialCreator, sUSD);
+					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
+					let answer = await StakingThalesDeployed.fixedPeriodReward.call();
+					assert.bnEqual(answer, toUnit(100000));
+					await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
+					answer = await StakingThalesDeployed.fixedPeriodReward.call();
+					assert.bnEqual(answer, fixedReward);
+
+					answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
+					assert.bnEqual(answer, fixedReward.mul(weeksOfStakingToTest));
+
+					for (let i = 0; i < users.length; i++) {
+						await ThalesDeployed.transfer(users[i], stakes[i], { from: owner });
+						answer = await ThalesDeployed.balanceOf.call(users[i]);
+						assert.bnEqual(answer, stakes[i]);
+
+						answer = await StakingThalesDeployed.stakedBalanceOf.call(users[i]);
+						assert.bnEqual(answer, 0);
+						await ThalesDeployed.approve(StakingThalesDeployed.address, stakes[i], {
+							from: users[i],
+						});
+						await StakingThalesDeployed.stake(stakes[i], { from: users[i] });
+						answer = await StakingThalesDeployed.stakedBalanceOf.call(users[i]);
+						assert.bnEqual(answer, stakes[i]);
+
+						answer = await StakingThalesDeployed.getRewardsAvailable(first);
+						assert.equal(answer, 0);
+						answer = await StakingThalesDeployed.getRewardFeesAvailable(first);
+						assert.equal(answer, 0);
 					}
-				}
-				//10th WEEK
-				await fastForward(WEEK + SECOND);
-				await StakingThalesDeployed.closePeriod({ from: second });
-				period++;
-				answer = await StakingThalesDeployed.periodsOfStaking.call();
-				assert.bnEqual(answer, period);
-				for(let i=0; i<users.length; i++) {
-					answer = await EscrowThalesDeployed.claimable(users[i], {from:second});
-					assert.bnEqual(answer,0);
-				}
-				//11th WEEK:
-				await fastForward(WEEK + SECOND);
-				await StakingThalesDeployed.closePeriod({ from: second });
-				period++;
-				answer = await StakingThalesDeployed.periodsOfStaking.call();
-				assert.bnEqual(answer, period);
-				let vested = [toUnit(0),toUnit(0),toUnit(0)];
-				for(let i=0; i<users.length; i++) {
-					answer = await EscrowThalesDeployed.claimable(users[i], {from:second});
-					assert.bnEqual(answer,claimableFirstWeek[i]);
-					await EscrowThalesDeployed.vest(answer, {from:users[i]});
-					let answer2 = await ThalesDeployed.balanceOf.call(users[i], {from:second});
-					assert.bnEqual(answer,answer2);
-					vested[i] = answer;
-				}
 
-				for(let i=0; i<users.length; i++) {
-					stakedEscrowedBalances[i] = stakedEscrowedBalances[i].sub(vested[i]);
-				}
+					await fastForward(WEEK + 5 * SECOND);
+					let totalStaked = toBN(0);
+					for (let i = 0; i < users.length; i++) {
+						answer = await StakingThalesDeployed.stakedBalanceOf.call(users[i]);
+						assert.bnEqual(answer, stakes[i]);
+						totalStaked = totalStaked.add(stakes[i]);
+						// console.log(stakes[i].toString())
+					}
+					answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
+					let sum_rewards = toBN(0);
+					sum_rewards = fixedReward.mul(weeksOfStakingToTest);
+					sum_rewards = sum_rewards.add(totalStaked);
+					assert.bnEqual(answer, sum_rewards);
 
-				while (period < weeksOfStakingToTest) {
+					answer = await StakingThalesDeployed.periodsOfStaking.call();
+					assert.bnEqual(answer, period);
+
+					let totalEscrowed = toBN(0);
+					let alreadyClaimed = [toUnit(0), toUnit(0), toUnit(0)];
+					for (let i = 0; i < users.length; i++) {
+						stakePortions[i] = stakes[i] / totalStaked;
+					}
+					stakedEscrowedBalances = [toUnit(0), toUnit(0), toUnit(0)];
+					let claimableFirstWeek = [toUnit(0), toUnit(0), toUnit(0)];
+					while (period < 10) {
+						await fastForward(WEEK + SECOND);
+						await StakingThalesDeployed.closePeriod({ from: second });
+						period++;
+						answer = await StakingThalesDeployed.periodsOfStaking.call();
+						assert.bnEqual(answer, period);
+						totalEscrowed = toBN(0);
+
+						for (let i = 0; i < users.length; i++) {
+							totalEscrowed = totalEscrowed.add(stakedEscrowedBalances[i]);
+						}
+
+						for (let i = 0; i < users.length; i++) {
+							answer = await StakingThalesDeployed.getRewardsAvailable(users[i]);
+							// console.log("rewards available:", answer.toNumber());
+							let reward = toBN(0);
+							reward = stakes[i]
+								.add(stakedEscrowedBalances[i])
+								.mul(fixedReward)
+								.div(totalStaked.add(totalEscrowed));
+							// console.log("period|portion: ",period, portion*fixedReward )
+							assert.bnEqual(answer, reward);
+							await StakingThalesDeployed.claimReward({ from: users[i] });
+
+							alreadyClaimed[i] = alreadyClaimed[i].add(reward);
+							answer = await StakingThalesDeployed.getAlreadyClaimedRewards(users[i]);
+							assert.bnEqual(answer, alreadyClaimed[i]);
+
+							//Check if total Escrowed are bnEqual to AlreadyClaimedRewards
+							let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(users[i]);
+							assert.bnEqual(stakedEscrowedBalances[i], answer2);
+							stakedEscrowedBalances[i] = stakedEscrowedBalances[i].add(reward);
+							if (period == 1) {
+								claimableFirstWeek[i] = stakedEscrowedBalances[i];
+							}
+							answer = await EscrowThalesDeployed.claimable(users[i], { from: second });
+							assert.bnEqual(answer, 0);
+						}
+					}
+					//10th WEEK
 					await fastForward(WEEK + SECOND);
 					await StakingThalesDeployed.closePeriod({ from: second });
 					period++;
 					answer = await StakingThalesDeployed.periodsOfStaking.call();
 					assert.bnEqual(answer, period);
-					totalEscrowed = toBN(0);
-
 					for (let i = 0; i < users.length; i++) {
-						totalEscrowed = totalEscrowed.add(stakedEscrowedBalances[i]);
+						answer = await EscrowThalesDeployed.claimable(users[i], { from: second });
+						assert.bnEqual(answer, 0);
+					}
+					//11th WEEK:
+					await fastForward(WEEK + SECOND);
+					await StakingThalesDeployed.closePeriod({ from: second });
+					period++;
+					answer = await StakingThalesDeployed.periodsOfStaking.call();
+					assert.bnEqual(answer, period);
+					let vested = [toUnit(0), toUnit(0), toUnit(0)];
+					for (let i = 0; i < users.length; i++) {
+						answer = await EscrowThalesDeployed.claimable(users[i], { from: second });
+						assert.bnEqual(answer, claimableFirstWeek[i]);
+						await EscrowThalesDeployed.vest(answer, { from: users[i] });
+						let answer2 = await ThalesDeployed.balanceOf.call(users[i], { from: second });
+						assert.bnEqual(answer, answer2);
+						vested[i] = answer;
 					}
 
 					for (let i = 0; i < users.length; i++) {
-						answer = await StakingThalesDeployed.getRewardsAvailable(users[i]);
-						// console.log("rewards available:", answer.toNumber());
-						let reward = toBN(0);
-						reward = stakes[i].add(stakedEscrowedBalances[i]).mul(fixedReward).div(totalStaked.add(totalEscrowed));
-						// console.log("period|portion: ",period, portion*fixedReward )
-						assert.bnEqual(answer, reward);
-						await StakingThalesDeployed.claimReward({ from: users[i] });
+						stakedEscrowedBalances[i] = stakedEscrowedBalances[i].sub(vested[i]);
+					}
 
-						alreadyClaimed[i] = alreadyClaimed[i].add(reward);
-						answer = await StakingThalesDeployed.getAlreadyClaimedRewards(users[i]);
-						assert.bnEqual(answer, alreadyClaimed[i]);
+					while (period < weeksOfStakingToTest) {
+						await fastForward(WEEK + SECOND);
+						await StakingThalesDeployed.closePeriod({ from: second });
+						period++;
+						answer = await StakingThalesDeployed.periodsOfStaking.call();
+						assert.bnEqual(answer, period);
+						totalEscrowed = toBN(0);
 
-						//Check if total Escrowed are bnEqual to AlreadyClaimedRewards
-						let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(users[i]);
-						assert.bnEqual(stakedEscrowedBalances[i], answer2);
-						stakedEscrowedBalances[i] = stakedEscrowedBalances[i].add(reward);
-						
+						for (let i = 0; i < users.length; i++) {
+							totalEscrowed = totalEscrowed.add(stakedEscrowedBalances[i]);
+						}
+
+						for (let i = 0; i < users.length; i++) {
+							answer = await StakingThalesDeployed.getRewardsAvailable(users[i]);
+							// console.log("rewards available:", answer.toNumber());
+							let reward = toBN(0);
+							reward = stakes[i]
+								.add(stakedEscrowedBalances[i])
+								.mul(fixedReward)
+								.div(totalStaked.add(totalEscrowed));
+							// console.log("period|portion: ",period, portion*fixedReward )
+							assert.bnEqual(answer, reward);
+							await StakingThalesDeployed.claimReward({ from: users[i] });
+
+							alreadyClaimed[i] = alreadyClaimed[i].add(reward);
+							answer = await StakingThalesDeployed.getAlreadyClaimedRewards(users[i]);
+							assert.bnEqual(answer, alreadyClaimed[i]);
+
+							//Check if total Escrowed are bnEqual to AlreadyClaimedRewards
+							let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(users[i]);
+							assert.bnEqual(stakedEscrowedBalances[i], answer2);
+							stakedEscrowedBalances[i] = stakedEscrowedBalances[i].add(reward);
+						}
+					}
+
+					await fastForward(WEEK + SECOND);
+					period++;
+					for (let i = 0; i < users.length; i++) {
+						answer = StakingThalesDeployed.startUnstake(partialUnstakes[i], {
+							from: users[i],
+						});
+
+						await expect(StakingThalesDeployed.unstake({ from: users[i] })).to.be.revertedWith(
+							'Cannot unstake yet, cooldown not expired.'
+						);
+					}
+
+					await fastForward(WEEK + SECOND);
+
+					for (let i = 0; i < users.length; i++) {
+						answer = await ThalesDeployed.balanceOf(users[i]);
+						assert.bnEqual(answer, vested[i]);
+						await StakingThalesDeployed.unstake({ from: users[i] });
+						answer = await ThalesDeployed.balanceOf(users[i]);
+						assert.bnEqual(answer, partialUnstakes[i].add(vested[i]));
 					}
 				}
-
-				await fastForward(WEEK + SECOND);
-				period++;
-				for (let i = 0; i < users.length; i++) {
-					answer = StakingThalesDeployed.startUnstake((partialUnstakes[i]), {
-						from: users[i],
-					});
-
-					await expect(StakingThalesDeployed.unstake({ from: users[i] })).to.be.revertedWith(
-						'Cannot unstake yet, cooldown not expired.'
-					);
-				}
-
-				await fastForward(WEEK + SECOND);
-
-				for (let i = 0; i < users.length; i++) {
-					answer = await ThalesDeployed.balanceOf(users[i]);
-					assert.bnEqual(answer, vested[i]);
-					await StakingThalesDeployed.unstake({ from: users[i] });
-					answer = await ThalesDeployed.balanceOf(users[i]);
-					assert.bnEqual(answer, partialUnstakes[i].add(vested[i]));
-				}
-				}	
 			}
 		);
 	});

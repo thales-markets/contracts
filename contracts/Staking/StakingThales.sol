@@ -237,6 +237,26 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         emit UnstakeCooldown(msg.sender, lastUnstakeTime[msg.sender].add(unstakeDurationPeriod), amount);
     }
 
+    function cancelUnstake() external {
+        require(unstaking[msg.sender] == true, "Account is not unstaking");
+
+        // on revert full unstake remove his escrowed balance from totalEscrowBalanceNotIncludedInStaking
+        if (_stakedBalances[msg.sender] == 0) {
+            if (iEscrowThales.totalAccountEscrowedAmount(msg.sender) > 0) {
+                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
+                    iEscrowThales.totalAccountEscrowedAmount(msg.sender)
+                );
+            }
+        }
+
+        unstaking[msg.sender] = false;
+        _totalStakedAmount = _totalStakedAmount.add(unstakingAmount[msg.sender]);
+        _stakedBalances[msg.sender] = _stakedBalances[msg.sender].add(unstakingAmount[msg.sender]);
+        unstakingAmount[msg.sender] = 0;
+
+        emit CancelUnstake(msg.sender);
+    }
+
     function unstake() external {
         require(unstaking[msg.sender] == true, "Account has not triggered unstake cooldown");
         require(
@@ -321,6 +341,7 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     event RewardsClaimed(address account, uint unclaimedReward);
     event FeeRewardsClaimed(address account, uint unclaimedFees);
     event UnstakeCooldown(address account, uint cooldownTime, uint amount);
+    event CancelUnstake(address account);
     event Unstaked(address account, uint unstakeAmount);
     event ClaimEnabled(bool enabled);
     event DistributeFeesEnabled(bool enabled);

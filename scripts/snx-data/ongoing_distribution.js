@@ -57,7 +57,10 @@ async function fetchData(start, end) {
 			weeklyRewardL2 = 0;
 		for (var element in result) {
 			weeklyReward += result[element].rewards;
-			data.push({ account: result[element].account.toLowerCase(), rewards: result[element].rewards });
+			data.push({
+				account: result[element].account.toLowerCase(),
+				rewards: result[element].rewards,
+			});
 		}
 
 		for (let [key, value] of Object.entries(resultL2)) {
@@ -67,8 +70,8 @@ async function fetchData(start, end) {
 
 		if (dataL2.length) {
 			// distribute 95% of weekly rewards to L1 and 5% to L2
-			getWeeklyData(data, 95, weeklyReward);
-			getWeeklyData(dataL2, 5, weeklyRewardL2);
+			getWeeklyData(data, 90, weeklyReward);
+			getWeeklyData(dataL2, 10, weeklyRewardL2);
 		} else {
 			getWeeklyData(data, 100, weeklyReward);
 		}

@@ -75,17 +75,11 @@ describe('Contract: OndoingAirdrop', async () => {
 					'Tokens have already been claimed'
 				);
 			}),
-			it('self destruct before time', async () => {
-				await assert.revert(
-					ongoingAirdrop._selfDestruct(acc1.address),
-					'Contract can only be selfdestruct after a year'
-				);
+			it('self destruct', async () => {
+				await fastForward(YEAR);
+				await ongoingAirdrop._selfDestruct(acc1.address);
+				let balance = await token.balanceOf(ongoingAirdrop.address);
+				assert.equal(balance, 0);
 			});
-		it('self destruct', async () => {
-			await fastForward(YEAR);
-			await ongoingAirdrop._selfDestruct(acc1.address);
-			let balance = await token.balanceOf(ongoingAirdrop.address);
-			assert.equal(balance, 0);
-		});
 	});
 });

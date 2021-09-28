@@ -18,7 +18,7 @@ const TOTAL_AMOUNT_TO_TRANSFER = web3.utils.toWei('225000');
 
 const fs = require('fs');
 
-let includeStakingRewards = true;
+let includeStakingRewards = false;
 
 async function ongoingAirdrop() {
 	let accounts = await ethers.getSigners();
@@ -59,7 +59,7 @@ async function ongoingAirdrop() {
 	// get stakers from StakingThales from last period
 	let stakers = [];
 	const stakingRewards = [];
-	if (STAKING_THALES && includeStakingRewards) {
+	if (STAKING_THALES) {
 		const stakingTimestamp = await stakingThales.startTimeStamp();
 		if (stakingTimestamp.toString() > 0) {
 			// check if staking has begun
@@ -96,26 +96,28 @@ async function ongoingAirdrop() {
 							return;
 						});
 
-					const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
-						fromBlock: 0,
-						toBlock: 'latest',
-					});
+					if (includeStakingRewards) {
+						const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
+							fromBlock: 0,
+							toBlock: 'latest',
+						});
 
-					for (let i = 0; i < stakedEvents.length; ++i) {
-						stakers.push(stakedEvents[i].returnValues.user.toLowerCase());
-					}
+						for (let i = 0; i < stakedEvents.length; ++i) {
+							stakers.push(stakedEvents[i].returnValues.user.toLowerCase());
+						}
 
-					stakers = [...new Set(stakers)]; // ensure uniqueness
+						stakers = [...new Set(stakers)]; // ensure uniqueness
 
-					console.log('stakers', stakers);
+						console.log('stakers', stakers);
 
-					for (let staker of stakers) {
-						try {
-							const reward = await stakingThales.getRewardsAvailable(staker);
-							console.log('available rewards for ', staker, ' - ', reward.toString());
-							stakingRewards[staker.toLowerCase()] = parseInt(reward.toString());
-						} catch (e) {
-							continue; // rewards already claimed, continue
+						for (let staker of stakers) {
+							try {
+								const reward = await stakingThales.getRewardsAvailable(staker);
+								console.log('available rewards for ', staker, ' - ', reward.toString());
+								stakingRewards[staker.toLowerCase()] = parseInt(reward.toString());
+							} catch (e) {
+								continue; // rewards already claimed, continue
+							}
 						}
 					}
 				} else {

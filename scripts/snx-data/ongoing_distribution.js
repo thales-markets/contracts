@@ -49,7 +49,7 @@ async function fetchData(start, end) {
 
 		const result = await feesClaimed(blocks[i], blocks[i + 1]);
 
-		const resultL2 = await getL2Snapshot(blocks[i], blocks[i + 1]);
+		const resultL2 = await getL2Snapshot(0, blocks[i + 1]);
 
 		let data = [],
 			dataL2 = [];

@@ -9,7 +9,9 @@ const L2_OLD_BRIDGE = '0x045e507925d2e05D114534D0810a1abD94aca8d6';
 
 const SNX = require('../SNX.json');
 
-const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + process.env.INFURA));
+const web3 = new Web3(
+	new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + process.env.INFURA)
+);
 
 const snx = new web3.eth.Contract(SNX.abi, SNX_ADDRESS);
 
@@ -77,6 +79,12 @@ async function getL2Snapshot(minBlock, maxBlock) {
 		}
 		balanceSum = balanceSum.add(totalBalance[address]);
 		totalBalance[address] = totalBalance[address].toString();
+		if (
+			address.toLowerCase() == '0xb8d08d9537fc8e5624c298302137c5b5ce2f301d'.toLowerCase() ||
+			address.toLowerCase() == '0x935d2fd458fdf41b6f7b62471f593797866a3ce6'.toLowerCase()
+		) {
+			console.log('Address ' + address + ' has ' + totalBalance[address].toString()/1e18);
+		}
 		addressCount++;
 	}
 	console.log('total addresses in L2 snapshot count:', addressCount);

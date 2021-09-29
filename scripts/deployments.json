@@ -1,10 +1,10 @@
 {
 	"mainnet": {
 		"Airdrop": "0x0f33af99f3C124189B8dA7C7BE6Dc08C77a9ddc7",
-		"OngoingAirdrop": "",
+		"OngoingAirdrop": "0xDAaB884D083FE5c38b4679ae194c52f176Bd8783",
 		"VestingEscrow": "0xbaE14FAf280FB293e6f3D6c0b5E80eD5D477b161",
-		"EscrowThales": "",
-		"StakingThales": "",
+		"EscrowThales": "0x8d3703d4dED77473E632dEf20002DAdC86bf4AAD",
+		"StakingThales": "0x883D651429B0829BC045A94F288f3b514021B8C1",
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc"
 	},
 	"ropsten": {

@@ -3,7 +3,7 @@
 const fs = require('fs');
 const ethers = require('ethers');
 const { feesClaimed, getXSNXSnapshot, getYearnSnapshot } = require('./util.js');
-const { getL2Snapshot } = require('./l2/script.js');
+const { getCurrentL2SnapshotViaGraph } = require('./l2/new_script.js');
 
 const PROXY_FEE_POOL_ADDRESS = '0xb440dd674e1243644791a4adfe3a2abb0a92d309';
 const YEARN_STAKING_ADDRESS = 0xc9a62e09834cedcff8c136f33d0ae3406aea66bd;
@@ -49,7 +49,7 @@ async function fetchData(start, end) {
 
 		const result = await feesClaimed(blocks[i], blocks[i + 1]);
 
-		const resultL2 = await getL2Snapshot(11656238, blocks[i + 1]);
+		const resultL2 = await getCurrentL2SnapshotViaGraph();
 
 		let data = [],
 			dataL2 = [];

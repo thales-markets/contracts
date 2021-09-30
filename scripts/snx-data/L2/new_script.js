@@ -19,6 +19,7 @@ const { request, gql } = require('graphql-request');
 getCurrentL2SnapshotViaGraph();
 
 async function getCurrentL2SnapshotViaGraph() {
+	let totalBalance = {};
 	let holders = [];
 	let highestIDLast = null;
 	let continueQuery = true;
@@ -44,9 +45,11 @@ async function getCurrentL2SnapshotViaGraph() {
 			queryIssuers,
 			variables
 		).then(data => {
-			console.log('data is' + data.snxholders);
 			data.snxholders.forEach(d => {
-				holders.push(d);
+				if (d.collateral > 0) {
+					holders.push(d);
+					totalBalance[d.id] = d.collateral * 1.0;
+				}
 			});
 			if (data.snxholders.length < 1000) {
 				continueQuery = false;
@@ -54,6 +57,8 @@ async function getCurrentL2SnapshotViaGraph() {
 			console.log('holders length is ' + holders.length);
 		});
 	}
+	console.log('finished');
+	return totalBalance;
 }
 
 module.exports = {

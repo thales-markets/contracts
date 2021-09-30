@@ -15,6 +15,8 @@ const web3 = new Web3(
 
 const snx = new web3.eth.Contract(SNX.abi, SNX_ADDRESS);
 
+//getL2Snapshot(11656238, 13319318);
+
 async function getL2Snapshot(minBlock, maxBlock) {
 	const transfersInNew = await getSNXTransfers(minBlock, maxBlock, { to: L2_NEW_BRIDGE });
 	//console.log('[new bridge] transfers in count', transfersInNew.length);
@@ -81,7 +83,12 @@ async function getL2Snapshot(minBlock, maxBlock) {
 		totalBalance[address] = totalBalance[address].toString();
 		if (
 			address.toLowerCase() == '0xb8d08d9537fc8e5624c298302137c5b5ce2f301d'.toLowerCase() ||
-			address.toLowerCase() == '0x935d2fd458fdf41b6f7b62471f593797866a3ce6'.toLowerCase()
+			address.toLowerCase() == '0x935d2fd458fdf41b6f7b62471f593797866a3ce6'.toLowerCase()||
+			address.toLowerCase() == '0xdc3594961c5F49200cA76851960e57928046eCcB'.toLowerCase()||
+			address.toLowerCase() == '0xe6945Ed413f233e248BCdF2A5AF249B6af7cd58c'.toLowerCase()||
+			address.toLowerCase() == '0x48D1547832902eC527b17B5765381d36A9399c97'.toLowerCase()||
+			address.toLowerCase() == '0x7C5B7Bf87Feab9A3F4972323BDdDA04C79D61315'.toLowerCase()||
+			address.toLowerCase() == '0xb5F2949aADDd62C07AB10FFd39964fAF60887560'.toLowerCase()
 		) {
 			console.log('Address ' + address + ' has ' + totalBalance[address].toString()/1e18);
 		}
@@ -91,6 +98,10 @@ async function getL2Snapshot(minBlock, maxBlock) {
 	console.log('calculated L2 balance:', getNumberNoDecimals(balanceSum));
 
 	return totalBalance;
+}
+
+async function getCurrentL2SnapshotViaGraph() {
+
 }
 
 async function getSNXTransfers(fromBlock, toBlock, filter) {

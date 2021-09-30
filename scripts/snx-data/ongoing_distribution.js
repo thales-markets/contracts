@@ -49,7 +49,7 @@ async function fetchData(start, end) {
 
 		const result = await feesClaimed(blocks[i], blocks[i + 1]);
 
-		const resultL2 = await getL2Snapshot(0, blocks[i + 1]);
+		const resultL2 = await getL2Snapshot(11656238, blocks[i + 1]);
 
 		let data = [],
 			dataL2 = [];
@@ -70,8 +70,8 @@ async function fetchData(start, end) {
 
 		if (dataL2.length) {
 			// distribute 95% of weekly rewards to L1 and 5% to L2
-			getWeeklyData(data, 90, weeklyReward);
-			getWeeklyData(dataL2, 10, weeklyRewardL2);
+			getWeeklyData(data, 87, weeklyReward);
+			getWeeklyData(dataL2, 13, weeklyRewardL2);
 		} else {
 			getWeeklyData(data, 100, weeklyReward);
 		}

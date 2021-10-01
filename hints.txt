@@ -1,5 +1,6 @@
 Script
 npx hardhat run --network ropsten scripts/deploy.js
+npx hardhat run --network kovan scripts/customBinaryOptions/deployETHBurnedAndFlippeningMarkets.js
 
 test
 npx hardhat test --optimizer

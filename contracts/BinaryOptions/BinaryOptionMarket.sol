@@ -49,6 +49,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     OracleDetails public oracleDetails;
     BinaryOptionMarketManager.Fees public fees;
     IAddressResolver public resolver;
+    IExchangeRates public exchangeRates;
 
     IOracleInstance public iOracleInstance;
     bool public customMarket;
@@ -76,6 +77,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         address _owner,
         address _binaryOptionMastercopy,
         IAddressResolver _resolver,
+        IExchangeRates _exchangeRates,
         address _creator,
         bytes32 _oracleKey,
         uint _strikePrice,
@@ -89,6 +91,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         initialized = true;
         initOwner(_owner);
         resolver = _resolver;
+        exchangeRates = _exchangeRates;
         creator = _creator;
 
         oracleDetails = OracleDetails(_oracleKey, _strikePrice, 0, _customMarket, _iOracleInstanceAddress);
@@ -120,7 +123,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     /* ---------- External Contracts ---------- */
 
     function _exchangeRates() internal view returns (IExchangeRates) {
-        return IExchangeRates(resolver.requireAndGetAddress(CONTRACT_EXRATES, "ExchangeRates contract not found"));
+        return exchangeRates;
     }
 
     function _sUSD() internal view returns (IERC20) {

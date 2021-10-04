@@ -8,13 +8,18 @@
       },
       {
         "internalType": "address",
-        "name": "_priceFeed",
+        "name": "_flippeningRatio",
         "type": "address"
       },
       {
         "internalType": "string",
         "name": "_targetName",
         "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_targetOutcome",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -63,6 +68,15 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [],
+    "name": "clearOutcome",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [],
     "name": "eventName",
@@ -80,12 +94,12 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "getOutcome",
+    "name": "flippeningRatio",
     "outputs": [
       {
-        "internalType": "bool",
+        "internalType": "contract FlippeningRatioOracle",
         "name": "",
-        "type": "bool"
+        "type": "address"
       }
     ],
     "payable": false,
@@ -95,12 +109,12 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "getPrice",
+    "name": "getOutcome",
     "outputs": [
       {
-        "internalType": "int256",
+        "internalType": "bool",
         "name": "",
-        "type": "int256"
+        "type": "bool"
       }
     ],
     "payable": false,
@@ -131,6 +145,21 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "outcome",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "payable": false,
@@ -172,11 +201,41 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_priceFeed",
+        "name": "_flippeningRatio",
         "type": "address"
       }
     ],
-    "name": "setPriceFeed",
+    "name": "setFlippeningRatio",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_outcome",
+        "type": "bool"
+      }
+    ],
+    "name": "setOutcome",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_resolvable",
+        "type": "bool"
+      }
+    ],
+    "name": "setResolvable",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -203,9 +262,9 @@
     "name": "targetOutcome",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "uint256",
         "name": "",
-        "type": "string"
+        "type": "uint256"
       }
     ],
     "payable": false,

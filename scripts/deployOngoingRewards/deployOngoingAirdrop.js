@@ -74,6 +74,7 @@ async function deploy_ongoing_airdrop() {
 
 	for (let ubh in userBalanceAndHashes) {
 		userBalanceAndHashes[ubh].proof = merkleTree.getHexProof(userBalanceAndHashes[ubh].hash);
+		delete userBalanceAndHashes[ubh].hash;
 	}
 
 	fs.writeFileSync(

@@ -8,13 +8,13 @@
       },
       {
         "internalType": "address",
-        "name": "_priceFeed",
+        "name": "_first",
         "type": "address"
       },
       {
-        "internalType": "string",
-        "name": "_targetName",
-        "type": "string"
+        "internalType": "address",
+        "name": "_second",
+        "type": "address"
       }
     ],
     "payable": false,
@@ -65,46 +65,16 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "eventName",
+    "name": "getRatio",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "uint256",
         "name": "",
-        "type": "string"
+        "type": "uint256"
       }
     ],
     "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getOutcome",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getPrice",
-    "outputs": [
-      {
-        "internalType": "int256",
-        "name": "",
-        "type": "int256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -153,18 +123,18 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "resolvable",
-    "outputs": [
+    "constant": false,
+    "inputs": [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        "internalType": "address",
+        "name": "_marketcap",
+        "type": "address"
       }
     ],
+    "name": "setFirstMarketcap",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -172,44 +142,14 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_priceFeed",
+        "name": "_marketcap",
         "type": "address"
       }
     ],
-    "name": "setPriceFeed",
+    "name": "setSecondMarketcap",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "targetName",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "targetOutcome",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   }
 ]

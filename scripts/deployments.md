@@ -80,6 +80,20 @@ Run the maintenance script with following command:
 npx hardhat run --network ropsten scripts/deployOngoingRewards/ongoingAirdrop.js
 ```
 
+Update: Due to security reasons the owner is now a multisig so running a script is not possible as before, rather the steps are:  
+* Gnosis Pause ongoing airdrop https://etherscan.io/address/0xDAaB884D083FE5c38b4679ae194c52f176Bd8783
+* Gnosis close staking period https://etherscan.io/address/0x883D651429B0829BC045A94F288f3b514021B8C1
+* Run the script ```bash
+                 npx hardhat run --network mainnet scripts/deployOngoingRewards/ongoingAirdrop.js
+                 ```
+* Push the new hashes file
+* Gnosis set the new root 
+* Gnosis unpause
+
+Sanity check:
+* Make sure unclaimed rewards are carried over
+* Make sure all addresses are lower case
+
 The script will generate `ongoing-airdrop-hashes-period-(PERIOD+1).json`, input for the next maintenance cycle.
 
 ### 5. Deploying StakingThales contract

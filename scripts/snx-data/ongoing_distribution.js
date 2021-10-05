@@ -3,7 +3,7 @@
 const fs = require('fs');
 const ethers = require('ethers');
 const { feesClaimed, getXSNXSnapshot, getYearnSnapshot } = require('./util.js');
-const { getCurrentL2SnapshotViaGraph } = require('./l2/new_script.js');
+const { getCurrentSnapshotViaGraph } = require('./l2/new_script.js');
 
 const PROXY_FEE_POOL_ADDRESS = '0xb440dd674e1243644791a4adfe3a2abb0a92d309';
 const YEARN_STAKING_ADDRESS = 0xc9a62e09834cedcff8c136f33d0ae3406aea66bd;
@@ -47,20 +47,21 @@ async function fetchData(start, end) {
 	for (let i = 0; i < blocks.length; i++) {
 		if (!blocks[i + 1]) break;
 
-		const result = await feesClaimed(blocks[i], blocks[i + 1]);
-
-		const resultL2 = await getCurrentL2SnapshotViaGraph();
+		const result = await getCurrentSnapshotViaGraph(
+			'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix'
+		);
+		const resultL2 = await getCurrentSnapshotViaGraph(
+			'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance'
+		);
 
 		let data = [],
 			dataL2 = [];
 		let weeklyReward = 0,
 			weeklyRewardL2 = 0;
-		for (var element in result) {
-			weeklyReward += result[element].rewards;
-			data.push({
-				account: result[element].account.toLowerCase(),
-				rewards: result[element].rewards,
-			});
+
+		for (let [key, value] of Object.entries(result)) {
+			weeklyReward += value / 1e18;
+			data.push({ account: key.toLowerCase(), rewards: value / 1e18 });
 		}
 
 		for (let [key, value] of Object.entries(resultL2)) {
@@ -70,8 +71,8 @@ async function fetchData(start, end) {
 
 		if (dataL2.length) {
 			// distribute 95% of weekly rewards to L1 and 5% to L2
-			getWeeklyData(data, 87, weeklyReward);
-			getWeeklyData(dataL2, 13, weeklyRewardL2);
+			getWeeklyData(data, 88, weeklyReward);
+			getWeeklyData(dataL2, 12, weeklyRewardL2);
 		} else {
 			getWeeklyData(data, 100, weeklyReward);
 		}

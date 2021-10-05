@@ -85,16 +85,17 @@ async function ongoingAirdrop() {
 				console.log('closingDate', closingDate.getTime());
 
 				if (now.getTime() > closingDate.getTime()) {
-					let tx = await stakingThales.closePeriod();
-					await tx
-						.wait()
-						.then(e => {
-							console.log('StakingThales: period closed');
-						})
-						.catch(e => {
-							console.err(e);
-							return;
-						});
+					// TODO: close through gnosis
+					// let tx = await stakingThales.closePeriod();
+					// await tx
+					// 	.wait()
+					// 	.then(e => {
+					// 		console.log('StakingThales: period closed');
+					// 	})
+					// 	.catch(e => {
+					// 		console.err(e);
+					// 		return;
+					// 	});
 
 					if (includeStakingRewards) {
 						const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
@@ -144,10 +145,11 @@ async function ongoingAirdrop() {
 	});
 
 	// pause ongoingAirdrop
-	let pauseTX = await ongoingAirdrop.setPaused(true);
-	await pauseTX.wait().then(e => {
-		txLog(pauseTX, 'Airdrop paused');
-	});
+	// TODO: pause through gnosis
+	// let pauseTX = await ongoingAirdrop.setPaused(true);
+	// await pauseTX.wait().then(e => {
+	// 	txLog(pauseTX, 'Airdrop paused');
+	// });
 
 	let totalScore = Big(0);
 	for (let value of Object.values(ongoingRewards)) {
@@ -285,17 +287,18 @@ async function ongoingAirdrop() {
 		userBalanceAndHashes[ubh].proof = merkleTree.getHexProof(userBalanceAndHashes[ubh].hash);
 	}
 
+	// TODO: all through gnosis
 	// ongoingAirdrop: set new tree root, unpause contract
-	let tx = await ongoingAirdrop.setRoot(root);
-	await tx.wait().then(e => {
-		txLog(tx, 'New root set');
-	});
-	pauseTX = await ongoingAirdrop.setPaused(false);
-	await pauseTX.wait().then(e => {
-		txLog(pauseTX, 'Airdrop unpaused');
-	});
+	// let tx = await ongoingAirdrop.setRoot(root);
+	// await tx.wait().then(e => {
+	// 	txLog(tx, 'New root set');
+	// });
+	// pauseTX = await ongoingAirdrop.setPaused(false);
+	// await pauseTX.wait().then(e => {
+	// 	txLog(pauseTX, 'Airdrop unpaused');
+	// });
 
-	ongoingPeriod = await ongoingAirdrop.period();
+	ongoingPeriod = (await ongoingAirdrop.period()) + 1;
 
 	fs.writeFileSync(
 		`scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-${ongoingPeriod.toString()}.json`,

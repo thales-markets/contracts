@@ -1,30 +1,17 @@
-//let { web3 } = require('hardhat');
-const fs = require('fs');
-const { Web3 } = require('hardhat');
-const { getNumberNoDecimals, bn } = require('../../snx-data/xsnx-snapshot/helpers');
-
-const SNX_ADDRESS = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
-const L2_NEW_BRIDGE = '0x5fd79d46eba7f351fe49bff9e87cdea6c821ef9f';
-const L2_OLD_BRIDGE = '0x045e507925d2e05D114534D0810a1abD94aca8d6';
-
-const SNX = require('../SNX.json');
-
-const web3 = new Web3(
-	new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/' + process.env.INFURA)
-);
-
-const snx = new web3.eth.Contract(SNX.abi, SNX_ADDRESS);
 const { request, gql } = require('graphql-request');
 
-getCurrentL2SnapshotViaGraph();
+// getCurrentSnapshotViaGraph(	'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance');
+// getCurrentSnapshotViaGraph('https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix');
+//getAllClaimers('https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance');
+//getAllClaimers('https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix');
 
-async function getCurrentL2SnapshotViaGraph() {
+async function getCurrentSnapshotViaGraph(url) {
+	let uniqueClaimers = await getAllClaimers(url);
 	let totalBalance = {};
 	let holders = [];
-	let highestIDLast = null;
+	let highestIDLast = '';
 	let continueQuery = true;
 	while (continueQuery) {
-		highestIDLast = holders.length ? holders[holders.length - 1].id : '';
 		const queryIssuers = gql`
 			query getIssuers($highestID: String!) {
 				snxholders(first: 1000, where: { id_gt: $highestID }, orderBy: id, orderDirection: asc) {
@@ -40,13 +27,10 @@ async function getCurrentL2SnapshotViaGraph() {
 			highestID: highestIDLast,
 		};
 		let performance = null;
-		await request(
-			'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance',
-			queryIssuers,
-			variables
-		).then(data => {
+		await request(url, queryIssuers, variables).then(data => {
 			data.snxholders.forEach(d => {
-				if (d.collateral > 0) {
+				let threshold = d.collateral * 1.0;
+				if (uniqueClaimers.has(d.id)) {
 					holders.push(d);
 					totalBalance[d.id] = d.collateral * 1.0;
 				}
@@ -54,6 +38,7 @@ async function getCurrentL2SnapshotViaGraph() {
 			if (data.snxholders.length < 1000) {
 				continueQuery = false;
 			}
+			highestIDLast = data.snxholders.length ? data.snxholders[data.snxholders.length - 1].id : '';
 			console.log('holders length is ' + holders.length);
 		});
 	}
@@ -61,18 +46,64 @@ async function getCurrentL2SnapshotViaGraph() {
 	return totalBalance;
 }
 
+async function getAllClaimers(url) {
+	let uniqueClaimers = new Set();
+	var lastWednesday = new Date();
+	lastWednesday.setDate(lastWednesday.getDate() - ((lastWednesday.getDay() + 4) % 7));
+	let maxDate = new Date(
+		lastWednesday.getFullYear(),
+		lastWednesday.getMonth(),
+		lastWednesday.getDate() + 1
+	);
+	let maxTimestamp = maxDate.getTime() / 1000;
+	var eightDaysAgo = new Date(
+		lastWednesday.getFullYear(),
+		lastWednesday.getMonth(),
+		lastWednesday.getDate() - 8
+	);
+	let lastTimestamp = eightDaysAgo.getTime() / 1000;
+	let continueQuery = true;
+	let claimers = [];
+	while (continueQuery) {
+		const queryIssuers = gql`
+			query getClaimers($lastTimestamp: BigInt!, $maxTimestamp: BigInt!) {
+				feesClaimeds(
+					first: 1000
+					where: { timestamp_gt: $lastTimestamp, timestamp_lt: $maxTimestamp }
+					orderBy: timestamp
+					orderDirection: asc
+				) {
+					timestamp
+					account
+				}
+			}
+		`;
+		const variables = {
+			lastTimestamp: lastTimestamp,
+			maxTimestamp: maxTimestamp,
+		};
+		let performance = null;
+		await request(url, queryIssuers, variables).then(data => {
+			console.log(data);
+			data.feesClaimeds.forEach(d => {
+				if (uniqueClaimers.has(d.account)) {
+					console.log(d.account + ' claimed twice');
+				}
+				uniqueClaimers.add(d.account);
+				claimers.push(d);
+			});
+			if (data.feesClaimeds.length < 1000) {
+				continueQuery = false;
+			}
+			console.log('claimers length is ' + claimers.length);
+			console.log('uniqueClaimers length is ' + uniqueClaimers.size);
+		});
+
+		lastTimestamp = claimers.length ? claimers[claimers.length - 1].timestamp : '';
+	}
+	return uniqueClaimers;
+}
+
 module.exports = {
-	getCurrentL2SnapshotViaGraph,
+	getCurrentSnapshotViaGraph: getCurrentSnapshotViaGraph,
 };
-
-// async function main() {
-// 	const data = await getL2Snapshot(0, 'latest');
-// 	fs.writeFileSync('scripts/snx-data/L2/L2_snapshot.json', JSON.stringify(data));
-// }
-
-// main()
-// 	.then(() => process.exit(0))
-// 	.catch(error => {
-// 		console.error(error);
-// 		process.exit(1);
-// 	});

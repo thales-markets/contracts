@@ -1,6 +1,7 @@
 Script
 npx hardhat run --network ropsten scripts/deploy.js
 npx hardhat run --network kovan scripts/customBinaryOptions/deployETHBurnedAndFlippeningMarkets.js
+node scripts/snx-data/ongoing_distribution.js 2021-09-22 2021-09-29
 
 test
 npx hardhat test --optimizer

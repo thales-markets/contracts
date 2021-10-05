@@ -15,19 +15,21 @@ contract('FlippeningRatioOracle', accounts => {
 
 			let FlippeningRatioOracleContract = artifacts.require('TestFlippeningRatioOracle');
 			let ratioOracle = await FlippeningRatioOracleContract.new(
-				BTC_TOTAL_MARKETCAP,
-                ETH_TOTAL_MARKETCAP
+                owner,
+                ETH_TOTAL_MARKETCAP,
+                BTC_TOTAL_MARKETCAP,
 			);
 	
-            console.log('ratio BTC/ETH marketcap', (await ratioOracle.getRatio()).toString());
+            console.log('ratio ETH/BTC marketcap', (await ratioOracle.getRatio()).toString());
 
 			let FlippeningRatioOracleInstanceContract = artifacts.require('FlippeningRatioOracleInstance');
 
 			let customOracle = await FlippeningRatioOracleInstanceContract.new(
 				owner,
 				ratioOracle.address,
-                'BTC/ETH Flippening Market',
-		        toUnit(2.5), // 2.5 * 1e18
+                'ETH/BTC Flippening Market',
+		        toUnit(0.7), // 0.7 * 1e18
+                'flippening markets'
 			);
 
 			assert.equal(await customOracle.getOutcome(), false);

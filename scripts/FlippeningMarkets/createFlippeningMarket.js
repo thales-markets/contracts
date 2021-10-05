@@ -8,7 +8,7 @@ const { toBytes32 } = require('../../index');
 let managerAddress = '0x5ed98Ebb66A929758C7Fe5Ac60c979aDF0F4040a'; //ropsten
 
 //let FLIPPENING_RATIO_ORACLE = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; // localhost
-let FLIPPENING_RATIO_ORACLE = '0x26D5eF01dC5De340570a6e617a62bDb4383Ba1f7'; // ropsten
+let FLIPPENING_RATIO_ORACLE = '0x8E98a35f9d4c940FB17c3a5c906393C006684382'; // ropsten
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -61,8 +61,9 @@ async function main() {
 		FlippeningRatioOracleInstanceContract,
 		owner.address,
 		flippeningRatioOracle.address,
-        'BTC/ETH Flippening Market',
-		w3utils.toWei('2.5'),
+        'ETH/BTC Flippening Market',
+		w3utils.toWei('0.7'),
+        'flippening markets'
 	);
 	await createMarket(manager, maturityDate, fundingAmount, oracleInstanceAddress);
 
@@ -73,8 +74,9 @@ async function main() {
 		constructorArguments: [
 			owner.address,
 			flippeningRatioOracle.address,
-			'BTC/ETH Flippening Market',
-			w3utils.toWei('2.5'),
+			'ETH/BTC Flippening Market',
+			w3utils.toWei('0.7'),
+            'flippening markets'
 		],
 		contract: 'contracts/customOracle/FlippeningRatioOracleInstance.sol:FlippeningRatioOracleInstance',
 	});
@@ -122,19 +124,21 @@ async function createOracleInstance(
 	ownerAddress,
 	flippeningRatioOracleContractDeployedAddress,
 	marketName,
-	ratio
+	ratio,
+    eventName
 ) {
 	const FlippeningRatioOracleInstanceContractDeployed = await FlippeningRatioOracleInstanceContract.deploy(
 		ownerAddress,
 		flippeningRatioOracleContractDeployedAddress,
 		marketName,
-	    ratio
+	    ratio,
+        eventName
 	);
 	await FlippeningRatioOracleInstanceContractDeployed.deployed();
 
 	console.log('FlippeningRatioOracleInstanceContractDeployed deployed to:', FlippeningRatioOracleInstanceContractDeployed.address);
 	console.log(
-		'with params marketName ' + marketName + ' ratio ' + ratio
+		'with params marketName ' + marketName + ' ratio ' + ratio + ' event name ' + eventName 
 	);
 
 	return FlippeningRatioOracleInstanceContractDeployed.address;

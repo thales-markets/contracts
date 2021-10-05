@@ -9,22 +9,24 @@ contract FlippeningRatioOracleInstance is IOracleInstance, Owned {
     FlippeningRatioOracle public flippeningRatio;
     string public targetName;
     uint256 public targetOutcome;
+    string public eventName;
 
     bool public outcome;
-    bool public resolvable;
+    bool public resolvable = true;
 
     bool private forcedOutcome;
-    string public eventName;
 
     constructor(
         address _owner,
         address _flippeningRatio,
         string memory _targetName,
-        uint256 _targetOutcome
+        uint256 _targetOutcome,
+        string memory _eventName
     ) public Owned(_owner) {
         flippeningRatio = FlippeningRatioOracle(_flippeningRatio);
         targetName = _targetName;
         targetOutcome = _targetOutcome;
+        eventName = _eventName;
     }
 
     function getOutcome() external view returns (bool) {

@@ -136,8 +136,9 @@ contract('BinaryOption', accounts => {
 		it('Can create a custom market', async () => {
 			let FlippeningRatioOracleContract = artifacts.require('TestFlippeningRatioOracle');
 			let feed = await FlippeningRatioOracleContract.new(
-				BTC_TOTAL_MARKETCAP,
+				managerOwner,
 				ETH_TOTAL_MARKETCAP,
+				BTC_TOTAL_MARKETCAP,
 			);
 
 			// await feed.setResult('0x5b22555341222c2243484e222c22474252225d00000000000000000000000000', {
@@ -150,7 +151,8 @@ contract('BinaryOption', accounts => {
 				managerOwner,
 				feed.address,
 				'BTC/ETH Flippening Market',
-		        toUnit(1.8),
+		        toUnit(0.3),
+				'flippening markets'
 			);
 
 			const now = await currentTime();
@@ -194,13 +196,13 @@ contract('BinaryOption', accounts => {
 		});
 
 		it('Can resolve a custom market', async () => {
-			assert.isFalse(await customOracle.resolvable());
+			assert.isTrue(await customOracle.resolvable());
 			assert.isFalse(await customMarket.canResolve());
 
 			await fastForward(timeToMaturity + 100);
 
-			assert.isFalse(await customOracle.resolvable());
-			assert.isFalse(await customMarket.canResolve());
+			assert.isTrue(await customOracle.resolvable());
+			assert.isTrue(await customMarket.canResolve());
 
 			await customOracle.setResolvable(true, {
 				from: managerOwner,

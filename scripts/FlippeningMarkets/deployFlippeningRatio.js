@@ -18,8 +18,9 @@ async function main() {
 	// We get the contract to deploy
 	let FlippeningRatioOracle = await ethers.getContractFactory('FlippeningRatioOracle');
 	const flippeningRatioOracle = await FlippeningRatioOracle.deploy(
-		BTC_TOTAL_MARKETCAP,
-		ETH_TOTAL_MARKETCAP
+		owner.address,
+		ETH_TOTAL_MARKETCAP,
+		BTC_TOTAL_MARKETCAP
 	);
 	await flippeningRatioOracle.deployed();
 
@@ -27,7 +28,7 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: flippeningRatioOracle.address,
-		constructorArguments: [BTC_TOTAL_MARKETCAP, ETH_TOTAL_MARKETCAP],
+		constructorArguments: [owner.address, ETH_TOTAL_MARKETCAP, BTC_TOTAL_MARKETCAP],
 		contract: 'contracts/customOracle/FlippeningRatioOracle.sol:FlippeningRatioOracle',
 	});
 }

@@ -20,6 +20,11 @@
         "internalType": "uint256",
         "name": "_targetOutcome",
         "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_eventName",
+        "type": "string"
       }
     ],
     "payable": false,

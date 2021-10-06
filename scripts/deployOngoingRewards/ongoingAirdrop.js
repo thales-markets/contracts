@@ -3,6 +3,8 @@ const keccak256 = require('keccak256');
 const { web3 } = require('hardhat');
 const Big = require('big.js');
 
+const { getAllClaimers } = require('../snx-data/L2/ongoingClaims');
+
 const {
 	numberExponentToLarge,
 	txLog,
@@ -84,47 +86,47 @@ async function ongoingAirdrop() {
 				console.log('durationPeriod', durationPeriod);
 				console.log('closingDate', closingDate.getTime());
 
-				if (now.getTime() > closingDate.getTime()) {
-					// TODO: close through gnosis
-					// let tx = await stakingThales.closePeriod();
-					// await tx
-					// 	.wait()
-					// 	.then(e => {
-					// 		console.log('StakingThales: period closed');
-					// 	})
-					// 	.catch(e => {
-					// 		console.err(e);
-					// 		return;
-					// 	});
+				// if (now.getTime() > closingDate.getTime()) {
+				// TODO: close through gnosis
+				// let tx = await stakingThales.closePeriod();
+				// await tx
+				// 	.wait()
+				// 	.then(e => {
+				// 		console.log('StakingThales: period closed');
+				// 	})
+				// 	.catch(e => {
+				// 		console.err(e);
+				// 		return;
+				// 	});
 
-					if (includeStakingRewards) {
-						const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
-							fromBlock: 0,
-							toBlock: 'latest',
-						});
+				if (includeStakingRewards) {
+					const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
+						fromBlock: 0,
+						toBlock: 'latest',
+					});
 
-						for (let i = 0; i < stakedEvents.length; ++i) {
-							stakers.push(stakedEvents[i].returnValues.user.toLowerCase());
-						}
+					for (let i = 0; i < stakedEvents.length; ++i) {
+						stakers.push(stakedEvents[i].returnValues.user.toLowerCase());
+					}
 
-						stakers = [...new Set(stakers)]; // ensure uniqueness
+					stakers = [...new Set(stakers)]; // ensure uniqueness
 
-						console.log('stakers', stakers);
+					console.log('stakers', stakers);
 
-						for (let staker of stakers) {
-							try {
-								const reward = await stakingThales.getRewardsAvailable(staker);
-								console.log('available rewards for ', staker, ' - ', reward.toString());
-								stakingRewards[staker.toLowerCase()] = parseInt(reward.toString());
-							} catch (e) {
-								continue; // rewards already claimed, continue
-							}
+					for (let staker of stakers) {
+						try {
+							const reward = await stakingThales.getRewardsAvailable(staker);
+							console.log('available rewards for ', staker, ' - ', reward.toString());
+							stakingRewards[staker.toLowerCase()] = parseInt(reward.toString());
+						} catch (e) {
+							continue; // rewards already claimed, continue
 						}
 					}
-				} else {
-					console.log("StakingThales: it's not time yet to close period");
-					return;
 				}
+				// } else {
+				// 	console.log("StakingThales: it's not time yet to close period");
+				// 	return;
+				// }
 			} catch (e) {
 				console.log('StakingThales: failed to close the period', e);
 				return;
@@ -162,9 +164,11 @@ async function ongoingAirdrop() {
 
 	// get list of leaves for the merkle trees using index, address and token balance
 	// encode user address and balance using web3 encodePacked
+	let kk = 0;
+	let claimers = await getAllClaimers();
 	for (let address of Object.keys(ongoingRewards)) {
+		console.log('checking address:' + address + ' which is ' + kk++ + '.');
 		address = address.toLowerCase();
-		console.log('processing address: ' + address);
 		addressesToSkip.add(address);
 		// check last period merkle distribution
 		var index = lastMerkleDistribution
@@ -173,14 +177,15 @@ async function ongoingAirdrop() {
 			})
 			.indexOf(address);
 
+		//TODO: change to subgraph to get claims after the last setRoot event
 		let claimed = 0;
-		try {
-			await ongoingAirdrop.claimed(index);
-		} catch (e) {
-			claimed = 1; // tx returned error - address already claimed
+		claimed = claimers.includes(address);
+		if (claimed) {
+			console.log(address + ' has already claimed');
+		} else {
+			console.log(address + ' has not claimed for this week');
 		}
 
-		console.log('checking address: ' + address);
 		let amount = Big(ongoingRewards[address])
 			.times(TOTAL_AMOUNT)
 			.div(totalScore)
@@ -214,8 +219,6 @@ async function ongoingAirdrop() {
 			index: i,
 		};
 
-		console.log('ongoing', address, numberExponentToLarge(amount.toString()));
-
 		stakingReward[address] = 0;
 		userBalanceHashes.push(hash);
 		userBalanceAndHashes.push(balance);
@@ -223,7 +226,9 @@ async function ongoingAirdrop() {
 	}
 
 	// Add staking rewards to merkle tree
+	kk = 0;
 	for (let address of Object.keys(stakingRewards)) {
+		console.log('Checking for staking rewards ' + address + ' which is ' + kk++ + '.');
 		address = address.toLowerCase();
 		if (addressesToSkip.has(address)) {
 			console.log('skipping address: ' + address);
@@ -237,10 +242,11 @@ async function ongoingAirdrop() {
 			.indexOf(address);
 
 		let claimed = 0;
-		try {
-			await ongoingAirdrop.claimed(index);
-		} catch (e) {
-			claimed = 1; // tx returned error - address already claimed
+		claimed = claimers.includes(address);
+		if (claimed) {
+			console.log(address + ' has already claimed');
+		} else {
+			console.log(address + ' has not claimed for this week');
 		}
 
 		let amount = Big(stakingRewards[address]);
@@ -285,6 +291,7 @@ async function ongoingAirdrop() {
 
 	for (let ubh in userBalanceAndHashes) {
 		userBalanceAndHashes[ubh].proof = merkleTree.getHexProof(userBalanceAndHashes[ubh].hash);
+		delete userBalanceAndHashes[ubh].hash;
 	}
 
 	// TODO: all through gnosis
@@ -298,7 +305,7 @@ async function ongoingAirdrop() {
 	// 	txLog(pauseTX, 'Airdrop unpaused');
 	// });
 
-	ongoingPeriod = (await ongoingAirdrop.period()) + 1;
+	ongoingPeriod = parseInt(await ongoingAirdrop.period()) + 1;
 
 	fs.writeFileSync(
 		`scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-${ongoingPeriod.toString()}.json`,
@@ -308,11 +315,12 @@ async function ongoingAirdrop() {
 		}
 	);
 
-	if (includeStakingRewards) {
-		await thales.transfer(ongoingAirdrop.address, TOTAL_AMOUNT_TO_TRANSFER);
-	} else {
-		await thales.transfer(ongoingAirdrop.address, TOTAL_AMOUNT);
-	}
+	// if (includeStakingRewards) {
+	// 	await thales.transfer(ongoingAirdrop.address, TOTAL_AMOUNT_TO_TRANSFER);
+	// } else {
+	// 	await thales.transfer(ongoingAirdrop.address, TOTAL_AMOUNT);
+	// }
+	console.log('Total amount to transfer is:' + TOTAL_AMOUNT);
 }
 
 ongoingAirdrop()

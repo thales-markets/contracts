@@ -5,10 +5,10 @@ const snx = require('synthetix');
 const { toBytes32 } = require('../../index');
 
 //let managerAddress = '0x46d9DB2830C005e38878b241199bb09d9d355994'; //kovan
-let managerAddress = '0x5ed98Ebb66A929758C7Fe5Ac60c979aDF0F4040a'; //ropsten
+let managerAddress = '0x5ed98Ebb66A929758C7Fe5Ac60c979aDF0F4040a'; //real
 
 //let FLIPPENING_RATIO_ORACLE = '0x5FbDB2315678afecb367f032d93F642f64180aa3'; // localhost
-let FLIPPENING_RATIO_ORACLE = '0x8E98a35f9d4c940FB17c3a5c906393C006684382'; // ropsten
+let FLIPPENING_RATIO_ORACLE = '0x2b68111e7f4954C82898dD3bB9cFBcd34534c65e'; // real
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -44,26 +44,19 @@ async function main() {
 
 	console.log('flippeningRatioOracle deployed to:', flippeningRatioOracle.address);
 
-	let FlippeningRatioOracleInstanceContract = await ethers.getContractFactory('FlippeningRatioOracleInstance');
+	let FlippeningRatioOracleInstanceContract = await ethers.getContractFactory(
+		'FlippeningRatioOracleInstance'
+	);
 
-	let maturityDate = Math.round(Date.parse('13 DEC 2021 00:00:00 GMT') / 1000);
-
-	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
-	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
-	let contract = new ethers.Contract(ProxyERC20sUSD.address, abi, owner);
-	await contract.approve(manager.address, w3utils.toWei('10000'), {
-		from: owner.address,
-	});
-	console.log('Done approving');
+	let maturityDate = Math.round(Date.parse('30 JULY 2022 00:00:00 GMT') / 1000);
 
 	let oracleInstanceAddress = await createOracleInstance(
 		FlippeningRatioOracleInstanceContract,
 		owner.address,
 		flippeningRatioOracle.address,
-        'ETH/BTC Flippening Market',
-		w3utils.toWei('0.7'),
-        'flippening markets'
+		'ETH/BTC Flippening Market',
+		w3utils.toWei('1'),
+		'Flippening Markets'
 	);
 	await createMarket(manager, maturityDate, fundingAmount, oracleInstanceAddress);
 
@@ -75,10 +68,11 @@ async function main() {
 			owner.address,
 			flippeningRatioOracle.address,
 			'ETH/BTC Flippening Market',
-			w3utils.toWei('0.7'),
-            'flippening markets'
+			w3utils.toWei('1'),
+			'Flippening Markets',
 		],
-		contract: 'contracts/customOracle/FlippeningRatioOracleInstance.sol:FlippeningRatioOracleInstance',
+		contract:
+			'contracts/customOracle/FlippeningRatioOracleInstance.sol:FlippeningRatioOracleInstance',
 	});
 }
 
@@ -106,7 +100,7 @@ async function createMarket(
 	);
 
 	await result.wait().then(function(receipt) {
-        console.log('receipt', receipt);
+		console.log('receipt', receipt);
 		let marketCreationArgs = receipt.events[receipt.events.length - 1].args;
 		for (var key in marketCreationArgs) {
 			if (marketCreationArgs.hasOwnProperty(key)) {
@@ -118,27 +112,29 @@ async function createMarket(
 	});
 }
 
-
 async function createOracleInstance(
 	FlippeningRatioOracleInstanceContract,
 	ownerAddress,
 	flippeningRatioOracleContractDeployedAddress,
 	marketName,
 	ratio,
-    eventName
+	eventName
 ) {
 	const FlippeningRatioOracleInstanceContractDeployed = await FlippeningRatioOracleInstanceContract.deploy(
 		ownerAddress,
 		flippeningRatioOracleContractDeployedAddress,
 		marketName,
-	    ratio,
-        eventName
+		ratio,
+		eventName
 	);
 	await FlippeningRatioOracleInstanceContractDeployed.deployed();
 
-	console.log('FlippeningRatioOracleInstanceContractDeployed deployed to:', FlippeningRatioOracleInstanceContractDeployed.address);
 	console.log(
-		'with params marketName ' + marketName + ' ratio ' + ratio + ' event name ' + eventName 
+		'FlippeningRatioOracleInstanceContractDeployed deployed to:',
+		FlippeningRatioOracleInstanceContractDeployed.address
+	);
+	console.log(
+		'with params marketName ' + marketName + ' ratio ' + ratio + ' event name ' + eventName
 	);
 
 	return FlippeningRatioOracleInstanceContractDeployed.address;

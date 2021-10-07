@@ -23,7 +23,7 @@ async function main() {
 		network = 'mainnet';
 	}
 	let fundingAmount = w3utils.toWei('1');
-	if (network == 'homestead') {
+	if (network == 'mainnet') {
 		network = 'mainnet';
 		fundingAmount = w3utils.toWei('1000');
 	}
@@ -60,7 +60,7 @@ async function main() {
 	await EthBurnedFeedContractDeployed.deployed();
 
 	await hre.run('verify:verify', {
-		address: '0x5A81f48D2aF98EdB31241055a2b2f13351DE1E04',
+		address: EthBurnedFeedContractDeployed.address,
 		constructorArguments: [
 			owner.address,
 			'0xff07c97631ff3bab5e5e5660cdf47aded8d4d4fd',

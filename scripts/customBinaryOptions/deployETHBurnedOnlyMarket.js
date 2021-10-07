@@ -54,25 +54,16 @@ async function main() {
 	console.log('found manager at:' + manager.address);
 
 	let EthBurnedFeedContract = await ethers.getContractFactory('EthBurnedFeed');
-	const EthBurnedFeedContractDeployed = await EthBurnedFeedContract.deploy(
-		owner.address,
-		oracleContract,
-		toBytes32(sportsJobId),
-		w3utils.toWei('1'),
-		'burned-eth',
-		false
+	const EthBurnedFeedContractDeployed = await EthBurnedFeedContract.attach(
+		'0xa4134Dec1842AFBe8e381681eA31e6EbF47865ed'
 	);
-	await EthBurnedFeedContractDeployed.deployed();
+
+	console.log('EthBurnedFeedContractDeployed deployed to:', EthBurnedFeedContractDeployed.address);
 
 	let EthBurnedOracleInstanceContract = await ethers.getContractFactory('EthBurnedOracleInstance');
-	const EthBurnedOracleInstanceDeployed = await EthBurnedOracleInstanceContract.deploy(
-		owner.address,
-		EthBurnedFeedContractDeployed.address,
-		'ETH burned count',
-		1000000,
-		'ETH burned count'
+	const EthBurnedOracleInstanceDeployed = await EthBurnedOracleInstanceContract.attach(
+		'0x70eDa37bF8Ed257dbFe496b26d2b0dAaD19063dD'
 	);
-	await EthBurnedOracleInstanceDeployed.deployed();
 
 	console.log(
 		'EthBurnedOracleInstanceDeployed deployed to:',
@@ -85,7 +76,7 @@ async function main() {
 	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
 	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
 	let contract = new ethers.Contract(ProxyERC20sUSD.address, abi, owner);
-	let approval = await contract.approve(manager.address, fundingAmount, {
+	let approval = await contract.approve(manager.address, w3utils.toWei('100000'), {
 		from: owner.address,
 	});
 	approval.wait().then(console.log('Done approving'));

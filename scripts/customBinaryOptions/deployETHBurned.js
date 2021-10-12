@@ -79,7 +79,7 @@ async function main() {
 		EthBurnedOracleInstanceDeployed.address
 	);
 
-	let maturityDate = Math.round(Date.parse('15 DEC 2021 00:00:00 GMT') / 1000);
+	let maturityDate = Math.round(Date.parse('1 NOV 2021 00:00:00 GMT') / 1000);
 
 	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
 	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);

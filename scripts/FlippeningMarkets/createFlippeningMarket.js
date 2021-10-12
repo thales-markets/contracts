@@ -48,15 +48,35 @@ async function main() {
 		'FlippeningRatioOracleInstance'
 	);
 
-	let maturityDate = Math.round(Date.parse('30 JULY 2022 00:00:00 GMT') / 1000);
+	let maturityDate = Math.round(Date.parse('1 NOV 2021 00:00:00 GMT') / 1000);
 
 	let oracleInstanceAddress = await createOracleInstance(
 		FlippeningRatioOracleInstanceContract,
 		owner.address,
 		flippeningRatioOracle.address,
-		'ETH/BTC Flippening Market',
-		w3utils.toWei('1'),
-		'Flippening Markets'
+		'ETH/BTC market cap ratio',
+		w3utils.toWei('0.41'),
+		'ETH/BTC market cap ratio'
+	);
+	await createMarket(manager, maturityDate, fundingAmount, oracleInstanceAddress);
+
+	oracleInstanceAddress = await createOracleInstance(
+		FlippeningRatioOracleInstanceContract,
+		owner.address,
+		flippeningRatioOracle.address,
+		'ETH/BTC market cap ratio',
+		w3utils.toWei('0.46'),
+		'ETH/BTC market cap ratio'
+	);
+	await createMarket(manager, maturityDate, fundingAmount, oracleInstanceAddress);
+
+	oracleInstanceAddress = await createOracleInstance(
+		FlippeningRatioOracleInstanceContract,
+		owner.address,
+		flippeningRatioOracle.address,
+		'ETH/BTC market cap ratio',
+		w3utils.toWei('0.36'),
+		'ETH/BTC market cap ratio'
 	);
 	await createMarket(manager, maturityDate, fundingAmount, oracleInstanceAddress);
 

@@ -59,27 +59,39 @@ async function main() {
 	);
 
 	console.log('EthBurnedFeedContractDeployed deployed to:', EthBurnedFeedContractDeployed.address);
+	let maturityDate = Math.round(Date.parse('1 NOV 2021 00:00:00 GMT') / 1000);
 
 	let EthBurnedOracleInstanceContract = await ethers.getContractFactory('EthBurnedOracleInstance');
-	const EthBurnedOracleInstanceDeployed = await EthBurnedOracleInstanceContract.attach(
-		'0x70eDa37bF8Ed257dbFe496b26d2b0dAaD19063dD'
+	let EthBurnedOracleInstanceDeployed = await EthBurnedOracleInstanceContract.deploy(
+		owner.address,
+		EthBurnedFeedContractDeployed.address,
+		'ETH burned count',
+		640000,
+		'ETH burned count'
 	);
+	await EthBurnedOracleInstanceDeployed.deployed();
 
-	console.log(
-		'EthBurnedOracleInstanceDeployed deployed to:',
-		EthBurnedOracleInstanceDeployed.address
+	await createMarket(manager, maturityDate, fundingAmount, EthBurnedOracleInstanceDeployed.address);
+
+	EthBurnedOracleInstanceDeployed = await EthBurnedOracleInstanceContract.deploy(
+		owner.address,
+		EthBurnedFeedContractDeployed.address,
+		'ETH burned count',
+		690000,
+		'ETH burned count'
 	);
+	await EthBurnedOracleInstanceDeployed.deployed();
 
-	let maturityDate = Math.round(Date.parse('15 DEC 2021 00:00:00 GMT') / 1000);
+	await createMarket(manager, maturityDate, fundingAmount, EthBurnedOracleInstanceDeployed.address);
 
-	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
-	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
-	let contract = new ethers.Contract(ProxyERC20sUSD.address, abi, owner);
-	let approval = await contract.approve(manager.address, w3utils.toWei('100000'), {
-		from: owner.address,
-	});
-	approval.wait().then(console.log('Done approving'));
+	EthBurnedOracleInstanceDeployed = await EthBurnedOracleInstanceContract.deploy(
+		owner.address,
+		EthBurnedFeedContractDeployed.address,
+		'ETH burned count',
+		740000,
+		'ETH burned count'
+	);
+	await EthBurnedOracleInstanceDeployed.deployed();
 
 	await createMarket(manager, maturityDate, fundingAmount, EthBurnedOracleInstanceDeployed.address);
 

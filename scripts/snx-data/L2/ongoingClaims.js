@@ -28,7 +28,7 @@ async function getAllClaimers() {
 	let claimers = [];
 	const getClaims = gql`
 		query getClaims {
-			tokenTransactions(where: { type: claimStakingRewards }) {
+			tokenTransactions(where: { type: claimStakingRewards , timestamp_gt:1633513600}) {
 				account
 				id
 				timestamp

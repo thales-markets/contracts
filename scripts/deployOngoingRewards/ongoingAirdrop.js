@@ -192,7 +192,7 @@ async function ongoingAirdrop() {
 			.round();
 
 		// check if the address is in stakingRewards
-		const stakingReward = Big(stakingRewards[address] ? stakingRewards[address] : 0);
+		let stakingReward = Big(stakingRewards[address] ? stakingRewards[address] : 0);
 		if (stakingReward > 0) {
 			amount = amount.add(stakingReward);
 		}

@@ -2,6 +2,8 @@ pragma solidity >=0.4.24;
 
 import "../interfaces/IBinaryOptionMarketManager.sol";
 import "../interfaces/IBinaryOption.sol";
+import "../interfaces/IExchangeRates.sol";
+import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
 
 interface IBinaryOptionMarket {
     /* ========== TYPES ========== */

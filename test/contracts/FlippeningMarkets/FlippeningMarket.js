@@ -27,8 +27,6 @@ const {
 
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
 let BinaryOptionMarket,
-	exchangeRates,
-	oracle,
 	sUSDSynth,
 	binaryOptionMarketMastercopy,
 	binaryOptionMastercopy;
@@ -96,14 +94,12 @@ contract('BinaryOption', accounts => {
 			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
 			BinaryOptionMastercopy: binaryOptionMastercopy,
 			AddressResolver: addressResolver,
-			ExchangeRates: exchangeRates,
 			SynthsUSD: sUSDSynth,
 		} = await setupAllContracts({
 			accounts,
 			synths: ['sUSD'],
 			contracts: [
 				'FeePool',
-				'ExchangeRates',
 				'BinaryOptionMarketMastercopy',
 				'BinaryOptionMastercopy',
 				'BinaryOptionMarketFactory',
@@ -117,8 +113,6 @@ contract('BinaryOption', accounts => {
 			from: managerOwner,
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
-
-		oracle = await exchangeRates.oracle();
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),

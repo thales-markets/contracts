@@ -150,6 +150,11 @@
         "type": "address"
       },
       {
+        "internalType": "contract IExchangeRates",
+        "name": "_exchangeRates",
+        "type": "address"
+      },
+      {
         "internalType": "bytes32",
         "name": "oracleKey",
         "type": "bytes32"

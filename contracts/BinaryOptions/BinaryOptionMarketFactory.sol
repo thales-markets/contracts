@@ -1,4 +1,5 @@
 pragma solidity ^0.5.16;
+pragma experimental ABIEncoderV2;
 
 // Inheritance
 import "synthetix-2.43.1/contracts/MinimalProxyFactory.sol";
@@ -7,8 +8,11 @@ import "synthetix-2.43.1/contracts/Owned.sol";
 // Internal references
 import "./BinaryOptionMarket.sol";
 import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
+import "../interfaces/IExchangeRates.sol";
+import "../interfaces/IBinaryOptionMarket.sol";
 
 contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
+
     /* ========== STATE VARIABLES ========== */
     address public binaryOptionMarketManager;
     address public binaryOptionMarketMastercopy;
@@ -23,6 +27,7 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     function createMarket(
         address creator,
         IAddressResolver _resolver,
+        IExchangeRates _exchangeRates,
         bytes32 oracleKey,
         uint strikePrice,
         uint[2] calldata times, // [maturity, expiry]
@@ -33,22 +38,25 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     ) external returns (BinaryOptionMarket) {
         require(binaryOptionMarketManager == msg.sender, "Only permitted by the manager.");
 
-        BinaryOptionMarket bom =
-            BinaryOptionMarket(
-                _cloneAsMinimalProxy(binaryOptionMarketMastercopy, "Could not create a Binary Option Market")
-            );
+        BinaryOptionMarket bom = BinaryOptionMarket(
+            _cloneAsMinimalProxy(binaryOptionMarketMastercopy, "Could not create a Binary Option Market")
+        );
+
         bom.initialize(
-            binaryOptionMarketManager,
-            binaryOptionMastercopy,
-            _resolver,
-            creator,
-            oracleKey,
-            strikePrice,
-            times,
-            initialMint,
-            fees,
-            customMarket,
-            customOracle
+            BinaryOptionMarket.BinaryOptionMarketParameters(
+                binaryOptionMarketManager,
+                binaryOptionMastercopy,
+                _resolver,
+                _exchangeRates,
+                creator,
+                oracleKey,
+                strikePrice,
+                times,
+                initialMint,
+                fees,
+                customMarket,
+                customOracle
+            )
         );
         return bom;
     }

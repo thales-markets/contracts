@@ -128,14 +128,14 @@ contract('BinaryOptionMarketManager', accounts => {
 			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
 			BinaryOptionMastercopy: binaryOptionMastercopy,
 			AddressResolver: addressResolver,
-			ExchangeRates: exchangeRates,
+			ExchangeRatesV2: exchangeRates,
 			SynthsUSD: sUSDSynth,
 		} = await setupAllContracts({
 			accounts,
 			synths: ['sUSD'],
 			contracts: [
 				'FeePool',
-				'ExchangeRates',
+				'ExchangeRatesV2',
 				'BinaryOptionMarketMastercopy',
 				'BinaryOptionMastercopy',
 				'BinaryOptionMarketFactory',
@@ -150,10 +150,10 @@ contract('BinaryOptionMarketManager', accounts => {
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
 
-		oracle = await exchangeRates.oracle();
+		//oracle = await exchangeRates.oracle();
 
 		await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-			from: oracle,
+			from: managerOwner,
 		});
 
 		await Promise.all([
@@ -184,11 +184,22 @@ contract('BinaryOptionMarketManager', accounts => {
 			let afterDeposit = toUnit(2).add(beforeDeposit);
 
 			assert.bnEqual(await manager.totalDeposited(), afterDeposit);
+			console.log('current', await currentTime());
 
 			await fastForward(expiryDuration + 1000);
+			console.log('current', await currentTime());
 			await exchangeRates.updateRates([sAUDKey], [toUnit(2)], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
+
+			console.log('current', await currentTime());
+			console.log('sAUD rate', (await exchangeRates.rateForCurrency(sAUDKey)).toString());
+			console.log('sAUD last update', (await exchangeRates.lastRateUpdateTimes(sAUDKey)).toString());
+
+			console.log(await markets[0].canResolve());
+			console.log((await markets[0].oracleTimestamp()).toString());
+			//console.log(await markets[0]._isFreshPriceUpdateTime((await exchangeRates.lastRateUpdateTimes(sAUDKey)).toString()));
+
 			await Promise.all(
 				markets.map(m => {
 					manager.resolveMarket(m.address);
@@ -247,7 +258,7 @@ contract('BinaryOptionMarketManager', accounts => {
 			// Resolve all the even markets, ensuring they have been transferred.
 			await fastForward(expiryDuration + 1000);
 			await exchangeRates.updateRates([sAUDKey], [toUnit(2)], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await Promise.all(evenMarkets.map(m => manager.resolveMarket(m)));
 
@@ -431,7 +442,7 @@ contract('BinaryOptionMarketManager', accounts => {
 
 			await fastForward(expiryDuration + 1000);
 			await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await manager.resolveMarket(newMarket.address);
 			await manager.expireMarkets([newMarket.address], { from: managerOwner });
@@ -475,6 +486,7 @@ contract('BinaryOptionMarketManager', accounts => {
 				args: [
 					managerOwner,
 					addressResolver.address,
+					exchangeRates.address,
 					61 * 60, // max oracle price age: 61 minutes
 					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
@@ -572,6 +584,7 @@ contract('BinaryOptionMarketManager', accounts => {
 				args: [
 					managerOwner,
 					addressResolver.address,
+					exchangeRates.address,
 					61 * 60, // max oracle price age: 61 minutes
 					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year

@@ -12,6 +12,11 @@
         "type": "address"
       },
       {
+        "internalType": "contract IExchangeRates",
+        "name": "_exchangeRates",
+        "type": "address"
+      },
+      {
         "internalType": "uint256",
         "name": "_maxOraclePriceAge",
         "type": "uint256"
@@ -465,6 +470,21 @@
         "internalType": "uint256",
         "name": "maxTimeToMaturity",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "exchangeRates",
+    "outputs": [
+      {
+        "internalType": "contract IExchangeRates",
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,

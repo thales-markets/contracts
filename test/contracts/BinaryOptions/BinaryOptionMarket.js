@@ -20,6 +20,7 @@ const {
 	getEventByName,
 	getDecodedLogs,
 	decodedEventEqual,
+	convertToDecimals,
 } = require('../../utils/helpers');
 
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
@@ -32,6 +33,8 @@ let BinaryOptionMarket,
 let market, long, short, BinaryOption, Synth;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+
+const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 const Phase = {
 	Trading: toBN(0),
@@ -85,6 +88,8 @@ contract('BinaryOption', accounts => {
 
 	const sAUDKey = toBytes32('sAUD');
 	const iAUDKey = toBytes32('iAUD');
+	const sUSDKey = toBytes32('sUSD');
+	const nonRate = toBytes32('nonExistent');
 
 	let timeToMaturity = 200;
 	let totalDepositedAfterFees;
@@ -128,14 +133,14 @@ contract('BinaryOption', accounts => {
 			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
 			BinaryOptionMastercopy: binaryOptionMastercopy,
 			AddressResolver: addressResolver,
-			ExchangeRates: exchangeRates,
+			ExchangeRatesV2: exchangeRates,
 			SynthsUSD: sUSDSynth,
 		} = await setupAllContracts({
 			accounts,
 			synths: ['sUSD'],
 			contracts: [
 				'FeePool',
-				'ExchangeRates',
+				'ExchangeRatesV2',
 				'BinaryOptionMarketMastercopy',
 				'BinaryOptionMastercopy',
 				'BinaryOptionMarketFactory',
@@ -150,10 +155,38 @@ contract('BinaryOption', accounts => {
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
 
-		oracle = await exchangeRates.oracle();
+		//oracle = await exchangeRates.oracle();
+		let aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
+		let aggregator_iAUD = await MockAggregator.new({ from: managerOwner });
+		let aggregator_sUSD = await MockAggregator.new({ from: managerOwner });
+		let aggregator_nonRate = await MockAggregator.new({ from: managerOwner });
+		aggregator_sAUD.setDecimals('8');
+		aggregator_iAUD.setDecimals('8');
+		aggregator_sUSD.setDecimals('8');
+		const timestamp = await currentTime();
+
+		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
+		await aggregator_iAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
+		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
+
+		await exchangeRates.addAggregator(sAUDKey, aggregator_sAUD.address, { 
+			from: managerOwner,
+		});
+
+		await exchangeRates.addAggregator(iAUDKey, aggregator_iAUD.address, { 
+			from: managerOwner,
+		});
+
+		await exchangeRates.addAggregator(sUSDKey, aggregator_sUSD.address, { 
+			from: managerOwner,
+		});
+
+		await exchangeRates.addAggregator(nonRate, aggregator_nonRate.address, { 
+			from: managerOwner,
+		});
 
 		await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-			from: oracle,
+			from: managerOwner,
 		});
 
 		await Promise.all([
@@ -363,6 +396,7 @@ contract('BinaryOption', accounts => {
 				args: [
 					initialCreator,
 					addressResolver.address,
+					exchangeRates.address,
 					sAUDKey,
 					toUnit(1),
 					[now + 200, now + expiryDuration + 200],
@@ -463,9 +497,6 @@ contract('BinaryOption', accounts => {
 		it('Cannot create markets for invalid keys.', async () => {
 			const now = await currentTime();
 
-			const sUSDKey = toBytes32('sUSD');
-			const nonRate = toBytes32('nonExistent');
-
 			await assert.revert(
 				manager.createMarket(sUSDKey, toUnit(1), now + 100, toUnit(2), false, ZERO_ADDRESS, {
 					from: initialCreator,
@@ -483,7 +514,7 @@ contract('BinaryOption', accounts => {
 				{ from: await exchangeRates.owner() }
 			);
 			await exchangeRates.updateRates([iAUDKey], [toUnit(151)], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 
 			await assert.revert(
@@ -614,7 +645,7 @@ contract('BinaryOption', accounts => {
 
 			await fastForward(expiryDuration.add(toBN(1000)));
 			await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await manager.resolveMarket(newAddress);
 			await manager.resolveMarket(newerAddress);
@@ -659,7 +690,7 @@ contract('BinaryOption', accounts => {
 
 				await fastForward(300);
 				await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-					from: oracle,
+					from: await exchangeRates.owner(),
 				});
 				await manager.resolveMarket(newMarket.address);
 				await assert.revert(
@@ -680,7 +711,7 @@ contract('BinaryOption', accounts => {
 				);
 				await fastForward(expiryDuration.add(toBN(1000)));
 				await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-					from: oracle,
+					from: await exchangeRates.owner(),
 				});
 				await manager.resolveMarket(newMarket.address);
 
@@ -784,7 +815,10 @@ contract('BinaryOption', accounts => {
 		it('Current oracle price and timestamp are correct.', async () => {
 			const now = await currentTime();
 			const price = toUnit(0.7);
-			await exchangeRates.updateRates([sAUDKey], [price], now, { from: oracle });
+			await exchangeRates.removeAggregator(sAUDKey, { from: await exchangeRates.owner() });
+			await exchangeRates.updateRates([sAUDKey], [price], now, { from: await exchangeRates.owner() });
+
+			console.log('sAUD rate', (await exchangeRates.rateForCurrency(sAUDKey)).toString());
 			const result = await market.oraclePriceAndTimestamp();
 
 			assert.bnEqual(result.price, price);
@@ -797,12 +831,12 @@ contract('BinaryOption', accounts => {
 
 			let now = await currentTime();
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice.div(two)], now, {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			assert.bnEqual(await market.result(), Side.Short);
 			now = await currentTime();
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice.mul(two)], now, {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			assert.bnEqual(await market.result(), Side.Long);
 
@@ -810,19 +844,19 @@ contract('BinaryOption', accounts => {
 			now = await currentTime();
 
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice.mul(two)], now, {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await manager.resolveMarket(market.address);
 
 			assert.isTrue(await market.resolved());
 			now = await currentTime();
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice.div(two)], now, {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			assert.bnEqual(await market.result(), Side.Long);
 			now = await currentTime();
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice.mul(two)], now, {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			assert.bnEqual(await market.result(), Side.Long);
 		});
@@ -840,7 +874,7 @@ contract('BinaryOption', accounts => {
 			await fastForward(timeToMaturity + 1);
 			now = await currentTime();
 			const price = initialStrikePrice.add(toBN(1));
-			await exchangeRates.updateRates([sAUDKey], [price], now, { from: oracle });
+			await exchangeRates.updateRates([sAUDKey], [price], now, { from: await exchangeRates.owner() });
 			const tx = await manager.resolveMarket(market.address);
 			assert.bnEqual(await market.result(), Side.Long);
 			assert.isTrue(await market.resolved());
@@ -877,7 +911,7 @@ contract('BinaryOption', accounts => {
 			now = await currentTime();
 			const price = initialStrikePrice.sub(toBN(1));
 
-			await exchangeRates.updateRates([sAUDKey], [price], now, { from: oracle });
+			await exchangeRates.updateRates([sAUDKey], [price], now, { from: await exchangeRates.owner() });
 
 			const tx = await manager.resolveMarket(market.address);
 			assert.isTrue(await market.resolved());
@@ -902,7 +936,7 @@ contract('BinaryOption', accounts => {
 			);
 			await fastForward(timeToMaturity + 1);
 			now = await currentTime();
-			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], now, { from: oracle });
+			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], now, { from: await exchangeRates.owner() });
 			await manager.resolveMarket(market.address);
 			assert.isTrue(await market.resolved());
 			assert.bnEqual(await market.result(), Side.Long);
@@ -933,7 +967,7 @@ contract('BinaryOption', accounts => {
 			);
 			await fastForward(timeToMaturity + 1);
 			now = await currentTime();
-			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], now, { from: oracle });
+			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], now, { from: await exchangeRates.owner() });
 			assert.isTrue(await market.canResolve());
 			await manager.resolveMarket(market.address);
 			assert.isFalse(await market.canResolve());
@@ -956,7 +990,7 @@ contract('BinaryOption', accounts => {
 				[initialStrikePrice],
 				now - (maxOraclePriceAge - 60),
 				{
-					from: oracle,
+					from: await exchangeRates.owner(),
 				}
 			);
 			assert.isTrue(await market.canResolve());
@@ -995,7 +1029,7 @@ contract('BinaryOption', accounts => {
 
 			await fastForward(timeToMaturity + 1);
 			await exchangeRates.updateRates([sAUDKey], [toUnit(0.7)], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 
 			const feeAddress = await manager.feeAddress();
@@ -1073,7 +1107,7 @@ contract('BinaryOption', accounts => {
 			);
 			await fastForward(timeToMaturity + 1);
 			await exchangeRates.updateRates([sAUDKey], [toUnit(0.7)], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await manager.setPaused(true, { from: accounts[1] });
 			await assert.revert(
@@ -1117,7 +1151,7 @@ contract('BinaryOption', accounts => {
 
 			now = await currentTime();
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], now, {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await manager.resolveMarket(market.address);
 
@@ -1137,7 +1171,7 @@ contract('BinaryOption', accounts => {
 
 			now = await currentTime();
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], now, {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await manager.resolveMarket(market.address);
 
@@ -1183,7 +1217,7 @@ contract('BinaryOption', accounts => {
 
 			now = await currentTime();
 			const price = (await market.oracleDetails()).strikePrice;
-			await exchangeRates.updateRates([sAUDKey], [price], now, { from: oracle });
+			await exchangeRates.updateRates([sAUDKey], [price], now, { from: await exchangeRates.owner() });
 			await manager.resolveMarket(market.address);
 
 			assert.bnEqual(await long.balanceOf(exersicer), longBalanceAfterMinting);
@@ -1225,7 +1259,7 @@ contract('BinaryOption', accounts => {
 				[sAUDKey],
 				[(await market.oracleDetails()).strikePrice],
 				await currentTime(),
-				{ from: oracle }
+				{ from: await exchangeRates.owner() }
 			);
 			assert.isFalse(await market.resolved());
 			await market.exerciseOptions({ from: exersicer });
@@ -1244,7 +1278,7 @@ contract('BinaryOption', accounts => {
 			await fastForward(timeToMaturity + 100);
 			now = await currentTime();
 			const price = (await market.oracleDetails()).strikePrice;
-			await exchangeRates.updateRates([sAUDKey], [price], now, { from: oracle });
+			await exchangeRates.updateRates([sAUDKey], [price], now, { from: await exchangeRates.owner() });
 			await manager.resolveMarket(market.address);
 
 			await assert.revert(market.exerciseOptions({ from: exersicer }), 'Nothing to exercise');
@@ -1266,7 +1300,7 @@ contract('BinaryOption', accounts => {
 				[sAUDKey],
 				[(await market.oracleDetails()).strikePrice],
 				await currentTime(),
-				{ from: oracle }
+				{ from: await exchangeRates.owner() }
 			);
 			await manager.resolveMarket(market.address);
 
@@ -1297,7 +1331,7 @@ contract('BinaryOption', accounts => {
 			await fastForward(timeToMaturity + 100);
 			now = await currentTime();
 			const price = (await market.oracleDetails()).strikePrice;
-			await exchangeRates.updateRates([sAUDKey], [price], now, { from: oracle });
+			await exchangeRates.updateRates([sAUDKey], [price], now, { from: await exchangeRates.owner() });
 			await manager.resolveMarket(market.address);
 
 			let tx = await market.exerciseOptions({ from: dummy });
@@ -1344,7 +1378,7 @@ contract('BinaryOption', accounts => {
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await manager.resolveMarket(market.address);
 			await manager.expireMarkets([market.address], { from: managerOwner });
@@ -1388,7 +1422,7 @@ contract('BinaryOption', accounts => {
 			await fastForward(timeToMaturity + 10);
 			now = await currentTime();
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], now, {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 
 			await manager.resolveMarket(market.address);
@@ -1410,7 +1444,7 @@ contract('BinaryOption', accounts => {
 
 			await fastForward(timeToMaturity + 10);
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await market.exerciseOptions({ from: initialCreator });
 			const marketAddress = market.address;
@@ -1430,7 +1464,7 @@ contract('BinaryOption', accounts => {
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await manager.resolveMarket(market.address);
 
@@ -1473,7 +1507,7 @@ contract('BinaryOption', accounts => {
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await manager.resolveMarket(market.address);
 			await manager.expireMarkets([market.address], { from: managerOwner });
@@ -1493,7 +1527,7 @@ contract('BinaryOption', accounts => {
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 
 			const marketAddress = market.address;
@@ -1525,7 +1559,7 @@ contract('BinaryOption', accounts => {
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await exchangeRates.updateRates([sAUDKey], [initialStrikePrice], await currentTime(), {
-				from: oracle,
+				from: await exchangeRates.owner(),
 			});
 			await manager.resolveMarket(market.address);
 			await manager.setPaused(true, { from: accounts[1] });

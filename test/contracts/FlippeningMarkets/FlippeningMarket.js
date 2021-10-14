@@ -3,7 +3,10 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../common');
+const BTC_TOTAL_MARKETCAP = '0x47E1e89570689c13E723819bf633548d611D630C';
+const ETH_TOTAL_MARKETCAP = '0xAA2FE1324b84981832AafCf7Dc6E6Fe6cF124283';
+
+const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
 const {
 	fastForward,
 	toUnit,
@@ -12,7 +15,7 @@ const {
 	divideDecimalRound,
 } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
-const { setupContract, setupAllContracts } = require('../Token/setup');
+const { setupContract, setupAllContracts } = require('../../utils/setup');
 
 const {
 	ensureOnlyExpectedMutativeFunctions,
@@ -20,12 +23,10 @@ const {
 	getEventByName,
 	getDecodedLogs,
 	decodedEventEqual,
-} = require('../helpers');
+} = require('../../utils/helpers');
 
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
 let BinaryOptionMarket,
-	exchangeRates,
-	oracle,
 	sUSDSynth,
 	binaryOptionMarketMastercopy,
 	binaryOptionMastercopy;
@@ -127,32 +128,25 @@ contract('BinaryOption', accounts => {
 
 	describe('Integration test', () => {
 		it('Can create a custom market', async () => {
-			let SportFeedContract = artifacts.require('TestSportFeed');
-			let feed = await SportFeedContract.new(
+			let FlippeningRatioOracleContract = artifacts.require('TestFlippeningRatioOracle');
+			let feed = await FlippeningRatioOracleContract.new(
 				managerOwner,
-				'0x56dd6586db0d08c6ce7b2f2805af28616e082455',
-				toBytes32('aa34467c0b074fb0888c9f42c449547f'),
-				toUnit(1),
-				'medals',
-				'2016',
-				'',
-				''
+				ETH_TOTAL_MARKETCAP,
+				BTC_TOTAL_MARKETCAP,
 			);
 
-			await feed.setResult('0x5b22555341222c2243484e222c22474252225d00000000000000000000000000', {
-				from: managerOwner,
-			});
+			// await feed.setResult('0x5b22555341222c2243484e222c22474252225d00000000000000000000000000', {
+			// 	from: managerOwner,
+			// });
 
-			let SportFeedOracleInstanceContract = artifacts.require('SportFeedOracleInstance');
+			let FlippeningRatioOracleInstanceContract = artifacts.require('FlippeningRatioOracleInstance');
 
-			await SportFeedOracleInstanceContract.link(await artifacts.require('Integers').new());
-
-			customOracle = await SportFeedOracleInstanceContract.new(
+			customOracle = await FlippeningRatioOracleInstanceContract.new(
 				managerOwner,
 				feed.address,
-				'USA',
-				'1',
-				'Olympics Medal Count'
+				'BTC/ETH Flippening Market',
+		        toUnit(0.3),
+				'flippening markets'
 			);
 
 			const now = await currentTime();
@@ -196,13 +190,13 @@ contract('BinaryOption', accounts => {
 		});
 
 		it('Can resolve a custom market', async () => {
-			assert.isFalse(await customOracle.resolvable());
+			assert.isTrue(await customOracle.resolvable());
 			assert.isFalse(await customMarket.canResolve());
 
 			await fastForward(timeToMaturity + 100);
 
-			assert.isFalse(await customOracle.resolvable());
-			assert.isFalse(await customMarket.canResolve());
+			assert.isTrue(await customOracle.resolvable());
+			assert.isTrue(await customMarket.canResolve());
 
 			await customOracle.setResolvable(true, {
 				from: managerOwner,

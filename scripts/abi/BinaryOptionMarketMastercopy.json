@@ -235,21 +235,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "exchangeRates",
-    "outputs": [
-      {
-        "internalType": "contract IExchangeRates",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [],
     "name": "exerciseOptions",
@@ -350,8 +335,8 @@
             "type": "address"
           },
           {
-            "internalType": "contract IExchangeRates",
-            "name": "exchangeRates",
+            "internalType": "contract IPriceFeed",
+            "name": "priceFeed",
             "type": "address"
           },
           {
@@ -580,6 +565,21 @@
         "internalType": "enum IBinaryOptionMarket.Phase",
         "name": "",
         "type": "uint8"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "priceFeed",
+    "outputs": [
+      {
+        "internalType": "contract IPriceFeed",
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,

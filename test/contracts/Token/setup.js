@@ -116,12 +116,6 @@ const setupContract = async ({
 		);
 	};
 
-
-	// let ExchangeRatesV2 = artifacts.require('ExchangeRatesV2');
-	// let exchangeRatesV2 = await ExchangeRatesV2.new(
-	// 	owner,
-	// );
-
 	// if it needs library linking
 	if (Object.keys((await artifacts.readArtifact(source || contract)).linkReferences).length > 0) {
 		await artifact.link(await artifacts.require('SafeDecimalMath').new());
@@ -148,14 +142,7 @@ const setupContract = async ({
 		AddressResolver: [owner],
 		SystemStatus: [owner],
 		FlexibleStorage: [tryGetAddressOf('AddressResolver')],
-		// ExchangeRates: [
-		// 	owner,
-		// 	oracle,
-		// 	tryGetAddressOf('AddressResolver'),
-		// 	[toBytes32('SNX')],
-		// 	[toWei('0.2', 'ether')],
-		// ],
-		ExchangeRatesV2: [
+		PriceFeed: [
 			owner,
 		],
 		SynthetixState: [owner, ZERO_ADDRESS],
@@ -230,7 +217,7 @@ const setupContract = async ({
 		BinaryOptionMarketManager: [
 			owner,
 			tryGetAddressOf('AddressResolver'),
-			tryGetAddressOf('ExchangeRatesV2'), //exchangeRatesV2.address,
+			tryGetAddressOf('PriceFeed'),
 			61 * 60, // max oracle price age: 61 minutes
 			26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 			365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
@@ -581,12 +568,7 @@ const setupAllContracts = async ({
 			contract: 'SystemSettings',
 			deps: ['AddressResolver', 'FlexibleStorage'],
 		},
-		// {
-		// 	contract: 'ExchangeRatesV2',
-		// 	deps: ['AddressResolver', 'SystemSettings'],
-		// 	mocks: ['Exchanger'],
-		// },
-		{ contract: 'ExchangeRatesV2' },
+		{ contract: 'PriceFeed' },
 		{ contract: 'ProxyERC20', forContract: 'Synth' }, // for generic synth
 		{ contract: 'Proxy', forContract: 'FeePool' },
 		{ contract: 'TokenState', forContract: 'Synth' }, // for generic synth
@@ -599,7 +581,7 @@ const setupAllContracts = async ({
 		}, // a generic synth
 		{
 			contract: 'BinaryOptionMarketFactory',
-			deps: ['AddressResolver', 'ExchangeRatesV2'],
+			deps: ['AddressResolver', 'PriceFeed'],
 		},
 		{
 			contract: 'BinaryOptionMarketMastercopy',
@@ -614,7 +596,7 @@ const setupAllContracts = async ({
 			deps: [
 				'SystemStatus',
 				'AddressResolver',
-				'ExchangeRatesV2',
+				'PriceFeed',
 				'FeePool',
 				'Synthetix',
 				'BinaryOptionMarketFactory',

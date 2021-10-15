@@ -26,7 +26,7 @@ const {
 
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
 let BinaryOptionMarket,
-	exchangeRates,
+	priceFeed,
 	oracle,
 	sUSDSynth,
 	binaryOptionMarketMastercopy,
@@ -78,14 +78,14 @@ contract('BinaryOptionMarketManager', accounts => {
 			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
 			BinaryOptionMastercopy: binaryOptionMastercopy,
 			AddressResolver: addressResolver,
-			ExchangeRatesV2: exchangeRates,
+			PriceFeed: priceFeed,
 			SynthsUSD: sUSDSynth,
 		} = await setupAllContracts({
 			accounts,
 			synths: ['sUSD'],
 			contracts: [
 				'FeePool',
-				'ExchangeRatesV2',
+				'PriceFeed',
 				'BinaryOptionMarketMastercopy',
 				'BinaryOptionMastercopy',
 				'BinaryOptionMarketFactory',
@@ -100,9 +100,9 @@ contract('BinaryOptionMarketManager', accounts => {
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
 
-		//oracle = await exchangeRates.oracle();
+		//oracle = await priceFeed.oracle();
 
-		await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
+		await priceFeed.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
 			from: managerOwner,
 		});
 
@@ -140,11 +140,11 @@ contract('BinaryOptionMarketManager', accounts => {
 			);
 			await market.mint(value, { from: exerciser });
 			await fastForward(timeToMaturity + 100);
-			await exchangeRates.updateRates(
+			await priceFeed.updateRates(
 				[sAUDKey],
 				[(await market.oracleDetails()).strikePrice],
 				await currentTime(),
-				{ from: await exchangeRates.owner() }
+				{ from: await priceFeed.owner() }
 			);
 
 			await market.exerciseOptions({ from: initialCreator });

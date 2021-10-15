@@ -25,7 +25,7 @@ const {
 
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
 let BinaryOptionMarket,
-	exchangeRates,
+	priceFeed,
 	oracle,
 	sUSDSynth,
 	binaryOptionMarketMastercopy,
@@ -98,14 +98,14 @@ contract('BinaryOption', accounts => {
 			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
 			BinaryOptionMastercopy: binaryOptionMastercopy,
 			AddressResolver: addressResolver,
-			ExchangeRatesV2: exchangeRates,
+			PriceFeed: priceFeed,
 			SynthsUSD: sUSDSynth,
 		} = await setupAllContracts({
 			accounts,
 			synths: ['sUSD'],
 			contracts: [
 				'FeePool',
-				'ExchangeRatesV2',
+				'PriceFeed',
 				'BinaryOptionMarketMastercopy',
 				'BinaryOptionMastercopy',
 				'BinaryOptionMarketFactory',
@@ -120,22 +120,22 @@ contract('BinaryOption', accounts => {
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
 
-		// oracle = await exchangeRates.oracle();
+		// oracle = await priceFeed.oracle();
 		let aggregatorAUD = await MockAggregator.new({ from: managerOwner });
 		aggregatorAUD.setDecimals('8');
 		const timestamp = await currentTime();
 		await aggregatorAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
-		await exchangeRates.addAggregator(AUDKey, aggregatorAUD.address, { 
+		await priceFeed.addAggregator(AUDKey, aggregatorAUD.address, { 
 			from: managerOwner,
 		});
 
-		await exchangeRates.updateRates([AUDKey], [toUnit(5)], await currentTime(), {
+		await priceFeed.updateRates([AUDKey], [toUnit(5)], await currentTime(), {
 			from: managerOwner,
 		});
 
-		console.log('AUD rate', await exchangeRates.rateForCurrency(AUDKey));
-		console.log('AUD aggregator', await exchangeRates.aggregators(AUDKey));
+		console.log('AUD rate', await priceFeed.rateForCurrency(AUDKey));
+		console.log('AUD aggregator', await priceFeed.aggregators(AUDKey));
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),

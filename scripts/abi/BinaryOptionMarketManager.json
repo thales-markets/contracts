@@ -12,8 +12,8 @@
         "type": "address"
       },
       {
-        "internalType": "contract IExchangeRates",
-        "name": "_exchangeRates",
+        "internalType": "contract IPriceFeed",
+        "name": "_priceFeed",
         "type": "address"
       },
       {
@@ -477,21 +477,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "exchangeRates",
-    "outputs": [
-      {
-        "internalType": "contract IExchangeRates",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
@@ -721,6 +706,21 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "priceFeed",
+    "outputs": [
+      {
+        "internalType": "contract IPriceFeed",
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,

@@ -54,68 +54,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bytes32",
-        "name": "currencyKey",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "entryPoint",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "upperLimit",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "lowerLimit",
-        "type": "uint256"
-      }
-    ],
-    "name": "InversePriceConfigured",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "currencyKey",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "rate",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "roundId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "initiator",
-        "type": "address"
-      }
-    ],
-    "name": "InversePriceFrozen",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -141,6 +79,19 @@
       }
     ],
     "name": "OwnerNominated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RateDeleted",
     "type": "event"
   },
   {
@@ -237,6 +188,27 @@
     "constant": true,
     "inputs": [
       {
+        "internalType": "address",
+        "name": "aggregator",
+        "type": "address"
+      }
+    ],
+    "name": "currenciesUsingAggregator",
+    "outputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "currencies",
+        "type": "bytes32[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
@@ -276,65 +248,18 @@
     "type": "function"
   },
   {
-    "constant": true,
+    "constant": false,
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "currencyKey",
         "type": "bytes32"
       }
     ],
-    "name": "inversePricing",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "entryPoint",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "upperLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "lowerLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "frozenAtUpperLimit",
-        "type": "bool"
-      },
-      {
-        "internalType": "bool",
-        "name": "frozenAtLowerLimit",
-        "type": "bool"
-      }
-    ],
+    "name": "deleteRate",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "invertedKeys",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -466,21 +391,6 @@
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "currencyKey",
-        "type": "bytes32"
-      }
-    ],
-    "name": "removeInversePricing",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "constant": true,
     "inputs": [
       {
@@ -499,46 +409,6 @@
     ],
     "payable": false,
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "currencyKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "entryPoint",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "upperLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "lowerLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "freezeAtUpperLimit",
-        "type": "bool"
-      },
-      {
-        "internalType": "bool",
-        "name": "freezeAtLowerLimit",
-        "type": "bool"
-      }
-    ],
-    "name": "setInversePricing",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

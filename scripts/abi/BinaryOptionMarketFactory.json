@@ -150,8 +150,8 @@
         "type": "address"
       },
       {
-        "internalType": "contract IExchangeRates",
-        "name": "_exchangeRates",
+        "internalType": "contract IPriceFeed",
+        "name": "_priceFeed",
         "type": "address"
       },
       {

@@ -14,7 +14,6 @@ import "./BinaryOptionMarketFactory.sol";
 import "./BinaryOptionMarket.sol";
 import "./BinaryOption.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
-//import "synthetix-2.43.1/contracts/interfaces/IExchangeRates.sol";
 import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
 import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
 
@@ -55,21 +54,20 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     BinaryOptionMarketManager internal _migratingManager;
 
     IAddressResolver public resolver;
-    IExchangeRates public exchangeRates;
+    IPriceFeed public priceFeed;
 
     address public binaryOptionMarketFactory;
 
     /* ---------- Address Resolver Configuration ---------- */
 
     bytes32 internal constant CONTRACT_SYNTHSUSD = "SynthsUSD";
-    bytes32 internal constant CONTRACT_EXRATES = "ExchangeRates";
 
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
         address _owner,
         IAddressResolver _resolver,
-        IExchangeRates _exchangeRates,
+        IPriceFeed _priceFeed,
         uint _maxOraclePriceAge,
         uint _expiryDuration,
         uint _maxTimeToMaturity,
@@ -79,7 +77,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         address _feeAddress
     ) public Owned(_owner) Pausable() {
         resolver = _resolver;
-        exchangeRates = _exchangeRates;
+        priceFeed = _priceFeed;
 
         // Temporarily change the owner so that the setters don't revert.
         owner = msg.sender;
@@ -111,9 +109,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         return IERC20(resolver.requireAndGetAddress(CONTRACT_SYNTHSUSD, "Synth sUSD contract not found"));
     }
 
-    function _exchangeRates() internal view returns (IExchangeRates) {
-        // return IExchangeRates(resolver.requireAndGetAddress(CONTRACT_EXRATES, "ExchangeRates contract not found"));
-        return exchangeRates;
+    function _priceFeed() internal view returns (IPriceFeed) {
+        return priceFeed;
     }
 
     /* ---------- Market Information ---------- */
@@ -139,18 +136,11 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     function _isValidKey(bytes32 oracleKey) internal view returns (bool) {
-        //IExchangeRates exchangeRates = _exchangeRates();
 
         // If it has a rate, then it's possibly a valid key
-        if (exchangeRates.rateForCurrency(oracleKey) != 0) {
+        if (priceFeed.rateForCurrency(oracleKey) != 0) {
             // But not sUSD
             if (oracleKey == "sUSD") {
-                return false;
-            }
-
-            // and not inverse rates
-            (uint entryPoint, , , , ) = exchangeRates.inversePricing(oracleKey);
-            if (entryPoint != 0) {
                 return false;
             }
 
@@ -253,7 +243,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
                 msg.sender,
                 resolver,
-                exchangeRates,
+                priceFeed,
                 oracleKey,
                 strikePrice,
                 [maturity, expiry],

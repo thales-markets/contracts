@@ -13,7 +13,6 @@ import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
 // Internal references
 import "./BinaryOptionMarketManager.sol";
 import "./BinaryOption.sol";
-// import "../interfaces/IExchangeRates.sol";
 import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
 import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
 
@@ -47,7 +46,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         address owner;
         address binaryOptionMastercopy;
         IAddressResolver resolver;
-        IExchangeRates exchangeRates;
+        IPriceFeed priceFeed;
         address creator;
         bytes32 oracleKey;
         uint strikePrice;
@@ -65,7 +64,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     OracleDetails public oracleDetails;
     BinaryOptionMarketManager.Fees public fees;
     IAddressResolver public resolver;
-    IExchangeRates public exchangeRates;
+    IPriceFeed public priceFeed;
 
     IOracleInstance public iOracleInstance;
     bool public customMarket;
@@ -82,7 +81,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     /* ---------- Address Resolver Configuration ---------- */
 
-    bytes32 internal constant CONTRACT_EXRATES = "ExchangeRates";
     bytes32 internal constant CONTRACT_SYNTHSUSD = "SynthsUSD";
 
     /* ========== CONSTRUCTOR ========== */
@@ -96,7 +94,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         initialized = true;
         initOwner(_parameters.owner);
         resolver = _parameters.resolver;
-        exchangeRates = _parameters.exchangeRates;
+        priceFeed = _parameters.priceFeed;
         creator = _parameters.creator;
 
         oracleDetails = OracleDetails(_parameters.oracleKey, _parameters.strikePrice, 0, _parameters.customMarket, _parameters.iOracleInstanceAddress);
@@ -127,8 +125,8 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     /* ---------- External Contracts ---------- */
 
-    function _exchangeRates() internal view returns (IExchangeRates) {
-        return exchangeRates;
+    function _priceFeed() internal view returns (IPriceFeed) {
+        return priceFeed;
 
     }
 
@@ -163,7 +161,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     /* ---------- Market Resolution ---------- */
 
     function _oraclePriceAndTimestamp() internal view returns (uint price, uint updatedAt) {
-        return _exchangeRates().rateAndUpdatedTime(oracleDetails.key);
+        return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
     }
 
     function oraclePriceAndTimestamp() external view returns (uint price, uint updatedAt) {

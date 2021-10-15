@@ -24,7 +24,7 @@ const {
 
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
 let BinaryOptionMarket,
-	exchangeRates,
+	priceFeed,
 	oracle,
 	sUSDSynth,
 	binaryOptionMarketMastercopy,

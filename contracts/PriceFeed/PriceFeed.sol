@@ -4,7 +4,7 @@ pragma solidity ^0.5.16;
 import "synthetix-2.43.1/contracts/Owned.sol";
 
 // Inheritance
-import "../interfaces/IExchangeRates.sol";
+import "../interfaces/IPriceFeed.sol";
 
 // Libraries
 import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
@@ -13,12 +13,11 @@ import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
 // AggregatorInterface from Chainlink represents a decentralized pricing network for a single currency key
 import "@chainlink/contracts-0.0.10/src/v0.5/interfaces/AggregatorV2V3Interface.sol";
 
-// https://docs.synthetix.io/contracts/source/contracts/exchangerates
-contract ExchangeRatesV2 is Owned, IExchangeRates {
+contract PriceFeed is Owned, IPriceFeed {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
-    // Exchange rates and update times stored by currency code, e.g. 'SNX', or 'sUSD'
+    // Exchange rates and update times stored by currency code, e.g. 'SNX', or 'ETH'
     mapping(bytes32 => mapping(uint => RateAndUpdatedTime)) private _rates;
 
     // Decentralized oracle networks that feed into pricing aggregators
@@ -28,9 +27,6 @@ contract ExchangeRatesV2 is Owned, IExchangeRates {
     // List of aggregator keys for convenient iteration
     bytes32[] public aggregatorKeys;
 
-    mapping(bytes32 => InversePricing) public inversePricing;
-    bytes32[] public invertedKeys;
-
     mapping(bytes32 => uint) public currentRoundForRate;
     mapping(bytes32 => uint) public roundFrozen;
 
@@ -38,10 +34,7 @@ contract ExchangeRatesV2 is Owned, IExchangeRates {
 
     // ========== CONSTRUCTOR ==========
     constructor(address _owner) public Owned(_owner) {
-        // The sUSD rate is always 1 and is never stale.
         _setRate("sUSD", SafeDecimalMath.unit(), now);
-
-        //internalUpdateRates(_currencyKeys, _newRates, now);
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
@@ -51,6 +44,16 @@ contract ExchangeRatesV2 is Owned, IExchangeRates {
         uint timeSent
     ) external onlyOwner returns (bool) {
         return internalUpdateRates(currencyKeys, newRates, timeSent);
+    }
+
+    function deleteRate(bytes32 currencyKey) external onlyOwner {
+        require(_getRate(currencyKey) > 0, "Rate is zero");
+
+        delete _rates[currencyKey][currentRoundForRate[currencyKey]];
+
+        currentRoundForRate[currencyKey]--;
+
+        emit RateDeleted(currencyKey);
     }
 
     function addAggregator(bytes32 currencyKey, address aggregatorAddress) external onlyOwner {
@@ -76,71 +79,6 @@ contract ExchangeRatesV2 is Owned, IExchangeRates {
 
         if (wasRemoved) {
             emit AggregatorRemoved(currencyKey, aggregator);
-        }
-    }
-
-    function setInversePricing(
-        bytes32 currencyKey,
-        uint entryPoint,
-        uint upperLimit,
-        uint lowerLimit,
-        bool freezeAtUpperLimit,
-        bool freezeAtLowerLimit
-    ) external onlyOwner {
-        // 0 < lowerLimit < entryPoint => 0 < entryPoint
-        require(lowerLimit > 0, "lowerLimit must be above 0");
-        require(upperLimit > entryPoint, "upperLimit must be above the entryPoint");
-        require(upperLimit < entryPoint.mul(2), "upperLimit must be less than double entryPoint");
-        require(lowerLimit < entryPoint, "lowerLimit must be below the entryPoint");
-
-        require(!(freezeAtUpperLimit && freezeAtLowerLimit), "Cannot freeze at both limits");
-
-        InversePricing storage inverse = inversePricing[currencyKey];
-        if (inverse.entryPoint == 0) {
-            // then we are adding a new inverse pricing, so add this
-            invertedKeys.push(currencyKey);
-        }
-        inverse.entryPoint = entryPoint;
-        inverse.upperLimit = upperLimit;
-        inverse.lowerLimit = lowerLimit;
-
-        if (freezeAtUpperLimit || freezeAtLowerLimit) {
-            // When indicating to freeze, we need to know the rate to freeze it at - either upper or lower
-            // this is useful in situations where ExchangeRates is updated and there are existing inverted
-            // rates already frozen in the current contract that need persisting across the upgrade
-
-            inverse.frozenAtUpperLimit = freezeAtUpperLimit;
-            inverse.frozenAtLowerLimit = freezeAtLowerLimit;
-            uint roundId = _getCurrentRoundId(currencyKey);
-            roundFrozen[currencyKey] = roundId;
-            emit InversePriceFrozen(currencyKey, freezeAtUpperLimit ? upperLimit : lowerLimit, roundId, msg.sender);
-        } else {
-            // unfreeze if need be
-            inverse.frozenAtUpperLimit = false;
-            inverse.frozenAtLowerLimit = false;
-            // remove any tracking
-            roundFrozen[currencyKey] = 0;
-        }
-
-        // SIP-78
-        uint rate = _getRate(currencyKey);
-        if (rate > 0) {
-            //exchanger().setLastExchangeRateForSynth(currencyKey, rate);
-        }
-
-        emit InversePriceConfigured(currencyKey, entryPoint, upperLimit, lowerLimit);
-    }
-
-    function removeInversePricing(bytes32 currencyKey) external onlyOwner {
-        require(inversePricing[currencyKey].entryPoint > 0, "No inverted price exists");
-
-        delete inversePricing[currencyKey];
-
-        // now remove inverted key from array
-        bool wasRemoved = removeFromArray(currencyKey, invertedKeys);
-
-        if (wasRemoved) {
-            emit InversePriceConfigured(currencyKey, 0, 0, 0);
         }
     }
 
@@ -219,6 +157,17 @@ contract ExchangeRatesV2 is Owned, IExchangeRates {
         return false;
     }
 
+    function currenciesUsingAggregator(address aggregator) external view returns (bytes32[] memory currencies) {
+        uint count = 0;
+        currencies = new bytes32[](aggregatorKeys.length);
+        for (uint i = 0; i < aggregatorKeys.length; i++) {
+            bytes32 currencyKey = aggregatorKeys[i];
+            if (address(aggregators[currencyKey]) == aggregator) {
+                currencies[count++] = currencyKey;
+            }
+        }
+    }
+
     function _formatAggregatorAnswer(bytes32 currencyKey, int256 rate) internal view returns (uint) {
         require(rate >= 0, "Negative rate not supported");
         if (currencyKeyDecimals[currencyKey] > 0) {
@@ -240,16 +189,6 @@ contract ExchangeRatesV2 is Owned, IExchangeRates {
 
     function _getRateAndUpdatedTime(bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
         AggregatorV2V3Interface aggregator = aggregators[currencyKey];
-        //require(aggregator != AggregatorV2V3Interface(0), "No aggregator exists for key");
-
-        // bytes memory payload = abi.encodeWithSignature("latestRoundData()");
-        // (bool success, bytes memory returnData) = address(aggregator).staticcall(payload);
-
-        // if (success) {
-        //     (, int256 answer, , uint256 updatedAt, ) = abi.decode(returnData, (uint80, int256, uint256, uint256, uint80));
-        //     return
-        //         RateAndUpdatedTime({rate: uint216(_formatAggregatorAnswer(currencyKey, answer)), time: uint40(updatedAt)});
-        // }
 
         if (aggregator != AggregatorV2V3Interface(0)) {
             // this view from the aggregator is the most gas efficient but it can throw when there's no data,
@@ -259,11 +198,13 @@ contract ExchangeRatesV2 is Owned, IExchangeRates {
             (bool success, bytes memory returnData) = address(aggregator).staticcall(payload);
 
             if (success) {
-                (uint80 roundId, int256 answer, , uint256 updatedAt, ) =
-                    abi.decode(returnData, (uint80, int256, uint256, uint256, uint80));
+                (uint80 roundId, int256 answer, , uint256 updatedAt, ) = abi.decode(
+                    returnData,
+                    (uint80, int256, uint256, uint256, uint80)
+                );
                 return
                     RateAndUpdatedTime({
-                        rate: uint216(_rateOrInverted(currencyKey, _formatAggregatorAnswer(currencyKey, answer), roundId)),
+                        rate: uint216(_formatAggregatorAnswer(currencyKey, answer)),
                         time: uint40(updatedAt)
                     });
             }
@@ -271,52 +212,7 @@ contract ExchangeRatesV2 is Owned, IExchangeRates {
             uint roundId = currentRoundForRate[currencyKey];
             RateAndUpdatedTime memory entry = _rates[currencyKey][roundId];
 
-            return RateAndUpdatedTime({rate: uint216(_rateOrInverted(currencyKey, entry.rate, roundId)), time: entry.time});
-        }
-    }
-
-    function _rateOrInverted(
-        bytes32 currencyKey,
-        uint rate,
-        uint roundId
-    ) internal view returns (uint newRate) {
-        // if an inverse mapping exists, adjust the price accordingly
-        InversePricing memory inverse = inversePricing[currencyKey];
-        if (inverse.entryPoint == 0 || rate == 0) {
-            // when no inverse is set or when given a 0 rate, return the rate, regardless of the inverse status
-            // (the latter is so when a new inverse is set but the underlying has no rate, it will return 0 as
-            // the rate, not the lowerLimit)
-            return rate;
-        }
-
-        newRate = rate;
-
-        // Determine when round was frozen (if any)
-        uint roundWhenRateFrozen = roundFrozen[currencyKey];
-        // And if we're looking at a rate after frozen, and it's currently frozen, then apply the bounds limit even
-        // if the current price is back within bounds
-        if (roundId >= roundWhenRateFrozen && inverse.frozenAtUpperLimit) {
-            newRate = inverse.upperLimit;
-        } else if (roundId >= roundWhenRateFrozen && inverse.frozenAtLowerLimit) {
-            newRate = inverse.lowerLimit;
-        } else {
-            // this ensures any rate outside the limit will never be returned
-            uint doubleEntryPoint = inverse.entryPoint.mul(2);
-            if (doubleEntryPoint <= rate) {
-                // avoid negative numbers for unsigned ints, so set this to 0
-                // which by the requirement that lowerLimit be > 0 will
-                // cause this to freeze the price to the lowerLimit
-                newRate = 0;
-            } else {
-                newRate = doubleEntryPoint.sub(rate);
-            }
-
-            // now ensure the rate is between the bounds
-            if (newRate >= inverse.upperLimit) {
-                newRate = inverse.upperLimit;
-            } else if (newRate <= inverse.lowerLimit) {
-                newRate = inverse.lowerLimit;
-            }
+            return RateAndUpdatedTime({rate: entry.rate, time: entry.time});
         }
     }
 
@@ -327,7 +223,6 @@ contract ExchangeRatesV2 is Owned, IExchangeRates {
     /* ========== EVENTS ========== */
     event AggregatorAdded(bytes32 currencyKey, address aggregator);
     event AggregatorRemoved(bytes32 currencyKey, address aggregator);
-    event InversePriceConfigured(bytes32 currencyKey, uint entryPoint, uint upperLimit, uint lowerLimit);
-    event InversePriceFrozen(bytes32 currencyKey, uint rate, uint roundId, address initiator);
     event RatesUpdated(bytes32[] currencyKeys, uint[] newRates);
+    event RateDeleted(bytes32 currencyKey);
 }

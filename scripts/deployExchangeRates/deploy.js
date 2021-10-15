@@ -28,22 +28,18 @@ async function main() {
 	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 
-	const ExchangeRatesV2 = await ethers.getContractFactory('ExchangeRatesV2', {
-		libraries: {
-			SafeDecimalMath: safeDecimalMath.address,
-		},
-	});
-	const exchangeRatesV2 = await ExchangeRatesV2.deploy(owner.address);
-	await exchangeRatesV2.deployed();
+	const PriceFeed = await ethers.getContractFactory('PriceFeed');
+	const priceFeed = await PriceFeed.deploy(owner.address);
+	await priceFeed.deployed();
 
-	console.log('ExchangeRates deployed to:', exchangeRatesV2.address);
+	console.log('PriceFeed deployed to:', priceFeed.address);
 
-    await exchangeRatesV2.addAggregator(toBytes32('JPY'), JPY_AGGREGATOR);
-    //await exchangeRatesV2.addAggregator(toBytes32('EUR'), EUR_AGGREGATOR);
-    //await exchangeRatesV2.addAggregator(toBytes32('LINK'), LINK_AGGREGATOR);
+    await priceFeed.addAggregator(toBytes32('JPY'), JPY_AGGREGATOR);
+    //await priceFeed.addAggregator(toBytes32('EUR'), EUR_AGGREGATOR);
+    //await priceFeed.addAggregator(toBytes32('LINK'), LINK_AGGREGATOR);
 
 	await hre.run('verify:verify', {
-		address: exchangeRatesV2.address,
+		address: priceFeed.address,
         constructorArguments: [
 			owner.address,
         ],

@@ -150,6 +150,11 @@
         "type": "address"
       },
       {
+        "internalType": "contract IPriceFeed",
+        "name": "_priceFeed",
+        "type": "address"
+      },
+      {
         "internalType": "bytes32",
         "name": "oracleKey",
         "type": "bytes32"

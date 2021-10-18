@@ -1,4 +1,5 @@
 pragma solidity ^0.5.16;
+pragma experimental ABIEncoderV2;
 
 // Inheritance
 import "synthetix-2.43.1/contracts/MinimalProxyFactory.sol";
@@ -12,7 +13,6 @@ import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
 // Internal references
 import "./BinaryOptionMarketManager.sol";
 import "./BinaryOption.sol";
-import "synthetix-2.43.1/contracts/interfaces/IExchangeRates.sol";
 import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
 import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
 
@@ -42,6 +42,21 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         address iOracleInstanceAddress;
     }
 
+    struct BinaryOptionMarketParameters {
+        address owner;
+        address binaryOptionMastercopy;
+        IAddressResolver resolver;
+        IPriceFeed priceFeed;
+        address creator;
+        bytes32 oracleKey;
+        uint strikePrice;
+        uint[2] times; // [maturity, expiry]
+        uint deposit; // sUSD deposit
+        uint[2] fees; // [poolFee, creatorFee]
+        bool customMarket;
+        address iOracleInstanceAddress;
+    }
+
     /* ========== STATE VARIABLES ========== */
 
     Options public options;
@@ -49,6 +64,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     OracleDetails public oracleDetails;
     BinaryOptionMarketManager.Fees public fees;
     IAddressResolver public resolver;
+    IPriceFeed public priceFeed;
 
     IOracleInstance public iOracleInstance;
     bool public customMarket;
@@ -65,7 +81,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     /* ---------- Address Resolver Configuration ---------- */
 
-    bytes32 internal constant CONTRACT_EXRATES = "ExchangeRates";
     bytes32 internal constant CONTRACT_SYNTHSUSD = "SynthsUSD";
 
     /* ========== CONSTRUCTOR ========== */
@@ -73,40 +88,31 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     bool public initialized = false;
 
     function initialize(
-        address _owner,
-        address _binaryOptionMastercopy,
-        IAddressResolver _resolver,
-        address _creator,
-        bytes32 _oracleKey,
-        uint _strikePrice,
-        uint[2] calldata _times, // [maturity, expiry]
-        uint _deposit, // sUSD deposit
-        uint[2] calldata _fees, // [poolFee, creatorFee]
-        bool _customMarket,
-        address _iOracleInstanceAddress
+        BinaryOptionMarketParameters calldata _parameters
     ) external {
         require(!initialized, "Binary Option Market already initialized");
         initialized = true;
-        initOwner(_owner);
-        resolver = _resolver;
-        creator = _creator;
+        initOwner(_parameters.owner);
+        resolver = _parameters.resolver;
+        priceFeed = _parameters.priceFeed;
+        creator = _parameters.creator;
 
-        oracleDetails = OracleDetails(_oracleKey, _strikePrice, 0, _customMarket, _iOracleInstanceAddress);
-        customMarket = _customMarket;
-        iOracleInstance = IOracleInstance(_iOracleInstanceAddress);
+        oracleDetails = OracleDetails(_parameters.oracleKey, _parameters.strikePrice, 0, _parameters.customMarket, _parameters.iOracleInstanceAddress);
+        customMarket = _parameters.customMarket;
+        iOracleInstance = IOracleInstance(_parameters.iOracleInstanceAddress);
 
-        times = Times(_times[0], _times[1]);
+        times = Times(_parameters.times[0], _parameters.times[1]);
 
-        deposited = _deposit;
-        initialMint = _deposit;
+        deposited = _parameters.deposit;
+        initialMint = _parameters.deposit;
 
-        (uint poolFee, uint creatorFee) = (_fees[0], _fees[1]);
+        (uint poolFee, uint creatorFee) = (_parameters.fees[0], _parameters.fees[1]);
         fees = BinaryOptionMarketManager.Fees(poolFee, creatorFee);
         _feeMultiplier = SafeDecimalMath.unit().sub(poolFee.add(creatorFee));
 
         // Instantiate the options themselves
-        options.long = BinaryOption(_cloneAsMinimalProxy(_binaryOptionMastercopy, "Could not create a Binary Option"));
-        options.short = BinaryOption(_cloneAsMinimalProxy(_binaryOptionMastercopy, "Could not create a Binary Option"));
+        options.long = BinaryOption(_cloneAsMinimalProxy(_parameters.binaryOptionMastercopy, "Could not create a Binary Option"));
+        options.short = BinaryOption(_cloneAsMinimalProxy(_parameters.binaryOptionMastercopy, "Could not create a Binary Option"));
         // abi.encodePacked("sLONG: ", _oracleKey)
         // consider naming the option: sLongBTC>50@2021.12.31
         options.long.initialize("Binary Option Long", "sLONG");
@@ -119,8 +125,9 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     /* ---------- External Contracts ---------- */
 
-    function _exchangeRates() internal view returns (IExchangeRates) {
-        return IExchangeRates(resolver.requireAndGetAddress(CONTRACT_EXRATES, "ExchangeRates contract not found"));
+    function _priceFeed() internal view returns (IPriceFeed) {
+        return priceFeed;
+
     }
 
     function _sUSD() internal view returns (IERC20) {
@@ -154,7 +161,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     /* ---------- Market Resolution ---------- */
 
     function _oraclePriceAndTimestamp() internal view returns (uint price, uint updatedAt) {
-        return _exchangeRates().rateAndUpdatedTime(oracleDetails.key);
+        return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
     }
 
     function oraclePriceAndTimestamp() external view returns (uint price, uint updatedAt) {
@@ -164,6 +171,11 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     function _isFreshPriceUpdateTime(uint timestamp) internal view returns (bool) {
         (uint maxOraclePriceAge, , ) = _manager().durations();
         return (times.maturity.sub(maxOraclePriceAge)) <= timestamp;
+    }
+
+    function oracleTimestamp() public view returns (uint) {
+        (, uint updatedAt) = _oraclePriceAndTimestamp();
+        return updatedAt;
     }
 
     function canResolve() public view returns (bool) {

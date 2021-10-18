@@ -10,7 +10,6 @@ import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
 // Internal references
 import "./BinaryOptionMarket.sol";
 
-
 contract BinaryOption is IERC20, IBinaryOption {
     /* ========== LIBRARIES ========== */
 
@@ -38,10 +37,7 @@ contract BinaryOption is IERC20, IBinaryOption {
 
     bool public initialized = false;
 
-    function initialize(
-        string calldata _name,
-        string calldata _symbol
-    ) external {
+    function initialize(string calldata _name, string calldata _symbol) external {
         require(!initialized, "Binary Option Market already initialized");
         initialized = true;
         name = _name;

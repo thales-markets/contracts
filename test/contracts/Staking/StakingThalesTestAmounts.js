@@ -45,7 +45,7 @@ contract('StakingThales', accounts => {
 	let Synth = artifacts.require('Synth');
 	let BinaryOption = artifacts.require('BinaryOption');
 	let manager, factory, addressResolver;
-	let exchangeRates, oracle, sUSDSynth, binaryOptionMarketMastercopy, binaryOptionMastercopy;
+	let sUSDSynth, binaryOptionMarketMastercopy, binaryOptionMastercopy;
 
 	before(async () => {
 		({
@@ -54,14 +54,12 @@ contract('StakingThales', accounts => {
 			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
 			BinaryOptionMastercopy: binaryOptionMastercopy,
 			AddressResolver: addressResolver,
-			ExchangeRates: exchangeRates,
 			SynthsUSD: sUSDSynth,
 		} = await setupAllContracts({
 			accounts,
 			synths: ['sUSD'],
 			contracts: [
 				'FeePool',
-				'ExchangeRates',
 				'BinaryOptionMarketMastercopy',
 				'BinaryOptionMastercopy',
 				'BinaryOptionMarketFactory',
@@ -75,12 +73,6 @@ contract('StakingThales', accounts => {
 			from: managerOwner,
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
-
-		oracle = await exchangeRates.oracle();
-
-		await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-			from: oracle,
-		});
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),

@@ -24,7 +24,7 @@ const {
 
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
 let BinaryOptionMarket,
-	exchangeRates,
+	priceFeed,
 	oracle,
 	sUSDSynth,
 	binaryOptionMarketMastercopy,
@@ -128,14 +128,14 @@ contract('BinaryOptionMarketManager', accounts => {
 			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
 			BinaryOptionMastercopy: binaryOptionMastercopy,
 			AddressResolver: addressResolver,
-			ExchangeRates: exchangeRates,
+			PriceFeed: priceFeed,
 			SynthsUSD: sUSDSynth,
 		} = await setupAllContracts({
 			accounts,
 			synths: ['sUSD'],
 			contracts: [
 				'FeePool',
-				'ExchangeRates',
+				'PriceFeed',
 				'BinaryOptionMarketMastercopy',
 				'BinaryOptionMastercopy',
 				'BinaryOptionMarketFactory',
@@ -150,10 +150,10 @@ contract('BinaryOptionMarketManager', accounts => {
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
 
-		oracle = await exchangeRates.oracle();
+		//oracle = await priceFeed.oracle();
 
-		await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-			from: oracle,
+		await priceFeed.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
+			from: managerOwner,
 		});
 
 		await Promise.all([
@@ -184,11 +184,22 @@ contract('BinaryOptionMarketManager', accounts => {
 			let afterDeposit = toUnit(2).add(beforeDeposit);
 
 			assert.bnEqual(await manager.totalDeposited(), afterDeposit);
+			console.log('current', await currentTime());
 
 			await fastForward(expiryDuration + 1000);
-			await exchangeRates.updateRates([sAUDKey], [toUnit(2)], await currentTime(), {
-				from: oracle,
+			console.log('current', await currentTime());
+			await priceFeed.updateRates([sAUDKey], [toUnit(2)], await currentTime(), {
+				from: await priceFeed.owner(),
 			});
+
+			console.log('current', await currentTime());
+			console.log('sAUD rate', (await priceFeed.rateForCurrency(sAUDKey)).toString());
+			console.log('sAUD last update', (await priceFeed.lastRateUpdateTimes(sAUDKey)).toString());
+
+			console.log(await markets[0].canResolve());
+			console.log((await markets[0].oracleTimestamp()).toString());
+			//console.log(await markets[0]._isFreshPriceUpdateTime((await priceFeed.lastRateUpdateTimes(sAUDKey)).toString()));
+
 			await Promise.all(
 				markets.map(m => {
 					manager.resolveMarket(m.address);
@@ -246,8 +257,8 @@ contract('BinaryOptionMarketManager', accounts => {
 
 			// Resolve all the even markets, ensuring they have been transferred.
 			await fastForward(expiryDuration + 1000);
-			await exchangeRates.updateRates([sAUDKey], [toUnit(2)], await currentTime(), {
-				from: oracle,
+			await priceFeed.updateRates([sAUDKey], [toUnit(2)], await currentTime(), {
+				from: await priceFeed.owner(),
 			});
 			await Promise.all(evenMarkets.map(m => manager.resolveMarket(m)));
 
@@ -430,8 +441,8 @@ contract('BinaryOptionMarketManager', accounts => {
 			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(5)));
 
 			await fastForward(expiryDuration + 1000);
-			await exchangeRates.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-				from: oracle,
+			await priceFeed.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
+				from: await priceFeed.owner(),
 			});
 			await manager.resolveMarket(newMarket.address);
 			await manager.expireMarkets([newMarket.address], { from: managerOwner });
@@ -475,6 +486,7 @@ contract('BinaryOptionMarketManager', accounts => {
 				args: [
 					managerOwner,
 					addressResolver.address,
+					priceFeed.address,
 					61 * 60, // max oracle price age: 61 minutes
 					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
@@ -572,6 +584,7 @@ contract('BinaryOptionMarketManager', accounts => {
 				args: [
 					managerOwner,
 					addressResolver.address,
+					priceFeed.address,
 					61 * 60, // max oracle price age: 61 minutes
 					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year

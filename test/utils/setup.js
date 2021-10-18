@@ -142,12 +142,8 @@ const setupContract = async ({
 		AddressResolver: [owner],
 		SystemStatus: [owner],
 		FlexibleStorage: [tryGetAddressOf('AddressResolver')],
-		ExchangeRates: [
+		PriceFeed: [
 			owner,
-			oracle,
-			tryGetAddressOf('AddressResolver'),
-			[toBytes32('SNX')],
-			[toWei('0.2', 'ether')],
 		],
 		SynthetixState: [owner, ZERO_ADDRESS],
 		SupplySchedule: [owner, 0, 0],
@@ -221,6 +217,7 @@ const setupContract = async ({
 		BinaryOptionMarketManager: [
 			owner,
 			tryGetAddressOf('AddressResolver'),
+			tryGetAddressOf('PriceFeed'),
 			61 * 60, // max oracle price age: 61 minutes
 			26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 			365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
@@ -571,11 +568,7 @@ const setupAllContracts = async ({
 			contract: 'SystemSettings',
 			deps: ['AddressResolver', 'FlexibleStorage'],
 		},
-		{
-			contract: 'ExchangeRates',
-			deps: ['AddressResolver', 'SystemSettings'],
-			mocks: ['Exchanger'],
-		},
+		{ contract: 'PriceFeed' },
 		{ contract: 'ProxyERC20', forContract: 'Synth' }, // for generic synth
 		{ contract: 'Proxy', forContract: 'FeePool' },
 		{ contract: 'TokenState', forContract: 'Synth' }, // for generic synth
@@ -588,7 +581,7 @@ const setupAllContracts = async ({
 		}, // a generic synth
 		{
 			contract: 'BinaryOptionMarketFactory',
-			deps: ['AddressResolver'],
+			deps: ['AddressResolver', 'PriceFeed'],
 		},
 		{
 			contract: 'BinaryOptionMarketMastercopy',
@@ -603,7 +596,7 @@ const setupAllContracts = async ({
 			deps: [
 				'SystemStatus',
 				'AddressResolver',
-				'ExchangeRates',
+				'PriceFeed',
 				'FeePool',
 				'Synthetix',
 				'BinaryOptionMarketFactory',

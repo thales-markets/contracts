@@ -22,6 +22,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const INFURA = process.env.INFURA;
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY;
 const PRIVATE_KEY_OPTIMISTIC_KOVAN = process.env.PRIVATE_KEY_OPTIMISTIC_KOVAN;
+const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : "http://127.0.0.1:8545";
 
 module.exports = {
 	etherscan: {
@@ -103,11 +104,17 @@ module.exports = {
 			url: 'https://mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
-		optimisticKovan: {
-			url: "https://kovan.optimism.io",
-			// ********* Replace with your own mnemonic
-			accounts: [PRIVATE_KEY_OPTIMISTIC_KOVAN],
+		optimistic: {
+			url: LOCAL_OPT_IP,
+			accounts: {
+			  mnemonic: "test test test test test test test test test test test junk",
+			},
 			gasPrice: 10000,
+		},
+		optimisticKovan: {
+			gasPrice: 10000,
+			url: "https://kovan.optimism.io",
+			accounts: [PRIVATE_KEY_OPTIMISTIC_KOVAN],
 		},
 	},
 	gasReporter: {

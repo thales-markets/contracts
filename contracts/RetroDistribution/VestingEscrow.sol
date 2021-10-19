@@ -4,9 +4,9 @@ import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 
-import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
+import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
-import "synthetix-2.43.1/contracts/Owned.sol";
+import "synthetix-2.50.4-ovm/contracts/Owned.sol";
 
 contract VestingEscrow is ReentrancyGuard, Owned {
     using Math for uint256;

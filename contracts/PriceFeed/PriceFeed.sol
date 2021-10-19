@@ -1,13 +1,13 @@
 pragma solidity ^0.5.16;
 
 // Contracts
-import "synthetix-2.43.1/contracts/Owned.sol";
+import "synthetix-2.50.4-ovm/contracts/Owned.sol";
 
 // Inheritance
 import "../interfaces/IPriceFeed.sol";
 
 // Libraries
-import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
+import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 
 // Internal references
 // AggregatorInterface from Chainlink represents a decentralized pricing network for a single currency key

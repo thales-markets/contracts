@@ -1,11 +1,11 @@
 pragma solidity ^0.5.16;
 
 // Inheritance
-import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
+import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
 import "../interfaces/IBinaryOption.sol";
 
 // Libraries
-import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
+import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 
 // Internal references
 import "./BinaryOptionMarket.sol";

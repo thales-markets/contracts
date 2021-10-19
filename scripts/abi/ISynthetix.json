@@ -275,7 +275,7 @@
       },
       {
         "internalType": "address",
-        "name": "originator",
+        "name": "rewardAddress",
         "type": "address"
       },
       {
@@ -314,7 +314,7 @@
       },
       {
         "internalType": "address",
-        "name": "originator",
+        "name": "rewardAddress",
         "type": "address"
       },
       {
@@ -324,6 +324,45 @@
       }
     ],
     "name": "exchangeWithTracking",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountReceived",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "sourceCurrencyKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sourceAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "destinationCurrencyKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "rewardAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "trackingCode",
+        "type": "bytes32"
+      }
+    ],
+    "name": "exchangeWithTrackingForInitiator",
     "outputs": [
       {
         "internalType": "uint256",
@@ -653,7 +692,7 @@
         "type": "bytes32"
       }
     ],
-    "name": "totalIssuedSynthsExcludeEtherCollateral",
+    "name": "totalIssuedSynthsExcludeOtherCollateral",
     "outputs": [
       {
         "internalType": "uint256",

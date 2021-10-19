@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 
 import "../interfaces/IBinaryOptionMarket.sol";
-import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
+import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
 
 interface IBinaryOption {
     /* ========== VIEWS / VARIABLES ========== */

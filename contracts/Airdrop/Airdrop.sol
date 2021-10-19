@@ -1,9 +1,9 @@
 pragma solidity ^0.5.16;
 
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
-import "synthetix-2.43.1/contracts/Owned.sol";
+import "synthetix-2.50.4-ovm/contracts/Owned.sol";
 import "openzeppelin-solidity-2.3.0/contracts/cryptography/MerkleProof.sol";
-import "synthetix-2.43.1/contracts/Pausable.sol";
+import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
 
 /**
  * Contract which implements a merkle airdrop for a given token

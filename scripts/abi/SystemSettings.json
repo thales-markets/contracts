@@ -53,6 +53,32 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "collapseFeeRate",
+        "type": "uint256"
+      }
+    ],
+    "name": "CollapseFeeRateUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newCollateralManager",
+        "type": "address"
+      }
+    ],
+    "name": "CollateralManagerUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "enum MixinSystemSettings.CrossDomainMessageGasLimits",
         "name": "gasLimitType",
         "type": "uint8"
@@ -85,6 +111,45 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "rate",
+        "type": "uint256"
+      }
+    ],
+    "name": "EtherWrapperBurnFeeRateUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxETH",
+        "type": "uint256"
+      }
+    ],
+    "name": "EtherWrapperMaxETHUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "rate",
+        "type": "uint256"
+      }
+    ],
+    "name": "EtherWrapperMintFeeRateUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bytes32",
         "name": "synthKey",
         "type": "bytes32"
@@ -110,6 +175,19 @@
       }
     ],
     "name": "FeePeriodDurationUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "interactionDelay",
+        "type": "uint256"
+      }
+    ],
+    "name": "InteractionDelayUpdated",
     "type": "event"
   },
   {
@@ -162,6 +240,19 @@
       }
     ],
     "name": "LiquidationRatioUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minCratio",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinCratioRatioUpdated",
     "type": "event"
   },
   {
@@ -278,6 +369,36 @@
     "constant": true,
     "inputs": [],
     "name": "MAX_CROSS_DOMAIN_GAS_LIMIT",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "MAX_ETHER_WRAPPER_BURN_FEE_RATE",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "MAX_ETHER_WRAPPER_MINT_FEE_RATE",
     "outputs": [
       {
         "internalType": "uint256",
@@ -497,6 +618,48 @@
     "constant": true,
     "inputs": [
       {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      }
+    ],
+    "name": "collapseFeeRate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      }
+    ],
+    "name": "collateralManager",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
         "internalType": "enum MixinSystemSettings.CrossDomainMessageGasLimits",
         "name": "gasLimitType",
         "type": "uint8"
@@ -518,6 +681,51 @@
     "constant": true,
     "inputs": [],
     "name": "debtSnapshotStaleTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "etherWrapperBurnFeeRate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "etherWrapperMaxETH",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "etherWrapperMintFeeRate",
     "outputs": [
       {
         "internalType": "uint256",
@@ -554,6 +762,27 @@
     "constant": true,
     "inputs": [],
     "name": "feePeriodDuration",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      }
+    ],
+    "name": "interactionDelay",
     "outputs": [
       {
         "internalType": "uint256",
@@ -629,6 +858,27 @@
     "constant": true,
     "inputs": [],
     "name": "liquidationRatio",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      }
+    ],
+    "name": "minCratio",
     "outputs": [
       {
         "internalType": "uint256",
@@ -788,6 +1038,46 @@
     "constant": false,
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_collapseFeeRate",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCollapseFeeRate",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_newCollateralManager",
+        "type": "address"
+      }
+    ],
+    "name": "setCollateralManager",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "internalType": "enum MixinSystemSettings.CrossDomainMessageGasLimits",
         "name": "_gasLimitType",
         "type": "uint8"
@@ -823,6 +1113,51 @@
     "constant": false,
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_rate",
+        "type": "uint256"
+      }
+    ],
+    "name": "setEtherWrapperBurnFeeRate",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxETH",
+        "type": "uint256"
+      }
+    ],
+    "name": "setEtherWrapperMaxETH",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_rate",
+        "type": "uint256"
+      }
+    ],
+    "name": "setEtherWrapperMintFeeRate",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "internalType": "bytes32[]",
         "name": "synthKeys",
         "type": "bytes32[]"
@@ -849,6 +1184,26 @@
       }
     ],
     "name": "setFeePeriodDuration",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_interactionDelay",
+        "type": "uint256"
+      }
+    ],
+    "name": "setInteractionDelay",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -909,6 +1264,26 @@
       }
     ],
     "name": "setLiquidationRatio",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minCratio",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinCratio",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

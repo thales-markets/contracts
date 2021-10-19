@@ -37,6 +37,11 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "exchangeForAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "from",
         "type": "address"
       },
@@ -59,190 +64,24 @@
         "internalType": "address",
         "name": "destinationAddress",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "virtualSynth",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "rewardAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "trackingCode",
+        "type": "bytes32"
       }
     ],
     "name": "exchange",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "amountReceived",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "exchangeForAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "sourceCurrencyKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "sourceAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "destinationCurrencyKey",
-        "type": "bytes32"
-      }
-    ],
-    "name": "exchangeOnBehalf",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "amountReceived",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "exchangeForAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "sourceCurrencyKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "sourceAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "destinationCurrencyKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "originator",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "trackingCode",
-        "type": "bytes32"
-      }
-    ],
-    "name": "exchangeOnBehalfWithTracking",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "amountReceived",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "sourceCurrencyKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "sourceAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "destinationCurrencyKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "destinationAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "originator",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "trackingCode",
-        "type": "bytes32"
-      }
-    ],
-    "name": "exchangeWithTracking",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "amountReceived",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "sourceCurrencyKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "sourceAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "destinationCurrencyKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "destinationAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "trackingCode",
-        "type": "bytes32"
-      }
-    ],
-    "name": "exchangeWithVirtual",
     "outputs": [
       {
         "internalType": "uint256",
@@ -399,6 +238,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "currencyKeys",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "resetLastExchangeRate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

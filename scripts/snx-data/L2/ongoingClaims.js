@@ -1,9 +1,8 @@
 const { request, gql } = require('graphql-request');
 
-
 let url = 'https://api.thegraph.com/subgraphs/name/thales-markets/thales-options';
 
-// getAllClaimers();
+getAllClaimers();
 async function getLastRootTimestamp() {
 	let lastTimestamp = 0;
 	const getOngoingAirdropNewRoots = gql`
@@ -27,8 +26,8 @@ async function getAllClaimers() {
 	let lastRootTimestamp = await getLastRootTimestamp();
 	let claimers = [];
 	const getClaims = gql`
-		query getClaims {
-			tokenTransactions(where: { type: claimStakingRewards , timestamp_gt:1633513600}) {
+		query getClaims($lastRootTimestamp: BigInt!) {
+			tokenTransactions(where: { type: claimStakingRewards, timestamp_gt: $lastRootTimestamp }) {
 				account
 				id
 				timestamp
@@ -36,7 +35,10 @@ async function getAllClaimers() {
 			}
 		}
 	`;
-	await request(url, getClaims).then(data => {
+	const variables = {
+		lastRootTimestamp: lastRootTimestamp,
+	};
+	await request(url, getClaims, variables).then(data => {
 		data.tokenTransactions.forEach(d => {
 			claimers.push(d.account);
 		});

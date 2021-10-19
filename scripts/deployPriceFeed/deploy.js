@@ -1,6 +1,7 @@
 const { ethers } = require('hardhat');
 const { toBytes32 } = require('../../index');
 const snx = require('synthetix');
+const { setTargetAddress } = require('../helpers');
 
 const JPY_AGGREGATOR = '0xD627B1eF3AC23F1d3e576FA6206126F3c1Bd0942'; // kovan
 const EUR_AGGREGATOR = '0x0c15Ab9A0DB086e062194c273CC79f41597Bbf13'; // kovan
@@ -28,21 +29,36 @@ async function main() {
 	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 
-	const PriceFeed = await ethers.getContractFactory('PriceFeed');
+	const PriceFeed = await ethers.getContractFactory('PriceFeed', {
+		libraries: {
+			SafeDecimalMath: safeDecimalMath.address,
+		},
+	});
 	const priceFeed = await PriceFeed.deploy(owner.address);
 	await priceFeed.deployed();
 
 	console.log('PriceFeed deployed to:', priceFeed.address);
+	setTargetAddress('PriceFeed', network, priceFeed.address);
 
-    await priceFeed.addAggregator(toBytes32('JPY'), JPY_AGGREGATOR);
-    //await priceFeed.addAggregator(toBytes32('EUR'), EUR_AGGREGATOR);
-    //await priceFeed.addAggregator(toBytes32('LINK'), LINK_AGGREGATOR);
+	let tx = await priceFeed.addAggregator(toBytes32('JPY'), JPY_AGGREGATOR);
+	await tx.wait().then(e => {
+		console.log('PriceFeed: addAggregator JPY');
+	});
+	tx = await priceFeed.addAggregator(toBytes32('EUR'), EUR_AGGREGATOR);
+	await tx.wait().then(e => {
+		console.log('PriceFeed: addAggregator EUR');
+	});
+	tx = await priceFeed.addAggregator(toBytes32('LINK'), LINK_AGGREGATOR);
+	await tx.wait().then(e => {
+		console.log('PriceFeed: addAggregator LINK');
+	});
 
 	await hre.run('verify:verify', {
 		address: priceFeed.address,
-        constructorArguments: [
-			owner.address,
-        ],
+		constructorArguments: [owner.address],
+		libraries: {
+			SafeDecimalMath: safeDecimalMath.address,
+		},
 	});
 }
 

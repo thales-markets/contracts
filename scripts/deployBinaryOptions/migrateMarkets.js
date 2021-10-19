@@ -17,14 +17,14 @@ const gasLimit = 2.0e6; // 1.5m;
 const { loadConnections, stringify } = require('../../publish/src/util');
 
 const migrateBinaryOptionMarkets = async () => {
-    let result;
-    let networkObj = await ethers.provider.getNetwork();
+	let result;
+	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
 
-    // set PROVIDER_URL and TESTNET_DEPLOY_PRIVATE_KEY in .env 
+	// set PROVIDER_URL and TESTNET_DEPLOY_PRIVATE_KEY in .env
 	const { providerUrl, privateKey: envPrivateKey, etherscanLinkPrefix } = loadConnections({
 		network,
 	});
@@ -112,7 +112,9 @@ const migrateBinaryOptionMarkets = async () => {
 	);
 
 	console.log(
-		yellow(`Attempting action BinaryOptionMarketManager.setMigratingManager(${sourceContractAddress})`)
+		yellow(
+			`Attempting action BinaryOptionMarketManager.setMigratingManager(${sourceContractAddress})`
+		)
 	);
 	const { transactionHash } = await targetContract.methods
 		.setMigratingManager(sourceContractAddress)

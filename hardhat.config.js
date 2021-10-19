@@ -114,7 +114,7 @@ module.exports = {
 		optimisticKovan: {
 			gasPrice: 10000,
 			url: "https://kovan.optimism.io",
-			accounts: [PRIVATE_KEY_OPTIMISTIC_KOVAN],
+			accounts: [PRIVATE_KEY],
 		},
 	},
 	gasReporter: {

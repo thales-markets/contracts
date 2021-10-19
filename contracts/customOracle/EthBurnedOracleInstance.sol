@@ -1,33 +1,33 @@
 pragma solidity ^0.5.16;
 
 import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
-import "./SportFeed.sol";
+import "./EthBurnedFeed.sol";
 import "../interfaces/IOracleInstance.sol";
 import "synthetix-2.50.4-ovm/contracts/Owned.sol";
 import "solidity-util/lib/Integers.sol";
 
-contract SportFeedOracleInstance is IOracleInstance, Owned {
+contract EthBurnedOracleInstance is IOracleInstance, Owned {
     using Chainlink for Chainlink.Request;
     using Integers for uint;
 
-    address public sportFeed;
+    address public ethBurnedFeed;
     string public targetName;
-    string public targetOutcome;
+    uint256 public targetOutcome;
     string public eventName;
 
     bool public outcome;
-    bool public resolvable;
+    bool private _resolvable;
 
     bool private forcedOutcome;
 
     constructor(
         address _owner,
-        address _sportFeed,
+        address _ethBurnedFeed,
         string memory _targetName,
-        string memory _targetOutcome,
+        uint256 _targetOutcome,
         string memory _eventName
     ) public Owned(_owner) {
-        sportFeed = _sportFeed;
+        ethBurnedFeed = _ethBurnedFeed;
         targetName = _targetName;
         targetOutcome = _targetOutcome;
         eventName = _eventName;
@@ -37,8 +37,8 @@ contract SportFeedOracleInstance is IOracleInstance, Owned {
         if (forcedOutcome) {
             return outcome;
         } else {
-            SportFeed sportFeedOracle = SportFeed(sportFeed);
-            return sportFeedOracle.isCompetitorAtPlace(targetName, Integers.parseInt(targetOutcome));
+            EthBurnedFeed ethBurnedFeedOracle = EthBurnedFeed(ethBurnedFeed);
+            return ethBurnedFeedOracle.result() > targetOutcome;
         }
     }
 
@@ -47,15 +47,20 @@ contract SportFeedOracleInstance is IOracleInstance, Owned {
         forcedOutcome = true;
     }
 
-    function setSportFeed(address _sportFeed) public onlyOwner {
-        sportFeed = _sportFeed;
+    function setEthBurnedFeed(address _ethBurnedFeed) public onlyOwner {
+        ethBurnedFeed = _ethBurnedFeed;
     }
 
     function clearOutcome() public onlyOwner {
         forcedOutcome = false;
     }
 
-    function setResolvable(bool _resolvable) public onlyOwner {
-        resolvable = _resolvable;
+    function setResolvable(bool _resolvableToSet) public onlyOwner {
+        _resolvable = _resolvableToSet;
+    }
+
+    function resolvable() external view returns (bool) {
+        EthBurnedFeed ethBurnedFeedOracle = EthBurnedFeed(ethBurnedFeed);
+        return (block.timestamp - ethBurnedFeedOracle.lastOracleUpdate()) < 2 hours;
     }
 }

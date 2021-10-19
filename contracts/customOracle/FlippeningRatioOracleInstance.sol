@@ -1,33 +1,29 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.5.16;
 
-import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
-import "./SportFeed.sol";
 import "../interfaces/IOracleInstance.sol";
+import "./FlippeningRatioOracle.sol";
 import "synthetix-2.50.4-ovm/contracts/Owned.sol";
-import "solidity-util/lib/Integers.sol";
 
-contract SportFeedOracleInstance is IOracleInstance, Owned {
-    using Chainlink for Chainlink.Request;
-    using Integers for uint;
-
-    address public sportFeed;
+contract FlippeningRatioOracleInstance is IOracleInstance, Owned {
+    FlippeningRatioOracle public flippeningRatio;
     string public targetName;
-    string public targetOutcome;
+    uint256 public targetOutcome;
     string public eventName;
 
     bool public outcome;
-    bool public resolvable;
+    bool public resolvable = true;
 
     bool private forcedOutcome;
 
     constructor(
         address _owner,
-        address _sportFeed,
+        address _flippeningRatio,
         string memory _targetName,
-        string memory _targetOutcome,
+        uint256 _targetOutcome,
         string memory _eventName
     ) public Owned(_owner) {
-        sportFeed = _sportFeed;
+        flippeningRatio = FlippeningRatioOracle(_flippeningRatio);
         targetName = _targetName;
         targetOutcome = _targetOutcome;
         eventName = _eventName;
@@ -37,8 +33,7 @@ contract SportFeedOracleInstance is IOracleInstance, Owned {
         if (forcedOutcome) {
             return outcome;
         } else {
-            SportFeed sportFeedOracle = SportFeed(sportFeed);
-            return sportFeedOracle.isCompetitorAtPlace(targetName, Integers.parseInt(targetOutcome));
+            return flippeningRatio.getRatio() >= targetOutcome;
         }
     }
 
@@ -47,12 +42,12 @@ contract SportFeedOracleInstance is IOracleInstance, Owned {
         forcedOutcome = true;
     }
 
-    function setSportFeed(address _sportFeed) public onlyOwner {
-        sportFeed = _sportFeed;
-    }
-
     function clearOutcome() public onlyOwner {
         forcedOutcome = false;
+    }
+
+    function setFlippeningRatio(address _flippeningRatio) public onlyOwner {
+        flippeningRatio = FlippeningRatioOracle(_flippeningRatio);
     }
 
     function setResolvable(bool _resolvable) public onlyOwner {

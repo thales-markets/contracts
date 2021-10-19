@@ -1,4 +1,4 @@
-pragma solidity >=0.4.24;
+pragma solidity ^0.5.16;
 
 import "../interfaces/IBinaryOptionMarket.sol";
 import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";

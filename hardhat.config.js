@@ -21,28 +21,21 @@ const CACHE_FOLDER = 'cache';
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const INFURA = process.env.INFURA;
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY;
+const PRIVATE_KEY_OPTIMISTIC_KOVAN = process.env.PRIVATE_KEY_OPTIMISTIC_KOVAN;
 
 module.exports = {
 	etherscan: {
 		// Your API key for Etherscan
 		// Obtain one at https://etherscan.io/
 		apiKey: ETHERSCAN_KEY,
+		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
 	GAS_PRICE,
-	ovm: {
-		solcVersion: '0.5.16',
-	},
+	// ovm: {
+	// 	solcVersion: '0.5.16',
+	// },
 	solidity: {
 		compilers: [
-			{
-				version: '0.4.25',
-				settings: {
-					optimizer: {
-						enabled: true,
-						runs: 200,
-					},
-				},
-			},
 			{
 				version: '0.5.16',
 				settings: {
@@ -109,6 +102,12 @@ module.exports = {
 			gasPrice: 'auto',
 			url: 'https://mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
+		},
+		optimisticKovan: {
+			url: "https://kovan.optimism.io",
+			// ********* Replace with your own mnemonic
+			accounts: [PRIVATE_KEY_OPTIMISTIC_KOVAN],
+			gasPrice: 10000,
 		},
 	},
 	gasReporter: {

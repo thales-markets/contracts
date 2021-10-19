@@ -20,7 +20,7 @@ const TOTAL_AMOUNT_TO_TRANSFER = web3.utils.toWei('225000');
 
 const fs = require('fs');
 
-let includeStakingRewards = false;
+let includeStakingRewards = true;
 
 async function ongoingAirdrop() {
 	let accounts = await ethers.getSigners();

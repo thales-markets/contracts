@@ -1,1 +1,54 @@
-{"mainnet":{"Airdrop":"0x0f33af99f3C124189B8dA7C7BE6Dc08C77a9ddc7","OngoingAirdrop":"0xDAaB884D083FE5c38b4679ae194c52f176Bd8783","VestingEscrow":"0xbaE14FAf280FB293e6f3D6c0b5E80eD5D477b161","EscrowThales":"0x8d3703d4dED77473E632dEf20002DAdC86bf4AAD","StakingThales":"0x883D651429B0829BC045A94F288f3b514021B8C1","Thales":"0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc"},"ropsten":{"Airdrop":"0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D","OngoingAirdrop":"0x3c9a11b9a8Ca835ed6931FD74a9F22A1Fc73Ac86","VestingEscrow":"0x196934f54cB87405392d9f8e7d8CcA269c3d48D3","EscrowThales":"0x9b960789E6C56192D70a0167bDc7027fFC7F2E58","StakingThales":"0x9c27B789D645bf7bB02e71590df627b3DE8249fA","Thales":"0x39Ed4A44C5a390415F1b1dDE2C77a61168aAdFbf"},"kovan":{"Airdrop":"0xD9ceC0F5b2B43C74DFA4A87117968808b95d9018","OngoingAirdrop":"0xd9112fC9396d38D024D1369e72f039d542000f80","VestingEscrow":"0xaF05693d2c336b40055F6531556aB6D0Ebf003D8","EscrowThales":"0xcE9c1aAb41b18b24355138776186484B260B9cf0","StakingThales":"0x8d178B3Dd7B29dfB38f55FdFE6518cabe6B31059","Thales":"0x9e7769409E3e5A6821eeDcF33371FCA929fE6A48"},"goerli":{"Airdrop":"","OngoingAirdrop":"","VestingEscrow":"","EscrowThales":"","StakingThales":"","Thales":""},"optimisticKovan":{"AddressResolver":"0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6","SafeDecimalMath":"0x87A479D8433121E4583D45D37B4A349b4350B79F","ProxysUSD":"0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57","BinaryOptionMastercopy":"0xaC47c388d52C443Fd854848Ef1fA57171679e7B1","BinaryOptionMarketMastercopy":"0x7EA9CD7Be7962B9410357EC607181A498a5e3ba6","BinaryOptionMarketFactory":"0xB721703FA4B2e3AA76ac0435980098f892A65ADA","PriceFeed":"0xb233aa4cBa1C6F24974a4A7F9E32D054E4a51342","BinaryOptionMarketManager":"0xB8109ac56EE572990e6d2C6b4648042bB1C33317","BinaryOptionMarketData":"0x6A07E7B1479658b74261e8359f58c083F3fA667b"},"optimisticLocal":{},"localhost":{"Airdrop":"","OngoingAirdrop":"0xB74DD224F1652672Fc5d18404Fe5AF120e1e0991","VestingEscrow":"0xE04Fa48Bf6f15E8Ff1317Cd8b896408235A08Df7","EscrowThales":"0x1817e45A781f47b89F5CD498E737Ee96cF743be9","StakingThales":"","Thales":"0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"}}
+{
+	"mainnet": {
+		"Airdrop": "0x0f33af99f3C124189B8dA7C7BE6Dc08C77a9ddc7",
+		"OngoingAirdrop": "0xDAaB884D083FE5c38b4679ae194c52f176Bd8783",
+		"VestingEscrow": "0xbaE14FAf280FB293e6f3D6c0b5E80eD5D477b161",
+		"EscrowThales": "0x8d3703d4dED77473E632dEf20002DAdC86bf4AAD",
+		"StakingThales": "0x883D651429B0829BC045A94F288f3b514021B8C1",
+		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc"
+	},
+	"ropsten": {
+		"Airdrop": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",
+		"OngoingAirdrop": "0x3c9a11b9a8Ca835ed6931FD74a9F22A1Fc73Ac86",
+		"VestingEscrow": "0x196934f54cB87405392d9f8e7d8CcA269c3d48D3",
+		"EscrowThales": "0x9b960789E6C56192D70a0167bDc7027fFC7F2E58",
+		"StakingThales": "0x9c27B789D645bf7bB02e71590df627b3DE8249fA",
+		"Thales": "0x39Ed4A44C5a390415F1b1dDE2C77a61168aAdFbf"
+	},
+	"kovan": {
+		"Airdrop": "0xD9ceC0F5b2B43C74DFA4A87117968808b95d9018",
+		"OngoingAirdrop": "0xd9112fC9396d38D024D1369e72f039d542000f80",
+		"VestingEscrow": "0xaF05693d2c336b40055F6531556aB6D0Ebf003D8",
+		"EscrowThales": "0xcE9c1aAb41b18b24355138776186484B260B9cf0",
+		"StakingThales": "0x8d178B3Dd7B29dfB38f55FdFE6518cabe6B31059",
+		"Thales": "0x9e7769409E3e5A6821eeDcF33371FCA929fE6A48"
+	},
+	"goerli": {
+		"Airdrop": "",
+		"OngoingAirdrop": "",
+		"VestingEscrow": "",
+		"EscrowThales": "",
+		"StakingThales": "",
+		"Thales": ""
+	},
+	"optimisticKovan": {
+		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
+		"SafeDecimalMath": "0x87A479D8433121E4583D45D37B4A349b4350B79F",
+		"ProxysUSD": "0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
+		"BinaryOptionMastercopy": "0x9E0B492F029F969affBFd78cA17302c2da2604E6",
+		"BinaryOptionMarketMastercopy": "0xAc724BeC64aD7591f2e6DdB5FA57F4eadb78eE6C",
+		"BinaryOptionMarketFactory": "0xcF05d2Fa3013bB78256341e1FB9b1F40D48b4c72",
+		"PriceFeed": "0xb233aa4cBa1C6F24974a4A7F9E32D054E4a51342",
+		"BinaryOptionMarketManager": "0xa234095bC421B97c1FE104331edc5299A60485C9",
+		"BinaryOptionMarketData": "0x33bf0378242c7C814942197ea4AE584b52681197"
+	},
+	"optimisticLocal": {},
+	"localhost": {
+		"Airdrop": "",
+		"OngoingAirdrop": "0xB74DD224F1652672Fc5d18404Fe5AF120e1e0991",
+		"VestingEscrow": "0xE04Fa48Bf6f15E8Ff1317Cd8b896408235A08Df7",
+		"EscrowThales": "0x1817e45A781f47b89F5CD498E737Ee96cF743be9",
+		"StakingThales": "",
+		"Thales": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+	}
+}

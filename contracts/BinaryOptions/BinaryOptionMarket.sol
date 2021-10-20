@@ -274,6 +274,10 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         iOracleInstance = IOracleInstance(_address);
     }
 
+    function setPriceFeed(address _address) external onlyOwner {
+        priceFeed = IPriceFeed(_address);
+    }
+
     /* ---------- Market Resolution ---------- */
 
     function resolve() external onlyOwner afterMaturity managerNotPaused {

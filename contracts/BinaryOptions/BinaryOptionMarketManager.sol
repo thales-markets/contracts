@@ -191,6 +191,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         emit CreatorCapitalRequirementUpdated(_creatorCapitalRequirement);
     }
 
+    function setPriceFeed(address _address) external onlyOwner {
+        priceFeed = IPriceFeed(_address);
+    }
+
     /* ---------- Deposit Management ---------- */
 
     function incrementTotalDeposited(uint delta) external onlyActiveMarkets notPaused {

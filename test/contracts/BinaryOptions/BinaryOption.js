@@ -120,17 +120,12 @@ contract('BinaryOption', accounts => {
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
 
-		// oracle = await priceFeed.oracle();
 		let aggregatorAUD = await MockAggregator.new({ from: managerOwner });
 		aggregatorAUD.setDecimals('8');
 		const timestamp = await currentTime();
 		await aggregatorAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
 		await priceFeed.addAggregator(AUDKey, aggregatorAUD.address, { 
-			from: managerOwner,
-		});
-
-		await priceFeed.updateRates([AUDKey], [toUnit(5)], await currentTime(), {
 			from: managerOwner,
 		});
 

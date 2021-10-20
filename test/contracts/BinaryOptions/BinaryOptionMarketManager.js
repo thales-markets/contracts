@@ -20,7 +20,10 @@ const {
 	getEventByName,
 	getDecodedLogs,
 	decodedEventEqual,
+	convertToDecimals,
 } = require('../../utils/helpers');
+
+const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
 let BinaryOptionMarket,
@@ -30,6 +33,7 @@ let BinaryOptionMarket,
 	binaryOptionMarketMastercopy,
 	binaryOptionMastercopy;
 let market, long, short, BinaryOption, Synth;
+let aggregator_sAUD;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -150,9 +154,13 @@ contract('BinaryOptionMarketManager', accounts => {
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
 
-		//oracle = await priceFeed.oracle();
+		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
+		aggregator_sAUD.setDecimals('8');
+		const timestamp = await currentTime();
 
-		await priceFeed.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
+		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
+
+		await priceFeed.addAggregator(sAUDKey, aggregator_sAUD.address, {
 			from: managerOwner,
 		});
 
@@ -188,17 +196,7 @@ contract('BinaryOptionMarketManager', accounts => {
 
 			await fastForward(expiryDuration + 1000);
 			console.log('current', await currentTime());
-			await priceFeed.updateRates([sAUDKey], [toUnit(2)], await currentTime(), {
-				from: await priceFeed.owner(),
-			});
-
-			console.log('current', await currentTime());
-			console.log('sAUD rate', (await priceFeed.rateForCurrency(sAUDKey)).toString());
-			console.log('sAUD last update', (await priceFeed.lastRateUpdateTimes(sAUDKey)).toString());
-
-			console.log(await markets[0].canResolve());
-			console.log((await markets[0].oracleTimestamp()).toString());
-			//console.log(await markets[0]._isFreshPriceUpdateTime((await priceFeed.lastRateUpdateTimes(sAUDKey)).toString()));
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), await currentTime());
 
 			await Promise.all(
 				markets.map(m => {
@@ -257,9 +255,8 @@ contract('BinaryOptionMarketManager', accounts => {
 
 			// Resolve all the even markets, ensuring they have been transferred.
 			await fastForward(expiryDuration + 1000);
-			await priceFeed.updateRates([sAUDKey], [toUnit(2)], await currentTime(), {
-				from: await priceFeed.owner(),
-			});
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), await currentTime());
+
 			await Promise.all(evenMarkets.map(m => manager.resolveMarket(m)));
 
 			assert.bnEqual(await manager.numActiveMarkets(), toBN(4));
@@ -441,9 +438,8 @@ contract('BinaryOptionMarketManager', accounts => {
 			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(5)));
 
 			await fastForward(expiryDuration + 1000);
-			await priceFeed.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
-				from: await priceFeed.owner(),
-			});
+			await aggregator_sAUD.setLatestAnswer(convertToDecimals(5, 8), await currentTime());
+		
 			await manager.resolveMarket(newMarket.address);
 			await manager.expireMarkets([newMarket.address], { from: managerOwner });
 

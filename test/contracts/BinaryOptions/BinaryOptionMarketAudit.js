@@ -22,8 +22,10 @@ const {
 	getEventByName,
 	getDecodedLogs,
 	decodedEventEqual,
+	convertToDecimals,
 } = require('../../utils/helpers');
 
+const MockAggregator = artifacts.require('MockAggregatorV2V3');
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
 let BinaryOptionMarket,
 	priceFeed,
@@ -32,6 +34,7 @@ let BinaryOptionMarket,
 	binaryOptionMarketMastercopy,
 	binaryOptionMastercopy;
 let market, long, short, BinaryOption, Synth;
+let aggregator_sAUD;
 
 contract('BinaryOptionMarketManager', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator] = accounts;
@@ -92,6 +95,8 @@ contract('BinaryOptionMarketManager', accounts => {
 			],
 		}));
 
+
+
 		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
 
 		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
@@ -100,9 +105,12 @@ contract('BinaryOptionMarketManager', accounts => {
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
 
-		//oracle = await priceFeed.oracle();
+		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });;
+		aggregator_sAUD.setDecimals('8');
 
-		await priceFeed.updateRates([sAUDKey], [toUnit(5)], await currentTime(), {
+		await aggregator_sAUD.setLatestAnswer(convertToDecimals(5,8), await currentTime());
+
+		await priceFeed.addAggregator(sAUDKey, aggregator_sAUD.address, {
 			from: managerOwner,
 		});
 
@@ -140,12 +148,7 @@ contract('BinaryOptionMarketManager', accounts => {
 			);
 			await market.mint(value, { from: exerciser });
 			await fastForward(timeToMaturity + 100);
-			await priceFeed.updateRates(
-				[sAUDKey],
-				[(await market.oracleDetails()).strikePrice],
-				await currentTime(),
-				{ from: await priceFeed.owner() }
-			);
+			await aggregator_sAUD.setLatestAnswer((await market.oracleDetails()).strikePrice, await currentTime());
 
 			await market.exerciseOptions({ from: initialCreator });
 			await market.exerciseOptions({ from: exerciser });

@@ -78,17 +78,6 @@ contract PriceFeed is Owned, IPriceFeed {
         return false;
     }
 
-    function currenciesUsingAggregator(address aggregator) external view returns (bytes32[] memory currencies) {
-        uint count = 0;
-        currencies = new bytes32[](aggregatorKeys.length);
-        for (uint i = 0; i < aggregatorKeys.length; i++) {
-            bytes32 currencyKey = aggregatorKeys[i];
-            if (address(aggregators[currencyKey]) == aggregator) {
-                currencies[count++] = currencyKey;
-            }
-        }
-    }
-
     function _formatAggregatorAnswer(bytes32 currencyKey, int256 rate) internal view returns (uint) {
         require(rate >= 0, "Negative rate not supported");
         if (currencyKeyDecimals[currencyKey] > 0) {

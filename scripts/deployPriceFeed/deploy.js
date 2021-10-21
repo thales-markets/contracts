@@ -60,11 +60,7 @@ async function main() {
 	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 
-	const PriceFeed = await ethers.getContractFactory('PriceFeed', {
-		libraries: {
-			SafeDecimalMath: safeDecimalMath.address,
-		},
-	});
+	const PriceFeed = await ethers.getContractFactory('PriceFeed');
 	const priceFeed = await PriceFeed.deploy(owner.address);
 	await priceFeed.deployed();
 
@@ -80,10 +76,7 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: priceFeed.address,
-		constructorArguments: [owner.address],
-		libraries: {
-			SafeDecimalMath: safeDecimalMath.address,
-		},
+		constructorArguments: [owner.address]
 	});
 }
 

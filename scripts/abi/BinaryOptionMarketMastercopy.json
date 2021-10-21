@@ -23,12 +23,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "oracleTimestamp",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "deposited",
         "type": "uint256"
       },
@@ -509,31 +503,11 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "oraclePriceAndTimestamp",
+    "name": "oraclePrice",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "price",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "updatedAt",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "oracleTimestamp",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
         "type": "uint256"
       }
     ],
@@ -659,6 +633,21 @@
       }
     ],
     "name": "setIOracleInstance",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "setPriceFeed",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

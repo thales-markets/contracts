@@ -51,7 +51,7 @@ interface IBinaryOptionMarket {
 
     function phase() external view returns (Phase);
 
-    function oraclePriceAndTimestamp() external view returns (uint price, uint updatedAt);
+    function oraclePrice() external view returns (uint);
 
     function canResolve() external view returns (bool);
 

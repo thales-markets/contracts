@@ -77,7 +77,7 @@ async function main() {
 
 	console.log('All params set');
 
-	const sAUDKey = toBytes32('sETH');
+	const sAUDKey = toBytes32('ETH');
 	const initialStrikePrice = w3utils.toWei('1');
 	const now = await currentTime();
 
@@ -99,7 +99,8 @@ async function main() {
 		initialStrikePrice,
 		false,
 		ZERO_ADDRESS,
-		{ gasLimit: 5000000 }
+		{ from: owner.address,
+			gasLimit: 5000000 }
 	);
 	let marketCreated;
 	await result.wait().then(function (receipt) {

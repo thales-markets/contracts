@@ -183,16 +183,11 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "oraclePriceAndTimestamp",
+    "name": "oraclePrice",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "price",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "updatedAt",
+        "name": "",
         "type": "uint256"
       }
     ],

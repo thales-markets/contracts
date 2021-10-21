@@ -57,13 +57,23 @@ contract PriceFeed is Owned, IPriceFeed {
         }
     }
 
-    function rateAndUpdatedTime(bytes32 currencyKey) external view returns (uint rate, uint time) {
-        RateAndUpdatedTime memory rateAndTime = _getRateAndUpdatedTime(currencyKey);
-        return (rateAndTime.rate, rateAndTime.time);
-    }
-
     function rateForCurrency(bytes32 currencyKey) external view returns (uint) {
-        return _getRateAndUpdatedTime(currencyKey).rate;
+        AggregatorV2V3Interface aggregator = aggregators[currencyKey];
+        require(address(aggregator) != address(0), "No aggregator exists for key");
+
+        // this view from the aggregator is the most gas efficient but it can throw when there's no data,
+        // so let's call it low-level to suppress any reverts
+        bytes memory payload = abi.encodeWithSignature("latestRoundData()");
+        // solhint-disable avoid-low-level-calls
+        (bool success, bytes memory returnData) = address(aggregator).staticcall(payload);
+
+        if (success) {
+            (uint80 roundId, int256 answer, , uint256 updatedAt, ) = abi.decode(
+                returnData,
+                (uint80, int256, uint256, uint256, uint80)
+            );
+            return _formatAggregatorAnswer(currencyKey, answer);
+        }
     }
 
     function removeFromArray(bytes32 entry, bytes32[] storage array) internal returns (bool) {
@@ -85,26 +95,6 @@ contract PriceFeed is Owned, IPriceFeed {
             return uint(uint(rate).mul(multiplier));
         }
         return uint(rate);
-    }
-
-    function _getRateAndUpdatedTime(bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
-        AggregatorV2V3Interface aggregator = aggregators[currencyKey];
-        require(address(aggregator) != address(0), "No aggregator exists for key");
-
-        // this view from the aggregator is the most gas efficient but it can throw when there's no data,
-        // so let's call it low-level to suppress any reverts
-        bytes memory payload = abi.encodeWithSignature("latestRoundData()");
-        // solhint-disable avoid-low-level-calls
-        (bool success, bytes memory returnData) = address(aggregator).staticcall(payload);
-
-        if (success) {
-            (uint80 roundId, int256 answer, , uint256 updatedAt, ) = abi.decode(
-                returnData,
-                (uint80, int256, uint256, uint256, uint80)
-            );
-            return
-                RateAndUpdatedTime({rate: uint216(_formatAggregatorAnswer(currencyKey, answer)), time: uint40(updatedAt)});
-        }
     }
 
     /* ========== EVENTS ========== */

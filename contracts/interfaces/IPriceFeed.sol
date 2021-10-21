@@ -14,7 +14,5 @@ interface IPriceFeed {
     // Views
     function aggregators(bytes32 currencyKey) external view returns (address);
 
-    function rateAndUpdatedTime(bytes32 currencyKey) external view returns (uint rate, uint time);
-
     function rateForCurrency(bytes32 currencyKey) external view returns (uint);
 }

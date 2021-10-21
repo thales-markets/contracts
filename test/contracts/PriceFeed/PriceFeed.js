@@ -181,12 +181,6 @@ contract('Price Feed', async accounts => {
 						});
 						assert.bnEqual(result, toUnit(newRate.toString()));
 					});
-					it('and the timestamp is the latest', async () => {
-						const result = await instance.rateAndUpdatedTime(JPY, {
-							from: accountOne,
-						});
-						assert.bnEqual(result.time.toNumber(), timestamp);
-					});
 				});
 			});
 
@@ -211,12 +205,6 @@ contract('Price Feed', async accounts => {
 							from: accountOne,
 						});
 						assert.bnEqual(result, web3.utils.toWei(gasPrice.toString(), 'gwei'));
-					});
-					it('and the timestamp is the latest', async () => {
-						const result = await instance.rateAndUpdatedTime(fastGasPrice, {
-							from: accountOne,
-						});
-						assert.bnEqual(result.time.toNumber(), timestamp);
 					});
 				});
 			});

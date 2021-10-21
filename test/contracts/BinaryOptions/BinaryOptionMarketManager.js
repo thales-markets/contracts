@@ -439,7 +439,7 @@ contract('BinaryOptionMarketManager', accounts => {
 
 			await fastForward(expiryDuration + 1000);
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(5, 8), await currentTime());
-		
+
 			await manager.resolveMarket(newMarket.address);
 			await manager.expireMarkets([newMarket.address], { from: managerOwner });
 

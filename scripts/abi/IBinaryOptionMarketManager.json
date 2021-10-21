@@ -86,11 +86,6 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "maxOraclePriceAge",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "expiryDuration",
         "type": "uint256"
       },

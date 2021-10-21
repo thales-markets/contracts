@@ -220,7 +220,6 @@ contract('BinaryOption', accounts => {
 					'setCreatorFee',
 					'setExpiryDuration',
 					'setMarketCreationEnabled',
-					'setMaxOraclePriceAge',
 					'setMaxTimeToMaturity',
 					'setMigratingManager',
 					'setPoolFee',
@@ -313,24 +312,6 @@ contract('BinaryOption', accounts => {
 			});
 		});
 
-		it('Set oracle maturity window', async () => {
-			const tx = await manager.setMaxOraclePriceAge(maxOraclePriceAge, { from: managerOwner });
-			assert.bnEqual((await manager.durations()).maxOraclePriceAge, maxOraclePriceAge);
-			const log = tx.logs[0];
-			assert.equal(log.event, 'MaxOraclePriceAgeUpdated');
-			assert.bnEqual(log.args.duration, maxOraclePriceAge);
-		});
-
-		it('Only the owner can set the oracle maturity window', async () => {
-			await onlyGivenAddressCanInvoke({
-				fnc: manager.setMaxOraclePriceAge,
-				args: [maxOraclePriceAge],
-				accounts,
-				address: managerOwner,
-				reason: 'Only the contract owner may perform this action',
-			});
-		});
-
 		it('Set expiry duration', async () => {
 			const tx = await manager.setExpiryDuration(expiryDuration, { from: managerOwner });
 			assert.bnEqual((await manager.durations()).expiryDuration, expiryDuration);
@@ -370,7 +351,6 @@ contract('BinaryOption', accounts => {
 		it('Static parameters are set properly', async () => {
 			const durations = await manager.durations();
 			assert.bnEqual(durations.expiryDuration, expiryDuration);
-			assert.bnEqual(durations.maxOraclePriceAge, maxOraclePriceAge);
 			assert.bnEqual(durations.maxTimeToMaturity, maxTimeToMaturity);
 
 			const fees = await manager.fees();

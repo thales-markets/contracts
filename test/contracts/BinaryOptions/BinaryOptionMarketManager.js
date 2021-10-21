@@ -483,7 +483,6 @@ contract('BinaryOptionMarketManager', accounts => {
 					managerOwner,
 					addressResolver.address,
 					priceFeed.address,
-					61 * 60, // max oracle price age: 61 minutes
 					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
 					toUnit('2'), // Capital requirement
@@ -581,7 +580,6 @@ contract('BinaryOptionMarketManager', accounts => {
 					managerOwner,
 					addressResolver.address,
 					priceFeed.address,
-					61 * 60, // max oracle price age: 61 minutes
 					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
 					toUnit('2'), // Capital requirement

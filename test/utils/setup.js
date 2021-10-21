@@ -218,7 +218,6 @@ const setupContract = async ({
 			owner,
 			tryGetAddressOf('AddressResolver'),
 			tryGetAddressOf('PriceFeed'),
-			61 * 60, // max oracle price age: 61 minutes
 			26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 			365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
 			toWei('2'), // Capital requirement

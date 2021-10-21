@@ -86,7 +86,6 @@ async function main() {
 		owner.address,
 		addressResolver.address,
 		priceFeedAddress,
-		maxOraclePriceAge,
 		expiryDuration,
 		maxTimeToMaturity,
 		creatorCapitalRequirement,

@@ -31,7 +31,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     struct Durations {
-        uint maxOraclePriceAge;
         uint expiryDuration;
         uint maxTimeToMaturity;
     }
@@ -68,7 +67,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         address _owner,
         IAddressResolver _resolver,
         IPriceFeed _priceFeed,
-        uint _maxOraclePriceAge,
         uint _expiryDuration,
         uint _maxTimeToMaturity,
         uint _creatorCapitalRequirement,
@@ -84,7 +82,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
         setFeeAddress(_feeAddress);
         setExpiryDuration(_expiryDuration);
-        setMaxOraclePriceAge(_maxOraclePriceAge);
         setMaxTimeToMaturity(_maxTimeToMaturity);
         setCreatorCapitalRequirement(_creatorCapitalRequirement);
         setPoolFee(_poolFee);
@@ -153,11 +150,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     /* ---------- Setters ---------- */
-
-    function setMaxOraclePriceAge(uint _maxOraclePriceAge) public onlyOwner {
-        durations.maxOraclePriceAge = _maxOraclePriceAge;
-        emit MaxOraclePriceAgeUpdated(_maxOraclePriceAge);
-    }
 
     function setExpiryDuration(uint _expiryDuration) public onlyOwner {
         durations.expiryDuration = _expiryDuration;
@@ -416,7 +408,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     event MarketsMigrated(BinaryOptionMarketManager receivingManager, BinaryOptionMarket[] markets);
     event MarketsReceived(BinaryOptionMarketManager migratingManager, BinaryOptionMarket[] markets);
     event MarketCreationEnabledUpdated(bool enabled);
-    event MaxOraclePriceAgeUpdated(uint duration);
     event ExpiryDurationUpdated(uint duration);
     event MaxTimeToMaturityUpdated(uint duration);
     event CreatorCapitalRequirementUpdated(uint value);

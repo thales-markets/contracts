@@ -18,11 +18,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_maxOraclePriceAge",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_expiryDuration",
         "type": "uint256"
       },
@@ -224,19 +219,6 @@
       }
     ],
     "name": "MarketsReceived",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "duration",
-        "type": "uint256"
-      }
-    ],
-    "name": "MaxOraclePriceAgeUpdated",
     "type": "event"
   },
   {
@@ -456,11 +438,6 @@
     "inputs": [],
     "name": "durations",
     "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "maxOraclePriceAge",
-        "type": "uint256"
-      },
       {
         "internalType": "uint256",
         "name": "expiryDuration",
@@ -887,21 +864,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_maxOraclePriceAge",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMaxOraclePriceAge",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "_maxTimeToMaturity",
         "type": "uint256"
       }
@@ -952,6 +914,21 @@
       }
     ],
     "name": "setPoolFee",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "setPriceFeed",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

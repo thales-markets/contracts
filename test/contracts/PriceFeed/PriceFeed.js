@@ -96,11 +96,6 @@ contract('Price Feed', async accounts => {
 			});
 		});
 
-		it('currenciesUsingAggregator for a rate returns an empty', async () => {
-			assert.deepEqual(await instance.currenciesUsingAggregator(aggregatorJPY.address), []);
-			assert.deepEqual(await instance.currenciesUsingAggregator(ZERO_ADDRESS), []);
-		});
-
 		describe('when the owner adds JPY added as an aggregator', () => {
 			let txn;
 			beforeEach(async () => {

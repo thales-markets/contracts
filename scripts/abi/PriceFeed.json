@@ -156,27 +156,6 @@
     "constant": true,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "aggregator",
-        "type": "address"
-      }
-    ],
-    "name": "currenciesUsingAggregator",
-    "outputs": [
-      {
-        "internalType": "bytes32[]",
-        "name": "currencies",
-        "type": "bytes32[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"

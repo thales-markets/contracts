@@ -74,9 +74,7 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: priceFeed.address,
-        constructorArguments: [
-			owner.address,
-        ],
+		constructorArguments: [owner.address]
 	});
 }
 

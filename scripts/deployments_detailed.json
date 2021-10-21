@@ -1,0 +1,85 @@
+{
+	"targets": {
+		"SafeDecimalMath": {
+			"name": "SafeDecimalMath",
+			"address": "0x87A479D8433121E4583D45D37B4A349b4350B79F",
+			"source": "SafeDecimalMath",
+			"link": "https://kovan-explorer.optimism.io/address/0x87A479D8433121E4583D45D37B4A349b4350B79F",
+			"timestamp": "2021-01-14T15:51:40.000Z",
+			"txn": "https://kovan-explorer.optimism.io/tx/GENESIS_87a479d8433121e4583d45d37b4a349b4350b79f",
+			"network": "kovan"
+		},
+		"AddressResolver": {
+			"name": "AddressResolver",
+			"address": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
+			"source": "AddressResolver",
+			"link": "https://kovan-explorer.optimism.io/address/0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
+			"timestamp": "2021-01-14T17:20:19.541Z",
+			"txn": "",
+			"network": "kovan"
+		},
+		"ProxyERC20sUSD": {
+			"name": "ProxyERC20sUSD",
+			"address": "0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
+			"source": "ProxyERC20",
+			"link": "https://kovan-explorer.optimism.io/address/0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
+			"timestamp": "2021-01-14T17:21:48.924Z",
+			"txn": "",
+			"network": "kovan"
+		},
+		"BinaryOptionMastercopy": {
+			"name": "BinaryOptionMastercopy",
+			"address": "0x012122615a48d1a0c5B15E147BAA54FfE89B9FC8",
+			"source": "BinaryOptionMastercopy",
+			"link": "https://kovan-optimistic.etherscan.io/address/0x012122615a48d1a0c5B15E147BAA54FfE89B9FC8",
+			"timestamp": "2021-10-21T15:50:52.0Z",
+			"txn": "",
+			"network": "kovan"
+		},
+		"BinaryOptionMarketMastercopy": {
+			"name": "BinaryOptionMarketMastercopy",
+			"address": "0xf0a7D192AB5273b07C9cf5B4Fb11C96a20A64B73",
+			"source": "BinaryOptionMarketMastercopy",
+			"link": "https://kovan-optimistic.etherscan.io/address/0xf0a7D192AB5273b07C9cf5B4Fb11C96a20A64B73",
+			"timestamp": "2021-10-21T15:50:52.1Z",
+			"txn": "",
+			"network": "kovan"
+		},
+		"BinaryOptionMarketFactory": {
+			"name": "BinaryOptionMarketFactory",
+			"address": "0x767A50044E301B32313Da82510E10a045a142791",
+			"source": "BinaryOptionMarketFactory",
+			"link": "https://kovan-optimistic.etherscan.io/address/0x767A50044E301B32313Da82510E10a045a142791",
+			"timestamp": "2021-10-21T15:50:52.2Z",
+			"txn": "",
+			"network": "kovan"
+		},
+		"BinaryOptionMarketManager": {
+			"name": "BinaryOptionMarketManager",
+			"address": "0xBa466C7c414285fAC1e89ED64fB40f97A3B15a1E",
+			"source": "BinaryOptionMarketManager",
+			"link": "https://kovan-optimistic.etherscan.io/address/0xBa466C7c414285fAC1e89ED64fB40f97A3B15a1E",
+			"timestamp": "2021-10-21T15:50:52.3Z",
+			"txn": "",
+			"network": "kovan"
+		},
+		"BinaryOptionMarketData": {
+			"name": "BinaryOptionMarketData",
+			"address": "0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9",
+			"source": "BinaryOptionMarketData",
+			"link": "https://kovan-optimistic.etherscan.io/address/0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9",
+			"timestamp": "2021-10-21T15:50:52.4Z",
+			"txn": "",
+			"network": "kovan"
+		},
+		"PriceFeed": {
+			"name": "PriceFeed",
+			"address": "0xd6BEd7D753DCbbbb8937Dd009788d6c815aE3094",
+			"source": "PriceFeed",
+			"link": "https://kovan-optimistic.etherscan.io/address/0xd6BEd7D753DCbbbb8937Dd009788d6c815aE3094",
+			"timestamp": "2021-10-21T15:50:52.01Z",
+			"txn": "",
+			"network": "kovan"
+		}
+	}
+}

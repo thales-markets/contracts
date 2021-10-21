@@ -282,9 +282,10 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     function resolve() external onlyOwner afterMaturity managerNotPaused {
         require(canResolve(), "Can not resolve market");
-
-        (uint price, uint updatedAt) = _oraclePriceAndTimestamp();
+        uint price; 
+        uint updatedAt;
         if (!customMarket) {
+            (price, updatedAt) = _oraclePriceAndTimestamp();
             oracleDetails.finalPrice = price;
         }
         resolved = true;

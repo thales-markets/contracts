@@ -99,8 +99,7 @@ async function main() {
 		initialStrikePrice,
 		false,
 		ZERO_ADDRESS,
-		{ from: owner.address,
-			gasLimit: 5000000 }
+		{ gasLimit: 6000000 }
 	);
 	let marketCreated;
 	await result.wait().then(function (receipt) {

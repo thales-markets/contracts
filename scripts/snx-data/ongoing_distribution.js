@@ -35,6 +35,7 @@ async function getBlocks(start, end) {
 		const block = await provider.getBlock(blockNumber);
 		if (block.timestamp >= startTimestamp && block.timestamp < endTimestamp) {
 			blocks.push(blockNumber);
+			console.log('pushed block:' + blockNumber);
 		}
 	}
 	return blocks;

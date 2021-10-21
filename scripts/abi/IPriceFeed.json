@@ -37,6 +37,7 @@
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "bytes32",

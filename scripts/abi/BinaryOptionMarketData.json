@@ -58,21 +58,9 @@
       {
         "components": [
           {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "updatedAt",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct BinaryOptionMarketData.OraclePriceAndTimestamp",
-            "name": "oraclePriceAndTimestamp",
-            "type": "tuple"
+            "internalType": "uint256",
+            "name": "oraclePrice",
+            "type": "uint256"
           },
           {
             "components": [

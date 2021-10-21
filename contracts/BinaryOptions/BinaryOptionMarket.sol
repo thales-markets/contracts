@@ -160,12 +160,12 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     /* ---------- Market Resolution ---------- */
 
-    function _oraclePriceAndTimestamp() internal view returns (uint price, uint updatedAt) {
-        return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
+    function _oraclePrice() internal view returns (uint price) {
+        return _priceFeed().rateForCurrency(oracleDetails.key);
     }
 
-    function oraclePriceAndTimestamp() external view returns (uint price, uint updatedAt) {
-        return _oraclePriceAndTimestamp();
+    function oraclePrice() external view returns (uint price) {
+        return _oraclePrice();
     }
 
     function _isFreshPriceUpdateTime(uint timestamp) internal view returns (bool) {
@@ -173,17 +173,11 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         return (times.maturity.sub(maxOraclePriceAge)) <= timestamp;
     }
 
-    function oracleTimestamp() public view returns (uint) {
-        (, uint updatedAt) = _oraclePriceAndTimestamp();
-        return updatedAt;
-    }
-
     function canResolve() public view returns (bool) {
         if (customMarket) {
             return !resolved && _matured() && iOracleInstance.resolvable();
         } else {
-            (, uint updatedAt) = _oraclePriceAndTimestamp();
-            return !resolved && _matured() && _isFreshPriceUpdateTime(updatedAt);
+            return !resolved && _matured();
         }
     }
 
@@ -195,7 +189,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
             if (resolved) {
                 price = oracleDetails.finalPrice;
             } else {
-                (price, ) = _oraclePriceAndTimestamp();
+                price = _oraclePrice();
             }
 
             return oracleDetails.strikePrice <= price ? Side.Long : Side.Short;
@@ -283,9 +277,8 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     function resolve() external onlyOwner afterMaturity managerNotPaused {
         require(canResolve(), "Can not resolve market");
         uint price; 
-        uint updatedAt;
         if (!customMarket) {
-            (price, updatedAt) = _oraclePriceAndTimestamp();
+            price = _oraclePrice();
             oracleDetails.finalPrice = price;
         }
         resolved = true;
@@ -303,7 +296,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         sUSD.transfer(_manager().feeAddress(), poolFees);
         sUSD.transfer(creator, creatorFees);
 
-        emit MarketResolved(_result(), price, updatedAt, deposited, poolFees, creatorFees);
+        emit MarketResolved(_result(), price, deposited, poolFees, creatorFees);
     }
 
     /* ---------- Claiming and Exercising Options ---------- */
@@ -387,7 +380,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     event MarketResolved(
         Side result,
         uint oraclePrice,
-        uint oracleTimestamp,
         uint deposited,
         uint poolFees,
         uint creatorFees

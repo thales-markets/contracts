@@ -21,11 +21,6 @@ contract BinaryOptionMarketData {
         bool canResolve;
     }
 
-    struct OraclePriceAndTimestamp {
-        uint price;
-        uint updatedAt;
-    }
-
     // used for things that don't change over the lifetime of the contract
     struct MarketParameters {
         address creator;
@@ -36,7 +31,7 @@ contract BinaryOptionMarketData {
     }
 
     struct MarketData {
-        OraclePriceAndTimestamp oraclePriceAndTimestamp;
+        uint oraclePrice;
         Deposits deposits;
         Resolution resolution;
         BinaryOptionMarket.Phase phase;
@@ -67,12 +62,12 @@ contract BinaryOptionMarketData {
     }
 
     function getMarketData(BinaryOptionMarket market) external view returns (MarketData memory) {
-        (uint price, uint updatedAt) = market.oraclePriceAndTimestamp();
+        uint price = market.oraclePrice();
         (uint longSupply, uint shortSupply) = market.totalSupplies();
 
         return
             MarketData(
-                OraclePriceAndTimestamp(price, updatedAt),
+                price,
                 Deposits(market.deposited()),
                 Resolution(market.resolved(), market.canResolve()),
                 market.phase(),

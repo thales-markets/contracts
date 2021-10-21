@@ -168,11 +168,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         return _oraclePrice();
     }
 
-    function _isFreshPriceUpdateTime(uint timestamp) internal view returns (bool) {
-        (uint maxOraclePriceAge, , ) = _manager().durations();
-        return (times.maturity.sub(maxOraclePriceAge)) <= timestamp;
-    }
-
     function canResolve() public view returns (bool) {
         if (customMarket) {
             return !resolved && _matured() && iOracleInstance.resolvable();

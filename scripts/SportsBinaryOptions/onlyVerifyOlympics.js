@@ -60,7 +60,6 @@ async function main() {
 		constructorArguments: [
 			owner.address,
 			addressResolver.address,
-			maxOraclePriceAge,
 			expiryDuration,
 			maxTimeToMaturity,
 			creatorCapitalRequirement,

@@ -70,7 +70,7 @@ async function main() {
 	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
 		owner.address,
 		addressResolver.address,
-		maxOraclePriceAge,
+		priceFeedAddress,
 		expiryDuration,
 		maxTimeToMaturity,
 		creatorCapitalRequirement,
@@ -108,7 +108,7 @@ async function main() {
 		constructorArguments: [
 			owner.address,
 			addressResolver.address,
-			maxOraclePriceAge,
+			priceFeedAddress,
 			expiryDuration,
 			maxTimeToMaturity,
 			creatorCapitalRequirement,

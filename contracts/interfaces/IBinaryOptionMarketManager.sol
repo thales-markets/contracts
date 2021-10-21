@@ -11,7 +11,6 @@ interface IBinaryOptionMarketManager {
         external
         view
         returns (
-            uint maxOraclePriceAge,
             uint expiryDuration,
             uint maxTimeToMaturity
         );

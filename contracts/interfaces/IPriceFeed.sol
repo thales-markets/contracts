@@ -10,4 +10,8 @@ interface IPriceFeed {
     function aggregators(bytes32 currencyKey) external view returns (address);
 
     function rateForCurrency(bytes32 currencyKey) external view returns (uint);
+
+    function getRates() external view returns (uint[] memory);
+
+    function getCurrencies() external view returns (bytes32[] memory);
 }

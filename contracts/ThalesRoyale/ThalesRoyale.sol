@@ -8,7 +8,7 @@ import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 import "../interfaces/IPriceFeed.sol";
 
-contract OwnedWithInitRoyale is Owned, Pausable {
+contract ThalesRoyale is Owned, Pausable {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;

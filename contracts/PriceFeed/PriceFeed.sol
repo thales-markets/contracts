@@ -68,10 +68,7 @@ contract PriceFeed is Owned, IPriceFeed {
         (bool success, bytes memory returnData) = address(aggregator).staticcall(payload);
 
         if (success) {
-            (uint80 roundId, int256 answer, , uint256 updatedAt, ) = abi.decode(
-                returnData,
-                (uint80, int256, uint256, uint256, uint80)
-            );
+            (, int256 answer, , , ) = abi.decode(returnData, (uint80, int256, uint256, uint256, uint80));
             return _formatAggregatorAnswer(currencyKey, answer);
         }
     }

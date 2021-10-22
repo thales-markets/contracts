@@ -1,6 +1,5 @@
 [
   {
-    "constant": false,
     "inputs": [
       {
         "internalType": "bytes32",
@@ -15,12 +14,10 @@
     ],
     "name": "addAggregator",
     "outputs": [],
-    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
       {
         "internalType": "bytes32",
@@ -36,14 +33,10 @@
         "type": "address"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-<<<<<<< HEAD
-    "constant": true,
-=======
     "inputs": [],
     "name": "getCurrencies",
     "outputs": [
@@ -70,7 +63,6 @@
     "type": "function"
   },
   {
->>>>>>> 646d884b1854c2e332aa9ebf5bbea0a05e7f84af
     "inputs": [
       {
         "internalType": "bytes32",
@@ -86,12 +78,10 @@
         "type": "uint256"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
       {
         "internalType": "bytes32",
@@ -101,7 +91,6 @@
     ],
     "name": "removeAggregator",
     "outputs": [],
-    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   }

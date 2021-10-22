@@ -1,14 +1,14 @@
 pragma solidity ^0.5.16;
 
-import "synthetix-2.43.1/contracts/Pausable.sol";
+import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
 import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
+import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 import "../interfaces/IPriceFeed.sol";
 
-contract OwnedWithInit is Owned, Pausable {
+contract OwnedWithInitRoyale is Owned, Pausable {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;

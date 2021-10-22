@@ -15,6 +15,7 @@ const { toBN } = web3.utils;
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const { toBytes32 } = require('../../index');
+const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -33,6 +34,9 @@ async function main() {
 
 	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
 	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
+
+	const priceFeedAddress = getTargetAddress('PriceFeed', network);
+	console.log('Found PriceFeed at:' + priceFeedAddress);
 
 	// We get the contract to deploy
 	const BinaryOptionMastercopy = await ethers.getContractFactory('BinaryOptionMastercopy');
@@ -77,10 +81,11 @@ async function main() {
 			SafeDecimalMath: safeDecimalMath.address,
 		},
 	});
+
 	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
 		owner.address,
 		addressResolver.address,
-		maxOraclePriceAge,
+		priceFeedAddress,
 		expiryDuration,
 		maxTimeToMaturity,
 		creatorCapitalRequirement,
@@ -95,34 +100,50 @@ async function main() {
 		binaryOptionMarketManagerDeployed.address
 	);
 
-	await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
+	setTargetAddress('BinaryOptionMarketManager', network, binaryOptionMarketManagerDeployed.address);
+
+	let tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
 		binaryOptionMarketManagerDeployed.address
 	);
-	await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketMastercopy(
+	await tx.wait().then(e => {
+		console.log('BinaryOptionMarketFactory: setBinaryOptionMarketManager');
+	});
+	tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketMastercopy(
 		binaryOptionMarketMastercopyDeployed.address
 	);
-	await binaryOptionMarketFactoryDeployed.setBinaryOptionMastercopy(
+	await tx.wait().then(e => {
+		console.log('BinaryOptionMarketFactory: setBinaryOptionMarketMastercopy');
+	});
+	tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMastercopy(
 		binaryOptionMastercopyDeployed.address
 	);
-	await binaryOptionMarketManagerDeployed.setBinaryOptionsMarketFactory(
+	await tx.wait().then(e => {
+		console.log('BinaryOptionMarketFactory: setBinaryOptionMastercopy');
+	});
+	tx = await binaryOptionMarketManagerDeployed.setBinaryOptionsMarketFactory(
 		binaryOptionMarketFactoryDeployed.address
 	);
+	await tx.wait().then(e => {
+		console.log('BinaryOptionMarketManager: setBinaryOptionsMarketFactory');
+	});
 
 	console.log('All params set');
 
-	const sAUDKey = toBytes32('sETH');
+	const JPYkey = toBytes32('JPY');
 	const initialStrikePrice = w3utils.toWei('1');
 	const now = await currentTime();
 
 	let abi = ["function approve(address _spender, uint256 _value) public returns (bool success)"]
 	let contract = new ethers.Contract(ProxyERC20sUSD.address, abi, owner);
-	await contract.approve(binaryOptionMarketManagerDeployed.address, initialStrikePrice, {
+	tx = await contract.approve(binaryOptionMarketManagerDeployed.address, initialStrikePrice, {
 		from: owner.address,
 	});
-	console.log('Done approving');
-
-	const result = await binaryOptionMarketManagerDeployed.createMarket(
-		sAUDKey,
+	await tx.wait().then(e => {
+		console.log('Done approving');
+	});
+	
+	tx = await binaryOptionMarketManagerDeployed.createMarket(
+		JPYkey,
 		initialStrikePrice,
 		now + 360,
 		initialStrikePrice,
@@ -130,7 +151,10 @@ async function main() {
 		ZERO_ADDRESS,
 		{ gasLimit: 5500000 }
 	);
-	console.log('Market created');
+	await tx.wait().then(e => {
+		console.log('Market created');
+	});
+	
 }
 
 main()

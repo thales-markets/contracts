@@ -73,9 +73,17 @@ contract('BinaryOption', accounts => {
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.createMarket(oracleKey, strikePrice, maturity, initialMint, false, ZERO_ADDRESS, {
-			from: creator,
-		});
+		const tx = await man.createMarket(
+			oracleKey,
+			strikePrice,
+			maturity,
+			initialMint,
+			false,
+			ZERO_ADDRESS,
+			{
+				from: creator,
+			}
+		);
 		return BinaryOptionMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);
 	};
 
@@ -120,17 +128,12 @@ contract('BinaryOption', accounts => {
 		});
 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
 
-		// oracle = await priceFeed.oracle();
 		let aggregatorAUD = await MockAggregator.new({ from: managerOwner });
 		aggregatorAUD.setDecimals('8');
 		const timestamp = await currentTime();
 		await aggregatorAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
-		await priceFeed.addAggregator(AUDKey, aggregatorAUD.address, { 
-			from: managerOwner,
-		});
-
-		await priceFeed.updateRates([AUDKey], [toUnit(5)], await currentTime(), {
+		await priceFeed.addAggregator(AUDKey, aggregatorAUD.address, {
 			from: managerOwner,
 		});
 
@@ -152,14 +155,7 @@ contract('BinaryOption', accounts => {
 			const newValue = toUnit(1);
 			await manager.setCreatorCapitalRequirement(newValue, { from: managerOwner });
 			let now = await currentTime();
-			market = await createMarket(
-				manager,
-				AUDKey,
-				toUnit(1),
-				now + 200,
-				toUnit(2),
-				initialCreator
-			);
+			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), initialCreator);
 			await fastForward(100);
 
 			const options = await market.options();
@@ -271,14 +267,7 @@ contract('BinaryOption', accounts => {
 
 		it('Can transferFrom tokens.', async () => {
 			let now = await currentTime();
-			market = await createMarket(
-				manager,
-				AUDKey,
-				toUnit(1),
-				now + 200,
-				toUnit(2),
-				initialCreator
-			);
+			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), initialCreator);
 			await fastForward(100);
 
 			const options = await market.options();

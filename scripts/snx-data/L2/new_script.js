@@ -39,7 +39,7 @@ async function getCurrentSnapshotViaGraph(url) {
 				continueQuery = false;
 			}
 			highestIDLast = data.snxholders.length ? data.snxholders[data.snxholders.length - 1].id : '';
-			console.log('holders length is ' + holders.length);
+			// console.log('holders length is ' + holders.length);
 		});
 	}
 	console.log('finished');
@@ -84,10 +84,10 @@ async function getAllClaimers(url) {
 		};
 		let performance = null;
 		await request(url, queryIssuers, variables).then(data => {
-			console.log(data);
+			// console.log(data);
 			data.feesClaimeds.forEach(d => {
 				if (uniqueClaimers.has(d.account)) {
-					console.log(d.account + ' claimed twice');
+					// console.log(d.account + ' claimed twice');
 				}
 				uniqueClaimers.add(d.account);
 				claimers.push(d);
@@ -95,8 +95,8 @@ async function getAllClaimers(url) {
 			if (data.feesClaimeds.length < 1000) {
 				continueQuery = false;
 			}
-			console.log('claimers length is ' + claimers.length);
-			console.log('uniqueClaimers length is ' + uniqueClaimers.size);
+			// console.log('claimers length is ' + claimers.length);
+			// console.log('uniqueClaimers length is ' + uniqueClaimers.size);
 		});
 
 		lastTimestamp = claimers.length ? claimers[claimers.length - 1].timestamp : '';

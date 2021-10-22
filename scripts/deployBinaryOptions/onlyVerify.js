@@ -2,6 +2,7 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix');
 const { artifacts, contract, web3 } = require('hardhat');
+const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -20,6 +21,9 @@ async function main() {
 
 	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
+
+	const priceFeedAddress = getTargetAddress('PriceFeed', network);
+	console.log('Found PriceFeed at:' + priceFeedAddress);
 
 	// We get the contract to deploy
 	const BinaryOptionMastercopy = await ethers.getContractFactory('BinaryOptionMastercopy');
@@ -56,11 +60,11 @@ async function main() {
 	const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
 
 	await hre.run('verify:verify', {
-		address: '0x3e4e650f61c7a747a4badcff5c3b3e2baf37aec3',
+		address: '0xEC9606021Ce3d9C4415d745614381CDED9a1E325',
 		constructorArguments: [
 			owner.address,
 			addressResolver.address,
-			maxOraclePriceAge,
+			priceFeedAddress,
 			expiryDuration,
 			maxTimeToMaturity,
 			creatorCapitalRequirement,

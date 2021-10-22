@@ -41,7 +41,36 @@
     "type": "function"
   },
   {
+<<<<<<< HEAD
     "constant": true,
+=======
+    "inputs": [],
+    "name": "getCurrencies",
+    "outputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "",
+        "type": "bytes32[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getRates",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+>>>>>>> 646d884b1854c2e332aa9ebf5bbea0a05e7f84af
     "inputs": [
       {
         "internalType": "bytes32",

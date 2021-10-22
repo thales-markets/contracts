@@ -15,12 +15,12 @@ const {
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');
 
 const TOTAL_AMOUNT = web3.utils.toWei('125000');
-const TOTAL_AMOUNT_STAKING = web3.utils.toWei('100000');
-const TOTAL_AMOUNT_TO_TRANSFER = web3.utils.toWei('225000');
+const TOTAL_AMOUNT_STAKING = web3.utils.toWei('50000');
+const TOTAL_AMOUNT_TO_TRANSFER = web3.utils.toWei('175000');
 
 const fs = require('fs');
 
-let includeStakingRewards = false;
+let includeStakingRewards = true;
 
 async function ongoingAirdrop() {
 	let accounts = await ethers.getSigners();
@@ -320,7 +320,7 @@ async function ongoingAirdrop() {
 	// } else {
 	// 	await thales.transfer(ongoingAirdrop.address, TOTAL_AMOUNT);
 	// }
-	console.log('Total amount to transfer is:' + TOTAL_AMOUNT);
+	console.log('Total amount to transfer is:' + TOTAL_AMOUNT_TO_TRANSFER);
 }
 
 ongoingAirdrop()

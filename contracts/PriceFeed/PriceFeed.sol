@@ -17,9 +17,6 @@ contract PriceFeed is Owned, IPriceFeed {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
-    // Exchange rates and update times stored by currency code, e.g. 'SNX', or 'ETH'
-    mapping(bytes32 => mapping(uint => RateAndUpdatedTime)) private _rates;
-
     // Decentralized oracle networks that feed into pricing aggregators
     mapping(bytes32 => AggregatorV2V3Interface) public aggregators;
     mapping(bytes32 => uint8) public currencyKeyDecimals;

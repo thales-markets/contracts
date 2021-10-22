@@ -170,8 +170,8 @@ async function main() {
 	});
 	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
 		owner.address,
-		PriceFeedDeployed.address,
 		addressResolver.address,
+		PriceFeedDeployed.address,
 		expiryDuration,
 		maxTimeToMaturity,
 		creatorCapitalRequirement,

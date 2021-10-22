@@ -19,8 +19,12 @@ contract ThalesRoyale is Owned, Pausable {
     IPriceFeed public priceFeed;
     uint public rounds;
     uint public maxParticipants;
+    uint public signUpPeriod = 24 hours;
 
     address[] public players;
+    mapping(address => uint) public playerSignedUp;
+
+    uint public creationTime;
 
     constructor(
         address _owner,
@@ -30,5 +34,14 @@ contract ThalesRoyale is Owned, Pausable {
         address rewardToken,
         uint rounds,
         uint maxParticipants
-    ) public Owned(_owner) {}
+    ) public Owned(_owner) {
+        creationTime = block.timestamp;
+    }
+
+    function signUp() external {
+        require(block.timestamp < creationTime + signUpPeriod, "Sign up period has expired");
+        require(playerSignedUp[msg.sender] == 0, "Player already signed up");
+        playerSignedUp[msg.sender] = block.timestamp;
+        players.push(msg.sender);
+    }
 }

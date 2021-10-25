@@ -97,6 +97,8 @@ async function main() {
 
 	console.log('binaryOptionMarketData deployed to:', binaryOptionMarketData.address);
 
+	setTargetAddress('BinaryOptionMarketData', network, binaryOptionMarketData.address);
+
 	let tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
 		binaryOptionMarketManagerDeployed.address
 	);

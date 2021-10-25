@@ -56,6 +56,9 @@
 		"BinaryOptionMarketManager": "",
 		"BinaryOptionMarketData": ""
 	},
+	"optimistic": {
+		
+	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
 		"SafeDecimalMath": "0x87A479D8433121E4583D45D37B4A349b4350B79F",

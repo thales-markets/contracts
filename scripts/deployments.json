@@ -57,7 +57,9 @@
 		"BinaryOptionMarketData": ""
 	},
 	"optimistic": {
-		
+		"AddressResolver": "0x95A6a3f44a70172E7d50a9e28c85Dfd712756B8C",
+		"SafeDecimalMath": "0x0142F40c25CE1F1177Ed131101FA19217396cB88",
+		"ProxysUSD": "0xbecc58c6D7Ca71b6FCC4cC8c9c5294A0eA7A0397"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

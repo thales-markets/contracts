@@ -2,19 +2,19 @@ pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
-import "synthetix-2.43.1/contracts/MinimalProxyFactory.sol";
+import "synthetix-2.50.4-ovm/contracts/MinimalProxyFactory.sol";
 import "../OwnedWithInit.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
 import "../interfaces/IOracleInstance.sol";
 
 // Libraries
-import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
+import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 
 // Internal references
 import "./BinaryOptionMarketManager.sol";
 import "./BinaryOption.sol";
-import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
-import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
+import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
+import "synthetix-2.50.4-ovm/contracts/interfaces/IAddressResolver.sol";
 
 contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOptionMarket {
     /* ========== LIBRARIES ========== */

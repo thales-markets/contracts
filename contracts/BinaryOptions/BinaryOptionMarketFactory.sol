@@ -2,12 +2,12 @@ pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
-import "synthetix-2.43.1/contracts/MinimalProxyFactory.sol";
-import "synthetix-2.43.1/contracts/Owned.sol";
+import "synthetix-2.50.4-ovm/contracts/MinimalProxyFactory.sol";
+import "synthetix-2.50.4-ovm/contracts/Owned.sol";
 
 // Internal references
 import "./BinaryOptionMarket.sol";
-import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
+import "synthetix-2.50.4-ovm/contracts/interfaces/IAddressResolver.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
 

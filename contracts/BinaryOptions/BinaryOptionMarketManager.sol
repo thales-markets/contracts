@@ -2,20 +2,21 @@ pragma solidity ^0.5.16;
 
 // Inheritance
 import "../interfaces/IBinaryOptionMarketManager.sol";
-import "synthetix-2.43.1/contracts/Owned.sol";
-import "synthetix-2.43.1/contracts/Pausable.sol";
+import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
 
 // Libraries
-import "synthetix-2.43.1/contracts/AddressSetLib.sol";
-import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
+import "synthetix-2.50.4-ovm/contracts/AddressSetLib.sol";
+import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 
 // Internal references
 import "./BinaryOptionMarketFactory.sol";
 import "./BinaryOptionMarket.sol";
 import "./BinaryOption.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
-import "synthetix-2.43.1/contracts/interfaces/IERC20.sol";
-import "synthetix-2.43.1/contracts/interfaces/IAddressResolver.sol";
+import "../interfaces/IPriceFeed.sol";
+import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
+import "synthetix-2.50.4-ovm/contracts/interfaces/IAddressResolver.sol";
 
 contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManager {
     /* ========== LIBRARIES ========== */

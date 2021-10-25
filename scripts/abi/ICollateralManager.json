@@ -2,6 +2,40 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "interestIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "currency",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bool",
+        "name": "isShort",
+        "type": "bool"
+      }
+    ],
+    "name": "accrueInterest",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "difference",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "collaterals",
         "type": "address[]"
@@ -15,9 +49,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32[2][]",
-        "name": "requiredSynthAndInverseNamesInResolver",
-        "type": "bytes32[2][]"
+        "internalType": "bytes32[]",
+        "name": "requiredSynthNamesInResolver",
+        "type": "bytes32[]"
       },
       {
         "internalType": "bytes32[]",
@@ -489,7 +523,7 @@
         "type": "uint256"
       }
     ],
-    "name": "updateBorrowRates",
+    "name": "updateBorrowRatesCollateral",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -507,7 +541,7 @@
         "type": "uint256"
       }
     ],
-    "name": "updateShortRates",
+    "name": "updateShortRatesCollateral",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

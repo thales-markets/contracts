@@ -2,9 +2,9 @@
 pragma solidity ^0.5.16;
 
 import "@chainlink/contracts/src/v0.5/interfaces/AggregatorV2V3Interface.sol";
-import "synthetix-2.43.1/contracts/SafeDecimalMath.sol";
+import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 
-import "synthetix-2.43.1/contracts/Owned.sol";
+import "synthetix-2.50.4-ovm/contracts/Owned.sol";
 
 contract TestFlippeningRatioOracle is Owned {
     using SafeMath for uint;

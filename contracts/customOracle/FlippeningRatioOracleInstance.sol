@@ -3,7 +3,7 @@ pragma solidity ^0.5.16;
 
 import "../interfaces/IOracleInstance.sol";
 import "./FlippeningRatioOracle.sol";
-import "synthetix-2.43.1/contracts/Owned.sol";
+import "synthetix-2.50.4-ovm/contracts/Owned.sol";
 
 contract FlippeningRatioOracleInstance is IOracleInstance, Owned {
     FlippeningRatioOracle public flippeningRatio;

@@ -17,3 +17,6 @@ npx hardhat coverage
 
 sports:
 npx hardhat run --network kovan scripts/SportsBinaryOptions/createUSOpenMarkets.js
+
+optimistic kovan:
+npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/deployThalesRoyale.js

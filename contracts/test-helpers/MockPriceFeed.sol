@@ -24,6 +24,8 @@ contract MockPriceFeed is Owned, IPriceFeed {
     // List of aggregator keys for convenient iteration
     bytes32[] public aggregatorKeys;
 
+    uint public priceToReturn;
+
     // ========== CONSTRUCTOR ==========
     constructor(address _owner) public Owned(_owner) {}
 
@@ -93,7 +95,11 @@ contract MockPriceFeed is Owned, IPriceFeed {
     }
 
     function _getRateForCurrency(bytes32 currencyKey) internal view returns (uint) {
-        return 1000;
+        return priceToReturn;
+    }
+
+    function setPricetoReturn(uint priceToSet) external {
+        priceToReturn = priceToSet;
     }
 
     /* ========== EVENTS ========== */

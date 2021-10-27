@@ -25,6 +25,7 @@ contract MockPriceFeed is Owned, IPriceFeed {
     bytes32[] public aggregatorKeys;
 
     uint public priceToReturn;
+    uint public timestampToReturn;
 
     // ========== CONSTRUCTOR ==========
     constructor(address _owner) public Owned(_owner) {}
@@ -73,6 +74,11 @@ contract MockPriceFeed is Owned, IPriceFeed {
         return _getRateForCurrency(currencyKey);
     }
 
+    function rateAndUpdatedTime(bytes32 currencyKey) external view returns (uint rate, uint time) {
+        RateAndUpdatedTime memory rateAndTime = _getRateAndUpdatedTime(currencyKey);
+        return (rateAndTime.rate, rateAndTime.time);
+    }
+
     function removeFromArray(bytes32 entry, bytes32[] storage array) internal returns (bool) {
         for (uint i = 0; i < array.length; i++) {
             if (array[i] == entry) {
@@ -94,12 +100,21 @@ contract MockPriceFeed is Owned, IPriceFeed {
         return uint(rate);
     }
 
-    function _getRateForCurrency(bytes32 currencyKey) internal view returns (uint) {
+    function _getRateAndUpdatedTime(bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
+        return
+            RateAndUpdatedTime({rate: uint16(priceToReturn), time: uint40(timestampToReturn)});
+        
+    }
+     function _getRateForCurrency(bytes32 currencyKey) internal view returns (uint) {
         return priceToReturn;
     }
 
     function setPricetoReturn(uint priceToSet) external {
         priceToReturn = priceToSet;
+    }
+
+    function setTimestamptoReturn(uint timestampToSet) external {
+        timestampToReturn = timestampToSet;
     }
 
     /* ========== EVENTS ========== */

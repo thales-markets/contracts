@@ -126,21 +126,6 @@ async function main() {
 
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMarketManagerDeployed.address,
-		constructorArguments: [
-			owner.address,
-			addressResolver.address,
-			priceFeedAddress,
-			expiryDuration,
-			maxTimeToMaturity,
-			creatorCapitalRequirement,
-			poolFee,
-			creatorFee,
-			feeAddress,
-		],
-	});
-
-	await hre.run('verify:verify', {
 		address: binaryOptionMarketFactoryDeployed.address,
 		constructorArguments: [owner.address],
 	});
@@ -160,6 +145,21 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: binaryOptionMarketData.address,
 		constructorArguments: [],
+	});
+
+	await hre.run('verify:verify', {
+		address: binaryOptionMarketManagerDeployed.address,
+		constructorArguments: [
+			owner.address,
+			addressResolver.address,
+			priceFeedAddress,
+			expiryDuration,
+			maxTimeToMaturity,
+			creatorCapitalRequirement,
+			poolFee,
+			creatorFee,
+			feeAddress,
+		],
 	});
 }
 

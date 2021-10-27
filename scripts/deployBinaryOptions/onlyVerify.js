@@ -60,40 +60,40 @@ async function main() {
 	const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
 
 	// await hre.run('verify:verify', {
-	// 	address: '0xEC9606021Ce3d9C4415d745614381CDED9a1E325',
-	// 	constructorArguments: [
-	// 		owner.address,
-	// 		addressResolver.address,
-	// 		priceFeedAddress,
-	// 		expiryDuration,
-	// 		maxTimeToMaturity,
-	// 		creatorCapitalRequirement,
-	// 		poolFee,
-	// 		creatorFee,
-	// 		feeAddress,
-	// 	],
-	// });
-
-	// await hre.run('verify:verify', {
-	// 	address: '0x46d9db2830c005e38878b241199bb09d9d355994',
+	// 	address: binaryOptionMarketFactoryDeployed.address,
 	// 	constructorArguments: [owner.address],
 	// });
 
 	// await hre.run('verify:verify', {
-	// 	address: '0x782a8aa798ee31c4c248bc2a209c96d625de04f6',
+	// 	address: '0x10C3cdB9616E246E48b6012F58B40Cc2B3254063',
 	// 	constructorArguments: [],
-	// 	contract: 'contracts/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
-	// });
-
-	// await hre.run('verify:verify', {
-	// 	address: '0xf73e5353ea2e50976afe763ce6a483f4124347f3',
-	// 	constructorArguments: [],
-	// 	contract: 'contracts/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
+	// 	contract: "contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy"
 	// });
 
 	await hre.run('verify:verify', {
-		address: '0x735Ef7c28f9A25De1Dc4F2f788fF6Be278031083',
+		address: '0xd051b22871f23d12eEdF54d695420F43C9d3C268',
 		constructorArguments: [],
+		contract: "contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy",
+	});
+
+	await hre.run('verify:verify', {
+		address: '0x43F0408cA92970EA198dAF6F41E024EF866178cD',
+		constructorArguments: [],
+	});
+
+	await hre.run('verify:verify', {
+		address: '0xF0c573f825b9efE4Da8DDd161ff1ebb756233ecA',
+		constructorArguments: [
+			owner.address,
+			addressResolver.address,
+			priceFeedAddress,
+			expiryDuration,
+			maxTimeToMaturity,
+			creatorCapitalRequirement,
+			poolFee,
+			creatorFee,
+			feeAddress,
+		],
 	});
 }
 

@@ -65,26 +65,26 @@ async function ongoingAirdrop() {
 		const stakingTimestamp = await stakingThales.startTimeStamp();
 		if (stakingTimestamp.toString() > 0) {
 			// check if staking has begun
-			const closedPeriodEvents = await stakingThalesContract.getPastEvents('ClosedPeriod', {
-				fromBlock: 0,
-				toBlock: 'latest',
-			});
-			let lastClosedPeriodBlockNumber = 0;
-
-			if (closedPeriodEvents.length) {
-				lastClosedPeriodBlockNumber = closedPeriodEvents[closedPeriodEvents.length - 1].blockNumber; // get last ClosedPeriod event block number
-			}
+			// const closedPeriodEvents = await stakingThalesContract.getPastEvents('ClosedPeriod', {
+			// 	fromBlock: 0,
+			// 	toBlock: 'latest',
+			// });
+			// let lastClosedPeriodBlockNumber = 0;
+			//
+			// if (closedPeriodEvents.length) {
+			// 	lastClosedPeriodBlockNumber = closedPeriodEvents[closedPeriodEvents.length - 1].blockNumber; // get last ClosedPeriod event block number
+			// }
 
 			// closePeriod() logic
 			try {
-				const lastPeriodTimeStamp = (await stakingThales.lastPeriodTimeStamp()).toString();
-				const durationPeriod = (await stakingThales.durationPeriod()).toString();
-				const closingDate = new Date(lastPeriodTimeStamp * 1000.0 + durationPeriod * 1000.0);
-				const now = new Date();
-
-				console.log('lastPeriodTS', lastPeriodTimeStamp);
-				console.log('durationPeriod', durationPeriod);
-				console.log('closingDate', closingDate.getTime());
+				// const lastPeriodTimeStamp = (await stakingThales.lastPeriodTimeStamp()).toString();
+				// const durationPeriod = (await stakingThales.durationPeriod()).toString();
+				// const closingDate = new Date(lastPeriodTimeStamp * 1000.0 + durationPeriod * 1000.0);
+				// const now = new Date();
+				//
+				// console.log('lastPeriodTS', lastPeriodTimeStamp);
+				// console.log('durationPeriod', durationPeriod);
+				// console.log('closingDate', closingDate.getTime());
 
 				// if (now.getTime() > closingDate.getTime()) {
 				// TODO: close through gnosis

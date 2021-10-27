@@ -18,30 +18,150 @@ contract ThalesRoyale is Owned, Pausable {
     bytes32 public oracleKey;
     IPriceFeed public priceFeed;
     uint public rounds;
-    uint public maxParticipants;
-    uint public signUpPeriod = 24 hours;
+    uint public signUpPeriod = 72 hours;
+
+    uint public roundChoosingLength = 8 hours;
+    uint public roundLength = 24 hours;
+
+    uint public round = 0;
+    uint public roundStartTime;
+    uint public roundEndTime;
+
+    uint public roundTargetPrice;
+
+    mapping(uint => uint) public roundResult;
 
     address[] public players;
     mapping(address => uint) public playerSignedUp;
 
     uint public creationTime;
+    bool public started = false;
+    bool public finished = false;
+
+    mapping(address => mapping(uint256 => uint256)) public positionInARound;
 
     constructor(
         address _owner,
-        bytes32 oracleKey,
-        IPriceFeed priceFeed,
+        bytes32 _oracleKey,
+        IPriceFeed _priceFeed,
         uint reward,
-        address rewardToken,
-        uint rounds,
-        uint maxParticipants
+        address _rewardToken,
+        uint _rounds
     ) public Owned(_owner) {
         creationTime = block.timestamp;
+        oracleKey = _oracleKey;
+        priceFeed = _priceFeed;
+        rewardToken = IERC20(_rewardToken);
+        rounds = _rounds;
     }
 
     function signUp() external {
-        require(block.timestamp < creationTime + signUpPeriod, "Sign up period has expired");
+        require(block.timestamp < (creationTime + signUpPeriod), "Sign up period has expired");
         require(playerSignedUp[msg.sender] == 0, "Player already signed up");
         playerSignedUp[msg.sender] = block.timestamp;
         players.push(msg.sender);
+        emit SignedUp(msg.sender);
     }
+
+    function startRoyale() external {
+        require(block.timestamp > (creationTime + signUpPeriod), "Can't start until signup period expires");
+        require(started == false, "Already started");
+        roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
+        started = true;
+        round = 1;
+        roundStartTime = block.timestamp;
+        roundEndTime = roundStartTime + roundLength;
+        emit RoyaleStarted();
+    }
+
+    function takeAPosition(uint position) external {
+        require(position == 1 || position == 2, "Position can only be 1 or 2");
+        require(started, "Competition not started yet");
+        require(!finished, "Competition finished");
+        require(playerSignedUp[msg.sender] != 0, "Player did not sign up");
+
+        if (round != 1) {
+            require(positionInARound[msg.sender][round - 1] == roundResult[round - 1], "Player no longer alive");
+        }
+
+        require(block.timestamp < roundStartTime + roundChoosingLength, "Round positioning finished");
+        positionInARound[msg.sender][round] = position;
+
+        emit TookAPosition(msg.sender, round, position);
+    }
+
+    function closeRound() external {
+        require(started, "Competition not started yet");
+        require(!finished, "Competition finished");
+        require(block.timestamp > (roundStartTime + roundLength), "Can't close round yet");
+
+        roundResult[round] = priceFeed.rateForCurrency(oracleKey) >= roundTargetPrice ? 2 : 1;
+
+        roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
+        round = round + 1;
+
+        if (round > rounds) {
+            finished = true;
+            emit RoyaleFinished();
+        } else {
+            roundStartTime = block.timestamp;
+            roundEndTime = roundStartTime + roundLength;
+        }
+        emit RoundClosed(round - 1, roundResult[round - 1]);
+    }
+
+    function isPlayerAlive(address player) public view returns (bool) {
+        if (round > 1) {
+            return (positionInARound[player][round - 1] == roundResult[round - 1]);
+        } else {
+            return playerSignedUp[player] != 0;
+        }
+    }
+
+    function getPlayers() public view returns (address[] memory) {
+        return players;
+    }
+
+    function getAlivePlayers() public view returns (address[] memory) {
+        uint k = 0;
+        for (uint i = 0; i < players.length; i++) {
+            if (isPlayerAlive(players[i])) {
+                k = k + 1;
+            }
+        }
+
+        address[] memory alivePlayers = new address[](k);
+        k = 0;
+
+        for (uint i = 0; i < players.length; i++) {
+            if (isPlayerAlive(players[i])) {
+                alivePlayers[k] = players[i];
+                k = k + 1;
+            }
+        }
+
+        return alivePlayers;
+    }
+
+    function setSignUpPeriod(uint _signUpPeriod) public onlyOwner {
+        signUpPeriod = _signUpPeriod;
+    }
+
+    function setRoundChoosingLength(uint _roundChoosingLength) public onlyOwner {
+        roundChoosingLength = _roundChoosingLength;
+    }
+
+    function setRoundLength(uint _roundLength) public onlyOwner {
+        roundLength = _roundLength;
+    }
+
+    function setRewards(uint _reward) public onlyOwner {
+        reward = _reward;
+    }
+
+    event SignedUp(address user);
+    event RoundClosed(uint round, uint result);
+    event TookAPosition(address user, uint round, uint position);
+    event RoyaleStarted();
+    event RoyaleFinished();
 }

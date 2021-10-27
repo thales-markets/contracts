@@ -30,6 +30,10 @@ async function main() {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 	}
+	if(networkObj.chainId == 10) {
+		networkObj.name = "optimistic";
+		network = 'optimistic'		
+	}
 
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + network);

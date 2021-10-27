@@ -7,7 +7,7 @@ const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 const { toBytes32 } = require('../../index');
 
-const aggregators = {
+const aggregators_kovan = {
 	BTC: '0x81AE7F8fF54070C52f0eB4EB5b8890e1506AA4f4',
 	DAI: '0xa18B00759bF7659Ad47d618734c8073942faFdEc',
 	ETH: '0xCb7895bDC70A1a1Dce69b689FD7e43A627475A06',
@@ -16,6 +16,12 @@ const aggregators = {
 	USDC: '0xb50cBeeFBCE78cDe83F184B275b5E80c4f01006A',
 	USDT: '0x4Dab1Dc2409A037d80316F2379Ac767A477C4236',
 };
+const aggregators_mainnet = {
+	BTC: '0xc326371d4D866C6Ff522E69298e36Fe75797D358',
+	ETH: '0xA969bEB73d918f6100163Cd0fba3C586C269bee1',
+	LINK: '0x74d6B50283AC1D651f9Afdc33521e4c1E3332b78',
+	SNX: '0x588e1f339910c21c7E4864048E37017AafF4cBc6',
+};
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -23,12 +29,19 @@ async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	console.log(networkObj)
 	let network = networkObj.name;
+	let aggregators = {}
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
 	if(networkObj.chainId == 69) {
 		networkObj.name = "optimisticKovan";
 		network = 'optimisticKovan'
+		aggregators = aggregators_kovan;
+	}
+	if(networkObj.chainId == 10) {
+		networkObj.name = "optimistic";
+		network = 'optimistic'
+		aggregators = aggregators_mainnet;
 		
 	}
 

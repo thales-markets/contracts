@@ -65,6 +65,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     BinaryOptionMarketManager.Fees public fees;
     IAddressResolver public resolver;
     IPriceFeed public priceFeed;
+    address public zeroExAddress;
 
     IOracleInstance public iOracleInstance;
     bool public customMarket;
@@ -78,6 +79,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     bool public resolved;
 
     uint internal _feeMultiplier;
+    uint internal zeroInitCounter;
 
     /* ---------- Address Resolver Configuration ---------- */
 
@@ -106,6 +108,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         deposited = _parameters.deposit;
         initialMint = _parameters.deposit;
 
+
         (uint poolFee, uint creatorFee) = (_parameters.fees[0], _parameters.fees[1]);
         fees = BinaryOptionMarketManager.Fees(poolFee, creatorFee);
         _feeMultiplier = SafeDecimalMath.unit().sub(poolFee.add(creatorFee));
@@ -115,8 +118,8 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         options.short = BinaryOption(_cloneAsMinimalProxy(_parameters.binaryOptionMastercopy, "Could not create a Binary Option"));
         // abi.encodePacked("sLONG: ", _oracleKey)
         // consider naming the option: sLongBTC>50@2021.12.31
-        options.long.initialize("Binary Option Long", "sLONG");
-        options.short.initialize("Binary Option Short", "sSHORT");
+        options.long.initialize("Binary Option Long", "sLONG", zeroExAddress);
+        options.short.initialize("Binary Option Short", "sSHORT", zeroExAddress);
         _mint(creator, initialMint);
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
@@ -125,6 +128,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     /* ---------- External Contracts ---------- */
 
+    
     function _priceFeed() internal view returns (IPriceFeed) {
         return priceFeed;
 
@@ -273,6 +277,15 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     function setPriceFeed(address _address) external onlyOwner {
         priceFeed = IPriceFeed(_address);
+    }
+
+    function setZeroExAddress(address _zeroExAddress) external onlyOwner {
+        zeroExAddress = _zeroExAddress;
+    }
+    
+    function setZeroExAddressAtInit(address _zeroExAddress) external {
+        require(zeroInitCounter == 0, "0x already set at Init");
+        zeroExAddress = _zeroExAddress;
     }
 
     /* ---------- Market Resolution ---------- */

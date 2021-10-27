@@ -164,6 +164,14 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         return _priceFeed().rateForCurrency(oracleDetails.key);
     }
 
+    function _oraclePriceAndTimestamp() internal view returns (uint price, uint updatedAt) {
+        return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
+    }
+
+    function oraclePriceAndTimestamp() external view returns (uint price, uint updatedAt) {
+        return _oraclePriceAndTimestamp();
+    }
+
     function oraclePrice() external view returns (uint price) {
         return _oraclePrice();
     }

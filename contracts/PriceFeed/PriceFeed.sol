@@ -59,7 +59,7 @@ contract PriceFeed is Owned, IPriceFeed {
         rates = new uint[](aggregatorKeys.length);
         for (uint i = 0; i < aggregatorKeys.length; i++) {
             bytes32 currencyKey = aggregatorKeys[i];
-            rates[count++] = _getRateForCurrency(currencyKey);
+            rates[count++] = _getRateAndUpdatedTime(currencyKey).rate;
         }
     }
 
@@ -68,7 +68,12 @@ contract PriceFeed is Owned, IPriceFeed {
     }
 
     function rateForCurrency(bytes32 currencyKey) external view returns (uint) {
-        return _getRateForCurrency(currencyKey);
+        return _getRateAndUpdatedTime(currencyKey).rate;
+    }
+
+    function rateAndUpdatedTime(bytes32 currencyKey) external view returns (uint rate, uint time) {
+        RateAndUpdatedTime memory rateAndTime = _getRateAndUpdatedTime(currencyKey);
+        return (rateAndTime.rate, rateAndTime.time);
     }
 
     function removeFromArray(bytes32 entry, bytes32[] storage array) internal returns (bool) {
@@ -92,7 +97,7 @@ contract PriceFeed is Owned, IPriceFeed {
         return uint(rate);
     }
 
-    function _getRateForCurrency(bytes32 currencyKey) internal view returns (uint) {
+    function _getRateAndUpdatedTime(bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
         AggregatorV2V3Interface aggregator = aggregators[currencyKey];
         require(address(aggregator) != address(0), "No aggregator exists for key");
 
@@ -103,8 +108,12 @@ contract PriceFeed is Owned, IPriceFeed {
         (bool success, bytes memory returnData) = address(aggregator).staticcall(payload);
 
         if (success) {
-            (, int256 answer, , , ) = abi.decode(returnData, (uint80, int256, uint256, uint256, uint80));
-            return _formatAggregatorAnswer(currencyKey, answer);
+            (, int256 answer, , uint256 updatedAt, ) = abi.decode(
+                returnData,
+                (uint80, int256, uint256, uint256, uint80)
+            );
+            return
+                RateAndUpdatedTime({rate: uint216(_formatAggregatorAnswer(currencyKey, answer)), time: uint40(updatedAt)});
         }
     }
 

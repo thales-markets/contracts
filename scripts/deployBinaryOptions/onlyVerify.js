@@ -59,40 +59,40 @@ async function main() {
 
 	const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
 
-	await hre.run('verify:verify', {
-		address: '0xEC9606021Ce3d9C4415d745614381CDED9a1E325',
-		constructorArguments: [
-			owner.address,
-			addressResolver.address,
-			priceFeedAddress,
-			expiryDuration,
-			maxTimeToMaturity,
-			creatorCapitalRequirement,
-			poolFee,
-			creatorFee,
-			feeAddress,
-		],
-	});
+	// await hre.run('verify:verify', {
+	// 	address: '0xEC9606021Ce3d9C4415d745614381CDED9a1E325',
+	// 	constructorArguments: [
+	// 		owner.address,
+	// 		addressResolver.address,
+	// 		priceFeedAddress,
+	// 		expiryDuration,
+	// 		maxTimeToMaturity,
+	// 		creatorCapitalRequirement,
+	// 		poolFee,
+	// 		creatorFee,
+	// 		feeAddress,
+	// 	],
+	// });
+
+	// await hre.run('verify:verify', {
+	// 	address: '0x46d9db2830c005e38878b241199bb09d9d355994',
+	// 	constructorArguments: [owner.address],
+	// });
+
+	// await hre.run('verify:verify', {
+	// 	address: '0x782a8aa798ee31c4c248bc2a209c96d625de04f6',
+	// 	constructorArguments: [],
+	// 	contract: 'contracts/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
+	// });
+
+	// await hre.run('verify:verify', {
+	// 	address: '0xf73e5353ea2e50976afe763ce6a483f4124347f3',
+	// 	constructorArguments: [],
+	// 	contract: 'contracts/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
+	// });
 
 	await hre.run('verify:verify', {
-		address: '0x46d9db2830c005e38878b241199bb09d9d355994',
-		constructorArguments: [owner.address],
-	});
-
-	await hre.run('verify:verify', {
-		address: '0x782a8aa798ee31c4c248bc2a209c96d625de04f6',
-		constructorArguments: [],
-		contract: 'contracts/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
-	});
-
-	await hre.run('verify:verify', {
-		address: '0xf73e5353ea2e50976afe763ce6a483f4124347f3',
-		constructorArguments: [],
-		contract: 'contracts/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
-	});
-
-	await hre.run('verify:verify', {
-		address: '0xd308ff11a3d06b184c68af0b9a003468a4a3c1a5',
+		address: '0x735Ef7c28f9A25De1Dc4F2f788fF6Be278031083',
 		constructorArguments: [],
 	});
 }

@@ -5,9 +5,8 @@ const Web3 = require('web3');
 const { gray, green, yellow } = require('chalk');
 const snx = require('synthetix');
 
-//const sourceContractAddress = '0x46d9DB2830C005e38878b241199bb09d9d355994';
-const sourceContractAddress = '0xeab016F8637464815c5Bdfd27895af4Dc86ad8C5';
-const targetContractAddress = '0xDd8f7337335B3E803d069C0F8a7397699EE413B3';
+const sourceContractAddress = '0x46d9DB2830C005e38878b241199bb09d9d355994';
+const targetContractAddress = '0x5c137947a500811672Df13fCaA21Bd7f580067d9';
 
 const ABI = require('../abi/BinaryOptionMarketManager.json');
 
@@ -103,6 +102,7 @@ const migrateBinaryOptionMarkets = async () => {
 	console.log(gray('The matured markets to migrate:'));
 	console.log(gray(stringify(maturedMarkets)));
 
+    return false;
 	console.log(
 		gray(
 			`Setting the migrating manager in ${yellow(targetContractAddress)} to ${yellow(

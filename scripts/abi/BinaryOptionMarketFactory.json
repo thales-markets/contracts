@@ -83,6 +83,19 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_zeroExAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ZeroExAddressChanged",
+    "type": "event"
+  },
+  {
     "constant": false,
     "inputs": [],
     "name": "acceptOwnership",

@@ -65,12 +65,12 @@
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
 		"SafeDecimalMath": "0x87A479D8433121E4583D45D37B4A349b4350B79F",
 		"ProxysUSD": "0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
-		"BinaryOptionMastercopy": "0xdF593a822B0Ba768816bA5a3d06FA3E1A8F7000E",
-		"BinaryOptionMarketMastercopy": "0x5c936675212cB832aa82bA4b8a1F237Cf8db97aD",
-		"BinaryOptionMarketFactory": "0xD95248Ea3a0875f9200A558Eff9c14F003B2FFd1",
-		"BinaryOptionMarketManager": "0x648200a8d65E477b7222b89019bb877209d1B0cF",
-		"BinaryOptionMarketData": "0x7B3241C61889185188E3B444abEf7298fAe6B1E1",
-		"PriceFeed": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",
+		"BinaryOptionMastercopy": "0x72ca0765d4bE0529377d656c9645600606214610",
+		"BinaryOptionMarketMastercopy": "0x8FE726b27e89Cd484981B2D27160186920Af2d17",
+		"BinaryOptionMarketFactory": "0x1Ac7eBfa70AB18bf0a8C36e51ecD6C969E88B1d1",
+		"BinaryOptionMarketManager": "0x85b827d133FEDC36B844b20f4a198dA583B25BAA",
+		"BinaryOptionMarketData": "0xdB6EB989127D0c33bC630d7b5B53f87ceCED3ce1",
+		"PriceFeed": "0xece0eEFFF3003d23e366C917104C6CF5Cdb404F1",
 		"ThalesRoyale": "0xA77CD27C37A3635Be830b6b3448a36967C5c7f9e"
 	},
 	"localhost": {

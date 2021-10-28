@@ -285,6 +285,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     
     function setZeroExAddressAtInit(address _zeroExAddress) external {
         require(zeroInitCounter == 0, "0x already set at Init");
+        zeroInitCounter = 9;
         zeroExAddress = _zeroExAddress;
     }
 

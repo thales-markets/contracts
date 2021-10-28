@@ -124,7 +124,6 @@ async function main() {
 		console.log('BinaryOptionMarketManager: setBinaryOptionsMarketFactory');
 	});
 
-
 	await hre.run('verify:verify', {
 		address: binaryOptionMarketFactoryDeployed.address,
 		constructorArguments: [owner.address],
@@ -133,13 +132,13 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: binaryOptionMastercopyDeployed.address,
 		constructorArguments: [],
-		contract: 'contracts/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
+		contract: "contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy"
 	});
 
 	await hre.run('verify:verify', {
 		address: binaryOptionMarketMastercopyDeployed.address,
 		constructorArguments: [],
-		contract: 'contracts/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
+		contract: "contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy",
 	});
 
 	await hre.run('verify:verify', {

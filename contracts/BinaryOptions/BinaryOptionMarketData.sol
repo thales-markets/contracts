@@ -67,7 +67,7 @@ contract BinaryOptionMarketData {
     }
 
     function getMarketData(BinaryOptionMarket market) external view returns (MarketData memory) {
-         (uint price, uint updatedAt) = market.oraclePriceAndTimestamp();
+        (uint price, uint updatedAt) = market.oraclePriceAndTimestamp();
         (uint longSupply, uint shortSupply) = market.totalSupplies();
 
         return

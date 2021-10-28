@@ -77,7 +77,8 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
         binaryOptionMastercopy = _binaryOptionMastercopy;
         emit BinaryOptionMastercopyChanged(_binaryOptionMastercopy);
     }
-    function setZeroExAddress(address _zeroExAddress) external onlyOwner {
+    function setZeroExAddress(address _zeroExAddress) external {
+        require(msg.sender == binaryOptionMarketManager, "Only BinaryOptionsManager can set the 0x address");
         zeroExAddress = _zeroExAddress;
         emit ZeroExAddressChanged(_zeroExAddress);
     }

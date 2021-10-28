@@ -279,9 +279,10 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     function resolve() external onlyOwner afterMaturity managerNotPaused {
         require(canResolve(), "Can not resolve market");
-        uint price; 
+        uint price;
+        uint updatedAt; 
         if (!customMarket) {
-            price = _oraclePrice();
+            (price, updatedAt) = _oraclePriceAndTimestamp();
             oracleDetails.finalPrice = price;
         }
         resolved = true;
@@ -299,7 +300,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         sUSD.transfer(_manager().feeAddress(), poolFees);
         sUSD.transfer(creator, creatorFees);
 
-        emit MarketResolved(_result(), price, deposited, poolFees, creatorFees);
+        emit MarketResolved(_result(), price, updatedAt, deposited, poolFees, creatorFees);
     }
 
     /* ---------- Claiming and Exercising Options ---------- */
@@ -383,6 +384,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     event MarketResolved(
         Side result,
         uint oraclePrice,
+        uint oracleTimestamp,
         uint deposited,
         uint poolFees,
         uint creatorFees

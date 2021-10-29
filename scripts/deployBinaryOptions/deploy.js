@@ -21,9 +21,26 @@ async function main() {
 
 	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
-
-	const priceFeedAddress = getTargetAddress('PriceFeed', network);
-	console.log('Found PriceFeed at:' + priceFeedAddress);
+	let priceFeedAddress;
+	if(network == 'ropsten') {
+		const ropstenPriceFeed = await ethers.getContractFactory('MockPriceFeed');
+		PriceFeedDeployed = await ropstenPriceFeed.deploy(owner.address);
+		await PriceFeedDeployed.deployed();
+		setTargetAddress('PriceFeed', network, PriceFeedDeployed.address);
+		console.log('MockPriceFeed deployed to:', PriceFeedDeployed.address);
+		await PriceFeedDeployed.setPricetoReturn(1000);
+		priceFeedAddress = PriceFeedDeployed.address;
+	}
+	else {
+		
+		// PriceFeedDeployed = await priceFeed.deploy(owner.address);
+		// await PriceFeedDeployed.deployed();
+		// setTargetAddress('PriceFeed', network, PriceFeedDeployed.address);
+		// console.log('PriceFeed deployed to:', PriceFeedDeployed.address);
+		
+		priceFeedAddress = getTargetAddress('PriceFeed', network);
+		console.log('Found PriceFeed at:' + priceFeedAddress);
+	}
 
 	const ZeroExAddress = getTargetAddress('ZeroEx', network);
 	console.log('Found 0x at:' + ZeroExAddress);

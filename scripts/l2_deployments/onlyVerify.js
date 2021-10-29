@@ -13,14 +13,27 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if(networkObj.chainId == 69) {
+		networkObj.name = "optimisticKovan";
+		network = 'optimisticKovan'
+	}
+	if(networkObj.chainId == 10) {
+		networkObj.name = "optimistic";
+		network = 'optimistic'		
+	}
+
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + networkObj.name);
 
-	const addressResolver = snx.getTarget({ network, contract: 'ReadProxyAddressResolver' });
-	console.log('Found address resolver at:' + addressResolver.address);
+	const addressResolverAddress = getTargetAddress('AddressResolver', network);
+	console.log('Found address resolver at:' + addressResolverAddress);
+	const safeDecimalMathAddress = getTargetAddress('SafeDecimalMath', network);
+	console.log('Found safeDecimalMath at:' + safeDecimalMathAddress);
+	
+	const proxysUSDAddress = getTargetAddress('ProxysUSD', network);
+	console.log('Found proxysUSD at:' + proxysUSDAddress);
 
-	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
-	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
+
 
 	const priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
@@ -40,6 +53,13 @@ async function main() {
 	const BinaryOptionMarketDataAddress = getTargetAddress('BinaryOptionMarketData', network);
 	console.log('Found BinaryOptionMarketData at:' + BinaryOptionMarketDataAddress);
 	
+
+	const ThalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
+	console.log('Found ThalesRoyale at:' + ThalesRoyaleAddress);
+
+
+
+
 	const day = 24 * 60 * 60;
 	const maxOraclePriceAge = 120 * 60; // Price updates are accepted from up to two hours before maturity to allow for delayed chainlink heartbeats.
 	const expiryDuration = 26 * 7 * day; // Six months to exercise options before the market is destructible.
@@ -76,10 +96,10 @@ async function main() {
 	});
 
 	await hre.run('verify:verify', {
-		address: BinaryOptionMarketManagerAddress,
+		address: BinaryOptionMarketDataAddress,
 		constructorArguments: [
 			owner.address,
-			addressResolver.address,
+			addressResolverAddress,
 			priceFeedAddress,
 			expiryDuration,
 			maxTimeToMaturity,
@@ -89,6 +109,19 @@ async function main() {
 			feeAddress,
 		],
 	});
+
+	await hre.run('verify:verify', {
+		address: ThalesRoyaleAddress,
+		constructorArguments: [
+			owner.address,
+			toBytes32('ETH'),
+			priceFeedAddress,
+			w3utils.toWei('10000'),
+			priceFeedAddress,
+			7,
+		],
+	});
+
 
 	
 }

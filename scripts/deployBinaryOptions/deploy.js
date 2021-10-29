@@ -25,6 +25,9 @@ async function main() {
 	const priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
 
+	const ZeroExAddress = getTargetAddress('ZeroEx', network);
+	console.log('Found 0x at:' + ZeroExAddress);
+
 	// We get the contract to deploy
 	const BinaryOptionMastercopy = await ethers.getContractFactory('BinaryOptionMastercopy');
 	const binaryOptionMastercopyDeployed = await BinaryOptionMastercopy.deploy();
@@ -122,6 +125,12 @@ async function main() {
 	);
 	await tx.wait().then(e => {
 		console.log('BinaryOptionMarketManager: setBinaryOptionsMarketFactory');
+	});
+
+	tx = await binaryOptionMarketManagerDeployed.setZeroExAddress(ZeroExAddress);
+
+	await tx.wait().then(e => {
+		console.log('BinaryOptionMarketFactory: setZeroExAddress');
 	});
 
 	await hre.run('verify:verify', {

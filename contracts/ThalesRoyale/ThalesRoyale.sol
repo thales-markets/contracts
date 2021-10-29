@@ -159,6 +159,10 @@ contract ThalesRoyale is Owned, Pausable {
         reward = _reward;
     }
 
+    function setPriceFeed(IPriceFeed _priceFeed) public onlyOwner {
+        priceFeed = _priceFeed;
+    }
+
     event SignedUp(address user);
     event RoundClosed(uint round, uint result);
     event TookAPosition(address user, uint round, uint position);

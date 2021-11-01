@@ -7,8 +7,8 @@
         "type": "address"
       },
       {
-        "internalType": "contract IAddressResolver",
-        "name": "_resolver",
+        "internalType": "contract IERC20",
+        "name": "_sUSD",
         "type": "address"
       },
       {
@@ -742,10 +742,10 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "resolver",
+    "name": "sUSD",
     "outputs": [
       {
-        "internalType": "contract IAddressResolver",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }
@@ -929,6 +929,21 @@
       }
     ],
     "name": "setPriceFeed",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "setsUSD",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

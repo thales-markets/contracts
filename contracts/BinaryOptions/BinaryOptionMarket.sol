@@ -14,7 +14,6 @@ import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 import "./BinaryOptionMarketManager.sol";
 import "./BinaryOption.sol";
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
-import "synthetix-2.50.4-ovm/contracts/interfaces/IAddressResolver.sol";
 
 contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOptionMarket {
     /* ========== LIBRARIES ========== */
@@ -45,7 +44,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     struct BinaryOptionMarketParameters {
         address owner;
         address binaryOptionMastercopy;
-        IAddressResolver resolver;
+        IERC20 sUSD;
         IPriceFeed priceFeed;
         address creator;
         bytes32 oracleKey;
@@ -63,8 +62,8 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     Times public times;
     OracleDetails public oracleDetails;
     BinaryOptionMarketManager.Fees public fees;
-    IAddressResolver public resolver;
     IPriceFeed public priceFeed;
+    IERC20 public sUSD;
 
     IOracleInstance public iOracleInstance;
     bool public customMarket;
@@ -79,25 +78,25 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     uint internal _feeMultiplier;
 
-    /* ---------- Address Resolver Configuration ---------- */
-
-    bytes32 internal constant CONTRACT_SYNTHSUSD = "SynthsUSD";
-
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
 
-    function initialize(
-        BinaryOptionMarketParameters calldata _parameters
-    ) external {
+    function initialize(BinaryOptionMarketParameters calldata _parameters) external {
         require(!initialized, "Binary Option Market already initialized");
         initialized = true;
         initOwner(_parameters.owner);
-        resolver = _parameters.resolver;
+        sUSD = _parameters.sUSD;
         priceFeed = _parameters.priceFeed;
         creator = _parameters.creator;
 
-        oracleDetails = OracleDetails(_parameters.oracleKey, _parameters.strikePrice, 0, _parameters.customMarket, _parameters.iOracleInstanceAddress);
+        oracleDetails = OracleDetails(
+            _parameters.oracleKey,
+            _parameters.strikePrice,
+            0,
+            _parameters.customMarket,
+            _parameters.iOracleInstanceAddress
+        );
         customMarket = _parameters.customMarket;
         iOracleInstance = IOracleInstance(_parameters.iOracleInstanceAddress);
 
@@ -111,8 +110,12 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         _feeMultiplier = SafeDecimalMath.unit().sub(poolFee.add(creatorFee));
 
         // Instantiate the options themselves
-        options.long = BinaryOption(_cloneAsMinimalProxy(_parameters.binaryOptionMastercopy, "Could not create a Binary Option"));
-        options.short = BinaryOption(_cloneAsMinimalProxy(_parameters.binaryOptionMastercopy, "Could not create a Binary Option"));
+        options.long = BinaryOption(
+            _cloneAsMinimalProxy(_parameters.binaryOptionMastercopy, "Could not create a Binary Option")
+        );
+        options.short = BinaryOption(
+            _cloneAsMinimalProxy(_parameters.binaryOptionMastercopy, "Could not create a Binary Option")
+        );
         // abi.encodePacked("sLONG: ", _oracleKey)
         // consider naming the option: sLongBTC>50@2021.12.31
         options.long.initialize("Binary Option Long", "sLONG");
@@ -127,11 +130,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     function _priceFeed() internal view returns (IPriceFeed) {
         return priceFeed;
-
-    }
-
-    function _sUSD() internal view returns (IERC20) {
-        return IERC20(resolver.requireAndGetAddress(CONTRACT_SYNTHSUSD, "SynthsUSD contract not found"));
     }
 
     function _manager() internal view returns (BinaryOptionMarketManager) {
@@ -275,12 +273,16 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         priceFeed = IPriceFeed(_address);
     }
 
+    function setsUSD(address _address) external onlyOwner {
+        sUSD = IERC20(_address);
+    }
+
     /* ---------- Market Resolution ---------- */
 
     function resolve() external onlyOwner afterMaturity managerNotPaused {
         require(canResolve(), "Can not resolve market");
         uint price;
-        uint updatedAt; 
+        uint updatedAt;
         if (!customMarket) {
             (price, updatedAt) = _oraclePriceAndTimestamp();
             oracleDetails.finalPrice = price;
@@ -290,7 +292,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         // Now remit any collected fees.
         // Since the constructor enforces that creatorFee + poolFee < 1, the balance
         // in the contract will be sufficient to cover these transfers.
-        IERC20 sUSD = _sUSD();
 
         uint totalFeesRatio = fees.poolFee.add(fees.creatorFee);
         uint poolFeesRatio = fees.poolFee.divideDecimalRound(totalFeesRatio);
@@ -329,7 +330,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);
-            _sUSD().transfer(msg.sender, payout);
+            sUSD.transfer(msg.sender, payout);
         }
         return payout;
     }
@@ -344,7 +345,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
         // Transfer the balance rather than the deposit value in case there are any synths left over
         // from direct transfers.
-        IERC20 sUSD = _sUSD();
         uint balance = sUSD.balanceOf(address(this));
         if (balance != 0) {
             sUSD.transfer(beneficiary, balance);

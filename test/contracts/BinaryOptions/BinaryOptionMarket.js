@@ -224,6 +224,7 @@ contract('BinaryOption', accounts => {
 					'setMigratingManager',
 					'setPoolFee',
 					'setPriceFeed',
+					'setsUSD',
 					'transferSusdTo',
 					'setCustomMarketCreationEnabled',
 				],
@@ -361,7 +362,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(capitalRequirement, capitalRequirement);
 			assert.bnEqual(await manager.totalDeposited(), toUnit(0));
 			assert.bnEqual(await manager.marketCreationEnabled(), true);
-			assert.equal(await manager.resolver(), addressResolver.address);
+			assert.equal(await manager.sUSD(), sUSDSynth.address);
 			assert.equal(await manager.owner(), accounts[1]);
 			assert.equal(await manager.feeAddress(), initialFeeAddress);
 		});
@@ -461,7 +462,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(oracleDetails.strikePrice, toUnit(100));
 			assert.equal(await market.creator(), initialCreator);
 			assert.equal(await market.owner(), manager.address);
-			assert.equal(await market.resolver(), addressResolver.address);
+			assert.equal(await market.sUSD(), sUSDSynth.address);
 
 			const fees = await market.fees();
 			assert.bnEqual(fees.poolFee, initialPoolFee);
@@ -737,6 +738,7 @@ contract('BinaryOption', accounts => {
 					'initialize',
 					'setIOracleInstance',
 					'setPriceFeed',
+					'setsUSD'
 				],
 			});
 		});

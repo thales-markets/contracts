@@ -16,7 +16,6 @@ import "./BinaryOption.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
 import "../interfaces/IPriceFeed.sol";
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
-import "synthetix-2.50.4-ovm/contracts/interfaces/IAddressResolver.sol";
 
 contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManager {
     /* ========== LIBRARIES ========== */
@@ -53,20 +52,16 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     BinaryOptionMarketManager internal _migratingManager;
 
-    IAddressResolver public resolver;
     IPriceFeed public priceFeed;
+    IERC20 public sUSD;
 
     address public binaryOptionMarketFactory;
-
-    /* ---------- Address Resolver Configuration ---------- */
-
-    bytes32 internal constant CONTRACT_SYNTHSUSD = "SynthsUSD";
 
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
         address _owner,
-        IAddressResolver _resolver,
+        IERC20 _sUSD,
         IPriceFeed _priceFeed,
         uint _expiryDuration,
         uint _maxTimeToMaturity,
@@ -75,8 +70,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint _creatorFee,
         address _feeAddress
     ) public Owned(_owner) Pausable() {
-        resolver = _resolver;
         priceFeed = _priceFeed;
+        sUSD = _sUSD;
 
         // Temporarily change the owner so that the setters don't revert.
         owner = msg.sender;
@@ -102,10 +97,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     /* ========== VIEWS ========== */
 
     /* ---------- Related Contracts ---------- */
-
-    function _sUSD() internal view returns (IERC20) {
-        return IERC20(resolver.requireAndGetAddress(CONTRACT_SYNTHSUSD, "Synth sUSD contract not found"));
-    }
 
     function _priceFeed() internal view returns (IPriceFeed) {
         return priceFeed;
@@ -187,6 +178,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         priceFeed = IPriceFeed(_address);
     }
 
+     function setsUSD(address _address) external onlyOwner {
+        sUSD = IERC20(_address);
+    }
+
     /* ---------- Deposit Management ---------- */
 
     function incrementTotalDeposited(uint delta) external onlyActiveMarkets notPaused {
@@ -239,7 +234,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         BinaryOptionMarket market =
             BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
                 msg.sender,
-                resolver,
+                sUSD,
                 priceFeed,
                 oracleKey,
                 strikePrice,
@@ -255,7 +250,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         // The debt can't be incremented in the new market's constructor because until construction is complete,
         // the manager doesn't know its address in order to grant it permission.
         totalDeposited = totalDeposited.add(initialMint);
-        _sUSD().transferFrom(msg.sender, address(market), initialMint);
+        sUSD.transferFrom(msg.sender, address(market), initialMint);
 
         (BinaryOption long, BinaryOption short) = market.options();
 
@@ -281,7 +276,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     ) external {
         //only to be called by markets themselves
         require(_isKnownMarket(address(msg.sender)), "Market unknown.");
-        _sUSD().transferFrom(sender, receiver, amount);
+        sUSD.transferFrom(sender, receiver, amount);
     }
 
     function resolveMarket(address market) external {

@@ -145,8 +145,8 @@
         "type": "address"
       },
       {
-        "internalType": "contract IAddressResolver",
-        "name": "_resolver",
+        "internalType": "contract IERC20",
+        "name": "_sUSD",
         "type": "address"
       },
       {

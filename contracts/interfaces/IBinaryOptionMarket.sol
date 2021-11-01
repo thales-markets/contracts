@@ -3,8 +3,6 @@ pragma solidity ^0.5.16;
 import "../interfaces/IBinaryOptionMarketManager.sol";
 import "../interfaces/IBinaryOption.sol";
 import "../interfaces/IPriceFeed.sol";
-// CHANGE pragma 0.4.24 to pragma ^0.5.16 in IAddressResolver  >>>>>>>>>>
-import "synthetix-2.50.4-ovm/contracts/interfaces/IAddressResolver.sol";
 
 interface IBinaryOptionMarket {
     /* ========== TYPES ========== */

@@ -7,10 +7,9 @@ import "synthetix-2.50.4-ovm/contracts/Owned.sol";
 
 // Internal references
 import "./BinaryOptionMarket.sol";
-import "synthetix-2.50.4-ovm/contracts/interfaces/IAddressResolver.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
-
+import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
 contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
 
     /* ========== STATE VARIABLES ========== */
@@ -26,7 +25,7 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
 
     function createMarket(
         address creator,
-        IAddressResolver _resolver,
+        IERC20 _sUSD,
         IPriceFeed _priceFeed,
         bytes32 oracleKey,
         uint strikePrice,
@@ -46,7 +45,7 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
             BinaryOptionMarket.BinaryOptionMarketParameters(
                 binaryOptionMarketManager,
                 binaryOptionMastercopy,
-                _resolver,
+                _sUSD,
                 _priceFeed,
                 creator,
                 oracleKey,

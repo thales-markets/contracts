@@ -72,6 +72,10 @@ async function main() {
 	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
 	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
 
+	await hre.run('verify:verify', {
+		address: priceFeedAddress,
+		constructorArguments: [owner.address],
+	});
 
 	await hre.run('verify:verify', {
 		address: BinaryOptionMarketFactoryAddress,
@@ -96,7 +100,7 @@ async function main() {
 	});
 
 	await hre.run('verify:verify', {
-		address: BinaryOptionMarketDataAddress,
+		address: BinaryOptionMarketManagerAddress,
 		constructorArguments: [
 			owner.address,
 			addressResolverAddress,
@@ -114,7 +118,7 @@ async function main() {
 		address: ThalesRoyaleAddress,
 		constructorArguments: [
 			owner.address,
-			toBytes32('ETH'),
+			snx.toBytes32("ETH"),
 			priceFeedAddress,
 			w3utils.toWei('10000'),
 			priceFeedAddress,

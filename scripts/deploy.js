@@ -15,8 +15,8 @@ async function main() {
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + networkObj.name);
 
-	const addressResolver = snx.getTarget({ network, contract: 'ReadProxyAddressResolver' });
-	console.log('Found address resolver at:' + addressResolver.address);
+	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
+	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
 
 	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
@@ -95,7 +95,7 @@ async function main() {
 	});
 	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
 		owner.address,
-		addressResolver.address,
+		ProxyERC20sUSD.address,
 		priceFeedAddress,
 		expiryDuration,
 		maxTimeToMaturity,
@@ -163,6 +163,21 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: binaryOptionMarketData.address,
 		constructorArguments: [],
+	});
+
+	await hre.run('verify:verify', {
+		address: binaryOptionMarketManagerDeployed.address,
+		constructorArguments: [
+			owner.address,
+			ProxyERC20sUSD.address,
+			priceFeedAddress,
+			expiryDuration,
+			maxTimeToMaturity,
+			creatorCapitalRequirement,
+			poolFee,
+			creatorFee,
+			feeAddress,
+		],
 	});
 }
 

@@ -146,6 +146,8 @@ contract('BinaryOptionMarketManager', accounts => {
 			],
 		}));
 
+		console.log('proxy', sUSDSynth.address);
+
 		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
 
 		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
@@ -481,7 +483,7 @@ contract('BinaryOptionMarketManager', accounts => {
 				contract: 'BinaryOptionMarketManager',
 				args: [
 					managerOwner,
-					addressResolver.address,
+					sUSDSynth.address,
 					priceFeed.address,
 					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
@@ -578,7 +580,7 @@ contract('BinaryOptionMarketManager', accounts => {
 				contract: 'BinaryOptionMarketManager',
 				args: [
 					managerOwner,
-					addressResolver.address,
+					sUSDSynth.address,
 					priceFeed.address,
 					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year

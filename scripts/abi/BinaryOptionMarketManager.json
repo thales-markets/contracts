@@ -7,8 +7,8 @@
         "type": "address"
       },
       {
-        "internalType": "contract IAddressResolver",
-        "name": "_resolver",
+        "internalType": "contract IERC20",
+        "name": "_sUSD",
         "type": "address"
       },
       {
@@ -748,10 +748,10 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "resolver",
+    "name": "sUSD",
     "outputs": [
       {
-        "internalType": "contract IAddressResolver",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }
@@ -945,11 +945,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_zeroExAddress",
+        "name": "_address",
         "type": "address"
       }
     ],
-    "name": "setZeroExAddress",
+    "name": "setsUSD",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

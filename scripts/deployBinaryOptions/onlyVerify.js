@@ -25,6 +25,9 @@ async function main() {
 	const priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
 	
+	const MockPriceFeedAddress = getTargetAddress('MockPriceFeed', network);
+	console.log('Found MockPriceFeed at:' + MockPriceFeedAddress);
+	
 	const BinaryOptionMastercopyAddress = getTargetAddress('BinaryOptionMastercopy', network);
 	console.log('Found BinaryOptionMastercopy at:' + BinaryOptionMastercopyAddress);
 	
@@ -52,6 +55,11 @@ async function main() {
 	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
 	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
 
+
+	await hre.run('verify:verify', {
+		address: MockPriceFeedAddress,
+		constructorArguments: [owner.address],
+	});
 
 	await hre.run('verify:verify', {
 		address: BinaryOptionMarketFactoryAddress,

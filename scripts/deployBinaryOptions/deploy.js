@@ -6,6 +6,7 @@ const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
+	console.log(accounts);
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
@@ -26,10 +27,12 @@ async function main() {
 		const ropstenPriceFeed = await ethers.getContractFactory('MockPriceFeed');
 		PriceFeedDeployed = await ropstenPriceFeed.deploy(owner.address);
 		await PriceFeedDeployed.deployed();
-		setTargetAddress('PriceFeed', network, PriceFeedDeployed.address);
+		setTargetAddress('MockPriceFeed', network, PriceFeedDeployed.address);
 		console.log('MockPriceFeed deployed to:', PriceFeedDeployed.address);
 		await PriceFeedDeployed.setPricetoReturn(1000);
 		priceFeedAddress = PriceFeedDeployed.address;
+		console.log("Adding aggregator", snx.toBytes32("ETH"), owner.address)
+		await PriceFeedDeployed.addAggregator(snx.toBytes32("ETH"), owner.address);
 	}
 	else {
 		
@@ -45,7 +48,7 @@ async function main() {
 	const ZeroExAddress = getTargetAddress('ZeroEx', network);
 	console.log('Found 0x at:' + ZeroExAddress);
 
-	// We get the contract to deploy
+	// // We get the contract to deploy
 	const BinaryOptionMastercopy = await ethers.getContractFactory('BinaryOptionMastercopy');
 	const binaryOptionMastercopyDeployed = await BinaryOptionMastercopy.deploy();
 	await binaryOptionMastercopyDeployed.deployed();
@@ -148,6 +151,11 @@ async function main() {
 
 	await tx.wait().then(e => {
 		console.log('BinaryOptionMarketFactory: setZeroExAddress');
+	});
+
+	await hre.run('verify:verify', {
+		address: PriceFeedDeployed.address,
+		constructorArguments: [owner.address],
 	});
 
 	await hre.run('verify:verify', {

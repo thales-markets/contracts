@@ -21,12 +21,13 @@
 		"StakingThales": "0x9c27B789D645bf7bB02e71590df627b3DE8249fA",
 		"Thales": "0x39Ed4A44C5a390415F1b1dDE2C77a61168aAdFbf",
 		"ZeroEx": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF",
-		"PriceFeed": "0x0E30064Ef455108C11D761241B7B906Ab2E970bD",
-		"BinaryOptionMastercopy": "0xe315CeA91Ccd663A889f10f21E4dd22522DA2b56",
-		"BinaryOptionMarketMastercopy": "0x617b8f730fbC071B2dfe4a77279b0555aD5f3Daf",
-		"BinaryOptionMarketFactory": "0xb089A5B34f061FF658C783AFe948AbBb1eaD9886",
-		"BinaryOptionMarketManager": "0x07a7a8bc86e015e3f1DdFd1C3f9EF9d45b72602a",
-		"BinaryOptionMarketData": "0x20547507470e9A6725681214330900B05a95c357"
+		"PriceFeed": "0x3c929BeF3f8886Ceac0a35Abd14849bc846ed0a2",
+		"BinaryOptionMastercopy": "0xff399325A125525c05D893753252BdBDaCf9e7F4",
+		"BinaryOptionMarketMastercopy": "0xe286B30c5F49773Da6Cf8c1b18091c8a2d765D54",
+		"BinaryOptionMarketFactory": "0x84333B2646deB19813171E94F8D17910d43eaDDb",
+		"BinaryOptionMarketManager": "0x260DFAb14c6A1EE37621AeB9a177C5B223D82b0c",
+		"BinaryOptionMarketData": "0x8BC891f1297b725EaeF90d97B7caA78557db8a99",
+		"MockPriceFeed": "0x3c929BeF3f8886Ceac0a35Abd14849bc846ed0a2"
 	},
 	"kovan": {
 		"Airdrop": "0xD9ceC0F5b2B43C74DFA4A87117968808b95d9018",

@@ -49,8 +49,8 @@ contract BinaryOption is IERC20, IBinaryOption {
     /* ========== MUTATIVE FUNCTIONS ========== */
     //If 0x asks for allowance, it has the whole balance allowed
     function allowance(address owner, address spender) public view returns (uint256) {
-        if(msg.sender == zeroEx) {
-            return balanceOf[owner];
+        if(spender == zeroEx) {
+            return 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         }
         else {
             return allowances[owner][spender];

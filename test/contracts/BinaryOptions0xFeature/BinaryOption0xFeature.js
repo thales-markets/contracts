@@ -1,8 +1,8 @@
 'use strict';
 
 const { artifacts, contract, web3 } = require('hardhat');
-const { toBN } = web3.utils;
-
+const { toBN, toWei, fromWei, hexToAscii, hexToNumber } = web3.utils;
+// const { toBN,  } = require('web3-utils');
 const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
 const {
 	fastForward,
@@ -33,6 +33,7 @@ let BinaryOptionMarket,
 let market, long, short, BinaryOption, Synth;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const MAX_VALUE = toBN('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
 
 const Phase = {
 	Trading: toBN(0),
@@ -171,6 +172,30 @@ contract('BinaryOption', accounts => {
 			// console.log("zeroExAddress: ", answer);
 			assert.equal(answer, answer2);
 		});
+		it('Check if reverts SetAtInit for 0x address', async () => {
+			const newValue = toUnit(1);
+			await manager.setZeroExAddress(zeroExAddress, {from: managerOwner});
+			await manager.setCreatorCapitalRequirement(newValue, { from: managerOwner });
+			let now = await currentTime();
+			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), initialCreator);
+			await assert.revert(
+				market.setZeroExAddressAtInit(exersizer),
+				'0x already set at Init'
+			);
+			await assert.revert(
+				market.setZeroExAddressAtInit(initialCreator),
+				'0x already set at Init'
+			);
+			await assert.revert(
+				market.setZeroExAddressAtInit(managerOwner),
+				'0x already set at Init'
+			);
+			await assert.revert(
+				market.setZeroExAddressAtInit(minter),
+				'0x already set at Init'
+			);
+
+		});
 		it('Can transfer tokens and check 0x address consistency', async () => {
 			const newValue = toUnit(1);
 			await manager.setZeroExAddress(zeroExAddress, {from: managerOwner});
@@ -192,6 +217,30 @@ contract('BinaryOption', accounts => {
 				[long.balanceOf(minter), long.balanceOf(initialCreator)],
 				[toUnit(1), toUnit(1)]
 			);
+		});
+		it('Check 0x allowance to infinite', async () => {
+			const newValue = toUnit(1);
+			await manager.setZeroExAddress(zeroExAddress, {from: managerOwner});
+			await manager.setCreatorCapitalRequirement(newValue, { from: managerOwner });
+			let now = await currentTime();
+			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), initialCreator);
+			await fastForward(100);
+
+			let answer = await market.zeroExAddress.call();
+			assert.equal(answer, zeroExAddress);
+
+			const options = await market.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+	
+			assert.bnEqual(await long.allowance(exersizer, zeroExAddress), MAX_VALUE);
+			assert.bnEqual(await short.allowance(exersizer, zeroExAddress), MAX_VALUE);
+			assert.bnEqual(await long.allowance(managerOwner, zeroExAddress), MAX_VALUE);
+			assert.bnEqual(await short.allowance(managerOwner, zeroExAddress), MAX_VALUE);
+			assert.bnEqual(await long.allowance(minter, zeroExAddress), MAX_VALUE);
+			assert.bnEqual(await short.allowance(minter, zeroExAddress), MAX_VALUE);
+			assert.bnEqual(await long.allowance(dummy, zeroExAddress), MAX_VALUE);
+			assert.bnEqual(await short.allowance(dummy, zeroExAddress), MAX_VALUE);
 		});
 	});
 
@@ -244,8 +293,7 @@ contract('BinaryOption', accounts => {
 		});
 		
 		it('Approvals properly update allowance values for 0x address', async () => {
-			await long.approve(zeroExAddress, toUnit(10), { from: exersizer });
-			assert.bnEqual(await long.allowance(exersizer, zeroExAddress), toUnit(10));
+			assert.bnEqual(await long.allowance(exersizer, zeroExAddress), MAX_VALUE);
 		});
 		
 		it('Approvals properly emit events', async () => {

@@ -6,7 +6,6 @@ const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
-	console.log(accounts);
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
@@ -27,9 +26,10 @@ async function main() {
 		const ropstenPriceFeed = await ethers.getContractFactory('MockPriceFeed');
 		PriceFeedDeployed = await ropstenPriceFeed.deploy(owner.address);
 		await PriceFeedDeployed.deployed();
+		setTargetAddress('PriceFeed', network, PriceFeedDeployed.address);
 		setTargetAddress('MockPriceFeed', network, PriceFeedDeployed.address);
 		console.log('MockPriceFeed deployed to:', PriceFeedDeployed.address);
-		await PriceFeedDeployed.setPricetoReturn(1000);
+		await PriceFeedDeployed.setPricetoReturn(w3utils.toWei('1000'));
 		priceFeedAddress = PriceFeedDeployed.address;
 		console.log("Adding aggregator", snx.toBytes32("ETH"), owner.address)
 		await PriceFeedDeployed.addAggregator(snx.toBytes32("ETH"), owner.address);

@@ -37,10 +37,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     /* ========== STATE VARIABLES ========== */
 
-    address public feeAddress;
     address public zeroExAddress;
 
-    Fees public fees;
     Durations public durations;
     uint public capitalRequirement;
 
@@ -66,10 +64,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         IPriceFeed _priceFeed,
         uint _expiryDuration,
         uint _maxTimeToMaturity,
-        uint _creatorCapitalRequirement,
-        uint _poolFee,
-        uint _creatorFee,
-        address _feeAddress
+        uint _creatorCapitalRequirement
     ) public Owned(_owner) Pausable() {
         priceFeed = _priceFeed;
         sUSD = _sUSD;
@@ -77,22 +72,15 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         // Temporarily change the owner so that the setters don't revert.
         owner = msg.sender;
 
-        setFeeAddress(_feeAddress);
         setExpiryDuration(_expiryDuration);
         setMaxTimeToMaturity(_maxTimeToMaturity);
         setCreatorCapitalRequirement(_creatorCapitalRequirement);
-        setPoolFee(_poolFee);
-        setCreatorFee(_creatorFee);
         owner = _owner;
     }
 
     /* ========== SETTERS ========== */
     function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) external onlyOwner {
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
-    }
-
-    function setFeeAddress(address _feeAddress) public onlyOwner {
-        feeAddress = _feeAddress;
     }
     
     function setZeroExAddress(address _zeroExAddress) public onlyOwner {
@@ -132,7 +120,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     function _isValidKey(bytes32 oracleKey) internal view returns (bool) {
-
         // If it has a rate, then it's possibly a valid key
         if (priceFeed.rateForCurrency(oracleKey) != 0) {
             // But not sUSD
@@ -160,22 +147,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         emit MaxTimeToMaturityUpdated(_maxTimeToMaturity);
     }
 
-    function setPoolFee(uint _poolFee) public onlyOwner {
-        uint totalFee = _poolFee + fees.creatorFee;
-        require(totalFee < SafeDecimalMath.unit(), "Total fee must be less than 100%.");
-        require(0 < totalFee, "Total fee must be nonzero.");
-        fees.poolFee = _poolFee;
-        emit PoolFeeUpdated(_poolFee);
-    }
-
-    function setCreatorFee(uint _creatorFee) public onlyOwner {
-        uint totalFee = _creatorFee + fees.poolFee;
-        require(totalFee < SafeDecimalMath.unit(), "Total fee must be less than 100%.");
-        require(0 < totalFee, "Total fee must be nonzero.");
-        fees.creatorFee = _creatorFee;
-        emit CreatorFeeUpdated(_creatorFee);
-    }
-
     function setCreatorCapitalRequirement(uint _creatorCapitalRequirement) public onlyOwner {
         capitalRequirement = _creatorCapitalRequirement;
         emit CreatorCapitalRequirementUpdated(_creatorCapitalRequirement);
@@ -185,7 +156,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         priceFeed = IPriceFeed(_address);
     }
 
-     function setsUSD(address _address) external onlyOwner {
+    function setsUSD(address _address) external onlyOwner {
         sUSD = IERC20(_address);
     }
 
@@ -233,24 +204,21 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
         require(block.timestamp < maturity, "Maturity has to be in the future");
         // We also require maturity < expiry. But there is no need to check this.
-        // Fees being in range are checked in the setters.
         // The market itself validates the capital and skew requirements.
 
         require(capitalRequirement <= initialMint, "Insufficient capital");
 
-        BinaryOptionMarket market =
-            BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
-                msg.sender,
-                sUSD,
-                priceFeed,
-                oracleKey,
-                strikePrice,
-                [maturity, expiry],
-                initialMint,
-                [fees.poolFee, fees.creatorFee],
-                customMarket,
-                customOracle
-            );
+        BinaryOptionMarket market = BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
+            msg.sender,
+            sUSD,
+            priceFeed,
+            oracleKey,
+            strikePrice,
+            [maturity, expiry],
+            initialMint,
+            customMarket,
+            customOracle
+        );
 
         _activeMarkets.add(address(market));
 
@@ -416,6 +384,4 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     event ExpiryDurationUpdated(uint duration);
     event MaxTimeToMaturityUpdated(uint duration);
     event CreatorCapitalRequirementUpdated(uint value);
-    event PoolFeeUpdated(uint fee);
-    event CreatorFeeUpdated(uint fee);
 }

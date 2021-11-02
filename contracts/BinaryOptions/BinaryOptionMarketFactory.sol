@@ -10,8 +10,8 @@ import "./BinaryOptionMarket.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
-contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
 
+contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     /* ========== STATE VARIABLES ========== */
     address public binaryOptionMarketManager;
     address public binaryOptionMarketMastercopy;
@@ -32,7 +32,6 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
         uint strikePrice,
         uint[2] calldata times, // [maturity, expiry]
         uint initialMint,
-        uint[2] calldata fees, // [poolFee, creatorFee]
         bool customMarket,
         address customOracle
     ) external returns (BinaryOptionMarket) {
@@ -53,7 +52,6 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
                 strikePrice,
                 times,
                 initialMint,
-                fees,
                 customMarket,
                 customOracle
             )

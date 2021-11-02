@@ -51,7 +51,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         uint strikePrice;
         uint[2] times; // [maturity, expiry]
         uint deposit; // sUSD deposit
-        uint[2] fees; // [poolFee, creatorFee]
         bool customMarket;
         address iOracleInstanceAddress;
     }
@@ -69,15 +68,13 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     IOracleInstance public iOracleInstance;
     bool public customMarket;
 
-    // `deposited` tracks the sum of all deposits minus the withheld fees.
+    // `deposited` tracks the sum of all deposits.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
     uint public deposited;
-    uint public accumulatedFees;
     uint public initialMint;
     address public creator;
     bool public resolved;
 
-    uint internal _feeMultiplier;
     uint internal zeroInitCounter;
 
     /* ========== CONSTRUCTOR ========== */
@@ -106,11 +103,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
         deposited = _parameters.deposit;
         initialMint = _parameters.deposit;
-
-
-        (uint poolFee, uint creatorFee) = (_parameters.fees[0], _parameters.fees[1]);
-        fees = BinaryOptionMarketManager.Fees(poolFee, creatorFee);
-        _feeMultiplier = SafeDecimalMath.unit().sub(poolFee.add(creatorFee));
 
         // Instantiate the options themselves
         options.long = BinaryOption(
@@ -250,11 +242,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
             return;
         }
 
-        uint valueAfterFees = value.multiplyDecimalRound(_feeMultiplier);
-        uint deductedFees = value.sub(valueAfterFees);
-        accumulatedFees = accumulatedFees.add(deductedFees);
-
-        _mint(msg.sender, valueAfterFees);
+        _mint(msg.sender, value);
 
         _incrementDeposited(value);
         _manager().transferSusdTo(msg.sender, address(this), value);
@@ -303,19 +291,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         }
         resolved = true;
 
-        // Now remit any collected fees.
-        // Since the constructor enforces that creatorFee + poolFee < 1, the balance
-        // in the contract will be sufficient to cover these transfers.
-
-        uint totalFeesRatio = fees.poolFee.add(fees.creatorFee);
-        uint poolFeesRatio = fees.poolFee.divideDecimalRound(totalFeesRatio);
-        uint poolFees = poolFeesRatio.multiplyDecimalRound(accumulatedFees);
-        uint creatorFees = accumulatedFees.sub(poolFees);
-        _decrementDeposited(creatorFees.add(poolFees));
-        sUSD.transfer(_manager().feeAddress(), poolFees);
-        sUSD.transfer(creator, creatorFees);
-
-        emit MarketResolved(_result(), price, updatedAt, deposited, poolFees, creatorFees);
+        emit MarketResolved(_result(), price, updatedAt, deposited);
     }
 
     /* ---------- Claiming and Exercising Options ---------- */
@@ -399,9 +375,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         Side result,
         uint oraclePrice,
         uint oracleTimestamp,
-        uint deposited,
-        uint poolFees,
-        uint creatorFees
+        uint deposited
     );
     event OptionsExercised(address indexed account, uint value);
 }

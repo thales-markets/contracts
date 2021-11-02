@@ -31,18 +31,6 @@
         "internalType": "uint256",
         "name": "deposited",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "poolFees",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "creatorFees",
-        "type": "uint256"
       }
     ],
     "name": "MarketResolved",
@@ -131,21 +119,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "accumulatedFees",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -363,11 +336,6 @@
             "internalType": "uint256",
             "name": "deposit",
             "type": "uint256"
-          },
-          {
-            "internalType": "uint256[2]",
-            "name": "fees",
-            "type": "uint256[2]"
           },
           {
             "internalType": "bool",

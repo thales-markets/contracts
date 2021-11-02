@@ -64,6 +64,14 @@ contract ThalesRoyale is Owned, Pausable {
         emit SignedUp(msg.sender);
     }
 
+    function signUpOnBehalf(address newSignee) external onlyOwner {
+        require(block.timestamp < (creationTime + signUpPeriod), "Sign up period has expired");
+        require(playerSignedUp[newSignee] == 0, "Player already signed up");
+        playerSignedUp[newSignee] = block.timestamp;
+        players.push(newSignee);
+        emit SignedUp(newSignee);
+    }
+
     function startRoyale() external {
         require(block.timestamp > (creationTime + signUpPeriod), "Can't start until signup period expires");
         require(started == false, "Already started");

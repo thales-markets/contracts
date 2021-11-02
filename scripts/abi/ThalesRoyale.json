@@ -678,6 +678,21 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newSignee",
+        "type": "address"
+      }
+    ],
+    "name": "signUpOnBehalf",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [],
     "name": "signUpPeriod",

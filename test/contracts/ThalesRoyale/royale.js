@@ -7,6 +7,9 @@ const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/commo
 
 const { toBytes32 } = require('../../../index');
 
+var ethers2 = require('ethers');
+var crypto = require('crypto');
+
 const SECOND = 1000;
 const HOUR = 3600;
 const DAY = 86400;

@@ -578,7 +578,6 @@ const setupAllContracts = async ({
 		{ contract: 'TokenState', forContract: 'Synth' }, // for generic synth
 		{ contract: 'FeePoolEternalStorage' },
 		{ contract: 'FeePoolState', mocks: ['FeePool'] },
-		//{ contract: 'ProxyERC20sUSD', mocks: ['Synth'] },
 		{
 			contract: 'Synth',
 			mocks: ['Issuer', 'Exchanger', 'FeePool'],
@@ -675,7 +674,6 @@ const setupAllContracts = async ({
 		// mark each mock onto the returnObj as true when it doesn't exist, indicating it needs to be
 		// put through the AddressResolver
 		// for all mocks required for this contract
-		console.log('contract', contract);
 		await Promise.all(
 			mocks
 				// if the target isn't on the returnObj (i.e. already mocked / created) and not in the list of contracts

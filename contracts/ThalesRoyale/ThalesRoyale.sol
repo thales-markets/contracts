@@ -30,6 +30,7 @@ contract ThalesRoyale is Owned, Pausable {
     uint public roundTargetPrice;
 
     mapping(uint => uint) public roundResult;
+    mapping(uint => uint) public targetPricePerRound;
 
     address[] public players;
     mapping(address => uint) public playerSignedUp;
@@ -67,6 +68,7 @@ contract ThalesRoyale is Owned, Pausable {
         require(block.timestamp > (creationTime + signUpPeriod), "Can't start until signup period expires");
         require(started == false, "Already started");
         roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
+        targetPricePerRound[1] = roundTargetPrice;
         started = true;
         round = 1;
         roundStartTime = block.timestamp;
@@ -96,9 +98,9 @@ contract ThalesRoyale is Owned, Pausable {
         require(block.timestamp > (roundStartTime + roundLength), "Can't close round yet");
 
         roundResult[round] = priceFeed.rateForCurrency(oracleKey) >= roundTargetPrice ? 2 : 1;
-
         roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
         round = round + 1;
+        targetPricePerRound[round] = roundTargetPrice;
 
         if (round > rounds) {
             finished = true;

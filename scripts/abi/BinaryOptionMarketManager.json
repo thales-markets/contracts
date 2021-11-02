@@ -824,11 +824,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_address",
+        "name": "_zeroExAddress",
         "type": "address"
       }
     ],
-    "name": "setsUSD",
+    "name": "setZeroExAddress",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -839,11 +839,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_zeroExAddress",
+        "name": "_address",
         "type": "address"
       }
     ],
-    "name": "setZeroExAddress",
+    "name": "setsUSD",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

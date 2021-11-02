@@ -88,10 +88,7 @@ async function main() {
 		priceFeedAddress,
 		expiryDuration,
 		maxTimeToMaturity,
-		creatorCapitalRequirement,
-		poolFee,
-		creatorFee,
-		feeAddress
+		creatorCapitalRequirement
 	);
 	await binaryOptionMarketManagerDeployed.deployed();
 

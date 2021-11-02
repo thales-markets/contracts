@@ -16,9 +16,6 @@ async function main() {
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + networkObj.name);
 
-	const addressResolver = snx.getTarget({ network, contract: 'ReadProxyAddressResolver' });
-	console.log('Found address resolver at:' + addressResolver.address);
-
 	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 
@@ -47,9 +44,6 @@ async function main() {
 	if (network == 'mainnet') {
 		creatorCapitalRequirement = w3utils.toWei('1000');
 	}
-	const poolFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the pool in the end.
-	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
-	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
 
 	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', {
 		libraries: {
@@ -89,10 +83,7 @@ async function main() {
 			priceFeedAddress,
 			expiryDuration,
 			maxTimeToMaturity,
-			creatorCapitalRequirement,
-			poolFee,
-			creatorFee,
-			feeAddress,
+			creatorCapitalRequirement
 		],
 	});
 }

@@ -34,12 +34,7 @@ async function main() {
 	setTargetAddress('BinaryOptionMastercopy', network, binaryOptionMastercopyDeployed.address);
 
 	const BinaryOptionMarketMastercopy = await ethers.getContractFactory(
-		'BinaryOptionMarketMastercopy',
-		{
-			libraries: {
-				SafeDecimalMath: safeDecimalMath.address,
-			},
-		}
+		'BinaryOptionMarketMastercopy'
 	);
 	const binaryOptionMarketMastercopyDeployed = await BinaryOptionMarketMastercopy.deploy();
 	await binaryOptionMarketMastercopyDeployed.deployed();
@@ -58,32 +53,21 @@ async function main() {
 	setTargetAddress('BinaryOptionMarketFactory', network, binaryOptionMarketFactoryDeployed.address);
 
 	const day = 24 * 60 * 60;
-	const maxOraclePriceAge = 120 * 60; // Price updates are accepted from up to two hours before maturity to allow for delayed chainlink heartbeats.
 	const expiryDuration = 26 * 7 * day; // Six months to exercise options before the market is destructible.
 	const maxTimeToMaturity = 730 * day; // Markets may not be deployed more than two years in the future.
 	let creatorCapitalRequirement = w3utils.toWei('1'); // 1 sUSD is required to create a new market for testnet, 1000 for mainnet.
 	if (network == 'mainnet') {
 		creatorCapitalRequirement = w3utils.toWei('1000');
 	}
-	const poolFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the pool in the end.
-	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
-	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
 
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', {
-		libraries: {
-			SafeDecimalMath: safeDecimalMath.address,
-		},
-	});
+	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
 	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
 		owner.address,
 		ProxyERC20sUSD.address,
 		priceFeedAddress,
 		expiryDuration,
 		maxTimeToMaturity,
-		creatorCapitalRequirement,
-		poolFee,
-		creatorFee,
-		feeAddress
+		creatorCapitalRequirement
 	);
 	await binaryOptionMarketManagerDeployed.deployed();
 
@@ -155,9 +139,6 @@ async function main() {
 			expiryDuration,
 			maxTimeToMaturity,
 			creatorCapitalRequirement,
-			poolFee,
-			creatorFee,
-			feeAddress,
 		],
 	});
 }

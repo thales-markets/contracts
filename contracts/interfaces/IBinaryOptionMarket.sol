@@ -7,20 +7,21 @@ import "../interfaces/IPriceFeed.sol";
 interface IBinaryOptionMarket {
     /* ========== TYPES ========== */
 
-    enum Phase {Trading, Maturity, Expiry}
-    enum Side {Long, Short}
+    enum Phase {
+        Trading,
+        Maturity,
+        Expiry
+    }
+    enum Side {
+        Long,
+        Short
+    }
 
     /* ========== VIEWS / VARIABLES ========== */
 
     function options() external view returns (IBinaryOption long, IBinaryOption short);
 
-    function times()
-        external
-        view
-        returns (
-            uint maturity,
-            uint destructino
-        );
+    function times() external view returns (uint maturity, uint destructino);
 
     function oracleDetails()
         external
@@ -31,17 +32,9 @@ interface IBinaryOptionMarket {
             uint finalPrice
         );
 
-    function fees()
-        external
-        view
-        returns (
-            uint poolFee,
-            uint creatorFee
-        );
+    function fees() external view returns (uint poolFee, uint creatorFee);
 
     function deposited() external view returns (uint);
-
-    function accumulatedFees() external view returns (uint);
 
     function creator() external view returns (address);
 

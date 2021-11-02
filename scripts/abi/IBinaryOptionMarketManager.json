@@ -124,26 +124,6 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "fees",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "poolFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "creatorFee",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "marketCreationEnabled",
     "outputs": [
       {

@@ -63,6 +63,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     BinaryOptionMarketManager.Fees public fees;
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
+    address public zeroExAddress;
 
     IOracleInstance public iOracleInstance;
     bool public customMarket;
@@ -73,6 +74,8 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     uint public initialMint;
     address public creator;
     bool public resolved;
+
+    uint internal zeroInitCounter;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -110,8 +113,8 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         );
         // abi.encodePacked("sLONG: ", _oracleKey)
         // consider naming the option: sLongBTC>50@2021.12.31
-        options.long.initialize("Binary Option Long", "sLONG");
-        options.short.initialize("Binary Option Short", "sSHORT");
+        options.long.initialize("Binary Option Long", "sLONG", zeroExAddress);
+        options.short.initialize("Binary Option Short", "sSHORT", zeroExAddress);
         _mint(creator, initialMint);
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
@@ -120,6 +123,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     /* ---------- External Contracts ---------- */
 
+    
     function _priceFeed() internal view returns (IPriceFeed) {
         return priceFeed;
     }
@@ -263,6 +267,16 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     function setsUSD(address _address) external onlyOwner {
         sUSD = IERC20(_address);
+    }
+
+    function setZeroExAddress(address _zeroExAddress) external onlyOwner {
+        zeroExAddress = _zeroExAddress;
+    }
+    
+    function setZeroExAddressAtInit(address _zeroExAddress) external {
+        require(zeroInitCounter == 0, "0x already set at Init");
+        zeroInitCounter = 9;
+        zeroExAddress = _zeroExAddress;
     }
 
     /* ---------- Market Resolution ---------- */

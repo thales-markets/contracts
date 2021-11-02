@@ -217,6 +217,7 @@ contract('BinaryOption', accounts => {
 					'setMigratingManager',
 					'setPriceFeed',
 					'setsUSD',
+					'setZeroExAddress',
 					'transferSusdTo',
 					'setCustomMarketCreationEnabled',
 				],
@@ -323,6 +324,7 @@ contract('BinaryOption', accounts => {
 					'setBinaryOptionMarketManager',
 					'setBinaryOptionMarketMastercopy',
 					'setBinaryOptionMastercopy',
+					'setZeroExAddress',
 				],
 			});
 		});
@@ -654,6 +656,8 @@ contract('BinaryOption', accounts => {
 					'setIOracleInstance',
 					'setPriceFeed',
 					'setsUSD',
+					'setZeroExAddress',
+					'setZeroExAddressAtInit',
 				],
 			});
 		});

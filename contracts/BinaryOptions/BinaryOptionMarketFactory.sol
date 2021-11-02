@@ -16,6 +16,7 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     address public binaryOptionMarketManager;
     address public binaryOptionMarketMastercopy;
     address public binaryOptionMastercopy;
+    address public zeroExAddress;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -39,7 +40,7 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
         BinaryOptionMarket bom = BinaryOptionMarket(
             _cloneAsMinimalProxy(binaryOptionMarketMastercopy, "Could not create a Binary Option Market")
         );
-
+        bom.setZeroExAddressAtInit(zeroExAddress);
         bom.initialize(
             BinaryOptionMarket.BinaryOptionMarketParameters(
                 binaryOptionMarketManager,
@@ -73,8 +74,14 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
         binaryOptionMastercopy = _binaryOptionMastercopy;
         emit BinaryOptionMastercopyChanged(_binaryOptionMastercopy);
     }
+    function setZeroExAddress(address _zeroExAddress) external {
+        require(msg.sender == binaryOptionMarketManager, "Only BinaryOptionsManager can set the 0x address");
+        zeroExAddress = _zeroExAddress;
+        emit ZeroExAddressChanged(_zeroExAddress);
+    }
 
     event BinaryOptionMarketManagerChanged(address _binaryOptionMarketManager);
     event BinaryOptionMarketMastercopyChanged(address _binaryOptionMarketMastercopy);
     event BinaryOptionMastercopyChanged(address _binaryOptionMastercopy);
+    event ZeroExAddressChanged(address _zeroExAddress);
 }

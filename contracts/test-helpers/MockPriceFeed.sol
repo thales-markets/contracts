@@ -33,8 +33,8 @@ contract MockPriceFeed is Owned, IPriceFeed {
     /* ========== MUTATIVE FUNCTIONS ========== */
     function addAggregator(bytes32 currencyKey, address aggregatorAddress) external onlyOwner {
         AggregatorV2V3Interface aggregator = AggregatorV2V3Interface(aggregatorAddress);
-        require(aggregator.latestRound() >= 0, "Given Aggregator is invalid");
-        uint8 decimals = aggregator.decimals();
+        // require(aggregator.latestRound() >= 0, "Given Aggregator is invalid");
+        uint8 decimals = 18;
         require(decimals <= 18, "Aggregator decimals should be lower or equal to 18");
         if (address(aggregators[currencyKey]) == address(0)) {
             aggregatorKeys.push(currencyKey);

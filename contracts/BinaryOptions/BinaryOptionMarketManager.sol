@@ -37,6 +37,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     /* ========== STATE VARIABLES ========== */
 
+    address public zeroExAddress;
+
     Durations public durations;
     uint public capitalRequirement;
 
@@ -79,6 +81,12 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     /* ========== SETTERS ========== */
     function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) external onlyOwner {
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
+    }
+
+    function setZeroExAddress(address _zeroExAddress) public onlyOwner {
+        require(_zeroExAddress != address(0), "Invalid address");
+        zeroExAddress = _zeroExAddress;
+        BinaryOptionMarketFactory(binaryOptionMarketFactory).setZeroExAddress(_zeroExAddress);
     }
 
     /* ========== VIEWS ========== */
@@ -231,7 +239,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             address(long),
             address(short),
             customMarket,
-            customOracle
+            customOracle,
+            zeroExAddress
         );
         return market;
     }
@@ -365,7 +374,8 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         address long,
         address short,
         bool customMarket,
-        address customOracle
+        address customOracle,
+        address zeroExAddress
     );
     event MarketExpired(address market);
     event MarketsMigrated(BinaryOptionMarketManager receivingManager, BinaryOptionMarket[] markets);

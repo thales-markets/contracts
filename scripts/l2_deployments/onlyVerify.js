@@ -13,17 +13,30 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if(networkObj.chainId == 69) {
+		networkObj.name = "optimisticKovan";
+		network = 'optimisticKovan'
+	}
+	if(networkObj.chainId == 10) {
+		networkObj.name = "optimistic";
+		network = 'optimistic'		
+	}
+
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + networkObj.name);
 
-	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
-	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
+	const addressResolverAddress = getTargetAddress('AddressResolver', network);
+	console.log('Found address resolver at:' + addressResolverAddress);
+	const safeDecimalMathAddress = getTargetAddress('SafeDecimalMath', network);
+	console.log('Found safeDecimalMath at:' + safeDecimalMathAddress);
+	
+	const proxysUSDAddress = getTargetAddress('ProxysUSD', network);
+	console.log('Found proxysUSD at:' + proxysUSDAddress);
+
+
 
 	const priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
-	
-	const MockPriceFeedAddress = getTargetAddress('MockPriceFeed', network);
-	console.log('Found MockPriceFeed at:' + MockPriceFeedAddress);
 	
 	const BinaryOptionMastercopyAddress = getTargetAddress('BinaryOptionMastercopy', network);
 	console.log('Found BinaryOptionMastercopy at:' + BinaryOptionMastercopyAddress);
@@ -40,6 +53,13 @@ async function main() {
 	const BinaryOptionMarketDataAddress = getTargetAddress('BinaryOptionMarketData', network);
 	console.log('Found BinaryOptionMarketData at:' + BinaryOptionMarketDataAddress);
 	
+
+	const ThalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
+	console.log('Found ThalesRoyale at:' + ThalesRoyaleAddress);
+
+
+
+
 	const day = 24 * 60 * 60;
 	const maxOraclePriceAge = 120 * 60; // Price updates are accepted from up to two hours before maturity to allow for delayed chainlink heartbeats.
 	const expiryDuration = 26 * 7 * day; // Six months to exercise options before the market is destructible.
@@ -48,10 +68,12 @@ async function main() {
 	if (network == 'mainnet') {
 		creatorCapitalRequirement = w3utils.toWei('1000');
 	}
-
+	const poolFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the pool in the end.
+	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
+	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
 
 	await hre.run('verify:verify', {
-		address: MockPriceFeedAddress,
+		address: priceFeedAddress,
 		constructorArguments: [owner.address],
 	});
 
@@ -81,13 +103,29 @@ async function main() {
 		address: BinaryOptionMarketManagerAddress,
 		constructorArguments: [
 			owner.address,
-			addressResolver.address,
+			addressResolverAddress,
 			priceFeedAddress,
 			expiryDuration,
 			maxTimeToMaturity,
-			creatorCapitalRequirement
+			creatorCapitalRequirement,
+			poolFee,
+			creatorFee,
+			feeAddress,
 		],
 	});
+
+	await hre.run('verify:verify', {
+		address: ThalesRoyaleAddress,
+		constructorArguments: [
+			owner.address,
+			snx.toBytes32("ETH"),
+			priceFeedAddress,
+			w3utils.toWei('10000'),
+			priceFeedAddress,
+			7,
+		],
+	});
+
 
 	
 }

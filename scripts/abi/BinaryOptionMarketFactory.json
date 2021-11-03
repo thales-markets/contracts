@@ -158,8 +158,8 @@
         "type": "address"
       },
       {
-        "internalType": "contract IAddressResolver",
-        "name": "_resolver",
+        "internalType": "contract IERC20",
+        "name": "_sUSD",
         "type": "address"
       },
       {
@@ -186,11 +186,6 @@
         "internalType": "uint256",
         "name": "initialMint",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256[2]",
-        "name": "fees",
-        "type": "uint256[2]"
       },
       {
         "internalType": "bool",

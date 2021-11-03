@@ -84,18 +84,13 @@ contract('BinaryOption', accounts => {
 	const initialStrikePrice = toUnit(100);
 	const initialStrikePriceValue = 100;
 
-	const initialPoolFee = toUnit(0.005);
-	const initialCreatorFee = toUnit(0.005);
-
-	const initialFeeAddress = 0xfeefeefeefeefeefeefeefeefeefeefeefeefeef;
-
 	const sAUDKey = toBytes32('sAUD');
 	const iAUDKey = toBytes32('iAUD');
 	const sUSDKey = toBytes32('sUSD');
 	const nonRate = toBytes32('nonExistent');
 
 	let timeToMaturity = 200;
-	let totalDepositedAfterFees;
+	let totalDeposited;
 
 	const Side = {
 		Long: toBN(0),
@@ -215,15 +210,13 @@ contract('BinaryOption', accounts => {
 					'receiveMarkets',
 					'resolveMarket',
 					'setBinaryOptionsMarketFactory',
-					'setFeeAddress',
 					'setCreatorCapitalRequirement',
-					'setCreatorFee',
 					'setExpiryDuration',
 					'setMarketCreationEnabled',
 					'setMaxTimeToMaturity',
 					'setMigratingManager',
-					'setPoolFee',
 					'setPriceFeed',
+					'setsUSD',
 					'setZeroExAddress',
 					'transferSusdTo',
 					'setCustomMarketCreationEnabled',
@@ -244,69 +237,6 @@ contract('BinaryOption', accounts => {
 			await onlyGivenAddressCanInvoke({
 				fnc: manager.setCreatorCapitalRequirement,
 				args: [toUnit(1)],
-				accounts,
-				address: managerOwner,
-				reason: 'Only the contract owner may perform this action',
-			});
-		});
-
-		it("Total fee can't be set too high", async () => {
-			await assert.revert(
-				manager.setPoolFee(toUnit(1), { from: managerOwner }),
-				'Total fee must be less than 100%.'
-			);
-			await assert.revert(
-				manager.setCreatorFee(toUnit(1), { from: managerOwner }),
-				'Total fee must be less than 100%.'
-			);
-		});
-
-		it('Total fee must be nonzero.', async () => {
-			await manager.setCreatorFee(toUnit(0), { from: managerOwner });
-			await assert.revert(
-				manager.setPoolFee(toBN(0), { from: managerOwner }),
-				'Total fee must be nonzero.'
-			);
-			await manager.setCreatorFee(toUnit(0.5), { from: managerOwner });
-			await manager.setPoolFee(toUnit(0), { from: managerOwner });
-			await assert.revert(
-				manager.setCreatorFee(toBN(0), { from: managerOwner }),
-				'Total fee must be nonzero.'
-			);
-		});
-
-		it('Set pool fee', async () => {
-			const newFee = toUnit(0.005);
-			const tx = await manager.setPoolFee(newFee, { from: managerOwner });
-			assert.bnEqual((await manager.fees()).poolFee, newFee);
-			const log = tx.logs[0];
-			assert.equal(log.event, 'PoolFeeUpdated');
-			assert.bnEqual(log.args.fee, newFee);
-		});
-
-		it('Only the owner can set the pool fee', async () => {
-			await onlyGivenAddressCanInvoke({
-				fnc: manager.setPoolFee,
-				args: [toUnit(0.005)],
-				accounts,
-				address: managerOwner,
-				reason: 'Only the contract owner may perform this action',
-			});
-		});
-
-		it('Set creator fee', async () => {
-			const newFee = toUnit(0.005);
-			const tx = await manager.setCreatorFee(newFee, { from: managerOwner });
-			assert.bnEqual((await manager.fees()).creatorFee, newFee);
-			const log = tx.logs[0];
-			assert.equal(log.event, 'CreatorFeeUpdated');
-			assert.bnEqual(log.args.fee, newFee);
-		});
-
-		it('Only the owner can set the creator fee', async () => {
-			await onlyGivenAddressCanInvoke({
-				fnc: manager.setCreatorFee,
-				args: [toUnit(0.005)],
 				accounts,
 				address: managerOwner,
 				reason: 'Only the contract owner may perform this action',
@@ -354,17 +284,12 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(durations.expiryDuration, expiryDuration);
 			assert.bnEqual(durations.maxTimeToMaturity, maxTimeToMaturity);
 
-			const fees = await manager.fees();
-			assert.bnEqual(fees.poolFee, initialPoolFee);
-			assert.bnEqual(fees.creatorFee, initialCreatorFee);
-
 			const capitalRequirement = await manager.capitalRequirement();
 			assert.bnEqual(capitalRequirement, capitalRequirement);
 			assert.bnEqual(await manager.totalDeposited(), toUnit(0));
 			assert.bnEqual(await manager.marketCreationEnabled(), true);
-			assert.equal(await manager.resolver(), addressResolver.address);
+			assert.equal(await manager.sUSD(), sUSDSynth.address);
 			assert.equal(await manager.owner(), accounts[1]);
-			assert.equal(await manager.feeAddress(), initialFeeAddress);
 		});
 	});
 
@@ -381,7 +306,6 @@ contract('BinaryOption', accounts => {
 					toUnit(1),
 					[now + 200, now + expiryDuration + 200],
 					toUnit(2),
-					[initialPoolFee, initialCreatorFee],
 					false,
 					ZERO_ADDRESS,
 				],
@@ -463,11 +387,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(oracleDetails.strikePrice, toUnit(100));
 			assert.equal(await market.creator(), initialCreator);
 			assert.equal(await market.owner(), manager.address);
-			assert.equal(await market.resolver(), addressResolver.address);
-
-			const fees = await market.fees();
-			assert.bnEqual(fees.poolFee, initialPoolFee);
-			assert.bnEqual(fees.creatorFee, initialCreatorFee);
+			assert.equal(await market.sUSD(), sUSDSynth.address);
 
 			assert.bnEqual(await manager.numActiveMarkets(), toBN(1));
 			assert.equal((await manager.activeMarkets(0, 100))[0], market.address);
@@ -713,18 +633,14 @@ contract('BinaryOption', accounts => {
 			long = await BinaryOption.at(options.long);
 			short = await BinaryOption.at(options.short);
 
-			let fees = await market.fees();
-			console.log('Fees are ' + fees[0] + ' ' + fees[1]);
-
-			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
-			let valueAfterFees = multiplyDecimalRound(_feeMultiplier, toUnit(1)).add(toUnit(2));
-			totalDepositedAfterFees = valueAfterFees;
-			assert.bnEqual(await long.balanceOf(initialCreator), valueAfterFees);
-			assert.bnEqual(await short.balanceOf(initialCreator), valueAfterFees);
+			let value = toUnit(3);
+			totalDeposited = value;
+			assert.bnEqual(await long.balanceOf(initialCreator), value);
+			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
 			const totalSupplies = await market.totalSupplies();
-			assert.bnEqual(totalSupplies.long, valueAfterFees);
-			assert.bnEqual(totalSupplies.short, valueAfterFees);
+			assert.bnEqual(totalSupplies.long, value);
+			assert.bnEqual(totalSupplies.short, value);
 		});
 
 		it('Only expected functions are mutative', async () => {
@@ -739,6 +655,7 @@ contract('BinaryOption', accounts => {
 					'initialize',
 					'setIOracleInstance',
 					'setPriceFeed',
+					'setsUSD',
 					'setZeroExAddress',
 					'setZeroExAddressAtInit',
 				],
@@ -831,16 +748,11 @@ contract('BinaryOption', accounts => {
 			assert.isTrue(await market.resolved());
 			assert.bnEqual((await market.oracleDetails()).finalPrice, price);
 
-			const poolFees = multiplyDecimalRound(toUnit(1), initialPoolFee);
-			const creatorFees = multiplyDecimalRound(toUnit(1), initialCreatorFee);
-
 			const log = BinaryOptionMarket.decodeLogs(tx.receipt.rawLogs)[0];
 			assert.eventEqual(log, 'MarketResolved', {
 				result: Side.Long,
 				oraclePrice: price,
-				deposited: totalDepositedAfterFees,
-				poolFees,
-				creatorFees,
+				deposited: totalDeposited,
 			});
 			assert.equal(log.event, 'MarketResolved');
 			assert.bnEqual(log.args.result, Side.Long);
@@ -941,79 +853,6 @@ contract('BinaryOption', accounts => {
 			);
 			assert.isTrue(await market.canResolve());
 			await manager.resolveMarket(market.address);
-		});
-
-		// it('Resolution cannot occur if the price is too old.', async () => {
-		// 	let result = await market.oraclePrice();
-		// 	let now = await currentTime();
-
-		// 	let timeToMaturityExtended = 60 * 61 + 200;
-
-		// 	await createMarketAndMintMore(
-		// 		sAUDKey,
-		// 		initialStrikePrice,
-		// 		now,
-		// 		initialCreator,
-		// 		timeToMaturityExtended
-		// 	);
-		// 	await fastForward(maxOraclePriceAge + 1);
-		// 	result = await market.oraclePrice();
-		// 	now = await currentTime();
-		// 	assert.isFalse(await market.canResolve());
-		// 	await assert.revert(manager.resolveMarket(market.address), 'Can not resolve market');
-		// });
-
-		it('Resolution properly remits the collected fees.', async () => {
-			let now = await currentTime();
-			await createMarketAndMintMore(
-				sAUDKey,
-				initialStrikePrice,
-				now,
-				initialCreator,
-				timeToMaturity
-			);
-
-			await fastForward(timeToMaturity + 1);
-
-			await aggregator_sAUD.setLatestAnswer(convertToDecimals(0.7, 8), await currentTime());
-
-			const feeAddress = await manager.feeAddress();
-
-			const [creatorPrebalance, poolPrebalance, preDeposits] = await Promise.all([
-				sUSDSynth.balanceOf(initialCreator),
-				sUSDSynth.balanceOf(feeAddress),
-				market.deposited(),
-			]);
-
-			const tx = await manager.resolveMarket(market.address);
-			const logs = Synth.decodeLogs(tx.receipt.rawLogs);
-
-			const [creatorPostbalance, poolPostbalance, postDeposits] = await Promise.all([
-				sUSDSynth.balanceOf(initialCreator),
-				sUSDSynth.balanceOf(feeAddress),
-				market.deposited(),
-			]);
-
-			const poolFee = multiplyDecimalRound(toUnit(1), initialPoolFee);
-			const creatorFee = multiplyDecimalRound(toUnit(1), initialCreatorFee);
-
-			const poolReceived = poolPostbalance.sub(poolPrebalance);
-			const creatorReceived = creatorPostbalance.sub(creatorPrebalance);
-
-			assert.bnClose(poolReceived, poolFee, 1);
-			assert.bnClose(creatorReceived, creatorFee, 1);
-			assert.bnClose(postDeposits, preDeposits.sub(poolFee.add(creatorFee)));
-
-			assert.eventEqual(logs[0], 'Transfer', {
-				from: market.address,
-				to: feeAddress,
-				value: poolReceived,
-			});
-			assert.eventEqual(logs[1], 'Transfer', {
-				from: market.address,
-				to: initialCreator,
-				value: creatorReceived,
-			});
 		});
 
 		it('Empty mints do nothing.', async () => {

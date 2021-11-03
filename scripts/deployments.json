@@ -36,13 +36,13 @@
 		"EscrowThales": "0xcE9c1aAb41b18b24355138776186484B260B9cf0",
 		"StakingThales": "0x8d178B3Dd7B29dfB38f55FdFE6518cabe6B31059",
 		"Thales": "0x9e7769409E3e5A6821eeDcF33371FCA929fE6A48",
-		"PriceFeed": "0x1521ed0AE5B8e6d34A7Fe2E22cA8Cd4aAbc354b8",
-		"BinaryOptionMastercopy": "0xbCAA9b682a7d9829ba652e2324a5BE4D63908BeF",
-		"BinaryOptionMarketMastercopy": "0x15e06ccd94953fF1BB5CFd23c72138c2fE50af40",
-		"BinaryOptionMarketFactory": "0x4Dd66b90495Cc3eEaeD92FA9d15a7Ac5F7728842",
-		"BinaryOptionMarketManager": "0x7ef54B7aF71D9F491D9735d8Cb093fFc4A51d01d",
+		"PriceFeed": "0x750dCAdcA8e9e7f9702c85383119ea8034450993",
+		"BinaryOptionMastercopy": "0x86ec51a6b95e3D30967F18A6Dea085852f67F748",
+		"BinaryOptionMarketMastercopy": "0x4CB4B45447E75416ec116B5e5F351c12B487C20A",
+		"BinaryOptionMarketFactory": "0x8F83e99e4bd5D67714Bd6D805765A01AE2283372",
+		"BinaryOptionMarketManager": "0xfF7AEA98740fA1e2a9eB81680583e62aaFf1e3Ad",
 		"BinaryOptionsMarketFactory": "0x0314824253cEc50d144d60CfEA3742874Df72B92",
-		"BinaryOptionMarketData": "0xcA4E2eB038d543345FB314382a331AD0C2A47829"
+		"BinaryOptionMarketData": "0xA852a651377fbE23f3d3acF5919c3D092aD4b77d"
 	},
 	"goerli": {
 		"Airdrop": "",

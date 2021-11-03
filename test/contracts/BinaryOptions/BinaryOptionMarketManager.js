@@ -82,16 +82,10 @@ contract('BinaryOptionMarketManager', accounts => {
 
 	const initialStrikePrice = toUnit(100);
 
-	const initialPoolFee = toUnit(0.005);
-	const initialCreatorFee = toUnit(0.005);
-
-	const initialFeeAddress = 0xfeefeefeefeefeefeefeefeefeefeefeefeefeef;
-
 	const sAUDKey = toBytes32('sAUD');
 	const iAUDKey = toBytes32('iAUD');
 
 	let timeToMaturity = 200;
-	let totalDepositedAfterFees;
 
 	const Side = {
 		Long: toBN(0),
@@ -145,6 +139,8 @@ contract('BinaryOptionMarketManager', accounts => {
 				'BinaryOptionMarketFactory',
 			],
 		}));
+
+		console.log('proxy', sUSDSynth.address);
 
 		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
 
@@ -208,11 +204,9 @@ contract('BinaryOptionMarketManager', accounts => {
 			assert.bnEqual(await markets[1].result(), toBN(0));
 			assert.bnEqual(await markets[2].result(), toBN(1));
 
-			const feesRemitted = multiplyDecimalRound(initialPoolFee.add(initialCreatorFee), toUnit(2));
-
 			await manager.expireMarkets([markets[1].address], { from: managerOwner });
 
-			assert.bnEqual(await manager.totalDeposited(), afterDeposit.sub(feesRemitted).sub(toUnit(1)));
+			assert.bnEqual(await manager.totalDeposited(), afterDeposit.sub(toUnit(1)));
 			await manager.expireMarkets([markets[0].address], { from: managerOwner });
 			await manager.expireMarkets([markets[2].address], { from: managerOwner });
 		});
@@ -481,14 +475,11 @@ contract('BinaryOptionMarketManager', accounts => {
 				contract: 'BinaryOptionMarketManager',
 				args: [
 					managerOwner,
-					addressResolver.address,
+					sUSDSynth.address,
 					priceFeed.address,
 					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
 					toUnit('2'), // Capital requirement
-					toUnit('0.005'), // pool fee
-					toUnit('0.005'), // creator fee
-					'0xfeEFEEfeefEeFeefEEFEEfEeFeefEEFeeFEEFEeF',
 				],
 			});
 
@@ -578,14 +569,11 @@ contract('BinaryOptionMarketManager', accounts => {
 				contract: 'BinaryOptionMarketManager',
 				args: [
 					managerOwner,
-					addressResolver.address,
+					sUSDSynth.address,
 					priceFeed.address,
 					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
 					toUnit('2'), // Capital requirement
-					toUnit('0.005'), // pool fee
-					toUnit('0.005'), // creator fee
-					'0xfeEFEEfeefEeFeefEEFEEfEeFeefEEFeeFEEFEeF',
 				],
 			});
 			await newerManager.setMigratingManager(newManager.address, { from: managerOwner });

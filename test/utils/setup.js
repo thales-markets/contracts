@@ -62,6 +62,14 @@ const mockToken = async ({
 				from: deployerAccount,
 			})
 	);
+	if (process.env.DEBUG) {
+		log(
+			'Deployed token',
+			synth,
+			'to',
+			token.address
+		);
+	}
 	await Promise.all([
 		tokenState.setAssociatedContract(token.address, { from: owner }),
 		proxy.setTarget(token.address, { from: owner }),
@@ -216,14 +224,11 @@ const setupContract = async ({
 		BinaryOptionMarketFactory: [owner],
 		BinaryOptionMarketManager: [
 			owner,
-			tryGetAddressOf('AddressResolver'),
+			tryGetAddressOf('SynthsUSD'),
 			tryGetAddressOf('PriceFeed'),
 			26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
 			365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
 			toWei('2'), // Capital requirement
-			toWei('0.005'), // pool fee
-			toWei('0.005'), // creator fee
-			"0xfeEFEEfeefEeFeefEEFEEfEeFeefEEFeeFEEFEeF", //fee address
 		],
 		BinaryOptionMarketData: [],
 		BinaryOptionMarketMastercopy: [],
@@ -580,7 +585,7 @@ const setupAllContracts = async ({
 		}, // a generic synth
 		{
 			contract: 'BinaryOptionMarketFactory',
-			deps: ['AddressResolver', 'PriceFeed'],
+			deps: ['SynthsUSD', 'PriceFeed'],
 		},
 		{
 			contract: 'BinaryOptionMarketMastercopy',
@@ -588,12 +593,13 @@ const setupAllContracts = async ({
 		},
 		{
 			contract: 'BinaryOptionMastercopy',
-			deps: ['AddressResolver', 'BinaryOptionMarketMastercopy'],
+			deps: ['SynthsUSD', 'BinaryOptionMarketMastercopy'],
 		},
 		{
 			contract: 'BinaryOptionMarketManager',
 			deps: [
 				'SystemStatus',
+				'SynthsUSD',
 				'AddressResolver',
 				'PriceFeed',
 				'FeePool',
@@ -639,6 +645,30 @@ const setupAllContracts = async ({
 			!(contract in existing)
 	);
 
+	// SYNTHS
+
+	const synthsToAdd = [];
+
+	// now setup each synth and its deps
+	for (const synth of synths) {
+		const { token, proxy, tokenState } = await mockToken({
+			accounts,
+			synth,
+			supply: 0, // add synths with 0 supply initially
+			skipInitialAllocation: true,
+			name: `Synth ${synth}`,
+			symbol: synth,
+		});
+
+		returnObj[`ProxyERC20${synth}`] = proxy;
+		returnObj[`TokenState${synth}`] = tokenState;
+		returnObj[`Synth${synth}`] = token;
+
+		// We'll defer adding the tokens into the Issuer as it must
+		// be synchronised with the FlexibleStorage address first.
+		synthsToAdd.push(token.address);
+	}
+
 	// now setup each contract in serial in case we have deps we need to load
 	for (const { contract, source, mocks = [], forContract } of contractsToFetch) {
 		// mark each mock onto the returnObj as true when it doesn't exist, indicating it needs to be
@@ -681,30 +711,6 @@ const setupAllContracts = async ({
 				(contracts.find(({ contract: foundContract }) => foundContract === contract) || {})
 					.properties || {},
 		});
-	}
-
-	// SYNTHS
-
-	const synthsToAdd = [];
-
-	// now setup each synth and its deps
-	for (const synth of synths) {
-		const { token, proxy, tokenState } = await mockToken({
-			accounts,
-			synth,
-			supply: 0, // add synths with 0 supply initially
-			skipInitialAllocation: true,
-			name: `Synth ${synth}`,
-			symbol: synth,
-		});
-
-		returnObj[`ProxyERC20${synth}`] = proxy;
-		returnObj[`TokenState${synth}`] = tokenState;
-		returnObj[`Synth${synth}`] = token;
-
-		// We'll defer adding the tokens into the Issuer as it must
-		// be synchronised with the FlexibleStorage address first.
-		synthsToAdd.push(token.address);
 	}
 
 	// now invoke AddressResolver to set all addresses

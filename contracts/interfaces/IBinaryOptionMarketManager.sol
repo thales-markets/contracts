@@ -5,15 +5,7 @@ import "../interfaces/IBinaryOptionMarket.sol";
 interface IBinaryOptionMarketManager {
     /* ========== VIEWS / VARIABLES ========== */
 
-    function fees() external view returns (uint poolFee, uint creatorFee);
-
-    function durations()
-        external
-        view
-        returns (
-            uint expiryDuration,
-            uint maxTimeToMaturity
-        );
+    function durations() external view returns (uint expiryDuration, uint maxTimeToMaturity);
 
     function capitalRequirement() external view returns (uint);
 

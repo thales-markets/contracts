@@ -9,6 +9,8 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	let priceFeedAddress;
+
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
@@ -16,13 +18,13 @@ async function main() {
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + networkObj.name);
 
-	const addressResolver = snx.getTarget({ network, contract: 'ReadProxyAddressResolver' });
-	console.log('Found address resolver at:' + addressResolver.address);
+	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
+	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
 
 	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
-	let priceFeedAddress;
-	if(network == 'ropsten') {
+
+	if (network == 'ropsten') {
 		const ropstenPriceFeed = await ethers.getContractFactory('MockPriceFeed');
 		PriceFeedDeployed = await ropstenPriceFeed.deploy(owner.address);
 		await PriceFeedDeployed.deployed();
@@ -31,16 +33,9 @@ async function main() {
 		console.log('MockPriceFeed deployed to:', PriceFeedDeployed.address);
 		await PriceFeedDeployed.setPricetoReturn(w3utils.toWei('1000'));
 		priceFeedAddress = PriceFeedDeployed.address;
-		console.log("Adding aggregator", snx.toBytes32("ETH"), owner.address)
-		await PriceFeedDeployed.addAggregator(snx.toBytes32("ETH"), owner.address);
-	}
-	else {
-		
-		// PriceFeedDeployed = await priceFeed.deploy(owner.address);
-		// await PriceFeedDeployed.deployed();
-		// setTargetAddress('PriceFeed', network, PriceFeedDeployed.address);
-		// console.log('PriceFeed deployed to:', PriceFeedDeployed.address);
-		
+		console.log('Adding aggregator', snx.toBytes32('ETH'), owner.address);
+		await PriceFeedDeployed.addAggregator(snx.toBytes32('ETH'), owner.address);
+	} else {
 		priceFeedAddress = getTargetAddress('PriceFeed', network);
 		console.log('Found PriceFeed at:' + priceFeedAddress);
 	}
@@ -57,12 +52,7 @@ async function main() {
 	setTargetAddress('BinaryOptionMastercopy', network, binaryOptionMastercopyDeployed.address);
 
 	const BinaryOptionMarketMastercopy = await ethers.getContractFactory(
-		'BinaryOptionMarketMastercopy',
-		{
-			libraries: {
-				SafeDecimalMath: safeDecimalMath.address,
-			},
-		}
+		'BinaryOptionMarketMastercopy'
 	);
 	const binaryOptionMarketMastercopyDeployed = await BinaryOptionMarketMastercopy.deploy();
 	await binaryOptionMarketMastercopyDeployed.deployed();
@@ -71,7 +61,11 @@ async function main() {
 		'binaryOptionMarketMastercopy deployed to:',
 		binaryOptionMarketMastercopyDeployed.address
 	);
-	setTargetAddress('BinaryOptionMarketMastercopy', network, binaryOptionMarketMastercopyDeployed.address);
+	setTargetAddress(
+		'BinaryOptionMarketMastercopy',
+		network,
+		binaryOptionMarketMastercopyDeployed.address
+	);
 
 	const BinaryOptionMarketFactory = await ethers.getContractFactory('BinaryOptionMarketFactory');
 	const binaryOptionMarketFactoryDeployed = await BinaryOptionMarketFactory.deploy(owner.address);
@@ -81,32 +75,21 @@ async function main() {
 	setTargetAddress('BinaryOptionMarketFactory', network, binaryOptionMarketFactoryDeployed.address);
 
 	const day = 24 * 60 * 60;
-	const maxOraclePriceAge = 120 * 60; // Price updates are accepted from up to two hours before maturity to allow for delayed chainlink heartbeats.
 	const expiryDuration = 26 * 7 * day; // Six months to exercise options before the market is destructible.
 	const maxTimeToMaturity = 730 * day; // Markets may not be deployed more than two years in the future.
 	let creatorCapitalRequirement = w3utils.toWei('1'); // 1 sUSD is required to create a new market for testnet, 1000 for mainnet.
 	if (network == 'mainnet') {
 		creatorCapitalRequirement = w3utils.toWei('1000');
 	}
-	const poolFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the pool in the end.
-	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
-	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
 
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', {
-		libraries: {
-			SafeDecimalMath: safeDecimalMath.address,
-		},
-	});
+	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
 	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
 		owner.address,
-		addressResolver.address,
+		ProxyERC20sUSD.address,
 		priceFeedAddress,
 		expiryDuration,
 		maxTimeToMaturity,
-		creatorCapitalRequirement,
-		poolFee,
-		creatorFee,
-		feeAddress
+		creatorCapitalRequirement
 	);
 	await binaryOptionMarketManagerDeployed.deployed();
 
@@ -147,16 +130,19 @@ async function main() {
 		console.log('BinaryOptionMarketManager: setBinaryOptionsMarketFactory');
 	});
 
-	tx = await binaryOptionMarketManagerDeployed.setZeroExAddress(ZeroExAddress);
+	if (ZeroExAddress) {
+		tx = await binaryOptionMarketManagerDeployed.setZeroExAddress(ZeroExAddress);
 
-	await tx.wait().then(e => {
-		console.log('BinaryOptionMarketFactory: setZeroExAddress');
-	});
-
-	await hre.run('verify:verify', {
-		address: PriceFeedDeployed.address,
-		constructorArguments: [owner.address],
-	});
+		await tx.wait().then(e => {
+			console.log('BinaryOptionMarketFactory: setZeroExAddress');
+		});
+	}
+	if (network == 'ropsten') {
+		await hre.run('verify:verify', {
+			address: priceFeedAddress,
+			constructorArguments: [owner.address],
+		});
+	}
 
 	await hre.run('verify:verify', {
 		address: binaryOptionMarketFactoryDeployed.address,
@@ -166,13 +152,14 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: binaryOptionMastercopyDeployed.address,
 		constructorArguments: [],
-		contract: "contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy"
+		contract: 'contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
 	});
 
 	await hre.run('verify:verify', {
 		address: binaryOptionMarketMastercopyDeployed.address,
 		constructorArguments: [],
-		contract: "contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy",
+		contract:
+			'contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
 	});
 
 	await hre.run('verify:verify', {
@@ -184,14 +171,11 @@ async function main() {
 		address: binaryOptionMarketManagerDeployed.address,
 		constructorArguments: [
 			owner.address,
-			addressResolver.address,
+			ProxyERC20sUSD.address,
 			priceFeedAddress,
 			expiryDuration,
 			maxTimeToMaturity,
 			creatorCapitalRequirement,
-			poolFee,
-			creatorFee,
-			feeAddress,
 		],
 	});
 }
@@ -203,9 +187,8 @@ main()
 		process.exit(1);
 	});
 
-
 function delay(time) {
-	return new Promise(function (resolve) {
+	return new Promise(function(resolve) {
 		setTimeout(resolve, time);
 	});
 }

@@ -51,17 +51,17 @@ contract BinaryOptionMarketData {
     function getMarketParameters(BinaryOptionMarket market) external view returns (MarketParameters memory) {
         (BinaryOption long, BinaryOption short) = market.options();
         (uint maturityDate, uint expiryDate) = market.times();
-        (bytes32 key, uint strikePrice, uint finalPrice,  bool customMarket, address iOracleInstanceAddress) = market.oracleDetails();
+        (bytes32 key, uint strikePrice, uint finalPrice, bool customMarket, address iOracleInstanceAddress) = market
+            .oracleDetails();
         (uint poolFee, uint creatorFee) = market.fees();
 
-        MarketParameters memory data =
-            MarketParameters(
-                market.creator(),
-                BinaryOptionMarket.Options(long, short),
-                BinaryOptionMarket.Times(maturityDate, expiryDate),
-                BinaryOptionMarket.OracleDetails(key, strikePrice, finalPrice, customMarket, iOracleInstanceAddress),
-                BinaryOptionMarketManager.Fees(poolFee, creatorFee)
-            );
+        MarketParameters memory data = MarketParameters(
+            market.creator(),
+            BinaryOptionMarket.Options(long, short),
+            BinaryOptionMarket.Times(maturityDate, expiryDate),
+            BinaryOptionMarket.OracleDetails(key, strikePrice, finalPrice, customMarket, iOracleInstanceAddress),
+            BinaryOptionMarketManager.Fees(poolFee, creatorFee)
+        );
 
         return data;
     }

@@ -7,8 +7,8 @@
         "type": "address"
       },
       {
-        "internalType": "contract IAddressResolver",
-        "name": "_resolver",
+        "internalType": "contract IERC20",
+        "name": "_sUSD",
         "type": "address"
       },
       {
@@ -30,21 +30,6 @@
         "internalType": "uint256",
         "name": "_creatorCapitalRequirement",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_poolFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_creatorFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_feeAddress",
-        "type": "address"
       }
     ],
     "payable": false,
@@ -62,19 +47,6 @@
       }
     ],
     "name": "CreatorCapitalRequirementUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "fee",
-        "type": "uint256"
-      }
-    ],
-    "name": "CreatorFeeUpdated",
     "type": "event"
   },
   {
@@ -286,19 +258,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "fee",
-        "type": "uint256"
-      }
-    ],
-    "name": "PoolFeeUpdated",
-    "type": "event"
-  },
-  {
     "constant": false,
     "inputs": [],
     "name": "acceptOwnership",
@@ -472,41 +431,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "feeAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "fees",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "poolFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "creatorFee",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -748,10 +672,10 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "resolver",
+    "name": "sUSD",
     "outputs": [
       {
-        "internalType": "contract IAddressResolver",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }
@@ -794,21 +718,6 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_creatorFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCreatorFee",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
         "internalType": "bool",
         "name": "enabled",
         "type": "bool"
@@ -830,21 +739,6 @@
       }
     ],
     "name": "setExpiryDuration",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_feeAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setFeeAddress",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -914,21 +808,6 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_poolFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setPoolFee",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_address",
         "type": "address"
@@ -950,6 +829,21 @@
       }
     ],
     "name": "setZeroExAddress",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "setsUSD",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

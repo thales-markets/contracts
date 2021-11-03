@@ -1,6 +1,6 @@
 const { request, gql } = require('graphql-request');
 
-// getCurrentSnapshotViaGraph(	'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance');
+//getCurrentSnapshotViaGraph(	'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance');
 // getCurrentSnapshotViaGraph('https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix');
 //getAllClaimers('https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance');
 //getAllClaimers('https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix');
@@ -14,7 +14,7 @@ async function getCurrentSnapshotViaGraph(url) {
 	while (continueQuery) {
 		const queryIssuers = gql`
 			query getIssuers($highestID: String!) {
-				snxholders(first: 1000, where: { id_gt: $highestID }, orderBy: id, orderDirection: asc) {
+				snxholders(first: 100, where: { id_gt: $highestID }, orderBy: id, orderDirection: asc) {
 					id
 					balanceOf
 					collateral
@@ -28,6 +28,7 @@ async function getCurrentSnapshotViaGraph(url) {
 		};
 		let performance = null;
 		await request(url, queryIssuers, variables).then(data => {
+			console.log("got batch");
 			data.snxholders.forEach(d => {
 				let threshold = d.collateral * 1.0;
 				if (uniqueClaimers.has(d.id)) {
@@ -35,11 +36,11 @@ async function getCurrentSnapshotViaGraph(url) {
 					totalBalance[d.id] = d.collateral * 1.0;
 				}
 			});
-			if (data.snxholders.length < 1000) {
+			if (data.snxholders.length < 100) {
 				continueQuery = false;
 			}
 			highestIDLast = data.snxholders.length ? data.snxholders[data.snxholders.length - 1].id : '';
-			// console.log('holders length is ' + holders.length);
+			console.log('holders length is ' + holders.length);
 		});
 	}
 	console.log('finished');

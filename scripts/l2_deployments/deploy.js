@@ -103,12 +103,17 @@ async function main() {
 	}
 	else {
 		
-		PriceFeedDeployed = await priceFeed.deploy(owner.address);
-		await PriceFeedDeployed.deployed();
-		setTargetAddress('PriceFeed', network, PriceFeedDeployed.address);
-		console.log('PriceFeed deployed to:', PriceFeedDeployed.address);
+		// PriceFeedDeployed = await priceFeed.deploy(owner.address);
+		// await PriceFeedDeployed.deployed();
+		// setTargetAddress('PriceFeed', network, PriceFeedDeployed.address);
+		// console.log('PriceFeed deployed to:', PriceFeedDeployed.address);
+
+		priceFeedAddress = getTargetAddress('PriceFeed', network);
+		console.log('Found PriceFeed at:' + priceFeedAddress);
 	}
 	
+
+
 	// We get the contract to deploy
 	// 1. Deployment BinaryOption Mastercopy
 	const BinaryOptionMastercopy = await ethers.getContractFactory('BinaryOptionMastercopy');
@@ -121,13 +126,8 @@ async function main() {
 	
 	// 2. Deployment BinaryOption Market Mastercopy
 	const BinaryOptionMarketMastercopy = await ethers.getContractFactory(
-		'BinaryOptionMarketMastercopy',
-		{
-			libraries: {
-				SafeDecimalMath: safeDecimalMath.address,
-			},
-		}
-		);
+		'BinaryOptionMarketMastercopy'
+	);
 	const binaryOptionMarketMastercopyDeployed = await BinaryOptionMarketMastercopy.deploy();
 	await binaryOptionMarketMastercopyDeployed.deployed();
 	
@@ -154,29 +154,23 @@ async function main() {
 	if (network == 'mainnet') {
 		creatorCapitalRequirement = w3utils.toWei('1000');
 	}
-	const poolFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the pool in the end.
-	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
-	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
+	// const poolFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the pool in the end.
+	// const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
+	// const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
 
 	// const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
 	
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', {
-		libraries: {
-			SafeDecimalMath: safeDecimalMath.address,
-		},
-	});
+	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
 	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
 		owner.address,
-		addressResolver.address,
-		PriceFeedDeployed.address,
+		proxysUSD.address,
+		priceFeedAddress,
 		expiryDuration,
 		maxTimeToMaturity,
-		creatorCapitalRequirement,
-		poolFee,
-		creatorFee,
-		feeAddress
+		creatorCapitalRequirement
 	);
 	await binaryOptionMarketManagerDeployed.deployed();
+
 	
 
 
@@ -193,7 +187,7 @@ async function main() {
 
 	setTargetAddress('BinaryOptionMarketData', network, binaryOptionMarketData.address);
 	console.log('binaryOptionMarketData deployed to:', binaryOptionMarketData.address);
-	
+
 	await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
 		binaryOptionMarketManagerDeployed.address
 	);
@@ -208,28 +202,63 @@ async function main() {
 		binaryOptionMarketFactoryDeployed.address
 	);
 
-	tx = await binaryOptionMarketManagerDeployed.setZeroExAddress(ZeroExAddress);
+	// tx = await binaryOptionMarketManagerDeployed.setZeroExAddress(ZeroExAddress);
 
-	await tx.wait().then(e => {
-		console.log('BinaryOptionMarketFactory: setZeroExAddress');
-	});
+	// await tx.wait().then(e => {
+	// 	console.log('BinaryOptionMarketFactory: setZeroExAddress');
+	// });
 
-	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
-	const ThalesRoyaleDeployed = await ThalesRoyale.deploy(
-		owner.address,
-		toBytes32('ETH'),
-		PriceFeedDeployed.address,
-		w3utils.toWei('10000'),
-		PriceFeedDeployed.address,
-		7
-	);
-	await ThalesRoyaleDeployed.deployed();
+	// const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
+	// const ThalesRoyaleDeployed = await ThalesRoyale.deploy(
+	// 	owner.address,
+	// 	toBytes32('ETH'),
+	// 	PriceFeedDeployed.address,
+	// 	w3utils.toWei('10000'),
+	// 	PriceFeedDeployed.address,
+	// 	7
+	// );
+	// await ThalesRoyaleDeployed.deployed();
 	// update deployments.json file
-	setTargetAddress('ThalesRoyale', network, ThalesRoyaleDeployed.address);
+	// setTargetAddress('ThalesRoyale', network, ThalesRoyaleDeployed.address);
 
-	console.log('ThalesRoyale deployed to:', ThalesRoyaleDeployed.address);
+	// console.log('ThalesRoyale deployed to:', ThalesRoyaleDeployed.address);
 
 	console.log('Done with all deployments');
+
+	await hre.run('verify:verify', {
+		address: binaryOptionMarketFactoryDeployed.address,
+		constructorArguments: [owner.address],
+	});
+
+	await hre.run('verify:verify', {
+		address: binaryOptionMastercopyDeployed.address,
+		constructorArguments: [],
+		contract: 'contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
+	});
+
+	await hre.run('verify:verify', {
+		address: binaryOptionMarketMastercopyDeployed.address,
+		constructorArguments: [],
+		contract:
+			'contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
+	});
+
+	await hre.run('verify:verify', {
+		address: binaryOptionMarketData.address,
+		constructorArguments: [],
+	});
+
+	await hre.run('verify:verify', {
+		address: binaryOptionMarketManagerDeployed.address,
+		constructorArguments: [
+			owner.address,
+			proxysUSD.address,
+			priceFeedAddress,
+			expiryDuration,
+			maxTimeToMaturity,
+			creatorCapitalRequirement,
+		],
+	});
 }
 
 main()

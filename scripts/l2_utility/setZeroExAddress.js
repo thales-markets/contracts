@@ -45,27 +45,27 @@ async function main() {
 	const ZeroExAddress = getTargetAddress('ZeroEx', network);
 	console.log('Found 0x at:' + ZeroExAddress);
 
-	const BinaryOptionMarketFactoryAddress = getTargetAddress('BinaryOptionMarketFactory', network);
-	console.log('Found BinaryOptionMarketFactory at:' + BinaryOptionMarketFactoryAddress);
+	// const BinaryOptionMarketFactoryAddress = getTargetAddress('BinaryOptionMarketFactory', network);
+	// console.log('Found BinaryOptionMarketFactory at:' + BinaryOptionMarketFactoryAddress);
 
-	let abi = ['function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) external'];
-	let contract = new ethers.Contract(BinaryOptionMarketManagerAddress, abi, owner);
+	// let abi = ['function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) external'];
+	// let contract = new ethers.Contract(BinaryOptionMarketManagerAddress, abi, owner);
 
-	let setBinaryOptions = await contract.setBinaryOptionsMarketFactory(
-		BinaryOptionMarketFactoryAddress,
-		{
-			from: owner.address,
-			gasLimit: 5000000
-		}
-	);
-	console.log(setBinaryOptions)
-	setBinaryOptions.wait().then(console.log('Done transfer! $$$$ >'));
+	// let setBinaryOptions = await contract.setBinaryOptionsMarketFactory(
+	// 	BinaryOptionMarketFactoryAddress,
+	// 	{
+	// 		from: owner.address,
+	// 		gasLimit: 5000000
+	// 	}
+	// );
+	// console.log(setBinaryOptions)
+	// setBinaryOptions.wait().then(console.log('Done transfer! $$$$ >'));
 
 
 	
 	// 3. Deployment BinaryOption Market Factory
-	abi = ['function setZeroExAddress(address _zeroExAddress) public'];
-	contract = new ethers.Contract(BinaryOptionMarketManagerAddress, abi, owner);
+	let abi = ['function setZeroExAddress(address _zeroExAddress) public'];
+	let contract = new ethers.Contract(BinaryOptionMarketManagerAddress, abi, owner);
 	let setZeroEx = await contract.setZeroExAddress(
 			ZeroExAddress,
 			{

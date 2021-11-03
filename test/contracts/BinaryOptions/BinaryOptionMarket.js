@@ -753,6 +753,8 @@ contract('BinaryOption', accounts => {
 				result: Side.Long,
 				oraclePrice: price,
 				deposited: totalDeposited,
+				poolFees: 0,
+				creatorFees: 0
 			});
 			assert.equal(log.event, 'MarketResolved');
 			assert.bnEqual(log.args.result, Side.Long);

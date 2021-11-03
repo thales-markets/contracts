@@ -291,7 +291,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         }
         resolved = true;
 
-        emit MarketResolved(_result(), price, updatedAt, deposited);
+        emit MarketResolved(_result(), price, updatedAt, deposited, 0, 0);
     }
 
     /* ---------- Claiming and Exercising Options ---------- */
@@ -375,7 +375,9 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         Side result,
         uint oraclePrice,
         uint oracleTimestamp,
-        uint deposited
+        uint deposited,
+        uint poolFees,
+        uint creatorFees
     );
     event OptionsExercised(address indexed account, uint value);
 }

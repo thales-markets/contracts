@@ -32,11 +32,7 @@ async function main() {
 	console.log('Found BinaryOptionMarketManager at:' + BinaryOptionMarketManagerAddress);
 
 
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', {
-		libraries: {
-			SafeDecimalMath: safeDecimalMath.address,
-		},
-	});
+	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
 	
 	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.attach(BinaryOptionMarketManagerAddress);
 	

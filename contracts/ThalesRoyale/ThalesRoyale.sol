@@ -50,14 +50,17 @@ contract ThalesRoyale is Owned, Pausable {
         address _rewardToken,
         uint _rounds,
         uint _signUpPeriod,
-        uint roundChoosingLength,
-        uint roundLength
+        uint _roundChoosingLength,
+        uint _roundLength
     ) public Owned(_owner) {
         creationTime = block.timestamp;
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
         rewardToken = IERC20(_rewardToken);
         rounds = _rounds;
+        signUpPeriod = _signUpPeriod;
+        roundChoosingLength = _roundChoosingLength;
+        roundLength = _roundLength;
     }
 
     function signUp() external {

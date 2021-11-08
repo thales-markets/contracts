@@ -38,12 +38,12 @@
       },
       {
         "internalType": "uint256",
-        "name": "roundChoosingLength",
+        "name": "_roundChoosingLength",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "roundLength",
+        "name": "_roundLength",
         "type": "uint256"
       }
     ],

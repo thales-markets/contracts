@@ -33,6 +33,9 @@ async function main() {
 	const priceFeed = await ethers.getContractFactory('PriceFeed');
 	let priceFeedAddress = getTargetAddress('PriceFeed', network);
 
+	const hour = 60 * 60;
+	const day = 24 * 60 * 60;
+
 	// Dev env - deploy Thales.sol; Live env - use Thales.sol contract address
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const ThalesRoyaleDeployed = await ThalesRoyale.deploy(
@@ -41,7 +44,10 @@ async function main() {
 		priceFeedAddress,
 		w3utils.toWei('10000'),
 		priceFeedAddress,
-		7
+		7,
+		hour * 3,
+		hour,
+		hour * 2
 	);
 	await ThalesRoyaleDeployed.deployed();
 	// update deployments.json file
@@ -58,6 +64,9 @@ async function main() {
 			w3utils.toWei('10000'),
 			priceFeedAddress,
 			7,
+			hour * 3,
+			hour,
+			hour * 2,
 		],
 	});
 }

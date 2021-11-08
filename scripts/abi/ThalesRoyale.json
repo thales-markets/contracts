@@ -30,6 +30,21 @@
         "internalType": "uint256",
         "name": "_rounds",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_signUpPeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "roundChoosingLength",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "roundLength",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -172,6 +187,27 @@
     "constant": true,
     "inputs": [],
     "name": "creationTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "finalPricePerRound",
     "outputs": [
       {
         "internalType": "uint256",

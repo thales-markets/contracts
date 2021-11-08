@@ -1,17 +1,65 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.6.0;
 
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/ERC20.sol";
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { IL2StandardERC20 } from "@eth-optimism/contracts/libraries/standards/IL2StandardERC20.sol";
 
-contract OpThales is ERC20 {
+contract OpThales is IL2StandardERC20, ERC20 {
 
-    string public name = "Optimistic Thales Token";
-    string public symbol = "OPTHALES";
-    uint8 public constant decimals = 18;
+    function name() public override view returns(string memory) {
+        return "Optimistic Thales Token";
+    }
+    function symbol() public override view returns(string memory) {
+        return "OPTHALES";
+    }
+    function decimals() public override view returns(uint8) {
+        return 18;
+    }
 
     uint private INITIAL_TOTAL_SUPPLY = 100000000;
 
-    constructor() public {
-        _mint(msg.sender, INITIAL_TOTAL_SUPPLY * 1e18);
+    address public override l1Token;
+    address public l2Bridge;
+
+    /**
+     * @param _l2Bridge Address of the L2 standard bridge.
+     * @param _l1Token Address of the corresponding L1 token.
+     * @param _name ERC20 name.
+     * @param _symbol ERC20 symbol.
+     */
+    constructor(
+        address _l2Bridge,
+        address _l1Token,
+        string memory _name,
+        string memory _symbol
+    ) public
+        ERC20(_name, _symbol) {
+        l1Token = _l1Token;
+        l2Bridge = _l2Bridge;
     }
 
+    modifier onlyL2Bridge {
+        require(msg.sender == l2Bridge, "Only L2 Bridge can mint and burn");
+        _;
+    }
+
+    function supportsInterface(bytes4 _interfaceId) public virtual override view returns (bool) {
+            bytes4 firstSupportedInterface = bytes4(keccak256("supportsInterface(bytes4)")); // ERC165
+            bytes4 secondSupportedInterface = IL2StandardERC20.l1Token.selector
+                ^ IL2StandardERC20.mint.selector
+                ^ IL2StandardERC20.burn.selector;
+            return _interfaceId == firstSupportedInterface || _interfaceId == secondSupportedInterface;
+        }
+
+    function mint(address _to, uint256 _amount) public virtual override onlyL2Bridge {
+        _mint(_to, _amount);
+
+        emit Mint(_to, _amount);
+    }
+
+    function burn(address _from, uint256 _amount) public virtual override onlyL2Bridge {
+        _burn(_from, _amount);
+
+        emit Burn(_from, _amount);
+    }
 }

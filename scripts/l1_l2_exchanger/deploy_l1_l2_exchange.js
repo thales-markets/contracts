@@ -20,8 +20,8 @@ const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
 
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
-const L2StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol/OVM_L2StandardBridge.json');
-const L1StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L1StandardBridge.sol/OVM_L1StandardBridge.json');
+const L2StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol/OVM_L2StandardBridge');
+const L1StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L1StandardBridge.sol/OVM_L1StandardBridge');
 const { toBytes32 } = require('../../index');
 
 async function main() {
@@ -78,33 +78,33 @@ async function main() {
 	
 	console.log("L1 Bridge on Kovan at: ", L1StandardBridge_deployed.address);
 
-	// const OP_Thales_L1_deployed = await OP_Thales_L1_connected.deploy();
+	const OP_Thales_L1_deployed = await OP_Thales_L1_connected.deploy();
 	
-	// let tx = await OP_Thales_L1_deployed.deployed();
-	// // console.log(tx);
-	// console.log("Optimistic Thales L1 deployed on: ",OP_Thales_L1_deployed.address);
-	// setTargetAddress('OpThales_L1', net_kovan, OP_Thales_L1_deployed.address);
+	let tx = await OP_Thales_L1_deployed.deployed();
+	// console.log(tx);
+	console.log("Optimistic Thales L1 deployed on: ",OP_Thales_L1_deployed.address);
+	setTargetAddress('OpThales_L1', net_kovan, OP_Thales_L1_deployed.address);
 	
-	// const OP_Thales_L2_deployed = await OP_Thales_L2_connected.deploy(
-	// 	L2_BRIDGE_ADDRESS,
-	// 	OP_Thales_L1_deployed.address,
-	// 	'Opt Thales L2',
-	// 	"OPTHALES_L2"
-	// 	);
+	const OP_Thales_L2_deployed = await OP_Thales_L2_connected.deploy(
+		L2_BRIDGE_ADDRESS,
+		OP_Thales_L1_deployed.address,
+		'Opt Thales L2',
+		"OPTHALES_L2"
+		);
 		
-	// tx = await OP_Thales_L2_deployed.deployed();
-	// console.log("Optimistic Thales L2 deployed on: ",OP_Thales_L2_deployed.address);
-	// setTargetAddress('OpThales_L2', net_optimistic_kovan, OP_Thales_L2_deployed.address);
+	tx = await OP_Thales_L2_deployed.deployed();
+	console.log("Optimistic Thales L2 deployed on: ",OP_Thales_L2_deployed.address);
+	setTargetAddress('OpThales_L2', net_optimistic_kovan, OP_Thales_L2_deployed.address);
 	
-	// const ThalesExchanger_deployed = await ThalesExchanger_connected.deploy(
-	// 	owner.address, 
-	// 	Thales_deployed.address,
-	// 	OP_Thales_L1_deployed.address
-	// 	);
+	const ThalesExchanger_deployed = await ThalesExchanger_connected.deploy(
+		owner.address, 
+		Thales_deployed.address,
+		OP_Thales_L1_deployed.address
+		);
 		
-	// tx = await ThalesExchanger_deployed.deployed();
-	// console.log("Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
-	// setTargetAddress('ThalesExchanger', net_kovan, ThalesExchanger_deployed.address);
+	tx = await ThalesExchanger_deployed.deployed();
+	console.log("Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
+	setTargetAddress('ThalesExchanger', net_kovan, ThalesExchanger_deployed.address);
 
 
 

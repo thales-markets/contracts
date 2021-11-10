@@ -46,9 +46,9 @@ async function main() {
 		w3utils.toWei('10000'),
 		priceFeedAddress,
 		7,
-		min * 20,
-		min * 10,
-		min * 12
+		day * 3,
+		hour * 8,
+		day
 	);
 	await ThalesRoyaleDeployed.deployed();
 	// update deployments.json file
@@ -65,9 +65,9 @@ async function main() {
 			w3utils.toWei('10000'),
 			priceFeedAddress,
 			7,
-			min * 20,
-			min * 10,
-			min * 12,
+			day * 3,
+			hour * 8,
+			day,
 		],
 	});
 }

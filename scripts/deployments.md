@@ -66,6 +66,7 @@ The script will also deploy the `EscrowThales` contract and generate file [`ongo
 
 ### 4. OngoingAirdrop maintenance
 
+Before running the script below check if rewards distribution between L1 and L2 needs to be tweaked depending on the number of stakers on L1 and L2.
 First, run [`ongoing_distribution.js`](./snx-data/ongoing_distribution.js) for the appropriate period (can be run before the THALES staking period ends, but after SNX weekly period):
 
 ```bash

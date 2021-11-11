@@ -40,7 +40,7 @@
 		"eslint-plugin-prettier": "^2.6.2",
 		"eslint-plugin-promise": "^4.0.1",
 		"eslint-plugin-standard": "^4.0.0",
-		"ethers": "5.0.31",
+		"ethers": "^5.4.5",
 		"execa": "^4.1.0",
 		"fs-extra": "9.0.1",
 		"hardhat": "~2.1.2",
@@ -71,7 +71,7 @@
 	"dependencies": {
 		"@chainlink/contracts": "^0.2.0",
 		"@chainlink/contracts-0.0.10": "npm:@chainlink/contracts@0.0.10",
-		"@eth-optimism/contracts": "0.2.8",
+		"@eth-optimism/contracts": "^0.4.14",
 		"@eth-optimism/watcher": "0.0.1-alpha.8",
 		"@openzeppelin/test-helpers": "^0.5.11",
 		"abi-decoder": "2.3.0",

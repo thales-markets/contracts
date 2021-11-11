@@ -31,6 +31,7 @@ contract ThalesRoyale is Owned, Pausable {
 
     mapping(uint => uint) public roundResult;
     mapping(uint => uint) public targetPricePerRound;
+    mapping(uint => uint) public finalPricePerRound;
 
     address[] public players;
     mapping(address => uint) public playerSignedUp;
@@ -47,13 +48,19 @@ contract ThalesRoyale is Owned, Pausable {
         IPriceFeed _priceFeed,
         uint reward,
         address _rewardToken,
-        uint _rounds
+        uint _rounds,
+        uint _signUpPeriod,
+        uint _roundChoosingLength,
+        uint _roundLength
     ) public Owned(_owner) {
         creationTime = block.timestamp;
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
         rewardToken = IERC20(_rewardToken);
         rounds = _rounds;
+        signUpPeriod = _signUpPeriod;
+        roundChoosingLength = _roundChoosingLength;
+        roundLength = _roundLength;
     }
 
     function signUp() external {
@@ -105,6 +112,7 @@ contract ThalesRoyale is Owned, Pausable {
         require(!finished, "Competition finished");
         require(block.timestamp > (roundStartTime + roundLength), "Can't close round yet");
 
+        finalPricePerRound[round] = priceFeed.rateForCurrency(oracleKey);
         roundResult[round] = priceFeed.rateForCurrency(oracleKey) >= roundTargetPrice ? 2 : 1;
         roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
         round = round + 1;

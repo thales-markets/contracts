@@ -1,6 +1,8 @@
 const { request, gql } = require('graphql-request');
 
-//getCurrentSnapshotViaGraph(	'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance');
+// getCurrentSnapshotViaGraph(
+// 	'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance'
+// );
 // getCurrentSnapshotViaGraph('https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix');
 //getAllClaimers('https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance');
 //getAllClaimers('https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix');
@@ -13,8 +15,13 @@ async function getCurrentSnapshotViaGraph(url) {
 	let continueQuery = true;
 	while (continueQuery) {
 		const queryIssuers = gql`
-			query getIssuers($highestID: String!) {
-				snxholders(first: 100, where: { id_gt: $highestID }, orderBy: id, orderDirection: asc) {
+			query getIssuers($highestID: String!, $threshold: String!) {
+				snxholders(
+					first: 100
+					where: { id_gt: $highestID, collateral_gt: $threshold }
+					orderBy: id
+					orderDirection: asc
+				) {
 					id
 					balanceOf
 					collateral
@@ -25,10 +32,11 @@ async function getCurrentSnapshotViaGraph(url) {
 		`;
 		const variables = {
 			highestID: highestIDLast,
+			threshold: '0.001',
 		};
 		let performance = null;
 		await request(url, queryIssuers, variables).then(data => {
-			console.log("got batch");
+			console.log('got batch');
 			data.snxholders.forEach(d => {
 				let threshold = d.collateral * 1.0;
 				if (uniqueClaimers.has(d.id)) {

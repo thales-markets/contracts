@@ -50,7 +50,10 @@ contract('ThalesRoyale', accounts => {
 			priceFeedAddress,
 			toUnit(10000),
 			rewardTokenAddress,
-			7
+			7,
+			DAY * 3,
+			HOUR * 8,
+			DAY
 		);
 	});
 

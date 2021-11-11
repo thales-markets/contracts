@@ -3,12 +3,15 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix');
 const { artifacts, contract, web3 } = require('hardhat');
+const { Watcher } = require('@eth-optimism/core-utils');
+const { predeploys } = require("@eth-optimism/contracts");
 
 const user_key = process.env.PRIVATE_KEY;
 
 const {
 	fastForward,
 	toUnit,
+	fromUnit,
 	currentTime,
 	multiplyDecimalRound,
 	divideDecimalRound,
@@ -17,11 +20,15 @@ const {
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
+const L1_MESSENGER_ADDRESS = '0xaF91349fdf3B206E079A8FcaB7b8dFaFB96A654D';
 
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 const L2StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol/OVM_L2StandardBridge.json');
 const L1StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L1StandardBridge.sol/OVM_L1StandardBridge.json');
+const L1CrossDomainMessengerArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/messaging/OVM_L1CrossDomainMessenger.sol/OVM_L1CrossDomainMessenger.json');
+const L2CrossDomainMessengerArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/messaging/OVM_L2CrossDomainMessenger.sol/OVM_L2CrossDomainMessenger.json');
+
 const { toBytes32 } = require('../../index');
 
 async function main() {
@@ -34,9 +41,12 @@ async function main() {
 	const net_kovan = 'kovan'
 	let network_optimistic_kovan = await ethers.provider.getNetwork();
 	const net_optimistic_kovan = 'optimisticKovan'
-	// console.log(network_optimistic_kovan);
+	
+	console.log("OVM L2 messenger at: ",predeploys.OVM_L2CrossDomainMessenger);
+	console.log("OVM L1 messenger at: ",predeploys.OVM_L1CrossDomainMessenger);
 	
 	// const l2StandardBridgeArtifact = require(`../node_modules/@eth-optimism/contracts/artifacts/contracts/L2/messaging/L2StandardBridge.sol/L2StandardBridge.json`)
+	
 	
 	
 	const l1Wallet = new ethers.Wallet(user_key, network_kovan);
@@ -48,26 +58,62 @@ async function main() {
 	blockNumber = await ethers.provider.getBlockNumber();
 	console.log("Optimistic Kovan block number: ", blockNumber);
 	
+	const ThalesAddress = getTargetAddress('Thales', net_kovan);
+	const ThalesExchangerAddress = getTargetAddress('ThalesExchanger', net_kovan);
+	const OP_Thales_L1Address = getTargetAddress('OpThales_L1', net_kovan);
+	const OP_Thales_L2Address = getTargetAddress('OpThales_L2', net_optimistic_kovan);
+
 	// const L2StandardBridge = await ethers.getContractFactory('../../node_modules/@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol:OVM_L2StandardBridge');
 	const L2StandardBridge = new ethers.ContractFactory(L2StandardBridgeArtifacts.abi, L2StandardBridgeArtifacts.bytecode);
 	const L1StandardBridge = new ethers.ContractFactory(L1StandardBridgeArtifacts.abi, L1StandardBridgeArtifacts.bytecode);
 	const OP_Thales_L1 = await ethers.getContractFactory('/contracts/Token/OpThales_L1.sol:OpThales');
 	const ThalesExchanger = await ethers.getContractFactory('ThalesExchanger');
 	const OP_Thales_L2 = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');
-	const ThalesAddress = getTargetAddress('Thales', 'kovan');
-
 	const Thales = await ethers.getContractFactory('Thales');
-	// console.log("L2 Contract:\n", OP_Thales_L2);
 	
+
+	const l2Messenger = new ethers.Contract(
+		predeploys.OVM_L2CrossDomainMessenger,
+		L2CrossDomainMessengerArtifacts.abi,
+		ethers.provider
+	);
+	
+	const l1Messenger = new ethers.Contract(
+	L1_MESSENGER_ADDRESS,
+	L1CrossDomainMessengerArtifacts.abi,
+	network_kovan
+	);
+
+	const l1MessengerAddress = l1Messenger.address;
+	// L2 messenger address is always the same, 0x42.....07
+	const l2MessengerAddress = l2Messenger.address;
+
+	console.log("L1 messenger:",l1MessengerAddress);
+	console.log("L2 messenger:",l2MessengerAddress);
+	//   // Tool that helps watches and waits for messages to be relayed between L1 and L2.
+	const watcher = new Watcher({
+		l1: {
+		  provider: network_kovan,
+		  messengerAddress: l1MessengerAddress
+		},
+		l2: {
+		  provider: ethers.provider,
+		  messengerAddress: l2MessengerAddress
+		}
+	  });
 
 	const Thales_deployed= await Thales.connect(l1Wallet).attach(ThalesAddress);
 	console.log("Thales on Kovan at: ", Thales_deployed.address);
-	const ThalesExchanger_connected = await ThalesExchanger.connect(l1Wallet);
-	console.log("Thales Exchanger ready to deploy: ", ThalesExchanger_connected.signer._isSigner);
-	const OP_Thales_L1_connected = await OP_Thales_L1.connect(l1Wallet);
-	console.log("L1 Contract ready to deploy: ", OP_Thales_L1_connected.signer._isSigner);
-	const OP_Thales_L2_connected = await OP_Thales_L2.connect(l2Wallet);
-	console.log("L2 Contract ready to deploy: ", OP_Thales_L2_connected.signer._isSigner);
+	
+	const ThalesExchanger_deployed = await ThalesExchanger.connect(l1Wallet).attach(ThalesExchangerAddress);
+	console.log("Thales Exchanger on Kovan at: ", ThalesExchanger_deployed.address);
+
+	const OP_Thales_L1_deployed = await OP_Thales_L1.connect(l1Wallet).attach(OP_Thales_L1Address);
+	console.log("L1 Contract on Kovan at: ", OP_Thales_L1_deployed.address);
+
+	const OP_Thales_L2_deployed = await OP_Thales_L2.connect(l2Wallet).attach(OP_Thales_L2Address);
+	console.log("L2 Contract on Optimistic Kovan at: ", OP_Thales_L2_deployed.address);
+
 	const L2StandardBridge_deployed = await L2StandardBridge.connect(l2Wallet).attach(L2_BRIDGE_ADDRESS);
 	console.log("L2 Bridge on Optimistic Kovan at: ", L2StandardBridge_deployed.address);
 
@@ -78,35 +124,66 @@ async function main() {
 	
 	console.log("L1 Bridge on Kovan at: ", L1StandardBridge_deployed.address);
 
-	// const OP_Thales_L1_deployed = await OP_Thales_L1_connected.deploy();
+	let balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+	console.log("\n\nL1 balance", owner.address,":", fromUnit(balance.toString()));
 	
-	// let tx = await OP_Thales_L1_deployed.deployed();
-	// // console.log(tx);
-	// console.log("Optimistic Thales L1 deployed on: ",OP_Thales_L1_deployed.address);
-	// setTargetAddress('OpThales_L1', net_kovan, OP_Thales_L1_deployed.address);
-	
-	// const OP_Thales_L2_deployed = await OP_Thales_L2_connected.deploy(
-	// 	L2_BRIDGE_ADDRESS,
-	// 	OP_Thales_L1_deployed.address,
-	// 	'Opt Thales L2',
-	// 	"OPTHALES_L2"
-	// 	);
-		
-	// tx = await OP_Thales_L2_deployed.deployed();
-	// console.log("Optimistic Thales L2 deployed on: ",OP_Thales_L2_deployed.address);
-	// setTargetAddress('OpThales_L2', net_optimistic_kovan, OP_Thales_L2_deployed.address);
-	
-	// const ThalesExchanger_deployed = await ThalesExchanger_connected.deploy(
-	// 	owner.address, 
-	// 	Thales_deployed.address,
-	// 	OP_Thales_L1_deployed.address
-	// 	);
-		
-	// tx = await ThalesExchanger_deployed.deployed();
-	// console.log("Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
-	// setTargetAddress('ThalesExchanger', net_kovan, ThalesExchanger_deployed.address);
+	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
+	console.log("L2 balance", owner.address,":", fromUnit(balance.toString()));
+	let init_balance = parseInt(fromUnit(balance.toString()));
+
+	let approved = await OP_Thales_L1_deployed.allowance(owner.address, L1StandardBridge_deployed.address);
+	console.log("Approved: ", fromUnit(approved.toString()));
+
+	let TRANSFER_ERC20 = '25'
+
+	if(parseInt(fromUnit(approved.toString())) == 0) {
+		const tx1 = await OP_Thales_L1_deployed.approve(L1StandardBridge_deployed.address, w3utils.toWei(TRANSFER_ERC20));
+		await tx1.wait()
+	}
+
+	approved = await OP_Thales_L1_deployed.allowance(owner.address, L1StandardBridge_deployed.address);
+	console.log("Approved: ", fromUnit(approved.toString()));
+
+	let checkToken = await OP_Thales_L2_deployed.l1Token();
+	console.log("\nL2 address for L1:", checkToken);
+
+	if(checkToken == OP_Thales_L1_deployed.address) {
+		console.log("Address match with L1 token");
+	}
+	else {
+		console.log("Address DOES NOT match with L1 token");
+	}
 
 
+	console.log('Depositing tokens into L2 ...')
+	const tx2 = await L1StandardBridge_deployed.depositERC20(
+		OP_Thales_L1_deployed.address,
+		OP_Thales_L2_deployed.address,
+		w3utils.toWei(TRANSFER_ERC20),
+		2000000,
+		'0x')
+	await tx2.wait()
+
+	// Wait for the message to be relayed to L2.
+	console.log('Waiting for deposit to be relayed to L2...');
+	balance = parseInt(init_balance);
+	let str_balance = ''
+	while(balance == init_balance) {
+		str_balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
+		balance = parseInt(fromUnit(str_balance.toString()));
+		console.log(init_balance, balance)
+		delay(10000);
+	}
+	// const [ msgHash1 ] = await watcher.getMessageHashesFromL1Tx(tx2.hash)
+
+	// const receipt = await watcher.getL2TransactionReceipt(msgHash1, true)
+	// console.log("receipt", receipt)
+
+	// Log some balances to see that it worked!
+	balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+	console.log("Balance on L1:", fromUnit(balance.toString())) // 0
+	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
+	console.log("Balance on L2:", fromUnit(balance.toString())) // 0
 
 
 }

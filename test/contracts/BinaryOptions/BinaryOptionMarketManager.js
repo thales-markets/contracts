@@ -139,6 +139,7 @@ contract('BinaryOptionMarketManager', accounts => {
 				'BinaryOptionMarketFactory',
 			],
 		}));
+		const [creator, owner] = await ethers.getSigners();
 
 		console.log('proxy', sUSDSynth.address);
 
@@ -156,9 +157,7 @@ contract('BinaryOptionMarketManager', accounts => {
 
 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
-		await priceFeed.addAggregator(sAUDKey, aggregator_sAUD.address, {
-			from: managerOwner,
-		});
+		await priceFeed.connect(owner).addAggregator(sAUDKey, aggregator_sAUD.address);
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),

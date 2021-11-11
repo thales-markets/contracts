@@ -145,6 +145,8 @@ contract('BinaryOption', accounts => {
 			],
 		}));
 
+		const [creator, owner] = await ethers.getSigners(); 
+
 		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
 
 		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
@@ -166,21 +168,13 @@ contract('BinaryOption', accounts => {
 		await aggregator_iAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
-		await priceFeed.addAggregator(sAUDKey, aggregator_sAUD.address, {
-			from: managerOwner,
-		});
+		await priceFeed.connect(owner).addAggregator(sAUDKey, aggregator_sAUD.address);
 
-		await priceFeed.addAggregator(iAUDKey, aggregator_iAUD.address, {
-			from: managerOwner,
-		});
+		await priceFeed.connect(owner).addAggregator(iAUDKey, aggregator_iAUD.address);
 
-		await priceFeed.addAggregator(sUSDKey, aggregator_sUSD.address, {
-			from: managerOwner,
-		});
+		await priceFeed.connect(owner).addAggregator(sUSDKey, aggregator_sUSD.address);
 
-		await priceFeed.addAggregator(nonRate, aggregator_nonRate.address, {
-			from: managerOwner,
-		});
+		await priceFeed.connect(owner).addAggregator(nonRate, aggregator_nonRate.address);
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),

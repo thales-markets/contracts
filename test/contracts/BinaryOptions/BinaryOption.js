@@ -120,6 +120,7 @@ contract('BinaryOption', accounts => {
 			],
 		}));
 
+		const [creator, owner] = await ethers.getSigners();
 		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
 
 		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
@@ -133,9 +134,10 @@ contract('BinaryOption', accounts => {
 		const timestamp = await currentTime();
 		await aggregatorAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
-		await priceFeed.addAggregator(AUDKey, aggregatorAUD.address, {
-			from: managerOwner,
-		});
+		console.log('owner', await priceFeed.owner());
+		console.log('owner signer', owner.address);
+
+		await priceFeed.connect(owner).addAggregator(AUDKey, aggregatorAUD.address);
 
 		console.log('AUD rate', await priceFeed.rateForCurrency(AUDKey));
 		console.log('AUD aggregator', await priceFeed.aggregators(AUDKey));

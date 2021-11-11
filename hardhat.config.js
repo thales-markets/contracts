@@ -10,6 +10,8 @@ require('hardhat-gas-reporter');
 require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-etherscan');
 require('hardhat-abi-exporter');
+require('@nomiclabs/hardhat-ethers');
+require('@openzeppelin/hardhat-upgrades');
 
 const {
 	constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },
@@ -48,6 +50,15 @@ module.exports = {
 			},
 			{
 				version: '0.6.0',
+				settings: {
+					optimizer: {
+						enabled: true,
+						runs: 200,
+					},
+				},
+			},
+			{
+				version: '0.8.2',
 				settings: {
 					optimizer: {
 						enabled: true,

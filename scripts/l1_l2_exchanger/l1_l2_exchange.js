@@ -166,26 +166,56 @@ async function main() {
 
 	// Wait for the message to be relayed to L2.
 	console.log('Waiting for deposit to be relayed to L2...');
-	balance = parseInt(init_balance);
-	let str_balance = ''
-	while(balance == init_balance) {
-		str_balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
-		balance = parseInt(fromUnit(str_balance.toString()));
-		console.log(init_balance, balance)
-		delay(10000);
-	}
+	
 	// const [ msgHash1 ] = await watcher.getMessageHashesFromL1Tx(tx2.hash)
 
-	// const receipt = await watcher.getL2TransactionReceipt(msgHash1, true)
+  	// const receipt = await watcher.getL2TransactionReceipt(msgHash1, true)
 	// console.log("receipt", receipt)
-
-	// Log some balances to see that it worked!
+	
+	balance = parseInt(init_balance);
+	let str_balance = '';
+	let seconds_counter = 0;
+	while(balance == init_balance) {
+		await delay(10000);
+		str_balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
+		balance = parseInt(fromUnit(str_balance.toString()));
+		seconds_counter = seconds_counter+10;
+		console.log(seconds_counter,"sec |", init_balance, balance)
+	}
+	
 	balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
 	console.log("Balance on L1:", fromUnit(balance.toString())) // 0
+	init_balance = parseInt(fromUnit(balance.toString()));
 	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
 	console.log("Balance on L2:", fromUnit(balance.toString())) // 0
 
+	console.log(`\nWithdrawing tokens back to L1 ...`)
+	const tx3 = await L2StandardBridge_deployed.withdraw(
+		OP_Thales_L2_deployed.address,
+		w3utils.toWei(TRANSFER_ERC20),
+		2000000,
+		'0x'
+	)
+	await tx3.wait()
+	
+	console.log("transaction hash:",tx3.hash)
+	// Wait for the message to be relayed to L1.
+	// console.log(`Waiting for withdrawal to be relayed to L1...`)
+	// balance = parseInt(init_balance);
+	// str_balance = '';
+	// seconds_counter = 0;
+	// while(balance == init_balance) {
+	// 	await delay(10000);
+	// 	str_balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+	// 	balance = parseInt(fromUnit(str_balance.toString()));
+	// 	seconds_counter = seconds_counter+10;
+	// 	console.log(seconds_counter,"sec |", init_balance, balance);
+	// }
 
+	balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+	console.log("Balance on L1:", fromUnit(balance.toString()));
+	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
+	console.log("Balance on L2:", fromUnit(balance.toString())); 
 }
 
 main()

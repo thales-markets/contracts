@@ -82,6 +82,7 @@
 		"keccak256": "^1.0.3",
 		"merkletreejs": "^0.2.23",
 		"openzeppelin-solidity-2.3.0": "npm:openzeppelin-solidity@2.3.0",
+		"prb-math": "^2.4.1",
 		"pretty-error": "^2.1.1",
 		"solidity-parser-antlr": "^0.4.11",
 		"solidity-util": "github:willitscale/solidity-util",

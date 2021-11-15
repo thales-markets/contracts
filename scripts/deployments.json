@@ -45,7 +45,7 @@
 		"BinaryOptionsMarketFactory": "0x0314824253cEc50d144d60CfEA3742874Df72B92",
 		"BinaryOptionMarketData": "0x42Af0890d254387110555A46d261B9e4f6E327Ac",
 		"OpThales_L1": "0xdf099a1fd576811b66d635b5B7B141CC3c8230C8",
-		"ThalesExchanger": "0x1F50737Ee29eF41cd3C8899Ff78413c3DF0aBB03"
+		"ThalesExchanger": "0x2460132Cc16A2914796e03a33F5C7E43ba60aeA2"
 	},
 	"goerli": {
 		"Airdrop": "",

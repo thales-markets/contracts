@@ -184,9 +184,10 @@ async function main() {
 	
 	balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
 	console.log("Balance on L1:", fromUnit(balance.toString())) // 0
-	init_balance = parseInt(fromUnit(balance.toString()));
+	// init_balance = parseInt(fromUnit(balance.toString()));
 	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
 	console.log("Balance on L2:", fromUnit(balance.toString())) // 0
+	init_balance = parseInt(fromUnit(balance.toString()));
 
 	console.log(`\nWithdrawing tokens back to L1 ...`)
 	const tx3 = await L2StandardBridge_deployed.withdraw(
@@ -205,7 +206,8 @@ async function main() {
 	seconds_counter = 0;
 	while(balance == init_balance) {
 		await delay(10000);
-		str_balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+		// str_balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+		str_balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
 		balance = parseInt(fromUnit(str_balance.toString()));
 		seconds_counter = seconds_counter+10;
 		console.log(seconds_counter,"sec |", init_balance, balance);

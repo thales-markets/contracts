@@ -154,7 +154,14 @@ contract('ThalesRoyale', accounts => {
 
 			await MockPriceFeedDeployed.setPricetoReturn(900);
 
+			let isRoundClosableBefore = await royale.canCloseRound();
+			assert.equal(false, isRoundClosableBefore);
+
 			await fastForward(HOUR * 72 + 1);
+
+			let isRoundClosableAfter = await royale.canCloseRound();
+			assert.equal(true, isRoundClosableAfter);
+
 			await royale.closeRound();
 
 			roundTargetPrice = await royale.roundTargetPrice();

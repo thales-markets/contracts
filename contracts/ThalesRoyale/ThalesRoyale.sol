@@ -124,7 +124,7 @@ contract ThalesRoyale is Owned, Pausable {
     function closeRound() external {
         require(started, "Competition not started yet");
         require(!finished, "Competition finished");
-        require(block.timestamp > (roundStartTime + roundLength), "Can't close round yet");
+        require(canCloseRound(), "Can't close round yet");
 
         uint nextRound = round + 1;
 
@@ -139,7 +139,7 @@ contract ThalesRoyale is Owned, Pausable {
             totalPlayersPerRound[nextRound] = winningPositionsPerRound;
         }
 
-        // setting eliminated players to be (total players - numner of winning players)
+        // setting eliminated players to be total players - number of winning players
         eliminatedPerRound[round] = totalPlayersPerRound[round] - winningPositionsPerRound;   
 
         round = nextRound;
@@ -154,6 +154,10 @@ contract ThalesRoyale is Owned, Pausable {
             totalPlayersPerRound[round] = getAlivePlayers().length;
         }
         emit RoundClosed(round - 1, roundResult[round - 1]);
+    }
+
+    function canCloseRound() public view returns (bool) {
+        return block.timestamp > (roundStartTime + roundLength);
     }
 
     function isPlayerAlive(address player) public view returns (bool) {

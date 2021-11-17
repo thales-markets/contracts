@@ -132,6 +132,10 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(0, initEliminatedPlayersInARound);
 
 			await fastForward(HOUR * 72 + 1);
+
+			let isRoundClosableBeforeStarting = await royale.canCloseRound();
+			assert.equal(false, isRoundClosableBeforeStarting);
+
 			await royale.startRoyale();
 
 			let totalPlayersInARound = await royale.getTotalPlayersPerRound(1);
@@ -163,6 +167,9 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(true, isRoundClosableAfter);
 
 			await royale.closeRound();
+
+			let isRoundClosableAfterClosing = await royale.canCloseRound();
+			assert.equal(false, isRoundClosableAfterClosing);
 
 			roundTargetPrice = await royale.roundTargetPrice();
 			console.log('roundTargetPrice is ' + roundTargetPrice);
@@ -784,6 +791,46 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(0, eliminatedPlayersInARound8);
 
 			await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
+		});
+
+		it('check the changing positions', async () => {
+			await royale.signUp({ from: first });
+			await royale.signUp({ from: second });
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.startRoyale();
+
+			let totalPlayersInARound = await royale.getTotalPlayersPerRound(1);
+			console.log('GTotal players in a 1. round: ' + totalPlayersInARound);
+			// equal to total number of players
+			assert.equal(2, totalPlayersInARound);
+
+			let eliminatedPlayersInARound = await royale.getEliminatedPerRound(1);
+			console.log('GTotal players eliminated in a 1. round: ' + eliminatedPlayersInARound);
+			// zero round need to be finished
+			assert.equal(0, eliminatedPlayersInARound);
+
+			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: second });
+			await royale.takeAPosition(1, { from: first });
+
+			await MockPriceFeedDeployed.setPricetoReturn(1100);
+
+			//#1
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound();
+
+			let totalPlayersInARound2 = await royale.getTotalPlayersPerRound(2);
+			console.log('GTotal players in a 2. round: ' + totalPlayersInARound2);
+			// equal to total number of players
+			assert.equal(1, totalPlayersInARound2);
+
+			let eliminatedPlayersInARound1 = await royale.getEliminatedPerRound(1);
+			console.log('GTotal players eliminated in a 1. round: ' + eliminatedPlayersInARound1);
+			// zero - all players are good
+			assert.equal(1, eliminatedPlayersInARound1);
+
+			
 		});
 	});
 });

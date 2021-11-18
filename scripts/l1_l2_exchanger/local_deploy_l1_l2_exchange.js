@@ -1,5 +1,5 @@
 const path = require('path');
-const { ethers } = require('hardhat');
+const { ethers, upgrades  } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix');
 const { artifacts, contract, web3 } = require('hardhat');
@@ -49,7 +49,7 @@ async function main() {
 	const L2StandardBridge = new ethers.ContractFactory(L2StandardBridgeArtifacts.abi, L2StandardBridgeArtifacts.bytecode);
 	const L1StandardBridge = new ethers.ContractFactory(L1StandardBridgeArtifacts.abi, L1StandardBridgeArtifacts.bytecode);
 	const OP_Thales_L1 = await ethers.getContractFactory('/contracts/Token/OpThales_L1.sol:OpThales');
-	const ThalesExchanger = await ethers.getContractFactory('ThalesExchanger');
+	const ThalesExchanger = await ethers.getContractFactory('/contracts/exchange_L1_L2/ProxyThalesExchanger.sol:ThalesExchanger');
 	const OP_Thales_L2 = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');
 	// const ThalesAddress = getTargetAddress('Thales', local_L1);
 
@@ -96,17 +96,18 @@ async function main() {
 	console.log("Optimistic Thales L2 deployed on: ",OP_Thales_L2_deployed.address);
 	setTargetAddress('OpThales_L2', local_L2, OP_Thales_L2_deployed.address);
 	
-	const ThalesExchanger_deployed = await ThalesExchanger_connected.deploy(
+	// const ThalesExchanger_deployed = await ThalesExchanger_connected.deploy(
+	const ThalesExchanger_deployed = await upgrades.deployProxy(ThalesExchanger, [
 		owner.address, 
 		Thales_deployed.address,
 		OP_Thales_L1_deployed.address,
 		L1StandardBridge_deployed.address,
 		OP_Thales_L2_deployed.address
-		);
+	]);
 		
 	tx = await ThalesExchanger_deployed.deployed();
 	console.log("Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
-	setTargetAddress('ThalesExchanger', local_L1, ThalesExchanger_deployed.address);
+	setTargetAddress('ProxyThalesExchanger', local_L1, ThalesExchanger_deployed.address);
 
 	
 

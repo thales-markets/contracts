@@ -211,6 +211,21 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         return (options.long.totalSupply(), options.short.totalSupply());
     }
 
+    function getMinimumLONGSHORT() external view returns (uint amount){
+        return _getMinimumLONGSHORT(msg.sender);
+    }
+
+    function _getMinimumLONGSHORT(address account) internal view returns (uint amount){
+        (uint longBalance, uint shortBalance) = _balancesOf(account);
+
+        // getting minimum of short vs long section
+        if (longBalance > shortBalance){
+            return shortBalance;
+        }
+
+        return longBalance;
+    }
+
     /* ---------- Utilities ---------- */
 
     function _incrementDeposited(uint value) internal returns (uint _deposited) {
@@ -254,6 +269,28 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
         emit Mint(Side.Long, minter, amount);
         emit Mint(Side.Short, minter, amount);
+    }
+
+
+    function burnOptionsMaximum() external{
+        _burnOptions(msg.sender, _getMinimumLONGSHORT(msg.sender));
+    }
+
+    function burnOptions(uint amount) external {
+        _burnOptions(msg.sender, amount);
+    }
+
+    function _burnOptions(address account, uint amount) internal {
+        require(amount > 0, "Can not burn zero amount!");
+        require(options.long.balanceOf(account) >= amount, "There is no enough sLONG!");
+        require(options.short.balanceOf(account) >= amount, "There is no enough sSHORT!");
+
+        // TODO
+        // transfer sUSD
+        // decrease deposit
+        // decrease options
+        
+
     }
 
     /* ---------- Custom oracle configuration ---------- */

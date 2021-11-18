@@ -650,6 +650,8 @@ contract('BinaryOption', accounts => {
 				expected: [
 					'mint',
 					'resolve',
+					'burnOptions',
+					'burnOptionsMaximum',
 					'exerciseOptions',
 					'expire',
 					'initialize',

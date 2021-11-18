@@ -111,7 +111,80 @@ contract('ThalesRoyale', accounts => {
 			);
 		});
 
-		it('take a losing position and end first round and try to take a position in 2nd round', async () => {
+		it('take a losing position and end first round and try to take a position in 2nd round player not alive', async () => {
+			let isPlayerFirstAlive = await royale.isPlayerAlive(first);
+
+			assert.equal(false, isPlayerFirstAlive);
+
+			await royale.signUp({ from: first });
+			await royale.signUp({ from: second });
+
+			isPlayerFirstAlive = await royale.isPlayerAlive(first);
+
+			assert.equal(true, isPlayerFirstAlive);
+
+			await fastForward(HOUR * 72 + 1);
+
+			let isRoundClosableBeforeStarting = await royale.canCloseRound();
+			assert.equal(false, isRoundClosableBeforeStarting);
+
+			await royale.startRoyale();
+
+			let totalPlayersInARound = await royale.totalPlayersPerRound(1);
+			assert.equal(2, totalPlayersInARound);
+
+			let eliminatedPlayersInARound = await royale.eliminatedPerRound(1);
+			assert.equal(0, eliminatedPlayersInARound);
+
+			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(1, { from: second });
+
+			let roundTargetPrice = await royale.roundTargetPrice();
+			console.log('roundTargetPrice is ' + roundTargetPrice);
+
+			let currentPrice = await MockPriceFeedDeployed.rateForCurrency(toBytes32('SNX'));
+			console.log('currentPrice is ' + currentPrice);
+
+			await MockPriceFeedDeployed.setPricetoReturn(900);
+
+			let isRoundClosableBefore = await royale.canCloseRound();
+			assert.equal(false, isRoundClosableBefore);
+
+			await fastForward(HOUR * 72 + 1);
+
+			let isRoundClosableAfter = await royale.canCloseRound();
+			assert.equal(true, isRoundClosableAfter);
+
+			await royale.closeRound();
+
+			let isRoundClosableAfterClosing = await royale.canCloseRound();
+			assert.equal(false, isRoundClosableAfterClosing);
+
+			roundTargetPrice = await royale.roundTargetPrice();
+			console.log('roundTargetPrice is ' + roundTargetPrice);
+
+			currentPrice = await MockPriceFeedDeployed.rateForCurrency(toBytes32('SNX'));
+			console.log('currentPrice is ' + currentPrice);
+
+			let roundResult = await royale.roundResult(1);
+			console.log('roundResult is  ' + roundResult);
+
+			isPlayerFirstAlive = await royale.isPlayerAlive(first);
+
+			let totalPlayersInARoundTwo = await royale.totalPlayersPerRound(2);
+			assert.equal(1, totalPlayersInARoundTwo);
+
+			let eliminatedPlayersInARoundOne = await royale.eliminatedPerRound(1);
+			assert.equal(1, eliminatedPlayersInARoundOne);
+
+			assert.equal(false, isPlayerFirstAlive);
+
+			await expect(royale.takeAPosition(2, { from: first })).to.be.revertedWith(
+				'Player no longer alive'
+			);
+		});
+
+		it('take a losing position end royale no players left', async () => {
 			let isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
 			assert.equal(false, isPlayerFirstAlive);
@@ -195,7 +268,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(false, isPlayerFirstAlive);
 
 			await expect(royale.takeAPosition(2, { from: first })).to.be.revertedWith(
-				'Player no longer alive'
+				'Competition finished'
 			);
 		});
 
@@ -793,7 +866,9 @@ contract('ThalesRoyale', accounts => {
 			await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
 		});
 
-		it('check the changing positions', async () => {
+
+		it('check the changing positions require to send different one', async () => {
+
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
 
@@ -801,20 +876,63 @@ contract('ThalesRoyale', accounts => {
 			await royale.startRoyale();
 
 			let totalPlayersInARound = await royale.totalPlayersPerRound(1);
+			assert.equal(2, totalPlayersInARound);
+
+			await royale.takeAPosition(2, { from: first });
+
+			await expect(royale.takeAPosition(2, { from: first })).to.be.revertedWith(
+				'Same position'
+			);
+
+
+		});
+
+		it('check the changing positions', async () => {
+			await royale.signUp({ from: first });
+			await royale.signUp({ from: second });
+			await royale.signUp({ from: third });
+			await royale.signUp({ from: fourth });
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.startRoyale();
+
+			let totalPlayersInARound = await royale.totalPlayersPerRound(1);
 			console.log('Total players in a 1. round: ' + totalPlayersInARound);
 			// equal to total number of players
-			assert.equal(2, totalPlayersInARound);
+			assert.equal(4, totalPlayersInARound);
 
 			let eliminatedPlayersInARound = await royale.eliminatedPerRound(1);
 			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound);
 			// zero round need to be finished
 			assert.equal(0, eliminatedPlayersInARound);
 
+			let postions1InRound1_before = await royale.getPositionsPerRound(1,1);
+			let postions2InRound1_before = await royale.getPositionsPerRound(1,2);
+			assert.equal(0, postions1InRound1_before);
+			assert.equal(0, postions2InRound1_before);
+
 			await royale.takeAPosition(2, { from: first });
 			await royale.takeAPosition(2, { from: second });
 			await royale.takeAPosition(1, { from: first });
+			// 3
+			await royale.takeAPosition(2, { from: third });
+			await royale.takeAPosition(1, { from: fourth });
+			await royale.takeAPosition(2, { from: first });
+			// 1
+			await royale.takeAPosition(1, { from: first });
+			await royale.takeAPosition(2, { from: fourth });
+			await royale.takeAPosition(1, { from: second });
+			// 2
+			await royale.takeAPosition(2, { from: second });
+			// 4
+			await royale.takeAPosition(1, { from: fourth });
 
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
+
+			let postions1InRound1_after = await royale.getPositionsPerRound(1,1);
+			let postions2InRound1_after = await royale.getPositionsPerRound(1,2);
+			assert.equal(2, postions1InRound1_after);
+			assert.equal(2, postions2InRound1_after);
 
 			//#1
 			await fastForward(HOUR * 72 + 1);
@@ -823,14 +941,107 @@ contract('ThalesRoyale', accounts => {
 			let totalPlayersInARound2 = await royale.totalPlayersPerRound(2);
 			console.log('Total players in a 2. round: ' + totalPlayersInARound2);
 			// equal to total number of players
-			assert.equal(1, totalPlayersInARound2);
+			assert.equal(2, totalPlayersInARound2);
 
 			let eliminatedPlayersInARound1 = await royale.eliminatedPerRound(1);
 			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound1);
 			// zero - all players are good
-			assert.equal(1, eliminatedPlayersInARound1);
+			assert.equal(2, eliminatedPlayersInARound1);
 
-			
+			let postions1InRound1_after_close = await royale.getPositionsPerRound(1,1);
+			let postions2InRound1_after_close = await royale.getPositionsPerRound(1,2);
+			assert.equal(2, postions1InRound1_after_close);
+			assert.equal(2, postions2InRound1_after_close);
+
+			let isPlayerFirstAlive = await royale.isPlayerAlive(first);
+			let isPlayerSecondAlive = await royale.isPlayerAlive(second);
+			let isPlayerThirdAlive = await royale.isPlayerAlive(third);
+			let isPlayerFourthAlive = await royale.isPlayerAlive(fourth);
+
+			assert.equal(false, isPlayerFirstAlive);
+			assert.equal(true, isPlayerSecondAlive);
+			assert.equal(true, isPlayerThirdAlive);
+			assert.equal(false, isPlayerFourthAlive);
+
+			//#2
+			//before checking
+			let postions1InRound2_before_start = await royale.getPositionsPerRound(2,1);
+			let postions2InRound2_before_start = await royale.getPositionsPerRound(2,2);
+			assert.equal(0, postions1InRound2_before_start);
+			assert.equal(0, postions2InRound2_before_start);
+
+			await royale.takeAPosition(2, { from: second });
+			await royale.takeAPosition(2, { from: third });
+			await royale.takeAPosition(1, { from: second });
+			await royale.takeAPosition(2, { from: second });
+			await royale.takeAPosition(1, { from: third });
+			await royale.takeAPosition(1, { from: second });
+			await royale.takeAPosition(2, { from: second });
+			await royale.takeAPosition(2, { from: third });
+
+			let postions1InRound2_after = await royale.getPositionsPerRound(2,1);
+			let postions2InRound2_after = await royale.getPositionsPerRound(2,2);
+			assert.equal(0, postions1InRound2_after);
+			assert.equal(2, postions2InRound2_after);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound();
+
+			let postions1InRound2_after_close = await royale.getPositionsPerRound(2,1);
+			let postions2InRound2_after_close = await royale.getPositionsPerRound(2,2);
+			assert.equal(0, postions1InRound2_after_close);
+			assert.equal(2, postions2InRound2_after_close);
+
+			let isPlayerFirstAliveRound2 = await royale.isPlayerAlive(first);
+			let isPlayerSecondAliveRound2 = await royale.isPlayerAlive(second);
+			let isPlayerThirdAliveRound2 = await royale.isPlayerAlive(third);
+			let isPlayerFourthAliveRound2 = await royale.isPlayerAlive(fourth);
+
+			assert.equal(false, isPlayerFirstAliveRound2);
+			assert.equal(true, isPlayerSecondAliveRound2);
+			assert.equal(true, isPlayerThirdAliveRound2);
+			assert.equal(false, isPlayerFourthAliveRound2);
+
+			//#3
+			//before checking
+			let postions1InRound3_before_start = await royale.getPositionsPerRound(3,1);
+			let postions2InRound3_before_start = await royale.getPositionsPerRound(3,2);
+			assert.equal(0, postions1InRound3_before_start);
+			assert.equal(0, postions2InRound3_before_start);
+
+			await royale.takeAPosition(2, { from: second });
+			await royale.takeAPosition(2, { from: third });
+			await royale.takeAPosition(1, { from: second });
+			await royale.takeAPosition(2, { from: second });
+			await royale.takeAPosition(1, { from: third });
+			await royale.takeAPosition(1, { from: second });
+
+			let postions1InRound3_after = await royale.getPositionsPerRound(3,1);
+			let postions2InRound3_after = await royale.getPositionsPerRound(3,2);
+			assert.equal(2, postions1InRound3_after);
+			assert.equal(0, postions2InRound3_after);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound();
+
+			let postions1InRound3_after_close = await royale.getPositionsPerRound(3,1);
+			let postions2InRound3_after_close = await royale.getPositionsPerRound(3,2);
+			assert.equal(2, postions1InRound3_after_close);
+			assert.equal(0, postions2InRound3_after_close);
+
+			let isPlayerFirstAliveRound3 = await royale.isPlayerAlive(first);
+			let isPlayerSecondAliveRound3 = await royale.isPlayerAlive(second);
+			let isPlayerThirdAliveRound3 = await royale.isPlayerAlive(third);
+			let isPlayerFourthAliveRound3 = await royale.isPlayerAlive(fourth);
+
+			assert.equal(false, isPlayerFirstAliveRound3);
+			assert.equal(false, isPlayerSecondAliveRound3);
+			assert.equal(false, isPlayerThirdAliveRound3);
+			assert.equal(false, isPlayerFourthAliveRound3);
+
+			await expect(royale.takeAPosition(2, { from: first })).to.be.revertedWith(
+				'Competition finished'
+			);
 		});
 	});
 });

@@ -101,6 +101,7 @@ contract ThalesRoyale is Owned, Pausable {
         require(started, "Competition not started yet");
         require(!finished, "Competition finished");
         require(playerSignedUp[msg.sender] != 0, "Player did not sign up");
+        require(positionInARound[msg.sender][round] != position, "Same position");
 
         if (round != 1) {
             require(positionInARound[msg.sender][round - 1] == roundResult[round - 1], "Player no longer alive");
@@ -108,24 +109,20 @@ contract ThalesRoyale is Owned, Pausable {
 
         require(block.timestamp < roundStartTime + roundChoosingLength, "Round positioning finished");
 
-        // this block is when sender change positions in a round to reduce
-        if(positionInARound[msg.sender][round] != position){
-            if(positionInARound[msg.sender][round] == 1 ){
-                positionsPerRound[round][1]--;
-            }else if (positionInARound[msg.sender][round] == 2) {
-                positionsPerRound[round][2]--;
-            }
+        // this block is when sender change positions in a round - first reduce
+        if(positionInARound[msg.sender][round] == 1){
+            positionsPerRound[round][1]--;
+        }else if (positionInARound[msg.sender][round] == 2) {
+            positionsPerRound[round][2]--;
         }
 
         // set new value
         positionInARound[msg.sender][round] = position;
 
         // add number of positions
-        // price is equal or over from a real price
         if(position == 2){
             positionsPerRound[round][position]++;
         }else{
-            // price is under a real price
             positionsPerRound[round][position]++;
         }
 
@@ -156,7 +153,7 @@ contract ThalesRoyale is Owned, Pausable {
         round = nextRound;
         targetPricePerRound[round] = roundTargetPrice;
 
-        if (round > rounds) {
+        if (round > rounds || totalPlayersPerRound[round] == 0) {
             finished = true;
             emit RoyaleFinished();
         } else {
@@ -168,6 +165,10 @@ contract ThalesRoyale is Owned, Pausable {
 
     function canCloseRound() public view returns (bool) {
         return started && !finished && block.timestamp > (roundStartTime + roundLength);
+    }
+
+    function getPositionsPerRound(uint _round, uint _position) public view returns (uint) {
+        return positionsPerRound[_round][_position];
     }
 
     function isPlayerAlive(address player) public view returns (bool) {

@@ -203,14 +203,6 @@ contract ThalesRoyale is Owned, Pausable {
         return alivePlayers;
     }
 
-    function getTotalPlayersPerRound(uint _round) public view returns (uint) {
-        return totalPlayersPerRound[_round];
-    }
-
-    function getEliminatedPerRound(uint _round) public view returns (uint) {
-        return eliminatedPerRound[_round];
-    }
-
     function setSignUpPeriod(uint _signUpPeriod) public onlyOwner {
         signUpPeriod = _signUpPeriod;
     }

@@ -40,7 +40,7 @@ contract ProxyThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, Pr
         ThalesToken = IERC20(thalesAddress);
         OpThalesToken = IERC20(opThalesAddress);
         L1Bridge = iOVM_L1ERC20Bridge(_l1BridgeAddress);
-        OpThalesToken.approve(_l1BridgeAddress, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+        // OpThalesToken.approve(_l1BridgeAddress, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         l2TokenAddress = _l2TokenAddress;
     }
 
@@ -57,12 +57,18 @@ contract ProxyThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, Pr
     }
 
     function setL1StandardBridge(address _l1BridgeAddress) external onlyOwner {
+        require(_l1BridgeAddress != address(L1Bridge), "Address already set");
         if (address(L1Bridge) != address(0)) {
             OpThalesToken.approve(address(L1Bridge), 0);
         }
         L1Bridge = iOVM_L1ERC20Bridge(_l1BridgeAddress);
         OpThalesToken.approve(_l1BridgeAddress, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         emit L1BridgeChanged(_l1BridgeAddress);
+    }
+
+    function approveUnlimitedOpThales() external onlyOwner {
+        require(address(OpThalesToken) != address(0), "Invalid address");
+        OpThalesToken.approve(address(L1Bridge), 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
     }
 
     function exchangeThalesToOpThales(uint amount) external nonReentrant notPaused {

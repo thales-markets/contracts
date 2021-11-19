@@ -887,6 +887,37 @@ contract('ThalesRoyale', accounts => {
 
 		});
 
+		it('check if can start royale', async () => {
+
+			await royale.signUp({ from: first });
+			await royale.signUp({ from: second });
+
+			let canStartFalse = await royale.canStartRoyale();
+			assert.equal(false, canStartFalse);
+
+			await fastForward(HOUR * 72 + 1);
+
+			let canStartTrue = await royale.canStartRoyale();
+			assert.equal(true, canStartTrue);
+
+			await royale.startRoyale();
+
+			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: second });
+
+			let canStartFalseAlreadyStarted = await royale.canStartRoyale();
+			assert.equal(false, canStartFalseAlreadyStarted);
+
+			await MockPriceFeedDeployed.setPricetoReturn(1100);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound();
+
+			let canStartFalseAfterClose = await royale.canStartRoyale();
+			assert.equal(false, canStartFalseAfterClose);
+
+		});
+
 		it('check the changing positions', async () => {
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -1042,6 +1073,9 @@ contract('ThalesRoyale', accounts => {
 			await expect(royale.takeAPosition(2, { from: first })).to.be.revertedWith(
 				'Competition finished'
 			);
+
+			let canStartFalseAfterFinish = await royale.canStartRoyale();
+			assert.equal(false, canStartFalseAfterFinish);
 		});
 	});
 });

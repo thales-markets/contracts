@@ -167,6 +167,10 @@ contract ThalesRoyale is Owned, Pausable {
         return started && !finished && block.timestamp > (roundStartTime + roundLength);
     }
 
+    function canStartRoyale() public view returns (bool) {
+        return !started && block.timestamp > (creationTime + signUpPeriod);
+    }
+
     function getPositionsPerRound(uint _round, uint _position) public view returns (uint) {
         return positionsPerRound[_round][_position];
     }

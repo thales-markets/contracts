@@ -609,6 +609,11 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(totalSupplies[0], toUnit(2));
 		});
 
+		it('Minimum Supplies', async () => {
+			let minimum = await market.getMinimumLONGSHORT(); 
+			assert.bnEqual(minimum, toUnit(2));
+		});
+
 		it('Held by owner', async () => {
 			const options = await market.options();
 			long = await BinaryOption.at(options.long);

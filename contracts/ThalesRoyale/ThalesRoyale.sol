@@ -132,7 +132,7 @@ contract ThalesRoyale is Owned, Pausable {
     function closeRound() external {
         require(started, "Competition not started yet");
         require(!finished, "Competition finished");
-        require(canCloseRound(), "Can't close round yet");
+        require(block.timestamp > (roundStartTime + roundLength), "Can't close round yet");
 
         uint nextRound = round + 1;
 

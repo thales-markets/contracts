@@ -321,6 +321,31 @@ contract('BinaryOption', accounts => {
 		});
 	});
 
+	describe('Exercising Options with amount', () => {
+		it('Exercising options with max amount updates balances properly', async () => {
+
+			let value_1 = toUnit(1);
+			let value_2 = toUnit(2);
+
+			const totalSupplyShort = await short.totalSupply(); // 1
+			const totalSupplyLong = await long.totalSupply(); // 2
+
+			assert.bnEqual(totalSupplyShort, value_1);
+			assert.bnEqual(totalSupplyLong, value_2);
+			
+			let minimum = await market.getMinimumLONGSHORT(); 
+			assert.bnEqual(minimum, value_1); // 1
+
+			console.log("minimum: " + minimum);
+
+			await fastForward(200);
+
+			const tx = await market.burnOptions(minimum, { from: minter });
+			await assertAllBnEqual([short.balanceOf(minter), short.totalSupply()], [toBN(0), value_1]);
+
+		});
+	});
+
 	describe('Destruction', () => {
 		it('Binary option can only be destroyed by its parent market', async () => {
 			await onlyGivenAddressCanInvoke({

@@ -198,7 +198,25 @@ async function main() {
 	)
 	await tx3.wait()
 	
-	console.log("transaction hash:",tx3.hash)
+	console.log("transaction hash:",tx3.hash);
+	console.log("Wait for 60 seconds....")
+	await delay(30000);
+	console.log("Wait for 30 seconds....")
+	await delay(30000);
+	console.log("Attempt to finalize")
+	
+	const tx4 = await L1StandardBridge_deployed.finalizeERC20Withdrawal(
+		OP_Thales_L1_deployed.address,
+		OP_Thales_L2_deployed.address,
+		owner.address,
+		owner.address,
+		w3utils.toWei(TRANSFER_ERC20),
+		'0x', 
+		{ gasLimit: 5000000 }
+	);
+	await tx4.wait();
+
+	console.log("tx hash:", tx4.hash);
 	// Wait for the message to be relayed to L1.
 	// console.log(`Waiting for withdrawal to be relayed to L1...`)
 	// balance = parseInt(init_balance);

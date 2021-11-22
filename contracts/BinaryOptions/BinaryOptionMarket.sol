@@ -285,24 +285,27 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         require(options.long.balanceOf(account) >= amount, "There is no enough sLONG!");
         require(options.short.balanceOf(account) >= amount, "There is no enough sSHORT!");
 
-        // decrease deposit
-        _decrementDeposited(amount);
-
-        // decrease long and short options
-        options.long.exercise(account);
-        options.short.exercise(account);
-
         // get balance 
-        uint balance = sUSD.balanceOf(account);
+        uint balance = sUSD.balanceOf(address(this));
 
-        // transfer balance
+        // check balance vs amount
+        require(balance >= amount, "Balance must be greather or equal amount that is burned");
+
         if (balance != 0) {
+        
+            // decrease deposit
+            _decrementDeposited(amount);
+
+            // decrease long and short options
+            options.long.exercise(account);
+            options.short.exercise(account);
+
+            // transfer balance
             sUSD.transfer(account, balance);
+
+            // emit events
+            emit OptionsBurned(account, amount);     
         }
-
-        // emit events
-        emit OptionsExercised(account, amount);     
-
     }
 
     /* ---------- Custom oracle configuration ---------- */
@@ -428,5 +431,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         uint poolFees,
         uint creatorFees
     );
+    
     event OptionsExercised(address indexed account, uint value);
+    event OptionsBurned(address indexed account, uint value);
 }

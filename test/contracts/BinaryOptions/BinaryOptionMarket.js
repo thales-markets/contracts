@@ -959,13 +959,13 @@ contract('BinaryOption', accounts => {
 			await market.burnOptions(toUnit(1), { from: initialCreator });
 
 			// after burn
-			let valueZero = toUnit(0);
-			totalDeposited = value;
-			assert.bnEqual(await long.balanceOf(initialCreator), valueZero);
-			assert.bnEqual(await short.balanceOf(initialCreator), valueZero);
+			let valueTwo = toUnit(2);
+			totalDeposited = valueTwo;
+			assert.bnEqual(await long.balanceOf(initialCreator), valueTwo);
+			assert.bnEqual(await short.balanceOf(initialCreator), valueTwo);
 
 			let minimum_after = await market.getMinimumLONGSHORT(); 
-			assert.bnEqual(minimum_after, valueZero);
+			assert.bnEqual(minimum_after, valueTwo);
 
 
 		});

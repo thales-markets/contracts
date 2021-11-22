@@ -88,7 +88,7 @@ contract BinaryOption is IERC20, IBinaryOption {
 
     // This must only be invoked after maturity.
     function exerciseWithAmount(address claimant, uint amount) external onlyMarket {
-        require(amount > 0, "Can not burn zero amount!");
+        require(amount > 0, "Can not exercise zero amount!");
 
         uint balance = balanceOf[claimant];
 

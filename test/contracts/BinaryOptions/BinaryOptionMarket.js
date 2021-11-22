@@ -894,7 +894,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(totalSupplies.short, value);
 
 			// burn all
-			await market.burnOptionsMaximum({ from: initialCreator });
+			const tx = await market.burnOptionsMaximum({ from: initialCreator });
 
 			// after burn
 			let valueZero = toUnit(0);
@@ -905,6 +905,10 @@ contract('BinaryOption', accounts => {
 			let minimum_after = await market.getMinimumLONGSHORT(); 
 			assert.bnEqual(minimum_after, valueZero);
 
+			assert.eventEqual(tx.logs[0], 'OptionsBurned', {
+				account: initialCreator,
+				value: toUnit(3),
+			});
 
 		});
 
@@ -936,7 +940,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(totalSupplies.short, value);
 
 			// burn only one
-			await market.burnOptions(toUnit(1), { from: initialCreator });
+			const tx = await market.burnOptions(toUnit(1), { from: initialCreator });
 
 			// after burn
 			let valueTwo = toUnit(2);
@@ -947,6 +951,10 @@ contract('BinaryOption', accounts => {
 			let minimum_after = await market.getMinimumLONGSHORT(); 
 			assert.bnEqual(minimum_after, valueTwo);
 
+			assert.eventEqual(tx.logs[0], 'OptionsBurned', {
+				account: initialCreator,
+				value: toUnit(1),
+			});
 
 		});
 

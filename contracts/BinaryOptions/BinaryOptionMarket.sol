@@ -285,16 +285,23 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         require(options.long.balanceOf(account) >= amount, "There is no enough sLONG!");
         require(options.short.balanceOf(account) >= amount, "There is no enough sSHORT!");
 
+        // decrease deposit
         _decrementDeposited(amount);
 
+        // decrease long and short options
         options.long.exercise(account);
         options.short.exercise(account);
 
+        // get balance 
         uint balance = sUSD.balanceOf(account);
 
+        // transfer balance
         if (balance != 0) {
             sUSD.transfer(account, balance);
-        }     
+        }
+
+        // emit events
+        emit OptionsExercised(account, amount);     
 
     }
 

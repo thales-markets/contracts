@@ -196,22 +196,37 @@ async function main() {
 		2000000,
 		'0x'
 	)
-	await tx3.wait()
-	
+	await tx3.wait();
 	console.log("transaction hash:",tx3.hash)
-	// Wait for the message to be relayed to L1.
 	console.log(`Waiting for withdrawal to be relayed to L1...`)
-	balance = parseInt(init_balance);
-	str_balance = '';
-	seconds_counter = 0;
-	while(balance == init_balance) {
-		await delay(10000);
-		// str_balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
-		str_balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
-		balance = parseInt(fromUnit(str_balance.toString()));
-		seconds_counter = seconds_counter+10;
-		console.log(seconds_counter,"sec |", init_balance, balance);
-	}
+
+	console.log("Wait for 10 seconds....")
+	await delay(10000);
+	console.log("Attempt to finalize")
+	
+	const tx4 = await L1StandardBridge.finalizeERC20Withdrawal(
+		OP_Thales_L1_deployed.address,
+		OP_Thales_L2_deployed.address,
+		owner.address,
+		owner.address,
+		w3utils.toWei(TRANSFER_ERC20),
+		'0x'
+	);
+	await tx4.wait();
+
+	console.log("tx hash:", tx4.hash);
+	// Wait for the message to be relayed to L1.
+	// balance = parseInt(init_balance);
+	// str_balance = '';
+	// seconds_counter = 0;
+	// while(balance == init_balance) {
+	// 	await delay(10000);
+	// 	// str_balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+	// 	str_balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
+	// 	balance = parseInt(fromUnit(str_balance.toString()));
+	// 	seconds_counter = seconds_counter+10;
+	// 	console.log(seconds_counter,"sec |", init_balance, balance);
+	// }
 
 	balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
 	console.log("Balance on L1:", fromUnit(balance.toString()));

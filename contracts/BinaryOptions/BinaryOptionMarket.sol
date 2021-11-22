@@ -297,11 +297,11 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
             _decrementDeposited(amount);
 
             // decrease long and short options
-            options.long.exercise(account);
-            options.short.exercise(account);
+            options.long.exerciseWithAmount(account, amount);
+            options.short.exerciseWithAmount(account, amount);
 
             // transfer balance
-            sUSD.transfer(account, balance);
+            sUSD.transfer(account, amount);
 
             // emit events
             emit OptionsBurned(account, amount);     

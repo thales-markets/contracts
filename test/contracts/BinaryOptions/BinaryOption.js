@@ -188,6 +188,7 @@ contract('BinaryOption', accounts => {
 					'initialize',
 					'mint',
 					'exercise',
+					'exerciseWithAmount',
 					'expire',
 					'transfer',
 					'transferFrom',

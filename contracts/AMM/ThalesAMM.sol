@@ -100,7 +100,15 @@ contract ThalesAMM is Owned, Pausable {
         return couldBuy;
     }
 
-    function getQuote(
+    function getBuyQuote(
+        address market,
+        Position position,
+        uint amount
+    ) public view returns (uint) {
+        return price(market, position).mul(amount);
+    }
+
+    function getSellQuote(
         address market,
         Position position,
         uint amount
@@ -120,6 +128,7 @@ contract ThalesAMM is Owned, Pausable {
 
         uint impliedVolatility = 140 * 1e18;
 
+        // TODO: inject the odds calculation
         return position == Position.Long ? 4 * 1e17 : 6 * 1e17;
     }
 

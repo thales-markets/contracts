@@ -222,8 +222,14 @@ contract('ThalesRoyale', accounts => {
 				initialCreator
 			);
 
-			let quote = await thalesAMM.getQuote(newMarket.address, Position.UP, 1000);
-			console.log('quote is:' + quote);
+			let getBuyQuote = await thalesAMM.getBuyQuote(newMarket.address, Position.UP, 1000);
+			console.log('getBuyQuote is:' + getBuyQuote);
+
+			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			console.log('priceUp is:' + priceUp);
+
+			let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
+			console.log('priceDown is:' + priceDown);
 
 			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
 				newMarket.address,
@@ -236,21 +242,7 @@ contract('ThalesRoyale', accounts => {
 				Position.UP
 			);
 			console.log('availableToBuyFromAMM is:' + availableToBuyFromAMM);
-
-			let lntest = await thalesAMM.lntest(toUnit(10));
-			console.log('lntest is:' + lntest / 1e18);
-
-			let exptest = await thalesAMM.exptest(toUnit(10));
-			console.log('exptest is:' + exptest / 1e18);
-
-			let expnegpow = await thalesAMM.expnegpow(toUnit(0.5));
-			console.log('expnegpow is:' + expnegpow / 1e18);
-
-			let expneg = await thalesAMM.expneg(toUnit(1));
-			console.log('expneg is:' + expneg / 1e18);
-
-			let power = await deciMath.pow(toUnit(2.71828), toUnit(0.5));
-			console.log('power is:' + power / 1e18);
+			
 
 			let calculatedOdds = calculateOdds(1000, 1500, 100, 100);
 			console.log('calculatedOdds is:' + calculatedOdds);

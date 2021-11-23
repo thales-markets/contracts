@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.6.10;
 
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { IL2StandardERC20 } from "@eth-optimism/contracts/libraries/standards/IL2StandardERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IL2StandardERC20} from "@eth-optimism/contracts/libraries/standards/IL2StandardERC20.sol";
 
 contract OpThales is IL2StandardERC20, ERC20 {
-
-    function name() public override view returns(string memory) {
+    function name() public view override returns (string memory) {
         return "Optimistic Thales Token";
     }
-    function symbol() public override view returns(string memory) {
-        return "OPTHALES";
+
+    function symbol() public view override returns (string memory) {
+        return "opTHALES";
     }
-    function decimals() public override view returns(uint8) {
+
+    function decimals() public view override returns (uint8) {
         return 18;
     }
 
@@ -32,8 +33,7 @@ contract OpThales is IL2StandardERC20, ERC20 {
         address _l1Token,
         string memory _name,
         string memory _symbol
-    ) public
-        ERC20(_name, _symbol) {
+    ) public ERC20(_name, _symbol) {
         l1Token = _l1Token;
         l2Bridge = _l2Bridge;
     }
@@ -43,13 +43,12 @@ contract OpThales is IL2StandardERC20, ERC20 {
         _;
     }
 
-    function supportsInterface(bytes4 _interfaceId) public virtual override view returns (bool) {
-            bytes4 firstSupportedInterface = bytes4(keccak256("supportsInterface(bytes4)")); // ERC165
-            bytes4 secondSupportedInterface = IL2StandardERC20.l1Token.selector
-                ^ IL2StandardERC20.mint.selector
-                ^ IL2StandardERC20.burn.selector;
-            return _interfaceId == firstSupportedInterface || _interfaceId == secondSupportedInterface;
-        }
+    function supportsInterface(bytes4 _interfaceId) public view virtual override returns (bool) {
+        bytes4 firstSupportedInterface = bytes4(keccak256("supportsInterface(bytes4)")); // ERC165
+        bytes4 secondSupportedInterface =
+            IL2StandardERC20.l1Token.selector ^ IL2StandardERC20.mint.selector ^ IL2StandardERC20.burn.selector;
+        return _interfaceId == firstSupportedInterface || _interfaceId == secondSupportedInterface;
+    }
 
     function mint(address _to, uint256 _amount) public virtual override onlyL2Bridge {
         _mint(_to, _amount);

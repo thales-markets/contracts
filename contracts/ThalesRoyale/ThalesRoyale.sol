@@ -9,6 +9,7 @@ import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 import "../interfaces/IPriceFeed.sol";
 
 contract ThalesRoyale is Owned, Pausable {
+
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;
@@ -26,6 +27,8 @@ contract ThalesRoyale is Owned, Pausable {
     uint public round = 0;
     uint public roundStartTime;
     uint public roundEndTime;
+    uint public royaleEndTime;
+    uint public claimTime = 1 weeks;
 
     uint public roundTargetPrice;
 
@@ -45,17 +48,21 @@ contract ThalesRoyale is Owned, Pausable {
     bool public finished = false;
 
     mapping(address => mapping(uint256 => uint256)) public positionInARound;
+    
+    mapping(address => bool) public rewardCollected;
+    uint rewardPerPlayer;
 
     constructor(
         address _owner,
         bytes32 _oracleKey,
         IPriceFeed _priceFeed,
-        uint reward,
+        uint _reward,
         address _rewardToken,
         uint _rounds,
         uint _signUpPeriod,
         uint _roundChoosingLength,
-        uint _roundLength
+        uint _roundLength,
+        uint _claimTime
     ) public Owned(_owner) {
         creationTime = block.timestamp;
         oracleKey = _oracleKey;
@@ -65,6 +72,8 @@ contract ThalesRoyale is Owned, Pausable {
         signUpPeriod = _signUpPeriod;
         roundChoosingLength = _roundChoosingLength;
         roundLength = _roundLength;
+        reward = _reward;
+        claimTime = _claimTime;
     }
 
     function signUp() external {
@@ -155,6 +164,11 @@ contract ThalesRoyale is Owned, Pausable {
 
         if (round > rounds || totalPlayersPerRound[round] == 0) {
             finished = true;
+            // there is no more rounds left and it has alive players at last round
+            if (round > rounds && getAlivePlayers().length > 0) {
+                _populateWinnersAndThereRewards(getAlivePlayers());
+            }
+            royaleEndTime = block.timestamp;
             emit RoyaleFinished();
         } else {
             roundStartTime = block.timestamp;
@@ -232,9 +246,54 @@ contract ThalesRoyale is Owned, Pausable {
         rounds = _rounds;
     }
 
+
+    function setClaimTime(uint _claimTime) public onlyOwner {
+        claimTime = _claimTime;
+    }
+
+    function _populateWinnersAndThereRewards(address[] memory alivePlayers) internal {
+        require(finished, "Royale must be finished");
+        require(alivePlayers.length > 0, "There is no alive players left in Royale");
+
+        rewardPerPlayer = reward.div(alivePlayers.length);
+
+        for (uint i = 0; i < alivePlayers.length; i++) {
+            rewardCollected[alivePlayers[i]] = false;
+        }
+    }
+
+    function claimReward() public onlyWinners {
+        require(reward > 0, "Reward must be set");
+        require(rewardPerPlayer > 0, "Reward per player must be more then zero");
+        require(block.timestamp < (royaleEndTime + claimTime), "Time for reward claiming expired");
+
+        // get balance 
+        uint balance = rewardToken.balanceOf(address(this));
+
+        if (balance != 0){
+
+            // set collected -> true
+            rewardCollected[msg.sender] = true;
+            
+            // transfering rewardPerPlayer
+            rewardToken.transfer(msg.sender, rewardPerPlayer);
+
+            // emit event
+            emit RewardClaimed(msg.sender, rewardPerPlayer);
+        }
+    }
+
+    modifier onlyWinners {
+        require(finished, "Royale must be finished!");
+        require(getAlivePlayers().length > 0, "There is no alive players left in Royale");
+        require(rewardCollected[msg.sender] == false, "Player did't win or already collected reward");
+        _;
+    }
+
     event SignedUp(address user);
     event RoundClosed(uint round, uint result);
     event TookAPosition(address user, uint round, uint position);
     event RoyaleStarted();
     event RoyaleFinished();
+    event RewardClaimed(address winner, uint reward);
 }

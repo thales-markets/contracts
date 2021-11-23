@@ -36,6 +36,7 @@ async function main() {
 	const min = 60;
 	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
+	const week = 7 * 24 * 60 * 60;
 
 	// Dev env - deploy Thales.sol; Live env - use Thales.sol contract address
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
@@ -48,7 +49,8 @@ async function main() {
 		7,
 		day * 3,
 		hour * 8,
-		day
+		day,
+		week
 	);
 	await ThalesRoyaleDeployed.deployed();
 	// update deployments.json file
@@ -68,6 +70,7 @@ async function main() {
 			day * 3,
 			hour * 8,
 			day,
+			week
 		],
 	});
 }

@@ -4,6 +4,7 @@ const w3utils = require('web3-utils');
 const snx = require('synthetix');
 const { artifacts, contract, web3 } = require('hardhat');
 const { Watcher } = require('@eth-optimism/core-utils');
+const { getMessagesAndProofsForL2Transaction } = require('@eth-optimism/message-relayer');
 const { predeploys } = require("@eth-optimism/contracts");
 
 // const user_key = process.env.PRIVATE_KEY;
@@ -20,7 +21,8 @@ const {
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
-const L1_MESSENGER_ADDRESS = '0xaF91349fdf3B206E079A8FcaB7b8dFaFB96A654D';
+const L1_MESSENGER_ADDRESS = '0x1afcA918eff169eE20fF8AB6Be75f3E872eE1C1A';
+const STATE_COMMITMENT_CHAIN_ADDRESS = '0x1afcA918eff169eE20fF8AB6Be75f3E872eE1C1A';
 
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
@@ -35,8 +37,9 @@ async function main() {
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
     
-	// let networkObj = await ethers.provider.getNetwork();
-	
+	let networkObj = await ethers.provider.getNetwork();
+	console.log("CHAIN ID:", networkObj.chainId);
+
     const local_L1 = 'localhost'
 	
 	const local_L2 = 'optimistic'
@@ -47,6 +50,9 @@ async function main() {
 	const l1Wallet = new ethers.Wallet(user_key, l1RpcProvider);
 	const l2Wallet = new ethers.Wallet(user_key, l2RpcProvider);
     // owner = l1Wallet;
+
+	console.log("add1:", owner.address);
+	console.log("add2:", l1Wallet.address);
     
 	let blockNumber = await l1RpcProvider.getBlockNumber();
 	console.log("L1 block number: ", blockNumber);
@@ -55,7 +61,7 @@ async function main() {
 	console.log("L2 block number: ", blockNumber);
 	
 	console.log("OVM L2 messenger at: ",predeploys.OVM_L2CrossDomainMessenger);
-	console.log("OVM L1 messenger at: ",predeploys.OVM_L1CrossDomainMessenger);
+	console.log("OVM L1 messenger at: ",predeploys);
 		
 	const ThalesAddress = getTargetAddress('Thales', local_L1);
 	const ThalesExchangerAddress = getTargetAddress('ThalesExchanger', local_L1);
@@ -204,17 +210,39 @@ async function main() {
 	await delay(10000);
 	console.log("Attempt to finalize")
 	
-	const tx4 = await L1StandardBridge.finalizeERC20Withdrawal(
-		OP_Thales_L1_deployed.address,
-		OP_Thales_L2_deployed.address,
-		owner.address,
-		owner.address,
-		w3utils.toWei(TRANSFER_ERC20),
-		'0x'
-	);
-	await tx4.wait();
+	let messagePairs = []
+	while (true) {
+		try {
+		  messagePairs = await getMessagesAndProofsForL2Transaction(
+			l1RpcProvider,
+			l2RpcProvider,
+			predeploys.OVM_L2CrossDomainMessenger,
+			STATE_COMMITMENT_CHAIN_ADDRESS,
+			tx3.hash
+		  );
+		  break
+		} catch (err) {
+		  if (err.message.includes('unable to find state root batch for tx')) {
+			await sleep(5000)
+		  } else {
+			throw err
+		  }
+		}
+	}
 
-	console.log("tx hash:", tx4.hash);
+	console.log(messagePairs);
+	// const tx4 = await L1StandardBridge_deployed.finalizeERC20Withdrawal(
+	// 	OP_Thales_L1_deployed.address,
+	// 	OP_Thales_L2_deployed.address,
+	// 	owner.address,
+	// 	owner.address,
+	// 	w3utils.toWei(TRANSFER_ERC20),
+	// 	'0x',
+	// 	{gasLimit: 5000000}
+	// );
+	// await tx4.wait();
+
+	// console.log("tx hash:", tx4.hash);
 	// Wait for the message to be relayed to L1.
 	// balance = parseInt(init_balance);
 	// str_balance = '';
@@ -228,10 +256,10 @@ async function main() {
 	// 	console.log(seconds_counter,"sec |", init_balance, balance);
 	// }
 
-	balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
-	console.log("Balance on L1:", fromUnit(balance.toString()));
-	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
-	console.log("Balance on L2:", fromUnit(balance.toString())); 
+	// balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+	// console.log("Balance on L1:", fromUnit(balance.toString()));
+	// balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
+	// console.log("Balance on L2:", fromUnit(balance.toString())); 
 }
 
 main()

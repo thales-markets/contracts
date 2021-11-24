@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.5.16;
 
+// Contracts
+import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+
 // Inheritance
 import "../interfaces/IPriceFeed.sol";
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+
 // Libraries
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 
@@ -11,7 +14,7 @@ import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 // AggregatorInterface from Chainlink represents a decentralized pricing network for a single currency key
 import "@chainlink/contracts-0.0.10/src/v0.5/interfaces/AggregatorV2V3Interface.sol";
 
-contract PriceFeed is IPriceFeed, Initializable {
+contract MockPriceFeed is Owned, IPriceFeed {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
@@ -21,20 +24,18 @@ contract PriceFeed is IPriceFeed, Initializable {
 
     // List of aggregator keys for convenient iteration
     bytes32[] public aggregatorKeys;
-    address public owner;
-    address public nominatedOwner;
 
-    function initialize(address _owner) public initializer {
-        require(_owner != address(0), "Owner address cannot be 0");
-        owner = _owner;
-        emit OwnerChanged(address(0), _owner);
-    }
+    uint public priceToReturn;
+    uint public timestampToReturn;
+
+    // ========== CONSTRUCTOR ==========
+    constructor(address _owner) public Owned(_owner) {}
 
     /* ========== MUTATIVE FUNCTIONS ========== */
     function addAggregator(bytes32 currencyKey, address aggregatorAddress) external onlyOwner {
         AggregatorV2V3Interface aggregator = AggregatorV2V3Interface(aggregatorAddress);
-        require(aggregator.latestRound() >= 0, "Given Aggregator is invalid");
-        uint8 decimals = aggregator.decimals();
+        // require(aggregator.latestRound() >= 0, "Given Aggregator is invalid");
+        uint8 decimals = 18;
         require(decimals <= 18, "Aggregator decimals should be lower or equal to 18");
         if (address(aggregators[currencyKey]) == address(0)) {
             aggregatorKeys.push(currencyKey);
@@ -62,7 +63,7 @@ contract PriceFeed is IPriceFeed, Initializable {
         rates = new uint[](aggregatorKeys.length);
         for (uint i = 0; i < aggregatorKeys.length; i++) {
             bytes32 currencyKey = aggregatorKeys[i];
-            rates[count++] = _getRateAndUpdatedTime(currencyKey).rate;
+            rates[count++] =_getRateAndUpdatedTime(currencyKey).rate;
         }
     }
 
@@ -101,46 +102,20 @@ contract PriceFeed is IPriceFeed, Initializable {
     }
 
     function _getRateAndUpdatedTime(bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
-        AggregatorV2V3Interface aggregator = aggregators[currencyKey];
-        require(address(aggregator) != address(0), "No aggregator exists for key");
-
-        // this view from the aggregator is the most gas efficient but it can throw when there's no data,
-        // so let's call it low-level to suppress any reverts
-        bytes memory payload = abi.encodeWithSignature("latestRoundData()");
-        // solhint-disable avoid-low-level-calls
-        (bool success, bytes memory returnData) = address(aggregator).staticcall(payload);
-
-        if (success) {
-            (, int256 answer, , uint256 updatedAt, ) = abi.decode(returnData, (uint80, int256, uint256, uint256, uint80));
-            return
-                RateAndUpdatedTime({rate: uint216(_formatAggregatorAnswer(currencyKey, answer)), time: uint40(updatedAt)});
-        }
+        return
+            RateAndUpdatedTime({rate:  uint216(_formatAggregatorAnswer(currencyKey, int256(priceToReturn))), time: uint40(timestampToReturn)});
+        
     }
 
-    function nominateNewOwner(address _owner) external onlyOwner {
-        nominatedOwner = _owner;
-        emit OwnerNominated(_owner);
+    function setPricetoReturn(uint priceToSet) external {
+        priceToReturn = priceToSet;
     }
 
-    function acceptOwnership() external {
-        require(msg.sender == nominatedOwner, "You must be nominated before you can accept ownership");
-        emit OwnerChanged(owner, nominatedOwner);
-        owner = nominatedOwner;
-        nominatedOwner = address(0);
-    }
-
-    modifier onlyOwner() {
-        _onlyOwner();
-        _;
-    }
-
-    function _onlyOwner() private view {
-        require(msg.sender == owner, "Only the contract owner may perform this action");
+    function setTimestamptoReturn(uint timestampToSet) external {
+        timestampToReturn = timestampToSet;
     }
 
     /* ========== EVENTS ========== */
     event AggregatorAdded(bytes32 currencyKey, address aggregator);
     event AggregatorRemoved(bytes32 currencyKey, address aggregator);
-    event OwnerNominated(address newOwner);
-    event OwnerChanged(address oldOwner, address newOwner);
 }

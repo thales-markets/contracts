@@ -33,6 +33,7 @@ async function main() {
 	const priceFeed = await ethers.getContractFactory('PriceFeed');
 	let priceFeedAddress = getTargetAddress('PriceFeed', network);
 
+	const min = 60;
 	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
 
@@ -45,9 +46,9 @@ async function main() {
 		w3utils.toWei('10000'),
 		priceFeedAddress,
 		7,
-		hour * 3,
-		hour,
-		hour * 2
+		day * 3,
+		hour * 8,
+		day
 	);
 	await ThalesRoyaleDeployed.deployed();
 	// update deployments.json file
@@ -64,9 +65,9 @@ async function main() {
 			w3utils.toWei('10000'),
 			priceFeedAddress,
 			7,
-			hour * 3,
-			hour,
-			hour * 2,
+			day * 3,
+			hour * 8,
+			day,
 		],
 	});
 }

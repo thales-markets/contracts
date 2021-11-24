@@ -8,7 +8,7 @@ contract OpThales is ERC20 {
 
     uint private INITIAL_TOTAL_SUPPLY = 100000000;
 
-    constructor () public ERC20("Opt Thales L1", "OPTHALES_L1") {
+    constructor () public ERC20("Optimistic Thales Token", "opTHALES") {
         _mint(msg.sender, INITIAL_TOTAL_SUPPLY * 1e18);
     }
     

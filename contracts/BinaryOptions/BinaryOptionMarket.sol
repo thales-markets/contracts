@@ -211,19 +211,13 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         return (options.long.totalSupply(), options.short.totalSupply());
     }
 
-    function getMinimumLONGSHORT() external view returns (uint amount){
-        return _getMinimumLONGSHORT(msg.sender);
+    function getMaximumBurnable() external view returns (uint amount){
+        return _getMaximumBurnable(msg.sender);
     }
 
-    function _getMinimumLONGSHORT(address account) internal view returns (uint amount){
+    function _getMaximumBurnable(address account) internal view returns (uint amount){
         (uint longBalance, uint shortBalance) = _balancesOf(account);
-
-        // getting minimum of short vs long section
-        if (longBalance > shortBalance){
-            return shortBalance;
-        }
-
-        return longBalance;
+        return (longBalance > shortBalance) ? shortBalance : longBalance;
     }
 
     /* ---------- Utilities ---------- */
@@ -273,7 +267,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
 
     function burnOptionsMaximum() external{
-        _burnOptions(msg.sender, _getMinimumLONGSHORT(msg.sender));
+        _burnOptions(msg.sender, _getMaximumBurnable(msg.sender));
     }
 
     function burnOptions(uint amount) external {
@@ -282,30 +276,26 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     function _burnOptions(address account, uint amount) internal {
         require(amount > 0, "Can not burn zero amount!");
-        require(options.long.balanceOf(account) >= amount, "There is no enough sLONG!");
-        require(options.short.balanceOf(account) >= amount, "There is no enough sSHORT!");
+        require(_getMaximumBurnable(account) >= amount, "There is not enough options!");
 
         // get balance 
         uint balance = sUSD.balanceOf(address(this));
 
         // check balance vs amount
         require(balance >= amount, "Balance must be greather or equal amount that is burned");
-
-        if (balance != 0) {
         
-            // decrease deposit
-            _decrementDeposited(amount);
+        // decrease deposit
+        _decrementDeposited(amount);
 
-            // decrease long and short options
-            options.long.exerciseWithAmount(account, amount);
-            options.short.exerciseWithAmount(account, amount);
+        // decrease long and short options
+        options.long.exerciseWithAmount(account, amount);
+        options.short.exerciseWithAmount(account, amount);
 
-            // transfer balance
-            sUSD.transfer(account, amount);
+        // transfer balance
+        sUSD.transfer(account, amount);
 
-            // emit events
-            emit OptionsBurned(account, amount);     
-        }
+        // emit events
+        emit OptionsBurned(account, amount);     
     }
 
     /* ---------- Custom oracle configuration ---------- */

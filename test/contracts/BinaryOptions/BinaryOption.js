@@ -338,65 +338,65 @@ contract('BinaryOption', accounts => {
 				market.burnOptions(toUnit(0), { from: minter }),
 				'Can not burn zero amount!'
 			);
+		});
+
+		it('Exercising options with provided amount  which exides MAX sLONG', async () => {
 	
-			it('Exercising options with provided amount  which exides MAX sLONG', async () => {
+			let value_1 = toUnit(1);
+			let value_2 = toUnit(2);
 	
-				let value_1 = toUnit(1);
-				let value_2 = toUnit(2);
+			const totalSupplyShort = await short.totalSupply(); // 1
+			const totalSupplyLong = await long.totalSupply(); // 2
+			assert.bnEqual(totalSupplyShort, value_1);
+			assert.bnEqual(totalSupplyLong, value_2);
 	
-				const totalSupplyShort = await short.totalSupply(); // 1
-				const totalSupplyLong = await long.totalSupply(); // 2
-				assert.bnEqual(totalSupplyShort, value_1);
-				assert.bnEqual(totalSupplyLong, value_2);
+			await fastForward(200);
 	
-				await fastForward(200);
+			await assert.revert(
+				market.burnOptions(value_2, { from: minter }),
+				'There is not enough options!'
+			);
 	
-				await assert.revert(
-					market.burnOptions(value_2, { from: minter }),
-					'There is no enough sLONG!'
-				);
-	
-			});
+		});
 			
-			it('Exercising options with max amount updates balances properly', async () => {
+		it('Exercising options with max amount updates balances properly', async () => {
 	
-				let value_1 = toUnit(1);
-				let value_2 = toUnit(2);
+			let value_1 = toUnit(1);
+			let value_2 = toUnit(2);
 	
-				const totalSupplyShort = await short.totalSupply(); // 1
-				const totalSupplyLong = await long.totalSupply(); // 2
-				assert.bnEqual(totalSupplyShort, value_1);
-				assert.bnEqual(totalSupplyLong, value_2);
+			const totalSupplyShort = await short.totalSupply(); // 1
+			const totalSupplyLong = await long.totalSupply(); // 2
+			assert.bnEqual(totalSupplyShort, value_1);
+			assert.bnEqual(totalSupplyLong, value_2);
 				
-				let minimum = await market.getMinimumLONGSHORT(); 
-				assert.bnEqual(minimum, value_1); // 1
+			let minimum = await market.getMaximumBurnable(); 
+			assert.bnEqual(minimum, value_1); // 1
 	
-				await fastForward(200);
+			await fastForward(200);
 	
-				const tx = await market.burnOptions(minimum, { from: initialCreator });
+			const tx = await market.burnOptions(minimum, { from: initialCreator });
 	
-				await assertAllBnEqual([short.balanceOf(initialCreator), long.balanceOf(initialCreator)], [toBN(0), value_1]);
+			await assertAllBnEqual([short.balanceOf(initialCreator), long.balanceOf(initialCreator)], [toBN(0), value_1]);
 	
-			});
+		});
 	
-			it('Exercising options with provided amount which exides MAX sSHORT', async () => {
-	
-				let value_1 = toUnit(1);
-				let value_2 = toUnit(2);
-	
-				const totalSupplyShort = await short.totalSupply(); // 1
-				const totalSupplyLong = await long.totalSupply(); // 2
-				assert.bnEqual(totalSupplyShort, value_1);
-				assert.bnEqual(totalSupplyLong, value_2);
-	
-				await fastForward(200);
-	
-				await assert.revert(
-					market.burnOptions(value_2, { from: initialCreator }),
-					'There is no enough sSHORT!'
-				);
-	
-			});
+		it('Exercising options with provided amount which exides MAX sSHORT', async () => {
+
+			let value_0 = toUnit(0);
+			let value_1 = toUnit(1);
+
+			const totalSupplyShort = await short.totalSupply(); // 1
+			const totalSupplyLong = await long.totalSupply(); // 2
+			assert.bnEqual(totalSupplyShort, value_0);
+			assert.bnEqual(totalSupplyLong, value_1);
+
+			await fastForward(200);
+
+			await assert.revert(
+				market.burnOptions(value_1, { from: initialCreator }),
+				'There is not enough options!'
+			);
+
 		});
 	});
 

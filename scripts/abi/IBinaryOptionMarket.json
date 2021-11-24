@@ -132,7 +132,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "getMinimumLONGSHORT",
+    "name": "getMaximumBurnable",
     "outputs": [
       {
         "internalType": "uint256",

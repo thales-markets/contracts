@@ -54,7 +54,7 @@ interface IBinaryOptionMarket {
 
     function totalSupplies() external view returns (uint long, uint short);
     
-    function getMinimumLONGSHORT() external view returns (uint amount);
+    function getMaximumBurnable() external view returns (uint amount);
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 

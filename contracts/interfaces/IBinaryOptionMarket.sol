@@ -53,10 +53,16 @@ interface IBinaryOptionMarket {
     function balancesOf(address account) external view returns (uint long, uint short);
 
     function totalSupplies() external view returns (uint long, uint short);
+    
+    function getMaximumBurnable() external view returns (uint amount);
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function mint(uint value) external;
 
     function exerciseOptions() external returns (uint);
+
+    function burnOptions(uint amount) external;
+
+    function burnOptionsMaximum() external;
 }

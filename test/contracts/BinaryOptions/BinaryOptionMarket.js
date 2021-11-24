@@ -609,6 +609,11 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(totalSupplies[0], toUnit(2));
 		});
 
+		it('Minimum Supplies', async () => {
+			let minimum = await market.getMaximumBurnable(); 
+			assert.bnEqual(minimum, toUnit(2));
+		});
+
 		it('Held by owner', async () => {
 			const options = await market.options();
 			long = await BinaryOption.at(options.long);
@@ -638,6 +643,9 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
+			let minimum = await market.getMaximumBurnable(); 
+			assert.bnEqual(minimum, value);
+
 			const totalSupplies = await market.totalSupplies();
 			assert.bnEqual(totalSupplies.long, value);
 			assert.bnEqual(totalSupplies.short, value);
@@ -650,6 +658,8 @@ contract('BinaryOption', accounts => {
 				expected: [
 					'mint',
 					'resolve',
+					'burnOptions',
+					'burnOptionsMaximum',
 					'exerciseOptions',
 					'expire',
 					'initialize',
@@ -874,6 +884,163 @@ contract('BinaryOption', accounts => {
 			assert.equal(tx1.receipt.rawLogs, 0);
 
 			assert.bnEqual(await long.balanceOf(dummy), 0);
+		});
+
+		it('Burn options maximum', async () => {
+			let now = await currentTime();
+			await createMarketAndMintMore(
+				sAUDKey,
+				initialStrikePrice,
+				now,
+				initialCreator,
+				timeToMaturity
+			);
+			
+			const options = await market.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+
+			// before burn
+			let value = toUnit(3);
+			totalDeposited = value;
+			assert.bnEqual(await long.balanceOf(initialCreator), value);
+			assert.bnEqual(await short.balanceOf(initialCreator), value);
+
+			let minimum = await market.getMaximumBurnable(); 
+			assert.bnEqual(minimum, value);
+
+			const totalSupplies = await market.totalSupplies();
+			assert.bnEqual(totalSupplies.long, value);
+			assert.bnEqual(totalSupplies.short, value);
+
+			// burn all
+			const tx = await market.burnOptionsMaximum({ from: initialCreator });
+
+			// after burn
+			let valueZero = toUnit(0);
+			totalDeposited = value;
+			assert.bnEqual(await long.balanceOf(initialCreator), valueZero);
+			assert.bnEqual(await short.balanceOf(initialCreator), valueZero);
+
+			let minimum_after = await market.getMaximumBurnable(); 
+			assert.bnEqual(minimum_after, valueZero);
+
+			assert.eventEqual(tx.logs[0], 'OptionsBurned', {
+				account: initialCreator,
+				value: toUnit(3),
+			});
+
+		});
+
+		it('Burn options some number lower then maximum', async () => {
+			let now = await currentTime();
+			await createMarketAndMintMore(
+				sAUDKey,
+				initialStrikePrice,
+				now,
+				initialCreator,
+				timeToMaturity
+			);
+			
+			const options = await market.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+
+			// before burn
+			let value = toUnit(3);
+			totalDeposited = value;
+			assert.bnEqual(await long.balanceOf(initialCreator), value);
+			assert.bnEqual(await short.balanceOf(initialCreator), value);
+
+			let minimum = await market.getMaximumBurnable(); 
+			assert.bnEqual(minimum, value);
+
+			const totalSupplies = await market.totalSupplies();
+			assert.bnEqual(totalSupplies.long, value);
+			assert.bnEqual(totalSupplies.short, value);
+
+			// burn only one
+			const tx = await market.burnOptions(toUnit(1), { from: initialCreator });
+
+			// after burn
+			let valueTwo = toUnit(2);
+			totalDeposited = valueTwo;
+			assert.bnEqual(await long.balanceOf(initialCreator), valueTwo);
+			assert.bnEqual(await short.balanceOf(initialCreator), valueTwo);
+
+			let minimum_after = await market.getMaximumBurnable(); 
+			assert.bnEqual(minimum_after, valueTwo);
+
+			assert.eventEqual(tx.logs[0], 'OptionsBurned', {
+				account: initialCreator,
+				value: toUnit(1),
+			});
+
+		});
+
+		it('Burn options some number more then maximum', async () => {
+			let now = await currentTime();
+			await createMarketAndMintMore(
+				sAUDKey,
+				initialStrikePrice,
+				now,
+				initialCreator,
+				timeToMaturity
+			);
+			
+			const options = await market.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+
+			// before burn
+			let value = toUnit(3);
+			totalDeposited = value;
+			assert.bnEqual(await long.balanceOf(initialCreator), value);
+			assert.bnEqual(await short.balanceOf(initialCreator), value);
+
+			let minimum = await market.getMaximumBurnable(); 
+			assert.bnEqual(minimum, value);
+
+			const totalSupplies = await market.totalSupplies();
+			assert.bnEqual(totalSupplies.long, value);
+			assert.bnEqual(totalSupplies.short, value);
+
+			// burn 5 but has 3
+			await assert.revert(market.burnOptions(toUnit(5), { from: initialCreator }), 'There is not enough options!');
+
+		});
+
+		it('Burn options zero amount', async () => {
+			let now = await currentTime();
+			await createMarketAndMintMore(
+				sAUDKey,
+				initialStrikePrice,
+				now,
+				initialCreator,
+				timeToMaturity
+			);
+			
+			const options = await market.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+
+			// before burn
+			let value = toUnit(3);
+			totalDeposited = value;
+			assert.bnEqual(await long.balanceOf(initialCreator), value);
+			assert.bnEqual(await short.balanceOf(initialCreator), value);
+
+			let minimum = await market.getMaximumBurnable(); 
+			assert.bnEqual(minimum, value);
+
+			const totalSupplies = await market.totalSupplies();
+			assert.bnEqual(totalSupplies.long, value);
+			assert.bnEqual(totalSupplies.short, value);
+
+			// burn 5 but has 3
+			await assert.revert(market.burnOptions(toUnit(0), { from: initialCreator }), 'Can not burn zero amount!');
+
+
 		});
 
 		it('Mint less than $0.01 revert.', async () => {

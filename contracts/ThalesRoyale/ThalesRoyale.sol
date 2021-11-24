@@ -50,7 +50,7 @@ contract ThalesRoyale is Owned, Pausable {
     mapping(address => mapping(uint256 => uint256)) public positionInARound;
     
     mapping(address => bool) public rewardCollected;
-    uint rewardPerPlayer;
+    uint public rewardPerPlayer;
 
     constructor(
         address _owner,
@@ -266,7 +266,7 @@ contract ThalesRoyale is Owned, Pausable {
 
         // get balance 
         uint balance = rewardToken.balanceOf(address(this));
-
+        
         if (balance != 0){
 
             // set collected -> true

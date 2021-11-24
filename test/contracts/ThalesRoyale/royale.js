@@ -27,14 +27,20 @@ const {
 contract('ThalesRoyale', accounts => {
 	const [first, owner, second, third, fourth] = accounts;
 	let priceFeedAddress;
-	let rewardTokenAddress;
 	let ThalesRoyale;
 	let royale;
 	let MockPriceFeedDeployed;
+	let ThalesDeployed;
+	let thales;
 
 	beforeEach(async () => {
+
+		const thalesQty = toUnit(10000);
+
+		let Thales = artifacts.require('Thales');
+		ThalesDeployed = await Thales.new({ from: owner });
+
 		priceFeedAddress = owner;
-		rewardTokenAddress = owner;
 
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
 		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
@@ -44,18 +50,22 @@ contract('ThalesRoyale', accounts => {
 		priceFeedAddress = MockPriceFeedDeployed.address;
 
 		ThalesRoyale = artifacts.require('ThalesRoyale');
+
 		royale = await ThalesRoyale.new(
 			owner,
 			toBytes32('SNX'),
 			priceFeedAddress,
-			toUnit(10000),
-			rewardTokenAddress,
+			thalesQty,
+			ThalesDeployed.address,
 			7,
 			DAY * 3,
 			HOUR * 8,
 			DAY,
 			WEEK
 		);
+
+		await ThalesDeployed.transfer(royale.address, thalesQty, { from: owner });
+		await ThalesDeployed.approve(royale.address, thalesQty, { from: owner });
 	});
 
 	describe('Init', () => {
@@ -1075,8 +1085,144 @@ contract('ThalesRoyale', accounts => {
 				'Competition finished'
 			);
 
+			// check if can collect rewards if no one is alive
+			await expect(royale.claimReward({ from: first })).to.be.revertedWith(
+				'There is no alive players left in Royale'
+			);
+
 			let canStartFalseAfterFinish = await royale.canStartRoyale();
 			assert.equal(false, canStartFalseAfterFinish);
 		});
+	});
+
+	it('Win and collect reward', async () => {
+
+		// check rewards
+		let reward = await royale.reward();
+		assert.bnEqual(reward, toUnit(10000));
+
+		await royale.signUp({ from: first });
+		await royale.signUp({ from: second });
+		await royale.signUp({ from: third });
+		await royale.signUp({ from: fourth });
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.startRoyale();
+
+		await royale.takeAPosition(2, { from: first });
+		await royale.takeAPosition(2, { from: second });
+		await royale.takeAPosition(2, { from: third });
+		await royale.takeAPosition(2, { from: fourth });
+
+		await MockPriceFeedDeployed.setPricetoReturn(1100);
+
+		//#1
+		await fastForward(HOUR * 72 + 1);
+		await royale.closeRound();
+
+		//#2
+		await royale.takeAPosition(2, { from: first });
+		await royale.takeAPosition(2, { from: second });
+		await royale.takeAPosition(2, { from: third });
+		await royale.takeAPosition(2, { from: fourth });
+		await fastForward(HOUR * 72 + 1);
+		await royale.closeRound();
+
+		//#3
+		await royale.takeAPosition(2, { from: first });
+		await royale.takeAPosition(2, { from: second });
+		await royale.takeAPosition(2, { from: third });
+		await royale.takeAPosition(2, { from: fourth });
+		await fastForward(HOUR * 72 + 1);
+		await royale.closeRound();
+
+		//#4
+		await royale.takeAPosition(2, { from: first });
+		await royale.takeAPosition(2, { from: second });
+		await royale.takeAPosition(2, { from: third });
+		await royale.takeAPosition(2, { from: fourth });
+		await fastForward(HOUR * 72 + 1);
+		await royale.closeRound();
+
+		//#5
+		await royale.takeAPosition(2, { from: first });
+		await royale.takeAPosition(2, { from: second });
+		await royale.takeAPosition(2, { from: third });
+		await royale.takeAPosition(2, { from: fourth });
+		await fastForward(HOUR * 72 + 1);
+		await royale.closeRound();
+
+		//#6
+		await royale.takeAPosition(2, { from: first });
+		await royale.takeAPosition(2, { from: second });
+		await royale.takeAPosition(2, { from: third });
+		await royale.takeAPosition(1, { from: fourth });
+		await fastForward(HOUR * 72 + 1);
+		await royale.closeRound();
+
+		let alivePlayers = await royale.getAlivePlayers();
+		console.log('final alive players are ' + alivePlayers);
+
+		// check if can collect rewards before royale ends
+		await expect(royale.claimReward({ from: first })).to.be.revertedWith(
+			'Royale must be finished!'
+		);
+
+		//#7
+		await royale.takeAPosition(2, { from: first });
+		await royale.takeAPosition(2, { from: second });
+		await royale.takeAPosition(1, { from: third });
+		await fastForward(HOUR * 72 + 1);
+		await royale.closeRound();
+
+		alivePlayers = await royale.getAlivePlayers();
+		console.log('final alive players are ' + alivePlayers);
+
+		let isPlayerFirstAlive = await royale.isPlayerAlive(first);
+		let isPlayerSecondAlive = await royale.isPlayerAlive(second);
+		let isPlayerThirdAlive = await royale.isPlayerAlive(third);
+		let isPlayerFourthAlive = await royale.isPlayerAlive(fourth);
+
+		assert.equal(true, isPlayerFirstAlive);
+		assert.equal(true, isPlayerSecondAlive);
+		assert.equal(false, isPlayerThirdAlive);
+		assert.equal(false, isPlayerFourthAlive);
+
+		let rewardPerPlayer = await royale.rewardPerPlayer();
+		// 10.000 -> two winners 5.000
+		assert.bnEqual(rewardPerPlayer, toUnit(5000));
+
+		await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
+
+		// check if player which not win can collect 
+		await expect(royale.claimReward({ from: third })).to.be.revertedWith(
+			'Player is not alive'
+		);
+
+		let isPlayerOneClaimedReward_before = await royale.rewardCollected(first);
+		assert.equal(false, isPlayerOneClaimedReward_before);
+
+		const tx = await royale.claimReward({ from: first });
+
+		// check if event is emited
+		assert.eventEqual(tx.logs[0], 'RewardClaimed', {
+			winner: first,
+			reward: toUnit(5000),
+		});
+
+		let isPlayerOneClaimedReward_after = await royale.rewardCollected(first);
+		assert.equal(isPlayerOneClaimedReward_after, true);
+
+		// check if player can collect two times
+		await expect(royale.claimReward({ from: first })).to.be.revertedWith(
+			'Player already collected reward'
+		);
+
+		await fastForward(WEEK * 1 + 1);
+
+		// check if player can collect after collect time is passed
+		await expect(royale.claimReward({ from: second })).to.be.revertedWith(
+			'Time for reward claiming expired'
+		);
 	});
 });

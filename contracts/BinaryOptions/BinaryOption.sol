@@ -90,13 +90,7 @@ contract BinaryOption is IERC20, IBinaryOption {
     function exerciseWithAmount(address claimant, uint amount) external onlyMarket {
         require(amount > 0, "Can not exercise zero amount!");
 
-        uint balance = balanceOf[claimant];
-
-        require(balance >= amount, "Balance must be greather or equal amount that is burned");
-
-        if (balance == 0) {
-            return;
-        }
+        require(balanceOf[claimant] >= amount, "Balance must be greather or equal amount that is burned");
 
         balanceOf[claimant] = balanceOf[claimant] - amount;
         totalSupply = totalSupply.sub(amount);

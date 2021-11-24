@@ -95,6 +95,22 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "getMaximumBurnable",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
     "inputs": [
       {
         "internalType": "uint256",

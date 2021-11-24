@@ -22,8 +22,8 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
     uint private constant OPTHALES_TO_THALES = 0;
     uint private constant MAX_APPROVAL = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
-    bool public enabledThalesToOpThales;
-    bool public enabledOpThalesToThales; 
+    bool public enabledThalesToOpThales = true;
+    bool public enabledOpThalesToThales = true; 
 
     event ExchangedThalesForOpThales(address sender, uint amount);
     event ExchangedThalesForL2OpThales(address sender, uint amount);
@@ -42,8 +42,6 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
         L1Bridge = iOVM_L1ERC20Bridge(_l1BridgeAddress);
         OpThalesToken.approve(_l1BridgeAddress, MAX_APPROVAL);
         l2TokenAddress = _l2TokenAddress;
-        enabledThalesToOpThales = true;
-        enabledOpThalesToThales = true;
     }
 
     function setThalesAddress(address thalesAddress) external onlyOwner {
@@ -76,17 +74,17 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
     }
 
     function exchangeThalesToOpThales(uint amount) external nonReentrant notPaused {
+        require(enabledThalesToOpThales, "Exchanging disabled");
         require(OpThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger OpThales funds");
         require(ThalesToken.allowance(msg.sender, address(this)) >= amount, "No allowance");
-        require(enabledThalesToOpThales, "Exchanging disabled");
         _exchange(msg.sender, amount, THALES_TO_OPTHALES);
         emit ExchangedThalesForOpThales(msg.sender, amount);
     }
 
     function exchangeOpThalesToThales(uint amount) external nonReentrant notPaused {
+        require(enabledOpThalesToThales, "Exchanging disabled");
         require(ThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger Thales funds");
         require(OpThalesToken.allowance(msg.sender, address(this)) >= amount, "No allowance");
-        require(enabledOpThalesToThales, "Exchanging disabled");
         _exchange(msg.sender, amount, OPTHALES_TO_THALES);
         emit ExchangedOpThalesForThales(msg.sender, amount);
     }

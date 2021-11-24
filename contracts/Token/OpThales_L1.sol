@@ -2,7 +2,6 @@
 pragma solidity >=0.6.10;
 
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-// import { IL2StandardERC20 } from "@eth-optimism/contracts/libraries/standards/IL2StandardERC20.sol";
 import { iOVM_L1StandardBridge } from "@eth-optimism/contracts/iOVM/bridge/tokens/iOVM_L1StandardBridge.sol";
 
 contract OpThales is ERC20 {

@@ -20,6 +20,10 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
 
     uint private constant THALES_TO_OPTHALES = 1;
     uint private constant OPTHALES_TO_THALES = 0;
+    uint private constant MAX_APPROVAL = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+
+    bool public enabledThalesToOpThales;
+    bool public enabledOpThalesToThales; 
 
     event ExchangedThalesForOpThales(address sender, uint amount);
     event ExchangedThalesForL2OpThales(address sender, uint amount);
@@ -36,8 +40,10 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
         ThalesToken = IERC20(thalesAddress);
         OpThalesToken = IERC20(opThalesAddress);
         L1Bridge = iOVM_L1ERC20Bridge(_l1BridgeAddress);
-        OpThalesToken.approve(_l1BridgeAddress, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+        OpThalesToken.approve(_l1BridgeAddress, MAX_APPROVAL);
         l2TokenAddress = _l2TokenAddress;
+        enabledThalesToOpThales = true;
+        enabledOpThalesToThales = true;
     }
 
     function setThalesAddress(address thalesAddress) external onlyOwner {
@@ -51,19 +57,28 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
     function setL2TokenAddress(address _l2TokenAddress) external onlyOwner {
         l2TokenAddress = _l2TokenAddress;
     }
+    
+    function setEnabledThalesToOpThales(bool _enable) external onlyOwner {
+        enabledThalesToOpThales = _enable;
+    }
+    
+    function setEnabledOpThalesToThales(bool _enable) external onlyOwner {
+        enabledOpThalesToThales = _enable;
+    }
 
     function setL1StandardBridge(address _l1BridgeAddress) external onlyOwner {
         if (address(L1Bridge) != address(0)) {
             OpThalesToken.approve(address(L1Bridge), 0);
         }
         L1Bridge = iOVM_L1ERC20Bridge(_l1BridgeAddress);
-        OpThalesToken.approve(_l1BridgeAddress, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+        OpThalesToken.approve(_l1BridgeAddress, MAX_APPROVAL);
         emit L1BridgeChanged(_l1BridgeAddress);
     }
 
     function exchangeThalesToOpThales(uint amount) external nonReentrant notPaused {
         require(OpThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger OpThales funds");
         require(ThalesToken.allowance(msg.sender, address(this)) >= amount, "No allowance");
+        require(enabledThalesToOpThales, "Exchanging disabled");
         _exchange(msg.sender, amount, THALES_TO_OPTHALES);
         emit ExchangedThalesForOpThales(msg.sender, amount);
     }
@@ -71,6 +86,7 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
     function exchangeOpThalesToThales(uint amount) external nonReentrant notPaused {
         require(ThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger Thales funds");
         require(OpThalesToken.allowance(msg.sender, address(this)) >= amount, "No allowance");
+        require(enabledOpThalesToThales, "Exchanging disabled");
         _exchange(msg.sender, amount, OPTHALES_TO_THALES);
         emit ExchangedOpThalesForThales(msg.sender, amount);
     }
@@ -78,9 +94,16 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
     function exchangeThalesToL2OpThales(uint amount) external nonReentrant notPaused {
         require(OpThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger OpThales funds");
         require(ThalesToken.allowance(msg.sender, address(this)) >= amount, "No allowance");
+        require(enabledThalesToOpThales, "Exchanging disabled");
         ThalesToken.transferFrom(msg.sender, address(this), amount);
         L1Bridge.depositERC20To(address(OpThalesToken), l2TokenAddress, msg.sender, amount, 2000000, "0x");
         emit ExchangedThalesForL2OpThales(msg.sender, amount);
+    }
+
+    function selfDestruct(address payable account) external onlyOwner {
+        OpThalesToken.transfer(account, OpThalesToken.balanceOf(address(this)));
+        ThalesToken.transfer(account, ThalesToken.balanceOf(address(this)));
+        selfdestruct(account);
     }
 
     function _exchange(

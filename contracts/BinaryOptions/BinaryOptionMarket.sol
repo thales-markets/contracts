@@ -277,12 +277,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     function _burnOptions(address account, uint amount) internal {
         require(amount > 0, "Can not burn zero amount!");
         require(_getMaximumBurnable(account) >= amount, "There is not enough options!");
-
-        // get balance 
-        uint balance = sUSD.balanceOf(address(this));
-
-        // check balance vs amount
-        require(balance >= amount, "Balance must be greather or equal amount that is burned");
         
         // decrease deposit
         _decrementDeposited(amount);

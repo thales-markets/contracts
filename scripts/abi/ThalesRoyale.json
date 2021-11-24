@@ -18,7 +18,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "reward",
+        "name": "_reward",
         "type": "uint256"
       },
       {

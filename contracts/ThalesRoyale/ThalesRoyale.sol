@@ -50,7 +50,7 @@ contract ThalesRoyale is Owned, Pausable {
         address _owner,
         bytes32 _oracleKey,
         IPriceFeed _priceFeed,
-        uint reward,
+        uint _reward,
         address _rewardToken,
         uint _rounds,
         uint _signUpPeriod,
@@ -60,6 +60,7 @@ contract ThalesRoyale is Owned, Pausable {
         creationTime = block.timestamp;
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
+        reward = _reward;
         rewardToken = IERC20(_rewardToken);
         rounds = _rounds;
         signUpPeriod = _signUpPeriod;

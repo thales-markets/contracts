@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.5.16;
 
 // Contracts
@@ -62,7 +63,7 @@ contract MockPriceFeed is Owned, IPriceFeed {
         rates = new uint[](aggregatorKeys.length);
         for (uint i = 0; i < aggregatorKeys.length; i++) {
             bytes32 currencyKey = aggregatorKeys[i];
-            rates[count++] = _getRateForCurrency(currencyKey);
+            rates[count++] =_getRateAndUpdatedTime(currencyKey).rate;
         }
     }
 
@@ -71,7 +72,7 @@ contract MockPriceFeed is Owned, IPriceFeed {
     }
 
     function rateForCurrency(bytes32 currencyKey) external view returns (uint) {
-        return _getRateForCurrency(currencyKey);
+        return _getRateAndUpdatedTime(currencyKey).rate;
     }
 
     function rateAndUpdatedTime(bytes32 currencyKey) external view returns (uint rate, uint time) {
@@ -102,11 +103,8 @@ contract MockPriceFeed is Owned, IPriceFeed {
 
     function _getRateAndUpdatedTime(bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
         return
-            RateAndUpdatedTime({rate: uint16(priceToReturn), time: uint40(timestampToReturn)});
+            RateAndUpdatedTime({rate:  uint216(_formatAggregatorAnswer(currencyKey, int256(priceToReturn))), time: uint40(timestampToReturn)});
         
-    }
-     function _getRateForCurrency(bytes32 currencyKey) internal view returns (uint) {
-        return priceToReturn;
     }
 
     function setPricetoReturn(uint priceToSet) external {

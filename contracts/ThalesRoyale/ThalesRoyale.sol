@@ -166,7 +166,7 @@ contract ThalesRoyale is Owned, Pausable {
             finished = true;
             // there is no more rounds left and it has alive players at last round
             if (round > rounds && getAlivePlayers().length > 0) {
-                _populateWinnersAndThereRewards(getAlivePlayers());
+                _populateReward(getAlivePlayers());
             }
             royaleEndTime = block.timestamp;
             emit RoyaleFinished();
@@ -251,20 +251,17 @@ contract ThalesRoyale is Owned, Pausable {
         claimTime = _claimTime;
     }
 
-    function _populateWinnersAndThereRewards(address[] memory alivePlayers) internal {
+    function _populateReward(address[] memory alivePlayers) internal {
         require(finished, "Royale must be finished");
         require(alivePlayers.length > 0, "There is no alive players left in Royale");
 
         rewardPerPlayer = reward.div(alivePlayers.length);
-
-        for (uint i = 0; i < alivePlayers.length; i++) {
-            rewardCollected[alivePlayers[i]] = false;
-        }
     }
 
     function claimReward() public onlyWinners {
         require(reward > 0, "Reward must be set");
         require(rewardPerPlayer > 0, "Reward per player must be more then zero");
+        require(rewardCollected[msg.sender] == false, "Player already collected reward");
         require(block.timestamp < (royaleEndTime + claimTime), "Time for reward claiming expired");
 
         // get balance 
@@ -286,7 +283,7 @@ contract ThalesRoyale is Owned, Pausable {
     modifier onlyWinners {
         require(finished, "Royale must be finished!");
         require(getAlivePlayers().length > 0, "There is no alive players left in Royale");
-        require(rewardCollected[msg.sender] == false, "Player did't win or already collected reward");
+        require(isPlayerAlive(msg.sender) == true, "Player is not alive");
         _;
     }
 

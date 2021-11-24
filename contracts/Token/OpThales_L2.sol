@@ -6,8 +6,8 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IL2StandardERC20} from "@eth-optimism/contracts/libraries/standards/IL2StandardERC20.sol";
 
 contract OpThales is IL2StandardERC20, ERC20, Ownable {
-    string public name = "Optimistic Thales Token";
-    string public symbol = "opTHALES";
+    string public __name = "Optimistic Thales Token";
+    string public __symbol = "opTHALES";
     uint8 public constant __decimals = 18;
     uint private INITIAL_TOTAL_SUPPLY = 100000000;
 
@@ -15,11 +15,11 @@ contract OpThales is IL2StandardERC20, ERC20, Ownable {
     event SymbolChanged(string symbol);
 
     function name() public view override returns (string memory) {
-        return name;
+        return __name;
     }
 
     function symbol() public view override returns (string memory) {
-        return symbol;
+        return __symbol;
     }
 
     function decimals() public view override returns (uint8) {
@@ -43,17 +43,17 @@ contract OpThales is IL2StandardERC20, ERC20, Ownable {
     ) public ERC20(_name, _symbol) {
         l1Token = _l1Token;
         l2Bridge = _l2Bridge;
-        name = _name;
-        symbol = _symbol;
+        __name = _name;
+        __symbol = _symbol;
     }
 
     function setName(string memory name_) external onlyOwner {
-        name = name_;
+        __name = name_;
         emit NameChanged(name_);
     }
 
     function setSymbol(string memory symbol_) external onlyOwner {
-        symbol = symbol_;
+        __symbol = symbol_;
         emit SymbolChanged(symbol_);
     }
 

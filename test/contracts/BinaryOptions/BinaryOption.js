@@ -369,7 +369,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(totalSupplyShort, value_1);
 			assert.bnEqual(totalSupplyLong, value_2);
 				
-			let minimum = await market.getMaximumBurnable(); 
+			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value_1); // 1
 	
 			await fastForward(200);

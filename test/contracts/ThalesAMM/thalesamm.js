@@ -50,6 +50,9 @@ contract('ThalesRoyale', accounts => {
 
 	const sUSDQty = toUnit(10000);
 
+	const hour = 60 * 60;
+	const day = 24 * 60 * 60;
+
 	const capitalRequirement = toUnit(2);
 	const skewLimit = toUnit(0.05);
 	const maxOraclePriceAge = toBN(60 * 61);
@@ -138,7 +141,7 @@ contract('ThalesRoyale', accounts => {
 		const timestamp = await currentTime();
 
 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
-		await aggregator_sETH.setLatestAnswer(convertToDecimals(100, 8), timestamp);
+		await aggregator_sETH.setLatestAnswer(convertToDecimals(10000, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
 		await priceFeed.addAggregator(sAUDKey, aggregator_sAUD.address, {
@@ -180,7 +183,7 @@ contract('ThalesRoyale', accounts => {
 
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
 		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
-		await MockPriceFeedDeployed.setPricetoReturn(1000);
+		await MockPriceFeedDeployed.setPricetoReturn(10000);
 
 		let DeciMath = artifacts.require('DeciMath');
 		deciMath = await DeciMath.new();
@@ -201,6 +204,8 @@ contract('ThalesRoyale', accounts => {
 			toUnit(1000),
 			deciMath.address
 		);
+		await thalesAMM.setBinaryOptionsMarketManager(manager.address, { from: owner });
+		sUSDSynth.issue(thalesAMM.address, sUSDQty);
 	});
 
 	const Position = {
@@ -208,46 +213,119 @@ contract('ThalesRoyale', accounts => {
 		DOWN: toBN(1),
 	};
 
-	describe('Init', () => {
-		it('thalesAMM deploy', async () => {
+	describe('Test AMM', () => {
+
+		it('check price', async () => {
+			// scenario:
+			// 1: Check current UP price
+			// 2. Check available to buy UP
+			// 3. Buy 200 UPs
+			// 4. Check available to sell
+			// 4. Sell 100 UPs
+
 			console.log('ThalesAMM deployed to ' + thalesAMM.address);
 
-			const now = await currentTime();
-			const newMarket = await createMarket(
+			let now = await currentTime();
+			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(10000),
-				now + 100,
+				toUnit(12000),
+				now + day * 10,
 				toUnit(10),
 				initialCreator
 			);
 
-			let getBuyQuote = await thalesAMM.getBuyQuote(newMarket.address, Position.UP, 1000);
-			console.log('getBuyQuote is:' + getBuyQuote);
-
-			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			console.log('priceUp is:' + priceUp);
-
-			let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-			console.log('priceDown is:' + priceDown);
-
-			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
+			let strikePrice = await thalesAMM.strikePrice(newMarket.address, Position.UP);
+			console.log('strikePrice is:' + strikePrice / 1e18);
+			let oraclePrice = await thalesAMM.oraclePrice(newMarket.address, Position.UP);
+			console.log('oraclePrice is:' + oraclePrice / 1e18);
+			let timeLeftToMaturityInDays = await thalesAMM.timeLeftToMaturityInDays(
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToSellToAMM is:' + availableToSellToAMM);
+			console.log('timeLeftToMaturityInDays is:' + timeLeftToMaturityInDays);
+
+			let calculatedOdds = calculateOdds(10000, 12000, 10, 120);
+			console.log('calculatedOdds is:' + calculatedOdds);
+			let calculatedOddsContract = await thalesAMM.calculateOdds(
+				toUnit(10000),
+				toUnit(12000),
+				toUnit(10),
+				toUnit(100)
+			);
+			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+
+			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			console.log('priceUp is:' + priceUp);
+			console.log('priceUp decimal is:' + priceUp / 1e18);
+			assert.equal(priceUp / 1e18, 0.17933571412829044);
 
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.UP
 			);
 			console.log('availableToBuyFromAMM is:' + availableToBuyFromAMM);
-			
+			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+			assert.equal(availableToBuyFromAMM / 1e18, 1218);
 
-			let calculatedOdds = calculateOdds(1000, 1500, 100, 100);
-			console.log('calculatedOdds is:' + calculatedOdds);
-			let calculatedOddsContract = await thalesAMM.calculateOdds(1000, 1500, 100, 100);
-			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+			let minterSusdBalance = await sUSDSynth.balanceOf(minter);
+			console.log('minterSusdBalance decimal is:' + minterSusdBalance / 1e18);
+			assert.equal(minterSusdBalance / 1e18, 10000);
+
+			let options = await newMarket.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+
+			let minterLongBalance = await long.balanceOf(minter);
+			console.log('minterLongBalance decimal is:' + minterLongBalance / 1e18);
+			assert.equal(minterLongBalance / 1e18, 0);
+
+			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
+			await thalesAMM.buyFromAMM(newMarket.address, Position.UP, toUnit(200), { from: minter });
+
+			minterSusdBalance = await sUSDSynth.balanceOf(minter);
+			console.log('minterSusdBalance decimal is:' + minterSusdBalance / 1e18);
+			assert.equal(Math.floor(minterSusdBalance / 1e18), 9964);
+
+			minterLongBalance = await long.balanceOf(minter);
+			console.log('minterLongBalance decimal is:' + minterLongBalance / 1e18);
+			assert.equal(minterLongBalance / 1e18, 200);
+
+			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.UP
+			);
+			console.log('availableToBuyFromAMM is:' + availableToBuyFromAMM);
+			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+			assert.equal(availableToBuyFromAMM / 1e18, 1018);
+
+			// availableToSellFromAMM = await thalesAMM.availableToBuyFromAMM(
+			// 	newMarket.address,
+			// 	Position.UP
+			// );
+			// console.log('availableToBuyFromAMM is:' + availableToBuyFromAMM);
+			// console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+			// assert.equal(availableToBuyFromAMM / 1e18, 1018);
+
+			//
+			// let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
+			// console.log('priceDown is:' + priceDown / 1e18);
+			//
+			// newMarket = await createMarket(
+			// 	manager,
+			// 	sETHKey,
+			// 	toUnit(20000),
+			// 	now + day * 10,
+			// 	toUnit(10),
+			// 	initialCreator
+			// );
+			//
+			// priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			// console.log('priceUp1 is:' + priceUp / 1e18);
+			//
+			// priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
+			// console.log('priceDown1 is:' + priceDown / 1e18);
+			//
 		});
 	});
 });

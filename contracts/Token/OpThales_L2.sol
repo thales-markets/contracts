@@ -1,23 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.6.10;
 
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IL2StandardERC20} from "@eth-optimism/contracts/libraries/standards/IL2StandardERC20.sol";
 
-contract OpThales is IL2StandardERC20, ERC20 {
+contract OpThales is IL2StandardERC20, ERC20, Ownable {
+    string private __name; 
+    string private __symbol;
+    uint8 private constant __decimals = 18;
+    uint private INITIAL_TOTAL_SUPPLY = 100000000;
+
     function name() public view override returns (string memory) {
-        return "Optimistic Thales Token";
+        return __name;
     }
 
     function symbol() public view override returns (string memory) {
-        return "opTHALES";
+        return __symbol;
     }
 
     function decimals() public view override returns (uint8) {
-        return 18;
+        return __decimals;
     }
-
-    uint private INITIAL_TOTAL_SUPPLY = 100000000;
 
     address public override l1Token;
     address public l2Bridge;
@@ -36,6 +40,18 @@ contract OpThales is IL2StandardERC20, ERC20 {
     ) public ERC20(_name, _symbol) {
         l1Token = _l1Token;
         l2Bridge = _l2Bridge;
+        __name = _name;
+        __symbol = _symbol;
+    }
+
+    function setName(string memory name_) external onlyOwner {
+        __name = name_;
+        emit NameChanged(name_);
+    }
+
+    function setSymbol(string memory symbol_) external onlyOwner {
+        __symbol = symbol_;
+        emit SymbolChanged(symbol_);
     }
 
     modifier onlyL2Bridge {
@@ -61,4 +77,7 @@ contract OpThales is IL2StandardERC20, ERC20 {
 
         emit Burn(_from, _amount);
     }
+
+    event NameChanged(string name);
+    event SymbolChanged(string symbol);
 }

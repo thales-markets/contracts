@@ -115,7 +115,8 @@ contract ThalesAMM is Owned, Pausable {
         //e.g.
         //in the example above the bot would be able to buy up to 1000 shorts
         uint curprice = price(market, position);
-        uint couldBuy = capPerMarket.sub(spentOnMarket[market]).div(curprice);
+        uint sUSDFromBurning = IBinaryOptionMarket(market).getMaximumBurnable(address(this));
+        uint couldBuy = capPerMarket.add(sUSDFromBurning).sub(spentOnMarket[market]).div(curprice);
         return couldBuy;
     }
 

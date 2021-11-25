@@ -214,7 +214,6 @@ contract('ThalesRoyale', accounts => {
 	};
 
 	describe('Test AMM', () => {
-
 		it('check price', async () => {
 			// scenario:
 			// 1: Check current UP price
@@ -291,21 +290,18 @@ contract('ThalesRoyale', accounts => {
 			console.log('minterLongBalance decimal is:' + minterLongBalance / 1e18);
 			assert.equal(minterLongBalance / 1e18, 200);
 
-			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-				newMarket.address,
-				Position.UP
-			);
+			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.UP);
 			console.log('availableToBuyFromAMM is:' + availableToBuyFromAMM);
 			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
 			assert.equal(availableToBuyFromAMM / 1e18, 1018);
 
-			// availableToSellFromAMM = await thalesAMM.availableToBuyFromAMM(
-			// 	newMarket.address,
-			// 	Position.UP
-			// );
-			// console.log('availableToBuyFromAMM is:' + availableToBuyFromAMM);
-			// console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
-			// assert.equal(availableToBuyFromAMM / 1e18, 1018);
+			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
+				newMarket.address,
+				Position.UP
+			);
+			console.log('availableToSellToAMM is:' + availableToSellToAMM);
+			console.log('availableToSellToAMM decimal is:' + availableToSellToAMM / 1e18);
+			assert.equal(availableToSellToAMM / 1e18, 1018);
 
 			//
 			// let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);

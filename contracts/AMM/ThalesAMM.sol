@@ -111,9 +111,6 @@ contract ThalesAMM is Owned, Pausable {
     }
 
     function availableToSellToAMM(address market, Position position) public view returns (uint) {
-        // add burn to BinaryOptions market so that if AMM has 0 long and 1000 short it can still buy longs by burning the longs and getting sUSD back
-        //e.g.
-        //in the example above the bot would be able to buy up to 1000 shorts
         uint curprice = price(market, position);
         uint sUSDFromBurning = IBinaryOptionMarket(market).getMaximumBurnable(address(this));
         uint couldBuy = capPerMarket.add(sUSDFromBurning).sub(spentOnMarket[market]).div(curprice);

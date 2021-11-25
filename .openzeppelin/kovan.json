@@ -38,6 +38,11 @@
       "address": "0xd8dE06e46F9C63Be0316cC9905440ff0450D9423",
       "txHash": "0xfd6a4fb88a5293aa6d7b17702587ba957fb260ec04a0cf15024963aa517dc5f0",
       "kind": "transparent"
+    },
+    {
+      "address": "0x4B0EaA3A0CD7A50B51de95Ba6da3B1f4B5EBb335",
+      "txHash": "0x97670c6dd474fd43961c5d7ca4feed77296936eab245bb7f686e42e5483c2fc8",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -63,6 +68,106 @@
             "label": "______gap",
             "type": "t_array(t_uint256)50_storage",
             "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "aggregators",
+            "type": "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)140)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:18"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "currencyKeyDecimals",
+            "type": "t_mapping(t_bytes32,t_uint8)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:19"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "aggregatorKeys",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts/PriceFeed/PriceFeed.sol:22"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/PriceFeed/PriceFeed.sol:23"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/PriceFeed/PriceFeed.sol:24"
+          }
+        ],
+        "types": {
+          "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)140)": {
+            "label": "mapping(bytes32 => contract AggregatorV2V3Interface)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_contract(AggregatorV2V3Interface)140": {
+            "label": "contract AggregatorV2V3Interface"
+          },
+          "t_mapping(t_bytes32,t_uint8)": {
+            "label": "mapping(bytes32 => uint8)"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          }
+        }
+      }
+    },
+    "5190220a9847daab01811cffea0ae7955f221101ce2b7b6e6eb4272e08d9e6fc": {
+      "address": "0xb63905584471EC6ED1A0312bE74fdD23752cFaD5",
+      "txHash": "0x9f877f90f7cdb6bec5e94058415a57dfbd280715e7bb9b1c129df2b501cd7065",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+          },
+          {
+            "contract": "OwnedInitializable",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/PriceFeed/OwnedInitializable.sol:6"
+          },
+          {
+            "contract": "OwnedInitializable",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/PriceFeed/OwnedInitializable.sol:7"
           },
           {
             "contract": "PriceFeed",

@@ -211,6 +211,15 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         return (options.long.totalSupply(), options.short.totalSupply());
     }
 
+    function getMaximumBurnable() external view returns (uint amount){
+        return _getMaximumBurnable(msg.sender);
+    }
+
+    function _getMaximumBurnable(address account) internal view returns (uint amount){
+        (uint longBalance, uint shortBalance) = _balancesOf(account);
+        return (longBalance > shortBalance) ? shortBalance : longBalance;
+    }
+
     /* ---------- Utilities ---------- */
 
     function _incrementDeposited(uint value) internal returns (uint _deposited) {
@@ -254,6 +263,33 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
         emit Mint(Side.Long, minter, amount);
         emit Mint(Side.Short, minter, amount);
+    }
+
+
+    function burnOptionsMaximum() external{
+        _burnOptions(msg.sender, _getMaximumBurnable(msg.sender));
+    }
+
+    function burnOptions(uint amount) external {
+        _burnOptions(msg.sender, amount);
+    }
+
+    function _burnOptions(address account, uint amount) internal {
+        require(amount > 0, "Can not burn zero amount!");
+        require(_getMaximumBurnable(account) >= amount, "There is not enough options!");
+        
+        // decrease deposit
+        _decrementDeposited(amount);
+
+        // decrease long and short options
+        options.long.exerciseWithAmount(account, amount);
+        options.short.exerciseWithAmount(account, amount);
+
+        // transfer balance
+        sUSD.transfer(account, amount);
+
+        // emit events
+        emit OptionsBurned(account, amount);     
     }
 
     /* ---------- Custom oracle configuration ---------- */
@@ -379,5 +415,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         uint poolFees,
         uint creatorFees
     );
+    
     event OptionsExercised(address indexed account, uint value);
+    event OptionsBurned(address indexed account, uint value);
 }

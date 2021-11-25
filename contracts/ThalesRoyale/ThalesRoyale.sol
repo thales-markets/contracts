@@ -33,6 +33,10 @@ contract ThalesRoyale is Owned, Pausable {
     mapping(uint => uint) public targetPricePerRound;
     mapping(uint => uint) public finalPricePerRound;
 
+    mapping(uint256 => mapping(uint256 => uint256)) public positionsPerRound;
+    mapping(uint => uint) public totalPlayersPerRound;
+    mapping(uint => uint) public eliminatedPerRound;
+
     address[] public players;
     mapping(address => uint) public playerSignedUp;
 
@@ -46,7 +50,7 @@ contract ThalesRoyale is Owned, Pausable {
         address _owner,
         bytes32 _oracleKey,
         IPriceFeed _priceFeed,
-        uint reward,
+        uint _reward,
         address _rewardToken,
         uint _rounds,
         uint _signUpPeriod,
@@ -56,6 +60,7 @@ contract ThalesRoyale is Owned, Pausable {
         creationTime = block.timestamp;
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
+        reward = _reward;
         rewardToken = IERC20(_rewardToken);
         rounds = _rounds;
         signUpPeriod = _signUpPeriod;
@@ -88,6 +93,7 @@ contract ThalesRoyale is Owned, Pausable {
         round = 1;
         roundStartTime = block.timestamp;
         roundEndTime = roundStartTime + roundLength;
+        totalPlayersPerRound[1] = players.length;
         emit RoyaleStarted();
     }
 
@@ -96,13 +102,30 @@ contract ThalesRoyale is Owned, Pausable {
         require(started, "Competition not started yet");
         require(!finished, "Competition finished");
         require(playerSignedUp[msg.sender] != 0, "Player did not sign up");
+        require(positionInARound[msg.sender][round] != position, "Same position");
 
         if (round != 1) {
             require(positionInARound[msg.sender][round - 1] == roundResult[round - 1], "Player no longer alive");
         }
 
         require(block.timestamp < roundStartTime + roundChoosingLength, "Round positioning finished");
+
+        // this block is when sender change positions in a round - first reduce
+        if(positionInARound[msg.sender][round] == 1){
+            positionsPerRound[round][1]--;
+        }else if (positionInARound[msg.sender][round] == 2) {
+            positionsPerRound[round][2]--;
+        }
+
+        // set new value
         positionInARound[msg.sender][round] = position;
+
+        // add number of positions
+        if(position == 2){
+            positionsPerRound[round][position]++;
+        }else{
+            positionsPerRound[round][position]++;
+        }
 
         emit TookAPosition(msg.sender, round, position);
     }
@@ -112,13 +135,26 @@ contract ThalesRoyale is Owned, Pausable {
         require(!finished, "Competition finished");
         require(block.timestamp > (roundStartTime + roundLength), "Can't close round yet");
 
+        uint nextRound = round + 1;
+
         finalPricePerRound[round] = priceFeed.rateForCurrency(oracleKey);
         roundResult[round] = priceFeed.rateForCurrency(oracleKey) >= roundTargetPrice ? 2 : 1;
         roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
-        round = round + 1;
+
+        uint winningPositionsPerRound = roundResult[round] == 2 ? positionsPerRound[round][2] : positionsPerRound[round][1];
+
+        if (nextRound <= rounds){
+            // setting total players for next round (round + 1) to be result of position in a previous round
+            totalPlayersPerRound[nextRound] = winningPositionsPerRound;
+        }
+
+        // setting eliminated players to be total players - number of winning players
+        eliminatedPerRound[round] = totalPlayersPerRound[round] - winningPositionsPerRound;   
+
+        round = nextRound;
         targetPricePerRound[round] = roundTargetPrice;
 
-        if (round > rounds) {
+        if (round > rounds || totalPlayersPerRound[round] == 0) {
             finished = true;
             emit RoyaleFinished();
         } else {
@@ -126,6 +162,18 @@ contract ThalesRoyale is Owned, Pausable {
             roundEndTime = roundStartTime + roundLength;
         }
         emit RoundClosed(round - 1, roundResult[round - 1]);
+    }
+
+    function canCloseRound() public view returns (bool) {
+        return started && !finished && block.timestamp > (roundStartTime + roundLength);
+    }
+
+    function canStartRoyale() public view returns (bool) {
+        return !started && block.timestamp > (creationTime + signUpPeriod);
+    }
+
+    function getPositionsPerRound(uint _round, uint _position) public view returns (uint) {
+        return positionsPerRound[_round][_position];
     }
 
     function isPlayerAlive(address player) public view returns (bool) {
@@ -179,6 +227,10 @@ contract ThalesRoyale is Owned, Pausable {
 
     function setPriceFeed(IPriceFeed _priceFeed) public onlyOwner {
         priceFeed = _priceFeed;
+    }
+
+    function setRoundNumber(uint _rounds) public onlyOwner {
+        rounds = _rounds;
     }
 
     event SignedUp(address user);

@@ -602,7 +602,7 @@ contract('BinaryOption', accounts => {
 		});
 
 		it('Minimum Supplies', async () => {
-			let minimum = await market.getMaximumBurnable(); 
+			let minimum = await market.getMaximumBurnable(initialCreator); 
 			assert.bnEqual(minimum, toUnit(2));
 		});
 
@@ -635,7 +635,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
-			let minimum = await market.getMaximumBurnable(); 
+			let minimum = await market.getMaximumBurnable(initialCreator); 
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
@@ -894,7 +894,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
-			let minimum = await market.getMaximumBurnable(); 
+			let minimum = await market.getMaximumBurnable(initialCreator); 
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
@@ -910,7 +910,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), valueZero);
 			assert.bnEqual(await short.balanceOf(initialCreator), valueZero);
 
-			let minimum_after = await market.getMaximumBurnable(); 
+			let minimum_after = await market.getMaximumBurnable(initialCreator); 
 			assert.bnEqual(minimum_after, valueZero);
 
 			assert.eventEqual(tx.logs[0], 'OptionsBurned', {
@@ -940,7 +940,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
-			let minimum = await market.getMaximumBurnable(); 
+			let minimum = await market.getMaximumBurnable(initialCreator); 
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
@@ -956,7 +956,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), valueTwo);
 			assert.bnEqual(await short.balanceOf(initialCreator), valueTwo);
 
-			let minimum_after = await market.getMaximumBurnable(); 
+			let minimum_after = await market.getMaximumBurnable(initialCreator); 
 			assert.bnEqual(minimum_after, valueTwo);
 
 			assert.eventEqual(tx.logs[0], 'OptionsBurned', {
@@ -986,7 +986,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
-			let minimum = await market.getMaximumBurnable(); 
+			let minimum = await market.getMaximumBurnable(initialCreator); 
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
@@ -1018,7 +1018,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
-			let minimum = await market.getMaximumBurnable(); 
+			let minimum = await market.getMaximumBurnable(initialCreator); 
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();

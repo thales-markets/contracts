@@ -5,6 +5,7 @@ contract ProxyOwned {
     address public owner;
     address public nominatedOwner;
     bool private _initialized;
+    bool private _transferredAtInit;
 
     function setOwner(address _owner) public {
         require(_owner != address(0), "Owner address cannot be 0");
@@ -24,6 +25,14 @@ contract ProxyOwned {
         emit OwnerChanged(owner, nominatedOwner);
         owner = nominatedOwner;
         nominatedOwner = address(0);
+    }
+
+    function transferOwnershipAtInit(address proxyAddress) external onlyOwner {
+        require(proxyAddress != address(0), "Invalid address");
+        require(!_transferredAtInit, "Already transferred");
+        owner = proxyAddress;
+        _transferredAtInit = true;
+        emit OwnerChanged(owner, proxyAddress);
     }
 
     modifier onlyOwner {

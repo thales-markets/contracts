@@ -1,7 +1,6 @@
 const path = require('path');
 const { ethers, upgrades } = require('hardhat');
 const w3utils = require('web3-utils');
-const snx = require('synthetix');
 const { artifacts, contract, web3 } = require('hardhat');
 
 const user_key_local_optimism = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
@@ -71,8 +70,15 @@ async function main() {
 	const OpThalesL1Address = getTargetAddress('OpThales_L1', net_kovan);
 	const OpThalesL2Address = getTargetAddress('OpThales_L2', net_optimistic_kovan);
 	
+	const OwnedUpgradeabilityProxy = await ethers.getContractFactory('OwnedUpgradeabilityProxy');
+	const OwnedUpgradeabilityProxy_deployed = await OwnedUpgradeabilityProxy.connect(l1Wallet).deploy();
+	await OwnedUpgradeabilityProxy_deployed.deployed();
+	console.log("Owned proxy deployed on: ",OwnedUpgradeabilityProxy_deployed.address);
+	setTargetAddress('OwnedUpgradeabilityProxy', net_kovan, OwnedUpgradeabilityProxy_deployed.address);
+
+
 	const Thales = await ethers.getContractFactory('Thales');
-	// console.log("L2 Contract:\n", OP_Thales_L2);
+
 	
 
 	const Thales_deployed= await Thales.connect(l1Wallet).attach(ThalesAddress);
@@ -101,20 +107,40 @@ async function main() {
 	// 	OP_Thales_L2_deployed.address
 	// 	);
 
-	const ThalesExchanger_deployed = await upgrades.deployProxy(ThalesExchanger_connected, [
-		owner.address, 
-		Thales_deployed.address,
-		OP_Thales_L1_deployed.address,
-		L1StandardBridge_deployed.address,
-		OP_Thales_L2_deployed.address
-	], );
+	const ThalesExchanger_deployed = await ThalesExchanger_connected.deploy();
+	await ThalesExchanger_deployed.deployed();
+
+	tx = await ThalesExchanger_deployed.initialize(
+			owner.address, 
+			Thales_deployed.address,
+			OP_Thales_L1_deployed.address,
+			L1StandardBridge_deployed.address,
+			OP_Thales_L2_deployed.address
+		);
+	
 		
 	tx = await ThalesExchanger_deployed.deployed();
 	console.log("Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
 	setTargetAddress('ThalesExchanger', net_kovan, ThalesExchanger_deployed.address);
 
-	
+	await delay(5000);
 
+	tx = await ThalesExchanger_deployed.owner.call();
+	console.log("Owner is:", tx);
+	
+	tx = await OwnedUpgradeabilityProxy_deployed.upgradeTo(ThalesExchanger_deployed.address);
+	console.log("Proxy updated");
+	
+	await delay(20000);
+	
+	tx = await ThalesExchanger_deployed.transferOwnershipAtInit(OwnedUpgradeabilityProxy_deployed.address);
+	console.log("Owner changed to proxy");
+	
+	console.log("Wait 20 seconds");
+	await delay(20000);
+
+	tx = await ThalesExchanger_deployed.owner.call();
+	console.log("Owner is:", tx);
 
 }
 

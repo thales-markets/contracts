@@ -7,15 +7,8 @@ import "../interfaces/IPriceFeed.sol";
 interface IBinaryOptionMarket {
     /* ========== TYPES ========== */
 
-    enum Phase {
-        Trading,
-        Maturity,
-        Expiry
-    }
-    enum Side {
-        Long,
-        Short
-    }
+    enum Phase {Trading, Maturity, Expiry}
+    enum Side {Long, Short}
 
     /* ========== VIEWS / VARIABLES ========== */
 
@@ -54,9 +47,15 @@ interface IBinaryOptionMarket {
 
     function totalSupplies() external view returns (uint long, uint short);
 
+    function getMaximumBurnable(address account) external view returns (uint amount);
+
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function mint(uint value) external;
 
     function exerciseOptions() external returns (uint);
+
+    function burnOptions(uint amount) external;
+
+    function burnOptionsMaximum() external;
 }

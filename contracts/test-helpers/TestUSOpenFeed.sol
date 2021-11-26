@@ -51,7 +51,7 @@ contract TestUSOpenFeed is ChainlinkClient, Owned {
     /**
      * Initial request
      */
-    function requestSportsWinner() external {
+    function requestSportsWinner() external view {
         Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfillSportsWinner.selector);
         req.add("season", season);
     }

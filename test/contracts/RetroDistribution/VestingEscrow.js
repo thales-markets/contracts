@@ -237,7 +237,7 @@ contract('VestingEscrow', accounts => {
 
 		it("should fund from admin's account only", async () => {
 			const REVERT =
-				'VM Exception while processing transaction: revert Only the contract owner may perform this action';
+				'VM Exception while processing transaction: reverted with reason string \'Only the contract owner may perform this action\'';
 			await assert.revert(VestingEscrow.connect(notAdmin).fund(recipients, amounts), REVERT);
 		});
 
@@ -304,7 +304,7 @@ contract('VestingEscrow', accounts => {
 
 		it('should show zero balance if claimed before start', async () => {
 			await time.increaseTo((await currentTime()).toString());
-			const REVERT = 'VM Exception while processing transaction: revert nothing to claim';
+			const REVERT = 'VM Exception while processing transaction: reverted with reason string \'nothing to claim\'';
 			await assert.revert(VestingEscrow.connect(beneficiary).claim(), REVERT);
 		});
 
@@ -362,7 +362,7 @@ contract('VestingEscrow', accounts => {
 		it('Cant selfdestruct befor a year passes after end time', async () => {
 			await fastForward(YEAR);
 			const REVERT =
-				'VM Exception while processing transaction: revert Contract can only be selfdestruct a year after endtime';
+				'VM Exception while processing transaction: reverted with reason string \'Contract can only be selfdestruct a year after endtime\'';
 			await assert.revert(VestingEscrow._selfDestruct(beneficiary.address), REVERT);
 		});
 

@@ -64,6 +64,7 @@ contract ThalesRoyale is Owned, Pausable {
     ) public Owned(_owner) {
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
+        reward = _reward;
         rewardToken = IERC20(_rewardToken);
         rounds = _rounds;
         signUpPeriod = _signUpPeriod;

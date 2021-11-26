@@ -86,6 +86,19 @@ contract BinaryOption is IERC20, IBinaryOption {
         emit Burned(claimant, balance);
     }
 
+    // This must only be invoked after maturity.
+    function exerciseWithAmount(address claimant, uint amount) external onlyMarket {
+        require(amount > 0, "Can not exercise zero amount!");
+
+        require(balanceOf[claimant] >= amount, "Balance must be greather or equal amount that is burned");
+
+        balanceOf[claimant] = balanceOf[claimant] - amount;
+        totalSupply = totalSupply.sub(amount);
+
+        emit Transfer(claimant, address(0), amount);
+        emit Burned(claimant, amount);
+    }
+
     // This must only be invoked after the exercise window is complete.
     // Note that any options which have not been exercised will linger.
     function expire(address payable beneficiary) external onlyMarket {

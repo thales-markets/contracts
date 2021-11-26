@@ -72,8 +72,8 @@ async function fetchData(start, end) {
 
 		if (dataL2.length) {
 			// distribute 95% of weekly rewards to L1 and 5% to L2
-			getWeeklyData(data, 82, weeklyReward);
-			getWeeklyData(dataL2, 18, weeklyRewardL2);
+			getWeeklyData(data, 75, weeklyReward);
+			getWeeklyData(dataL2, 25, weeklyRewardL2);
 		} else {
 			getWeeklyData(data, 100, weeklyReward);
 		}

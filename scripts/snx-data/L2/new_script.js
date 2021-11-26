@@ -1,7 +1,5 @@
 const { request, gql } = require('graphql-request');
 
-const regenesisSnapshot = require('./regenesisSnapshot.json');
-
 // getCurrentSnapshotViaGraph(
 // 	'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance'
 // );
@@ -53,15 +51,6 @@ async function getCurrentSnapshotViaGraph(url) {
 			console.log('holders length is ' + holders.length);
 		});
 	}
-
-	// TODO: this is only to be used after the OP regenesis which wiped the subgraph
-	if (url.includes('optimism')) {
-		regenesisSnapshot.forEach(r => {
-			if (totalBalance[r.id] == undefined) {
-				totalBalance[r.id] = r.collateral * 1.0;
-			}
-		});
-	}
 	console.log('finished');
 	return totalBalance;
 }
@@ -76,7 +65,6 @@ async function getAllClaimers(url) {
 		lastWednesday.getDate() + 1
 	);
 	let maxTimestamp = maxDate.getTime() / 1000;
-	// let maxTimestamp = Math.floor(new Date().getTime() / 1000);
 	var eightDaysAgo = new Date(
 		lastWednesday.getFullYear(),
 		lastWednesday.getMonth(),

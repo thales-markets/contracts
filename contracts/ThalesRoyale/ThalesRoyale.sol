@@ -161,20 +161,21 @@ contract ThalesRoyale is Owned, Pausable {
         roundPerSeason[season] = nextRound;
         targetPricePerRoundPerSeason[season][roundPerSeason[season]] = roundTargetPrice;
 
-        if (roundPerSeason[season] > rounds || totalPlayersPerRoundPerSeason[season][roundPerSeason[season]] == 0) {
+        if (roundPerSeason[season] > rounds || totalPlayersPerRoundPerSeason[season][roundPerSeason[season]] <= 1) {
             seasonFinish[season] = true;
             // there is no more rounds left and it has alive players at last round
             if (roundPerSeason[season] > rounds && getAlivePlayers().length > 0) {
                 _populateReward(getAlivePlayers());
             }
             royaleSeasonEndTime[season] = block.timestamp;
-            //season = season + 1;
+            // first close previous round then royale
+            emit RoundClosed(season, roundPerSeason[season] - 1, roundResultPerSeason[season][roundPerSeason[season] - 1]);
             emit RoyaleFinished(season);
         } else {
             roundInASeasonStartTime[season] = block.timestamp;
             roundInSeasonEndTime[season] = roundInASeasonStartTime[season] + roundLength;
+            emit RoundClosed(season, roundPerSeason[season] - 1, roundResultPerSeason[season][roundPerSeason[season] - 1]);
         }
-        emit RoundClosed(season, roundPerSeason[season] - 1, roundResultPerSeason[season][roundPerSeason[season] - 1]);
     }
 
     function canCloseRound() public view returns (bool) {
@@ -183,6 +184,14 @@ contract ThalesRoyale is Owned, Pausable {
 
     function canStartRoyale() public view returns (bool) {
         return !seasonStart[season] && block.timestamp > (seasonCreationTime[season] + signUpPeriod);
+    }
+
+    function isPlayerAliveInASpecificSeason(address player, uint _season) public view returns (bool) {
+        if (roundPerSeason[_season] > 1) {
+            return (positionInARoundPerSeason[_season][player][roundPerSeason[_season] - 1] == roundResultPerSeason[_season][roundPerSeason[_season] - 1]);
+        } else {
+            return playerSignedUpPerSeason[_season][player] != 0;
+        }
     }
 
     function isPlayerAlive(address player) public view returns (bool) {
@@ -222,6 +231,27 @@ contract ThalesRoyale is Owned, Pausable {
         return alivePlayers;
     }
 
+    function getAlivePlayersInSpecificSeason(uint _season) public view returns (address[] memory) {
+        uint k = 0;
+        for (uint i = 0; i < playersPerSeason[_season].length; i++) {
+            if (isPlayerAliveInASpecificSeason(playersPerSeason[_season][i], _season)) {
+                k = k + 1;
+            }
+        }
+
+        address[] memory alivePlayers = new address[](k);
+        k = 0;
+
+        for (uint i = 0; i < playersPerSeason[_season].length; i++) {
+            if (isPlayerAliveInASpecificSeason(playersPerSeason[_season][i], _season)) {
+                alivePlayers[k] = playersPerSeason[_season][i];
+                k = k + 1;
+            }
+        }
+
+        return alivePlayers;
+    }
+
     function setSignUpPeriod(uint _signUpPeriod) public onlyOwner {
         signUpPeriod = _signUpPeriod;
     }
@@ -251,6 +281,13 @@ contract ThalesRoyale is Owned, Pausable {
         claimTime = _claimTime;
     }
 
+    function startNewSeason() public onlyOwner {
+        require(seasonFinish[season], "Previous season must be finished");
+        season = season + 1;
+        seasonCreationTime[season] = block.timestamp;
+        emit NewSeasonStarted(season);
+    }
+
     function _populateReward(address[] memory alivePlayers) internal {
         require(seasonFinish[season], "Royale must be finished");
         require(alivePlayers.length > 0, "There is no alive players left in Royale");
@@ -258,11 +295,11 @@ contract ThalesRoyale is Owned, Pausable {
         rewardPerPlayerPerSeason[season] = reward.div(alivePlayers.length);
     }
 
-    function claimRewardForLastSeason() public onlyWinners {
+    function claimRewardForCurrentSeason() public onlyWinners(season) {
         _claimRewardForSeason(season);
     }
 
-    function claimRewardForSeason(uint _season) public onlyWinners {
+    function claimRewardForSeason(uint _season) public onlyWinners (_season) {
         _claimRewardForSeason(_season);
     }
 
@@ -288,10 +325,10 @@ contract ThalesRoyale is Owned, Pausable {
         }
     }
 
-    modifier onlyWinners {
-        require(seasonFinish[season], "Royale must be finished!");
-        require(getAlivePlayers().length > 0, "There is no alive players left in Royale");
-        require(isPlayerAlive(msg.sender) == true, "Player is not alive");
+    modifier onlyWinners (uint _season) {
+        require(seasonFinish[_season], "Royale must be finished!");
+        require(getAlivePlayersInSpecificSeason(_season).length > 0, "There is no alive players left in Royale");
+        require(isPlayerAliveInASpecificSeason(msg.sender, _season) == true, "Player is not alive");
         _;
     }
 
@@ -301,4 +338,5 @@ contract ThalesRoyale is Owned, Pausable {
     event RoyaleStarted(uint season);
     event RoyaleFinished(uint season);
     event RewardClaimed(uint season, address winner, uint reward);
+    event NewSeasonStarted(uint season);
 }

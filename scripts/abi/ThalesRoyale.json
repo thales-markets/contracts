@@ -66,6 +66,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "season",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewSeasonStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -274,7 +287,7 @@
   {
     "constant": false,
     "inputs": [],
-    "name": "claimRewardForLastSeason",
+    "name": "claimRewardForCurrentSeason",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -388,6 +401,27 @@
   },
   {
     "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_season",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAlivePlayersInSpecificSeason",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [],
     "name": "getPlayers",
     "outputs": [
@@ -432,6 +466,32 @@
       }
     ],
     "name": "isPlayerAlive",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_season",
+        "type": "uint256"
+      }
+    ],
+    "name": "isPlayerAliveInASpecificSeason",
     "outputs": [
       {
         "internalType": "bool",
@@ -1165,6 +1225,15 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "startNewSeason",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

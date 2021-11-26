@@ -118,6 +118,7 @@ contract('ThalesRoyale', accounts => {
 
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
+			await royale.signUp({ from: third });
 
 			isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
@@ -131,13 +132,14 @@ contract('ThalesRoyale', accounts => {
 			await royale.startRoyale();
 
 			let totalPlayersInARound = await royale.totalPlayersPerRound(1);
-			assert.equal(2, totalPlayersInARound);
+			assert.equal(3, totalPlayersInARound);
 
 			let eliminatedPlayersInARound = await royale.eliminatedPerRound(1);
 			assert.equal(0, eliminatedPlayersInARound);
 
 			await royale.takeAPosition(2, { from: first });
 			await royale.takeAPosition(1, { from: second });
+			await royale.takeAPosition(1, { from: third });
 
 			let roundTargetPrice = await royale.roundTargetPrice();
 			console.log('roundTargetPrice is ' + roundTargetPrice);
@@ -172,7 +174,7 @@ contract('ThalesRoyale', accounts => {
 			isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
 			let totalPlayersInARoundTwo = await royale.totalPlayersPerRound(2);
-			assert.equal(1, totalPlayersInARoundTwo);
+			assert.equal(2, totalPlayersInARoundTwo);
 
 			let eliminatedPlayersInARoundOne = await royale.eliminatedPerRound(1);
 			assert.equal(1, eliminatedPlayersInARoundOne);
@@ -308,21 +310,8 @@ contract('ThalesRoyale', accounts => {
 
 			assert.equal(true, isPlayerFirstAlive);
 
-			await royale.takeAPosition(2, { from: first });
-
-			isPlayerFirstAlive = await royale.isPlayerAlive(first);
-
-			let totalPlayersInARoundTwo = await royale.totalPlayersPerRound(2);
-			console.log('Total players in a 2. round: ' + totalPlayersInARoundTwo);
-			// equal to one because first
-			assert.equal(1, totalPlayersInARoundTwo);
-
-			let eliminatedPlayersInARoundOne = await royale.eliminatedPerRound(1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARoundOne);
-			// second did't take position at all so eliminated is 1
-			assert.equal(1, eliminatedPlayersInARoundOne);
-
-			assert.equal(true, isPlayerFirstAlive);
+			// only one player left -> competition is ended
+			await expect(royale.takeAPosition(2, { from: first })).to.be.revertedWith('Competition finished');
 		});
 
 		it('take a winning position and end first round then skip 2nd round', async () => {
@@ -332,6 +321,7 @@ contract('ThalesRoyale', accounts => {
 
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
+			await royale.signUp({ from: third });
 
 			let alivePlayers = await royale.getAlivePlayers();
 			console.log('alivePlayers are ' + alivePlayers);
@@ -346,7 +336,7 @@ contract('ThalesRoyale', accounts => {
 			let totalPlayersInARound = await royale.totalPlayersPerRound(1);
 			console.log('Total players in a 1. round: ' + totalPlayersInARound);
 			// equal to total number of players
-			assert.equal(2, totalPlayersInARound);
+			assert.equal(3, totalPlayersInARound);
 
 			let eliminatedPlayersInARound = await royale.eliminatedPerRound(1);
 			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound);
@@ -354,6 +344,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(0, eliminatedPlayersInARound);
 
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: third });
 
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
@@ -362,8 +353,7 @@ contract('ThalesRoyale', accounts => {
 
 			let totalPlayersInARoundTwo = await royale.totalPlayersPerRound(2);
 			console.log('Total players in a 2. round: ' + totalPlayersInARoundTwo);
-			// equal to one because first
-			assert.equal(1, totalPlayersInARoundTwo);
+			assert.equal(2, totalPlayersInARoundTwo);
 
 			let eliminatedPlayersInARoundOne = await royale.eliminatedPerRound(1);
 			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARoundOne);
@@ -388,8 +378,8 @@ contract('ThalesRoyale', accounts => {
 
 			let eliminatedPlayersInARoundTwo = await royale.eliminatedPerRound(2);
 			console.log('Total players eliminated in a 2. round: ' + eliminatedPlayersInARoundTwo);
-			// first did't take position at all so eliminated in round two is 1
-			assert.equal(1, eliminatedPlayersInARoundTwo);
+			// first did't take position at all so eliminated in round two is 2
+			assert.equal(2, eliminatedPlayersInARoundTwo);
 
 			isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
@@ -399,6 +389,7 @@ contract('ThalesRoyale', accounts => {
 		it('win till the end', async () => {
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
+			await royale.signUp({ from: third });
 
 			await fastForward(HOUR * 72 + 1);
 			await royale.startRoyale();
@@ -406,7 +397,7 @@ contract('ThalesRoyale', accounts => {
 			let totalPlayersInARound = await royale.totalPlayersPerRound(1);
 			console.log('Total players in a 1. round: ' + totalPlayersInARound);
 			// equal to total number of players
-			assert.equal(2, totalPlayersInARound);
+			assert.equal(3, totalPlayersInARound);
 
 			let eliminatedPlayersInARound = await royale.eliminatedPerRound(1);
 			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound);
@@ -414,6 +405,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(0, eliminatedPlayersInARound);
 
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: third });
 
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
@@ -423,8 +415,8 @@ contract('ThalesRoyale', accounts => {
 
 			let totalPlayersInARoundTwo = await royale.totalPlayersPerRound(2);
 			console.log('Total players in a 2. round: ' + totalPlayersInARoundTwo);
-			// equal to one - first player win
-			assert.equal(1, totalPlayersInARoundTwo);
+			// equal to 2 - first player, third win
+			assert.equal(2, totalPlayersInARoundTwo);
 
 			let eliminatedPlayersInARoundOne = await royale.eliminatedPerRound(1);
 			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARoundOne);
@@ -433,13 +425,14 @@ contract('ThalesRoyale', accounts => {
 
 			//#2
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: third });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
 			let totalPlayersInARoundThree = await royale.totalPlayersPerRound(3);
 			console.log('Total players in a 3. round: ' + totalPlayersInARoundThree);
-			// equal to one - first player win
-			assert.equal(1, totalPlayersInARoundThree);
+			// equal to 2 - first, third player win
+			assert.equal(2, totalPlayersInARoundThree);
 
 			let eliminatedPlayersInARoundTwo = await royale.eliminatedPerRound(2);
 			console.log('Total players eliminated in a 2. round: ' + eliminatedPlayersInARoundTwo);
@@ -448,13 +441,14 @@ contract('ThalesRoyale', accounts => {
 
 			//#3
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: third });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
 			let totalPlayersInARoundFour = await royale.totalPlayersPerRound(4);
 			console.log('Total players in a 4. round: ' + totalPlayersInARoundFour);
-			// equal to one - first player win
-			assert.equal(1, totalPlayersInARoundFour);
+			// equal to 2 - first, third player win
+			assert.equal(2, totalPlayersInARoundFour);
 
 			let eliminatedPlayersInARoundThree = await royale.eliminatedPerRound(3);
 			console.log('Total players eliminated in a 3. round: ' + eliminatedPlayersInARoundThree);
@@ -463,13 +457,14 @@ contract('ThalesRoyale', accounts => {
 
 			//#4
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: third });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
 			let totalPlayersInARoundFive = await royale.totalPlayersPerRound(5);
 			console.log('Total players in a 5. round: ' + totalPlayersInARoundFive);
-			// equal to one - first player win
-			assert.equal(1, totalPlayersInARoundFive);
+			// equal to 2 - first, third player win
+			assert.equal(2, totalPlayersInARoundFive);
 
 			let eliminatedPlayersInARoundFour = await royale.eliminatedPerRound(4);
 			console.log('Total players eliminated in a 4. round: ' + eliminatedPlayersInARoundFour);
@@ -478,13 +473,14 @@ contract('ThalesRoyale', accounts => {
 
 			//#5
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: third });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
 			let totalPlayersInARoundSix = await royale.totalPlayersPerRound(6);
 			console.log('Total players in a 6. round: ' + totalPlayersInARoundSix);
-			// equal to one - first player win
-			assert.equal(1, totalPlayersInARoundSix);
+			// equal to 2 - first, third player win
+			assert.equal(2, totalPlayersInARoundSix);
 
 			let eliminatedPlayersInARoundFive = await royale.eliminatedPerRound(5);
 			console.log('Total players eliminated in a 5. round: ' + eliminatedPlayersInARoundFive);
@@ -493,13 +489,14 @@ contract('ThalesRoyale', accounts => {
 
 			//#6
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: third });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
 			let totalPlayersInARoundSeven = await royale.totalPlayersPerRound(7);
 			console.log('Total players in a 7. round: ' + totalPlayersInARoundSeven);
-			// equal to one - first player win
-			assert.equal(1, totalPlayersInARoundSeven);
+			// equal to 2 - first, third player win
+			assert.equal(2, totalPlayersInARoundSeven);
 
 			let eliminatedPlayersInARoundSix = await royale.eliminatedPerRound(6);
 			console.log('Total players eliminated in a 6. round: ' + eliminatedPlayersInARoundSix);
@@ -508,6 +505,7 @@ contract('ThalesRoyale', accounts => {
 
 			//#7
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(1, { from: third });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
@@ -519,7 +517,7 @@ contract('ThalesRoyale', accounts => {
 			let eliminatedPlayersInARoundSeven = await royale.eliminatedPerRound(7);
 			console.log('Total players eliminated in a 7. round: ' + eliminatedPlayersInARoundSeven);
 			// no one left untill the end player one win
-			assert.equal(0, eliminatedPlayersInARoundSeven);
+			assert.equal(1, eliminatedPlayersInARoundSeven);
 
 			let alivePlayers = await royale.getAlivePlayers();
 			console.log('final alive players are ' + alivePlayers);
@@ -550,6 +548,7 @@ contract('ThalesRoyale', accounts => {
 			await royale.startRoyale();
 
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: second });
 
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
@@ -580,6 +579,7 @@ contract('ThalesRoyale', accounts => {
 			await royale.startRoyale();
 
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: second });
 
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
@@ -589,31 +589,37 @@ contract('ThalesRoyale', accounts => {
 
 			//#2
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: second });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
 			//#3
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: second });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
 			//#4
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: second });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
 			//#5
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: second });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
 			//#6
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(2, { from: second });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
 			//#7
 			await royale.takeAPosition(2, { from: first });
+			await royale.takeAPosition(1, { from: second });
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 

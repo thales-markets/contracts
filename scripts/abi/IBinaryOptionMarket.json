@@ -131,7 +131,13 @@
   },
   {
     "constant": true,
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
     "name": "getMaximumBurnable",
     "outputs": [
       {

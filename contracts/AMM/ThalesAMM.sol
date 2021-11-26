@@ -17,6 +17,8 @@ contract ThalesAMM is Owned, Pausable {
 
     DeciMath public deciMath;
 
+    uint public constant ONE = 1e18;
+
     uint public capPerMarket = 1000 * 1e18;
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
@@ -87,8 +89,7 @@ contract ThalesAMM is Owned, Pausable {
         uint balance = balanceOfPositionOnMarket(market, position);
         uint availableUntilCapSUSD = capPerMarket.sub(spentOnMarket[market]);
         uint curprice = price(market, position);
-        uint one = 1e18;
-        uint additionalBufferFromSelling = availableUntilCapSUSD.div(one.sub(curprice)).mul(1e18);
+        uint additionalBufferFromSelling = availableUntilCapSUSD.div(ONE.sub(curprice)).mul(1e18);
         return balance.add(additionalBufferFromSelling);
     }
 
@@ -98,23 +99,42 @@ contract ThalesAMM is Owned, Pausable {
         uint amount
     ) public {
         uint couldbuy = availableToSellToAMM(market, position);
-        require(amount < couldbuy, "cant buy that much");
+        require(amount < couldbuy, "Cant buy that much");
 
         (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
         IBinaryOption target = position == Position.Long ? long : short;
-        uint pricePaid = amount.mul(price(market, position));
 
-        sUSD.transfer(msg.sender, amount.mul(price(market, position)));
+        require(target.balanceOf(msg.sender) >= amount, "You dont have enough options.");
+        require(IERC20(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
+
+        //transfer options first to have max burn available
         IERC20(address(target)).transferFrom(msg.sender, address(this), amount);
 
-        spentOnMarket[market] = spentOnMarket[market].add(pricePaid);
+        uint sUSDFromBurning = IBinaryOptionMarket(market).getMaximumBurnable(address(this));
+        if (sUSDFromBurning > 0) {
+            IBinaryOptionMarket(market).burnOptionsMaximum();
+        }
+
+        uint pricePaid = amount.mul(price(market, position)).div(1e18);
+
+        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
+
+        sUSD.transfer(msg.sender, pricePaid);
+
+        spentOnMarket[market] = spentOnMarket[market].add(pricePaid).sub(sUSDFromBurning);
     }
 
     function availableToSellToAMM(address market, Position position) public view returns (uint) {
         uint curprice = price(market, position);
-        uint sUSDFromBurning = IBinaryOptionMarket(market).getMaximumBurnable(address(this));
-        uint couldBuy = capPerMarket.add(sUSDFromBurning).sub(spentOnMarket[market]).div(curprice);
-        return couldBuy;
+        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+        uint balanceOfTheOtherSide =
+            position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
+
+        uint couldBuyNow = capPerMarket.sub(spentOnMarket[market]).div(curprice).mul(1e18);
+
+        // add the potential max burn
+        uint sUSDFromBurning = balanceOfTheOtherSide > couldBuyNow ? couldBuyNow : balanceOfTheOtherSide;
+        return capPerMarket.add(sUSDFromBurning).sub(spentOnMarket[market]).div(curprice).mul(1e18);
     }
 
     function getBuyQuote(
@@ -144,7 +164,11 @@ contract ThalesAMM is Owned, Pausable {
 
         (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
 
-        return calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatility).div(1e2);
+        if (position == Position.Long) {
+            return calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatility).div(1e2);
+        } else {
+            return ONE.sub(calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatility).div(1e2));
+        }
     }
 
     function oraclePrice(address market, Position position) public view returns (uint) {
@@ -195,8 +219,7 @@ contract ThalesAMM is Owned, Pausable {
     ) public view returns (uint) {
         uint vt = volatility.div(100).mul(sqrt(timeLeftInDays.div(365))).div(1e9);
         uint d1 = deciMath.ln(strike.mul(1e18).div(price), 99).mul(1e18).div(vt);
-        uint one = 1e18;
-        uint y = one.mul(1e18).div(one.add(d1.mul(2316419).div(1e7)));
+        uint y = ONE.mul(1e18).div(ONE.add(d1.mul(2316419).div(1e7)));
         uint d2 = d1.mul(d1).div(2).div(1e18);
         uint z = expneg(d2).mul(3989423).div(1e7);
 
@@ -206,8 +229,8 @@ contract ThalesAMM is Owned, Pausable {
         uint y2 = deciMath.pow(y, 2 * 1e18).mul(356538).div(1e6);
         uint y1 = y.mul(3193815).div(1e7);
         uint x1 = y5.add(y3).add(y1).sub(y4).sub(y2);
-        uint x = one.sub(z.mul(x1).div(1e18));
-        uint result = one.mul(1e2).sub(x.mul(1e2));
+        uint x = ONE.sub(z.mul(x1).div(1e18));
+        uint result = ONE.mul(1e2).sub(x.mul(1e2));
 
         return result;
     }

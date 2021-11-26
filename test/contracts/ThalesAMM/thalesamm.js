@@ -267,6 +267,14 @@ contract('ThalesRoyale', accounts => {
 			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
 			assert.equal(availableToBuyFromAMM / 1e18, 1218);
 
+			let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.DOWN
+			);
+			console.log('availableToBuyFromAMMDown is:' + availableToBuyFromAMMDown);
+			console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
+			assert.equal(Math.floor(availableToBuyFromAMMDown / 1e18), 5576);
+
 			let minterSusdBalance = await sUSDSynth.balanceOf(minter);
 			console.log('minterSusdBalance decimal is:' + minterSusdBalance / 1e18);
 			assert.equal(minterSusdBalance / 1e18, 10000);
@@ -281,6 +289,14 @@ contract('ThalesRoyale', accounts => {
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			await thalesAMM.buyFromAMM(newMarket.address, Position.UP, toUnit(200), { from: minter });
+
+			availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.DOWN
+			);
+			console.log('availableToBuyFromAMMDown is:' + availableToBuyFromAMMDown);
+			console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
+			assert.equal(Math.floor(availableToBuyFromAMMDown / 1e18), 4860);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
 			console.log('minterSusdBalance decimal is:' + minterSusdBalance / 1e18);
@@ -301,27 +317,62 @@ contract('ThalesRoyale', accounts => {
 			);
 			console.log('availableToSellToAMM is:' + availableToSellToAMM);
 			console.log('availableToSellToAMM decimal is:' + availableToSellToAMM / 1e18);
-			assert.equal(availableToSellToAMM / 1e18, 1018);
+			assert.equal(availableToSellToAMM / 1e18, 5776);
 
-			//
-			// let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-			// console.log('priceDown is:' + priceDown / 1e18);
-			//
-			// newMarket = await createMarket(
-			// 	manager,
-			// 	sETHKey,
-			// 	toUnit(20000),
-			// 	now + day * 10,
-			// 	toUnit(10),
-			// 	initialCreator
-			// );
-			//
-			// priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			// console.log('priceUp1 is:' + priceUp / 1e18);
-			//
-			// priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-			// console.log('priceDown1 is:' + priceDown / 1e18);
-			//
+			let spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
+			console.log('spentOnMarket decimal is:' + spentOnMarket / 1e18);
+
+			let ammLongBalance = await long.balanceOf(thalesAMM.address);
+			console.log('ammLongBalance decimal is:' + ammLongBalance / 1e18);
+			let ammShortBalance = await short.balanceOf(thalesAMM.address);
+			console.log('ammShortBalance decimal is:' + ammShortBalance / 1e18);
+
+			await long.approve(thalesAMM.address, toUnit(2000), { from: minter });
+			await thalesAMM.sellToAMM(newMarket.address, Position.UP, toUnit(100), { from: minter });
+
+			minterSusdBalance = await sUSDSynth.balanceOf(minter);
+			console.log('minterSusdBalance decimal is:' + minterSusdBalance / 1e18);
+			assert.equal(Math.floor(minterSusdBalance / 1e18), 9982);
+
+			minterLongBalance = await long.balanceOf(minter);
+			console.log('minterLongBalance decimal is:' + minterLongBalance / 1e18);
+			assert.equal(minterLongBalance / 1e18, 100);
+
+			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
+			console.log('spentOnMarket decimal is:' + spentOnMarket / 1e18);
+
+			priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			console.log('priceUp is:' + priceUp);
+			console.log('priceUp decimal is:' + priceUp / 1e18);
+
+			ammLongBalance = await long.balanceOf(thalesAMM.address);
+			console.log('ammLongBalance decimal is:' + ammLongBalance / 1e18);
+			ammShortBalance = await short.balanceOf(thalesAMM.address);
+			console.log('ammShortBalance decimal is:' + ammShortBalance / 1e18);
+
+			availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
+			console.log('availableToSellToAMM is:' + availableToSellToAMM);
+			console.log('availableToSellToAMM decimal is:' + availableToSellToAMM / 1e18);
+			assert.equal(Math.floor(availableToSellToAMM / 1e18), 5676);
+
+			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.UP);
+			console.log('availableToBuyFromAMM is:' + availableToBuyFromAMM);
+			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+			assert.equal(availableToBuyFromAMM / 1e18, 1118);
+
+			availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.DOWN
+			);
+			console.log('availableToBuyFromAMMDown is:' + availableToBuyFromAMMDown);
+			console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
+			assert.equal(Math.floor(availableToBuyFromAMMDown / 1e18), 5217);
+
+			let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
+			console.log('priceDown is:' + priceDown / 1e18);
+
+			priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			console.log('priceUp is:' + priceUp / 1e18);
 		});
 	});
 });

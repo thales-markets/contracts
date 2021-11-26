@@ -25,6 +25,7 @@ contract ThalesAMM is Owned, Pausable {
     address public manager;
 
     uint public impliedVolatility = 120 * 1e18;
+    uint public spread = 2e16; //1%
 
     struct MarketSkew {
         uint longs;
@@ -61,9 +62,11 @@ contract ThalesAMM is Owned, Pausable {
         Position position,
         uint amount
     ) public {
+        require(IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading, "Market is not in Trading phase");
+
         require(amount < availableToBuyFromAMM(market, position), "Not enough liquidity.");
 
-        uint sUSDPaid = amount.mul(price(market, position)).div(1e18);
+        uint sUSDPaid = amount.mul(buyPrice(market, position)).div(1e18);
         require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
         require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
 
@@ -86,11 +89,15 @@ contract ThalesAMM is Owned, Pausable {
     }
 
     function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
-        uint balance = balanceOfPositionOnMarket(market, position);
-        uint availableUntilCapSUSD = capPerMarket.sub(spentOnMarket[market]);
-        uint curprice = price(market, position);
-        uint additionalBufferFromSelling = availableUntilCapSUSD.div(ONE.sub(curprice)).mul(1e18);
-        return balance.add(additionalBufferFromSelling);
+        if (IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading) {
+            uint balance = balanceOfPositionOnMarket(market, position);
+            uint availableUntilCapSUSD = capPerMarket.sub(spentOnMarket[market]);
+            uint curprice = buyPrice(market, position);
+            uint additionalBufferFromSelling = availableUntilCapSUSD.div(ONE.sub(curprice)).mul(1e18);
+            return balance.add(additionalBufferFromSelling);
+        } else {
+            return 0;
+        }
     }
 
     function sellToAMM(
@@ -98,6 +105,8 @@ contract ThalesAMM is Owned, Pausable {
         Position position,
         uint amount
     ) public {
+        require(IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading, "Market is not in Trading phase");
+
         uint couldbuy = availableToSellToAMM(market, position);
         require(amount < couldbuy, "Cant buy that much");
 
@@ -115,7 +124,7 @@ contract ThalesAMM is Owned, Pausable {
             IBinaryOptionMarket(market).burnOptionsMaximum();
         }
 
-        uint pricePaid = amount.mul(price(market, position)).div(1e18);
+        uint pricePaid = amount.mul(sellPrice(market, position)).div(1e18);
 
         require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
 
@@ -125,90 +134,49 @@ contract ThalesAMM is Owned, Pausable {
     }
 
     function availableToSellToAMM(address market, Position position) public view returns (uint) {
-        uint curprice = price(market, position);
-        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-        uint balanceOfTheOtherSide =
-            position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
+        if (IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading) {
+            uint curprice = sellPrice(market, position);
+            (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+            uint balanceOfTheOtherSide =
+                position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
 
-        uint couldBuyNow = capPerMarket.sub(spentOnMarket[market]).div(curprice).mul(1e18);
+            uint couldBuyNow = capPerMarket.sub(spentOnMarket[market]).div(curprice).mul(1e18);
 
-        // add the potential max burn
-        uint sUSDFromBurning = balanceOfTheOtherSide > couldBuyNow ? couldBuyNow : balanceOfTheOtherSide;
-        return capPerMarket.add(sUSDFromBurning).sub(spentOnMarket[market]).div(curprice).mul(1e18);
+            // add the potential max burn
+            uint sUSDFromBurning = balanceOfTheOtherSide > couldBuyNow ? couldBuyNow : balanceOfTheOtherSide;
+            return capPerMarket.add(sUSDFromBurning).sub(spentOnMarket[market]).div(curprice).mul(1e18);
+        } else return 0;
     }
 
-    function getBuyQuote(
-        address market,
-        Position position,
-        uint amount
-    ) public view returns (uint) {
-        return price(market, position).mul(amount);
+    function buyPrice(address market, Position position) public view returns (uint) {
+        // add spread to price
+        return price(market, position).mul(ONE.add(spread)).div(1e18);
     }
 
-    function getSellQuote(
-        address market,
-        Position position,
-        uint amount
-    ) public view returns (uint) {
-        return price(market, position).mul(amount);
+    function sellPrice(address market, Position position) public view returns (uint) {
+        // subtract spread to price
+        return price(market, position).mul(ONE.sub(spread)).div(1e18);
     }
 
     function price(address market, Position position) public view returns (uint) {
-        // add price calculation
-        IBinaryOptionMarket marketContract = IBinaryOptionMarket(market);
-        (uint maturity, uint destructino) = marketContract.times();
+        if (IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading) {
+            // add price calculation
+            IBinaryOptionMarket marketContract = IBinaryOptionMarket(market);
+            (uint maturity, uint destructino) = marketContract.times();
 
-        uint timeLeftToMaturity = maturity - block.timestamp;
-        uint timeLeftToMaturityInDays = timeLeftToMaturity.mul(1e18).div(86400);
-        uint oraclePrice = marketContract.oraclePrice();
+            uint timeLeftToMaturity = maturity - block.timestamp;
+            uint timeLeftToMaturityInDays = timeLeftToMaturity.mul(1e18).div(86400);
+            uint oraclePrice = marketContract.oraclePrice();
 
-        (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
+            (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
 
-        if (position == Position.Long) {
-            return calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatility).div(1e2);
-        } else {
-            return ONE.sub(calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatility).div(1e2));
-        }
-    }
-
-    function oraclePrice(address market, Position position) public view returns (uint) {
-        // add price calculation
-        IBinaryOptionMarket marketContract = IBinaryOptionMarket(market);
-        (uint maturity, uint destructino) = marketContract.times();
-
-        uint timeLeftToMaturity = maturity - block.timestamp;
-        uint oraclePrice = marketContract.oraclePrice();
-
-        (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
-
-        return oraclePrice;
-    }
-
-    function strikePrice(address market, Position position) public view returns (uint) {
-        // add price calculation
-        IBinaryOptionMarket marketContract = IBinaryOptionMarket(market);
-        (uint maturity, uint destructino) = marketContract.times();
-
-        uint timeLeftToMaturity = maturity - block.timestamp;
-        uint oraclePrice = marketContract.oraclePrice();
-
-        (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
-
-        return strikePrice;
-    }
-
-    function timeLeftToMaturityInDays(address market, Position position) public view returns (uint) {
-        // add price calculation
-        IBinaryOptionMarket marketContract = IBinaryOptionMarket(market);
-        (uint maturity, uint destructino) = marketContract.times();
-
-        uint timeLeftToMaturity = maturity - block.timestamp;
-        uint timeLeftToMaturityInDays = timeLeftToMaturity.mul(1e18).div(86400);
-        uint oraclePrice = marketContract.oraclePrice();
-
-        (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
-
-        return timeLeftToMaturityInDays;
+            if (position == Position.Long) {
+                return calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatility).div(1e2);
+            } else {
+                return
+                    ONE.sub(calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatility).div(1e2));
+            }
+        } else return 0;
     }
 
     function calculateOdds(
@@ -235,10 +203,6 @@ contract ThalesAMM is Owned, Pausable {
         return result;
     }
 
-    function power(uint A, uint B) public returns (uint256) {
-        return A**B;
-    }
-
     function sqrt(uint y) internal pure returns (uint z) {
         if (y > 3) {
             z = y;
@@ -260,6 +224,10 @@ contract ThalesAMM is Owned, Pausable {
 
     function setImpliedVolatility(uint _impliedVolatility) public onlyOwner {
         impliedVolatility = _impliedVolatility;
+    }
+
+    function setSpread(uint _spread) public onlyOwner {
+        spread = _spread;
     }
 
     function expneg(uint x) public view returns (uint result) {

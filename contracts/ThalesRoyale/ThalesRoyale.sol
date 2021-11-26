@@ -154,14 +154,16 @@ contract ThalesRoyale is Owned, Pausable {
         round = nextRound;
         targetPricePerRound[round] = roundTargetPrice;
 
-        if (round > rounds || totalPlayersPerRound[round] == 0) {
+        if (round > rounds || totalPlayersPerRound[round] <= 1) {
             finished = true;
+            // first close previous round then royale
+            emit RoundClosed(round - 1, roundResult[round - 1]);
             emit RoyaleFinished();
         } else {
             roundStartTime = block.timestamp;
             roundEndTime = roundStartTime + roundLength;
+            emit RoundClosed(round - 1, roundResult[round - 1]);
         }
-        emit RoundClosed(round - 1, roundResult[round - 1]);
     }
 
     function canCloseRound() public view returns (bool) {

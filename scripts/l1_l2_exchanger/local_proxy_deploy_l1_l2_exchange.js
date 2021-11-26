@@ -104,7 +104,9 @@ async function main() {
 		L1StandardBridge_deployed.address,
 		OP_Thales_L2_deployed.address
 	]);
-		
+
+
+	
 	tx = await ThalesExchanger_deployed.deployed();
 	console.log("Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
 	setTargetAddress('ProxyThalesExchanger', local_L1, ThalesExchanger_deployed.address);

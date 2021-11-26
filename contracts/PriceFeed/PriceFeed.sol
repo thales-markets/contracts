@@ -3,15 +3,16 @@ pragma solidity ^0.5.16;
 
 // Inheritance
 import "../interfaces/IPriceFeed.sol";
-import "./OwnedInitializable.sol";
+import "../utils/proxy/ProxyOwned.sol";
 // Libraries
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 // Internal references
 // AggregatorInterface from Chainlink represents a decentralized pricing network for a single currency key
 import "@chainlink/contracts-0.0.10/src/v0.5/interfaces/AggregatorV2V3Interface.sol";
 
-contract PriceFeed is IPriceFeed, OwnedInitializable {
+contract PriceFeed is IPriceFeed, Initializable, ProxyOwned {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
@@ -25,7 +26,7 @@ contract PriceFeed is IPriceFeed, OwnedInitializable {
     address public nominatedOwner;
 
     function initialize(address _owner) public initializer {
-        OwnedInitializable.initialize((_owner));
+        setOwner(_owner);
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */

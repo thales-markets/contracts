@@ -54,7 +54,8 @@ contract('ThalesRoyale', accounts => {
 			DAY * 3,
 			HOUR * 8,
 			DAY,
-			WEEK
+			WEEK,
+			1 // season 1
 		);
 	});
 

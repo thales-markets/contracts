@@ -15,6 +15,16 @@
         "internalType": "address",
         "name": "opThalesAddress",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_l1BridgeAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_l2TokenAddress",
+        "type": "address"
       }
     ],
     "payable": false,
@@ -56,7 +66,39 @@
         "type": "uint256"
       }
     ],
+    "name": "ExchangedThalesForL2OpThales",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
     "name": "ExchangedThalesForOpThales",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "l1BridgeAddress",
+        "type": "address"
+      }
+    ],
+    "name": "L1BridgeChanged",
     "type": "event"
   },
   {
@@ -107,6 +149,21 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "L1Bridge",
+    "outputs": [
+      {
+        "internalType": "contract iOVM_L1ERC20Bridge",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "OpThalesToken",
     "outputs": [
       {
@@ -144,6 +201,36 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "enabledOpThalesToThales",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "enabledThalesToOpThales",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -167,10 +254,40 @@
         "type": "uint256"
       }
     ],
+    "name": "exchangeThalesToL2OpThales",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
     "name": "exchangeThalesToOpThales",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "l2TokenAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -246,6 +363,81 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "selfDestruct",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_enable",
+        "type": "bool"
+      }
+    ],
+    "name": "setEnabledOpThalesToThales",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_enable",
+        "type": "bool"
+      }
+    ],
+    "name": "setEnabledThalesToOpThales",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_l1BridgeAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setL1StandardBridge",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_l2TokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setL2TokenAddress",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

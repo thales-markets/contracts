@@ -1,7 +1,5 @@
 const { ethers, upgrades } = require('hardhat');
-const { toBytes32 } = require('../../index');
-const snx = require('synthetix');
-const { setTargetAddress, getTargetAddress } = require('../helpers');
+const { getTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();

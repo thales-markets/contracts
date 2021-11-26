@@ -1,7 +1,7 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const { artifacts, contract, web3 } = require('hardhat');
-const snx = require('synthetix');
+const snx = require('synthetix-2.50.4-ovm');
 
 const { toBN } = web3.utils;
 

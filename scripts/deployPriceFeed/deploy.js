@@ -1,6 +1,5 @@
 const { ethers, upgrades } = require('hardhat');
 const { toBytes32 } = require('../../index');
-const snx = require('synthetix');
 const { setTargetAddress } = require('../helpers');
 
 async function main() {

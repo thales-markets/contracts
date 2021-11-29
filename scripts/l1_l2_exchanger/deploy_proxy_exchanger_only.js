@@ -1,7 +1,6 @@
 const path = require('path');
 const { ethers, upgrades } = require('hardhat');
 const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
 
 const user_key_local_optimism = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';

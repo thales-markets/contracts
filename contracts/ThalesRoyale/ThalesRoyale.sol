@@ -28,6 +28,7 @@ contract ThalesRoyale is Owned, Pausable {
 
     // per season properties season -> rest
     uint public season = 1; 
+    mapping(uint => uint) public signedUpPlayersCount;
     mapping(uint => uint) public roundPerSeason;
     mapping(uint => bool) public seasonStart;
     mapping(uint => bool) public seasonFinish;
@@ -81,6 +82,7 @@ contract ThalesRoyale is Owned, Pausable {
         require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");
         playerSignedUpPerSeason[season][msg.sender] = block.timestamp;
         playersPerSeason[season].push(msg.sender);
+        signedUpPlayersCount[season]++;
         emit SignedUp(msg.sender, season);
     }
 
@@ -89,6 +91,7 @@ contract ThalesRoyale is Owned, Pausable {
         require(playerSignedUpPerSeason[season][newSignee] == 0, "Player already signed up");
         playerSignedUpPerSeason[season][newSignee] = block.timestamp;
         playersPerSeason[season].push(newSignee);
+        signedUpPlayersCount[season]++;
         emit SignedUp(newSignee, season);
     }
 
@@ -101,7 +104,7 @@ contract ThalesRoyale is Owned, Pausable {
         roundPerSeason[season] = 1;
         roundInASeasonStartTime[season] = block.timestamp;
         roundInSeasonEndTime[season] = roundInASeasonStartTime[season] + roundLength;
-        totalPlayersPerRoundPerSeason[season][1] = playersPerSeason[season].length;
+        totalPlayersPerRoundPerSeason[season][1] = signedUpPlayersCount[season];
         emit RoyaleStarted(season);
     }
 
@@ -162,16 +165,23 @@ contract ThalesRoyale is Owned, Pausable {
         // setting eliminated players to be total players - number of winning players
         eliminatedPerRoundPerSeason[season][roundPerSeason[season]] = totalPlayersPerRoundPerSeason[season][roundPerSeason[season]] - winningPositionsPerRound;   
 
-        roundPerSeason[season] = nextRound;
-        targetPricePerRoundPerSeason[season][roundPerSeason[season]] = roundTargetPrice;
+        // if no one is left no need to set values
+        if(winningPositionsPerRound > 0){
+            roundPerSeason[season] = nextRound;
+            targetPricePerRoundPerSeason[season][roundPerSeason[season]] = roundTargetPrice;
+        }
 
-        if (roundPerSeason[season] > rounds || totalPlayersPerRoundPerSeason[season][roundPerSeason[season]] <= 1) {
+        if (roundPerSeason[season] > rounds || winningPositionsPerRound <= 1) {
             seasonFinish[season] = true;
-            address[] memory alivePlayers = getAlivePlayers();
-            // there is alive players at the end
-            if (alivePlayers.length > 0) {
-                _populateReward(alivePlayers);
+
+            // in no one is winner pick from lest round
+            if (winningPositionsPerRound == 0) {
+                _populateReward(totalPlayersPerRoundPerSeason[season][roundPerSeason[season]]);
+            } else{ 
+                // there is min 1 winner
+                _populateReward(winningPositionsPerRound);
             }
+
             royaleSeasonEndTime[season] = block.timestamp;
             // first close previous round then royale
             emit RoundClosed(season, roundPerSeason[season] - 1, roundResultPerSeason[season][roundPerSeason[season] - 1]);
@@ -205,56 +215,6 @@ contract ThalesRoyale is Owned, Pausable {
         } else {
             return playerSignedUpPerSeason[season][player] != 0;
         }
-    }
-
-    function getPlayers() public view returns (address[] memory) {
-        return playersPerSeason[season];
-    }
-
-    function getPlayersInASeason(uint _season) public view returns (address[] memory) {
-        return playersPerSeason[_season];
-    }
-
-    function getAlivePlayers() public view returns (address[] memory) {
-        uint k = 0;
-        for (uint i = 0; i < playersPerSeason[season].length; i++) {
-            if (isPlayerAlive(playersPerSeason[season][i])) {
-                k = k + 1;
-            }
-        }
-
-        address[] memory alivePlayers = new address[](k);
-        k = 0;
-
-        for (uint i = 0; i < playersPerSeason[season].length; i++) {
-            if (isPlayerAlive(playersPerSeason[season][i])) {
-                alivePlayers[k] = playersPerSeason[season][i];
-                k = k + 1;
-            }
-        }
-
-        return alivePlayers;
-    }
-
-    function getAlivePlayersInSpecificSeason(uint _season) public view returns (address[] memory) {
-        uint k = 0;
-        for (uint i = 0; i < playersPerSeason[_season].length; i++) {
-            if (isPlayerAliveInASpecificSeason(playersPerSeason[_season][i], _season)) {
-                k = k + 1;
-            }
-        }
-
-        address[] memory alivePlayers = new address[](k);
-        k = 0;
-
-        for (uint i = 0; i < playersPerSeason[_season].length; i++) {
-            if (isPlayerAliveInASpecificSeason(playersPerSeason[_season][i], _season)) {
-                alivePlayers[k] = playersPerSeason[_season][i];
-                k = k + 1;
-            }
-        }
-
-        return alivePlayers;
     }
 
     function setSignUpPeriod(uint _signUpPeriod) public onlyOwner {
@@ -293,11 +253,11 @@ contract ThalesRoyale is Owned, Pausable {
         emit NewSeasonStarted(season);
     }
 
-    function _populateReward(address[] memory alivePlayers) internal {
+    function _populateReward(uint numberOfWinners) internal {
         require(seasonFinish[season], "Royale must be finished");
-        require(alivePlayers.length > 0, "There is no alive players left in Royale");
+        require(numberOfWinners > 0, "There is no alive players left in Royale");
 
-        rewardPerPlayerPerSeason[season] = reward.div(alivePlayers.length);
+        rewardPerPlayerPerSeason[season] = reward.div(numberOfWinners);
     }
 
     function claimRewardForCurrentSeason() public onlyWinners(season) {
@@ -332,7 +292,6 @@ contract ThalesRoyale is Owned, Pausable {
 
     modifier onlyWinners (uint _season) {
         require(seasonFinish[_season], "Royale must be finished!");
-        require(getAlivePlayersInSpecificSeason(_season).length > 0, "There is no alive players left in Royale");
         require(isPlayerAliveInASpecificSeason(msg.sender, _season) == true, "Player is not alive");
         _;
     }

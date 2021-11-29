@@ -68,10 +68,6 @@ contract('ThalesRoyale', accounts => {
 				var wallet = new ethers2.Wallet(privateKey);
 				await royale.signUpOnBehalf(wallet.address, { from: owner });
 			}
-
-			let alivePlayers = await royale.getAlivePlayers();
-			//console.log('final alive players are ' + alivePlayers);
-			console.log('final alive players are ' + alivePlayers.length);
 		});
 	});
 });

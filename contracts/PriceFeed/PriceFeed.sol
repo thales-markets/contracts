@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.5.16;
 
-// Contracts
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
-
 // Inheritance
 import "../interfaces/IPriceFeed.sol";
-
+import "../utils/proxy/ProxyOwned.sol";
 // Libraries
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 // Internal references
 // AggregatorInterface from Chainlink represents a decentralized pricing network for a single currency key
 import "@chainlink/contracts-0.0.10/src/v0.5/interfaces/AggregatorV2V3Interface.sol";
 
-contract PriceFeed is Owned, IPriceFeed {
+contract PriceFeed is IPriceFeed, Initializable, ProxyOwned {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
@@ -24,9 +22,12 @@ contract PriceFeed is Owned, IPriceFeed {
 
     // List of aggregator keys for convenient iteration
     bytes32[] public aggregatorKeys;
+    address public owner;
+    address public nominatedOwner;
 
-    // ========== CONSTRUCTOR ==========
-    constructor(address _owner) public Owned(_owner) {}
+    function initialize(address _owner) public initializer {
+        setOwner(_owner);
+    }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
     function addAggregator(bytes32 currencyKey, address aggregatorAddress) external onlyOwner {
@@ -109,10 +110,7 @@ contract PriceFeed is Owned, IPriceFeed {
         (bool success, bytes memory returnData) = address(aggregator).staticcall(payload);
 
         if (success) {
-            (, int256 answer, , uint256 updatedAt, ) = abi.decode(
-                returnData,
-                (uint80, int256, uint256, uint256, uint80)
-            );
+            (, int256 answer, , uint256 updatedAt, ) = abi.decode(returnData, (uint80, int256, uint256, uint256, uint80));
             return
                 RateAndUpdatedTime({rate: uint216(_formatAggregatorAnswer(currencyKey, answer)), time: uint40(updatedAt)});
         }

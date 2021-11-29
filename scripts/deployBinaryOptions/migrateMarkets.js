@@ -3,7 +3,7 @@
 const w3utils = require('web3-utils');
 const Web3 = require('web3');
 const { gray, green, yellow } = require('chalk');
-const snx = require('synthetix');
+const snx = require('synthetix-2.50.4-ovm');
 
 const sourceContractAddress = '0x46d9DB2830C005e38878b241199bb09d9d355994';
 const targetContractAddress = '0x5c137947a500811672Df13fCaA21Bd7f580067d9';

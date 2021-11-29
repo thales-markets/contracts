@@ -338,6 +338,21 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(true, isPlayerFirstAlive);
 
 			await expect(royale.takeAPosition(2, { from: first })).to.be.revertedWith('Competition finished');
+
+			let isPlayerOneClaimedReward_before = await royale.rewardCollectedPerSeason(season_1, first);
+			assert.equal(false, isPlayerOneClaimedReward_before);
+
+			const tx = await royale.claimRewardForCurrentSeason({ from: first });
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'RewardClaimed', {
+				season: season_1,
+				winner: first,
+				reward: toUnit(10000),
+			});
+
+			let isPlayerOneClaimedReward_after = await royale.rewardCollectedPerSeason(season_1, first);
+			assert.equal(isPlayerOneClaimedReward_after, true);
 		});
 
 		it('take a winning position and end first round then skip 2nd round', async () => {

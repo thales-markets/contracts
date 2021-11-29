@@ -145,9 +145,12 @@ contract ThalesRoyale is Owned, Pausable {
 
         uint nextRound = roundPerSeason[season] + 1;
 
-        finalPricePerRoundPerSeason[season][roundPerSeason[season]] = priceFeed.rateForCurrency(oracleKey);
-        roundResultPerSeason[season][roundPerSeason[season]] = priceFeed.rateForCurrency(oracleKey) >= roundTargetPrice ? 2 : 1;
-        roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
+        // getting price
+        uint currentPriceFromOracle = priceFeed.rateForCurrency(oracleKey);
+
+        finalPricePerRoundPerSeason[season][roundPerSeason[season]] = currentPriceFromOracle;
+        roundResultPerSeason[season][roundPerSeason[season]] = currentPriceFromOracle >= roundTargetPrice ? 2 : 1;
+        roundTargetPrice = currentPriceFromOracle;
 
         uint winningPositionsPerRound = roundResultPerSeason[season][roundPerSeason[season]] == 2 ? positionsPerRoundPerSeason[season][roundPerSeason[season]][2] : positionsPerRoundPerSeason[season][roundPerSeason[season]][1];
 
@@ -164,9 +167,10 @@ contract ThalesRoyale is Owned, Pausable {
 
         if (roundPerSeason[season] > rounds || totalPlayersPerRoundPerSeason[season][roundPerSeason[season]] <= 1) {
             seasonFinish[season] = true;
-            // there is no more rounds left and it has alive players at last round
-            if (roundPerSeason[season] > rounds && getAlivePlayers().length > 0) {
-                _populateReward(getAlivePlayers());
+            address[] memory alivePlayers = getAlivePlayers();
+            // there is alive players at the end
+            if (alivePlayers.length > 0) {
+                _populateReward(alivePlayers);
             }
             royaleSeasonEndTime[season] = block.timestamp;
             // first close previous round then royale

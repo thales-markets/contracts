@@ -18,7 +18,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_reward",
+        "name": "_initialReward",
         "type": "uint256"
       },
       {
@@ -60,6 +60,31 @@
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "season",
+        "type": "uint256"
+      }
+    ],
+    "name": "BuyIn",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -652,21 +677,6 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "reward",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -701,6 +711,27 @@
       }
     ],
     "name": "rewardPerPlayerPerSeason",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "rewardPerSeason",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1118,23 +1149,14 @@
   },
   {
     "constant": false,
-    "inputs": [],
-    "name": "signUp",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "newSignee",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "signUpOnBehalf",
+    "name": "signUp",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

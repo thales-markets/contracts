@@ -30,11 +30,18 @@ contract('ThalesRoyale', accounts => {
 	let rewardTokenAddress;
 	let ThalesRoyale;
 	let royale;
+	let ThalesDeployed;
 	let MockPriceFeedDeployed;
 
+	const thalesQty = toUnit(10000);
+	const thalesQty_2500 = toUnit(2500);
+
 	beforeEach(async () => {
+
+		let Thales = artifacts.require('Thales');
+		ThalesDeployed = await Thales.new({ from: owner });
+
 		priceFeedAddress = owner;
-		rewardTokenAddress = owner;
 
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
 		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
@@ -48,8 +55,8 @@ contract('ThalesRoyale', accounts => {
 			owner,
 			toBytes32('SNX'),
 			priceFeedAddress,
-			toUnit(10000),
-			rewardTokenAddress,
+			toUnit(0),
+			ThalesDeployed.address,
 			7,
 			DAY * 3,
 			HOUR * 8,
@@ -57,17 +64,34 @@ contract('ThalesRoyale', accounts => {
 			WEEK,
 			1 // season 1
 		);
+
+		await ThalesDeployed.transfer(royale.address, thalesQty, { from: owner });
+		await ThalesDeployed.approve(royale.address, thalesQty, { from: owner });
+
 	});
 
 	describe('Init', () => {
 		it('max alive players', async () => {
-			for (let i = 0; i < 500; i++) {
-				var id = crypto.randomBytes(32).toString('hex');
-				var privateKey = '0x' + id;
+				for (let i = 0; i < 2000; i++) {
+					var id = crypto.randomBytes(32).toString('hex');
+					var privateKey = '0x' + id;
+	
+					var wallet = new ethers2.Wallet(privateKey);
+					//console.log('wallet  ' + wallet.address);
+					
+					//await ThalesDeployed.approve(wallet.address, toUnit(1), { from: owner });
+					//await ThalesDeployed.transfer(wallet.address, toUnit(1), { from: owner });
+					//await ThalesDeployed.approve(royale.address, toUnit(1), { from: wallet.address });
+					//await ThalesDeployed.transfer(royale.address, toUnit(1), { from: wallet.address });
+					//await royale.signUp(toUnit(1) , { from: wallet.address });
 
-				var wallet = new ethers2.Wallet(privateKey);
-				await royale.signUpOnBehalf(wallet.address, { from: owner });
-			}
+					//console.log('Signed up ' + wallet.address, ' which is ' + i);
+				}
+
+				await fastForward(4 * DAY);
+				await royale.startRoyale();
+				let totalPlayersRound1 = await royale.totalPlayersPerRoundPerSeason(1, 1);
+				console.log('totalPlayersRound1 is ' + totalPlayersRound1);
 		});
 	});
 });

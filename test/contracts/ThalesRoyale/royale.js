@@ -37,7 +37,9 @@ contract('ThalesRoyale', accounts => {
 
 	beforeEach(async () => {
 
+		const thalesQty_0 = toUnit(0);
 		const thalesQty = toUnit(10000);
+		const thalesQty_2500 = toUnit(2500);
 
 		let Thales = artifacts.require('Thales');
 		ThalesDeployed = await Thales.new({ from: owner });
@@ -57,7 +59,7 @@ contract('ThalesRoyale', accounts => {
 			owner,
 			toBytes32('SNX'),
 			priceFeedAddress,
-			thalesQty,
+			thalesQty_0, // initial
 			ThalesDeployed.address,
 			7,
 			DAY * 3,
@@ -69,13 +71,26 @@ contract('ThalesRoyale', accounts => {
 
 		await ThalesDeployed.transfer(royale.address, thalesQty, { from: owner });
 		await ThalesDeployed.approve(royale.address, thalesQty, { from: owner });
+
+		await ThalesDeployed.transfer(first, thalesQty, { from: owner });
+		await ThalesDeployed.approve(royale.address, thalesQty_2500, { from: first });
+
+		await ThalesDeployed.transfer(second, thalesQty, { from: owner });
+		await ThalesDeployed.approve(royale.address, thalesQty_2500, { from: second });
+
+		await ThalesDeployed.transfer(third, thalesQty, { from: owner });
+		await ThalesDeployed.approve(royale.address, thalesQty_2500, { from: third });
+
+		await ThalesDeployed.transfer(fourth, thalesQty, { from: owner });
+		await ThalesDeployed.approve(royale.address, thalesQty_2500, { from: fourth });
+
 	});
 
 	describe('Init', () => {
 		it('Signing up cant be called twice', async () => {
 
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
 
 			let initTotalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 1);
 			// not started
@@ -85,19 +100,41 @@ contract('ThalesRoyale', accounts => {
 			// not started
 			assert.equal(0, initEliminatedPlayersInARound);
 
-			await expect(royale.signUp({ from: first })).to.be.revertedWith('Player already signed up');
+			await expect(royale.signUp(toUnit(2500),{ from: first })).to.be.revertedWith('Player already signed up');
+		});
+
+		it('Signing up no allowance', async () => {
+			await expect(royale.signUp(toUnit(3500),{ from: first })).to.be.revertedWith('No allowance.');
+		});
+
+		it('Signing up with allowance check event', async () => {
+
+			const tx = await royale.signUp(toUnit(2500), { from: first });
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'BuyIn', {
+				user: first,
+				amount: toUnit(2500),
+				season: season_1
+			});
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[1], 'SignedUp', {
+				user: first,
+				season: season_1
+			});
 		});
 
 		it('Signing up only possible in specified time', async () => {
 			await fastForward(DAY * 4);
-			await expect(royale.signUp({ from: first })).to.be.revertedWith('Sign up period has expired');
+			await expect(royale.signUp(toUnit(2500),{ from: first })).to.be.revertedWith('Sign up period has expired');
 		});
 
 		it('Cant start new season if this not finished', async () => {
 
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
-			await royale.signUp({ from: third });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
+			await royale.signUp(toUnit(2500), { from: third });
 
 			let isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
@@ -117,8 +154,8 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('check require statements', async () => {
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
 
 			await expect(royale.takeAPosition(1, { from: first })).to.be.revertedWith(
 				'Competition not started yet'
@@ -146,9 +183,9 @@ contract('ThalesRoyale', accounts => {
 
 			assert.equal(false, isPlayerFirstAlive);
 
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
-			await royale.signUp({ from: third });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
+			await royale.signUp(toUnit(2500), { from: third });
 
 			isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
@@ -218,8 +255,8 @@ contract('ThalesRoyale', accounts => {
 
 			assert.equal(false, isPlayerFirstAlive);
 
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
 
 			isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
@@ -306,8 +343,8 @@ contract('ThalesRoyale', accounts => {
 
 			assert.equal(false, isPlayerFirstAlive);
 
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
 
 			isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
@@ -348,7 +385,7 @@ contract('ThalesRoyale', accounts => {
 			assert.eventEqual(tx.logs[0], 'RewardClaimed', {
 				season: season_1,
 				winner: first,
-				reward: toUnit(10000),
+				reward: toUnit(5000),
 			});
 
 			let isPlayerOneClaimedReward_after = await royale.rewardCollectedPerSeason(season_1, first);
@@ -360,9 +397,9 @@ contract('ThalesRoyale', accounts => {
 
 			assert.equal(false, isPlayerFirstAlive);
 
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
-			await royale.signUp({ from: third });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
+			await royale.signUp(toUnit(2500), { from: third });
 
 			isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
@@ -424,9 +461,9 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('win till the end', async () => {
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
-			await royale.signUp({ from: third });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
+			await royale.signUp(toUnit(2500), { from: third });
 
 			await fastForward(HOUR * 72 + 1);
 			await royale.startRoyale();
@@ -568,8 +605,8 @@ contract('ThalesRoyale', accounts => {
 
 			assert.equal(false, isPlayerFirstAlive);
 
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
 
 			isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
@@ -600,8 +637,8 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('win till the end', async () => {
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
 
 			await fastForward(HOUR * 72 + 1);
 			await royale.startRoyale();
@@ -659,10 +696,10 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('win till the end', async () => {
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
-			await royale.signUp({ from: third });
-			await royale.signUp({ from: fourth });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
+			await royale.signUp(toUnit(2500), { from: third });
+			await royale.signUp(toUnit(2500), { from: fourth });
 
 			await fastForward(HOUR * 72 + 1);
 			await royale.startRoyale();
@@ -733,10 +770,10 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('win till the end and check results', async () => {
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
-			await royale.signUp({ from: third });
-			await royale.signUp({ from: fourth });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
+			await royale.signUp(toUnit(2500), { from: third });
+			await royale.signUp(toUnit(2500), { from: fourth });
 
 			await fastForward(HOUR * 72 + 1);
 			await royale.startRoyale();
@@ -888,8 +925,8 @@ contract('ThalesRoyale', accounts => {
 
 		it('check the changing positions require to send different one', async () => {
 
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
 
 			await fastForward(HOUR * 72 + 1);
 			await royale.startRoyale();
@@ -908,8 +945,8 @@ contract('ThalesRoyale', accounts => {
 
 		it('check if can start royale', async () => {
 
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
 
 			let canStartFalse = await royale.canStartRoyale();
 			assert.equal(false, canStartFalse);
@@ -938,10 +975,10 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('check the changing positions', async () => {
-			await royale.signUp({ from: first });
-			await royale.signUp({ from: second });
-			await royale.signUp({ from: third });
-			await royale.signUp({ from: fourth });
+			await royale.signUp(toUnit(2500), { from: first });
+			await royale.signUp(toUnit(2500), { from: second });
+			await royale.signUp(toUnit(2500), { from: third });
+			await royale.signUp(toUnit(2500), { from: fourth });
 
 			await fastForward(HOUR * 72 + 1);
 			await royale.startRoyale();
@@ -1139,13 +1176,13 @@ contract('ThalesRoyale', accounts => {
 	it('Win and collect reward', async () => {
 
 		// check rewards
-		let reward = await royale.reward();
-		assert.bnEqual(reward, toUnit(10000));
+		let reward = await royale.rewardPerSeason(season_1);
+		assert.bnEqual(reward, toUnit(0));
 
-		await royale.signUp({ from: first });
-		await royale.signUp({ from: second });
-		await royale.signUp({ from: third });
-		await royale.signUp({ from: fourth });
+		await royale.signUp(toUnit(2500), { from: first });
+		await royale.signUp(toUnit(2500), { from: second });
+		await royale.signUp(toUnit(2500), { from: third });
+		await royale.signUp(toUnit(2500), { from: fourth });
 
 		await fastForward(HOUR * 72 + 1);
 		await royale.startRoyale();
@@ -1268,13 +1305,13 @@ contract('ThalesRoyale', accounts => {
 	it('Win and collect rewards and start new season', async () => {
 
 		// check rewards
-		let reward = await royale.reward();
-		assert.bnEqual(reward, toUnit(10000));
+		let reward = await royale.rewardPerSeason(season_1);
+		assert.bnEqual(reward, toUnit(0));
 
-		await royale.signUp({ from: first });
-		await royale.signUp({ from: second });
-		await royale.signUp({ from: third });
-		await royale.signUp({ from: fourth });
+		await royale.signUp(toUnit(2500), { from: first });
+		await royale.signUp(toUnit(2500), { from: second });
+		await royale.signUp(toUnit(2500), { from: third });
+		await royale.signUp(toUnit(2500), { from: fourth });
 
 		await fastForward(HOUR * 72 + 1);
 		await royale.startRoyale();
@@ -1417,15 +1454,29 @@ contract('ThalesRoyale', accounts => {
 		// aprove new amount in pool (add aditional 5000, bacause in a pool is already 5000)
 		await ThalesDeployed.transfer(royale.address, toUnit(5000), { from: owner });
 		await ThalesDeployed.approve(royale.address, toUnit(5000), { from: owner });
+		await ThalesDeployed.transfer(first, toUnit(2500), { from: owner });
+		await ThalesDeployed.approve(royale.address, toUnit(2500), { from: first });
+		await ThalesDeployed.transfer(second, toUnit(2500), { from: owner });
+		await ThalesDeployed.approve(royale.address, toUnit(2500), { from: second });
+		await ThalesDeployed.transfer(third, toUnit(2500), { from: owner });
+		await ThalesDeployed.approve(royale.address, toUnit(2500), { from: third });
+		await ThalesDeployed.transfer(fourth, toUnit(2500), { from: owner });
+		await ThalesDeployed.approve(royale.address, toUnit(2500), { from: fourth });
+
+		// setting new reward
+		await royale.setRewards(toUnit(10000), { from: owner });
 
 		// check rewards
-		let reward_s2 = await royale.reward();
+		let reward_s2 = await royale.rewardPerSeason(season_2);
 		assert.bnEqual(reward_s2, toUnit(10000));
 
-		await royale.signUp({ from: first });
-		await royale.signUp({ from: second });
-		await royale.signUp({ from: third });
-		await royale.signUp({ from: fourth });
+		await royale.signUp(toUnit(2500), { from: first });
+		await royale.signUp(toUnit(2500), { from: second });
+		await royale.signUp(toUnit(2500), { from: third });
+		await royale.signUp(toUnit(2500), { from: fourth });
+
+		let reward_s2_aftersignup = await royale.rewardPerSeason(season_2);
+		assert.bnEqual(reward_s2_aftersignup, toUnit(20000));
 
 		await fastForward(HOUR * 72 + 1);
 		await royale.startRoyale();
@@ -1506,7 +1557,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(false, isPlayerFourthAlive_s2);
 
 		let rewardPerPlayer_s2 = await royale.rewardPerPlayerPerSeason(season_2);
-		assert.bnEqual(rewardPerPlayer_s2, toUnit(10000));
+		assert.bnEqual(rewardPerPlayer_s2, toUnit(20000));
 
 		await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
 
@@ -1524,7 +1575,7 @@ contract('ThalesRoyale', accounts => {
 		assert.eventEqual(tx_s2.logs[0], 'RewardClaimed', {
 			season: season_2,
 			winner: first,
-			reward: toUnit(10000),
+			reward: toUnit(20000),
 		});
 
 		let isPlayerOneClaimedReward_after_s2 = await royale.rewardCollectedPerSeason(season_2, first);
@@ -1550,13 +1601,13 @@ contract('ThalesRoyale', accounts => {
 	it('Two players take loosing positions no one left but they can collect and they are winners', async () => {
 
 		// check rewards
-		let reward = await royale.reward();
-		assert.bnEqual(reward, toUnit(10000));
+		let reward = await royale.rewardPerSeason(season_1);
+		assert.bnEqual(reward, toUnit(0));
 
-		await royale.signUp({ from: first });
-		await royale.signUp({ from: second });
-		await royale.signUp({ from: third });
-		await royale.signUp({ from: fourth });
+		await royale.signUp(toUnit(2500), { from: first });
+		await royale.signUp(toUnit(2500), { from: second });
+		await royale.signUp(toUnit(2500), { from: third });
+		await royale.signUp(toUnit(2500), { from: fourth });
 
 		await fastForward(HOUR * 72 + 1);
 		await royale.startRoyale();

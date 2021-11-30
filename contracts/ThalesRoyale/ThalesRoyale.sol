@@ -14,7 +14,6 @@ contract ThalesRoyale is Owned, Pausable {
     using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;
 
-    uint public reward;
     IERC20 public rewardToken;
     bytes32 public oracleKey;
     IPriceFeed public priceFeed;
@@ -28,6 +27,7 @@ contract ThalesRoyale is Owned, Pausable {
 
     // per season properties season -> rest
     uint public season = 1; 
+    mapping(uint => uint) public rewardPerSeason;
     mapping(uint => uint) public signedUpPlayersCount;
     mapping(uint => uint) public roundPerSeason;
     mapping(uint => bool) public seasonStart;
@@ -54,7 +54,7 @@ contract ThalesRoyale is Owned, Pausable {
         address _owner,
         bytes32 _oracleKey,
         IPriceFeed _priceFeed,
-        uint _reward,
+        uint _initialReward,
         address _rewardToken,
         uint _rounds,
         uint _signUpPeriod,
@@ -65,34 +65,29 @@ contract ThalesRoyale is Owned, Pausable {
     ) public Owned(_owner) {
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
-        reward = _reward;
+        rewardPerSeason[_season] = _initialReward;
         rewardToken = IERC20(_rewardToken);
         rounds = _rounds;
         signUpPeriod = _signUpPeriod;
         roundChoosingLength = _roundChoosingLength;
         roundLength = _roundLength;
-        reward = _reward;
         claimTime = _claimTime;
         season = _season;
         seasonCreationTime[_season] = block.timestamp;
     }
 
-    function signUp() external {
+    function signUp(uint amount) external {
         require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
         require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");
+        require(rewardToken.allowance(msg.sender, address(this)) >= amount, "No allowance.");
+
         playerSignedUpPerSeason[season][msg.sender] = block.timestamp;
         playersPerSeason[season].push(msg.sender);
         signedUpPlayersCount[season]++;
-        emit SignedUp(msg.sender, season);
-    }
 
-    function signUpOnBehalf(address newSignee) external onlyOwner {
-        require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
-        require(playerSignedUpPerSeason[season][newSignee] == 0, "Player already signed up");
-        playerSignedUpPerSeason[season][newSignee] = block.timestamp;
-        playersPerSeason[season].push(newSignee);
-        signedUpPlayersCount[season]++;
-        emit SignedUp(newSignee, season);
+        _buyIn(msg.sender, amount);
+
+        emit SignedUp(msg.sender, season);
     }
 
     function startRoyale() external {
@@ -230,7 +225,7 @@ contract ThalesRoyale is Owned, Pausable {
     }
 
     function setRewards(uint _reward) public onlyOwner {
-        reward = _reward;
+        rewardPerSeason[season] = _reward;
     }
 
     function setPriceFeed(IPriceFeed _priceFeed) public onlyOwner {
@@ -257,7 +252,8 @@ contract ThalesRoyale is Owned, Pausable {
         require(seasonFinish[season], "Royale must be finished");
         require(numberOfWinners > 0, "There is no alive players left in Royale");
 
-        rewardPerPlayerPerSeason[season] = reward.div(numberOfWinners);
+        //uint reward = rewardPerSeason[season];
+        rewardPerPlayerPerSeason[season] = rewardPerSeason[season].div(numberOfWinners);
     }
 
     function claimRewardForCurrentSeason() public onlyWinners(season) {
@@ -268,8 +264,16 @@ contract ThalesRoyale is Owned, Pausable {
         _claimRewardForSeason(_season);
     }
 
+    function _buyIn(address _sender, uint _amount) internal {
+
+        rewardToken.transferFrom(_sender, address(this), _amount);
+        rewardPerSeason[season] += _amount;
+
+        emit BuyIn(_sender, _amount, season);
+    }
+
     function _claimRewardForSeason(uint _season) internal {
-        require(reward > 0, "Reward must be set");
+        require(rewardPerSeason[_season] > 0, "Reward must be set");
         require(rewardPerPlayerPerSeason[_season] > 0, "Reward per player must be more then zero");
         require(rewardCollectedPerSeason[_season][msg.sender] == false, "Player already collected reward");
         require(block.timestamp < (royaleSeasonEndTime[_season] + claimTime), "Time for reward claiming expired");
@@ -297,6 +301,7 @@ contract ThalesRoyale is Owned, Pausable {
     }
 
     event SignedUp(address user, uint season);
+    event BuyIn(address user, uint amount, uint season);
     event RoundClosed(uint season, uint round, uint result);
     event TookAPosition(address user, uint season, uint round, uint position);
     event RoyaleStarted(uint season);

@@ -68,6 +68,12 @@
 		"SafeDecimalMath": "0x0142F40c25CE1F1177Ed131101FA19217396cB88",
 		"ProxysUSD": "0xbecc58c6D7Ca71b6FCC4cC8c9c5294A0eA7A0397",
 		"ZeroEx": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF",
+		"BinaryOptionMastercopy": "0xBbC6Bf169235aD9CA1b7d0f6a4593BB770e8C6cd",
+		"BinaryOptionMarketMastercopy": "0x73043369F8EFdd6E0fcB09c1201eE787583a7425",
+		"BinaryOptionMarketFactory": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
+		"BinaryOptionMarketManager": "0x4dB7AfB6b777fB47101C86Bdeb56669ffA8cD656",
+		"BinaryOptionMarketData": "0x1751dDCE8D8B917223e05D8bD015dfb81bF1fcf2",
+		"PriceFeed": "0x8FE726b27e89Cd484981B2D27160186920Af2d17",
 		"OpThales_L2": "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E"
 	},
 	"optimisticKovan": {
@@ -80,7 +86,7 @@
 		"BinaryOptionMarketFactory": "0x7dFdA202789A8d35539260fb22b711b55A335674",
 		"BinaryOptionMarketManager": "0xe2889Edd73C84FC116185638F88EEd328bbDD865",
 		"BinaryOptionMarketData": "0xa5665909A05B1fDe235F6e5aC6Cc16a1502e57b9",
-		"PriceFeed": "0xB721703FA4B2e3AA76ac0435980098f892A65ADA",
+		"PriceFeed": "0xda80876cCF328C1cF4722d6451DdE9aE8b24D127",
 		"ThalesRoyale": "0xb15d3070B829C542c72356EEb7157364A77fEE63",
 		"OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224"
 	},
@@ -91,7 +97,7 @@
 		"EscrowThales": "0x1817e45A781f47b89F5CD498E737Ee96cF743be9",
 		"StakingThales": "",
 		"Thales": "0x9E545E3C0baAB3E08CdfD552C960A1050f373042",
-		"PriceFeed": "",
+		"PriceFeed": "0xda80876cCF328C1cF4722d6451DdE9aE8b24D127",
 		"BinaryOptionMastercopy": "",
 		"BinaryOptionMarketMastercopy": "",
 		"BinaryOptionMarketFactory": "",

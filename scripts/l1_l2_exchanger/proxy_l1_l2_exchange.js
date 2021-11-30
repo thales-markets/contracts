@@ -7,6 +7,7 @@ const { getMessagesAndProofsForL2Transaction } = require('@eth-optimism/message-
 const { predeploys } = require("@eth-optimism/contracts");
 
 const user_key = process.env.PRIVATE_KEY;
+const user_key2 = process.env.PRIVATE_KEY_2;
 
 const {
 	fastForward,
@@ -52,6 +53,7 @@ async function main() {
 	
 	
 	const l1Wallet = new ethers.Wallet(user_key, network_kovan);
+	const l1Wallet2 = new ethers.Wallet(user_key2, network_kovan);
 	const l2Wallet = new ethers.Wallet(user_key, ethers.provider);
 	
 	let blockNumber = await network_kovan.getBlockNumber();
@@ -62,7 +64,7 @@ async function main() {
 	
 	const ThalesAddress = getTargetAddress('Thales', net_kovan);
 	const ProxyThalesExchangerAddress = getTargetAddress('ProxyThalesExchanger', net_kovan);
-	const ThalesExchangerAddress = getTargetAddress('ThalesExchanger', net_kovan);
+	const ThalesExchangerAddress = getTargetAddress('ProxyThalesExchanger', net_kovan);
 	const OP_Thales_L1Address = getTargetAddress('OpThales_L1', net_kovan);
 	const OP_Thales_L2Address = getTargetAddress('OpThales_L2', net_optimistic_kovan);
 
@@ -70,11 +72,14 @@ async function main() {
 	const L2StandardBridge = new ethers.ContractFactory(L2StandardBridgeArtifacts.abi, L2StandardBridgeArtifacts.bytecode);
 	const L1StandardBridge = new ethers.ContractFactory(L1StandardBridgeArtifacts.abi, L1StandardBridgeArtifacts.bytecode);
 	const OP_Thales_L1 = await ethers.getContractFactory('/contracts/Token/OpThales_L1.sol:OpThales');
-	// const ThalesExchanger = await ethers.getContractFactory('ThalesExchanger');
+	const ThalesExchanger = await ethers.getContractFactory('ProxyThalesExchanger');
 	const ProxyThalesExchanger = await ethers.getContractFactory('ProxyThalesExchanger');
+	const OwnedUpgradeabilityProxy = await ethers.getContractFactory('OwnedUpgradeabilityProxy');
+	const OwnedUpgradeabilityProxyAddress = getTargetAddress('OwnedUpgradeabilityProxy', net_kovan);
 	const OP_Thales_L2 = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');
 	const Thales = await ethers.getContractFactory('Thales');
 	
+	const OwnedUpgradeabilityProxy_deployed = await OwnedUpgradeabilityProxy.connect(l1Wallet).attach(OwnedUpgradeabilityProxyAddress);
 
 	const l2Messenger = new ethers.Contract(
 		predeploys.OVM_L2CrossDomainMessenger,
@@ -109,8 +114,11 @@ async function main() {
 	const Thales_deployed= await Thales.connect(l1Wallet).attach(ThalesAddress);
 	console.log("Thales on Kovan at: ", Thales_deployed.address);
 	
-	const ProxyThalesExchanger_deployed = await ProxyThalesExchanger.connect(l1Wallet).attach(ProxyThalesExchangerAddress);
-	console.log("Thales Exchanger on Kovan at: ", ProxyThalesExchanger_deployed.address);
+	const ProxyThalesExchanger_deployed = await ProxyThalesExchanger.connect(l1Wallet2).attach(OwnedUpgradeabilityProxyAddress);
+	console.log("Thales ProxyExchanger on Kovan at: ", ProxyThalesExchanger_deployed.address);
+	
+	const ThalesExchanger_deployed = await ThalesExchanger.connect(l1Wallet2).attach(ThalesExchangerAddress);
+	console.log("Thales Exchanger NON-proxy on Kovan at: ", ThalesExchanger_deployed.address);
 
 	const OP_Thales_L1_deployed = await OP_Thales_L1.connect(l1Wallet).attach(OP_Thales_L1Address);
 	console.log("L1 Contract on Kovan at: ", OP_Thales_L1_deployed.address);
@@ -144,33 +152,53 @@ async function main() {
 	console.log("Thales balance", owner.address,":", fromUnit(balance.toString()));
     
     balance = await Thales_deployed.balanceOf(ProxyThalesExchanger_deployed.address);
-	console.log("Thales balance of Proxy", ProxyThalesExchanger_deployed.address,":", fromUnit(balance.toString()));
+	console.log("Thales balance of Exchanger", ProxyThalesExchanger_deployed.address,":", fromUnit(balance.toString()));
     
-    balance = await Thales_deployed.balanceOf(ThalesExchangerAddress);
-	console.log("Thales balance of Exchanger", ThalesExchangerAddress,":", fromUnit(balance.toString()));
+    // balance = await Thales_deployed.balanceOf(OwnedUpgradeabilityProxy_deployed.address);
+	// console.log("Thales balance of Proxy", OwnedUpgradeabilityProxy_deployed.address,":", fromUnit(balance.toString()));
     
 	balance = await OP_Thales_L1_deployed.balanceOf(ProxyThalesExchanger_deployed.address);
-	console.log("L1 balance of Proxy contract", ProxyThalesExchanger_deployed.address,":", fromUnit(balance.toString()));
+	console.log("L1 balance of Exchanger", ProxyThalesExchanger_deployed.address,":", fromUnit(balance.toString()));
     
-    balance = await OP_Thales_L1_deployed.balanceOf(ThalesExchangerAddress);
-	console.log("L1 balance of Exchanger", ThalesExchangerAddress,":", fromUnit(balance.toString()));
+    // balance = await OP_Thales_L1_deployed.balanceOf(OwnedUpgradeabilityProxy_deployed.address);
+	// console.log("L1 balance of Proxy", OwnedUpgradeabilityProxy_deployed.address,":", fromUnit(balance.toString()));
     
 	
     if(parseInt(fromUnit(balance.toString())) == 0) {
-        console.log("\nTransferring ", TRANSFER_ERC20, " THALES to Exchanger using proxy");
-        const transfer = await OP_Thales_L1_deployed.transfer(ProxyThalesExchanger_deployed.address, w3utils.toWei(TRANSFER_ERC20), {
-            from:owner.address,
-            gasPrice: 180000000
-        });
-        await transfer.wait();
-        console.log("Transfer with transaction: ", transfer.hash);
-    }
-    
-    balance = await OP_Thales_L1_deployed.balanceOf(ThalesExchangerAddress);
-	console.log("L1 balance of Exchanger contract", ThalesExchangerAddress,":", fromUnit(balance.toString()));
-    // let approved = await OP_Thales_L1_deployed.allowance(owner.address, L1StandardBridge_deployed.address);
+		console.log("\nTransferring ", TRANSFER_ERC20, " THALES to Exchanger using proxy");
+        const transfer = await OP_Thales_L1_deployed.transfer(ProxyThalesExchanger_deployed.address, w3utils.toWei(TRANSFER_ERC20));
+        // const transfer = await OP_Thales_L1_deployed.transfer(ProxyThalesExchanger_deployed.address, w3utils.toWei(TRANSFER_ERC20), {
+			//     from:owner.address,
+			//     gasPrice: 180000000
+			// });
+			await transfer.wait();
+			console.log("Transfer with transaction: ", transfer.hash);
+		}
+		
+	// balance = await OP_Thales_L1_deployed.balanceOf(OwnedUpgradeabilityProxy_deployed.address);
+	// console.log("L1 balance of Proxy", OwnedUpgradeabilityProxy_deployed.address,":", fromUnit(balance.toString()));
+		// let approved = await OP_Thales_L1_deployed.allowance(owner.address, L1StandardBridge_deployed.address);
+	balance = await OP_Thales_L1_deployed.balanceOf(ProxyThalesExchanger_deployed.address);
+	console.log("L1 balance of Exchanger", ProxyThalesExchanger_deployed.address,":", fromUnit(balance.toString()));
 	// console.log("Approved: ", fromUnit(approved.toString()));
 
+	let answer = await ProxyThalesExchanger_deployed.enabledOpThalesToThales();
+	console.log("enabledOpToThales:", answer.toString());
+	
+	answer = await ThalesExchanger_deployed.enabledOpThalesToThales();
+	console.log("(nonProxy) enabledOpToThales:", answer.toString());
+	
+	answer = await ProxyThalesExchanger_deployed.l2TokenAddress();
+	console.log("L2TokenAddress:", answer.toString());
+	
+	answer = await ProxyThalesExchanger_deployed.owner();
+	console.log("owner:", answer.toString());
+	
+	answer = await ThalesExchanger_deployed.owner();
+	console.log("owner non-proxy:", answer.toString());
+	
+	answer = await OwnedUpgradeabilityProxy_deployed.proxyOwner();
+	console.log("Proxy owner:", answer.toString());
 	// let TRANSFER_ERC20 = '25'
 
 	// if(parseInt(fromUnit(approved.toString())) == 0) {

@@ -1,7 +1,7 @@
 const path = require('path');
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
-const snx = require('synthetix');
+const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
 
 const user_key = process.env.PRIVATE_KEY;

@@ -90,9 +90,9 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
     }
 
     function exchangeThalesToL2OpThales(uint amount) external nonReentrant notPaused {
+        require(enabledThalesToOpThales, "Exchanging disabled");
         require(OpThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger OpThales funds");
         require(ThalesToken.allowance(msg.sender, address(this)) >= amount, "No allowance");
-        require(enabledThalesToOpThales, "Exchanging disabled");
         ThalesToken.transferFrom(msg.sender, address(this), amount);
         L1Bridge.depositERC20To(address(OpThalesToken), l2TokenAddress, msg.sender, amount, 2000000, "0x");
         emit ExchangedThalesForL2OpThales(msg.sender, amount);

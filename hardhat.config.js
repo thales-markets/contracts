@@ -40,6 +40,15 @@ module.exports = {
 	solidity: {
 		compilers: [
 			{
+				version: '0.4.21',
+				settings: {
+					optimizer: {
+						enabled: true,
+						runs: 200,
+					},
+				},
+			},
+			{
 				version: '0.5.16',
 				settings: {
 					optimizer: {
@@ -115,12 +124,16 @@ module.exports = {
 			url: 'https://mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
-		optimistic: {
+		optimisticLocal: {
 			url: LOCAL_OPT_IP,
 			accounts: {
 			  mnemonic: "test test test test test test test test test test test junk",
 			},
 			gasPrice: 10000,
+		},
+		optimistic: {
+			url: 'https://mainnet.optimism.io',
+			accounts: [PRIVATE_KEY]
 		},
 		optimisticKovan: {
 			gasPrice: 10000,

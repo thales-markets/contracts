@@ -45,7 +45,7 @@ async function main() {
 		priceFeedAddress,
 		w3utils.toWei('10000'),
 		priceFeedAddress,
-		7,
+		6,
 		day * 3,
 		hour * 8,
 		day
@@ -64,7 +64,7 @@ async function main() {
 			priceFeedAddress,
 			w3utils.toWei('10000'),
 			priceFeedAddress,
-			7,
+			6,
 			day * 3,
 			hour * 8,
 			day,

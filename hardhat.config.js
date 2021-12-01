@@ -10,6 +10,8 @@ require('hardhat-gas-reporter');
 require('@nomiclabs/hardhat-waffle');
 require('@nomiclabs/hardhat-etherscan');
 require('hardhat-abi-exporter');
+require('@nomiclabs/hardhat-ethers');
+require('@openzeppelin/hardhat-upgrades');
 
 const {
 	constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },
@@ -37,6 +39,15 @@ module.exports = {
 	// },
 	solidity: {
 		compilers: [
+			{
+				version: '0.4.21',
+				settings: {
+					optimizer: {
+						enabled: true,
+						runs: 200,
+					},
+				},
+			},
 			{
 				version: '0.5.16',
 				settings: {
@@ -113,12 +124,16 @@ module.exports = {
 			url: 'https://mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
-		optimistic: {
+		optimisticLocal: {
 			url: LOCAL_OPT_IP,
 			accounts: {
 				mnemonic: 'test test test test test test test test test test test junk',
 			},
 			gasPrice: 10000,
+		},
+		optimistic: {
+			url: 'https://mainnet.optimism.io',
+			accounts: [PRIVATE_KEY]
 		},
 		optimisticKovan: {
 			gasPrice: 10000,

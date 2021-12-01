@@ -59,17 +59,22 @@ contract('ThalesRoyale', accounts => {
 
 	describe('Init', () => {
 		it('max alive players', async () => {
-			for (let i = 0; i < 500; i++) {
+			for (let i = 0; i < 2000; i++) {
 				var id = crypto.randomBytes(32).toString('hex');
 				var privateKey = '0x' + id;
 
 				var wallet = new ethers2.Wallet(privateKey);
 				await royale.signUpOnBehalf(wallet.address, { from: owner });
+				console.log('Signed up ' + wallet.address, ' which is ' + i);
 			}
+			await fastForward(4 * DAY);
+			await royale.startRoyale();
+			let totalPlayersRound1 = await royale.totalPlayersPerRound(1);
+			console.log('totalPlayersRound1 is ' + totalPlayersRound1);
 
-			let alivePlayers = await royale.getAlivePlayers();
-			//console.log('final alive players are ' + alivePlayers);
-			console.log('final alive players are ' + alivePlayers.length);
+			// let alivePlayers = await royale.getAlivePlayers();
+			// //console.log('final alive players are ' + alivePlayers);
+			// console.log('final alive players are ' + alivePlayers.length);
 		});
 	});
 });

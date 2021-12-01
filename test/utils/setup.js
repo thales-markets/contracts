@@ -1,6 +1,6 @@
 'use strict';
 
-const { artifacts, web3, log } = require('hardhat');
+const { artifacts, web3, log, upgrades } = require('hardhat');
 
 const { toWei } = web3.utils;
 const { toUnit } = require('./index')();
@@ -150,9 +150,7 @@ const setupContract = async ({
 		AddressResolver: [owner],
 		SystemStatus: [owner],
 		FlexibleStorage: [tryGetAddressOf('AddressResolver')],
-		PriceFeed: [
-			owner,
-		],
+		PriceFeed: [owner],
 		SynthetixState: [owner, ZERO_ADDRESS],
 		SupplySchedule: [owner, 0, 0],
 		Proxy: [owner],
@@ -245,9 +243,15 @@ const setupContract = async ({
 
 	let instance;
 	try {
-		instance = await create({
-			constructorArgs: args.length > 0 ? args : defaultArgs[contract],
-		});
+
+		if(contract == 'PriceFeed') {
+			const PriceFeed = await ethers.getContractFactory('PriceFeed');
+			instance = await upgrades.deployProxy(PriceFeed, [owner]);
+		} else {
+			instance = await create({
+				constructorArgs: args.length > 0 ? args : defaultArgs[contract],
+			});
+		}
 		// Show contracts creating for debugging purposes
 		if (process.env.DEBUG) {
 			log(

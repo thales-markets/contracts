@@ -24,6 +24,7 @@ contract ThalesRoyale is Owned, Pausable {
     uint public roundLength = 24 hours;
     uint public claimTime = 1 weeks;
     uint public roundTargetPrice;
+    uint public buyInAmount;
 
     // per season properties season -> rest
     uint public season = 1; 
@@ -61,7 +62,8 @@ contract ThalesRoyale is Owned, Pausable {
         uint _roundChoosingLength,
         uint _roundLength,
         uint _claimTime,
-        uint _season
+        uint _season,
+        uint _buyInAmount
     ) public Owned(_owner) {
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
@@ -74,18 +76,19 @@ contract ThalesRoyale is Owned, Pausable {
         claimTime = _claimTime;
         season = _season;
         seasonCreationTime[_season] = block.timestamp;
+        buyInAmount = _buyInAmount;
     }
 
-    function signUp(uint amount) external {
+    function signUp() external {
         require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
         require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");
-        require(rewardToken.allowance(msg.sender, address(this)) >= amount, "No allowance.");
+        require(rewardToken.allowance(msg.sender, address(this)) >= buyInAmount, "No allowance.");
 
         playerSignedUpPerSeason[season][msg.sender] = block.timestamp;
         playersPerSeason[season].push(msg.sender);
         signedUpPlayersCount[season]++;
 
-        _buyIn(msg.sender, amount);
+        _buyIn(msg.sender, buyInAmount);
 
         emit SignedUp(msg.sender, season);
     }
@@ -93,6 +96,7 @@ contract ThalesRoyale is Owned, Pausable {
     function startRoyale() external {
         require(block.timestamp > (seasonCreationTime[season] + signUpPeriod), "Can't start until signup period expires");
         require(seasonStart[season] == false, "Already started");
+
         roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
         targetPricePerRoundPerSeason[season][1] = roundTargetPrice;
         seasonStart[season] = true;
@@ -100,6 +104,7 @@ contract ThalesRoyale is Owned, Pausable {
         roundInASeasonStartTime[season] = block.timestamp;
         roundInSeasonEndTime[season] = roundInASeasonStartTime[season] + roundLength;
         totalPlayersPerRoundPerSeason[season][1] = signedUpPlayersCount[season];
+        
         emit RoyaleStarted(season);
     }
 
@@ -236,6 +241,9 @@ contract ThalesRoyale is Owned, Pausable {
         rounds = _rounds;
     }
 
+    function setBuyInAmount(uint _buyInAmount) public onlyOwner {
+        buyInAmount = _buyInAmount;
+    }
 
     function setClaimTime(uint _claimTime) public onlyOwner {
         claimTime = _claimTime;
@@ -252,7 +260,6 @@ contract ThalesRoyale is Owned, Pausable {
         require(seasonFinish[season], "Royale must be finished");
         require(numberOfWinners > 0, "There is no alive players left in Royale");
 
-        //uint reward = rewardPerSeason[season];
         rewardPerPlayerPerSeason[season] = rewardPerSeason[season].div(numberOfWinners);
     }
 

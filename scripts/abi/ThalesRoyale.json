@@ -55,6 +55,11 @@
         "internalType": "uint256",
         "name": "_season",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyInAmount",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -277,6 +282,21 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "buyInAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1032,6 +1052,21 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_buyInAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "setBuyInAmount",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_claimTime",
         "type": "uint256"
       }
@@ -1149,13 +1184,7 @@
   },
   {
     "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "name": "signUp",
     "outputs": [],
     "payable": false,

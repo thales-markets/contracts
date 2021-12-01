@@ -44,13 +44,15 @@ async function main() {
 		owner.address,
 		toBytes32('ETH'),
 		priceFeedAddress,
-		w3utils.toWei('10000'),
+		w3utils.toWei('10000'), // ? need to be 0 i gues
 		priceFeedAddress,
 		6,
 		day * 3,
 		hour * 8,
 		day,
-		week
+		week,
+		1, // season
+		10
 	);
 	await ThalesRoyaleDeployed.deployed();
 	// update deployments.json file
@@ -64,13 +66,15 @@ async function main() {
 			owner.address,
 			toBytes32('ETH'),
 			priceFeedAddress,
-			w3utils.toWei('10000'),
+			w3utils.toWei('10000'), //? need to be 0 i gues
 			priceFeedAddress,
 			6,
 			day * 3,
 			hour * 8,
 			day,
-			week
+			week,
+			1, // season
+			10
 		],
 	});
 }

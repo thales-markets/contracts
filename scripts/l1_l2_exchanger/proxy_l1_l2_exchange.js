@@ -48,11 +48,11 @@ async function main() {
 	console.log("OVM L2 messenger at: ", predeploys.OVM_L2CrossDomainMessenger);
 	console.log("OVM L1 messenger at: ", L1_MESSENGER_ADDRESS);
 	
-	// const l2StandardBridgeArtifact = require(`../node_modules/@eth-optimism/contracts/artifacts/contracts/L2/messaging/L2StandardBridge.sol/L2StandardBridge.json`)
-	
-	
 	
 	const l1Wallet = new ethers.Wallet(user_key, network_kovan);
+	
+	// Wallet used as a user to call ProxyExchanger
+	// Proxy admin user can not call functions at ProxyExchanger
 	const l1Wallet2 = new ethers.Wallet(user_key2, network_kovan);
 	const l2Wallet = new ethers.Wallet(user_key, ethers.provider);
 	

@@ -7,6 +7,8 @@ const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers')
 
 const user_key_local_optimism = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 const user_key_env = process.env.PRIVATE_KEY;
+const user_key2 = process.env.PRIVATE_KEY_2;
+
 const {
 	fastForward,
 	toUnit,
@@ -52,6 +54,7 @@ async function main() {
 	
 	
 	const l1Wallet = new ethers.Wallet(user_key, networkL1);
+	const l1Wallet2 = new ethers.Wallet(user_key2, network_kovan);
 	const l2Wallet = new ethers.Wallet(user_key, networkL2);
 	
 	let blockNumber = await networkL1.getBlockNumber();
@@ -109,24 +112,27 @@ async function main() {
 	const ThalesExchanger_deployed = await ThalesExchanger_connected.deploy();
 	await ThalesExchanger_deployed.deployed();
 
-	const initializeData = encodeCall('initialize', [
-		'address',
-		'address',
-		'address',
-		'address',
-		'address'
-	],
-	[
-		owner.address, 
-		Thales_deployed.address,
-		OP_Thales_L1_deployed.address,
-		L1StandardBridge_deployed.address,
-		OP_Thales_L2_deployed.address
-	]);
+	console.log("Exchanger Instance deployed on:", ThalesExchanger_deployed.address)
 
-	console.log("\nInitialize data: \n", initializeData);
+	// const initializeData = encodeCall('initialize', [
+	// 	'address',
+	// 	'address',
+	// 	'address',
+	// 	'address',
+	// 	'address'
+	// ],
+	// [
+	// 	owner.address, 
+	// 	Thales_deployed.address,
+	// 	OP_Thales_L1_deployed.address,
+	// 	L1StandardBridge_deployed.address,
+	// 	OP_Thales_L2_deployed.address
+	// ]);
 
+	// console.log("\nInitialize data: \n", initializeData);
 
+	
+	
 	// tx = await ThalesExchanger_deployed.initialize(
 	// 		owner.address, 
 	// 		Thales_deployed.address,
@@ -137,8 +143,8 @@ async function main() {
 	
 		
 	// tx = await ThalesExchanger_deployed.deployed();
-	console.log("Proxy Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
-	setTargetAddress('ProxyThalesExchanger', net_kovan, ThalesExchanger_deployed.address);
+	// console.log("Proxy Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
+	// setTargetAddress('ProxyThalesExchanger', net_kovan, ThalesExchanger_deployed.address);
 
 
 	await delay(20000);
@@ -147,16 +153,33 @@ async function main() {
 	console.log("Owner is:", tx);
 	await delay(20000);
 	
-	// tx = await OwnedUpgradeabilityProxy_deployed.upgradeTo(ThalesExchanger_deployed.address);
-	tx = await OwnedUpgradeabilityProxy_deployed.upgradeToAndCall(ThalesExchanger_deployed.address, initializeData);
+	tx = await OwnedUpgradeabilityProxy_deployed.upgradeTo(ThalesExchanger_deployed.address);
+	// tx = await OwnedUpgradeabilityProxy_deployed.upgradeToAndCall(ThalesExchanger_deployed.address, initializeData);
 	await tx.wait()
 	console.log("Proxy updated");
 	
 	await delay(20000);
 	
-	tx = await ThalesExchanger_deployed.transferOwnershipAtInit(OwnedUpgradeabilityProxy_deployed.address);
-	await tx.wait()
-	console.log("Owner changed to proxy");
+	const ProxyThalesExchanger_deployed = ThalesExchanger.connect(l1Wallet2).attach(OwnedUpgradeabilityProxy_deployed.address);
+	
+	tx = await ProxyThalesExchanger_deployed.initialize(
+			owner.address, 
+			Thales_deployed.address,
+			OP_Thales_L1_deployed.address,
+			L1StandardBridge_deployed.address,
+			OP_Thales_L2_deployed.address
+		);
+	
+	// tx = await ProxyThalesExchanger_deployed.deployed();
+	await tx.wait();
+	console.log(tx.hash)
+	console.log("Proxy Thales Exchanger deployed on: ", ProxyThalesExchanger_deployed.address);
+	setTargetAddress('ProxyThalesExchanger', net_kovan, ProxyThalesExchanger_deployed.address);
+	
+	
+	// tx = await ThalesExchanger_deployed.transferOwnershipAtInit(OwnedUpgradeabilityProxy_deployed.address);
+	// await tx.wait()
+	// console.log("Owner changed to proxy");
 	
 	console.log("Wait 20 seconds");
 	await delay(20000);

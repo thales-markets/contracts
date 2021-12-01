@@ -278,12 +278,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.startRoyale();
 
 			let totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 1);
-			console.log('Total players in a 1. round: ' + totalPlayersInARound);
 			// equal to total number of players
 			assert.equal(2, totalPlayersInARound);
 
 			let eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound);
 			// zero  round need to be finished
 			assert.equal(0, eliminatedPlayersInARound);
 
@@ -322,12 +320,10 @@ contract('ThalesRoyale', accounts => {
 			isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
 			let totalPlayersInARoundTwo = await royale.totalPlayersPerRoundPerSeason(season_1, 2);
-			console.log('Total players in a 2. round: ' + totalPlayersInARoundTwo);
 			// equal to zero because second didn't take position
 			assert.equal(0, totalPlayersInARoundTwo);
 
 			let eliminatedPlayersInARoundOne = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARoundOne);
 			// two because first did take losing position, and second did't take position at all
 			assert.equal(2, eliminatedPlayersInARoundOne);
 
@@ -354,12 +350,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.startRoyale();
 
 			let totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 1);
-			console.log('Total players in a 1. round: ' + totalPlayersInARound);
 			// equal to total number of players
 			assert.equal(2, totalPlayersInARound);
 
 			let eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound);
 			// zero  round need to be finished
 			assert.equal(0, eliminatedPlayersInARound);
 
@@ -409,12 +403,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.startRoyale();
 
 			let totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 1);
-			console.log('Total players in a 1. round: ' + totalPlayersInARound);
 			// equal to total number of players
 			assert.equal(3, totalPlayersInARound);
 
 			let eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound);
 			// zero  round need to be finished
 			assert.equal(0, eliminatedPlayersInARound);
 
@@ -427,12 +419,9 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARoundTwo = await royale.totalPlayersPerRoundPerSeason(season_1, 2);
-			console.log('Total players in a 2. round: ' + totalPlayersInARoundTwo);
-
 			assert.equal(2, totalPlayersInARoundTwo);
 
 			let eliminatedPlayersInARoundOne = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARoundOne);
 			// second did't take position at all so eliminated is 1
 			assert.equal(1, eliminatedPlayersInARoundOne);
 
@@ -445,12 +434,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARoundThree = await  royale.totalPlayersPerRoundPerSeason(season_1, 3);
-			console.log('Total players in a 3. round: ' + totalPlayersInARoundThree);
 			// equal to zero because first player didn't take position
 			assert.equal(0, totalPlayersInARoundThree);
 
 			let eliminatedPlayersInARoundTwo = await royale.eliminatedPerRoundPerSeason(season_1, 2);
-			console.log('Total players eliminated in a 2. round: ' + eliminatedPlayersInARoundTwo);
 			// first did't take position at all so eliminated in round two is 2
 			assert.equal(2, eliminatedPlayersInARoundTwo);
 
@@ -469,12 +456,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.startRoyale();
 
 			let totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 1);
-			console.log('Total players in a 1. round: ' + totalPlayersInARound);
 			// equal to total number of players
 			assert.equal(3, totalPlayersInARound);
 
 			let eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound);
 			// zero  round need to be finished
 			assert.equal(0, eliminatedPlayersInARound);
 
@@ -488,12 +473,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARoundTwo = await royale.totalPlayersPerRoundPerSeason(season_1, 2);
-			console.log('Total players in a 2. round: ' + totalPlayersInARoundTwo);
 			// equal to 2 - first player, third win
 			assert.equal(2, totalPlayersInARoundTwo);
 
 			let eliminatedPlayersInARoundOne = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARoundOne);
 			// equal to 1 second player did't take position
 			assert.equal(1, eliminatedPlayersInARoundOne);
 
@@ -504,12 +487,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARoundThree = await royale.totalPlayersPerRoundPerSeason(season_1, 3);
-			console.log('Total players in a 3. round: ' + totalPlayersInARoundThree);
 			// equal to 2 - first, third player win
 			assert.equal(2, totalPlayersInARoundThree);
 
 			let eliminatedPlayersInARoundTwo = await royale.eliminatedPerRoundPerSeason(season_1, 2);
-			console.log('Total players eliminated in a 2. round: ' + eliminatedPlayersInARoundTwo);
 			// no one left untill the end player one win
 			assert.equal(0, eliminatedPlayersInARoundTwo);
 
@@ -520,12 +501,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARoundFour = await royale.totalPlayersPerRoundPerSeason(season_1, 4);
-			console.log('Total players in a 4. round: ' + totalPlayersInARoundFour);
 			// equal to 2 - first, third player win
 			assert.equal(2, totalPlayersInARoundFour);
 
 			let eliminatedPlayersInARoundThree = await royale.eliminatedPerRoundPerSeason(season_1, 3);
-			console.log('Total players eliminated in a 3. round: ' + eliminatedPlayersInARoundThree);
 			// no one left untill the end player one win
 			assert.equal(0, eliminatedPlayersInARoundThree);
 
@@ -536,12 +515,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARoundFive = await royale.totalPlayersPerRoundPerSeason(season_1, 5);
-			console.log('Total players in a 5. round: ' + totalPlayersInARoundFive);
 			// equal to 2 - first, third player win
 			assert.equal(2, totalPlayersInARoundFive);
 
 			let eliminatedPlayersInARoundFour = await royale.eliminatedPerRoundPerSeason(season_1, 4);
-			console.log('Total players eliminated in a 4. round: ' + eliminatedPlayersInARoundFour);
 			// no one left untill the end player one win
 			assert.equal(0, eliminatedPlayersInARoundFour);
 
@@ -552,12 +529,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARoundSix = await royale.totalPlayersPerRoundPerSeason(season_1, 6);
-			console.log('Total players in a 6. round: ' + totalPlayersInARoundSix);
 			// equal to 2 - first, third player win
 			assert.equal(2, totalPlayersInARoundSix);
 
 			let eliminatedPlayersInARoundFive = await royale.eliminatedPerRoundPerSeason(season_1, 5);
-			console.log('Total players eliminated in a 5. round: ' + eliminatedPlayersInARoundFive);
 			// no one left untill the end player one win
 			assert.equal(0, eliminatedPlayersInARoundFive);
 
@@ -568,12 +543,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARoundSeven = await royale.totalPlayersPerRoundPerSeason(season_1, 7);
-			console.log('Total players in a 7. round: ' + totalPlayersInARoundSeven);
 			// equal to 2 - first, third player win
 			assert.equal(2, totalPlayersInARoundSeven);
 
 			let eliminatedPlayersInARoundSix = await royale.eliminatedPerRoundPerSeason(season_1, 6);
-			console.log('Total players eliminated in a 6. round: ' + eliminatedPlayersInARoundSix);
 			// no one left untill the end player one win
 			assert.equal(0, eliminatedPlayersInARoundSix);
 
@@ -584,12 +557,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARoundEight = await royale.totalPlayersPerRoundPerSeason(season_1, 8);
-			console.log('Total players in a 8. round: ' + totalPlayersInARoundEight);
 			// equal to ZERO, no 8. round!
 			assert.equal(0, totalPlayersInARoundEight);
 
 			let eliminatedPlayersInARoundSeven = await royale.eliminatedPerRoundPerSeason(season_1, 7);
-			console.log('Total players eliminated in a 7. round: ' + eliminatedPlayersInARoundSeven);
 
 			assert.equal(1, eliminatedPlayersInARoundSeven);
 
@@ -779,12 +750,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.startRoyale();
 
 			let totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 1);
-			console.log('Total players in a 1. round: ' + totalPlayersInARound);
 			// equal to total number of players
 			assert.equal(4, totalPlayersInARound);
 
 			let eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound);
 			// zero round need to be finished
 			assert.equal(0, eliminatedPlayersInARound);
 
@@ -800,12 +769,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARound2 = await royale.totalPlayersPerRoundPerSeason(season_1, 2);
-			console.log('Total players in a 2. round: ' + totalPlayersInARound2);
 			// equal to total number of players
 			assert.equal(4, totalPlayersInARound2);
 
 			let eliminatedPlayersInARound1 = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound1);
 			// zero - all players are good
 			assert.equal(0, eliminatedPlayersInARound1);
 
@@ -818,12 +785,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARound3 = await royale.totalPlayersPerRoundPerSeason(season_1, 3);
-			console.log('Total players in a 3. round: ' + totalPlayersInARound3);
 			// equal to three
 			assert.equal(3, totalPlayersInARound3);
 
 			let eliminatedPlayersInARound2 = await royale.eliminatedPerRoundPerSeason(season_1, 2);
-			console.log('Total players eliminated in a 2. round: ' + eliminatedPlayersInARound2);
 			// one player eliminated
 			assert.equal(1, eliminatedPlayersInARound2);
 
@@ -835,12 +800,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARound4 = await royale.totalPlayersPerRoundPerSeason(season_1, 4);
-			console.log('Total players in a 4. round: ' + totalPlayersInARound4);
 			// equal to two
 			assert.equal(2, totalPlayersInARound4);
 
 			let eliminatedPlayersInARound3 = await royale.eliminatedPerRoundPerSeason(season_1, 3);
-			console.log('Total players eliminated in a 3. round: ' + eliminatedPlayersInARound3);
 			// one player eliminated
 			assert.equal(1, eliminatedPlayersInARound3);
 
@@ -851,12 +814,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARound5 = await royale.totalPlayersPerRoundPerSeason(season_1, 5);
-			console.log('Total players in a 5. round: ' + totalPlayersInARound5);
 			// equal to two
 			assert.equal(2, totalPlayersInARound5);
 
 			let eliminatedPlayersInARound4 = await royale.eliminatedPerRoundPerSeason(season_1, 4);
-			console.log('Total players eliminated in a 4. round: ' + eliminatedPlayersInARound4);
 			// zero - all players are good
 			assert.equal(0, eliminatedPlayersInARound4);
 
@@ -867,12 +828,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARound6 = await royale.totalPlayersPerRoundPerSeason(season_1, 6);
-			console.log('Total players in a 6. round: ' + totalPlayersInARound6);
 			// equal to two
 			assert.equal(2, totalPlayersInARound6);
 
 			let eliminatedPlayersInARound5 = await royale.eliminatedPerRoundPerSeason(season_1, 5);
-			console.log('Total players eliminated in a 5. round: ' + eliminatedPlayersInARound5);
 			// zero - all players are good
 			assert.equal(0, eliminatedPlayersInARound5);
 
@@ -883,12 +842,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARound7 = await royale.totalPlayersPerRoundPerSeason(season_1, 7);
-			console.log('Total players in a 7. round: ' + totalPlayersInARound7);
 			// equal to two
 			assert.equal(2, totalPlayersInARound7);
 
 			let eliminatedPlayersInARound6 = await royale.eliminatedPerRoundPerSeason(season_1, 6);
-			console.log('Total players eliminated in a 6. round: ' + eliminatedPlayersInARound6);
 			// zero - all players are good
 			assert.equal(0, eliminatedPlayersInARound6);
 
@@ -899,7 +856,6 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let eliminatedPlayersInARound7 = await royale.eliminatedPerRoundPerSeason(season_1, 7);
-			console.log('Total players eliminated in a 7. round: ' + eliminatedPlayersInARound7);
 			// one player eliminated
 			assert.equal(1, eliminatedPlayersInARound7);
 
@@ -984,12 +940,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.startRoyale();
 
 			let totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 1);
-			console.log('Total players in a 1. round: ' + totalPlayersInARound);
 			// equal to total number of players
 			assert.equal(4, totalPlayersInARound);
 
 			let eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound);
 			// zero round need to be finished
 			assert.equal(0, eliminatedPlayersInARound);
 
@@ -1026,12 +980,10 @@ contract('ThalesRoyale', accounts => {
 			await royale.closeRound();
 
 			let totalPlayersInARound2 = await royale.totalPlayersPerRoundPerSeason(season_1, 2);
-			console.log('Total players in a 2. round: ' + totalPlayersInARound2);
 			// equal to total number of players
 			assert.equal(2, totalPlayersInARound2);
 
 			let eliminatedPlayersInARound1 = await royale.eliminatedPerRoundPerSeason(season_1, 1);
-			console.log('Total players eliminated in a 1. round: ' + eliminatedPlayersInARound1);
 			// zero - all players are good
 			assert.equal(2, eliminatedPlayersInARound1);
 

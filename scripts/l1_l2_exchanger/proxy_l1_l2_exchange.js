@@ -50,12 +50,15 @@ async function main() {
 	
 	
 	const l1Wallet = new ethers.Wallet(user_key, network_kovan);
-	
+
 	// Wallet used as a user to call ProxyExchanger
 	// Proxy admin user can not call functions at ProxyExchanger
 	const l1Wallet2 = new ethers.Wallet(user_key2, network_kovan);
 	const l2Wallet = new ethers.Wallet(user_key, ethers.provider);
+	const l2Wallet2 = new ethers.Wallet(user_key2, ethers.provider);
 	
+	// console.log("Wallet2:", l1Wallet2);
+
 	let blockNumber = await network_kovan.getBlockNumber();
 	console.log("Kovan block number: ", blockNumber);
 	
@@ -111,6 +114,7 @@ async function main() {
 		}
 	  });
 
+	const Thales_USER_deployed= await Thales.connect(l1Wallet2).attach(ThalesAddress);
 	const Thales_deployed= await Thales.connect(l1Wallet).attach(ThalesAddress);
 	console.log("Thales on Kovan at: ", Thales_deployed.address);
 	
@@ -123,9 +127,11 @@ async function main() {
 	const OP_Thales_L1_deployed = await OP_Thales_L1.connect(l1Wallet).attach(OP_Thales_L1Address);
 	console.log("L1 Contract on Kovan at: ", OP_Thales_L1_deployed.address);
 
+	// const OP_Thales_L2_USER_deployed = await OP_Thales_L2.connect(l2Wallet2).attach(OP_Thales_L2Address);
 	const OP_Thales_L2_deployed = await OP_Thales_L2.connect(l2Wallet).attach(OP_Thales_L2Address);
 	console.log("L2 Contract on Optimistic Kovan at: ", OP_Thales_L2_deployed.address);
 
+	const L2StandardBridge_USER_deployed = await L2StandardBridge.connect(l2Wallet2).attach(L2_BRIDGE_ADDRESS);
 	const L2StandardBridge_deployed = await L2StandardBridge.connect(l2Wallet).attach(L2_BRIDGE_ADDRESS);
 	console.log("L2 Bridge on Optimistic Kovan at: ", L2StandardBridge_deployed.address);
 
@@ -146,34 +152,36 @@ async function main() {
 	
 	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
 	console.log("L2 balance", owner.address,":", fromUnit(balance.toString()));
+	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
+	console.log("L2 USER balance", l1Wallet2.address,":", fromUnit(balance.toString()));
 	let init_balance = parseInt(fromUnit(balance.toString()));
     
     balance = await Thales_deployed.balanceOf(owner.address);
-	console.log("Thales balance", owner.address,":", fromUnit(balance.toString()));
+	console.log("Thales owner balance", owner.address,":", fromUnit(balance.toString()));
     
-    balance = await Thales_deployed.balanceOf(ProxyThalesExchanger_deployed.address);
-	console.log("Thales balance of Exchanger", ProxyThalesExchanger_deployed.address,":", fromUnit(balance.toString()));
+	balance = await Thales_deployed.balanceOf(l1Wallet2.address);
+	console.log("Thales USER balance", l1Wallet2.address,":", fromUnit(balance.toString()));
+
+	if(parseInt(fromUnit(balance.toString())) == 0) {
+		console.log("\nTransferring ", TRANSFER_ERC20, " THALES from owner to USER");
+        let transfer = await Thales_deployed.transfer(l1Wallet2.address, w3utils.toWei(TRANSFER_ERC20));
+        
+		await transfer.wait();
+		console.log("Transfer with transaction: ", transfer.hash);
+	}
     
-    // balance = await Thales_deployed.balanceOf(OwnedUpgradeabilityProxy_deployed.address);
-	// console.log("Thales balance of Proxy", OwnedUpgradeabilityProxy_deployed.address,":", fromUnit(balance.toString()));
-    
+    balance = await Thales_deployed.balanceOf(l1Wallet2.address);
+	console.log("Thales balance of USER", l1Wallet2.address,":", fromUnit(balance.toString()));
+       
 	balance = await OP_Thales_L1_deployed.balanceOf(ProxyThalesExchanger_deployed.address);
 	console.log("L1 balance of Exchanger", ProxyThalesExchanger_deployed.address,":", fromUnit(balance.toString()));
-    
-    // balance = await OP_Thales_L1_deployed.balanceOf(OwnedUpgradeabilityProxy_deployed.address);
-	// console.log("L1 balance of Proxy", OwnedUpgradeabilityProxy_deployed.address,":", fromUnit(balance.toString()));
-    
 	
     if(parseInt(fromUnit(balance.toString())) == 0) {
 		console.log("\nTransferring ", TRANSFER_ERC20, " THALES to Exchanger using proxy");
-        const transfer = await OP_Thales_L1_deployed.transfer(ProxyThalesExchanger_deployed.address, w3utils.toWei(TRANSFER_ERC20));
-        // const transfer = await OP_Thales_L1_deployed.transfer(ProxyThalesExchanger_deployed.address, w3utils.toWei(TRANSFER_ERC20), {
-			//     from:owner.address,
-			//     gasPrice: 180000000
-			// });
-			await transfer.wait();
-			console.log("Transfer with transaction: ", transfer.hash);
-		}
+        let transfer = await OP_Thales_L1_deployed.transfer(ProxyThalesExchanger_deployed.address, w3utils.toWei(TRANSFER_ERC20));
+		await transfer.wait();
+		console.log("Transfer with transaction: ", transfer.hash);
+	}
 		
 	// balance = await OP_Thales_L1_deployed.balanceOf(OwnedUpgradeabilityProxy_deployed.address);
 	// console.log("L1 balance of Proxy", OwnedUpgradeabilityProxy_deployed.address,":", fromUnit(balance.toString()));
@@ -201,156 +209,168 @@ async function main() {
 	console.log("Proxy owner:", answer.toString());
 	// let TRANSFER_ERC20 = '25'
 
+	let approved = await OP_Thales_L1_deployed.allowance(ProxyThalesExchanger_deployed.address, L1StandardBridge_deployed.address);
+	console.log("\nOpTL1 approval of ThalesExchanger to L1Bridge: ", fromUnit(approved.toString()));
+	
 	// if(parseInt(fromUnit(approved.toString())) == 0) {
 	// 	const tx1 = await OP_Thales_L1_deployed.approve(L1StandardBridge_deployed.address, w3utils.toWei(TRANSFER_ERC20));
 	// 	await tx1.wait()
 	// }
 
-	// approved = await OP_Thales_L1_deployed.allowance(owner.address, L1StandardBridge_deployed.address);
-	// console.log("Approved: ", fromUnit(approved.toString()));
-
-	// let checkToken = await OP_Thales_L2_deployed.l1Token();
-	// console.log("\nL2 address for L1:", checkToken);
-
-	// if(checkToken == OP_Thales_L1_deployed.address) {
-	// 	console.log("Address match with L1 token");
-	// }
-	// else {
-	// 	console.log("Address DOES NOT match with L1 token");
-	// }
-
-
-	// console.log('Depositing tokens into L2 ...')
-	// const tx2 = await L1StandardBridge_deployed.depositERC20(
-	// 	OP_Thales_L1_deployed.address,
-	// 	OP_Thales_L2_deployed.address,
-	// 	w3utils.toWei(TRANSFER_ERC20),
-	// 	2000000,
-	// 	'0x')
-	// await tx2.wait()
-
-	// // Wait for the message to be relayed to L2.
-	// console.log('Waiting for deposit to be relayed to L2...');
+	approved = await Thales_USER_deployed.allowance(l1Wallet2.address, ProxyThalesExchanger_deployed.address);
+	console.log("\nTHALES approval of owner to ThalesExchanger: ", fromUnit(approved.toString()));
+	
+	
+	if(parseInt(fromUnit(approved.toString())) == 0) {
+		console.log("Approving.....")
+		const tx1 = await Thales_USER_deployed.approve(ProxyThalesExchanger_deployed.address, w3utils.toWei(TRANSFER_ERC20));
+		await tx1.wait()
 		
-	// balance = parseInt(init_balance);
-	// let str_balance = '';
-	// let seconds_counter = 0;
-	// while(balance == init_balance) {
-	// 	await delay(10000);
-	// 	str_balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
-	// 	balance = parseInt(fromUnit(str_balance.toString()));
-	// 	seconds_counter = seconds_counter+10;
-	// 	console.log(seconds_counter,"sec |", init_balance, balance)
-	// }
-	
-	// balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
-	// console.log("Balance on L1:", fromUnit(balance.toString())) // 0
-	// init_balance = parseInt(fromUnit(balance.toString()));
-	// balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
-	// console.log("Balance on L2:", fromUnit(balance.toString())) // 0
-
-	// console.log(`\nWithdrawing tokens back to L1 ...`)
-	// const tx3 = await L2StandardBridge_deployed.withdraw(
-	// 	OP_Thales_L2_deployed.address,
-	// 	w3utils.toWei(TRANSFER_ERC20),
-	// 	2000000,
-	// 	'0x'
-	// )
-	// await tx3.wait()
-	
-	// console.log("transaction hash:",tx3.hash);
-	// // console.log("Wait for 30 seconds....")
-	// // await delay(30000);
-	// console.log("Attempting");
-	
-	// let messagePairs = []
-	// while (true) {
-	// 	try {
-	// 	  messagePairs = await getMessagesAndProofsForL2Transaction(
-	// 		network_kovan,
-	// 		ethers.provider,
-	// 		STATE_COMMITMENT_CHAIN_ADDRESS,
-	// 		predeploys.OVM_L2CrossDomainMessenger,
-	// 		tx3.hash
-	// 	  );
-	// 	  console.log("-");
-	// 	  break
-	// 	} catch (err) {
-	// 	  if (err.message.includes('unable to find state root batch for tx')) {
-	// 		await delay(5000)
-	// 	  } else {
-	// 		throw err
-	// 	  }
-	// 	}
-	// }
-
-	// // console.log(messagePairs);
-
-	// for (const { message, proof } of messagePairs) {
-	// 	while (true) {
-	// 	  try {
-	// 		console.log("sender:",message.sender);
-	// 		console.log("target:",message.target);
-	// 		console.log("message:",message.target);
-
-	// 		const result = await l1Messenger
-	// 		  .connect(l1Wallet)
-	// 		  .relayMessage(
-	// 			message.target,
-	// 			message.sender,
-	// 			message.message,
-	// 			message.messageNonce,
-	// 			proof
-	// 		  )
-	// 		await result.wait()
-	// 		break
-	// 	  } catch (err) {
-	// 		if (err.message.includes('execution failed due to an exception')) {
-	// 		  await delay(5000)
-	// 		} else if (err.message.includes('Nonce too low')) {
-	// 		  await delay(5000)
-	// 		} else if (err.message.includes('transaction was replaced')) {
-	// 		  // this happens when we run tests in parallel
-	// 		  await delay(5000)
-	// 		} else if (
-	// 		  err.message.includes(
-	// 			'another transaction with same nonce in the queue'
-	// 		  )
-	// 		) {
-	// 		  // this happens when we run tests in parallel
-	// 		  await delay(5000)
-	// 		} else if (
-	// 		  err.message.includes('message has already been received')
-	// 		) {
-	// 		  break
-	// 		} else {
-	// 		  throw err
-	// 		}
-	// 	  }
-	// 	}
-	// }
-	
-	// // console.log("Wait for 30 seconds....")
-	// // await delay(30000);
-	// console.log("Attempt to finalize");
+		approved = await Thales_USER_deployed.allowance(l1Wallet2.address, ProxyThalesExchanger_deployed.address);
+		console.log("\nTHALES approval of owner to ThalesExchanger: ", fromUnit(approved.toString()));
+	}
 	
 
-	// console.log(`Waiting for withdrawal to be relayed to L1...`)
-	// balance = parseInt(init_balance);
-	// str_balance = '';
-	// seconds_counter = 0;
-	// while(balance == init_balance) {
-	// 	await delay(10000);
-	// 	str_balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
-	// 	balance = parseInt(fromUnit(str_balance.toString()));
-	// 	seconds_counter = seconds_counter+10;
-	// 	console.log(seconds_counter,"sec |", init_balance, balance);
-	// }
+	let checkToken = await OP_Thales_L2_deployed.l1Token();
+	console.log("\nL2 address for L1:", checkToken);
 
-	// balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
-	// console.log("Balance on L1:", fromUnit(balance.toString()));
-	// balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
-	// console.log("Balance on L2:", fromUnit(balance.toString())); 
+	if(checkToken == OP_Thales_L1_deployed.address) {
+		console.log("Address match with L1 token");
+	}
+	else {
+		console.log("Address DOES NOT match with L1 token");
+	}
+
+
+	console.log('Depositing tokens into L2 ...')
+	const tx2 = await ProxyThalesExchanger_deployed.exchangeThalesToL2OpThales(
+		w3utils.toWei(TRANSFER_ERC20),
+		{ gasLimit: 8000000 }
+	);
+	await tx2.wait()
+
+	// Wait for the message to be relayed to L2.
+	console.log('Waiting for deposit to be relayed to L2...');
+
+	balance = parseInt(init_balance);
+	let str_balance = '';
+	let seconds_counter = 0;
+	while(balance == init_balance) {
+		await delay(10000);
+		str_balance = await OP_Thales_L2_deployed.balanceOf(l1Wallet2.address);
+		balance = parseInt(fromUnit(str_balance.toString()));
+		seconds_counter = seconds_counter+10;
+		console.log(seconds_counter,"sec |", init_balance, balance)
+	}
+	
+	balance = await OP_Thales_L1_deployed.balanceOf(l1Wallet2.address);
+	console.log("Balance on L1:", fromUnit(balance.toString())) // 0
+	init_balance = parseInt(fromUnit(balance.toString()));
+	balance = await OP_Thales_L2_deployed.balanceOf(l1Wallet2.address);
+	console.log("Balance on L2:", fromUnit(balance.toString())) // 0
+
+	console.log(`\nWithdrawing tokens back to L1 ...`)
+	const tx3 = await L2StandardBridge_USER_deployed.withdraw(
+		OP_Thales_L2_deployed.address,
+		w3utils.toWei(TRANSFER_ERC20),
+		2000000,
+		'0x'
+	)
+	await tx3.wait()
+	
+	console.log("transaction hash:",tx3.hash);
+	// console.log("Wait for 30 seconds....")
+	// await delay(30000);
+	console.log("Attempting");
+	
+	let messagePairs = []
+	while (true) {
+		try {
+		  messagePairs = await getMessagesAndProofsForL2Transaction(
+			network_kovan,
+			ethers.provider,
+			STATE_COMMITMENT_CHAIN_ADDRESS,
+			predeploys.OVM_L2CrossDomainMessenger,
+			tx3.hash
+		  );
+		  console.log("-");
+		  break
+		} catch (err) {
+		  if (err.message.includes('unable to find state root batch for tx')) {
+			await delay(5000)
+		  } else {
+			throw err
+		  }
+		}
+	}
+
+	console.log(messagePairs);
+
+	for (const { message, proof } of messagePairs) {
+		while (true) {
+		  try {
+			console.log("sender:",message.sender);
+			console.log("target:",message.target);
+			console.log("message:",message.target);
+
+			const result = await l1Messenger
+			  .connect(l1Wallet2)
+			  .relayMessage(
+				message.target,
+				message.sender,
+				message.message,
+				message.messageNonce,
+				proof
+			  )
+			await result.wait()
+			break
+		  } catch (err) {
+			if (err.message.includes('execution failed due to an exception')) {
+			  await delay(5000)
+			} else if (err.message.includes('Nonce too low')) {
+			  await delay(5000)
+			} else if (err.message.includes('transaction was replaced')) {
+			  // this happens when we run tests in parallel
+			  await delay(5000)
+			} else if (
+			  err.message.includes(
+				'another transaction with same nonce in the queue'
+			  )
+			) {
+			  // this happens when we run tests in parallel
+			  await delay(5000)
+			} else if (
+			  err.message.includes('message has already been received')
+			) {
+			  break
+			} else {
+			  throw err
+			}
+		  }
+		}
+	}
+	
+	// console.log("Wait for 30 seconds....")
+	// await delay(30000);
+	console.log("Attempt to finalize");
+	
+
+	console.log(`Waiting for withdrawal to be relayed to L1...`)
+	balance = parseInt(init_balance);
+	str_balance = '';
+	seconds_counter = 0;
+	while(balance == init_balance) {
+		await delay(10000);
+		str_balance = await OP_Thales_L1_deployed.balanceOf(l1Wallet2.address);
+		balance = parseInt(fromUnit(str_balance.toString()));
+		seconds_counter = seconds_counter+10;
+		console.log(seconds_counter,"sec |", init_balance, balance);
+	}
+
+	balance = await OP_Thales_L1_deployed.balanceOf(l1Wallet2.address);
+	console.log("Balance on L1:", fromUnit(balance.toString()));
+	balance = await OP_Thales_L2_deployed.balanceOf(l1Wallet2.address);
+	console.log("Balance on L2:", fromUnit(balance.toString())); 
 }
 
 main()

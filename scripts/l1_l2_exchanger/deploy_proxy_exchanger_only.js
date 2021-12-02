@@ -114,37 +114,8 @@ async function main() {
 
 	console.log("Exchanger Instance deployed on:", ThalesExchanger_deployed.address)
 
-	// const initializeData = encodeCall('initialize', [
-	// 	'address',
-	// 	'address',
-	// 	'address',
-	// 	'address',
-	// 	'address'
-	// ],
-	// [
-	// 	owner.address, 
-	// 	Thales_deployed.address,
-	// 	OP_Thales_L1_deployed.address,
-	// 	L1StandardBridge_deployed.address,
-	// 	OP_Thales_L2_deployed.address
-	// ]);
-
-	// console.log("\nInitialize data: \n", initializeData);
-
-	
-	
-	// tx = await ThalesExchanger_deployed.initialize(
-	// 		owner.address, 
-	// 		Thales_deployed.address,
-	// 		OP_Thales_L1_deployed.address,
-	// 		L1StandardBridge_deployed.address,
-	// 		OP_Thales_L2_deployed.address
-	// 	);
-	
-		
-	// tx = await ThalesExchanger_deployed.deployed();
-	// console.log("Proxy Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
-	// setTargetAddress('ProxyThalesExchanger', net_kovan, ThalesExchanger_deployed.address);
+	console.log("Proxy Thales Exchanger Logic deployed on: ", ThalesExchanger_deployed.address);
+	setTargetAddress('ProxyThalesExchangerLogic', net_kovan, ThalesExchanger_deployed.address);
 
 
 	await delay(20000);

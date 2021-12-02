@@ -186,7 +186,7 @@ async function main() {
 		address: binaryOptionMarketManagerDeployed.address,
 		constructorArguments: [
 			owner.address,
-			ProxyERC20sUSD.address,
+			ProxyERC20sUSDaddress,
 			priceFeedAddress,
 			expiryDuration,
 			maxTimeToMaturity,

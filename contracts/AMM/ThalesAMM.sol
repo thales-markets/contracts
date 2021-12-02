@@ -67,7 +67,7 @@ contract ThalesAMM is Owned, Pausable {
 
         require(amount < availableToBuyFromAMM(market, position), "Not enough liquidity.");
 
-        uint sUSDPaid = buyQoute(market, position, amount);
+        uint sUSDPaid = buyFromAmmQuote(market, position, amount);
         require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
         require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
 
@@ -101,55 +101,7 @@ contract ThalesAMM is Owned, Pausable {
         }
     }
 
-    function sellToAMM(
-        address market,
-        Position position,
-        uint amount
-    ) public {
-        require(IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading, "Market is not in Trading phase");
-
-        uint couldbuy = availableToSellToAMM(market, position);
-        require(amount < couldbuy, "Cant buy that much");
-
-        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-        IBinaryOption target = position == Position.Long ? long : short;
-
-        require(target.balanceOf(msg.sender) >= amount, "You dont have enough options.");
-        require(IERC20(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
-
-        //transfer options first to have max burn available
-        IERC20(address(target)).transferFrom(msg.sender, address(this), amount);
-
-        uint sUSDFromBurning = IBinaryOptionMarket(market).getMaximumBurnable(address(this));
-        if (sUSDFromBurning > 0) {
-            IBinaryOptionMarket(market).burnOptionsMaximum();
-        }
-
-        uint pricePaid = amount.mul(sellPrice(market, position)).div(1e18);
-
-        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
-
-        sUSD.transfer(msg.sender, pricePaid);
-
-        spentOnMarket[market] = spentOnMarket[market].add(pricePaid).sub(sUSDFromBurning);
-    }
-
-    function availableToSellToAMM(address market, Position position) public view returns (uint) {
-        if (IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading) {
-            uint sell_max_price = price(market, position).mul(ONE.sub(max_spread)).div(1e18);
-            (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-            uint balanceOfTheOtherSide =
-                position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
-
-            uint couldBuyNow = capPerMarket.sub(spentOnMarket[market]).div(sell_max_price).mul(1e18);
-
-            // add the potential max burn
-            uint sUSDFromBurning = balanceOfTheOtherSide > couldBuyNow ? couldBuyNow : balanceOfTheOtherSide;
-            return capPerMarket.add(sUSDFromBurning).sub(spentOnMarket[market]).div(sell_max_price).mul(1e18);
-        } else return 0;
-    }
-
-    function buyQoute(
+    function buyFromAmmQuote(
         address market,
         Position position,
         uint amount
@@ -157,36 +109,11 @@ contract ThalesAMM is Owned, Pausable {
         if (amount > availableToBuyFromAMM(market, position)) {
             return 0;
         }
-        return amount.mul(buyPriceImpact(market, position, amount)).div(1e18);
+        uint basePrice = price(market, position);
+        return amount.mul(basePrice.mul(ONE.add(buyPriceImpact(market, position, amount))).div(1e18)).div(1e18);
     }
 
     function buyPriceImpact(
-        address market,
-        Position position,
-        uint amount
-    ) public view returns (uint) {
-        if (amount > availableToBuyFromAMM(market, position)) {
-            return 0;
-        }
-        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-        uint balancePosition = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
-        uint balanceOtherSide = position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
-        uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
-        uint balanceOtherSideAfter =
-            balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
-        uint pricePaid = buyPrice(market, position).mul(amount).div(1e18);
-        if (balancePositionAfter > balanceOtherSideAfter) {
-            //minimal price impact as it will balance the AMM exposure
-            return spread;
-        } else {
-            uint spentOnMarket = spentOnMarket[market];
-            uint basePrice = price(market, position);
-            uint skew = balanceOtherSideAfter.sub(balancePositionAfter).add(spentOnMarket).sub(pricePaid);
-            return spread.add(max_spread.sub(spread).mul(skew.mul(1e18).div(capPerMarket)).div(1e18));
-        }
-    }
-
-    function buyPriceImpactTest(
         address market,
         Position position,
         uint amount
@@ -212,24 +139,92 @@ contract ThalesAMM is Owned, Pausable {
         }
     }
 
-    function sellQoute(
+    function sellToAMM(
+        address market,
+        Position position,
+        uint amount
+    ) public {
+        require(IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading, "Market is not in Trading phase");
+
+        require(amount < availableToSellToAMM(market, position), "Cant buy that much");
+
+        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+        IBinaryOption target = position == Position.Long ? long : short;
+
+        require(target.balanceOf(msg.sender) >= amount, "You dont have enough options.");
+        require(IERC20(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
+
+        uint pricePaid = sellToAmmQuote(market, position, amount);
+        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
+
+        //transfer options first to have max burn available
+        IERC20(address(target)).transferFrom(msg.sender, address(this), amount);
+
+        uint sUSDFromBurning = IBinaryOptionMarket(market).getMaximumBurnable(address(this));
+        if (sUSDFromBurning > 0) {
+            IBinaryOptionMarket(market).burnOptionsMaximum();
+        }
+
+        sUSD.transfer(msg.sender, pricePaid);
+
+        spentOnMarket[market] = spentOnMarket[market].add(pricePaid).sub(sUSDFromBurning);
+    }
+
+    function availableToSellToAMM(address market, Position position) public view returns (uint) {
+        if (IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading) {
+            uint sell_max_price = price(market, position).mul(ONE.sub(max_spread)).div(1e18);
+            (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+            uint balanceOfTheOtherSide =
+                position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
+
+            uint couldBuyNow = capPerMarket.sub(spentOnMarket[market]).div(sell_max_price).mul(1e18);
+
+            if (balanceOfTheOtherSide < couldBuyNow) {
+                // add the potential max burn
+                uint willPay = couldBuyNow.div(sell_max_price).mul(1e18);
+                uint usdAvailable = capPerMarket.add(couldBuyNow).sub(spentOnMarket[market]).sub(willPay);
+                return usdAvailable.div(sell_max_price).mul(1e18);
+            } else {
+                uint willPay = balanceOfTheOtherSide.div(sell_max_price).mul(1e18);
+                uint usdAvailable = capPerMarket.add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
+                return usdAvailable.div(sell_max_price).mul(1e18);
+            }
+        } else return 0;
+    }
+
+    function sellToAmmQuote(
         address market,
         Position position,
         uint amount
     ) public view returns (uint) {
-        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+        if (amount > availableToSellToAMM(market, position)) {
+            return 0;
+        }
         uint basePrice = price(market, position);
-        uint balancePosition = (position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this)));
-        uint balanceOtherSide = (position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this)));
-        uint balancePositionAfterSellToAmm = balancePosition > amount ? balancePosition.add(amount) : 0;
-        if (balanceOtherSide > balancePositionAfterSellToAmm) {
+        return amount.mul(basePrice.mul(ONE.sub(sellPriceImpact(market, position, amount))).div(1e18)).div(1e18);
+    }
+
+    function sellPriceImpact(
+        address market,
+        Position position,
+        uint amount
+    ) public view returns (uint) {
+        if (amount > availableToSellToAMM(market, position)) {
+            return 0;
+        }
+        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+        uint balancePosition = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
+        uint balanceOtherSide = position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
+        uint balancePositionAfter = balancePosition.add(amount);
+        uint pricePaid = sellPrice(market, position).mul(amount).div(1e18);
+        if (balancePositionAfter < balanceOtherSide) {
             //minimal price impact as it will balance the AMM exposure
-            return basePrice.mul(ONE.sub(spread)).div(1e18);
+            return spread;
         } else {
-            uint skew = balancePositionAfterSellToAmm.sub(balanceOtherSide).mul(basePrice).div(1e18);
-            skew = skew > capPerMarket ? capPerMarket : skew;
-            uint slippage = spread.add(max_spread.sub(spread).mul(skew.div(capPerMarket)));
-            return basePrice.mul(ONE.sub(slippage)).div(1e18);
+            uint basePrice = price(market, position);
+            uint skew = balancePositionAfter.sub(balanceOtherSide);
+            uint maxPossibleSkew = capPerMarket.mul(1e18).div(basePrice);
+            return spread.add(max_spread.sub(spread).mul(skew.mul(1e18).div(maxPossibleSkew)).div(1e18));
         }
     }
 

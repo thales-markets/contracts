@@ -44,7 +44,7 @@ const Phase = {
 	Expiry: toBN(2),
 };
 
-contract('ThalesRoyale', accounts => {
+contract('ThalesAMM', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
 	const [first, owner, second, third, fourth] = accounts;
 
@@ -144,21 +144,15 @@ contract('ThalesRoyale', accounts => {
 		await aggregator_sETH.setLatestAnswer(convertToDecimals(10000, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
-		await priceFeed.addAggregator(sAUDKey, aggregator_sAUD.address, {
-			from: managerOwner,
-		});
+		const [creator, owner] = await ethers.getSigners();
 
-		await priceFeed.addAggregator(sETHKey, aggregator_sETH.address, {
-			from: managerOwner,
-		});
+		await priceFeed.connect(owner).addAggregator(sAUDKey, aggregator_sAUD.address);
 
-		await priceFeed.addAggregator(sUSDKey, aggregator_sUSD.address, {
-			from: managerOwner,
-		});
+		await priceFeed.connect(owner).addAggregator(sETHKey, aggregator_sETH.address);
 
-		await priceFeed.addAggregator(nonRate, aggregator_nonRate.address, {
-			from: managerOwner,
-		});
+		await priceFeed.connect(owner).addAggregator(sUSDKey, aggregator_sUSD.address);
+
+		await priceFeed.connect(owner).addAggregator(nonRate, aggregator_nonRate.address);
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
@@ -409,7 +403,7 @@ contract('ThalesRoyale', accounts => {
 		// 	).to.be.revertedWith('Market is not in Trading phase');
 		// });
 
-		it('buy/sell qoutes', async () => {
+		it('buy test', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -420,111 +414,245 @@ contract('ThalesRoyale', accounts => {
 				initialCreator
 			);
 
-			let calculatedOdds = calculateOdds(10000, 12000, 10, 120);
-			console.log('calculatedOdds is:' + calculatedOdds);
-			let calculatedOddsContract = await thalesAMM.calculateOdds(
-				toUnit(10000),
-				toUnit(12000),
-				toUnit(10),
-				toUnit(100)
-			);
-			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
-
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			console.log('priceUp is:' + priceUp);
 			console.log('priceUp decimal is:' + priceUp / 1e18);
-			assert.equal(priceUp / 1e18, 0.17933571412829044);
-
-			let buyPriceImpact = await thalesAMM.buyPriceImpactTest(
-				newMarket.address,
-				Position.UP,
-				toUnit(1)
-			);
-			console.log('buyPriceImpact is:' + buyPriceImpact);
-			console.log('buyPriceImpact decimal is:' + buyPriceImpact / 1e18);
-			// assert.equal(buyPriceImpact / 1e18, 0.18112907126957334);
-
-			let buyPriceImpactThousand = await thalesAMM.buyPriceImpactTest(
-				newMarket.address,
-				Position.UP,
-				toUnit(1000)
-			);
-			console.log('buyPriceImpactThousand is:' + buyPriceImpactThousand);
-			console.log('buyPriceImpactThousand decimal is:' + buyPriceImpactThousand / 1e18);
-			// assert.equal(buyPriceImpactThousand / 1e18, 0.18112907126957334);
 
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToBuyFromAMM is:' + availableToBuyFromAMM);
 			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
-			// assert.equal(availableToBuyFromAMM / 1e18, 1231);
 
-			let buyPriceImpactMax = await thalesAMM.buyPriceImpactTest(
+			let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
 				newMarket.address,
 				Position.UP,
 				toUnit(availableToBuyFromAMM / 1e18)
 			);
-			console.log('buyPriceImpactMax is:' + buyPriceImpactMax);
 			console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
-			// assert.equal(buyPriceImpactMax / 1e18, 0.18112907126957334);
+
+			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 1e18)
+			);
+			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			await thalesAMM.buyFromAMM(newMarket.address, Position.UP, toUnit(500), { from: minter });
-			let buyPriceImpactPostBuy = await thalesAMM.buyPriceImpactTest(
+			let buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
 				newMarket.address,
 				Position.UP,
 				toUnit(100)
 			);
-			console.log('buyPriceImpactPostBuy is:' + buyPriceImpactPostBuy);
-			console.log('buyPriceImpactPostBuy decimal is:' + buyPriceImpactPostBuy / 1e18);
-
-			let buyPriceImpactPostBuyDoubled = await thalesAMM.buyPriceImpactTest(
-				newMarket.address,
-				Position.UP,
-				toUnit(300)
-			);
-			console.log('buyPriceImpactPostBuyDoubled is:' + buyPriceImpactPostBuyDoubled);
-			console.log('buyPriceImpactPostBuyDoubled decimal is:' + buyPriceImpactPostBuyDoubled / 1e18);
-
-			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.UP);
-			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
-			buyPriceImpactMax = await thalesAMM.buyPriceImpactTest(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18)
-			);
-			console.log('buyPriceImpactMax is:' + buyPriceImpactMax);
-			console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
-
-			let availableToBuyFromAMMOtherSide = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.DOWN);
-			console.log('availableToBuyFromAMMOtherSide decimal is:' + availableToBuyFromAMMOtherSide / 1e18);
-
-			let buyPriceImpactOtherSide = await thalesAMM.buyPriceImpactTest(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(500)
-			);
-			console.log('buyPriceImpactOtherSide is:' + buyPriceImpactOtherSide);
-			console.log('buyPriceImpactOtherSide decimal is:' + buyPriceImpactOtherSide / 1e18);
-
-			let buyPriceImpactOtherSideSwitchSkew = await thalesAMM.buyPriceImpactTest(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(501)
-			);
-			console.log('buyPriceImpactOtherSideSwitchSkew is:' + buyPriceImpactOtherSideSwitchSkew);
-			console.log('buyPriceImpactOtherSideSwitchSkew decimal is:' + buyPriceImpactOtherSideSwitchSkew / 1e18);
-
-			let buyPriceImpactOtherSideThousand = await thalesAMM.buyPriceImpactTest(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(3000)
-			);
-			console.log('buyPriceImpactOtherSideThousand is:' + buyPriceImpactOtherSideThousand);
-			console.log('buyPriceImpactOtherSideThousand decimal is:' + buyPriceImpactOtherSideThousand / 1e18);
 		});
+
+		// it('buy/sell quotes', async () => {
+		// 	let now = await currentTime();
+		// 	let newMarket = await createMarket(
+		// 		manager,
+		// 		sETHKey,
+		// 		toUnit(12000),
+		// 		now + day * 10,
+		// 		toUnit(10),
+		// 		initialCreator
+		// 	);
+		//
+		// 	let calculatedOdds = calculateOdds(10000, 12000, 10, 120);
+		// 	console.log('calculatedOdds is:' + calculatedOdds);
+		// 	let calculatedOddsContract = await thalesAMM.calculateOdds(
+		// 		toUnit(10000),
+		// 		toUnit(12000),
+		// 		toUnit(10),
+		// 		toUnit(120)
+		// 	);
+		// 	console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+		//
+		// 	let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+		// 	console.log('priceUp is:' + priceUp);
+		// 	console.log('priceUp decimal is:' + priceUp / 1e18);
+		// 	assert.equal(priceUp / 1e18, 0.17933571412829044);
+		//
+		// 	let buyPriceImpact = await thalesAMM.buyPriceImpact(
+		// 		newMarket.address,
+		// 		Position.UP,
+		// 		toUnit(1)
+		// 	);
+		// 	console.log('buyPriceImpact is:' + buyPriceImpact);
+		// 	console.log('buyPriceImpact decimal is:' + buyPriceImpact / 1e18);
+		// 	// assert.equal(buyPriceImpact / 1e18, 0.18112907126957334);
+		//
+		// 	let buyPriceImpactThousand = await thalesAMM.buyPriceImpact(
+		// 		newMarket.address,
+		// 		Position.UP,
+		// 		toUnit(1000)
+		// 	);
+		// 	console.log('buyPriceImpactThousand is:' + buyPriceImpactThousand);
+		// 	console.log('buyPriceImpactThousand decimal is:' + buyPriceImpactThousand / 1e18);
+		// 	// assert.equal(buyPriceImpactThousand / 1e18, 0.18112907126957334);
+		//
+		// 	let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+		// 		newMarket.address,
+		// 		Position.UP
+		// 	);
+		// 	console.log('availableToBuyFromAMM is:' + availableToBuyFromAMM);
+		// 	console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+		// 	// assert.equal(availableToBuyFromAMM / 1e18, 1231);
+		//
+		// 	let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+		// 		newMarket.address,
+		// 		Position.UP,
+		// 		toUnit(availableToBuyFromAMM / 1e18)
+		// 	);
+		// 	console.log('buyPriceImpactMax is:' + buyPriceImpactMax);
+		// 	console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
+		// 	// assert.equal(buyPriceImpactMax / 1e18, 0.18112907126957334);
+		//
+		// 	await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
+		// 	await thalesAMM.buyFromAMM(newMarket.address, Position.UP, toUnit(500), { from: minter });
+		// 	let buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
+		// 		newMarket.address,
+		// 		Position.UP,
+		// 		toUnit(100)
+		// 	);
+		// 	console.log('buyPriceImpactPostBuy is:' + buyPriceImpactPostBuy);
+		// 	console.log('buyPriceImpactPostBuy decimal is:' + buyPriceImpactPostBuy / 1e18);
+		//
+		// 	let buyPriceImpactPostBuyDoubled = await thalesAMM.buyPriceImpact(
+		// 		newMarket.address,
+		// 		Position.UP,
+		// 		toUnit(300)
+		// 	);
+		// 	console.log('buyPriceImpactPostBuyDoubled is:' + buyPriceImpactPostBuyDoubled);
+		// 	console.log('buyPriceImpactPostBuyDoubled decimal is:' + buyPriceImpactPostBuyDoubled / 1e18);
+		//
+		// 	availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.UP);
+		// 	console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+		// 	buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+		// 		newMarket.address,
+		// 		Position.UP,
+		// 		toUnit(availableToBuyFromAMM / 1e18)
+		// 	);
+		// 	console.log('buyPriceImpactMax is:' + buyPriceImpactMax);
+		// 	console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
+		//
+		// 	let availableToBuyFromAMMOtherSide = await thalesAMM.availableToBuyFromAMM(
+		// 		newMarket.address,
+		// 		Position.DOWN
+		// 	);
+		// 	console.log(
+		// 		'availableToBuyFromAMMOtherSide decimal is:' + availableToBuyFromAMMOtherSide / 1e18
+		// 	);
+		//
+		// 	let buyPriceImpactOtherSide = await thalesAMM.buyPriceImpact(
+		// 		newMarket.address,
+		// 		Position.DOWN,
+		// 		toUnit(500)
+		// 	);
+		// 	console.log('buyPriceImpactOtherSide is:' + buyPriceImpactOtherSide);
+		// 	console.log('buyPriceImpactOtherSide decimal is:' + buyPriceImpactOtherSide / 1e18);
+		//
+		// 	let buyPriceImpactOtherSideSwitchSkew = await thalesAMM.buyPriceImpact(
+		// 		newMarket.address,
+		// 		Position.DOWN,
+		// 		toUnit(501)
+		// 	);
+		// 	console.log('buyPriceImpactOtherSideSwitchSkew is:' + buyPriceImpactOtherSideSwitchSkew);
+		// 	console.log(
+		// 		'buyPriceImpactOtherSideSwitchSkew decimal is:' + buyPriceImpactOtherSideSwitchSkew / 1e18
+		// 	);
+		//
+		// 	let buyPriceImpactOtherSideThousand = await thalesAMM.buyPriceImpact(
+		// 		newMarket.address,
+		// 		Position.DOWN,
+		// 		toUnit(3000)
+		// 	);
+		// 	console.log('buyPriceImpactOtherSideThousand is:' + buyPriceImpactOtherSideThousand);
+		// 	console.log(
+		// 		'buyPriceImpactOtherSideThousand decimal is:' + buyPriceImpactOtherSideThousand / 1e18
+		// 	);
+		//
+		// 	let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
+		// 		newMarket.address,
+		// 		Position.UP
+		// 	);
+		// 	console.log('availableToSellToAMM decimal is:' + availableToSellToAMM / 1e18);
+		//
+		// 	let availableToSellToAMMOtherSide = await thalesAMM.availableToSellToAMM(
+		// 		newMarket.address,
+		// 		Position.DOWN
+		// 	);
+		// 	console.log(
+		// 		'availableToSellToAMMOtherSide decimal is:' + availableToSellToAMMOtherSide / 1e18
+		// 	);
+		//
+		// 	let sellPriceImpact = await thalesAMM.sellPriceImpact(
+		// 		newMarket.address,
+		// 		Position.UP,
+		// 		toUnit(300)
+		// 	);
+		// 	console.log('sellPriceImpact is:' + sellPriceImpact);
+		// 	console.log('sellPriceImpact decimal is:' + sellPriceImpact / 1e18);
+		//
+		// 	let sellPriceImpactHalf = await thalesAMM.sellPriceImpact(
+		// 		newMarket.address,
+		// 		Position.UP,
+		// 		toUnit(3000)
+		// 	);
+		// 	console.log('sellPriceImpactHalf is:' + sellPriceImpactHalf);
+		// 	console.log('sellPriceImpactHalf decimal is:' + sellPriceImpactHalf / 1e18);
+		//
+		// 	let spentOnMarketBefore = await thalesAMM.spentOnMarket(newMarket.address);
+		// 	console.log('spentOnMarketBefore is:' + spentOnMarketBefore);
+		// 	console.log('spentOnMarketBefore decimal is:' + spentOnMarketBefore / 1e18);
+		//
+		// 	availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.UP);
+		// 	console.log('availableToBuyFromAMM is:' + availableToBuyFromAMM);
+		// 	console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+		//
+		// 	let buyPrice = await thalesAMM.buyPrice(newMarket.address, Position.UP);
+		// 	console.log('buyPrice is:' + buyPrice);
+		// 	console.log('buyPrice decimal is:' + buyPrice / 1e18);
+		//
+		// 	let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(newMarket.address, Position.UP, toUnit(600));
+		// 	console.log('buyFromAmmQuote is:' + buyFromAmmQuote);
+		// 	console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+		//
+		// 	availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
+		// 	console.log('availableToSellToAMMPreSale decimal is:' + availableToSellToAMM / 1e18);
+		//
+		// 	availableToSellToAMMOtherSide = await thalesAMM.availableToSellToAMM(
+		// 		newMarket.address,
+		// 		Position.DOWN
+		// 	);
+		// 	console.log(
+		// 		'availableToSellToAMMPreSaleOtherSide decimal is:' + availableToSellToAMMOtherSide / 1e18
+		// 	);
+		//
+		// 	await thalesAMM.buyFromAMM(newMarket.address, Position.UP, toUnit(600), { from: minter });
+		//
+		// 	let spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
+		// 	console.log('spentOnMarket is:' + spentOnMarket);
+		// 	console.log('spentOnMarket decimal is:' + spentOnMarket / 1e18);
+		//
+		// 	availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
+		// 	console.log('availableToSellToAMMPostSale decimal is:' + availableToSellToAMM / 1e18);
+		//
+		// 	availableToSellToAMMOtherSide = await thalesAMM.availableToSellToAMM(
+		// 		newMarket.address,
+		// 		Position.DOWN
+		// 	);
+		// 	console.log(
+		// 		'availableToSellToAMMOtherSidePostSale decimal is:' + availableToSellToAMMOtherSide / 1e18
+		// 	);
+		//
+		// 	let sellPriceImpactHalfPostBuy = await thalesAMM.sellPriceImpact(
+		// 		newMarket.address,
+		// 		Position.UP,
+		// 		toUnit(3000)
+		// 	);
+		// 	console.log('sellPriceImpactHalf is:' + sellPriceImpactHalfPostBuy);
+		// 	console.log('sellPriceImpactHalf decimal is:' + sellPriceImpactHalfPostBuy / 1e18);
+		// });
 	});
 });
 

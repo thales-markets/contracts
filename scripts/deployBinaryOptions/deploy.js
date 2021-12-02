@@ -15,8 +15,19 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
 	if(networkObj.chainId == 10) {
-		network = 'optimistic';
+		networkObj.name = "optimistic";
+		network = 'optimistic'
+	}
+
+	if (networkObj.chainId == 10) {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	} else if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });

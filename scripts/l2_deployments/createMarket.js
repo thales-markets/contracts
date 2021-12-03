@@ -30,9 +30,9 @@ async function main() {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 	}
-	if(networkObj.chainId == 10) {
-		networkObj.name = "optimistic";
-		network = 'optimistic'		
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimistic';
+		network = 'optimistic';
 	}
 
 	console.log('Account is:' + owner.address);
@@ -73,8 +73,7 @@ async function main() {
 	);
 	console.log('BinaryOptionMarketManager attached to:', binaryOptionMarketManagerDeployed.address);
 
-
-	const sAUDKey = toBytes32('ETH');
+	const sAUDKey = toBytes32('BTC');
 	const initialStrikePrice = w3utils.toWei('1');
 	const now = await currentTime();
 
@@ -89,17 +88,34 @@ async function main() {
 	);
 	approval.wait().then(console.log('Done approving'));
 
+	const BinaryOptionMarket = await ethers.getContractFactory('BinaryOptionMarket');
+	const binaryOptionMarket = await BinaryOptionMarket.deploy();
+	await binaryOptionMarket.deployed();
+
+	console.log('binaryOptionMarket deployed to:', binaryOptionMarket.address);
+
+	const BinaryOption = await ethers.getContractFactory('BinaryOption');
+	const binaryOptionLong = await BinaryOption.deploy();
+	await binaryOptionLong.deployed();
+	console.log('binaryOptionLong deployed to:', binaryOptionLong.address);
+
+	const binaryOptionShort = await BinaryOption.deploy();
+	await binaryOptionShort.deployed();
+	console.log('binaryOptionShort deployed to:', binaryOptionShort.address);
+
 	const result = await binaryOptionMarketManagerDeployed.createMarket(
+		binaryOptionMarket.address,
+		binaryOptionLong.address,
+		binaryOptionShort.address,
 		sAUDKey,
-		initialStrikePrice,
-		now + 36000,
+		w3utils.toWei('70000'),
+		now + 360000,
 		initialStrikePrice,
 		false,
-		ZERO_ADDRESS,
-		{ gasLimit: 6000000 }
+		ZERO_ADDRESS
 	);
 	let marketCreated;
-	await result.wait().then(function (receipt) {
+	await result.wait().then(function(receipt) {
 		console.log('receipt', receipt);
 		let marketCreationArgs = receipt.events[receipt.events.length - 1].args;
 		for (var key in marketCreationArgs) {
@@ -115,27 +131,19 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: marketCreated,
-		constructorArguments: [
-			sAUDKey,
-			initialStrikePrice,
-			now + 360,
-			initialStrikePrice,
-			false,
-			ZERO_ADDRESS,
-		],
-		contract: 'contracts/BinaryOptionMarket.sol:BinaryOptionMarket',
+		contract: 'contracts/BinaryOptions/BinaryOptionMarket.sol:BinaryOptionMarket',
 	});
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch((error) => {
+	.catch(error => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function (resolve) {
+	return new Promise(function(resolve) {
 		setTimeout(resolve, time);
 	});
 }

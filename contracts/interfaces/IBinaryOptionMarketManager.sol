@@ -24,6 +24,9 @@ interface IBinaryOptionMarketManager {
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function createMarket(
+        address _market,
+        address _long,
+        address _short,
         bytes32 oracleKey,
         uint strikePrice,
         uint maturity,

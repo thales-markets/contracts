@@ -124,12 +124,6 @@
         "internalType": "address",
         "name": "customOracle",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "zeroExAddress",
-        "type": "address"
       }
     ],
     "name": "MarketCreated",
@@ -325,6 +319,21 @@
   {
     "constant": false,
     "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_long",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_short",
+        "type": "address"
+      },
       {
         "internalType": "bytes32",
         "name": "oracleKey",
@@ -824,21 +833,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_zeroExAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setZeroExAddress",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_address",
         "type": "address"
       }
@@ -887,21 +881,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "zeroExAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   }
 ]

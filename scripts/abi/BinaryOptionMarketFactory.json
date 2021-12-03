@@ -30,32 +30,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_binaryOptionMarketMastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "BinaryOptionMarketMastercopyChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_binaryOptionMastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "BinaryOptionMastercopyChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -83,19 +57,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_zeroExAddress",
-        "type": "address"
-      }
-    ],
-    "name": "ZeroExAddressChanged",
-    "type": "event"
-  },
-  {
     "constant": false,
     "inputs": [],
     "name": "acceptOwnership",
@@ -120,82 +81,74 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "binaryOptionMarketMastercopy",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "binaryOptionMastercopy",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IERC20",
-        "name": "_sUSD",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IPriceFeed",
-        "name": "_priceFeed",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "oracleKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "strikePrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[2]",
-        "name": "times",
-        "type": "uint256[2]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "initialMint",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "customMarket",
-        "type": "bool"
-      },
-      {
-        "internalType": "address",
-        "name": "customOracle",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "creator",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "market",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "long",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "short",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IERC20",
+            "name": "_sUSD",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IPriceFeed",
+            "name": "_priceFeed",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "oracleKey",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[2]",
+            "name": "times",
+            "type": "uint256[2]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "initialMint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "customMarket",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "customOracle",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct BinaryOptionMarketFactory.BinaryOptionCreationMarketParameters",
+        "name": "_parameters",
+        "type": "tuple"
       }
     ],
     "name": "createMarket",
@@ -268,66 +221,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_binaryOptionMarketMastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "setBinaryOptionMarketMastercopy",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_binaryOptionMastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "setBinaryOptionMastercopy",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_zeroExAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setZeroExAddress",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "zeroExAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   }
 ]

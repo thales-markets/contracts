@@ -15,7 +15,7 @@ import "./BinaryOptionMarketManager.sol";
 import "./BinaryOption.sol";
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
 
-contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOptionMarket {
+contract BinaryOptionMarket is OwnedWithInit, IBinaryOptionMarket {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
@@ -43,7 +43,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     struct BinaryOptionMarketParameters {
         address owner;
-        address binaryOptionMastercopy;
         IERC20 sUSD;
         IPriceFeed priceFeed;
         address creator;
@@ -53,6 +52,8 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         uint deposit; // sUSD deposit
         bool customMarket;
         address iOracleInstanceAddress;
+        address long;
+        address short;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -63,7 +64,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     BinaryOptionMarketManager.Fees public fees;
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
-    address public zeroExAddress;
 
     IOracleInstance public iOracleInstance;
     bool public customMarket;
@@ -75,11 +75,11 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     address public creator;
     bool public resolved;
 
-    uint internal zeroInitCounter;
-
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
+
+    constructor() public {}
 
     function initialize(BinaryOptionMarketParameters calldata _parameters) external {
         require(!initialized, "Binary Option Market already initialized");
@@ -105,16 +105,12 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
         initialMint = _parameters.deposit;
 
         // Instantiate the options themselves
-        options.long = BinaryOption(
-            _cloneAsMinimalProxy(_parameters.binaryOptionMastercopy, "Could not create a Binary Option")
-        );
-        options.short = BinaryOption(
-            _cloneAsMinimalProxy(_parameters.binaryOptionMastercopy, "Could not create a Binary Option")
-        );
+        options.long = BinaryOption(_parameters.long);
+        options.short = BinaryOption(_parameters.short);
         // abi.encodePacked("sLONG: ", _oracleKey)
         // consider naming the option: sLongBTC>50@2021.12.31
-        options.long.initialize("Binary Option Long", "sLONG", zeroExAddress);
-        options.short.initialize("Binary Option Short", "sSHORT", zeroExAddress);
+        options.long.initialize("Binary Option Long", "sLONG");
+        options.short.initialize("Binary Option Short", "sSHORT");
         _mint(creator, initialMint);
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
@@ -301,16 +297,6 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     function setsUSD(address _address) external onlyOwner {
         sUSD = IERC20(_address);
-    }
-
-    function setZeroExAddress(address _zeroExAddress) external onlyOwner {
-        zeroExAddress = _zeroExAddress;
-    }
-
-    function setZeroExAddressAtInit(address _zeroExAddress) external {
-        require(zeroInitCounter == 0, "0x already set at Init");
-        zeroInitCounter = 9;
-        zeroExAddress = _zeroExAddress;
     }
 
     /* ---------- Market Resolution ---------- */

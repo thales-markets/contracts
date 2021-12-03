@@ -1,4 +1,5 @@
 pragma solidity ^0.5.16;
+pragma experimental ABIEncoderV2;
 
 // Inheritance
 import "../interfaces/IBinaryOptionMarketManager.sol";
@@ -36,8 +37,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     /* ========== STATE VARIABLES ========== */
-
-    address public zeroExAddress;
 
     Durations public durations;
     uint public capitalRequirement;
@@ -81,12 +80,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     /* ========== SETTERS ========== */
     function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) external onlyOwner {
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
-    }
-
-    function setZeroExAddress(address _zeroExAddress) public onlyOwner {
-        require(_zeroExAddress != address(0), "Invalid address");
-        zeroExAddress = _zeroExAddress;
-        BinaryOptionMarketFactory(binaryOptionMarketFactory).setZeroExAddress(_zeroExAddress);
     }
 
     /* ========== VIEWS ========== */
@@ -176,6 +169,9 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     /* ---------- Market Lifecycle ---------- */
 
     function createMarket(
+        address _market,
+        address _long,
+        address _short,
         bytes32 oracleKey,
         uint strikePrice,
         uint maturity,
@@ -185,6 +181,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     )
         external
         notPaused
+        onlyOwner
         returns (
             IBinaryOptionMarket // no support for returning BinaryOptionMarket polymorphically given the interface
         )
@@ -208,17 +205,23 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
         require(capitalRequirement <= initialMint, "Insufficient capital");
 
-        BinaryOptionMarket market = BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
-            msg.sender,
-            sUSD,
-            priceFeed,
-            oracleKey,
-            strikePrice,
-            [maturity, expiry],
-            initialMint,
-            customMarket,
-            customOracle
-        );
+        BinaryOptionMarket market =
+            BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
+                BinaryOptionMarketFactory.BinaryOptionCreationMarketParameters(
+                    msg.sender,
+                    _market,
+                    _long,
+                    _short,
+                    sUSD,
+                    priceFeed,
+                    oracleKey,
+                    strikePrice,
+                    [maturity, expiry],
+                    initialMint,
+                    customMarket,
+                    customOracle
+                )
+            );
 
         _activeMarkets.add(address(market));
 
@@ -239,8 +242,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             address(long),
             address(short),
             customMarket,
-            customOracle,
-            zeroExAddress
+            customOracle
         );
         return market;
     }
@@ -374,8 +376,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         address long,
         address short,
         bool customMarket,
-        address customOracle,
-        address zeroExAddress
+        address customOracle
     );
     event MarketExpired(address market);
     event MarketsMigrated(BinaryOptionMarketManager receivingManager, BinaryOptionMarket[] markets);

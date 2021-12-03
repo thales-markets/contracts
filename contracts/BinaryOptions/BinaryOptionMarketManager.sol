@@ -178,7 +178,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     )
         external
         notPaused
-        onlyOwner
         returns (
             IBinaryOptionMarket // no support for returning BinaryOptionMarket polymorphically given the interface
         )

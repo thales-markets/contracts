@@ -55,6 +55,30 @@ async function main() {
 		console.log('Found PriceFeed at:' + priceFeedAddress);
 	}
 
+	// // We get the contract to deploy
+	const BinaryOptionMastercopy = await ethers.getContractFactory('BinaryOptionMastercopy');
+	const binaryOptionMastercopyDeployed = await BinaryOptionMastercopy.deploy();
+	await binaryOptionMastercopyDeployed.deployed();
+
+	console.log('BinaryOptionMastercopy deployed to:', binaryOptionMastercopyDeployed.address);
+	setTargetAddress('BinaryOptionMastercopy', network, binaryOptionMastercopyDeployed.address);
+
+	const BinaryOptionMarketMastercopy = await ethers.getContractFactory(
+		'BinaryOptionMarketMastercopy'
+	);
+	const binaryOptionMarketMastercopyDeployed = await BinaryOptionMarketMastercopy.deploy();
+	await binaryOptionMarketMastercopyDeployed.deployed();
+
+	console.log(
+		'binaryOptionMarketMastercopy deployed to:',
+		binaryOptionMarketMastercopyDeployed.address
+	);
+	setTargetAddress(
+		'BinaryOptionMarketMastercopy',
+		network,
+		binaryOptionMarketMastercopyDeployed.address
+	);
+
 	const day = 24 * 60 * 60;
 	const expiryDuration = 26 * 7 * day; // Six months to exercise options before the market is destructible.
 	const maxTimeToMaturity = 730 * day; // Markets may not be deployed more than two years in the future.
@@ -106,6 +130,19 @@ async function main() {
 		console.log('BinaryOptionMarketManager: setBinaryOptionsMarketFactory');
 	});
 
+	tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketMastercopy(
+		binaryOptionMarketMastercopyDeployed.address
+	);
+	await tx.wait().then(e => {
+		console.log('BinaryOptionMarketFactory: setBinaryOptionMarketMastercopy');
+	});
+	tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMastercopy(
+		binaryOptionMastercopyDeployed.address
+	);
+	await tx.wait().then(e => {
+		console.log('BinaryOptionMarketFactory: setBinaryOptionMastercopy');
+	});
+
 	if (network == 'ropsten') {
 		await hre.run('verify:verify', {
 			address: priceFeedAddress,
@@ -133,6 +170,19 @@ async function main() {
 			maxTimeToMaturity,
 			creatorCapitalRequirement,
 		],
+	});
+
+	await hre.run('verify:verify', {
+		address: binaryOptionMastercopyDeployed.address,
+		constructorArguments: [],
+		contract: 'contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
+	});
+
+	await hre.run('verify:verify', {
+		address: binaryOptionMarketMastercopyDeployed.address,
+		constructorArguments: [],
+		contract:
+			'contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
 	});
 }
 

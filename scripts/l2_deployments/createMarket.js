@@ -91,7 +91,7 @@ async function main() {
 	const result = await binaryOptionMarketManagerDeployed.createMarket(
 		sAUDKey,
 		w3utils.toWei('70000'),
-		now + 360000,
+		now + 3600000,
 		initialStrikePrice,
 		false,
 		ZERO_ADDRESS
@@ -113,8 +113,17 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: marketCreated,
+		constructorArguments: [
+			sAUDKey,
+			w3utils.toWei('70000'),
+			now + 3600000,
+			initialStrikePrice,
+			false,
+			ZERO_ADDRESS,
+		],
 		contract: 'contracts/BinaryOptions/BinaryOptionMarket.sol:BinaryOptionMarket',
 	});
+
 }
 
 main()

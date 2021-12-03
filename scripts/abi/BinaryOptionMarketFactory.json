@@ -30,6 +30,32 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_binaryOptionMarketMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "BinaryOptionMarketMastercopyChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_binaryOptionMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "BinaryOptionMastercopyChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -69,6 +95,36 @@
     "constant": true,
     "inputs": [],
     "name": "binaryOptionMarketManager",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "binaryOptionMarketMastercopy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "binaryOptionMastercopy",
     "outputs": [
       {
         "internalType": "address",
@@ -203,6 +259,36 @@
       }
     ],
     "name": "setBinaryOptionMarketManager",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_binaryOptionMarketMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "setBinaryOptionMarketMastercopy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_binaryOptionMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "setBinaryOptionMastercopy",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

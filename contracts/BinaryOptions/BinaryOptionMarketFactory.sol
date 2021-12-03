@@ -11,10 +11,14 @@ import "./BinaryOptionMarketFactory.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
+import "synthetix-2.50.4-ovm/contracts/MinimalProxyFactory.sol";
 
-contract BinaryOptionMarketFactory is Owned {
+contract BinaryOptionMarketFactory is Owned, MinimalProxyFactory {
     /* ========== STATE VARIABLES ========== */
     address public binaryOptionMarketManager;
+
+    address public binaryOptionMarketMastercopy;
+    address public binaryOptionMastercopy;
 
     struct BinaryOptionCreationMarketParameters {
         address creator;
@@ -30,16 +34,19 @@ contract BinaryOptionMarketFactory is Owned {
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(address _owner) public Owned(_owner) {}
+    constructor(address _owner) public Owned(_owner) MinimalProxyFactory() {}
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function createMarket(BinaryOptionCreationMarketParameters calldata _parameters) external returns (BinaryOptionMarket) {
         require(binaryOptionMarketManager == msg.sender, "Only permitted by the manager.");
 
-        BinaryOptionMarket bom = new BinaryOptionMarket();
-        BinaryOption long = new BinaryOption();
-        BinaryOption short = new BinaryOption();
+        BinaryOptionMarket bom =
+            BinaryOptionMarket(
+                _cloneAsMinimalProxy(binaryOptionMarketMastercopy, "Could not create a Binary Option Market")
+            );
+        BinaryOption long = BinaryOption(_cloneAsMinimalProxy(binaryOptionMastercopy, "Could not create a Binary Option"));
+        BinaryOption short = BinaryOption(_cloneAsMinimalProxy(binaryOptionMastercopy, "Could not create a Binary Option"));
         bom.initialize(
             BinaryOptionMarket.BinaryOptionMarketParameters(
                 binaryOptionMarketManager,
@@ -65,5 +72,17 @@ contract BinaryOptionMarketFactory is Owned {
         emit BinaryOptionMarketManagerChanged(_binaryOptionMarketManager);
     }
 
+    function setBinaryOptionMarketMastercopy(address _binaryOptionMarketMastercopy) external onlyOwner {
+        binaryOptionMarketMastercopy = _binaryOptionMarketMastercopy;
+        emit BinaryOptionMarketMastercopyChanged(_binaryOptionMarketMastercopy);
+    }
+
+    function setBinaryOptionMastercopy(address _binaryOptionMastercopy) external onlyOwner {
+        binaryOptionMastercopy = _binaryOptionMastercopy;
+        emit BinaryOptionMastercopyChanged(_binaryOptionMastercopy);
+    }
+
     event BinaryOptionMarketManagerChanged(address _binaryOptionMarketManager);
+    event BinaryOptionMarketMastercopyChanged(address _binaryOptionMarketMastercopy);
+    event BinaryOptionMastercopyChanged(address _binaryOptionMastercopy);
 }

@@ -78,8 +78,6 @@ contract BinaryOptionMarket is OwnedWithInit, IBinaryOptionMarket {
 
     bool public initialized = false;
 
-    constructor() public {}
-
     function initialize(BinaryOptionMarketParameters calldata _parameters) external {
         require(!initialized, "Binary Option Market already initialized");
         initialized = true;

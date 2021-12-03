@@ -88,25 +88,7 @@ async function main() {
 	);
 	approval.wait().then(console.log('Done approving'));
 
-	const BinaryOptionMarket = await ethers.getContractFactory('BinaryOptionMarket');
-	const binaryOptionMarket = await BinaryOptionMarket.deploy();
-	await binaryOptionMarket.deployed();
-
-	console.log('binaryOptionMarket deployed to:', binaryOptionMarket.address);
-
-	const BinaryOption = await ethers.getContractFactory('BinaryOption');
-	const binaryOptionLong = await BinaryOption.deploy();
-	await binaryOptionLong.deployed();
-	console.log('binaryOptionLong deployed to:', binaryOptionLong.address);
-
-	const binaryOptionShort = await BinaryOption.deploy();
-	await binaryOptionShort.deployed();
-	console.log('binaryOptionShort deployed to:', binaryOptionShort.address);
-
 	const result = await binaryOptionMarketManagerDeployed.createMarket(
-		binaryOptionMarket.address,
-		binaryOptionLong.address,
-		binaryOptionShort.address,
 		sAUDKey,
 		w3utils.toWei('70000'),
 		now + 360000,

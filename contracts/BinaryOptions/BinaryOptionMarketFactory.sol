@@ -2,10 +2,10 @@ pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
-import "synthetix-2.50.4-ovm/contracts/MinimalProxyFactory.sol";
 import "synthetix-2.50.4-ovm/contracts/Owned.sol";
 
 // Internal references
+import "./BinaryOption.sol";
 import "./BinaryOptionMarket.sol";
 import "./BinaryOptionMarketFactory.sol";
 import "../interfaces/IPriceFeed.sol";
@@ -18,9 +18,6 @@ contract BinaryOptionMarketFactory is Owned {
 
     struct BinaryOptionCreationMarketParameters {
         address creator;
-        address market;
-        address long;
-        address short;
         IERC20 _sUSD;
         IPriceFeed _priceFeed;
         bytes32 oracleKey;
@@ -40,7 +37,9 @@ contract BinaryOptionMarketFactory is Owned {
     function createMarket(BinaryOptionCreationMarketParameters calldata _parameters) external returns (BinaryOptionMarket) {
         require(binaryOptionMarketManager == msg.sender, "Only permitted by the manager.");
 
-        BinaryOptionMarket bom = BinaryOptionMarket(_parameters.market);
+        BinaryOptionMarket bom = new BinaryOptionMarket();
+        BinaryOption long = new BinaryOption();
+        BinaryOption short = new BinaryOption();
         bom.initialize(
             BinaryOptionMarket.BinaryOptionMarketParameters(
                 binaryOptionMarketManager,
@@ -53,8 +52,8 @@ contract BinaryOptionMarketFactory is Owned {
                 _parameters.initialMint,
                 _parameters.customMarket,
                 _parameters.customOracle,
-                _parameters.long,
-                _parameters.short
+                address(long),
+                address(short)
             )
         );
         return bom;

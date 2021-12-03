@@ -320,21 +320,6 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_long",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_short",
-        "type": "address"
-      },
-      {
         "internalType": "bytes32",
         "name": "oracleKey",
         "type": "bytes32"

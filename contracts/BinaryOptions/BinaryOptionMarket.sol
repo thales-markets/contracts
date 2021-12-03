@@ -2,7 +2,6 @@ pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
-import "synthetix-2.50.4-ovm/contracts/MinimalProxyFactory.sol";
 import "../OwnedWithInit.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
 import "../interfaces/IOracleInstance.sol";

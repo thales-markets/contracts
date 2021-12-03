@@ -169,9 +169,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     /* ---------- Market Lifecycle ---------- */
 
     function createMarket(
-        address _market,
-        address _long,
-        address _short,
         bytes32 oracleKey,
         uint strikePrice,
         uint maturity,
@@ -209,9 +206,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
                 BinaryOptionMarketFactory.BinaryOptionCreationMarketParameters(
                     msg.sender,
-                    _market,
-                    _long,
-                    _short,
                     sUSD,
                     priceFeed,
                     oracleKey,

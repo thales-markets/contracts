@@ -91,21 +91,6 @@
             "type": "address"
           },
           {
-            "internalType": "address",
-            "name": "market",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "long",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "short",
-            "type": "address"
-          },
-          {
             "internalType": "contract IERC20",
             "name": "_sUSD",
             "type": "address"

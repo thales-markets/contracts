@@ -28,7 +28,7 @@ contract BinaryOption is IERC20, IBinaryOption {
     uint public totalSupply;
 
     // The argument order is allowance[owner][spender]
-    mapping(address => mapping(address => uint)) public allowances;
+    mapping(address => mapping(address => uint)) public allowance;
 
     // Enforce a 1 cent minimum amount
     uint internal constant _MINIMUM_AMOUNT = 1e16;
@@ -42,12 +42,6 @@ contract BinaryOption is IERC20, IBinaryOption {
         name = _name;
         symbol = _symbol;
         market = BinaryOptionMarket(msg.sender);
-    }
-
-    /* ========== MUTATIVE FUNCTIONS ========== */
-    //If 0x asks for allowance, it has the whole balance allowed
-    function allowance(address owner, address spender) public view returns (uint256) {
-        return allowances[owner][spender];
     }
 
     function _requireMinimumAmount(uint amount) internal pure returns (uint) {
@@ -128,14 +122,14 @@ contract BinaryOption is IERC20, IBinaryOption {
         address _to,
         uint _value
     ) external returns (bool success) {
-        uint fromAllowance = allowances[_from][msg.sender];
+        uint fromAllowance = allowance[_from][msg.sender];
         require(_value <= fromAllowance, "Insufficient allowance");
-        allowances[_from][msg.sender] = fromAllowance.sub(_value);
+        allowance[_from][msg.sender] = fromAllowance.sub(_value);
     }
 
     function approve(address _spender, uint _value) external returns (bool success) {
         require(_spender != address(0));
-        allowances[msg.sender][_spender] = _value;
+        allowance[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
         return true;
     }

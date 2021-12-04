@@ -73,7 +73,7 @@ async function main() {
 	);
 	console.log('BinaryOptionMarketManager attached to:', binaryOptionMarketManagerDeployed.address);
 
-	const sAUDKey = toBytes32('BTC');
+	const sAUDKey = toBytes32('ETH');
 	const initialStrikePrice = w3utils.toWei('1');
 	const now = await currentTime();
 
@@ -90,8 +90,8 @@ async function main() {
 
 	const result = await binaryOptionMarketManagerDeployed.createMarket(
 		sAUDKey,
-		w3utils.toWei('70000'),
-		now + 3600000,
+		w3utils.toWei('5000'),
+		now + 360000,
 		initialStrikePrice,
 		false,
 		ZERO_ADDRESS
@@ -123,7 +123,6 @@ async function main() {
 		],
 		contract: 'contracts/BinaryOptions/BinaryOptionMarket.sol:BinaryOptionMarket',
 	});
-
 }
 
 main()

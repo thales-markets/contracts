@@ -86,12 +86,49 @@ async function main() {
 		binaryOptionMarketFactoryAddress
 	);
 
+	const day = 24 * 60 * 60;
+	const expiryDuration = 26 * 7 * day; // Six months to exercise options before the market is destructible.
+	const maxTimeToMaturity = 730 * day; // Markets may not be deployed more than two years in the future.
+	let creatorCapitalRequirement = w3utils.toWei('1'); // 1 sUSD is required to create a new market for testnet, 1000 for mainnet.
+	if (network == 'mainnet') {
+		creatorCapitalRequirement = w3utils.toWei('1000');
+	}
+
+	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
+	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
+		owner.address,
+		ProxyERC20sUSDaddress,
+		priceFeedAddress,
+		expiryDuration,
+		maxTimeToMaturity,
+		creatorCapitalRequirement
+	);
+	await binaryOptionMarketManagerDeployed.deployed();
+
+	console.log('binaryOptionMarketManager deployed to:', binaryOptionMarketManagerDeployed.address);
+
+	setTargetAddress('BinaryOptionMarketManager', network, binaryOptionMarketManagerDeployed.address);
+
 	let tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketMastercopy(
 		binaryOptionMarketMastercopyDeployed.address
 	);
 	await tx.wait().then(e => {
 		console.log('BinaryOptionMarketFactory: setBinaryOptionMarketMastercopy');
 	});
+
+	 tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
+		binaryOptionMarketManagerDeployed.address
+	);
+	await tx.wait().then(e => {
+		console.log('BinaryOptionMarketFactory: setBinaryOptionMarketManager');
+	});
+	tx = await binaryOptionMarketManagerDeployed.setBinaryOptionsMarketFactory(
+		binaryOptionMarketFactoryDeployed.address
+	);
+	await tx.wait().then(e => {
+		console.log('BinaryOptionMarketManager: setBinaryOptionsMarketFactory');
+	});
+
 	tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMastercopy(
 		binaryOptionMastercopyDeployed.address
 	);
@@ -111,6 +148,19 @@ async function main() {
 		contract:
 			'contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
 	});
+
+	await hre.run('verify:verify', {
+		address: binaryOptionMarketManagerDeployed.address,
+		constructorArguments: [
+			owner.address,
+			ProxyERC20sUSDaddress,
+			priceFeedAddress,
+			expiryDuration,
+			maxTimeToMaturity,
+			creatorCapitalRequirement,
+		],
+	});
+
 }
 
 main()

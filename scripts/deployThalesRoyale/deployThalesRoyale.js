@@ -41,13 +41,13 @@ async function main() {
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const ThalesRoyaleDeployed = await ThalesRoyale.deploy(
 		owner.address,
-		toBytes32('ETH'),
+		toBytes32('BTC'),
 		priceFeedAddress,
 		w3utils.toWei('10000'),
 		priceFeedAddress,
 		6,
 		day * 3,
-		hour * 8,
+		hour * 12,
 		day
 	);
 	await ThalesRoyaleDeployed.deployed();
@@ -60,13 +60,13 @@ async function main() {
 		address: ThalesRoyaleDeployed.address,
 		constructorArguments: [
 			owner.address,
-			toBytes32('ETH'),
+			toBytes32('BTC'),
 			priceFeedAddress,
 			w3utils.toWei('10000'),
 			priceFeedAddress,
 			6,
 			day * 3,
-			hour * 8,
+			hour * 12,
 			day,
 		],
 	});

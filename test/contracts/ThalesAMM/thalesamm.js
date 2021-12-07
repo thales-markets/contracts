@@ -689,6 +689,143 @@ contract('ThalesAMM', accounts => {
 				})
 			).to.be.revertedWith('Market is not in Trading phase');
 		});
+
+		it('Exercise market', async () => {
+			let now = await currentTime();
+			let newMarket = await createMarket(
+				manager,
+				sETHKey,
+				toUnit(12000),
+				now + day * 10,
+				toUnit(10),
+				initialCreator
+			);
+
+			await newMarket.mint(toUnit(1000), {
+				from: minter,
+			});
+
+			let canExerciseMaturedMarket = await thalesAMM.canExerciseMaturedMarket(newMarket.address);
+			console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
+			let phase = await newMarket.phase();
+			console.log('phase ' + phase);
+
+			let options = await newMarket.options();
+			long = await BinaryOption.at(options.long);
+			short = await BinaryOption.at(options.short);
+			await long.approve(thalesAMM.address, toUnit(100), { from: minter });
+			await short.approve(thalesAMM.address, toUnit(100), { from: minter });
+
+			await thalesAMM.sellToAMM(newMarket.address, Position.DOWN, toUnit(100), { from: minter });
+
+			await sUSDSynth.approve(thalesAMM.address, toUnit(1), { from: minter });
+
+			await expect(thalesAMM.exerciseMaturedMarket(newMarket.address), {
+				from: minter,
+			}).to.be.revertedWith('Market is not in Maturity phase');
+
+			await fastForward(day * 20);
+
+			phase = await newMarket.phase();
+			console.log('phase ' + phase);
+
+			let isKnownMarket = await manager.isKnownMarket(newMarket.address);
+			console.log('isKnownMarket ' + isKnownMarket);
+
+			let ammLongBalance = await long.balanceOf(thalesAMM.address);
+			console.log('amm LongBalance pre Exercise decimal is:' + ammLongBalance / 1e18);
+
+			let ammShortBalance = await short.balanceOf(thalesAMM.address);
+			console.log('ammShortBalance pre Exercise  decimal is:' + ammShortBalance / 1e18);
+
+			let sUSDBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			console.log('sUSDBalance post Exercise  decimal is:' + sUSDBalance / 1e18);
+
+			canExerciseMaturedMarket = await thalesAMM.canExerciseMaturedMarket(newMarket.address);
+			console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
+
+			await thalesAMM.exerciseMaturedMarket(newMarket.address);
+
+			ammLongBalance = await long.balanceOf(thalesAMM.address);
+			console.log('amm LongBalance post Exercise decimal is:' + ammLongBalance / 1e18);
+
+			ammShortBalance = await short.balanceOf(thalesAMM.address);
+			console.log('ammShortBalance post Exercise  decimal is:' + ammShortBalance / 1e18);
+
+			sUSDBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			console.log('sUSDBalance post Exercise  decimal is:' + sUSDBalance / 1e18);
+		});
+
+		it('Odds calculation checker', async () => {
+			console.log('ThalesAMM deployed to ' + thalesAMM.address);
+
+			let now = await currentTime();
+			let newMarket = await createMarket(
+				manager,
+				sETHKey,
+				toUnit(12000),
+				now + day * 10,
+				toUnit(10),
+				initialCreator
+			);
+
+			let calculatedOdds = calculateOdds(10000, 12000, 10, 120);
+			console.log('calculatedOdds is:' + calculatedOdds);
+			let calculatedOddsContract = await thalesAMM.calculateOdds(
+				toUnit(10000),
+				toUnit(12000),
+				toUnit(10),
+				toUnit(120)
+			);
+			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+
+			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			console.log('priceUp decimal is:' + priceUp / 1e18);
+
+			newMarket = await createMarket(
+				manager,
+				sETHKey,
+				toUnit(10000),
+				now + day * 1,
+				toUnit(10),
+				initialCreator
+			);
+
+			calculatedOdds = calculateOdds(10000, 10000, 1, 120);
+			console.log('calculatedOdds is:' + calculatedOdds);
+			calculatedOddsContract = await thalesAMM.calculateOdds(
+				toUnit(10000),
+				toUnit(10000),
+				toUnit(1),
+				toUnit(120)
+			);
+			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+
+			priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			console.log('priceUp decimal is:' + priceUp / 1e18);
+
+			newMarket = await createMarket(
+				manager,
+				sETHKey,
+				toUnit(11000),
+				now + hour * 12,
+				toUnit(10),
+				initialCreator
+			);
+
+			calculatedOdds = calculateOdds(10000, 11000, 0.5, 120);
+			console.log('calculatedOdds is:' + calculatedOdds);
+			calculatedOddsContract = await thalesAMM.calculateOdds(
+				toUnit(10000),
+				toUnit(11000),
+				toUnit(0.5),
+				toUnit(120)
+			);
+			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+
+			priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			console.log('priceUp decimal is:' + priceUp / 1e18);
+		});
 	});
 });
 

@@ -15,8 +15,19 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
 	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimistic';
 		network = 'optimistic';
+	}
+
+	if (networkObj.chainId == 10) {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	} else if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
@@ -40,7 +51,7 @@ async function main() {
 
 	// // We get the contract to deploy
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
-	const thalesAMM = await DeciMath.deploy(
+	const thalesAMM = await ThalesAMM.deploy(
 		owner.address,
 		priceFeedAddress,
 		ProxyERC20sUSDaddress,
@@ -51,6 +62,12 @@ async function main() {
 
 	console.log('ThalesAMM deployed to:', thalesAMM.address);
 	setTargetAddress('ThalesAMM', network, thalesAMM.address);
+
+	let managerAddress = getTargetAddress('BinaryOptionMarketManager', network);
+	let tx = await thalesAMM.setBinaryOptionsMarketManager(managerAddress);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setBinaryOptionsMarketManager');
+	});
 
 	await hre.run('verify:verify', {
 		address: deciMath.address,

@@ -99,8 +99,12 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     /* ---------- Market Information ---------- */
 
-    function _isKnownMarket(address candidate) internal view returns (bool) {
+    function isKnownMarket(address candidate) public view returns (bool) {
         return _activeMarkets.contains(candidate) || _maturedMarkets.contains(candidate);
+    }
+
+    function isActiveMarket(address candidate) public view returns (bool) {
+        return _activeMarkets.contains(candidate);
     }
 
     function numActiveMarkets() external view returns (uint) {
@@ -251,7 +255,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint amount
     ) external {
         //only to be called by markets themselves
-        require(_isKnownMarket(address(msg.sender)), "Market unknown.");
+        require(isKnownMarket(address(msg.sender)), "Market unknown.");
         sUSD.transferFrom(sender, receiver, amount);
     }
 
@@ -266,7 +270,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         for (uint i = 0; i < markets.length; i++) {
             address market = markets[i];
 
-            require(_isKnownMarket(address(market)), "Market unknown.");
+            require(isKnownMarket(address(market)), "Market unknown.");
 
             // The market itself handles decrementing the total deposits.
             BinaryOptionMarket(market).expire(msg.sender);
@@ -310,7 +314,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint runningDepositTotal;
         for (uint i; i < _numMarkets; i++) {
             BinaryOptionMarket market = marketsToMigrate[i];
-            require(_isKnownMarket(address(market)), "Market unknown.");
+            require(isKnownMarket(address(market)), "Market unknown.");
 
             // Remove it from our list and deposit total.
             markets.remove(address(market));
@@ -339,7 +343,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint runningDepositTotal;
         for (uint i; i < _numMarkets; i++) {
             BinaryOptionMarket market = marketsToReceive[i];
-            require(!_isKnownMarket(address(market)), "Market already known.");
+            require(!isKnownMarket(address(market)), "Market already known.");
 
             market.acceptOwnership();
             markets.add(address(market));
@@ -358,7 +362,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     modifier onlyKnownMarkets() {
-        require(_isKnownMarket(msg.sender), "Permitted only for known markets.");
+        require(isKnownMarket(msg.sender), "Permitted only for known markets.");
         _;
     }
 

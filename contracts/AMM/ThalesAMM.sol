@@ -8,6 +8,7 @@ import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
+import "../interfaces/IBinaryOptionMarketManager.sol";
 import "../interfaces/IBinaryOption.sol";
 import "./DeciMath.sol";
 
@@ -27,6 +28,8 @@ contract ThalesAMM is Owned, Pausable {
     uint public impliedVolatility = 120 * 1e18;
     uint public spread = 1e16; //1%
     uint public max_spread = 5e16; //5%
+
+    uint public minimalTimeLeftToMaturity = 2 hours;
 
     struct MarketSkew {
         uint longs;
@@ -63,13 +66,15 @@ contract ThalesAMM is Owned, Pausable {
         Position position,
         uint amount
     ) public {
-        require(IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading, "Market is not in Trading phase");
+        require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
-        require(amount < availableToBuyFromAMM(market, position), "Not enough liquidity.");
+        require(amount <= availableToBuyFromAMM(market, position), "Not enough liquidity.");
 
         uint sUSDPaid = buyFromAmmQuote(market, position, amount);
         require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
         require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
+
+        sUSD.transferFrom(msg.sender, address(this), sUSDPaid);
 
         uint availableInContract = balanceOfPositionOnMarket(market, position);
 
@@ -84,18 +89,25 @@ contract ThalesAMM is Owned, Pausable {
         IBinaryOption target = position == Position.Long ? long : short;
 
         IERC20(address(target)).transfer(msg.sender, amount);
-        sUSD.transferFrom(msg.sender, address(this), sUSDPaid);
 
-        spentOnMarket[market] = spentOnMarket[market].add(toMint).sub(sUSDPaid);
+        spentOnMarket[market] = spentOnMarket[market].add(toMint);
+
+        if (spentOnMarket[market] <= sUSDPaid) {
+            spentOnMarket[market] = 0;
+        } else {
+            spentOnMarket[market] = spentOnMarket[market].sub(sUSDPaid);
+        }
     }
 
     function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
-        if (IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading) {
+        if (isMarketInAMMTrading(market)) {
             uint balance = balanceOfPositionOnMarket(market, position);
-            uint availableUntilCapSUSD = capPerMarket.sub(spentOnMarket[market]);
             uint buy_max_price = price(market, position).mul(ONE.add(max_spread)).div(1e18);
-            uint additionalBufferFromSelling = availableUntilCapSUSD.div(ONE.sub(buy_max_price)).mul(1e18);
-            return balance.add(additionalBufferFromSelling);
+            uint divider_max_price = ONE.sub(buy_max_price);
+            uint additionalBufferFromSelling = balance.mul(buy_max_price).div(1e18);
+            uint availableUntilCapSUSD = capPerMarket.sub(spentOnMarket[market]).add(additionalBufferFromSelling);
+
+            return balance.add(availableUntilCapSUSD.div(divider_max_price).mul(1e18));
         } else {
             return 0;
         }
@@ -144,9 +156,9 @@ contract ThalesAMM is Owned, Pausable {
         Position position,
         uint amount
     ) public {
-        require(IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading, "Market is not in Trading phase");
+        require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
-        require(amount < availableToSellToAMM(market, position), "Cant buy that much");
+        require(amount <= availableToSellToAMM(market, position), "Cant buy that much");
 
         (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
         IBinaryOption target = position == Position.Long ? long : short;
@@ -154,41 +166,37 @@ contract ThalesAMM is Owned, Pausable {
         require(target.balanceOf(msg.sender) >= amount, "You dont have enough options.");
         require(IERC20(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
 
-        uint pricePaid = sellToAmmQuote(market, position, amount);
-        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
-
         //transfer options first to have max burn available
         IERC20(address(target)).transferFrom(msg.sender, address(this), amount);
-
         uint sUSDFromBurning = IBinaryOptionMarket(market).getMaximumBurnable(address(this));
         if (sUSDFromBurning > 0) {
             IBinaryOptionMarket(market).burnOptionsMaximum();
         }
 
+        uint pricePaid = sellToAmmQuote(market, position, amount);
+        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
+
         sUSD.transfer(msg.sender, pricePaid);
 
-        spentOnMarket[market] = spentOnMarket[market].add(pricePaid).sub(sUSDFromBurning);
+        spentOnMarket[market] = spentOnMarket[market].add(pricePaid);
+        if (spentOnMarket[market] < sUSDFromBurning) {
+            spentOnMarket[market] = 0;
+        } else {
+            spentOnMarket[market] = spentOnMarket[market].sub(sUSDFromBurning);
+        }
     }
 
     function availableToSellToAMM(address market, Position position) public view returns (uint) {
-        if (IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading) {
+        if (isMarketInAMMTrading(market)) {
             uint sell_max_price = price(market, position).mul(ONE.sub(max_spread)).div(1e18);
             (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
             uint balanceOfTheOtherSide =
                 position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
 
-            uint couldBuyNow = capPerMarket.sub(spentOnMarket[market]).div(sell_max_price).mul(1e18);
-
-            if (balanceOfTheOtherSide < couldBuyNow) {
-                // add the potential max burn
-                uint willPay = couldBuyNow.div(sell_max_price).mul(1e18);
-                uint usdAvailable = capPerMarket.add(couldBuyNow).sub(spentOnMarket[market]).sub(willPay);
-                return usdAvailable.div(sell_max_price).mul(1e18);
-            } else {
-                uint willPay = balanceOfTheOtherSide.div(sell_max_price).mul(1e18);
-                uint usdAvailable = capPerMarket.add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
-                return usdAvailable.div(sell_max_price).mul(1e18);
-            }
+            // can burn straight away balanceOfTheOtherSide
+            uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(1e18);
+            uint usdAvailable = capPerMarket.add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
+            return usdAvailable.div(sell_max_price).mul(1e18).add(balanceOfTheOtherSide);
         } else return 0;
     }
 
@@ -237,7 +245,7 @@ contract ThalesAMM is Owned, Pausable {
     }
 
     function price(address market, Position position) public view returns (uint) {
-        if (IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Trading) {
+        if (isMarketInAMMTrading(market)) {
             // add price calculation
             IBinaryOptionMarket marketContract = IBinaryOptionMarket(market);
             (uint maturity, uint destructino) = marketContract.times();
@@ -255,6 +263,19 @@ contract ThalesAMM is Owned, Pausable {
                     ONE.sub(calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatility).div(1e2));
             }
         } else return 0;
+    }
+
+    function isMarketInAMMTrading(address market) public view returns (bool) {
+        if (IBinaryOptionMarketManager(manager).isActiveMarket(market)) {
+            // add price calculation
+            IBinaryOptionMarket marketContract = IBinaryOptionMarket(market);
+            (uint maturity, uint destructino) = marketContract.times();
+
+            uint timeLeftToMaturity = maturity - block.timestamp;
+            return timeLeftToMaturity > minimalTimeLeftToMaturity;
+        } else {
+            return false;
+        }
     }
 
     function calculateOdds(
@@ -321,6 +342,10 @@ contract ThalesAMM is Owned, Pausable {
 
     function setImpliedVolatility(uint _impliedVolatility) public onlyOwner {
         impliedVolatility = _impliedVolatility;
+    }
+
+    function setMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity) public onlyOwner {
+        minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
     }
 
     function setSpread(uint _spread) public onlyOwner {

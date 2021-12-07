@@ -15,8 +15,18 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimistic';
+		network = 'optimistic';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
+	console.log('Network id:' + networkObj.chainId);
 
 	const PriceFeed = await ethers.getContractFactory('PriceFeed');
 	const priceFeed = await upgrades.deployProxy(PriceFeed, [owner.address]);

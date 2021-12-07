@@ -124,12 +124,16 @@ module.exports = {
 			url: 'https://mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
-		optimistic: {
+		optimisticLocal: {
 			url: LOCAL_OPT_IP,
 			accounts: {
 			  mnemonic: "test test test test test test test test test test test junk",
 			},
 			gasPrice: 10000,
+		},
+		optimistic: {
+			url: 'https://mainnet.optimism.io',
+			accounts: [PRIVATE_KEY]
 		},
 		optimisticKovan: {
 			gasPrice: 10000,

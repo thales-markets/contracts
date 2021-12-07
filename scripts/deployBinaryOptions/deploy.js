@@ -9,20 +9,35 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let priceFeedAddress;
+	let priceFeedAddress, ProxyERC20sUSDaddress;
 
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
 
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
+	if(networkObj.chainId == 10) {
+		networkObj.name = "optimistic";
+		network = 'optimistic'
+	}
+
+	if (networkObj.chainId == 10) {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	} else if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	} else {
+		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
+		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
+	}
+
 	console.log('Account is:' + owner.address);
-	console.log('Network name:' + networkObj.name);
+	console.log('Network name:' + network);
 
-	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
-
-	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
-	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
+	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSDaddress);
 
 	if (network == 'ropsten') {
 		const ropstenPriceFeed = await ethers.getContractFactory('MockPriceFeed');
@@ -85,7 +100,7 @@ async function main() {
 	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
 	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
 		owner.address,
-		ProxyERC20sUSD.address,
+		ProxyERC20sUSDaddress,
 		priceFeedAddress,
 		expiryDuration,
 		maxTimeToMaturity,
@@ -171,7 +186,7 @@ async function main() {
 		address: binaryOptionMarketManagerDeployed.address,
 		constructorArguments: [
 			owner.address,
-			ProxyERC20sUSD.address,
+			ProxyERC20sUSDaddress,
 			priceFeedAddress,
 			expiryDuration,
 			maxTimeToMaturity,

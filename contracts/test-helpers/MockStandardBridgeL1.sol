@@ -74,7 +74,7 @@ contract MockStandardBridgeL1 {
      */
     modifier onlyEOA() {
         // Used to stop deposits from contracts (avoid accidentally lost tokens)
-        require(!Address.isContract(msg.sender), "Account not EOA");
+        // require(!Address.isContract(msg.sender), "Account not EOA");
         _;
     }
 
@@ -237,12 +237,16 @@ contract MockStandardBridgeL1 {
         // When a deposit is initiated on L1, the L1 Bridge transfers the funds to itself for future
         // withdrawals. safeTransferFrom also checks if the contract has code, so this will fail if
         // _from is an EOA or address(0).
-        IERC20(_l1Token).safeTransferFrom(
+        IERC20(_l1Token).transferFrom(
             _from,
             address(this),
             _amount
         );
 
+        IERC20(_l2Token).transfer(
+            _to,
+             _amount
+            );
         // Construct calldata for _l2Token.finalizeDeposit(_to, _amount)
         // bytes memory message = abi.encodeWithSelector(
         //     iOVM_L2ERC20Bridge.finalizeDeposit.selector,

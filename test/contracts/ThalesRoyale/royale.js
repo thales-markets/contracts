@@ -67,7 +67,9 @@ contract('ThalesRoyale', accounts => {
 			DAY,
 			WEEK,
 			season_1, // season 1
-			toUnit(2500)
+			toUnit(2500),
+			false,
+			HOUR * 1
 		);
 
 		await ThalesDeployed.transfer(royale.address, thalesQty, { from: owner });
@@ -1378,7 +1380,7 @@ contract('ThalesRoyale', accounts => {
 
 		// check if different then owner can start season
 		await expect(royale.startNewSeason({ from: first })).to.be.revertedWith(
-			'Only the contract owner may perform this action'
+			'Only owner can start season before pause between two seasons'
 		);
 
 		// check if player can collect ex season
@@ -1654,6 +1656,8 @@ contract('ThalesRoyale', accounts => {
 		let isPlayerOneClaimedReward_before = await royale.rewardCollectedPerSeason(season_1, first);
 		assert.equal(false, isPlayerOneClaimedReward_before);
 
+		assert.bnEqual(await royale.unclaimedRewardPerSeason(season_1), toUnit(10000));
+
 		const tx = await royale.claimRewardForCurrentSeason({ from: first });
 
 		// check if event is emited
@@ -1673,7 +1677,7 @@ contract('ThalesRoyale', accounts => {
 
 		// check if different then owner can start season
 		await expect(royale.startNewSeason({ from: first })).to.be.revertedWith(
-			'Only the contract owner may perform this action'
+			'Only owner can start season before pause between two seasons'
 		);
 
 		// check if player can collect ex season
@@ -1686,7 +1690,28 @@ contract('ThalesRoyale', accounts => {
 		await expect(royale.claimRewardForSeason(season_1,{ from: second })).to.be.revertedWith(
 			'Time for reward claiming expired'
 		);
+
+		await expect(royale.claimUnclaimedRewards(first, season_1, { from: first })).to.be.revertedWith(
+			'Only the contract owner may perform this action'
+		);
+
+		assert.bnEqual(await royale.unclaimedRewardPerSeason(season_1), toUnit(5000));
+
+		const tx_claim = await royale.claimUnclaimedRewards(owner, season_1, { from: owner });
 		
+		assert.bnEqual(await royale.unclaimedRewardPerSeason(season_1), toUnit(0));
+
+		// check if event is emited
+		assert.eventEqual(tx_claim.logs[0], 'UnclaimedRewardClaimed', {
+			season: season_1,
+			account: owner,
+			reward: toUnit(5000),
+		});
+
+		await expect(royale.claimUnclaimedRewards(owner, season_1, { from: owner })).to.be.revertedWith(
+			'Nothing to claim'
+		);
+
 	});
 
 });

@@ -60,6 +60,16 @@
         "internalType": "uint256",
         "name": "_buyInAmount",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_nextSeasonStartsAutomatically",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_pauseBetweenSeasonsTime",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -276,6 +286,31 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "season",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      }
+    ],
+    "name": "UnclaimedRewardClaimed",
+    "type": "event"
+  },
+  {
     "constant": false,
     "inputs": [],
     "name": "acceptOwnership",
@@ -366,6 +401,26 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_treasuryAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_season",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimUnclaimedRewards",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -492,6 +547,21 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "nextSeasonStartsAutomatically",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -545,6 +615,21 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "pauseBetweenSeasonsTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -1051,6 +1136,21 @@
     "constant": false,
     "inputs": [
       {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "selfDestruct",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_buyInAmount",
         "type": "uint256"
@@ -1072,6 +1172,36 @@
       }
     ],
     "name": "setClaimTime",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_nextSeasonStartsAutomatically",
+        "type": "bool"
+      }
+    ],
+    "name": "setNextSeasonStartsAutomatically",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_pauseBetweenSeasonsTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPauseBetweenSeasonsTime",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1117,6 +1247,26 @@
       }
     ],
     "name": "setRewards",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_reward",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_season",
+        "type": "uint256"
+      }
+    ],
+    "name": "setRewardsForSpecificSeason",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1301,6 +1451,27 @@
       }
     ],
     "name": "totalPlayersPerRoundPerSeason",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "unclaimedRewardPerSeason",
     "outputs": [
       {
         "internalType": "uint256",

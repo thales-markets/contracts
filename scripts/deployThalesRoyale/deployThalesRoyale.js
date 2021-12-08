@@ -32,27 +32,44 @@ async function main() {
 
 	const priceFeed = await ethers.getContractFactory('PriceFeed');
 	let priceFeedAddress = getTargetAddress('PriceFeed', network);
+	// TODO change reward token address
+	let rewardTokenAddress = getTargetAddress('PriceFeed', network);
 
 	const min = 60;
 	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
 	const week = 7 * 24 * 60 * 60;
 
+	const asset = toBytes32('ETH');
+
+	const signUpPeriod = day * 3;
+	const roundChoosingLength = hour * 8;
+	const roundLength = day;
+	const claimTime = week;
+	const pauseBetweenSeasonsTime = hour * 24;
+
+	const season = 1;
+	const zeroAmount = 0;
+	const rounds = 6;
+	const buyIn = w3utils.toWei('10');
+
 	// Dev env - deploy Thales.sol; Live env - use Thales.sol contract address
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const ThalesRoyaleDeployed = await ThalesRoyale.deploy(
 		owner.address,
-		toBytes32('ETH'),
+		asset,
 		priceFeedAddress,
-		w3utils.toWei('10000'), // ? need to be 0 i gues
-		priceFeedAddress,
-		6,
-		day * 3,
-		hour * 8,
-		day,
-		week,
-		1, // season
-		10
+		zeroAmount,
+		rewardTokenAddress,
+		rounds,
+		signUpPeriod,
+		roundChoosingLength,
+		roundLength,
+		claimTime,
+		season, 
+		buyIn,
+		false,
+		pauseBetweenSeasonsTime
 	);
 	await ThalesRoyaleDeployed.deployed();
 	// update deployments.json file
@@ -64,17 +81,19 @@ async function main() {
 		address: ThalesRoyaleDeployed.address,
 		constructorArguments: [
 			owner.address,
-			toBytes32('ETH'),
+			asset,
 			priceFeedAddress,
-			w3utils.toWei('10000'), //? need to be 0 i gues
-			priceFeedAddress,
-			6,
-			day * 3,
-			hour * 8,
-			day,
-			week,
-			1, // season
-			10
+			zeroAmount,
+			rewardTokenAddress,
+			rounds,
+			signUpPeriod,
+			roundChoosingLength,
+			roundLength,
+			claimTime,
+			season, 
+			buyIn,
+			false,
+			pauseBetweenSeasonsTime
 		],
 	});
 }

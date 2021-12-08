@@ -28,25 +28,24 @@ contract BinaryOption is IERC20, IBinaryOption {
     uint public totalSupply;
 
     // The argument order is allowance[owner][spender]
-    mapping(address => mapping(address => uint)) public allowances;
+    mapping(address => mapping(address => uint)) private allowances;
 
     // Enforce a 1 cent minimum amount
     uint internal constant _MINIMUM_AMOUNT = 1e16;
 
-    address private limitOrderProvider = 0xb707d89D29c189421163515c59E42147371D6857;
+    address public limitOrderProvider;
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
 
-    function initialize(
-        string calldata _name,
-        string calldata _symbol
-    ) external {
+    function initialize(string calldata _name, string calldata _symbol) external {
         require(!initialized, "Binary Option Market already initialized");
         initialized = true;
         name = _name;
         symbol = _symbol;
         market = BinaryOptionMarket(msg.sender);
+        // add through constructor
+        limitOrderProvider = 0xb707d89D29c189421163515c59E42147371D6857;
     }
 
     function allowance(address owner, address spender) public view returns (uint256) {

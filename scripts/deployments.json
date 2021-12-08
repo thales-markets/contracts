@@ -68,12 +68,12 @@
 		"SafeDecimalMath": "0x0142F40c25CE1F1177Ed131101FA19217396cB88",
 		"ProxysUSD": "0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9",
 		"BinaryOptionMarketFactory": "0x0D3dD2ab36A9a6174559F24DB59b45a73737bD19",
-		"BinaryOptionMarketManager": "0x1EBCE103B528bBCe8c3bF0bd594cdF18d284cEf7",
+		"BinaryOptionMarketManager": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224",
 		"BinaryOptionMarketData": "0x4cd7C4BE42266903299aFc72284e273D0b49dF48",
 		"PriceFeed": "0x8FE726b27e89Cd484981B2D27160186920Af2d17",
 		"OpThales_L2": "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
-		"BinaryOptionMastercopy": "0x80559F187Ab7B373C39A04Df434F33d5462Ac1bb",
-		"BinaryOptionMarketMastercopy": "0x50B532AdAF5378F59dBD619dFD03E4d4ab3586bC"
+		"BinaryOptionMastercopy": "0xA59727442212227BBdCFEC1E883677A930707412",
+		"BinaryOptionMarketMastercopy": "0x51F1E255a9f82578bf2c004576C4bC84CB9dD8F7"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

@@ -70,7 +70,7 @@ async function createMarketAndMintMore(
 }
 
 contract('BinaryOptionMarketManager', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator] = accounts;
+	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator, ,] = accounts;
 
 	const sUSDQty = toUnit(10000);
 
@@ -607,6 +607,99 @@ contract('BinaryOptionMarketManager', accounts => {
 				skipPassCheck: true,
 				reason: 'Only permitted for migrating manager.',
 			});
+		});
+	});
+
+	describe('Whitelisted addresses', () => {
+		it('Only owner can set whitelisted addresses', async () => {
+			await onlyGivenAddressCanInvoke({
+				fnc: manager.setWhitelistedAddresses,
+				args: [[dummy, exerciser, secondCreator]],
+				address: managerOwner,
+				accounts,
+				skipPassCheck: true,
+				reason: 'Only the contract owner may perform this action',
+			});
+		});
+
+		it('Cannot enable whitelisted feature if whitelist addresses is empty', async () => {
+			await assert.revert(
+				manager.setWhitelistedAddresses([], {
+					from: managerOwner,
+				}),
+				'Whitelisted addresses cannot be empty'
+			);
+
+			assert.equal(await manager.onlyWhitelistedAddressesCanCreateMarkets(), false);
+		});
+
+		it('Only whitelisted address can create markets', async () => {
+			const now = await currentTime();
+
+			await manager.setWhitelistedAddresses([dummy, exerciser, secondCreator], {
+				from: managerOwner,
+			});
+
+			await assert.revert(
+				manager.createMarket(sAUDKey, toUnit(1), now + 100, toUnit(5), false, ZERO_ADDRESS, {
+					from: minter,
+				}),
+				'Only whitelisted addresses can create markets'
+			);
+		});
+
+		it('Can remove whitelisted address', async () => {
+			const now = await currentTime();
+
+			await manager.removeWhitelistedAddress(dummy, {
+				from: managerOwner,
+			});
+
+			await assert.revert(
+				manager.createMarket(sAUDKey, toUnit(1), now + 100, toUnit(5), false, ZERO_ADDRESS, {
+					from: dummy,
+				}),
+				'Only whitelisted addresses can create markets'
+			);
+		});
+
+		it('Can add whitelisted address', async () => {
+			const now = await currentTime();
+
+			await manager.addWhitelistedAddress(initialCreator, {
+				from: managerOwner,
+			});
+
+			const tx = await manager.createMarket(
+				sAUDKey,
+				toUnit(1),
+				now + 100,
+				toUnit(5),
+				false,
+				ZERO_ADDRESS,
+				{
+					from: initialCreator,
+				}
+			);
+			assert.equal(tx.logs.length, 2);
+		});
+
+		it('Anyone can create market if whitelisted addresses feature is disabled', async () => {
+			const now = await currentTime();
+			await manager.disableWhitelistedAddresses({ from: managerOwner });
+
+			const tx = await manager.createMarket(
+				sAUDKey,
+				toUnit(1),
+				now + 100,
+				toUnit(5),
+				false,
+				ZERO_ADDRESS,
+				{
+					from: minter,
+				}
+			);
+			assert.equal(tx.logs.length, 2);
 		});
 	});
 });

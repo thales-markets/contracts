@@ -55,8 +55,17 @@ contract ThalesAMM is Owned, Pausable {
 
     function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
+            uint basePrice = price(market, position);
+            // ignore extremes
+            if (basePrice >= ONE.sub(1e16) || basePrice <= 1e16) {
+                return 0;
+            }
             uint balance = _balanceOfPositionOnMarket(market, position);
-            uint buy_max_price = price(market, position).mul(ONE.add(max_spread)).div(1e18);
+            uint buy_max_price = basePrice.mul(ONE.add(max_spread)).div(1e18);
+            // ignore extremes
+            if (buy_max_price >= ONE.sub(1e16) || buy_max_price <= 1e16) {
+                return 0;
+            }
             uint divider_max_price = ONE.sub(buy_max_price);
             uint additionalBufferFromSelling = balance.mul(buy_max_price).div(1e18);
             uint availableUntilCapSUSD = capPerMarket.sub(spentOnMarket[market]).add(additionalBufferFromSelling);
@@ -107,7 +116,12 @@ contract ThalesAMM is Owned, Pausable {
 
     function availableToSellToAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
-            uint sell_max_price = price(market, position).mul(ONE.sub(max_spread)).div(1e18);
+            uint basePrice = price(market, position);
+            // ignore extremes
+            if (basePrice >= ONE.sub(1e16) || basePrice <= 1e16) {
+                return 0;
+            }
+            uint sell_max_price = basePrice.mul(ONE.sub(max_spread)).div(1e18);
             (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
             uint balanceOfTheOtherSide =
                 position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));

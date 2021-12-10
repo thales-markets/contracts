@@ -5,6 +5,7 @@ import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
 
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
@@ -12,7 +13,7 @@ import "../interfaces/IBinaryOptionMarketManager.sol";
 import "../interfaces/IBinaryOption.sol";
 import "./DeciMath.sol";
 
-contract ThalesAMM is Owned, Pausable {
+contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
@@ -246,7 +247,7 @@ contract ThalesAMM is Owned, Pausable {
         address market,
         Position position,
         uint amount
-    ) public {
+    ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         require(amount <= availableToBuyFromAMM(market, position), "Not enough liquidity.");
@@ -286,7 +287,7 @@ contract ThalesAMM is Owned, Pausable {
         address market,
         Position position,
         uint amount
-    ) public {
+    ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         require(amount <= availableToSellToAMM(market, position), "Cant buy that much");
@@ -402,6 +403,12 @@ contract ThalesAMM is Owned, Pausable {
         } else if (y != 0) {
             z = 1;
         }
+    }
+
+    //selfdestruct
+    function selfDestruct(address payable account) external onlyOwner {
+        sUSD.transfer(account, sUSD.balanceOf(address(this)));
+        selfdestruct(account);
     }
 
     // events

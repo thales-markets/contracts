@@ -216,6 +216,16 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "additionalSlippage",
+        "type": "uint256"
       }
     ],
     "name": "buyFromAMM",
@@ -390,8 +400,14 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "impliedVolatility",
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "impliedVolatilityPerAsset",
     "outputs": [
       {
         "internalType": "uint256",
@@ -616,6 +632,21 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "selfDestruct",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [
       {
@@ -662,6 +693,16 @@
       {
         "internalType": "uint256",
         "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "additionalSlippage",
         "type": "uint256"
       }
     ],
@@ -736,12 +777,17 @@
     "constant": false,
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "asset",
+        "type": "bytes32"
+      },
+      {
         "internalType": "uint256",
         "name": "_impliedVolatility",
         "type": "uint256"
       }
     ],
-    "name": "setImpliedVolatility",
+    "name": "setImpliedVolatilityPerAsset",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

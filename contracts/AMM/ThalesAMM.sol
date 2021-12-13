@@ -26,9 +26,10 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
     address public manager;
 
     uint public capPerMarket = 1000 * 1e18;
-    uint public impliedVolatility = 120 * 1e18;
     uint public min_spread = 1e16; //1%
     uint public max_spread = 5e16; //5%
+
+    mapping(bytes32 => uint) public impliedVolatilityPerAsset;
 
     uint public minimalTimeLeftToMaturity = 2 hours;
 
@@ -123,6 +124,7 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
                 return 0;
             }
             uint sell_max_price = basePrice.mul(ONE.sub(max_spread)).div(1e18);
+            require(sell_max_price > 0, "div by zero sell_max_price");
             (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
             uint balanceOfTheOtherSide =
                 position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
@@ -165,7 +167,9 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         } else {
             uint basePrice = price(market, position);
             uint skew = balancePositionAfter.sub(balanceOtherSide);
+            require(basePrice > 0, "div by zero basePrice");
             uint maxPossibleSkew = capPerMarket.mul(1e18).div(basePrice);
+            require(maxPossibleSkew > 0, "div by zero maxPossibleSkew");
             return min_spread.add(max_spread.sub(min_spread).mul(skew.mul(1e18).div(maxPossibleSkew)).div(1e18));
         }
     }
@@ -183,10 +187,16 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
             (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
 
             if (position == Position.Long) {
-                return calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatility).div(1e2);
+                return
+                    calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
+                        1e2
+                    );
             } else {
                 return
-                    ONE.sub(calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatility).div(1e2));
+                    ONE.sub(
+                        calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
+                            .div(1e2)
+                    );
             }
         } else return 0;
     }
@@ -217,8 +227,13 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
 
     function isMarketInAMMTrading(address market) public view returns (bool) {
         if (IBinaryOptionMarketManager(manager).isActiveMarket(market)) {
-            // add price calculation
             IBinaryOptionMarket marketContract = IBinaryOptionMarket(market);
+            (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
+            //check if asset is supported
+            if (impliedVolatilityPerAsset[key] == 0) {
+                return false;
+            }
+            // add price calculation
             (uint maturity, uint destructino) = marketContract.times();
 
             uint timeLeftToMaturity = maturity - block.timestamp;
@@ -246,7 +261,9 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
     function buyFromAMM(
         address market,
         Position position,
-        uint amount
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage
     ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
@@ -255,6 +272,10 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         uint sUSDPaid = buyFromAmmQuote(market, position, amount);
         require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
         require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
+
+        require(sUSDPaid.mul(ONE).div(expectedPayout) <= (ONE.add(additionalSlippage)), "Slippage too high");
+
+        require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
 
         sUSD.transferFrom(msg.sender, address(this), sUSDPaid);
 
@@ -268,9 +289,7 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         }
 
         (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-        IBinaryOption target = position == Position.Long ? long : short;
-
-        IERC20(address(target)).transfer(msg.sender, amount);
+        IERC20(address(position == Position.Long ? long : short)).transfer(msg.sender, amount);
 
         spentOnMarket[market] = spentOnMarket[market].add(toMint);
 
@@ -286,11 +305,16 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
     function sellToAMM(
         address market,
         Position position,
-        uint amount
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage
     ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         require(amount <= availableToSellToAMM(market, position), "Cant buy that much");
+
+        uint pricePaid = sellToAmmQuote(market, position, amount);
+        require(expectedPayout.mul(ONE).div(pricePaid) <= (ONE.add(additionalSlippage)), "Slippage too high");
 
         (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
         IBinaryOption target = position == Position.Long ? long : short;
@@ -305,7 +329,6 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
             IBinaryOptionMarket(market).burnOptionsMaximum();
         }
 
-        uint pricePaid = sellToAmmQuote(market, position, amount);
         require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
 
         sUSD.transfer(msg.sender, pricePaid);
@@ -343,8 +366,8 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         max_spread = _spread;
     }
 
-    function setImpliedVolatility(uint _impliedVolatility) public onlyOwner {
-        impliedVolatility = _impliedVolatility;
+    function setImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility) public onlyOwner {
+        impliedVolatilityPerAsset[asset] = _impliedVolatility;
     }
 
     function setCapPerMarket(uint _capPerMarket) public onlyOwner {

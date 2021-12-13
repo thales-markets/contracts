@@ -3,6 +3,7 @@ const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { toBytes32 } = require('../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -67,6 +68,21 @@ async function main() {
 	let tx = await thalesAMM.setBinaryOptionsMarketManager(managerAddress);
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setBinaryOptionsMarketManager');
+	});
+
+	tx = await thalesAMM.setImpliedVolatilityPerAsset(toBytes32('ETH'), w3utils.toWei('120'));
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setImpliedVolatilityPerAsset(ETH, 120)');
+	});
+
+	tx = await thalesAMM.setImpliedVolatilityPerAsset(toBytes32('LINK'), w3utils.toWei('120'));
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setImpliedVolatilityPerAsset(LINK, 120)');
+	});
+
+	tx = await thalesAMM.setImpliedVolatilityPerAsset(toBytes32('LINK'), w3utils.toWei('120'));
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setImpliedVolatilityPerAsset(LINK, 120)');
 	});
 
 	await hre.run('verify:verify', {

@@ -85,7 +85,10 @@ async function main() {
 		Thales_deployed.address,
 		OP_Thales_L1_deployed.address,
 		L1StandardBridge_deployed.address,
-		OP_Thales_L2_deployed.address
+		OP_Thales_L2_deployed.address,
+		{
+			gasPrice: 3000000000
+		}
 		);
 		
 	tx = await ThalesExchanger_deployed.deployed();

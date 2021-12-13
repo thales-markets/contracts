@@ -44,10 +44,10 @@
 		"BinaryOptionMarketManager": "0x547818b1ee8bd9a6d5854e8A9E84E066B9a07aA7",
 		"BinaryOptionsMarketFactory": "0x0314824253cEc50d144d60CfEA3742874Df72B92",
 		"BinaryOptionMarketData": "0x42Af0890d254387110555A46d261B9e4f6E327Ac",
-		"OpThales_L1": "0x0F32dc40B8d26Fb7D5104bC6ca639C1D8800bfF0",
-		"ThalesExchanger": "0x48A326BaBc868CA7bf37Cf49845114D3A8A445f7",
-		"OwnedUpgradeabilityProxy": "0xF731f980248Eb0bdBcd94A9B06ae6fb172fE9883",
-		"ProxyThalesExchanger": "0x719e0C6aC74c8b279E75a738Ec4c73F5a870e09e"
+		"OpThales_L1": "0x008e86b2e21ce8d71C4700A9a174D151839cFbc7",
+		"ThalesExchanger": "0x7b9a3a5599B26a3243b50cf6e1506f7bE180aC3c",
+		"OwnedUpgradeabilityProxy": "0x7596C9aA9ce105610324AcC27D943C5235518701",
+		"ProxyThalesExchanger": "0x7596C9aA9ce105610324AcC27D943C5235518701"
 	},
 	"goerli": {
 		"Airdrop": "",
@@ -103,9 +103,9 @@
 		"BinaryOptionMarketFactory": "",
 		"BinaryOptionMarketManager": "",
 		"BinaryOptionMarketData": "",
-		"OpThales_L1": "0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9",
-		"ThalesExchanger": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
-		"OwnedUpgradeabilityProxy": "0x67d269191c92Caf3cD7723F116c85e6E9bf55933",
-		"ProxyThalesExchanger": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8"
+		"OpThales_L1": "0x4A679253410272dd5232B3Ff7cF5dbB88f295319",
+		"ThalesExchanger": "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
+		"OwnedUpgradeabilityProxy": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
+		"ProxyThalesExchanger": "0x59b670e9fA9D0A427751Af201D676719a970857b"
 	}
 }

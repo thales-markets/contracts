@@ -2,6 +2,7 @@ const { gray, green, yellow, bgCyan, black } = require('chalk');
 const Big = require('big.js');
 const fs = require('fs');
 const deployments = require('./deployments.json');
+const abi = require('ethereumjs-abi');
 
 const numberExponentToLarge = numIn => {
 	numIn += ''; // To cater to numric entries
@@ -54,9 +55,17 @@ const setTargetAddress = (contractName, network, address) => {
 	});
 };
 
+
+function encodeCall(name, arguments, values) {
+  const methodId = abi.methodID(name, arguments).toString('hex');
+  const params = abi.rawEncode(arguments, values).toString('hex');
+  return '0x' + methodId + params;
+}
+
 module.exports = {
 	numberExponentToLarge,
 	txLog,
 	getTargetAddress,
 	setTargetAddress,
+	encodeCall
 };

@@ -67,7 +67,7 @@ module.exports = {
 				},
 			},
 			{
-				version: '0.8.2',
+				version: '0.7.6',
 				settings: {
 					optimizer: {
 						enabled: true,
@@ -75,6 +75,15 @@ module.exports = {
 					},
 				},
 			},
+			// {
+			// 	version: '0.8.2',
+			// 	settings: {
+			// 		optimizer: {
+			// 			enabled: true,
+			// 			runs: 200,
+			// 		},
+			// 	},
+			// },
 		],
 	},
 	paths: {

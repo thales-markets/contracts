@@ -76,6 +76,8 @@
 		"@eth-optimism/message-relayer": "^0.2.4",
 		"@eth-optimism/watcher": "0.0.1-alpha.8",
 		"@openzeppelin/test-helpers": "^0.5.11",
+		"@uniswap/v3-core": "^1.0.0",
+		"@uniswap/v3-periphery": "^1.3.0",
 		"abi-decoder": "2.3.0",
 		"big.js": "^6.1.1",
 		"commander": "5.1.0",

@@ -32,7 +32,8 @@ https://docs.openzeppelin.com/upgrades-plugins/1.x/proxies#transparent-proxies-a
 4. Then, running functions using the Proxy instance is by using the Implementation ABI with the Proxy instance address attached:
 
     ```
-    const ProxyContract = await Implementation_ABI.connect(owner).attach(OwnedUpgradeabilityProxy_instance);
+    const Implementation_ABI = await ethers.getContractFactory('ProxyImplementation');
+    const ProxyContract = await Implementation_ABI.connect(owner).attach(OwnedUpgradeabilityProxy_instance.address);
     const getInfo = ProxyContract.getInfo();    
     ```
 

@@ -1,7 +1,6 @@
 const path = require('path');
 const { ethers, upgrades  } = require('hardhat');
 const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
 require('dotenv').config();
 
@@ -129,8 +128,13 @@ async function main() {
 	tx = await OwnedUpgradeabilityProxy_deployed.upgradeTo(ThalesExchanger_deployed.address);
 	console.log("Proxy updated");
 	
+	await delay(20000);
+	
 	tx = await ThalesExchanger_deployed.transferOwnershipAtInit(OwnedUpgradeabilityProxy_deployed.address);
 	console.log("Owner changed to proxy");
+
+	console.log("Wait 20 seconds");
+	await delay(20000);
 
 	tx = await ThalesExchanger_deployed.owner.call();
 	console.log("Owner is:", tx);

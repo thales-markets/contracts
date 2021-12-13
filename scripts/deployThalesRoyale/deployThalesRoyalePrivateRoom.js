@@ -32,68 +32,30 @@ async function main() {
 
 	const priceFeed = await ethers.getContractFactory('PriceFeed');
 	let priceFeedAddress = getTargetAddress('PriceFeed', network);
-	// TODO change reward token address
-	let rewardTokenAddress = getTargetAddress('PriceFeed', network);
 
 	const min = 60;
 	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
-	const week = 7 * 24 * 60 * 60;
 
-	const asset = toBytes32('ETH');
-
-	const signUpPeriod = day * 3;
-	const roundChoosingLength = hour * 8;
-	const roundLength = day;
-	const claimTime = week;
-	const pauseBetweenSeasonsTime = hour * 24;
-
-	const season = 1;
-	const zeroAmount = 0;
-	const rounds = 6;
-	const buyIn = w3utils.toWei('10');
-
-	// Dev env - deploy Thales.sol; Live env - use Thales.sol contract address
-	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
-	const ThalesRoyaleDeployed = await ThalesRoyale.deploy(
+	// use ThalesRoyalePrivateRoom.sol
+	const ThalesRoyalePrivateRoom = await ethers.getContractFactory('ThalesRoyalePrivateRoom');
+	const ThalesRoyalePrivateRoomDeployed = await ThalesRoyalePrivateRoom.deploy(
 		owner.address,
-		asset,
 		priceFeedAddress,
-		zeroAmount,
-		rewardTokenAddress,
-		rounds,
-		signUpPeriod,
-		roundChoosingLength,
-		roundLength,
-		claimTime,
-		season, 
-		buyIn,
-		false,
-		pauseBetweenSeasonsTime
+		priceFeedAddress
 	);
-	await ThalesRoyaleDeployed.deployed();
+	await ThalesRoyalePrivateRoomDeployed.deployed();
 	// update deployments.json file
-	setTargetAddress('ThalesRoyale', network, ThalesRoyaleDeployed.address);
+	setTargetAddress('ThalesRoyalePrivateRoom', network, ThalesRoyalePrivateRoomDeployed.address);
 
-	console.log('ThalesRoyale deployed to:', ThalesRoyaleDeployed.address);
+	console.log('ThalesRoyalePrivateRoom deployed to:', ThalesRoyalePrivateRoomDeployed.address);
 
 	await hre.run('verify:verify', {
-		address: ThalesRoyaleDeployed.address,
+		address: ThalesRoyalePrivateRoomDeployed.address,
 		constructorArguments: [
 			owner.address,
-			asset,
 			priceFeedAddress,
-			zeroAmount,
-			rewardTokenAddress,
-			rounds,
-			signUpPeriod,
-			roundChoosingLength,
-			roundLength,
-			claimTime,
-			season, 
-			buyIn,
-			false,
-			pauseBetweenSeasonsTime
+			priceFeedAddress
 		],
 	});
 }

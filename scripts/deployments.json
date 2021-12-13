@@ -37,17 +37,17 @@
 		"StakingThales": "0x8d178B3Dd7B29dfB38f55FdFE6518cabe6B31059",
 		"Thales": "0x9e7769409E3e5A6821eeDcF33371FCA929fE6A48",
 		"ZeroEx": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF",
-		"PriceFeed": "0xB26E51A3bf090aC383e7D92A2851698241D81AdE",
+		"PriceFeed": "0x8Cd1c11e8d83b0F2b479092f5E11c1fB3D944f2D",
 		"BinaryOptionMastercopy": "0x31F71B6E97392D23Cf0759E520cD4Db35b5D2dd9",
 		"BinaryOptionMarketMastercopy": "0xfBF1C584223E79289018B6823Ab5fB864B02BB0a",
 		"BinaryOptionMarketFactory": "0x47Fd1c6B781252990863f4125Cf11415c4A79f57",
 		"BinaryOptionMarketManager": "0x547818b1ee8bd9a6d5854e8A9E84E066B9a07aA7",
 		"BinaryOptionsMarketFactory": "0x0314824253cEc50d144d60CfEA3742874Df72B92",
 		"BinaryOptionMarketData": "0x42Af0890d254387110555A46d261B9e4f6E327Ac",
-		"OpThales_L1": "0x0F32dc40B8d26Fb7D5104bC6ca639C1D8800bfF0",
-		"ThalesExchanger": "0x48A326BaBc868CA7bf37Cf49845114D3A8A445f7",
-		"OwnedUpgradeabilityProxy": "0xF731f980248Eb0bdBcd94A9B06ae6fb172fE9883",
-		"ProxyThalesExchanger": "0x719e0C6aC74c8b279E75a738Ec4c73F5a870e09e"
+		"OpThales_L1": "0x008e86b2e21ce8d71C4700A9a174D151839cFbc7",
+		"ThalesExchanger": "0x7b9a3a5599B26a3243b50cf6e1506f7bE180aC3c",
+		"ProxyThalesExchanger": "0x7596C9aA9ce105610324AcC27D943C5235518701",
+		"ProxyPriceFeed": "0x6e48F6B1722aBa6903a600AD4F821C40d5702C7c"
 	},
 	"goerli": {
 		"Airdrop": "",
@@ -67,20 +67,18 @@
 		"AddressResolver": "0x95A6a3f44a70172E7d50a9e28c85Dfd712756B8C",
 		"SafeDecimalMath": "0x0142F40c25CE1F1177Ed131101FA19217396cB88",
 		"ProxysUSD": "0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9",
-		"ZeroEx": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF",
-		"BinaryOptionMastercopy": "0xBbC6Bf169235aD9CA1b7d0f6a4593BB770e8C6cd",
-		"BinaryOptionMarketMastercopy": "0x73043369F8EFdd6E0fcB09c1201eE787583a7425",
-		"BinaryOptionMarketFactory": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
-		"BinaryOptionMarketManager": "0x4dB7AfB6b777fB47101C86Bdeb56669ffA8cD656",
-		"BinaryOptionMarketData": "0x1751dDCE8D8B917223e05D8bD015dfb81bF1fcf2",
+		"BinaryOptionMarketFactory": "0x0D3dD2ab36A9a6174559F24DB59b45a73737bD19",
+		"BinaryOptionMarketManager": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224",
+		"BinaryOptionMarketData": "0x4cd7C4BE42266903299aFc72284e273D0b49dF48",
 		"PriceFeed": "0x8FE726b27e89Cd484981B2D27160186920Af2d17",
-		"OpThales_L2": "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E"
+		"OpThales_L2": "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
+		"BinaryOptionMastercopy": "0xA59727442212227BBdCFEC1E883677A930707412",
+		"BinaryOptionMarketMastercopy": "0x51F1E255a9f82578bf2c004576C4bC84CB9dD8F7"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
 		"SafeDecimalMath": "0x87A479D8433121E4583D45D37B4A349b4350B79F",
 		"ProxysUSD": "0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
-		"ZeroEx": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF",
 		"BinaryOptionMastercopy": "0xCe18580bB1b5944231e8eF09740bd2C6ac025f53",
 		"BinaryOptionMarketMastercopy": "0x8d178B3Dd7B29dfB38f55FdFE6518cabe6B31059",
 		"BinaryOptionMarketFactory": "0x4511efB3f008B83198255b6079B4296a1eFE72cA",
@@ -88,9 +86,8 @@
 		"BinaryOptionMarketData": "0x761d1A7Bc6a5b4383a959d9fa288bA5FDE6c74c4",
 		"PriceFeed": "0x34fb310296b441625469395ed5765296F6426636",
 		"ThalesRoyale": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
-		"OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224",
-		"DeciMath": "0x4Fde83278Da79EdB4725d73D414c5EBE1a61C615",
-		"ThalesAMM": "0x5C45AC81AaC10e53e18c023363B35765Ed5594f4"
+		"ThalesRoyalePrivateRoom": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
+		"OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224"
 	},
 	"localhost": {
 		"Airdrop": "",
@@ -105,9 +102,9 @@
 		"BinaryOptionMarketFactory": "",
 		"BinaryOptionMarketManager": "",
 		"BinaryOptionMarketData": "",
-		"OpThales_L1": "0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9",
-		"ThalesExchanger": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
-		"OwnedUpgradeabilityProxy": "0x67d269191c92Caf3cD7723F116c85e6E9bf55933",
-		"ProxyThalesExchanger": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8"
+		"OpThales_L1": "0x4A679253410272dd5232B3Ff7cF5dbB88f295319",
+		"ThalesExchanger": "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
+		"OwnedUpgradeabilityProxy": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
+		"ProxyThalesExchanger": "0x59b670e9fA9D0A427751Af201D676719a970857b"
 	}
 }

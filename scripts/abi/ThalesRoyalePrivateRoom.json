@@ -7,69 +7,14 @@
         "type": "address"
       },
       {
-        "internalType": "bytes32",
-        "name": "_oracleKey",
-        "type": "bytes32"
-      },
-      {
         "internalType": "contract IPriceFeed",
         "name": "_priceFeed",
         "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "_initialReward",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "_rewardToken",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_rounds",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_signUpPeriod",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_roundChoosingLength",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_roundLength",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_claimTime",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_season",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_buyInAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "_nextSeasonStartsAutomatically",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_pauseBetweenSeasonsTime",
-        "type": "uint256"
       }
     ],
     "payable": false,
@@ -82,36 +27,23 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "user",
+        "name": "_user",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "amount",
+        "name": "_amount",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "season",
+        "name": "_roomNumber",
         "type": "uint256"
       }
     ],
     "name": "BuyIn",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "season",
-        "type": "uint256"
-      }
-    ],
-    "name": "NewSeasonStarted",
     "type": "event"
   },
   {
@@ -165,19 +97,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "season",
+        "name": "_roomNumber",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "address",
-        "name": "winner",
+        "name": "_winner",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "reward",
+        "name": "_reward",
         "type": "uint256"
       }
     ],
@@ -189,24 +121,30 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "season",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "round",
+        "name": "_roomNumberCounter",
         "type": "uint256"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "result",
-        "type": "uint256"
+        "internalType": "enum ThalesRoyalePrivateRoom.RoomType",
+        "name": "_roomType",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum ThalesRoyalePrivateRoom.GameType",
+        "name": "_gameType",
+        "type": "uint8"
       }
     ],
-    "name": "RoundClosed",
+    "name": "RoomCreated",
     "type": "event"
   },
   {
@@ -215,11 +153,23 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "season",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_round",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_result",
         "type": "uint256"
       }
     ],
-    "name": "RoyaleFinished",
+    "name": "RoundClosedInRoom",
     "type": "event"
   },
   {
@@ -228,11 +178,24 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "season",
+        "name": "_roomNumber",
         "type": "uint256"
       }
     ],
-    "name": "RoyaleStarted",
+    "name": "RoyaleFinishedForRoom",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "RoyaleStartedForRoom",
     "type": "event"
   },
   {
@@ -241,17 +204,42 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "user",
+        "name": "_account",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "season",
+        "name": "_roomNumber",
         "type": "uint256"
       }
     ],
-    "name": "SignedUp",
+    "name": "SignedUpInARoom",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_round",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_numberOfPlayers",
+        "type": "uint256"
+      }
+    ],
+    "name": "SplitBetweenLoosers",
     "type": "event"
   },
   {
@@ -260,54 +248,29 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "user",
+        "name": "_user",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "season",
+        "name": "_roomNumber",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "round",
+        "name": "_round",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "position",
+        "name": "_position",
         "type": "uint256"
       }
     ],
     "name": "TookAPosition",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "season",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "reward",
-        "type": "uint256"
-      }
-    ],
-    "name": "UnclaimedRewardClaimed",
     "type": "event"
   },
   {
@@ -320,69 +283,15 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "buyInAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "canCloseRound",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "canStartRoyale",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "claimRewardForCurrentSeason",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_season",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "asset",
+        "type": "string"
       }
     ],
-    "name": "claimRewardForSeason",
+    "name": "addAsset",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -390,13 +299,19 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "claimTime",
-    "outputs": [
+    "inputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "name": "allowedAssets",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "payable": false,
@@ -404,28 +319,97 @@
     "type": "function"
   },
   {
-    "constant": false,
+    "constant": true,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_treasuryAddress",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_season",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "claimUnclaimedRewards",
+    "name": "alowedPlayersPerRoom",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "buyInPerPlayerRerRoom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimRewardForRoom",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "climeTimePerRoom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      }
+    ],
     "name": "closeRound",
     "outputs": [],
     "payable": false,
@@ -433,20 +417,80 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_oracleKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "enum ThalesRoyalePrivateRoom.RoomType",
+        "name": "_roomType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum ThalesRoyalePrivateRoom.GameType",
+        "name": "_gameType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_alowedPlayers",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyInAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amuontOfPlayersinRoom",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_roomSignUpPeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_numberOfRoundsInRoom",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_roundChoosingLength",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_roundLength",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_claimTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "createARoom",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
-    "name": "eliminatedPerRoundPerSeason",
+    "name": "currentRoundInRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -472,7 +516,7 @@
         "type": "uint256"
       }
     ],
-    "name": "finalPricePerRoundPerSeason",
+    "name": "eliminatedPerRoundPerRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -488,12 +532,59 @@
     "constant": true,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
-    "name": "isPlayerAlive",
+    "name": "finalPricePerRoundPerRoom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "gameTypeInRoom",
+    "outputs": [
+      {
+        "internalType": "enum ThalesRoyalePrivateRoom.GameType",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_oracleKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "isAssetAllowed",
     "outputs": [
       {
         "internalType": "bool",
@@ -515,11 +606,63 @@
       },
       {
         "internalType": "uint256",
-        "name": "_season",
+        "name": "_roomNumber",
         "type": "uint256"
       }
     ],
-    "name": "isPlayerAliveInASpecificSeason",
+    "name": "isPlayerAliveInASpecificRoom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_player",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "isPlayerAllowed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_player",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "isPlayerOwner",
     "outputs": [
       {
         "internalType": "bool",
@@ -540,21 +683,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "nextSeasonStartsAutomatically",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "payable": false,
@@ -593,8 +721,77 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "oracleKey",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "numberOfAlowedPlayersInRoom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "numberOfPlayersInRoom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "numberOfRoundsInRoom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "oracleKeyPerRoom",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -615,21 +812,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "pauseBetweenSeasonsTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "payable": false,
@@ -665,12 +847,59 @@
         "type": "address"
       }
     ],
-    "name": "playerSignedUpPerSeason",
+    "name": "playerCanPlayInRoom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "playerSignedUpPerRoom",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "playerStartedSignUp",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "payable": false,
@@ -691,7 +920,7 @@
         "type": "uint256"
       }
     ],
-    "name": "playersPerSeason",
+    "name": "playersInRoom",
     "outputs": [
       {
         "internalType": "address",
@@ -722,7 +951,7 @@
         "type": "uint256"
       }
     ],
-    "name": "positionInARoundPerSeason",
+    "name": "positionInARoundPerRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -753,7 +982,7 @@
         "type": "uint256"
       }
     ],
-    "name": "positionsPerRoundPerSeason",
+    "name": "positionsPerRoundPerRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -794,7 +1023,7 @@
         "type": "address"
       }
     ],
-    "name": "rewardCollectedPerSeason",
+    "name": "rewardCollectedPerRoom",
     "outputs": [
       {
         "internalType": "bool",
@@ -815,7 +1044,7 @@
         "type": "uint256"
       }
     ],
-    "name": "rewardPerPlayerPerSeason",
+    "name": "rewardPerPlayerPerRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -836,7 +1065,7 @@
         "type": "uint256"
       }
     ],
-    "name": "rewardPerSeason",
+    "name": "rewardPerRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -865,8 +1094,71 @@
   },
   {
     "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roomCreationTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roomEndTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roomFinished",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [],
-    "name": "roundChoosingLength",
+    "name": "roomNumberCounter",
     "outputs": [
       {
         "internalType": "uint256",
@@ -887,7 +1179,28 @@
         "type": "uint256"
       }
     ],
-    "name": "roundInASeasonStartTime",
+    "name": "roomOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roomSignUpPeriod",
     "outputs": [
       {
         "internalType": "uint256",
@@ -908,12 +1221,12 @@
         "type": "uint256"
       }
     ],
-    "name": "roundInSeasonEndTime",
+    "name": "roomStarted",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "payable": false,
@@ -922,8 +1235,35 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "roundLength",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roomTypePerRoom",
+    "outputs": [
+      {
+        "internalType": "enum ThalesRoyalePrivateRoom.RoomType",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roundChoosingLengthInRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -944,7 +1284,28 @@
         "type": "uint256"
       }
     ],
-    "name": "roundPerSeason",
+    "name": "roundEndTimeInRoom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roundLengthInRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -970,37 +1331,7 @@
         "type": "uint256"
       }
     ],
-    "name": "roundResultPerSeason",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "roundTargetPrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "rounds",
+    "name": "roundResultPerRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1021,22 +1352,7 @@
         "type": "uint256"
       }
     ],
-    "name": "royaleSeasonEndTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "season",
+    "name": "roundStartTimeInRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1057,70 +1373,7 @@
         "type": "uint256"
       }
     ],
-    "name": "seasonCreationTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "seasonFinish",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "seasonStart",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "seasonStartedTime",
+    "name": "roundTargetPriceInRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1136,12 +1389,17 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_alowedPlayers",
+        "type": "address[]"
       }
     ],
-    "name": "selfDestruct",
+    "name": "setAlowedPlayersPerRoomClosedRoom",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1150,6 +1408,31 @@
   {
     "constant": false,
     "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amuontOfPlayersinRoom",
+        "type": "uint256"
+      }
+    ],
+    "name": "setAmuontOfPlayersinOpenRoom",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "_buyInAmount",
@@ -1167,26 +1450,16 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_claimTime",
         "type": "uint256"
       }
     ],
-    "name": "setClaimTime",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "_nextSeasonStartsAutomatically",
-        "type": "bool"
-      }
-    ],
-    "name": "setNextSeasonStartsAutomatically",
+    "name": "setClaimTimePerRoom",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1197,11 +1470,141 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_pauseBetweenSeasonsTime",
+        "name": "_maxPlayersInClosedRoom",
         "type": "uint256"
       }
     ],
-    "name": "setPauseBetweenSeasonsTime",
+    "name": "setMaxPlayersInClosedRoom",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minBuyIn",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinBuyIn",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minChooseTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinChooseTime",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minClaimTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinClaimTime",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minRoundTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinRoundTime",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minTimeSignUp",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinTimeSignUp",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_numberOfRoundsInRoom",
+        "type": "uint256"
+      }
+    ],
+    "name": "setNumberOfRoundsInRoom",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_offsetBeteweenChooseAndEndRound",
+        "type": "uint256"
+      }
+    ],
+    "name": "setOffsetBeteweenChooseAndEndRound",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_oracleKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setOracleKey",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1242,31 +1645,16 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_reward",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRewards",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_reward",
+        "name": "_roomNumber",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_season",
+        "name": "_roomSignUpPeriod",
         "type": "uint256"
       }
     ],
-    "name": "setRewardsForSpecificSeason",
+    "name": "setRoomSignUpPeriod",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1275,6 +1663,11 @@
   {
     "constant": false,
     "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "_roundChoosingLength",
@@ -1292,6 +1685,31 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_roundChoosingLength",
+        "type": "uint256"
+      }
+    ],
+    "name": "setRoundChoosingLengthPerRoom",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_roundLength",
         "type": "uint256"
       }
@@ -1307,11 +1725,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_rounds",
+        "name": "_roomNumber",
         "type": "uint256"
       }
     ],
-    "name": "setRoundNumber",
+    "name": "signUpForRoom",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1322,20 +1740,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_signUpPeriod",
+        "name": "_roomNumber",
         "type": "uint256"
       }
     ],
-    "name": "setSignUpPeriod",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "signUp",
+    "name": "startRoyaleInRoom",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1343,56 +1752,23 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "signUpPeriod",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "source",
+        "type": "string"
       }
     ],
-    "name": "signedUpPlayersCount",
+    "name": "stringToBytes32",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "result",
+        "type": "bytes32"
       }
     ],
     "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "startNewSeason",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "startRoyale",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1400,11 +1776,16 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "position",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position",
         "type": "uint256"
       }
     ],
-    "name": "takeAPosition",
+    "name": "takeAPositionInRoom",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1424,7 +1805,7 @@
         "type": "uint256"
       }
     ],
-    "name": "targetPricePerRoundPerSeason",
+    "name": "targetPricePerRoundPerRoom",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1450,28 +1831,7 @@
         "type": "uint256"
       }
     ],
-    "name": "totalPlayersPerRoundPerSeason",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "unclaimedRewardPerSeason",
+    "name": "totalPlayersInARoomInARound",
     "outputs": [
       {
         "internalType": "uint256",

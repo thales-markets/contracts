@@ -1,7 +1,6 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
@@ -15,8 +14,19 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
 	if(networkObj.chainId == 10) {
-		network = 'optimistic';
+		networkObj.name = "optimistic";
+		network = 'optimistic'
+	}
+
+	if (networkObj.chainId == 10) {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	} else if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
@@ -101,6 +111,19 @@ async function main() {
 
 	setTargetAddress('BinaryOptionMarketManager', network, binaryOptionMarketManagerDeployed.address);
 
+	// set whitelisted addresses for L2
+	if(networkObj.chainId === 10 || networkObj.chainId === 69) {
+		const whitelistedAddresses = [
+			'0xB27E08908D6Ecbe7F9555b9e048871532bE89302',
+			'0x9841484A4a6C0B61C4EEa71376D76453fd05eC9C'
+		];
+
+		let transaction = await binaryOptionMarketManagerDeployed.setWhitelistedAddresses(whitelistedAddresses);
+		await transaction.wait().then(e => {
+			console.log('BinaryOptionMarketManager: whitelistedAddresses set');
+		});
+		
+
 	const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
 	const binaryOptionMarketData = await BinaryOptionMarketData.deploy();
 	await binaryOptionMarketData.deployed();
@@ -175,7 +198,7 @@ async function main() {
 		address: binaryOptionMarketManagerDeployed.address,
 		constructorArguments: [
 			owner.address,
-			ProxyERC20sUSD.address,
+			ProxyERC20sUSDaddress,
 			priceFeedAddress,
 			expiryDuration,
 			maxTimeToMaturity,

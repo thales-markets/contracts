@@ -66,20 +66,13 @@ async function main() {
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 	console.log('Found proxysUSD at:' + proxysUSD.address);
 
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', 
-										{
-											libraries: {
-												SafeDecimalMath: safeDecimalMath.address,
-											},
-										}
-										);
+	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
 	let binaryOptionMarketAddress = getTargetAddress('BinaryOptionMarketManager', network);
 	let binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.attach(
 		binaryOptionMarketAddress
 	);
 	console.log('BinaryOptionMarketManager attached to:', binaryOptionMarketManagerDeployed.address);
 
-	console.log('All params set');
 
 	const sAUDKey = toBytes32('ETH');
 	const initialStrikePrice = w3utils.toWei('1');
@@ -99,7 +92,7 @@ async function main() {
 	const result = await binaryOptionMarketManagerDeployed.createMarket(
 		sAUDKey,
 		initialStrikePrice,
-		now + 360,
+		now + 36000,
 		initialStrikePrice,
 		false,
 		ZERO_ADDRESS,

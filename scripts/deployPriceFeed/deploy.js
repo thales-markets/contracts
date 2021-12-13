@@ -15,7 +15,12 @@ async function main() {
 		network = 'mainnet';
 	}
 
-	if(networkObj.chainId == 10) {
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimistic';
 		network = 'optimistic';
 	}
 

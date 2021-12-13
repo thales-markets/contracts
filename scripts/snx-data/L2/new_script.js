@@ -3,10 +3,10 @@ const { request, gql } = require('graphql-request');
 const regenesisSnapshot = require('./regenesisSnapshot.json');
 
 // getCurrentSnapshotViaGraph(
-// 	'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance'
+// 	'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-main'
 // );
 // getCurrentSnapshotViaGraph('https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix');
-//getAllClaimers('https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance');
+//getAllClaimers('https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-main');
 //getAllClaimers('https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix');
 
 async function getCurrentSnapshotViaGraph(url) {

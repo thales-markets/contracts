@@ -68,7 +68,7 @@ async function main() {
 	const L1StandardBridge = new ethers.ContractFactory(L1StandardBridgeArtifacts.abi, L1StandardBridgeArtifacts.bytecode);
 	const OP_Thales_L1 = await ethers.getContractFactory('/contracts/Token/OpThales_L1.sol:OpThales');
 	// const ThalesExchanger = await ethers.getContractFactory('ThalesExchanger');
-	const ThalesExchanger = await ethers.getContractFactory('ProxyThalesExchanger');;
+	const ProxyThalesExchanger = await ethers.getContractFactory('ProxyThalesExchanger');
 	const OP_Thales_L2 = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');
 	const ThalesAddress = getTargetAddress('Thales', net_kovan);
 	const OpThalesL1Address = getTargetAddress('OpThales_L1', net_kovan);
@@ -81,7 +81,7 @@ async function main() {
 	
 	await OwnedUpgradeabilityProxy_deployed.deployed();
 	console.log("Owned proxy deployed on: ",OwnedUpgradeabilityProxy_deployed.address);
-	 setTargetAddress('OwnedUpgradeabilityProxy', net_kovan, OwnedUpgradeabilityProxy_deployed.address);
+	setTargetAddress('OwnedUpgradeabilityProxy', net_kovan, OwnedUpgradeabilityProxy_deployed.address);
 
 
 	const Thales = await ethers.getContractFactory('Thales');
@@ -97,8 +97,8 @@ async function main() {
 	const L2StandardBridge_deployed = await L2StandardBridge.connect(l2Wallet).attach(L2_BRIDGE_ADDRESS);
 	console.log("L2 Bridge on Optimistic Kovan at: ", L2StandardBridge_deployed.address);
 	
-	const ThalesExchanger_connected = await ThalesExchanger.connect(l1Wallet);
-	console.log("Thales Exchanger ready to deploy: ", ThalesExchanger_connected.signer._isSigner);
+	const ProxyThalesExchanger_connected = await ProxyThalesExchanger.connect(l1Wallet);
+	console.log("Thales Exchanger ready to deploy: ", ProxyThalesExchanger_connected.signer._isSigner);
 
 	const L1StandardBridgeAddress = await L2StandardBridge_deployed.l1TokenBridge();
 	
@@ -109,29 +109,29 @@ async function main() {
 	// const ProxyThalesExchangerAddress = getTargetAddress('ProxyThalesExchanger', net_kovan);
 	// const ThalesExchanger_deployed = await ThalesExchanger_connected.attach(ProxyThalesExchangerAddress);
 
-	const ThalesExchanger_deployed = await ThalesExchanger_connected.deploy();
-	await ThalesExchanger_deployed.deployed();
+	const ProxyThalesExchanger_implementation = await ProxyThalesExchanger_connected.deploy();
+	await ProxyThalesExchanger_implementation.deployed();
 
-	console.log("Exchanger Instance deployed on:", ThalesExchanger_deployed.address)
+	// console.log("Exchanger Instance deployed on:", ProxyThalesExchanger_deployed.address)
 
-	console.log("Proxy Thales Exchanger Logic deployed on: ", ThalesExchanger_deployed.address);
-	setTargetAddress('ProxyThalesExchangerLogic', net_kovan, ThalesExchanger_deployed.address);
+	console.log("Proxy Thales Exchanger Logic deployed on: ", ProxyThalesExchanger_implementation.address);
+	setTargetAddress('ProxyThalesExchangerLogic', net_kovan, ProxyThalesExchanger_implementation.address);
 
 
 	await delay(20000);
 	
-	tx = await ThalesExchanger_deployed.owner.call();
+	tx = await ProxyThalesExchanger_implementation.owner.call();
 	console.log("Owner is:", tx);
 	await delay(20000);
 	
-	tx = await OwnedUpgradeabilityProxy_deployed.upgradeTo(ThalesExchanger_deployed.address);
+	tx = await OwnedUpgradeabilityProxy_deployed.upgradeTo(ProxyThalesExchanger_implementation.address);
 	// tx = await OwnedUpgradeabilityProxy_deployed.upgradeToAndCall(ThalesExchanger_deployed.address, initializeData);
 	await tx.wait()
 	console.log("Proxy updated");
 	
 	await delay(20000);
 	
-	const ProxyThalesExchanger_deployed = ThalesExchanger.connect(l1Wallet2).attach(OwnedUpgradeabilityProxy_deployed.address);
+	const ProxyThalesExchanger_deployed = ProxyThalesExchanger.connect(l1Wallet2).attach(OwnedUpgradeabilityProxy_deployed.address);
 	
 	tx = await ProxyThalesExchanger_deployed.initialize(
 			owner.address, 

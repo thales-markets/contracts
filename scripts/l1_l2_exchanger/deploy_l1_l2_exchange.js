@@ -97,17 +97,17 @@ async function main() {
 	console.log("Optimistic Thales L2 deployed on: ",OP_Thales_L2_deployed.address);
 	setTargetAddress('OpThales_L2', net_optimistic_kovan, OP_Thales_L2_deployed.address);
 	
-	const ThalesExchanger_deployed = await ThalesExchanger_connected.deploy(
-		owner.address, 
-		Thales_deployed.address,
-		OP_Thales_L1_deployed.address,
-		L1StandardBridge_deployed.address,
-		OP_Thales_L2_deployed.address
-		);
+	// const ThalesExchanger_deployed = await ThalesExchanger_connected.deploy(
+	// 	owner.address, 
+	// 	Thales_deployed.address,
+	// 	OP_Thales_L1_deployed.address,
+	// 	L1StandardBridge_deployed.address,
+	// 	OP_Thales_L2_deployed.address
+	// 	);
 		
-	tx = await ThalesExchanger_deployed.deployed();
-	console.log("Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
-	setTargetAddress('ThalesExchanger', net_kovan, ThalesExchanger_deployed.address);
+	// tx = await ThalesExchanger_deployed.deployed();
+	// console.log("Thales Exchanger deployed on: ", ThalesExchanger_deployed.address);
+	// setTargetAddress('ThalesExchanger', net_kovan, ThalesExchanger_deployed.address);
 
 	
 

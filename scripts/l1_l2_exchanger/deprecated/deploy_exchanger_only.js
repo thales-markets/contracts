@@ -12,17 +12,17 @@ const {
 	currentTime,
 	multiplyDecimalRound,
 	divideDecimalRound,
-} = require('../../test/utils/index')();
+} = require('../../../test/utils/index')();
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
 
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 const L2StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol/OVM_L2StandardBridge');
 const L1StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L1StandardBridge.sol/OVM_L1StandardBridge');
-const { toBytes32 } = require('../../index');
+const { toBytes32 } = require('../../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();

@@ -1,14 +1,12 @@
 const path = require('path');
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
 const { Watcher } = require('@eth-optimism/core-utils');
-const { getMessagesAndProofsForL2Transaction } = require('@eth-optimism/message-relayer');
 const { predeploys } = require("@eth-optimism/contracts");
 
-// const user_key = process.env.PRIVATE_KEY;
-const user_key = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
+const user_key = process.env.PRIVATE_KEY;
+
 const {
 	fastForward,
 	toUnit,
@@ -16,57 +14,53 @@ const {
 	currentTime,
 	multiplyDecimalRound,
 	divideDecimalRound,
-} = require('../../test/utils/index')();
+} = require('../../../test/utils/index')();
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
-const L1_MESSENGER_ADDRESS = '0x1afcA918eff169eE20fF8AB6Be75f3E872eE1C1A';
-const STATE_COMMITMENT_CHAIN_ADDRESS = '0x1afcA918eff169eE20fF8AB6Be75f3E872eE1C1A';
+const L1_MESSENGER_ADDRESS = '0xaF91349fdf3B206E079A8FcaB7b8dFaFB96A654D';
 
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 const L2StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol/OVM_L2StandardBridge.json');
 const L1StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L1StandardBridge.sol/OVM_L1StandardBridge.json');
 const L1CrossDomainMessengerArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/messaging/OVM_L1CrossDomainMessenger.sol/OVM_L1CrossDomainMessenger.json');
 const L2CrossDomainMessengerArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/messaging/OVM_L2CrossDomainMessenger.sol/OVM_L2CrossDomainMessenger.json');
 
-const { toBytes32 } = require('../../index');
+const { toBytes32 } = require('../../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
-    
-	let networkObj = await ethers.provider.getNetwork();
-	console.log("CHAIN ID:", networkObj.chainId);
-
-    const local_L1 = 'localhost'
+	// let networkObj = await ethers.provider.getNetwork();
 	
-	const local_L2 = 'optimistic'
-	
-    const l1RpcProvider = new ethers.providers.JsonRpcProvider(process.env.LOCAL_OPT_IP_2)
-    const l2RpcProvider = new ethers.providers.JsonRpcProvider(process.env.LOCAL_OPT_IP)
-	
-	const l1Wallet = new ethers.Wallet(user_key, l1RpcProvider);
-	const l2Wallet = new ethers.Wallet(user_key, l2RpcProvider);
-    // owner = l1Wallet;
-
-	console.log("add1:", owner.address);
-	console.log("add2:", l1Wallet.address);
-    
-	let blockNumber = await l1RpcProvider.getBlockNumber();
-	console.log("L1 block number: ", blockNumber);
-	
-	blockNumber = await l2RpcProvider.getBlockNumber();
-	console.log("L2 block number: ", blockNumber);
+	let network_kovan = new ethers.providers.InfuraProvider("kovan");
+	// console.log(network_kovan);
+	const net_kovan = 'kovan'
+	let network_optimistic_kovan = await ethers.provider.getNetwork();
+	const net_optimistic_kovan = 'optimisticKovan'
 	
 	console.log("OVM L2 messenger at: ",predeploys.OVM_L2CrossDomainMessenger);
-	console.log("OVM L1 messenger at: ",predeploys);
-		
-	const ThalesAddress = getTargetAddress('Thales', local_L1);
-	const ThalesExchangerAddress = getTargetAddress('ThalesExchanger', local_L1);
-	const OP_Thales_L1Address = getTargetAddress('OpThales_L1', local_L1);
-	const OP_Thales_L2Address = getTargetAddress('OpThales_L2', local_L2);
+	console.log("OVM L1 messenger at: ",predeploys.OVM_L1CrossDomainMessenger);
+	
+	// const l2StandardBridgeArtifact = require(`../node_modules/@eth-optimism/contracts/artifacts/contracts/L2/messaging/L2StandardBridge.sol/L2StandardBridge.json`)
+	
+	
+	
+	const l1Wallet = new ethers.Wallet(user_key, network_kovan);
+	const l2Wallet = new ethers.Wallet(user_key, ethers.provider);
+	
+	let blockNumber = await network_kovan.getBlockNumber();
+	console.log("Kovan block number: ", blockNumber);
+	
+	blockNumber = await ethers.provider.getBlockNumber();
+	console.log("Optimistic Kovan block number: ", blockNumber);
+	
+	const ThalesAddress = getTargetAddress('Thales', net_kovan);
+	const ThalesExchangerAddress = getTargetAddress('ThalesExchanger', net_kovan);
+	const OP_Thales_L1Address = getTargetAddress('OpThales_L1', net_kovan);
+	const OP_Thales_L2Address = getTargetAddress('OpThales_L2', net_optimistic_kovan);
 
 	// const L2StandardBridge = await ethers.getContractFactory('../../node_modules/@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol:OVM_L2StandardBridge');
 	const L2StandardBridge = new ethers.ContractFactory(L2StandardBridgeArtifacts.abi, L2StandardBridgeArtifacts.bytecode);
@@ -80,13 +74,13 @@ async function main() {
 	const l2Messenger = new ethers.Contract(
 		predeploys.OVM_L2CrossDomainMessenger,
 		L2CrossDomainMessengerArtifacts.abi,
-		l2RpcProvider
+		ethers.provider
 	);
 	
 	const l1Messenger = new ethers.Contract(
 	L1_MESSENGER_ADDRESS,
 	L1CrossDomainMessengerArtifacts.abi,
-	l1RpcProvider
+	network_kovan
 	);
 
 	const l1MessengerAddress = l1Messenger.address;
@@ -98,56 +92,73 @@ async function main() {
 	//   // Tool that helps watches and waits for messages to be relayed between L1 and L2.
 	const watcher = new Watcher({
 		l1: {
-		  provider: l1RpcProvider,
+		  provider: network_kovan,
 		  messengerAddress: l1MessengerAddress
 		},
 		l2: {
-		  provider: l2RpcProvider,
+		  provider: ethers.provider,
 		  messengerAddress: l2MessengerAddress
 		}
 	  });
 
 	const Thales_deployed= await Thales.connect(l1Wallet).attach(ThalesAddress);
-	console.log("Thales on L1 at: ", Thales_deployed.address);
+	console.log("Thales on Kovan at: ", Thales_deployed.address);
 	
 	const ThalesExchanger_deployed = await ThalesExchanger.connect(l1Wallet).attach(ThalesExchangerAddress);
-	console.log("Thales Exchanger on L1 at: ", ThalesExchanger_deployed.address);
+	console.log("Thales Exchanger on Kovan at: ", ThalesExchanger_deployed.address);
 
 	const OP_Thales_L1_deployed = await OP_Thales_L1.connect(l1Wallet).attach(OP_Thales_L1Address);
-	console.log("L1 Contract on L1 at: ", OP_Thales_L1_deployed.address);
+	console.log("L1 Contract on Kovan at: ", OP_Thales_L1_deployed.address);
 
 	const OP_Thales_L2_deployed = await OP_Thales_L2.connect(l2Wallet).attach(OP_Thales_L2Address);
-	console.log("L2 Contract on L2 at: ", OP_Thales_L2_deployed.address);
+	console.log("L2 Contract on Optimistic Kovan at: ", OP_Thales_L2_deployed.address);
 
 	const L2StandardBridge_deployed = await L2StandardBridge.connect(l2Wallet).attach(L2_BRIDGE_ADDRESS);
-	console.log("L2 Bridge on L2 at: ", L2StandardBridge_deployed.address);
+	console.log("L2 Bridge on Optimistic Kovan at: ", L2StandardBridge_deployed.address);
 
-
+	  
 	const L1StandardBridgeAddress = await L2StandardBridge_deployed.l1TokenBridge();
 	
 	const L1StandardBridge_deployed = await L1StandardBridge.connect(l1Wallet).attach(L1StandardBridgeAddress);
 	
-	console.log("L1 Bridge on L1 at: ", L1StandardBridge_deployed.address);
+	console.log("L1 Bridge on Kovan at: ", L1StandardBridge_deployed.address);
 
 	let balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
-	console.log("\n\nL1 balance", owner.address,":", fromUnit(balance.toString()));
+	console.log("L1 OpThales balance", owner.address,":", fromUnit(balance.toString()));
+	
+	balance = await Thales_deployed.balanceOf(owner.address);
+	console.log("Thales balance", owner.address,":", fromUnit(balance.toString()));
+	
+	balance = await OP_Thales_L1_deployed.balanceOf(ThalesExchanger_deployed.address);
+	console.log("ThalesExchanger OpTL1 balance: ", fromUnit(balance.toString()));
 	
 	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
 	console.log("L2 balance", owner.address,":", fromUnit(balance.toString()));
 	let init_balance = parseInt(fromUnit(balance.toString()));
 
-	let approved = await OP_Thales_L1_deployed.allowance(owner.address, L1StandardBridge_deployed.address);
-	console.log("Approved: ", fromUnit(approved.toString()));
-
 	let TRANSFER_ERC20 = '25'
 
+	const transferOP = await OP_Thales_L1_deployed.transfer(ThalesExchanger_deployed.address, w3utils.toWei(TRANSFER_ERC20), {from:owner.address})
+	await transferOP.wait();
+	console.log("Owner to ThalesExchanger transfer of", TRANSFER_ERC20, "THALES (hash: ", transferOP.hash,")");
+
+	balance = await OP_Thales_L1_deployed.balanceOf(ThalesExchanger_deployed.address);
+	console.log("ThalesExchanger OpTL1 balance: ", fromUnit(balance.toString()));
+
+	let approved = await OP_Thales_L1_deployed.allowance(ThalesExchanger_deployed.address, L1StandardBridge_deployed.address);
+	console.log("\nOpTL1 approval of ThalesExchanger to L1Bridge: ", fromUnit(approved.toString()));
+	
+	approved = await Thales_deployed.allowance(owner.address, ThalesExchanger_deployed.address);
+	console.log("\nTHALES approval of owner to ThalesExchanger: ", fromUnit(approved.toString()));
+	
 	if(parseInt(fromUnit(approved.toString())) == 0) {
-		const tx1 = await OP_Thales_L1_deployed.approve(L1StandardBridge_deployed.address, w3utils.toWei(TRANSFER_ERC20), {from:owner.address});
+		console.log("Approving.....")
+		const tx1 = await Thales_deployed.approve(ThalesExchanger_deployed.address, w3utils.toWei(TRANSFER_ERC20));
 		await tx1.wait()
 	}
-
-	approved = await OP_Thales_L1_deployed.allowance(owner.address, L1StandardBridge_deployed.address);
-	console.log("Approved: ", fromUnit(approved.toString()));
+	
+	approved = await Thales_deployed.allowance(owner.address, ThalesExchanger_deployed.address);
+	console.log("THALES approval of owner to ThalesExchanger: ", fromUnit(approved.toString()));
 
 	let checkToken = await OP_Thales_L2_deployed.l1Token();
 	console.log("\nL2 address for L1:", checkToken);
@@ -161,12 +172,10 @@ async function main() {
 
 
 	console.log('Depositing tokens into L2 ...')
-	const tx2 = await L1StandardBridge_deployed.depositERC20(
-		OP_Thales_L1_deployed.address,
-		OP_Thales_L2_deployed.address,
+	const tx2 = await ThalesExchanger_deployed.exchangeThalesToL2OpThales(
 		w3utils.toWei(TRANSFER_ERC20),
-		2000000,
-		'0x')
+		{ gasLimit: 8000000 }
+	);
 	await tx2.wait()
 
 	// Wait for the message to be relayed to L2.
@@ -190,10 +199,9 @@ async function main() {
 	
 	balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
 	console.log("Balance on L1:", fromUnit(balance.toString())) // 0
-	// init_balance = parseInt(fromUnit(balance.toString()));
+	init_balance = parseInt(fromUnit(balance.toString()));
 	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
 	console.log("Balance on L2:", fromUnit(balance.toString())) // 0
-	init_balance = parseInt(fromUnit(balance.toString()));
 
 	console.log(`\nWithdrawing tokens back to L1 ...`)
 	const tx3 = await L2StandardBridge_deployed.withdraw(
@@ -202,64 +210,100 @@ async function main() {
 		2000000,
 		'0x'
 	)
-	await tx3.wait();
+	await tx3.wait()
+	
 	console.log("transaction hash:",tx3.hash)
-	console.log(`Waiting for withdrawal to be relayed to L1...`)
 
-	console.log("Wait for 10 seconds....")
-	await delay(10000);
-	console.log("Attempt to finalize")
+	console.log("Attempting");
 	
 	let messagePairs = []
 	while (true) {
 		try {
 		  messagePairs = await getMessagesAndProofsForL2Transaction(
-			l1RpcProvider,
-			l2RpcProvider,
-			predeploys.OVM_L2CrossDomainMessenger,
+			network_kovan,
+			ethers.provider,
 			STATE_COMMITMENT_CHAIN_ADDRESS,
+			predeploys.OVM_L2CrossDomainMessenger,
 			tx3.hash
 		  );
+		  console.log("-");
 		  break
 		} catch (err) {
 		  if (err.message.includes('unable to find state root batch for tx')) {
-			await sleep(5000)
+			await delay(5000)
 		  } else {
 			throw err
 		  }
 		}
 	}
 
-	console.log(messagePairs);
-	// const tx4 = await L1StandardBridge_deployed.finalizeERC20Withdrawal(
-	// 	OP_Thales_L1_deployed.address,
-	// 	OP_Thales_L2_deployed.address,
-	// 	owner.address,
-	// 	owner.address,
-	// 	w3utils.toWei(TRANSFER_ERC20),
-	// 	'0x',
-	// 	{gasLimit: 5000000}
-	// );
-	// await tx4.wait();
+	// console.log(messagePairs);
 
-	// console.log("tx hash:", tx4.hash);
-	// Wait for the message to be relayed to L1.
-	// balance = parseInt(init_balance);
-	// str_balance = '';
-	// seconds_counter = 0;
-	// while(balance == init_balance) {
-	// 	await delay(10000);
-	// 	// str_balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
-	// 	str_balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
-	// 	balance = parseInt(fromUnit(str_balance.toString()));
-	// 	seconds_counter = seconds_counter+10;
-	// 	console.log(seconds_counter,"sec |", init_balance, balance);
-	// }
+	for (const { message, proof } of messagePairs) {
+		while (true) {
+		  try {
+			console.log("sender:",message.sender);
+			console.log("target:",message.target);
+			console.log("message:",message.target);
 
-	// balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
-	// console.log("Balance on L1:", fromUnit(balance.toString()));
-	// balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
-	// console.log("Balance on L2:", fromUnit(balance.toString())); 
+			const result = await l1Messenger
+			  .connect(l1Wallet)
+			  .relayMessage(
+				message.target,
+				message.sender,
+				message.message,
+				message.messageNonce,
+				proof
+			  )
+			await result.wait()
+			break
+		  } catch (err) {
+			if (err.message.includes('execution failed due to an exception')) {
+			  await delay(5000)
+			} else if (err.message.includes('Nonce too low')) {
+			  await delay(5000)
+			} else if (err.message.includes('transaction was replaced')) {
+			  // this happens when we run tests in parallel
+			  await delay(5000)
+			} else if (
+			  err.message.includes(
+				'another transaction with same nonce in the queue'
+			  )
+			) {
+			  // this happens when we run tests in parallel
+			  await delay(5000)
+			} else if (
+			  err.message.includes('message has already been received')
+			) {
+			  break
+			} else {
+			  throw err
+			}
+		  }
+		}
+	}
+	
+	// console.log("Wait for 30 seconds....")
+	// await delay(30000);
+	console.log("Attempt to finalize");
+	
+
+	console.log(`Waiting for withdrawal to be relayed to L1...`)
+	balance = parseInt(init_balance);
+	str_balance = '';
+	seconds_counter = 0;
+	while(balance == init_balance) {
+		await delay(10000);
+		str_balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+		balance = parseInt(fromUnit(str_balance.toString()));
+		seconds_counter = seconds_counter+10;
+		console.log(seconds_counter,"sec |", init_balance, balance);
+	}
+
+	balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+	console.log("Balance on L1:", fromUnit(balance.toString()));
+	balance = await OP_Thales_L2_deployed.balanceOf(owner.address);
+	console.log("Balance on L2:", fromUnit(balance.toString())); 
 }
 
 main()

@@ -52,7 +52,7 @@ async function fetchData(start, end) {
 			'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix'
 		);
 		const resultL2 = await getCurrentSnapshotViaGraph(
-			'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance'
+			'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-main'
 		);
 
 		let data = [],

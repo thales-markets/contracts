@@ -1,7 +1,6 @@
 const path = require('path');
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
 const { Watcher } = require('@eth-optimism/core-utils');
 const { predeploys } = require("@eth-optimism/contracts");
@@ -215,19 +214,91 @@ async function main() {
 	
 	console.log("transaction hash:",tx3.hash)
 
-	// Withdrawal time on KOVAN is 7 days
-			// Wait for the message to be relayed to L1.
-			// console.log(`Waiting for withdrawal to be relayed to L1...`)
-			// balance = parseInt(init_balance);
-			// str_balance = '';
-			// seconds_counter = 0;
-			// while(balance == init_balance) {
-			// 	await delay(10000);
-			// 	str_balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
-			// 	balance = parseInt(fromUnit(str_balance.toString()));
-			// 	seconds_counter = seconds_counter+10;
-			// 	console.log(seconds_counter,"sec |", init_balance, balance);
-			// }
+	console.log("Attempting");
+	
+	let messagePairs = []
+	while (true) {
+		try {
+		  messagePairs = await getMessagesAndProofsForL2Transaction(
+			network_kovan,
+			ethers.provider,
+			STATE_COMMITMENT_CHAIN_ADDRESS,
+			predeploys.OVM_L2CrossDomainMessenger,
+			tx3.hash
+		  );
+		  console.log("-");
+		  break
+		} catch (err) {
+		  if (err.message.includes('unable to find state root batch for tx')) {
+			await delay(5000)
+		  } else {
+			throw err
+		  }
+		}
+	}
+
+	// console.log(messagePairs);
+
+	for (const { message, proof } of messagePairs) {
+		while (true) {
+		  try {
+			console.log("sender:",message.sender);
+			console.log("target:",message.target);
+			console.log("message:",message.target);
+
+			const result = await l1Messenger
+			  .connect(l1Wallet)
+			  .relayMessage(
+				message.target,
+				message.sender,
+				message.message,
+				message.messageNonce,
+				proof
+			  )
+			await result.wait()
+			break
+		  } catch (err) {
+			if (err.message.includes('execution failed due to an exception')) {
+			  await delay(5000)
+			} else if (err.message.includes('Nonce too low')) {
+			  await delay(5000)
+			} else if (err.message.includes('transaction was replaced')) {
+			  // this happens when we run tests in parallel
+			  await delay(5000)
+			} else if (
+			  err.message.includes(
+				'another transaction with same nonce in the queue'
+			  )
+			) {
+			  // this happens when we run tests in parallel
+			  await delay(5000)
+			} else if (
+			  err.message.includes('message has already been received')
+			) {
+			  break
+			} else {
+			  throw err
+			}
+		  }
+		}
+	}
+	
+	// console.log("Wait for 30 seconds....")
+	// await delay(30000);
+	console.log("Attempt to finalize");
+	
+
+	console.log(`Waiting for withdrawal to be relayed to L1...`)
+	balance = parseInt(init_balance);
+	str_balance = '';
+	seconds_counter = 0;
+	while(balance == init_balance) {
+		await delay(10000);
+		str_balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
+		balance = parseInt(fromUnit(str_balance.toString()));
+		seconds_counter = seconds_counter+10;
+		console.log(seconds_counter,"sec |", init_balance, balance);
+	}
 
 	balance = await OP_Thales_L1_deployed.balanceOf(owner.address);
 	console.log("Balance on L1:", fromUnit(balance.toString()));

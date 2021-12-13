@@ -43,6 +43,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     bool public marketCreationEnabled = true;
     bool public customMarketCreationEnabled = false;
+
+    bool public onlyWhitelistedAddressesCanCreateMarkets = false;
+    mapping(address => bool) public whitelistedAddresses;
+
     uint public totalDeposited;
 
     AddressSetLib.AddressSet internal _activeMarkets;
@@ -82,6 +86,29 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
     }
 
+    function setWhitelistedAddresses(address[] memory _whitelistedAddresses) public onlyOwner {
+        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
+        onlyWhitelistedAddressesCanCreateMarkets = true;
+        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
+            whitelistedAddresses[_whitelistedAddresses[index]] = true;
+        }
+    }
+
+    function disableWhitelistedAddresses() public onlyOwner {
+        onlyWhitelistedAddressesCanCreateMarkets = false;
+    }
+
+    function enableWhitelistedAddresses() public onlyOwner {
+        onlyWhitelistedAddressesCanCreateMarkets = true;
+    }
+
+    function addWhitelistedAddress(address _address) public onlyOwner {
+        whitelistedAddresses[_address] = true;
+    }
+
+    function removeWhitelistedAddress(address _address) public onlyOwner {
+        delete whitelistedAddresses[_address];
+    }
     /* ========== VIEWS ========== */
 
     /* ---------- Related Contracts ---------- */
@@ -190,6 +217,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
                 require(owner == msg.sender, "Only owner can create custom markets");
             }
             require(address(0) != customOracle, "Invalid custom oracle");
+        }
+
+        if(onlyWhitelistedAddressesCanCreateMarkets) {
+            require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
         }
 
         require(maturity <= block.timestamp + durations.maxTimeToMaturity, "Maturity too far in the future");

@@ -7,8 +7,17 @@ const { assert } = require('./common');
 
 const { currentTime, toUnit } = require('./index')();
 const { toBytes32 } = require('../../index');
+const abi = require('ethereumjs-abi');
 
 module.exports = {
+
+	encodeCall(name, arguments, values) {
+		const methodId = abi.methodID(name, arguments).toString('hex');
+		const params = abi.rawEncode(arguments, values).toString('hex');
+		return '0x' + methodId + params;
+	},
+	
+
 	/**
 	 * the truffle transaction does not return all events logged, only those from the invoked
 	 * contract and ERC20 Transfer events (see https://github.com/trufflesuite/truffle/issues/555),

@@ -1,7 +1,6 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
@@ -101,6 +100,19 @@ async function main() {
 	console.log('binaryOptionMarketManager deployed to:', binaryOptionMarketManagerDeployed.address);
 
 	setTargetAddress('BinaryOptionMarketManager', network, binaryOptionMarketManagerDeployed.address);
+
+	// set whitelisted addresses for L2
+	if(networkObj.chainId === 10 || networkObj.chainId === 69) {
+		const whitelistedAddresses = [
+			'0xB27E08908D6Ecbe7F9555b9e048871532bE89302',
+			'0x9841484A4a6C0B61C4EEa71376D76453fd05eC9C'
+		];
+
+		let transaction = await binaryOptionMarketManagerDeployed.setWhitelistedAddresses(whitelistedAddresses);
+		await transaction.wait().then(e => {
+			console.log('BinaryOptionMarketManager: whitelistedAddresses set');
+		});
+		
 
 	const BinaryOptionMarketFactory = await ethers.getContractFactory('BinaryOptionMarketFactory');
 	const binaryOptionMarketFactoryDeployed = await BinaryOptionMarketFactory.deploy(owner.address);

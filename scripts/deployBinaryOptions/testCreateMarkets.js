@@ -23,14 +23,20 @@ async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 
+
+	if(networkObj.chainId === 69) {
+		network = "optimisticKovan";
+	}
+
 	console.log('Account is:' + owner.address);
-	console.log('Network name:' + networkObj.name);
+	console.log('Network name:' + network);
 
-	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
-	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
+	// const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
+	// console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 
-	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
+	// const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxysUSD' });
+	// console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
+	const ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 
 	const priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
@@ -52,7 +58,7 @@ async function main() {
 	const now = await currentTime();
 
 	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
-	let contract = new ethers.Contract(ProxyERC20sUSD.address, abi, owner);
+	let contract = new ethers.Contract(ProxyERC20sUSDaddress, abi, owner);
 	tx = await contract.approve(binaryOptionMarketManagerDeployed.address, initialStrikePrice, {
 		from: owner.address,
 	});

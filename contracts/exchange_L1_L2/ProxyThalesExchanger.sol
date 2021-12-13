@@ -24,8 +24,8 @@ contract ProxyThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, Pr
     uint private constant OPTHALES_TO_THALES = 0;
     uint private constant MAX_APPROVAL = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
-    bool public enabledThalesToOpThales = true;
-    bool public enabledOpThalesToThales = true; 
+    bool public enabledThalesToOpThales;
+    bool public enabledOpThalesToThales; 
 
     function initialize(
         address _owner,
@@ -41,6 +41,8 @@ contract ProxyThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, Pr
         L1Bridge = iOVM_L1ERC20Bridge(_l1BridgeAddress);
         OpThalesToken.approve(_l1BridgeAddress, MAX_APPROVAL);
         l2TokenAddress = _l2TokenAddress;
+        enabledThalesToOpThales = true;
+        enabledOpThalesToThales = true;
     }
 
     function setThalesAddress(address thalesAddress) external onlyOwner {

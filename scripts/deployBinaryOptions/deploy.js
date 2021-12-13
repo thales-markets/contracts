@@ -115,64 +115,93 @@ async function main() {
 			console.log('BinaryOptionMarketManager: whitelistedAddresses set');
 		});
 
+		const BinaryOptionMarketFactory = await ethers.getContractFactory('BinaryOptionMarketFactory');
+		const binaryOptionMarketFactoryDeployed = await BinaryOptionMarketFactory.deploy(owner.address);
+		await binaryOptionMarketFactoryDeployed.deployed();
 
-	const BinaryOptionMarketFactory = await ethers.getContractFactory('BinaryOptionMarketFactory');
-	const binaryOptionMarketFactoryDeployed = await BinaryOptionMarketFactory.deploy(owner.address);
-	await binaryOptionMarketFactoryDeployed.deployed();
+		console.log(
+			'BinaryOptionMarketFactory deployed to:',
+			binaryOptionMarketFactoryDeployed.address
+		);
+		setTargetAddress(
+			'BinaryOptionMarketFactory',
+			network,
+			binaryOptionMarketFactoryDeployed.address
+		);
 
-	console.log('BinaryOptionMarketFactory deployed to:', binaryOptionMarketFactoryDeployed.address);
-	setTargetAddress('BinaryOptionMarketFactory', network, binaryOptionMarketFactoryDeployed.address);
+		const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
+		const binaryOptionMarketData = await BinaryOptionMarketData.deploy();
 
-	const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
-	const binaryOptionMarketData = await BinaryOptionMarketData.deploy();
+		console.log('binaryOptionMarketData deployed to:', binaryOptionMarketData.address);
 
-  console.log('binaryOptionMarketData deployed to:', binaryOptionMarketData.address);
+		setTargetAddress('BinaryOptionMarketData', network, binaryOptionMarketData.address);
 
-	setTargetAddress('BinaryOptionMarketData', network, binaryOptionMarketData.address);
+		let tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
+			binaryOptionMarketManagerDeployed.address
+		);
+		await tx.wait().then(e => {
+			console.log('BinaryOptionMarketFactory: setBinaryOptionMarketManager');
+		});
+		tx = await binaryOptionMarketManagerDeployed.setBinaryOptionsMarketFactory(
+			binaryOptionMarketFactoryDeployed.address
+		);
+		await tx.wait().then(e => {
+			console.log('BinaryOptionMarketManager: setBinaryOptionsMarketFactory');
+		});
 
-	let tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
-		binaryOptionMarketManagerDeployed.address
-	);
-	await tx.wait().then(e => {
-		console.log('BinaryOptionMarketFactory: setBinaryOptionMarketManager');
-	});
-	tx = await binaryOptionMarketManagerDeployed.setBinaryOptionsMarketFactory(
-		binaryOptionMarketFactoryDeployed.address
-	);
-	await tx.wait().then(e => {
-		console.log('BinaryOptionMarketManager: setBinaryOptionsMarketFactory');
-	});
+		tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketMastercopy(
+			binaryOptionMarketMastercopyDeployed.address
+		);
+		await tx.wait().then(e => {
+			console.log('BinaryOptionMarketFactory: setBinaryOptionMarketMastercopy');
+		});
+		tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMastercopy(
+			binaryOptionMastercopyDeployed.address
+		);
+		await tx.wait().then(e => {
+			console.log('BinaryOptionMarketFactory: setBinaryOptionMastercopy');
+		});
 
-	tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketMastercopy(
-		binaryOptionMarketMastercopyDeployed.address
-	);
-	await tx.wait().then(e => {
-		console.log('BinaryOptionMarketFactory: setBinaryOptionMarketMastercopy');
-	});
-	tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMastercopy(
-		binaryOptionMastercopyDeployed.address
-	);
-	await tx.wait().then(e => {
-		console.log('BinaryOptionMarketFactory: setBinaryOptionMastercopy');
-	});
+		if (network == 'ropsten') {
+			await hre.run('verify:verify', {
+				address: binaryOptionMarketFactoryDeployed.address,
+				constructorArguments: [owner.address],
+			});
 
-	if (network == 'ropsten') {
+			await hre.run('verify:verify', {
+				address: binaryOptionMastercopyDeployed.address,
+				constructorArguments: [],
+				contract: 'contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
+			});
+
+			await hre.run('verify:verify', {
+				address: binaryOptionMarketMastercopyDeployed.address,
+				constructorArguments: [],
+				contract:
+					'contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
+			});
+
+			await hre.run('verify:verify', {
+				address: binaryOptionMarketData.address,
+				constructorArguments: [],
+			});
+
+			await hre.run('verify:verify', {
+				address: binaryOptionMarketManagerDeployed.address,
+				constructorArguments: [
+					owner.address,
+					ProxyERC20sUSDaddress,
+					priceFeedAddress,
+					expiryDuration,
+					maxTimeToMaturity,
+					creatorCapitalRequirement,
+				],
+			});
+		}
+
 		await hre.run('verify:verify', {
 			address: binaryOptionMarketFactoryDeployed.address,
 			constructorArguments: [owner.address],
-		});
-
-		await hre.run('verify:verify', {
-			address: binaryOptionMastercopyDeployed.address,
-			constructorArguments: [],
-			contract: 'contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
-		});
-
-		await hre.run('verify:verify', {
-			address: binaryOptionMarketMastercopyDeployed.address,
-			constructorArguments: [],
-			contract:
-				'contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
 		});
 
 		await hre.run('verify:verify', {
@@ -191,43 +220,20 @@ async function main() {
 				creatorCapitalRequirement,
 			],
 		});
+
+		await hre.run('verify:verify', {
+			address: binaryOptionMastercopyDeployed.address,
+			constructorArguments: [],
+			contract: 'contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
+		});
+
+		await hre.run('verify:verify', {
+			address: binaryOptionMarketMastercopyDeployed.address,
+			constructorArguments: [],
+			contract:
+				'contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
+		});
 	}
-
-	await hre.run('verify:verify', {
-		address: binaryOptionMarketFactoryDeployed.address,
-		constructorArguments: [owner.address],
-	});
-
-	await hre.run('verify:verify', {
-		address: binaryOptionMarketData.address,
-		constructorArguments: [],
-	});
-
-	await hre.run('verify:verify', {
-		address: binaryOptionMarketManagerDeployed.address,
-		constructorArguments: [
-			owner.address,
-			ProxyERC20sUSDaddress,
-			priceFeedAddress,
-			expiryDuration,
-			maxTimeToMaturity,
-			creatorCapitalRequirement,
-		],
-	});
-
-	await hre.run('verify:verify', {
-		address: binaryOptionMastercopyDeployed.address,
-		constructorArguments: [],
-		contract: 'contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
-	});
-
-	await hre.run('verify:verify', {
-		address: binaryOptionMarketMastercopyDeployed.address,
-		constructorArguments: [],
-		contract:
-			'contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
-	});
-}
 
 	function delay(time) {
 		return new Promise(function(resolve) {
@@ -235,3 +241,10 @@ async function main() {
 		});
 	}
 }
+
+main()
+	.then(() => process.exit(0))
+	.catch(error => {
+		console.error(error);
+		process.exit(1);
+	});

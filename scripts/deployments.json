@@ -88,6 +88,7 @@
 		"BinaryOptionMarketData": "0x761d1A7Bc6a5b4383a959d9fa288bA5FDE6c74c4",
 		"PriceFeed": "0x34fb310296b441625469395ed5765296F6426636",
 		"ThalesRoyale": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
+		"ThalesRoyalePrivateRoom": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
 		"OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224"
 	},
 	"localhost": {

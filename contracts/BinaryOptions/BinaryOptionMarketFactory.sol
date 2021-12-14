@@ -20,6 +20,9 @@ contract BinaryOptionMarketFactory is Owned, MinimalProxyFactory {
     address public binaryOptionMarketMastercopy;
     address public binaryOptionMastercopy;
 
+    address public limitOrderProvider;
+    address public thalesAMM;
+
     struct BinaryOptionCreationMarketParameters {
         address creator;
         IERC20 _sUSD;
@@ -60,7 +63,9 @@ contract BinaryOptionMarketFactory is Owned, MinimalProxyFactory {
                 _parameters.customMarket,
                 _parameters.customOracle,
                 address(long),
-                address(short)
+                address(short),
+                limitOrderProvider,
+                thalesAMM
             )
         );
         return bom;
@@ -80,6 +85,14 @@ contract BinaryOptionMarketFactory is Owned, MinimalProxyFactory {
     function setBinaryOptionMastercopy(address _binaryOptionMastercopy) external onlyOwner {
         binaryOptionMastercopy = _binaryOptionMastercopy;
         emit BinaryOptionMastercopyChanged(_binaryOptionMastercopy);
+    }
+
+    function setLimitOrderProvider(address _limitOrderProvider) external onlyOwner {
+        limitOrderProvider = _limitOrderProvider;
+    }
+
+    function setThalesAMM(address _thalesAMM) external onlyOwner {
+        thalesAMM = _thalesAMM;
     }
 
     event BinaryOptionMarketManagerChanged(address _binaryOptionMarketManager);

@@ -237,6 +237,16 @@
         "internalType": "string",
         "name": "_symbol",
         "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_limitOrderProvider",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_thalesAMM",
+        "type": "address"
       }
     ],
     "name": "initialize",
@@ -334,6 +344,21 @@
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "thalesAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,

@@ -136,6 +136,8 @@ async function main() {
 
 		setTargetAddress('BinaryOptionMarketData', network, binaryOptionMarketData.address);
 
+		let LimitOrderProviderAddress = getTargetAddress('LimitOrderProvider', network);
+
 		let tx = await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
 			binaryOptionMarketManagerDeployed.address
 		);
@@ -161,6 +163,13 @@ async function main() {
 		await tx.wait().then(e => {
 			console.log('BinaryOptionMarketFactory: setBinaryOptionMastercopy');
 		});
+
+		if (LimitOrderProviderAddress) {
+			tx = await binaryOptionMarketFactoryDeployed.setLimitOrderProvider(LimitOrderProviderAddress);
+			await tx.wait().then(e => {
+				console.log('BinaryOptionMarketFactory: setLimitOrderProvider');
+			});
+		}
 
 		if (network == 'ropsten') {
 			await hre.run('verify:verify', {

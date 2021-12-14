@@ -73,7 +73,8 @@
 		"PriceFeed": "0x8FE726b27e89Cd484981B2D27160186920Af2d17",
 		"OpThales_L2": "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
 		"BinaryOptionMastercopy": "0xA59727442212227BBdCFEC1E883677A930707412",
-		"BinaryOptionMarketMastercopy": "0x51F1E255a9f82578bf2c004576C4bC84CB9dD8F7"
+		"BinaryOptionMarketMastercopy": "0x51F1E255a9f82578bf2c004576C4bC84CB9dD8F7",
+		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
@@ -87,7 +88,8 @@
 		"PriceFeed": "0x34fb310296b441625469395ed5765296F6426636",
 		"ThalesRoyale": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
 		"ThalesRoyalePrivateRoom": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
-		"OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224"
+		"OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224",
+		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857"
 	},
 	"localhost": {
 		"Airdrop": "",

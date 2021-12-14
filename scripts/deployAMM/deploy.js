@@ -65,6 +65,11 @@ async function main() {
 	setTargetAddress('ThalesAMM', network, thalesAMM.address);
 
 	let managerAddress = getTargetAddress('BinaryOptionMarketManager', network);
+
+	const BinaryOptionMarketFactory = await ethers.getContractFactory('BinaryOptionMarketFactory');
+	let factoryAddress = getTargetAddress('BinaryOptionMarketFactory', network);
+	const BinaryOptionMarketFactoryInstance = await BinaryOptionMarketFactory.attach(factoryAddress);
+
 	let tx = await thalesAMM.setBinaryOptionsMarketManager(managerAddress);
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setBinaryOptionsMarketManager');
@@ -83,6 +88,11 @@ async function main() {
 	tx = await thalesAMM.setImpliedVolatilityPerAsset(toBytes32('LINK'), w3utils.toWei('120'));
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(LINK, 120)');
+	});
+
+	tx = await BinaryOptionMarketFactoryInstance.setThalesAMM(thalesAMM.address);
+	await tx.wait().then(e => {
+		console.log('BinaryOptionMarketFactoryInstance: setThalesAMM');
 	});
 
 	await hre.run('verify:verify', {

@@ -53,6 +53,8 @@ contract BinaryOptionMarket is OwnedWithInit, IBinaryOptionMarket {
         address iOracleInstanceAddress;
         address long;
         address short;
+        address limitOrderProvider;
+        address thalesAMM;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -106,8 +108,8 @@ contract BinaryOptionMarket is OwnedWithInit, IBinaryOptionMarket {
         options.short = BinaryOption(_parameters.short);
         // abi.encodePacked("sLONG: ", _oracleKey)
         // consider naming the option: sLongBTC>50@2021.12.31
-        options.long.initialize("Binary Option Long", "sLONG");
-        options.short.initialize("Binary Option Short", "sSHORT");
+        options.long.initialize("Binary Option Long", "sLONG", _parameters.limitOrderProvider, _parameters.thalesAMM);
+        options.short.initialize("Binary Option Short", "sSHORT", _parameters.limitOrderProvider, _parameters.thalesAMM);
         _mint(creator, initialMint);
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry

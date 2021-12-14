@@ -33,6 +33,9 @@ async function main() {
 		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
 	}
 
+	const privateKey1 = process.env.PRIVATE_KEY;
+	const privateKey2 = process.env.PRIVATE_KEY_2;
+
 	const proxyOwner = new ethers.Wallet(privateKey1, ethers.provider);
 	const owner = new ethers.Wallet(privateKey2, ethers.provider);
 
@@ -63,13 +66,15 @@ async function main() {
 	setTargetAddress('DeciMath', network, deciMath.address);
 
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
-	const thalesAMM = await ThalesAMM.deploy();
+	const thalesAMMConnected = await ThalesAMM.connect(proxyOwner);
+	console.log('thalesAMMConnected ready to deploy: ', thalesAMMConnected.signer._isSigner);
+	const thalesAMM = await thalesAMMConnected.deploy();
 	await thalesAMM.deployed();
 
 	console.log('ThalesAMM logic contract deployed on:', ThalesAMM.address);
 	setTargetAddress('ThalesAMMImplementation', network, thalesAMM.address);
 
-	tx = await OwnedUpgradeabilityProxyDeployed.upgradeTo(thalesAMM.address);
+	let tx = await OwnedUpgradeabilityProxyDeployed.upgradeTo(thalesAMM.address);
 
 	await tx.wait().then(e => {
 		console.log('Proxy updated');
@@ -99,22 +104,28 @@ async function main() {
 	let factoryAddress = getTargetAddress('BinaryOptionMarketFactory', network);
 	const BinaryOptionMarketFactoryInstance = await BinaryOptionMarketFactory.attach(factoryAddress);
 
-	let tx = await thalesAMM.setBinaryOptionsMarketManager(managerAddress);
+	tx = await ThalesAMMDeployed.setBinaryOptionsMarketManager(managerAddress);
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setBinaryOptionsMarketManager');
 	});
 
-	tx = await thalesAMM.setImpliedVolatilityPerAsset(toBytes32('ETH'), w3utils.toWei('120'));
+	tx = await ThalesAMMDeployed.setImpliedVolatilityPerAsset(toBytes32('ETH'), w3utils.toWei('120'));
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(ETH, 120)');
 	});
 
-	tx = await thalesAMM.setImpliedVolatilityPerAsset(toBytes32('LINK'), w3utils.toWei('120'));
+	tx = await ThalesAMMDeployed.setImpliedVolatilityPerAsset(
+		toBytes32('BTC'),
+		w3utils.toWei('120')
+	);
 	await tx.wait().then(e => {
-		console.log('ThalesAMM: setImpliedVolatilityPerAsset(LINK, 120)');
+		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BTC, 120)');
 	});
 
-	tx = await thalesAMM.setImpliedVolatilityPerAsset(toBytes32('LINK'), w3utils.toWei('120'));
+	tx = await ThalesAMMDeployed.setImpliedVolatilityPerAsset(
+		toBytes32('LINK'),
+		w3utils.toWei('120')
+	);
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(LINK, 120)');
 	});

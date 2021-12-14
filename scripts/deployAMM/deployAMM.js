@@ -71,7 +71,7 @@ async function main() {
 	const thalesAMMImplementation = await thalesAMMConnected.deploy();
 	await thalesAMMImplementation.deployed();
 
-	console.log('ThalesAMM logic contract deployed on:', ThalesAMM.address);
+	console.log('ThalesAMM logic contract deployed on:', thalesAMMImplementation.address);
 	setTargetAddress('ThalesAMMImplementation', network, thalesAMMImplementation.address);
 
 	let tx = await OwnedUpgradeabilityProxyDeployed.upgradeTo(thalesAMMImplementation.address);

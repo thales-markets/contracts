@@ -192,7 +192,8 @@ contract('ThalesAMM', accounts => {
 		priceFeedAddress = MockPriceFeedDeployed.address;
 
 		ThalesAMM = artifacts.require('ThalesAMM');
-		thalesAMM = await ThalesAMM.new(
+		thalesAMM = await ThalesAMM.new();
+		await thalesAMM.initialize(
 			owner,
 			priceFeedAddress,
 			sUSDSynth.address,

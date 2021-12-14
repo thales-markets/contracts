@@ -1,11 +1,13 @@
 pragma solidity ^0.5.16;
 
-import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
-import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
-import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+
+import "../utils/proxy/ProxyReentrancyGuard.sol";
+import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/ProxyPausable.sol";
 
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
@@ -13,7 +15,7 @@ import "../interfaces/IBinaryOptionMarketManager.sol";
 import "../interfaces/IBinaryOption.sol";
 import "./DeciMath.sol";
 
-contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
+contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
@@ -42,13 +44,15 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
 
     mapping(address => uint) public spentOnMarket;
 
-    constructor(
+    function initialize(
         address _owner,
         IPriceFeed _priceFeed,
         IERC20 _sUSD,
         uint _capPerMarket,
         DeciMath _deciMath
-    ) public Owned(_owner) {
+    ) public initializer {
+        setOwner(_owner);
+        initNonReentrant();
         priceFeed = _priceFeed;
         sUSD = _sUSD;
         capPerMarket = _capPerMarket;
@@ -428,10 +432,8 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         }
     }
 
-    //selfdestruct
-    function selfDestruct(address payable account) external onlyOwner {
+    function pullFunds(address payable account) external onlyOwner {
         sUSD.transfer(account, sUSD.balanceOf(address(this)));
-        selfdestruct(account);
     }
 
     // events

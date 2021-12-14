@@ -9,8 +9,8 @@ async function main() {
 	//let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-    const privateKey1 = process.env.PRIVATE_KEY;
-    const privateKey2 = process.env.PRIVATE_KEY_2;
+	const privateKey1 = process.env.PRIVATE_KEY;
+	const privateKey2 = process.env.PRIVATE_KEY_2;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -29,30 +29,32 @@ async function main() {
 		network = 'optimistic';
 	}
 
-    const proxyOwner = new ethers.Wallet(privateKey1, ethers.provider);
+	const proxyOwner = new ethers.Wallet(privateKey1, ethers.provider);
 	const owner = new ethers.Wallet(privateKey2, ethers.provider);
 
-    console.log('Owner is: ' + owner.address);
-    console.log('ProxyOwner is: ' + proxyOwner.address);
+	console.log('Owner is: ' + owner.address);
+	console.log('ProxyOwner is: ' + proxyOwner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
 	const PriceFeed = await ethers.getContractFactory('PriceFeed');
 
 	const OwnedUpgradeabilityProxy = await ethers.getContractFactory('OwnedUpgradeabilityProxy');
-	const OwnedUpgradeabilityProxyDeployed = await OwnedUpgradeabilityProxy.connect(proxyOwner).deploy();
+	const OwnedUpgradeabilityProxyDeployed = await OwnedUpgradeabilityProxy.connect(
+		proxyOwner
+	).deploy();
 
 	await OwnedUpgradeabilityProxyDeployed.deployed();
 	console.log('Owned proxy deployed on:', OwnedUpgradeabilityProxyDeployed.address);
 
-    const PriceFeedConnected = await PriceFeed.connect(proxyOwner);
-	console.log("PriceFeed ready to deploy: ", PriceFeedConnected.signer._isSigner);
+	const PriceFeedConnected = await PriceFeed.connect(proxyOwner);
+	console.log('PriceFeed ready to deploy: ', PriceFeedConnected.signer._isSigner);
 
 	const PriceFeedDeployed = await PriceFeedConnected.deploy();
 	await PriceFeedDeployed.deployed();
 
 	console.log('PriceFeed logic contract deployed on:', PriceFeedDeployed.address);
-	setTargetAddress('PriceFeed', network, PriceFeedDeployed.address);
+	setTargetAddress('PriceFeedImplementation', network, PriceFeedDeployed.address);
 
 	let tx = await OwnedUpgradeabilityProxyDeployed.upgradeTo(PriceFeedDeployed.address);
 
@@ -60,7 +62,9 @@ async function main() {
 		console.log('Proxy updated');
 	});
 
-	const ProxyPriceFeedDeployed = PriceFeed.connect(owner).attach(OwnedUpgradeabilityProxyDeployed.address);
+	const ProxyPriceFeedDeployed = PriceFeed.connect(owner).attach(
+		OwnedUpgradeabilityProxyDeployed.address
+	);
 
 	tx = await ProxyPriceFeedDeployed.initialize(owner.address);
 
@@ -68,7 +72,7 @@ async function main() {
 		console.log('ProxyPriceFeed deployed on:', ProxyPriceFeedDeployed.address);
 	});
 
-	setTargetAddress('ProxyPriceFeed', network, ProxyPriceFeedDeployed.address);
+	setTargetAddress('PriceFeed', network, ProxyPriceFeedDeployed.address);
 
 	const aggregators = require(`./aggregators/${network}.json`);
 	for (let [key, aggregator] of Object.entries(aggregators)) {
@@ -85,4 +89,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-

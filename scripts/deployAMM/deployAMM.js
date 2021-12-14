@@ -6,8 +6,6 @@ const { getTargetAddress, setTargetAddress } = require('../helpers');
 const { toBytes32 } = require('../../index');
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	let priceFeedAddress, ProxyERC20sUSDaddress;
@@ -35,14 +33,28 @@ async function main() {
 		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
 	}
 
-	console.log('Account is:' + owner.address);
-	console.log('Network name:' + network);
+	const proxyOwner = new ethers.Wallet(privateKey1, ethers.provider);
+	const owner = new ethers.Wallet(privateKey2, ethers.provider);
+
+	console.log('Owner is: ' + owner.address);
+	console.log('ProxyOwner is: ' + proxyOwner.address);
+	console.log('Network:' + network);
+	console.log('Network id:' + networkObj.chainId);
+
+	const PriceFeed = await ethers.getContractFactory('PriceFeed');
+
+	const OwnedUpgradeabilityProxy = await ethers.getContractFactory('OwnedUpgradeabilityProxy');
+	const OwnedUpgradeabilityProxyDeployed = await OwnedUpgradeabilityProxy.connect(
+		proxyOwner
+	).deploy();
+
+	await OwnedUpgradeabilityProxyDeployed.deployed();
+	console.log('Owned proxy deployed on:', OwnedUpgradeabilityProxyDeployed.address);
 
 	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSDaddress);
 	priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
 
-	// // We get the contract to deploy
 	const DeciMath = await ethers.getContractFactory('DeciMath');
 	const deciMath = await DeciMath.deploy();
 	await deciMath.deployed();
@@ -50,19 +62,36 @@ async function main() {
 	console.log('DeciMath deployed to:', deciMath.address);
 	setTargetAddress('DeciMath', network, deciMath.address);
 
-	// // We get the contract to deploy
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
-	const thalesAMM = await ThalesAMM.deploy(
+	const thalesAMM = await ThalesAMM.deploy();
+	await thalesAMM.deployed();
+
+	console.log('ThalesAMM logic contract deployed on:', ThalesAMM.address);
+	setTargetAddress('ThalesAMMImplementation', network, thalesAMM.address);
+
+	tx = await OwnedUpgradeabilityProxyDeployed.upgradeTo(thalesAMM.address);
+
+	await tx.wait().then(e => {
+		console.log('Proxy updated');
+	});
+
+	const ThalesAMMDeployed = ThalesAMM.connect(owner).attach(
+		OwnedUpgradeabilityProxyDeployed.address
+	);
+
+	tx = await ThalesAMMDeployed.initialize(
 		owner.address,
 		priceFeedAddress,
 		ProxyERC20sUSDaddress,
 		w3utils.toWei('1000'),
 		deciMath.address
 	);
-	await thalesAMM.deployed();
 
-	console.log('ThalesAMM deployed to:', thalesAMM.address);
-	setTargetAddress('ThalesAMM', network, thalesAMM.address);
+	await tx.wait().then(e => {
+		console.log('ProxyThalesAMM initialized');
+	});
+
+	setTargetAddress('ThalesAMM', network, ThalesAMMDeployed.address);
 
 	let managerAddress = getTargetAddress('BinaryOptionMarketManager', network);
 
@@ -90,7 +119,7 @@ async function main() {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(LINK, 120)');
 	});
 
-	tx = await BinaryOptionMarketFactoryInstance.setThalesAMM(thalesAMM.address);
+	tx = await BinaryOptionMarketFactoryInstance.setThalesAMM(ThalesAMMDeployed.address);
 	await tx.wait().then(e => {
 		console.log('BinaryOptionMarketFactoryInstance: setThalesAMM');
 	});

@@ -81,6 +81,18 @@ async function main() {
 			console.log('PriceFeed: addAggregator for', key);
 		});
 	}
+
+	// verify logic contract
+	await hre.run('verify:verify', {
+		address: PriceFeedDeployed.address,
+		constructorArguments: [],
+	});
+
+	// verify proxy contract
+	await hre.run('verify:verify', {
+		address: ProxyPriceFeedDeployed.address,
+		constructorArguments: [],
+	});
 }
 
 main()

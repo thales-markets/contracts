@@ -97,6 +97,11 @@ async function main() {
 	);
 	console.log('buyFromAmmQuoteLong: ' + buyFromAmmQuoteLong);
 	console.log('sellToAmmQuoteLong: ' + sellToAmmQuoteLong);
+
+	let spentOnMarket = await ThalesAMMDProxyeployed.spentOnMarket(
+		'0xf633bfb0ddb5bc64e0cbbd50f4b793d2cb8ca833'
+	);
+	console.log('spentOnMarket: ' + spentOnMarket);
 }
 
 main()

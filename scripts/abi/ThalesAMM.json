@@ -423,6 +423,16 @@
         "internalType": "contract DeciMath",
         "name": "_deciMath",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_min_spread",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_max_spread",
+        "type": "uint256"
       }
     ],
     "name": "initialize",

@@ -89,7 +89,9 @@ async function main() {
 		priceFeedAddress,
 		ProxyERC20sUSDaddress,
 		w3utils.toWei('1000'),
-		deciMath.address
+		deciMath.address,
+		w3utils.toWei('0.01'),
+		w3utils.toWei('0.05')
 	);
 
 	await tx.wait().then(e => {
@@ -109,7 +111,10 @@ async function main() {
 		console.log('ThalesAMM: setBinaryOptionsMarketManager');
 	});
 
-	tx = await ThalesAMMDProxyeployed.setImpliedVolatilityPerAsset(toBytes32('ETH'), w3utils.toWei('120'));
+	tx = await ThalesAMMDProxyeployed.setImpliedVolatilityPerAsset(
+		toBytes32('ETH'),
+		w3utils.toWei('120')
+	);
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(ETH, 120)');
 	});
@@ -135,6 +140,32 @@ async function main() {
 		console.log('BinaryOptionMarketFactoryInstance: setThalesAMM');
 	});
 
+	//setLookupTables 		await deciMath.setLUT1();
+	tx = await deciMath.setLUT1();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT1');
+	});
+	tx = await deciMath.setLUT2();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT2');
+	});
+	tx = await deciMath.setLUT3_1();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT3_1');
+	});
+	tx = await deciMath.setLUT3_2();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT3_2');
+	});
+	tx = await deciMath.setLUT3_3();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT3_3');
+	});
+	tx = await deciMath.setLUT3_4();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT3_4');
+	});
+
 	await hre.run('verify:verify', {
 		address: deciMath.address,
 	});
@@ -150,7 +181,6 @@ async function main() {
 		address: ThalesAMMDProxyeployed.address,
 		constructorArguments: [],
 	});
-
 }
 
 main()

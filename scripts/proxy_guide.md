@@ -52,6 +52,16 @@ https://docs.openzeppelin.com/upgrades-plugins/1.x/hardhat-upgrades
 
 NOTE: there might be an issue if in the `initialize` function of the `Implementation` contract there is a gas-consuming or function that calls external contract. The automated deployment of OpenZeppelin may brake during deployment. 
 
+When using this method, the verification steps are different
+
+1. Deploy using the openzeppelin guide (https://docs.openzeppelin.com/upgrades-plugins/1.x/hardhat-upgrades)
+
+2. Get the implementation address form the .openzeppelin/network-netID.json
+
+3. Verify the implementation, using the address from 2).
+
+4. Verify the proxy using the link: https://kovan-optimistic.etherscan.io/proxyContractChecker
+
 
 ## How to upgrade a Proxy Contract with a new Implementation
 

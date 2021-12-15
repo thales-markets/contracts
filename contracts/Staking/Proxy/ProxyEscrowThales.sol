@@ -22,11 +22,11 @@ contract ProxyEscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyRee
     address public airdropContract;
 
     uint public constant NUM_PERIODS = 10;
-    uint public totalEscrowedRewards = 0;
-    uint public totalEscrowBalanceNotIncludedInStaking = 0;
-    uint public currentVestingPeriod = 0;
+    uint public totalEscrowedRewards;
+    uint public totalEscrowBalanceNotIncludedInStaking;
+    uint public currentVestingPeriod;
 
-    uint private _totalVested = 0;
+    uint private _totalVested;
 
     struct VestingEntry {
         uint amount;
@@ -38,7 +38,7 @@ contract ProxyEscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyRee
 
     mapping(address => uint) public lastPeriodAddedReward;
 
-    bool private testMode = false;
+    bool private testMode;
 
     /* ========== CONSTRUCTOR ========== */
 

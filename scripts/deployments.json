@@ -46,7 +46,9 @@
 		"BinaryOptionMarketData": "0x42Af0890d254387110555A46d261B9e4f6E327Ac",
 		"OpThales_L1": "0x008e86b2e21ce8d71C4700A9a174D151839cFbc7",
 		"OwnedUpgradeabilityProxy": "0x7596C9aA9ce105610324AcC27D943C5235518701",
-		"ProxyThalesExchanger": "0x7596C9aA9ce105610324AcC27D943C5235518701"
+		"ProxyThalesExchanger": "0x7596C9aA9ce105610324AcC27D943C5235518701",
+		"ProxyStakingThales": "0xB6C1cE599EB43daBA7A2ef90C1517d78dF821711",
+		"ProxyEscrowThales": "0x2f07803C8D59889f6E02D7ABfa8Cc7C7c571B3CA"
 	},
 	"goerli": {
 		"Airdrop": "",
@@ -87,7 +89,9 @@
 		"BinaryOptionMarketData": "0x761d1A7Bc6a5b4383a959d9fa288bA5FDE6c74c4",
 		"PriceFeed": "0x34fb310296b441625469395ed5765296F6426636",
 		"ThalesRoyale": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
-		"OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224"
+		"OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224",
+		"ProxyStakingThales": "0xeEAacf51A6A3009Fc0FFB1DE42B01CfA8aDF8393",
+		"ProxyEscrowThales": "0xd86aA455cc860864b51261Ee273e7298EABaeF0b"
 	},
 	"localhost": {
 		"Airdrop": "",

@@ -1,7 +1,9 @@
-const { ethers } = require('hardhat');
+const { ethers, upgrades } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
+
+
 
 const THALES_AMOUNT = web3.utils.toWei('200');
 const SECOND = 1000;
@@ -12,7 +14,7 @@ const WEEK = 604800;
 const YEAR = 31556926;
 
 const fs = require('fs');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
 
 const user_key1 = process.env.PRIVATE_KEY;
 const user_key2 = process.env.PRIVATE_KEY_2;
@@ -52,76 +54,51 @@ async function main() {
 		thalesAddress = getTargetAddress('OpThales_L2', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
     }
-	const thalesAddress = getTargetAddress('OpThales_L2', network);
+	else{
+		thalesAddress = getTargetAddress('Thales', network);
+		ProxyERC20sUSD_address = getTargetAddress('PriceFeed', network);
+	}
+	// const thalesAddress = getTargetAddress('OpThales_L2', network);
 	console.log('Thales address: ', thalesAddress);
 	
-	const ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
+	// const ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
 	console.log('ProxyERC20sUSD address: ', ProxyERC20sUSD_address);
 	// const ProxyEscrowThalesAddress = getTargetAddress('ProxyEscrowThales', network);
 
 	const ProxyEscrow = await ethers.getContractFactory('ProxyEscrowThales');
 	const ProxyStaking = await ethers.getContractFactory('ProxyStakingThales');
-	
-	const OwnedProxyEscrow = await ethers.getContractFactory('OwnedUpgradeabilityProxy');
-	const OwnedProxyEscrow_deployed = await OwnedProxyEscrow.connect(proxyOwner).deploy();
-	await OwnedProxyEscrow_deployed.deployed();
-	
-	const OwnedProxyStaking_deployed = await OwnedProxyEscrow.connect(proxyOwner).deploy();
-	await OwnedProxyStaking_deployed.deployed();
 
-	const ProxyStaking_implementation = await ProxyStaking.connect(owner).deploy();
-	await ProxyStaking_implementation.deployed();
-	console.log("Staking implementation:", ProxyStaking_implementation.address);
-	
-	const ProxyEscrow_implementation = await ProxyEscrow.connect(owner).deploy();
-	await ProxyEscrow_implementation.deployed();
-	console.log("Escrow implementation:", ProxyEscrow_implementation.address);
-	
-	let tx = await OwnedProxyStaking_deployed.upgradeTo(ProxyStaking_implementation.address);
-	await tx.wait();
-	
-	tx = await OwnedProxyEscrow_deployed.upgradeTo(ProxyEscrow_implementation.address);
-	await tx.wait();
+    let ProxyEscrow_deployed = await upgrades.deployProxy(ProxyEscrow, 
+                [
+            		owner.address,
+            		thalesAddress
+            	]
+        );
+    await ProxyEscrow_deployed.deployed();
 
-	const ProxyEscrow_deployed = ProxyEscrow.connect(owner).attach(OwnedProxyEscrow_deployed.address);
-
-	tx = await ProxyEscrow_deployed.initialize(
-		owner.address,
-		thalesAddress
-		);
-		
-	await tx.wait();
-		
-	console.log("Escrow proxy:", ProxyEscrow_deployed.address);
+    let ProxyStaking_deployed = await upgrades.deployProxy(ProxyStaking,
+        [
+            owner.address, 
+            ProxyEscrow_deployed.address,
+            thalesAddress,
+            ProxyERC20sUSD_address,
+            durationPeriod,
+            unstakeDurationPeriod
+        ]
+    );
+    await ProxyStaking_deployed.deployed();
 	
-	const ProxyStaking_deployed = ProxyStaking.connect(owner).attach(OwnedProxyStaking_deployed.address);	
-	tx = await ProxyStaking_deployed.initialize(
-		owner.address, 
-		ProxyEscrow_deployed.address,
-		thalesAddress,
-		ProxyERC20sUSD_address,
-		durationPeriod,
-		unstakeDurationPeriod
-		);
-	await tx.wait();
+	
 		
+    console.log("Escrow proxy:", ProxyEscrow_deployed.address);
 	console.log("Staking proxy:", ProxyStaking_deployed.address);
 	
 	setTargetAddress('ProxyStakingThales', network, ProxyStaking_deployed.address);
 	setTargetAddress('ProxyEscrowThales', network, ProxyEscrow_deployed.address);
 		
-	await hre.run('verify:verify', {
-			address: ProxyStaking_deployed.address,
-			constructorArguments: [],
-		});
-	await hre.run('verify:verify', {
-		address: ProxyEscrow_deployed.address,
-		constructorArguments: [],
-	});
-
-
-	await ProxyStaking_deployed.startStakingPeriod({ from: owner.address });
-	console.log('Staking has been started');
+	
+	// await ProxyStaking_deployed.startStakingPeriod({ from: owner.address });
+	// console.log('Staking has been started');
 }
 
 main()

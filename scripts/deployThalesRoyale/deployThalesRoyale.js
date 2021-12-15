@@ -1,3 +1,5 @@
+// DEPRECATED!! DON'T USE!!!
+
 const { ethers } = require('hardhat');
 
 const w3utils = require('web3-utils');
@@ -116,34 +118,12 @@ async function main() {
 		console.log('Proxy updated');
 	});
 
-	const ProxyThalesRoyaleDeployed = ThalesRoyale.connect(owner).attach(OwnedUpgradeabilityProxyDeployed.address);
-
-	tx = await ProxyThalesRoyaleDeployed.initialize(owner.address);
-
-	await tx.wait().then(e => {
-		console.log('ThalesRoyale deployed on:', ProxyThalesRoyaleDeployed.address);
-	});
-
-	setTargetAddress('ThalesRoyale', network, ProxyThalesRoyaleDeployed.address);
-
-	const aggregators = require(`./aggregators/${network}.json`);
-	for (let [key, aggregator] of Object.entries(aggregators)) {
-		let tx = await ProxyThalesRoyaleDeployed.addAggregator(toBytes32(key), aggregator);
-		await tx.wait().then(e => {
-			console.log('ThalesRoyale: addAggregator for', key);
-		});
-	}
-
     /* ========== VEFIFICATION ========== */
 
 	await hre.run('verify:verify', {
 		address: ThalesRoyaleDeployed.address,
-		constructorArguments: initializeRoyaleData,
-	});
-
-	await hre.run('verify:verify', {
-		address: ProxyThalesRoyaleDeployed.address,
-		constructorArguments: [],
+		constructorArguments: [
+		],
 	});
 }
 

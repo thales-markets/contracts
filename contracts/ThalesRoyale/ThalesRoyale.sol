@@ -29,21 +29,21 @@ contract ThalesRoyale is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyP
     bytes32 public oracleKey;
     IPriceFeed public priceFeed;
 
-    uint public rounds = 6;
-    uint public signUpPeriod = 72 hours;
-    uint public roundChoosingLength = 8 hours;
-    uint public roundLength = 24 hours;
-    uint public claimTime = 1 weeks;
+    uint public rounds;
+    uint public signUpPeriod;
+    uint public roundChoosingLength;
+    uint public roundLength;
+    uint public claimTime;
 
     bool public nextSeasonStartsAutomatically;
-    uint public pauseBetweenSeasonsTime = 1 weeks;
+    uint public pauseBetweenSeasonsTime;
 
     uint public roundTargetPrice;
     uint public buyInAmount;
 
     /* ========== SEASON VARIABLES ========== */
 
-    uint public season = 1; 
+    uint public season; 
 
     mapping(uint => uint) public rewardPerSeason;
     mapping(uint => uint) public signedUpPlayersCount;
@@ -366,7 +366,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyP
 
     function selfDestruct(address payable account) external onlyOwner {
         rewardToken.safeTransfer(account, rewardToken.balanceOf(address(this)));
-        selfdestruct(account);
     }
 
     /* ========== MODIFIERS ========== */

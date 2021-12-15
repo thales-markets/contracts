@@ -28,31 +28,37 @@ contract BinaryOption is IERC20, IBinaryOption {
     uint public totalSupply;
 
     // The argument order is allowance[owner][spender]
-    mapping(address => mapping(address => uint)) public allowances;
+    mapping(address => mapping(address => uint)) private allowances;
 
     // Enforce a 1 cent minimum amount
     uint internal constant _MINIMUM_AMOUNT = 1e16;
-    address private zeroEx;
+
+    address public limitOrderProvider;
+    address public thalesAMM;
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
 
-    function initialize(string calldata _name, string calldata _symbol, address _zeroEx) external {
+    function initialize(
+        string calldata _name,
+        string calldata _symbol,
+        address _limitOrderProvider,
+        address _thalesAMM
+    ) external {
         require(!initialized, "Binary Option Market already initialized");
         initialized = true;
         name = _name;
         symbol = _symbol;
         market = BinaryOptionMarket(msg.sender);
-        zeroEx = _zeroEx;
+        // add through constructor
+        limitOrderProvider = _limitOrderProvider;
+        thalesAMM = _thalesAMM;
     }
 
-    /* ========== MUTATIVE FUNCTIONS ========== */
-    //If 0x asks for allowance, it has the whole balance allowed
     function allowance(address owner, address spender) public view returns (uint256) {
-        if(spender == zeroEx) {
+        if (spender == limitOrderProvider || spender == thalesAMM) {
             return 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-        }
-        else {
+        } else {
             return allowances[owner][spender];
         }
     }
@@ -128,25 +134,19 @@ contract BinaryOption is IERC20, IBinaryOption {
     function transfer(address _to, uint _value) external returns (bool success) {
         return _transfer(msg.sender, _to, _value);
     }
-    //0x can transfer full funds without allowance needed
+
     function transferFrom(
         address _from,
         address _to,
         uint _value
     ) external returns (bool success) {
-        
-        if(msg.sender != zeroEx) {
-
+        if (msg.sender != limitOrderProvider && msg.sender != thalesAMM) {
             uint fromAllowance = allowances[_from][msg.sender];
             require(_value <= fromAllowance, "Insufficient allowance");
             allowances[_from][msg.sender] = fromAllowance.sub(_value);
-        
         }
-
         return _transfer(_from, _to, _value);
     }
-
-    
 
     function approve(address _spender, uint _value) external returns (bool success) {
         require(_spender != address(0));

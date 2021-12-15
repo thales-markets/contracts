@@ -7,6 +7,7 @@ const { assert } = require('./common');
 
 const { currentTime, toUnit } = require('./index')();
 const { toBytes32 } = require('../../index');
+const abi = require('ethereumjs-abi');
 
 const abi = require('ethereumjs-abi');
 

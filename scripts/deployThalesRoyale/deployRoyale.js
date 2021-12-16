@@ -2,6 +2,7 @@ const { ethers, upgrades } = require('hardhat');
 const { toBytes32 } = require('../../index');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 const w3utils = require('web3-utils');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
 async function main() {
     
@@ -9,7 +10,7 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-    
+
 	if (network === 'unknown') {
 		network = 'localhost';
 	}
@@ -79,6 +80,14 @@ async function main() {
 
 	console.log('ThalesRoyale deployed to:', royale.address);
 	setTargetAddress('ThalesRoyale', network, royale.address);
+
+    const implementation = await getImplementationAddress(ethers.provider, royale.address);
+	console.log('ThalesRoyaleImplementation: ', implementation);
+    setTargetAddress('ThalesRoyaleImplementation', network, implementation);
+
+    await hre.run('verify:verify', {
+        address: implementation
+    });
 
 }
 

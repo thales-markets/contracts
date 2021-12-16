@@ -42,13 +42,8 @@
       "kind": "transparent"
     },
     {
-      "address": "0x9b960789E6C56192D70a0167bDc7027fFC7F2E58",
-      "txHash": "0x64c43fa6773f459506c1af23305ea47a2f8c9ea6737e0aff7d9eb1035ce609c3",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x01233bac094790277efb8b9efa93f365ab5c7137",
-      "txHash": "0x66771b3305132643db1a70529dcf2d7f4cebb4297d2246e0a1814c36a70727ad",
+      "address": "0xa4C7D93A01F20e0C49c5064adc2714791c71e4eb",
+      "txHash": "0x1d7d1085003076ae00338d403c8d1c96103f79cf742fb3d872a575c7bfd0eeb6",
       "kind": "transparent"
     }
   ],
@@ -199,6 +194,118 @@
             "label": "_initialized",
             "type": "t_bool",
             "src": "contracts/utils/proxy/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "aggregators",
+            "type": "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)140)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:20"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "currencyKeyDecimals",
+            "type": "t_mapping(t_bytes32,t_uint8)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:21"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "aggregatorKeys",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts/PriceFeed/PriceFeed.sol:24"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/PriceFeed/PriceFeed.sol:25"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/PriceFeed/PriceFeed.sol:26"
+          }
+        ],
+        "types": {
+          "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)140)": {
+            "label": "mapping(bytes32 => contract AggregatorV2V3Interface)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_contract(AggregatorV2V3Interface)140": {
+            "label": "contract AggregatorV2V3Interface"
+          },
+          "t_mapping(t_bytes32,t_uint8)": {
+            "label": "mapping(bytes32 => uint8)"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          }
+        }
+      }
+    },
+    "a8871540c290415451d9459595a1ca6069fc66949fca754a61d99bddde319f76": {
+      "address": "0x8Db8A23031E655db609b05C1c6B5D3cFE22a9e1B",
+      "txHash": "0x7901e53d3ad426961ba26277e51acf08eeb4636d4e664dccccad5d864046d430",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:5"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:8"
           },
           {
             "contract": "PriceFeed",

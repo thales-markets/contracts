@@ -84,6 +84,9 @@
     {
       "address": "0x01233bac094790277efb8b9efa93f365ab5c7137",
       "txHash": "0x66771b3305132643db1a70529dcf2d7f4cebb4297d2246e0a1814c36a70727ad",
+      "kind": "transparent"
+      },
+    {
       "address": "0xa4C7D93A01F20e0C49c5064adc2714791c71e4eb",
       "txHash": "0x1d7d1085003076ae00338d403c8d1c96103f79cf742fb3d872a575c7bfd0eeb6",
       "kind": "transparent"
@@ -536,8 +539,9 @@
             "label": "bool"
           },
           "t_array(t_uint256)50_storage": {
-            "label": "uint256[50]"},
-            "t_uint256": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
               "label": "uint256"
           }
         }

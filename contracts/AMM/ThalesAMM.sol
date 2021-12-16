@@ -28,9 +28,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     IERC20 public sUSD;
     address public manager;
 
-    uint public capPerMarket = 1000 * 1e18;
-    uint public min_spread = 1e16; //1%
-    uint public max_spread = 5e16; //5%
+    uint public capPerMarket;
+    uint public min_spread;
+    uint public max_spread;
 
     mapping(bytes32 => uint) public impliedVolatilityPerAsset;
 
@@ -50,7 +50,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         IPriceFeed _priceFeed,
         IERC20 _sUSD,
         uint _capPerMarket,
-        DeciMath _deciMath
+        DeciMath _deciMath,
+        uint _min_spread,
+        uint _max_spread
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -58,6 +60,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         sUSD = _sUSD;
         capPerMarket = _capPerMarket;
         deciMath = _deciMath;
+        min_spread = _min_spread;
+        max_spread = _max_spread;
     }
 
     function availableToBuyFromAMM(address market, Position position) public view returns (uint) {

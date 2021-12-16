@@ -198,7 +198,9 @@ contract('ThalesAMM', accounts => {
 			priceFeedAddress,
 			sUSDSynth.address,
 			toUnit(1000),
-			deciMath.address
+			deciMath.address,
+			toUnit(0.01),
+			toUnit(0.05)
 		);
 		await thalesAMM.setBinaryOptionsMarketManager(manager.address, { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });

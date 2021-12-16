@@ -3,13 +3,16 @@ pragma solidity ^0.5.16;
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
-import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
-import "../interfaces/IEscrowThales.sol";
-import "../interfaces/IStakingThales.sol";
 
-contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
+import "../../utils/proxy/ProxyReentrancyGuard.sol";
+import "../../utils/proxy/ProxyOwned.sol";
+import "../../utils/proxy/ProxyPausable.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+
+import "../../interfaces/IEscrowThales.sol";
+import "../../interfaces/IStakingThales.sol";
+
+contract ProxyEscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;
@@ -19,11 +22,11 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
     address public airdropContract;
 
     uint public constant NUM_PERIODS = 10;
-    uint public totalEscrowedRewards = 0;
-    uint public totalEscrowBalanceNotIncludedInStaking = 0;
-    uint public currentVestingPeriod = 0;
+    uint public totalEscrowedRewards;
+    uint public totalEscrowBalanceNotIncludedInStaking;
+    uint public currentVestingPeriod;
 
-    uint private _totalVested = 0;
+    uint private _totalVested;
 
     struct VestingEntry {
         uint amount;
@@ -35,14 +38,16 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
 
     mapping(address => uint) public lastPeriodAddedReward;
 
-    bool private testMode = false;
+    bool private testMode;
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(
+    function initialize(
         address _owner,
         address _vestingToken //THALES
-    ) public Owned(_owner) {
+    ) public initializer {
+        setOwner(_owner);
+        initNonReentrant();
         vestingToken = IERC20(_vestingToken);
     }
 
@@ -157,10 +162,12 @@ contract EscrowThales is IEscrowThales, Owned, ReentrancyGuard, Pausable {
         emit AirdropContractChanged(AirdropContract);
     }
 
-    function selfDestruct(address payable account) external onlyOwner {
-        vestingToken.safeTransfer(account, vestingToken.balanceOf(address(this)));
-        selfdestruct(account);
-    }
+    /*  Selfdestruct operation potentially harmful for proxy contracts
+     */
+    // function selfDestruct(address payable account) external onlyOwner {
+    //     vestingToken.safeTransfer(account, vestingToken.balanceOf(address(this)));
+    //     selfdestruct(account);
+    // }
 
     /* ========== INTERNAL FUNCTIONS ========== */
 

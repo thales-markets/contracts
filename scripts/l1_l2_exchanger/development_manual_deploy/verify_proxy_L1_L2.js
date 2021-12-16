@@ -5,7 +5,7 @@ const { artifacts, contract, web3 } = require('hardhat');
 
 
 
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 
 async function main() {

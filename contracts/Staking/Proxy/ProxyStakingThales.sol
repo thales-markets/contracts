@@ -3,14 +3,16 @@ pragma solidity ^0.5.16;
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
-import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
-import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
 
-import "../interfaces/IEscrowThales.sol";
-import "../interfaces/IStakingThales.sol";
+import "../../utils/proxy/ProxyReentrancyGuard.sol";
+import "../../utils/proxy/ProxyOwned.sol";
+import "../../utils/proxy/ProxyPausable.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
-contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
+import "../../interfaces/IEscrowThales.sol";
+import "../../interfaces/IStakingThales.sol";
+
+contract ProxyStakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
@@ -23,16 +25,16 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
     IERC20 public stakingToken;
     IERC20 public feeToken;
 
-    uint public periodsOfStaking = 0;
-    uint public lastPeriodTimeStamp = 0;
-    uint public durationPeriod = 7 days;
-    uint public unstakeDurationPeriod = 7 days;
-    uint public startTimeStamp = 0;
-    uint public currentPeriodRewards = 0;
-    uint public currentPeriodFees = 0;
-    bool public distributeFeesEnabled = false;
-    uint public fixedPeriodReward = 100000 * 1e18;
-    bool public claimEnabled = false;
+    uint public periodsOfStaking;
+    uint public lastPeriodTimeStamp;
+    uint public durationPeriod;
+    uint public unstakeDurationPeriod;
+    uint public startTimeStamp;
+    uint public currentPeriodRewards;
+    uint public currentPeriodFees;
+    bool public distributeFeesEnabled;
+    uint public fixedPeriodReward;
+    bool public claimEnabled;
 
     mapping(address => uint) public stakerLifetimeRewardsClaimed;
     mapping(address => uint) public stakerFeesClaimed;
@@ -52,20 +54,23 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(
+    function initialize(
         address _owner,
         address _iEscrowThales, //THALES
         address _stakingToken, //THALES
         address _feeToken, //sUSD
         uint _durationPeriod,
         uint _unstakeDurationPeriod
-    ) public Owned(_owner) {
+    ) public initializer {
+        setOwner(_owner);
+        initNonReentrant();
         iEscrowThales = IEscrowThales(_iEscrowThales);
         stakingToken = IERC20(_stakingToken);
         feeToken = IERC20(_feeToken);
         stakingToken.approve(_iEscrowThales, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         durationPeriod = _durationPeriod;
         unstakeDurationPeriod = _unstakeDurationPeriod;
+        fixedPeriodReward = 100000 * 1e18;
     }
 
     /* ========== VIEWS ========== */
@@ -274,11 +279,13 @@ contract StakingThales is IStakingThales, Owned, ReentrancyGuard, Pausable {
         _claimReward(msg.sender);
     }
 
-    function selfDestruct(address payable account) external onlyOwner {
-        stakingToken.safeTransfer(account, stakingToken.balanceOf(address(this)));
-        feeToken.safeTransfer(account, feeToken.balanceOf(address(this)));
-        selfdestruct(account);
-    }
+    /*  Selfdestruct operation potentially harmful for proxy contracts
+     */
+    // function selfDestruct(address payable account) external onlyOwner {
+    //     stakingToken.safeTransfer(account, stakingToken.balanceOf(address(this)));
+    //     feeToken.safeTransfer(account, feeToken.balanceOf(address(this)));
+    //     selfdestruct(account);
+    // }
 
     /* ========== INTERNAL FUNCTIONS ========== */
 

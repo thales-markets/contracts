@@ -74,6 +74,9 @@
     {
       "address": "0xc517D5A81Be4489282cDe30A77Fc1Ad74f6D8AeD",
       "txHash": "0x973dce1126b97742d54ecb0fb6c343b94938caa429a3b4e511bd71cd750e7224",
+      "kind": "transparent"
+    },
+    {
       "address": "0x9b960789E6C56192D70a0167bDc7027fFC7F2E58",
       "txHash": "0x64c43fa6773f459506c1af23305ea47a2f8c9ea6737e0aff7d9eb1035ce609c3",
       "kind": "transparent"
@@ -81,6 +84,8 @@
     {
       "address": "0x01233bac094790277efb8b9efa93f365ab5c7137",
       "txHash": "0x66771b3305132643db1a70529dcf2d7f4cebb4297d2246e0a1814c36a70727ad",
+      "address": "0xa4C7D93A01F20e0C49c5064adc2714791c71e4eb",
+      "txHash": "0x1d7d1085003076ae00338d403c8d1c96103f79cf742fb3d872a575c7bfd0eeb6",
       "kind": "transparent"
     }
   ],
@@ -427,9 +432,9 @@
         }
       }
     },
-    "dec7451ddd6a2944d651b4d4f48028c7d9c3bbcece0f9237e85e4b5747e77ab7": {
-      "address": "0x062106C253029A0065c3829dB00f6483444510C9",
-      "txHash": "0x704a89b407e0411e2ace0a16ccc26eed07ad96f5e59b17195f9c70fed757750f",
+    "a8871540c290415451d9459595a1ca6069fc66949fca754a61d99bddde319f76": {
+      "address": "0x8Db8A23031E655db609b05C1c6B5D3cFE22a9e1B",
+      "txHash": "0x7901e53d3ad426961ba26277e51acf08eeb4636d4e664dccccad5d864046d430",
       "layout": {
         "storage": [
           {
@@ -475,136 +480,65 @@
             "src": "contracts/utils/proxy/ProxyOwned.sol:8"
           },
           {
-            "contract": "ProxyReentrancyGuard",
-            "label": "_guardCounter",
-            "type": "t_uint256",
-            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:17"
+            "contract": "PriceFeed",
+            "label": "aggregators",
+            "type": "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)140)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:20"
           },
           {
-            "contract": "ProxyReentrancyGuard",
-            "label": "_initialized",
-            "type": "t_bool",
-            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:18"
+            "contract": "PriceFeed",
+            "label": "currencyKeyDecimals",
+            "type": "t_mapping(t_bytes32,t_uint8)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:21"
           },
           {
-            "contract": "ProxyPausable",
-            "label": "lastPauseTime",
-            "type": "t_uint256",
-            "src": "contracts/utils/proxy/ProxyPausable.sol:9"
+            "contract": "PriceFeed",
+            "label": "aggregatorKeys",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts/PriceFeed/PriceFeed.sol:24"
           },
           {
-            "contract": "ProxyPausable",
-            "label": "paused",
-            "type": "t_bool",
-            "src": "contracts/utils/proxy/ProxyPausable.sol:10"
-          },
-          {
-            "contract": "ProxyEscrowThales",
-            "label": "vestingToken",
-            "type": "t_contract(IERC20)16823",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:20"
-          },
-          {
-            "contract": "ProxyEscrowThales",
-            "label": "iStakingThales",
-            "type": "t_contract(IStakingThales)12586",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:21"
-          },
-          {
-            "contract": "ProxyEscrowThales",
-            "label": "airdropContract",
+            "contract": "PriceFeed",
+            "label": "owner",
             "type": "t_address",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:22"
+            "src": "contracts/PriceFeed/PriceFeed.sol:25"
           },
           {
-            "contract": "ProxyEscrowThales",
-            "label": "totalEscrowedRewards",
-            "type": "t_uint256",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:25"
-          },
-          {
-            "contract": "ProxyEscrowThales",
-            "label": "totalEscrowBalanceNotIncludedInStaking",
-            "type": "t_uint256",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:26"
-          },
-          {
-            "contract": "ProxyEscrowThales",
-            "label": "currentVestingPeriod",
-            "type": "t_uint256",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:27"
-          },
-          {
-            "contract": "ProxyEscrowThales",
-            "label": "_totalVested",
-            "type": "t_uint256",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:29"
-          },
-          {
-            "contract": "ProxyEscrowThales",
-            "label": "vestingEntries",
-            "type": "t_mapping(t_address,t_array(t_struct(VestingEntry)8132_storage)10_storage)",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:36"
-          },
-          {
-            "contract": "ProxyEscrowThales",
-            "label": "totalAccountEscrowedAmount",
-            "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:37"
-          },
-          {
-            "contract": "ProxyEscrowThales",
-            "label": "lastPeriodAddedReward",
-            "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:39"
-          },
-          {
-            "contract": "ProxyEscrowThales",
-            "label": "testMode",
-            "type": "t_bool",
-            "src": "contracts/Staking/Proxy/ProxyEscrowThales.sol:41"
+            "contract": "PriceFeed",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/PriceFeed/PriceFeed.sol:26"
           }
         ],
         "types": {
-          "t_contract(IERC20)16823": {
-            "label": "contract IERC20"
+          "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)140)": {
+            "label": "mapping(bytes32 => contract AggregatorV2V3Interface)"
           },
-          "t_contract(IStakingThales)12586": {
-            "label": "contract IStakingThales"
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_contract(AggregatorV2V3Interface)140": {
+            "label": "contract AggregatorV2V3Interface"
+          },
+          "t_mapping(t_bytes32,t_uint8)": {
+            "label": "mapping(bytes32 => uint8)"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
           },
           "t_address": {
             "label": "address"
-          },
-          "t_uint256": {
-            "label": "uint256"
-          },
-          "t_mapping(t_address,t_array(t_struct(VestingEntry)8132_storage)10_storage)": {
-            "label": "mapping(address => struct ProxyEscrowThales.VestingEntry[10])"
-          },
-          "t_array(t_struct(VestingEntry)8132_storage)10_storage": {
-            "label": "struct ProxyEscrowThales.VestingEntry[10]"
-          },
-          "t_struct(VestingEntry)8132_storage": {
-            "label": "struct ProxyEscrowThales.VestingEntry",
-            "members": [
-              {
-                "label": "amount",
-                "type": "t_uint256"
-              },
-              {
-                "label": "vesting_period",
-                "type": "t_uint256"
-              }
-            ]
-          },
-          "t_mapping(t_address,t_uint256)": {
-            "label": "mapping(address => uint256)"
           },
           "t_bool": {
             "label": "bool"
           },
           "t_array(t_uint256)50_storage": {
-            "label": "uint256[50]"
+            "label": "uint256[50]"},
+            "t_uint256": {
+              "label": "uint256"
           }
         }
       }

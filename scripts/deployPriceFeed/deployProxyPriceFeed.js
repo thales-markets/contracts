@@ -1,3 +1,5 @@
+// Deprecated 
+
 const { ethers } = require('hardhat');
 
 const { getTargetAddress, setTargetAddress } = require('../helpers');

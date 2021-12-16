@@ -21,6 +21,10 @@ interface IBinaryOptionMarketManager {
 
     function maturedMarkets(uint index, uint pageSize) external view returns (address[] memory);
 
+    function isActiveMarket(address candidate) external view returns (bool);
+
+    function isKnownMarket(address candidate) external view returns (bool);
+
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function createMarket(

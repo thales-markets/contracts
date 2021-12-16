@@ -1,4 +1,5 @@
 pragma solidity ^0.5.16;
+pragma experimental ABIEncoderV2;
 
 // Inheritance
 import "../interfaces/IBinaryOptionMarketManager.sol";
@@ -36,8 +37,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     /* ========== STATE VARIABLES ========== */
-
-    address public zeroExAddress;
 
     Durations public durations;
     uint public capitalRequirement;
@@ -87,12 +86,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
     }
 
-    function setZeroExAddress(address _zeroExAddress) public onlyOwner {
-        require(_zeroExAddress != address(0), "Invalid address");
-        zeroExAddress = _zeroExAddress;
-        BinaryOptionMarketFactory(binaryOptionMarketFactory).setZeroExAddress(_zeroExAddress);
-    }
-
     function setWhitelistedAddresses(address[] memory _whitelistedAddresses) public onlyOwner {
         require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
         onlyWhitelistedAddressesCanCreateMarkets = true;
@@ -126,8 +119,12 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     /* ---------- Market Information ---------- */
 
-    function _isKnownMarket(address candidate) internal view returns (bool) {
+    function isKnownMarket(address candidate) public view returns (bool) {
         return _activeMarkets.contains(candidate) || _maturedMarkets.contains(candidate);
+    }
+
+    function isActiveMarket(address candidate) public view returns (bool) {
+        return _activeMarkets.contains(candidate);
     }
 
     function numActiveMarkets() external view returns (uint) {
@@ -239,17 +236,20 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
         require(capitalRequirement <= initialMint, "Insufficient capital");
 
-        BinaryOptionMarket market = BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
-            msg.sender,
-            sUSD,
-            priceFeed,
-            oracleKey,
-            strikePrice,
-            [maturity, expiry],
-            initialMint,
-            customMarket,
-            customOracle
-        );
+        BinaryOptionMarket market =
+            BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
+                BinaryOptionMarketFactory.BinaryOptionCreationMarketParameters(
+                    msg.sender,
+                    sUSD,
+                    priceFeed,
+                    oracleKey,
+                    strikePrice,
+                    [maturity, expiry],
+                    initialMint,
+                    customMarket,
+                    customOracle
+                )
+            );
 
         _activeMarkets.add(address(market));
 
@@ -270,8 +270,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             address(long),
             address(short),
             customMarket,
-            customOracle,
-            zeroExAddress
+            customOracle
         );
         return market;
     }
@@ -282,7 +281,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint amount
     ) external {
         //only to be called by markets themselves
-        require(_isKnownMarket(address(msg.sender)), "Market unknown.");
+        require(isKnownMarket(address(msg.sender)), "Market unknown.");
         sUSD.transferFrom(sender, receiver, amount);
     }
 
@@ -297,7 +296,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         for (uint i = 0; i < markets.length; i++) {
             address market = markets[i];
 
-            require(_isKnownMarket(address(market)), "Market unknown.");
+            require(isKnownMarket(address(market)), "Market unknown.");
 
             // The market itself handles decrementing the total deposits.
             BinaryOptionMarket(market).expire(msg.sender);
@@ -341,7 +340,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint runningDepositTotal;
         for (uint i; i < _numMarkets; i++) {
             BinaryOptionMarket market = marketsToMigrate[i];
-            require(_isKnownMarket(address(market)), "Market unknown.");
+            require(isKnownMarket(address(market)), "Market unknown.");
 
             // Remove it from our list and deposit total.
             markets.remove(address(market));
@@ -370,7 +369,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         uint runningDepositTotal;
         for (uint i; i < _numMarkets; i++) {
             BinaryOptionMarket market = marketsToReceive[i];
-            require(!_isKnownMarket(address(market)), "Market already known.");
+            require(!isKnownMarket(address(market)), "Market already known.");
 
             market.acceptOwnership();
             markets.add(address(market));
@@ -389,7 +388,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     modifier onlyKnownMarkets() {
-        require(_isKnownMarket(msg.sender), "Permitted only for known markets.");
+        require(isKnownMarket(msg.sender), "Permitted only for known markets.");
         _;
     }
 
@@ -405,8 +404,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         address long,
         address short,
         bool customMarket,
-        address customOracle,
-        address zeroExAddress
+        address customOracle
     );
     event MarketExpired(address market);
     event MarketsMigrated(BinaryOptionMarketManager receivingManager, BinaryOptionMarket[] markets);

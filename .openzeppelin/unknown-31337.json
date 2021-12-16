@@ -41,11 +41,6 @@
       "kind": "transparent"
     },
     {
-      "address": "0xCA8c8688914e0F7096c920146cd0Ad85cD7Ae8b9",
-      "txHash": "0x7883d0a7f72a90073718bc6f5d701fefb48d4541645c6f54b85e3e5cc6b9c3d7",
-      "kind": "transparent"
-    },
-    {
       "address": "0x01c1DeF3b91672704716159C9041Aeca392DdFfb",
       "txHash": "0xddd2d7455b93c843a250ab6e76e5f644238ef7501082887197c5e60c946c3145",
       "kind": "transparent"
@@ -93,11 +88,6 @@
     {
       "address": "0x8786A226918A4c6Cd7B3463ca200f156C964031f",
       "txHash": "0x36b731c4b7c6eb699060f0f703c912db5ce2032fb2f44e7d0adb7cec961084ea",
-      "kind": "transparent"
-    },
-    {
-      "address": "0xfC47d03bd4C8a7E62A62f29000ceBa4D84142343",
-      "txHash": "0x42920245aa40b5aa77dd361dc9b9f84416d88b988e1e33e0cfe4a8ddafed7b82",
       "kind": "transparent"
     },
     {
@@ -553,73 +543,73 @@
             "contract": "Initializable",
             "label": "initialized",
             "type": "t_bool",
-            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:23"
           },
           {
             "contract": "Initializable",
             "label": "initializing",
             "type": "t_bool",
-            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:28"
           },
           {
             "contract": "Initializable",
             "label": "______gap",
             "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:63"
           },
           {
             "contract": "ProxyOwned",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts/utils/proxy/ProxyOwned.sol:5"
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:5"
           },
           {
             "contract": "ProxyOwned",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts/utils/proxy/ProxyOwned.sol:6"
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:6"
           },
           {
             "contract": "ProxyOwned",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts/utils/proxy/ProxyOwned.sol:7"
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:7"
           },
           {
             "contract": "ProxyOwned",
             "label": "_transferredAtInit",
             "type": "t_bool",
-            "src": "contracts/utils/proxy/ProxyOwned.sol:8"
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:8"
           },
           {
             "contract": "PriceFeed",
             "label": "aggregators",
             "type": "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)140)",
-            "src": "contracts/PriceFeed/PriceFeed.sol:20"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:20"
           },
           {
             "contract": "PriceFeed",
             "label": "currencyKeyDecimals",
             "type": "t_mapping(t_bytes32,t_uint8)",
-            "src": "contracts/PriceFeed/PriceFeed.sol:21"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:21"
           },
           {
             "contract": "PriceFeed",
             "label": "aggregatorKeys",
             "type": "t_array(t_bytes32)dyn_storage",
-            "src": "contracts/PriceFeed/PriceFeed.sol:24"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:24"
           },
           {
             "contract": "PriceFeed",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts/PriceFeed/PriceFeed.sol:25"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:25"
           },
           {
             "contract": "PriceFeed",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts/PriceFeed/PriceFeed.sol:26"
+            "src": "contracts\\PriceFeed\\PriceFeed.sol:26"
           }
         ],
         "types": {

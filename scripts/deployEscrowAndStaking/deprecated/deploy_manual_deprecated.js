@@ -12,7 +12,7 @@ const WEEK = 604800;
 const YEAR = 31556926;
 
 const fs = require('fs');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 const user_key1 = process.env.PRIVATE_KEY;
 const user_key2 = process.env.PRIVATE_KEY_2;

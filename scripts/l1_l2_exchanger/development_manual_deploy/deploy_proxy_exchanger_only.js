@@ -3,7 +3,7 @@ const { ethers, upgrades } = require('hardhat');
 const w3utils = require('web3-utils');
 const { artifacts, contract, web3 } = require('hardhat');
 
-const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
+const { getTargetAddress, setTargetAddress, encodeCall } = require('../../helpers');
 
 const user_key_local_optimism = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 const user_key_env = process.env.PRIVATE_KEY;
@@ -15,7 +15,7 @@ const {
 	currentTime,
 	multiplyDecimalRound,
 	divideDecimalRound,
-} = require('../../test/utils/index')();
+} = require('../../../test/utils/index')();
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -24,7 +24,7 @@ const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
 
 const L2StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol/OVM_L2StandardBridge');
 const L1StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L1StandardBridge.sol/OVM_L1StandardBridge');
-const { toBytes32 } = require('../../index');
+const { toBytes32 } = require('../../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -48,9 +48,6 @@ async function main() {
 	const net_kovan = 'kovan'
 	let network_optimistic_kovan = await ethers.provider.getNetwork();
 	const net_optimistic_kovan = 'optimisticKovan'
-	// console.log(network_optimistic_kovan);
-	
-	// const l2StandardBridgeArtifact = require(`../node_modules/@eth-optimism/contracts/artifacts/contracts/L2/messaging/L2StandardBridge.sol/L2StandardBridge.json`)
 	
 	
 	const l1Wallet = new ethers.Wallet(user_key, networkL1);
@@ -147,10 +144,6 @@ async function main() {
 	console.log("Proxy Thales Exchanger deployed on: ", ProxyThalesExchanger_deployed.address);
 	setTargetAddress('ProxyThalesExchanger', net_kovan, ProxyThalesExchanger_deployed.address);
 	
-	
-	// tx = await ThalesExchanger_deployed.transferOwnershipAtInit(OwnedUpgradeabilityProxy_deployed.address);
-	// await tx.wait()
-	// console.log("Owner changed to proxy");
 	
 	console.log("Wait 20 seconds");
 	await delay(20000);

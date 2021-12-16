@@ -105,11 +105,6 @@ contract ProxyThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, Pr
         emit ExchangedThalesForL2OpThales(msg.sender, amount);
     }
 
-    function selfDestruct(address payable account) external onlyOwner {
-        OpThalesToken.transfer(account, OpThalesToken.balanceOf(address(this)));
-        ThalesToken.transfer(account, ThalesToken.balanceOf(address(this)));
-        selfdestruct(account);
-    }
 
     function _exchange(
         address _sender,

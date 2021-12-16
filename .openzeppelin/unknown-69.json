@@ -74,6 +74,56 @@
       "address": "0xeEAacf51A6A3009Fc0FFB1DE42B01CfA8aDF8393",
       "txHash": "0x0ccb1a687ad7887948c89d1e1a5a232d9f13c62a97b4c7ce15bfc382cec113d1",
       "kind": "transparent"
+    },
+    {
+      "address": "0xBFD4e1147ed66053fFBd0389d8cb4d7F0cc50aC3",
+      "txHash": "0xc81d6302f5cb623313fdabf8998dbbfcb78945e4fdb236edcec7ae5d1b0f9c4e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xF995b09da3F9caee09299cF417ED9eb0416C657a",
+      "txHash": "0x209bdc66313b2f6b010066c088d20664ee158b20f930d583777e29924629a9ba",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xcA4E2eB038d543345FB314382a331AD0C2A47829",
+      "txHash": "0x0c4ecc0ca4e0875093bee5444705494d301bfdebeadb7cf5c0acb4fef43269e6",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x184DC5b0e8B93f276Db2f56f2D73b4E259d5F763",
+      "txHash": "0x252c04c5b2d722c0dda6d3e2b1df04c9c69bdc83402436e83a3fa5f4a29f453a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x14b3aa89e12b4c71aC5cD8506EE9C991Eb45338D",
+      "txHash": "0x40aa1710dfe8850bb24de33c72d8c421178b8ead5965dd75003a85b9fddc04e1",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x26cCbD90470D590af6A3EA54A4b95C3B86F88837",
+      "txHash": "0xca0c054d0336ab4bec91667ef543ee9e8aa664006b57a4adb79708fd9f7947c6",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x077201d18e27b517cE6d8E417E4200fF32BC14C7",
+      "txHash": "0x75d62e4f99cc8f6cb630a31255032865bb3b8a8b684669427fca9a5bb0d44620",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4F3C385b27003E24EaF045b0bb4bFF4569150c10",
+      "txHash": "0x6274d55347c8566654d3098826f8af58c1d04472d5fef7656aa2ec8654b183f5",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1A16ebD0a9855A9537aa3bc30989634ec3043Df2",
+      "txHash": "0xe2bf3a4f60561d7a9ac206e1af8fc9e16f7460c23c132178805004b0192431f4",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x3eD7fba8d640B2ED4E0a57607185FaB0f228515C",
+      "txHash": "0x8b466f7534febf5d05d04539523a4e2db6623ebf0c7b0c52f638b1958ef35b0f",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -844,6 +894,136 @@
           },
           "t_mapping(t_address,t_bool)": {
             "label": "mapping(address => bool)"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "61b6decfe09777a77ddb1e9dbd4474ce81cc23a570c95a959e114b89b22350e7": {
+      "address": "0xC069a7B6E3637Dd1A035d23c6DAD5f48a401dE95",
+      "txHash": "0xf5d219ab036e489189c8f1d4388916cf5fb506b3d2595883abc13a7f9f5df9af",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:5"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:17"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/ProxyPausable.sol:9"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyPausable.sol:10"
+          },
+          {
+            "contract": "ProxyThalesExchanger",
+            "label": "ThalesToken",
+            "type": "t_contract(IERC20)16823",
+            "src": "contracts/exchange_L1_L2/ProxyThalesExchanger.sol:17"
+          },
+          {
+            "contract": "ProxyThalesExchanger",
+            "label": "OpThalesToken",
+            "type": "t_contract(IERC20)16823",
+            "src": "contracts/exchange_L1_L2/ProxyThalesExchanger.sol:18"
+          },
+          {
+            "contract": "ProxyThalesExchanger",
+            "label": "L1Bridge",
+            "type": "t_contract(iOVM_L1ERC20Bridge)2276",
+            "src": "contracts/exchange_L1_L2/ProxyThalesExchanger.sol:19"
+          },
+          {
+            "contract": "ProxyThalesExchanger",
+            "label": "l2TokenAddress",
+            "type": "t_address",
+            "src": "contracts/exchange_L1_L2/ProxyThalesExchanger.sol:21"
+          },
+          {
+            "contract": "ProxyThalesExchanger",
+            "label": "enabledThalesToOpThales",
+            "type": "t_bool",
+            "src": "contracts/exchange_L1_L2/ProxyThalesExchanger.sol:27"
+          },
+          {
+            "contract": "ProxyThalesExchanger",
+            "label": "enabledOpThalesToThales",
+            "type": "t_bool",
+            "src": "contracts/exchange_L1_L2/ProxyThalesExchanger.sol:28"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20)16823": {
+            "label": "contract IERC20"
+          },
+          "t_contract(iOVM_L1ERC20Bridge)2276": {
+            "label": "contract iOVM_L1ERC20Bridge"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_uint256": {
+            "label": "uint256"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"

@@ -81,12 +81,14 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     /* ========== SETTERS ========== */
     function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) external onlyOwner {
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
+        emit SetBinaryOptionsMarketFactory(_binaryOptionMarketFactory);
     }
 
     function setZeroExAddress(address _zeroExAddress) public onlyOwner {
         require(_zeroExAddress != address(0), "Invalid address");
         zeroExAddress = _zeroExAddress;
         BinaryOptionMarketFactory(binaryOptionMarketFactory).setZeroExAddress(_zeroExAddress);
+        emit SetZeroExAddress(_zeroExAddress);
     }
 
     /* ========== VIEWS ========== */
@@ -148,10 +150,12 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     function setPriceFeed(address _address) external onlyOwner {
         priceFeed = IPriceFeed(_address);
+        emit SetPriceFeed(_address);
     }
 
     function setsUSD(address _address) external onlyOwner {
         sUSD = IERC20(_address);
+        emit SetsUSD(_address);
     }
 
     /* ---------- Deposit Management ---------- */
@@ -202,17 +206,18 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
         require(capitalRequirement <= initialMint, "Insufficient capital");
 
-        BinaryOptionMarket market = BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
-            msg.sender,
-            sUSD,
-            priceFeed,
-            oracleKey,
-            strikePrice,
-            [maturity, expiry],
-            initialMint,
-            customMarket,
-            customOracle
-        );
+        BinaryOptionMarket market =
+            BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
+                msg.sender,
+                sUSD,
+                priceFeed,
+                oracleKey,
+                strikePrice,
+                [maturity, expiry],
+                initialMint,
+                customMarket,
+                customOracle
+            );
 
         _activeMarkets.add(address(market));
 
@@ -248,7 +253,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         require(_isKnownMarket(address(msg.sender)), "Market unknown.");
         bool success = sUSD.transferFrom(sender, receiver, amount);
 
-        if(!success) {
+        if (!success) {
             revert("TransferFrom function failed");
         }
     }
@@ -286,10 +291,12 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     function setCustomMarketCreationEnabled(bool enabled) external onlyOwner {
         customMarketCreationEnabled = enabled;
+        emit SetCustomMarketCreationEnabled(enabled);
     }
 
     function setMigratingManager(BinaryOptionMarketManager manager) external onlyOwner {
         _migratingManager = manager;
+        emit SetMigratingManager(address(manager));
     }
 
     function migrateMarkets(
@@ -382,4 +389,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     event ExpiryDurationUpdated(uint duration);
     event MaxTimeToMaturityUpdated(uint duration);
     event CreatorCapitalRequirementUpdated(uint value);
+    event SetBinaryOptionsMarketFactory(address _binaryOptionMarketFactory);
+    event SetZeroExAddress(address _zeroExAddress);
+    event SetPriceFeed(address _address);
+    event SetsUSD(address _address);
+    event SetCustomMarketCreationEnabled(bool enabled);
+    event SetMigratingManager(address manager);
 }

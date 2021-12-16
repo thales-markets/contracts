@@ -37,9 +37,10 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     ) external returns (BinaryOptionMarket) {
         require(binaryOptionMarketManager == msg.sender, "Only permitted by the manager.");
 
-        BinaryOptionMarket bom = BinaryOptionMarket(
-            _cloneAsMinimalProxy(binaryOptionMarketMastercopy, "Could not create a Binary Option Market")
-        );
+        BinaryOptionMarket bom =
+            BinaryOptionMarket(
+                _cloneAsMinimalProxy(binaryOptionMarketMastercopy, "Could not create a Binary Option Market")
+            );
         bom.setZeroExAddressAtInit(zeroExAddress);
         bom.initialize(
             BinaryOptionMarket.BinaryOptionMarketParameters(
@@ -57,6 +58,16 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
             )
         );
         return bom;
+        emit MarketCreated(
+            address(bom),
+            oracleKey,
+            strikePrice,
+            times[0],
+            times[1],
+            initialMint,
+            customMarket,
+            customOracle
+        );
     }
 
     /* ========== SETTERS ========== */
@@ -74,6 +85,7 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
         binaryOptionMastercopy = _binaryOptionMastercopy;
         emit BinaryOptionMastercopyChanged(_binaryOptionMastercopy);
     }
+
     function setZeroExAddress(address _zeroExAddress) external {
         require(msg.sender == binaryOptionMarketManager, "Only BinaryOptionsManager can set the 0x address");
         zeroExAddress = _zeroExAddress;
@@ -84,4 +96,14 @@ contract BinaryOptionMarketFactory is MinimalProxyFactory, Owned {
     event BinaryOptionMarketMastercopyChanged(address _binaryOptionMarketMastercopy);
     event BinaryOptionMastercopyChanged(address _binaryOptionMastercopy);
     event ZeroExAddressChanged(address _zeroExAddress);
+    event MarketCreated(
+        address market,
+        bytes32 indexed oracleKey,
+        uint strikePrice,
+        uint maturityDate,
+        uint expiryDate,
+        uint initialMint,
+        bool customMarket,
+        address customOracle
+    );
 }

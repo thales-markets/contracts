@@ -23,12 +23,17 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
     uint private constant MAX_APPROVAL = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
     bool public enabledThalesToOpThales = true;
-    bool public enabledOpThalesToThales = true; 
+    bool public enabledOpThalesToThales = true;
 
     event ExchangedThalesForOpThales(address sender, uint amount);
     event ExchangedThalesForL2OpThales(address sender, uint amount);
     event ExchangedOpThalesForThales(address sender, uint amount);
     event L1BridgeChanged(address l1BridgeAddress);
+    event ThalesAdressSet(address thalesAddress);
+    event OpThalesAdressSet(address opThalesAddress);
+    event L2tokenAdressSet(address _l2TokenAddress);
+    event SetEnabledThalesToOpThales(bool _enable);
+    event SetEnabledOpThalesToThales(bool _enable);
 
     constructor(
         address _owner,
@@ -46,22 +51,27 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
 
     function setThalesAddress(address thalesAddress) external onlyOwner {
         ThalesToken = IERC20(thalesAddress);
+        emit ThalesAdressSet(thalesAddress);
     }
 
     function setOpThalesAddress(address opThalesAddress) external onlyOwner {
         OpThalesToken = IERC20(opThalesAddress);
+        emit OpThalesAdressSet(opThalesAddress);
     }
 
     function setL2TokenAddress(address _l2TokenAddress) external onlyOwner {
         l2TokenAddress = _l2TokenAddress;
+        emit L2tokenAdressSet(_l2TokenAddress);
     }
-    
+
     function setEnabledThalesToOpThales(bool _enable) external onlyOwner {
         enabledThalesToOpThales = _enable;
+        emit SetEnabledThalesToOpThales(_enable);
     }
-    
+
     function setEnabledOpThalesToThales(bool _enable) external onlyOwner {
         enabledOpThalesToThales = _enable;
+        emit SetEnabledOpThalesToThales(_enable);
     }
 
     function setL1StandardBridge(address _l1BridgeAddress) external onlyOwner {

@@ -293,24 +293,29 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
     /* ---------- Custom oracle configuration ---------- */
     function setIOracleInstance(address _address) external onlyOwner {
         iOracleInstance = IOracleInstance(_address);
+        emit SetIOracleInstance(_address);
     }
 
     function setPriceFeed(address _address) external onlyOwner {
         priceFeed = IPriceFeed(_address);
+        emit SetPriceFeed(_address);
     }
 
     function setsUSD(address _address) external onlyOwner {
         sUSD = IERC20(_address);
+        emit SetsUSD(_address);
     }
 
     function setZeroExAddress(address _zeroExAddress) external onlyOwner {
         zeroExAddress = _zeroExAddress;
+        emit SetZeroExAddress(_zeroExAddress);
     }
 
     function setZeroExAddressAtInit(address _zeroExAddress) external {
         require(zeroInitCounter == 0, "0x already set at Init");
         zeroInitCounter = 9;
         zeroExAddress = _zeroExAddress;
+        emit SetZeroExAddressAtInit(_zeroExAddress);
     }
 
     /* ---------- Market Resolution ---------- */
@@ -382,6 +387,7 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     function expire(address payable beneficiary) external onlyOwner {
         require(_expired(), "Unexpired options remaining");
+        emit Expired(beneficiary);
         _selfDestruct(beneficiary);
     }
 
@@ -416,4 +422,10 @@ contract BinaryOptionMarket is MinimalProxyFactory, OwnedWithInit, IBinaryOption
 
     event OptionsExercised(address indexed account, uint value);
     event OptionsBurned(address indexed account, uint value);
+    event SetZeroExAddress(address _zeroExAddress);
+    event SetZeroExAddressAtInit(address _zeroExAddress);
+    event SetsUSD(address _address);
+    event SetPriceFeed(address _address);
+    event SetIOracleInstance(address _address);
+    event Expired(address beneficiary);
 }

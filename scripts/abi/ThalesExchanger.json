@@ -107,6 +107,32 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_l2TokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "L2tokenAdressSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "opThalesAddress",
+        "type": "address"
+      }
+    ],
+    "name": "OpThalesAdressSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -144,6 +170,45 @@
       }
     ],
     "name": "PauseChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_enable",
+        "type": "bool"
+      }
+    ],
+    "name": "SetEnabledOpThalesToThales",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_enable",
+        "type": "bool"
+      }
+    ],
+    "name": "SetEnabledThalesToOpThales",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "thalesAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ThalesAdressSet",
     "type": "event"
   },
   {

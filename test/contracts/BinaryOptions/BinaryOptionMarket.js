@@ -358,12 +358,12 @@ contract('BinaryOption', accounts => {
 			});
 
 			const decodedLogs = BinaryOptionMarket.decodeLogs(result.receipt.rawLogs);
-			assert.eventEqual(decodedLogs[1], 'Mint', {
+			assert.eventEqual(decodedLogs[2], 'Mint', {
 				side: Side.Long,
 				account: initialCreator,
 				value: toUnit(2),
 			});
-			assert.eventEqual(decodedLogs[2], 'Mint', {
+			assert.eventEqual(decodedLogs[3], 'Mint', {
 				side: Side.Short,
 				account: initialCreator,
 				value: toUnit(2),

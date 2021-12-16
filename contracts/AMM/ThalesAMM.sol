@@ -298,17 +298,21 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
 
         (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-        IERC20(address(position == Position.Long ? long : short)).transfer(msg.sender, amount);
+        IBinaryOption target = position == Position.Long ? long : short;
+        IERC20(address(target)).transfer(msg.sender, amount);
 
         spentOnMarket[market] = spentOnMarket[market].add(toMint);
+        spentOnMarket[market] = spentOnMarket[market] <= sUSDPaid ? 0 : spentOnMarket[market].sub(sUSDPaid);
 
-        if (spentOnMarket[market] <= sUSDPaid) {
-            spentOnMarket[market] = 0;
-        } else {
-            spentOnMarket[market] = spentOnMarket[market].sub(sUSDPaid);
-        }
-
-        emit BoughtFromAmm(msg.sender, market, position, amount);
+        emit BoughtFromAmm(
+            msg.sender,
+            market,
+            position,
+            amount,
+            sUSDPaid,
+            address(sUSD),
+            address(target)
+        );
     }
 
     function sellToAMM(
@@ -349,7 +353,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             spentOnMarket[market] = spentOnMarket[market].sub(sUSDFromBurning);
         }
 
-        emit SoldToAMM(msg.sender, market, position, amount);
+        emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), address(target));
     }
 
     function exerciseMaturedMarket(address market) external {
@@ -365,30 +369,37 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     // setters
     function setMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity) public onlyOwner {
         minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
+        emit SetMinimalTimeLeftToMaturity(_minimalTimeLeftToMaturity);
     }
 
     function setMinSpread(uint _spread) public onlyOwner {
         min_spread = _spread;
+        emit SetMinSpread(_spread);
     }
 
     function setMaxSpread(uint _spread) public onlyOwner {
         max_spread = _spread;
+        emit SetMaxSpread(_spread);
     }
 
     function setImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility) public onlyOwner {
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
+        emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);
     }
 
     function setCapPerMarket(uint _capPerMarket) public onlyOwner {
         capPerMarket = _capPerMarket;
+        emit SetCapPerMarket(_capPerMarket);
     }
 
     function setPriceFeed(IPriceFeed _priceFeed) public onlyOwner {
         priceFeed = _priceFeed;
+        emit SetPriceFeed(address(_priceFeed));
     }
 
     function setSUSD(IERC20 _sUSD) public onlyOwner {
         sUSD = _sUSD;
+        emit SetSUSD(address(sUSD));
     }
 
     function setBinaryOptionsMarketManager(address _manager) public onlyOwner {
@@ -397,6 +408,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
         manager = _manager;
         sUSD.approve(manager, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+        emit SetBinaryOptionsMarketManager(_manager);
     }
 
     // Internal functions
@@ -416,10 +428,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function _expneg(uint x) private view returns (uint result) {
-        result = (ONE * ONE) / _expnegpow(x);
+        result = (ONE * ONE) / _expNegPow(x);
     }
 
-    function _expnegpow(uint x) internal view returns (uint result) {
+    function _expNegPow(uint x) internal view returns (uint result) {
         uint e = 2718280000000000000;
         result = deciMath.pow(e, x);
     }
@@ -437,11 +449,36 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
     }
 
-    function pullFunds(address payable account) external onlyOwner {
+    function retrieveSUSD(address payable account) external onlyOwner {
         sUSD.transfer(account, sUSD.balanceOf(address(this)));
     }
 
     // events
-    event SoldToAMM(address seller, address market, Position position, uint amount);
-    event BoughtFromAmm(address buyer, address market, Position position, uint amount);
+    event SoldToAMM(
+        address seller,
+        address market,
+        Position position,
+        uint amount,
+        uint sUSDPaid,
+        address susd,
+        address asset
+    );
+    event BoughtFromAmm(
+        address buyer,
+        address market,
+        Position position,
+        uint amount,
+        uint sUSDPaid,
+        address susd,
+        address asset
+    );
+
+    event SetBinaryOptionsMarketManager(address _manager);
+    event SetSUSD(address sUSD);
+    event SetPriceFeed(address _priceFeed);
+    event SetCapPerMarket(uint _capPerMarket);
+    event SetImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility);
+    event SetMaxSpread(uint _spread);
+    event SetMinSpread(uint _spread);
+    event SetMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity);
 }

@@ -2,9 +2,9 @@
 
 const { ethers } = require('hardhat');
 
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
-const { toBytes32 } = require('../../index');
+const { toBytes32 } = require('../../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();

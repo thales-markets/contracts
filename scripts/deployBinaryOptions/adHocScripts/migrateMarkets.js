@@ -8,12 +8,12 @@ const snx = require('synthetix-2.50.4-ovm');
 const sourceContractAddress = '0x46d9DB2830C005e38878b241199bb09d9d355994';
 const targetContractAddress = '0x5c137947a500811672Df13fCaA21Bd7f580067d9';
 
-const ABI = require('../abi/BinaryOptionMarketManager.json');
+const ABI = require('../../abi/BinaryOptionMarketManager.json');
 
 const gasPrice = '1';
 const gasLimit = 2.0e6; // 1.5m;
 
-const { loadConnections, stringify } = require('../../publish/src/util');
+const { loadConnections, stringify } = require('../../../publish/src/util');
 
 const migrateBinaryOptionMarkets = async () => {
 	let result;

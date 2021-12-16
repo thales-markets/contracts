@@ -34,7 +34,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     mapping(bytes32 => uint) public impliedVolatilityPerAsset;
 
-    uint public minimalTimeLeftToMaturity = 2 hours;
+    uint public minimalTimeLeftToMaturity;
 
     struct MarketSkew {
         uint longs;
@@ -52,7 +52,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint _capPerMarket,
         DeciMath _deciMath,
         uint _min_spread,
-        uint _max_spread
+        uint _max_spread,
+        uint _minimalTimeLeftToMaturity
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -62,6 +63,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         deciMath = _deciMath;
         min_spread = _min_spread;
         max_spread = _max_spread;
+        minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
     }
 
     function availableToBuyFromAMM(address market, Position position) public view returns (uint) {

@@ -16,7 +16,6 @@ const fs = require('fs');
 const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
 
 const user_key1 = process.env.PRIVATE_KEY;
-const user_key2 = process.env.PRIVATE_KEY_2;
 
 async function main() {
 	let accounts = await ethers.getSigners();

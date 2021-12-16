@@ -2,8 +2,8 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
-const { toBytes32 } = require('../../index');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
+const { toBytes32 } = require('../../../index');
 
 async function main() {
 	let networkObj = await ethers.provider.getNetwork();

@@ -191,6 +191,7 @@ contract('ThalesAMM', accounts => {
 
 		priceFeedAddress = MockPriceFeedDeployed.address;
 
+		const hour = 60 * 60;
 		ThalesAMM = artifacts.require('ThalesAMM');
 		thalesAMM = await ThalesAMM.new();
 		await thalesAMM.initialize(
@@ -200,7 +201,8 @@ contract('ThalesAMM', accounts => {
 			toUnit(1000),
 			deciMath.address,
 			toUnit(0.01),
-			toUnit(0.05)
+			toUnit(0.05),
+			hour * 2
 		);
 		await thalesAMM.setBinaryOptionsMarketManager(manager.address, { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });

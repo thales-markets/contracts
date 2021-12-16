@@ -75,6 +75,15 @@ module.exports = {
 					},
 				},
 			},
+			{
+				version: '0.8.2',
+				settings: {
+					optimizer: {
+						enabled: true,
+						runs: 200,
+					},
+				},
+			},
 		],
 	},
 	paths: {
@@ -133,7 +142,7 @@ module.exports = {
 		},
 		optimistic: {
 			url: 'https://mainnet.optimism.io',
-			accounts: [PRIVATE_KEY]
+			accounts: [PRIVATE_KEY],
 		},
 		optimisticKovan: {
 			gasPrice: 10000,

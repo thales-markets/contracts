@@ -22,8 +22,8 @@ npx hardhat run --network kovan scripts/SportsBinaryOptions/createUSOpenMarkets.
 
 optimistic kovan:
 npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/deployThalesRoyale.js
-npx hardhat run --network optimisticKovan scripts/deployAMM/deploy.js
+npx hardhat run --network optimisticKovan scripts/deployAMM/deployAMM.js
+
 
 optimistic:
-optimistic kovan:
-npx hardhat run --network optimistic scripts/deployBinaryOptions/deployFix.js
+npx hardhat run --network optimistic scripts/deployAMM/deployAMM.js

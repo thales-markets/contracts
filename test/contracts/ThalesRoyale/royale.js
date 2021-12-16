@@ -24,22 +24,34 @@ const {
 	divideDecimalRound,
 } = require('../../utils')();
 
+const {
+        onlyGivenAddressCanInvoke,
+        convertToDecimals,
+        encodeCall,
+        assertRevert,
+} = require('../../utils/helpers');
+
 contract('ThalesRoyale', accounts => {
 	const [first, owner, second, third, fourth] = accounts;
 	const season_1 = 1;
 	const season_2 = 2;
 	let priceFeedAddress;
-	let ThalesRoyale;
-	let royale;
 	let MockPriceFeedDeployed;
 	let ThalesDeployed;
-	let thales;
+	let thales;  
+	let ThalesRoyale;
+	let ThalesRoyaleDeployed;
+	let royale;  
+	let initializeRoyaleData;
+    let ThalesRoyaleImplementation;
 
 	beforeEach(async () => {
 
 		const thalesQty_0 = toUnit(0);
 		const thalesQty = toUnit(10000);
 		const thalesQty_2500 = toUnit(2500);
+
+		let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 
 		let Thales = artifacts.require('Thales');
 		ThalesDeployed = await Thales.new({ from: owner });
@@ -49,28 +61,44 @@ contract('ThalesRoyale', accounts => {
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
 		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
 
+
 		await MockPriceFeedDeployed.setPricetoReturn(1000);
 
 		priceFeedAddress = MockPriceFeedDeployed.address;
 
 		ThalesRoyale = artifacts.require('ThalesRoyale');
+        
+		ThalesRoyaleDeployed = await OwnedUpgradeabilityProxy.new({ from: owner });
+		ThalesRoyaleImplementation = await ThalesRoyale.new({from:owner});
+		royale = await ThalesRoyale.at(ThalesRoyaleDeployed.address);
 
-		royale = await ThalesRoyale.new(
-			owner,
-			toBytes32('SNX'),
-			priceFeedAddress,
-			thalesQty_0, // initial
-			ThalesDeployed.address,
-			7,
-			DAY * 3,
-			HOUR * 8,
-			DAY,
-			WEEK,
-			season_1, // season 1
-			toUnit(2500),
-			false,
-			HOUR * 1
+		initializeRoyaleData = encodeCall(
+			'initialize',
+			['address', 'bytes32', 'address', 'uint', 'address', 'uint',
+			'uint', 'uint', 'uint', 'uint', 'uint', 'uint',
+			'bool', 'uint'],
+			[
+				owner,
+				toBytes32('SNX'),
+				priceFeedAddress,
+				thalesQty_0, // initial
+				ThalesDeployed.address,
+				7,
+				DAY * 3,
+				HOUR * 8,
+				DAY,
+				WEEK,
+				season_1, // season 1
+				toUnit(2500),
+				false,
+				HOUR * 1
+			]
 		);
+
+		await ThalesRoyaleDeployed.upgradeToAndCall(ThalesRoyaleImplementation.address, initializeRoyaleData, {
+			from: owner,
+        });
+
 
 		await ThalesDeployed.transfer(royale.address, thalesQty, { from: owner });
 		await ThalesDeployed.approve(royale.address, thalesQty, { from: owner });

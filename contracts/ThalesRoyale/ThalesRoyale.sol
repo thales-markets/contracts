@@ -1,14 +1,21 @@
 pragma solidity ^0.5.16;
 
-import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
-import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
+// external
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+
+// interfaces
 import "../interfaces/IPriceFeed.sol";
 
-contract ThalesRoyale is Owned, Pausable {
+// internal
+import "../utils/proxy/ProxyReentrancyGuard.sol";
+import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/ProxyPausable.sol";
+
+contract ThalesRoyale is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
 
     /* ========== LIBRARIES ========== */
 
@@ -22,21 +29,21 @@ contract ThalesRoyale is Owned, Pausable {
     bytes32 public oracleKey;
     IPriceFeed public priceFeed;
 
-    uint public rounds = 6;
-    uint public signUpPeriod = 72 hours;
-    uint public roundChoosingLength = 8 hours;
-    uint public roundLength = 24 hours;
-    uint public claimTime = 1 weeks;
+    uint public rounds;
+    uint public signUpPeriod;
+    uint public roundChoosingLength;
+    uint public roundLength;
+    uint public claimTime;
 
     bool public nextSeasonStartsAutomatically;
-    uint public pauseBetweenSeasonsTime = 1 weeks;
+    uint public pauseBetweenSeasonsTime;
 
     uint public roundTargetPrice;
     uint public buyInAmount;
 
     /* ========== SEASON VARIABLES ========== */
 
-    uint public season = 1; 
+    uint public season; 
 
     mapping(uint => uint) public rewardPerSeason;
     mapping(uint => uint) public signedUpPlayersCount;
@@ -64,7 +71,7 @@ contract ThalesRoyale is Owned, Pausable {
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(
+    function initialize(
         address _owner,
         bytes32 _oracleKey,
         IPriceFeed _priceFeed,
@@ -79,7 +86,9 @@ contract ThalesRoyale is Owned, Pausable {
         uint _buyInAmount,
         bool _nextSeasonStartsAutomatically,
         uint _pauseBetweenSeasonsTime
-    ) public Owned(_owner) {
+    ) public initializer {
+        setOwner(_owner);
+        initNonReentrant();
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
         rewardPerSeason[_season] = _initialReward;
@@ -344,7 +353,7 @@ contract ThalesRoyale is Owned, Pausable {
         claimTime = _claimTime;
     }
 
-    function claimUnclaimedRewards(address _treasuryAddress, uint _season) public onlyOwner {
+    function claimUnclaimedRewards(address _treasuryAddress, uint _season) external onlyOwner {
         require(block.timestamp > royaleSeasonEndTime[_season] + claimTime, "Time for reward claiming not expired");
         require(unclaimedRewardPerSeason[_season] > 0, "Nothing to claim");
 
@@ -357,7 +366,6 @@ contract ThalesRoyale is Owned, Pausable {
 
     function selfDestruct(address payable account) external onlyOwner {
         rewardToken.safeTransfer(account, rewardToken.balanceOf(address(this)));
-        selfdestruct(account);
     }
 
     /* ========== MODIFIERS ========== */

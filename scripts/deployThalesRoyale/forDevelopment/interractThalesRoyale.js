@@ -2,9 +2,9 @@ const { ethers } = require('hardhat');
 
 const w3utils = require('web3-utils');
 
-const { toBytes32 } = require('../../index');
+const { toBytes32 } = require('../../../index');
 
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 var ethers2 = require('ethers');
 var crypto = require('crypto');

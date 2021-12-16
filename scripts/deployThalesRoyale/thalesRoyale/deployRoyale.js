@@ -1,6 +1,6 @@
 const { ethers, upgrades } = require('hardhat');
-const { toBytes32 } = require('../../index');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { toBytes32 } = require('../../../index');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
 const w3utils = require('web3-utils');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 

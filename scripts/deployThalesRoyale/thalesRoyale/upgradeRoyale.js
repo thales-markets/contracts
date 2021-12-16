@@ -1,5 +1,5 @@
 const { ethers, upgrades } = require('hardhat');
-const { getTargetAddress } = require('../helpers');
+const { getTargetAddress } = require('../../helpers');
 
 async function main() {
 	

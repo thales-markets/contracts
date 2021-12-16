@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity 0.5.16;
 
 // Inheritance
 import "../interfaces/IBinaryOptionMarketManager.sol";
@@ -90,12 +90,6 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     }
 
     /* ========== VIEWS ========== */
-
-    /* ---------- Related Contracts ---------- */
-
-    function _priceFeed() internal view returns (IPriceFeed) {
-        return priceFeed;
-    }
 
     /* ---------- Market Information ---------- */
 
@@ -252,7 +246,11 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     ) external {
         //only to be called by markets themselves
         require(_isKnownMarket(address(msg.sender)), "Market unknown.");
-        sUSD.transferFrom(sender, receiver, amount);
+        bool success = sUSD.transferFrom(sender, receiver, amount);
+
+        if(!success) {
+            revert("TransferFrom function failed");
+        }
     }
 
     function resolveMarket(address market) external {
@@ -279,18 +277,18 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         }
     }
 
-    function setMarketCreationEnabled(bool enabled) public onlyOwner {
+    function setMarketCreationEnabled(bool enabled) external onlyOwner {
         if (enabled != marketCreationEnabled) {
             marketCreationEnabled = enabled;
             emit MarketCreationEnabledUpdated(enabled);
         }
     }
 
-    function setCustomMarketCreationEnabled(bool enabled) public onlyOwner {
+    function setCustomMarketCreationEnabled(bool enabled) external onlyOwner {
         customMarketCreationEnabled = enabled;
     }
 
-    function setMigratingManager(BinaryOptionMarketManager manager) public onlyOwner {
+    function setMigratingManager(BinaryOptionMarketManager manager) external onlyOwner {
         _migratingManager = manager;
     }
 

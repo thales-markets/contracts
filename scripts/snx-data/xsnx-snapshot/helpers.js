@@ -1,4 +1,5 @@
 const { ethers, network } = require("hardhat");
+const abi = require('ethereumjs-abi');
 
 
 /**
@@ -14,6 +15,15 @@ async function deploy(contractName) {
  */
 async function deployArgs(contractName, ...args) {
     let Contract = await ethers.getContractFactory(contractName);
+    return await Contract.deploy(...args);
+}
+
+async function deployProxyArgs(contractName, proxyOwner, owner, ...args) {
+    let Proxy = await OwnedUpgradeabilityProxy.new({ from: proxyOwner });
+    let Contract = await ethers.getContractFactory(contractName);
+    let Implementation = await Contract.new({from:owner});
+    let ContractDeployed = await Contract.At(Proxy.address);
+
     return await Contract.deploy(...args);
 }
 
@@ -68,6 +78,8 @@ function getNumberNoDecimals(amount) {
     return amount.div(decimals).toNumber();
 }
 
+
+
 module.exports = {
-    deploy, deployArgs, deployWithAbi, bn, bnDecimal, bnDecimals, getNumberNoDecimals, getNumberDivDecimals
+    deploy, deployArgs, deployProxyArgs, deployWithAbi, bn, bnDecimal, bnDecimals, getNumberNoDecimals, getNumberDivDecimals
 }

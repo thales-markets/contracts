@@ -191,6 +191,7 @@ contract('ThalesAMM', accounts => {
 
 		priceFeedAddress = MockPriceFeedDeployed.address;
 
+		const hour = 60 * 60;
 		ThalesAMM = artifacts.require('ThalesAMM');
 		thalesAMM = await ThalesAMM.new();
 		await thalesAMM.initialize(
@@ -198,7 +199,10 @@ contract('ThalesAMM', accounts => {
 			priceFeedAddress,
 			sUSDSynth.address,
 			toUnit(1000),
-			deciMath.address
+			deciMath.address,
+			toUnit(0.01),
+			toUnit(0.05),
+			hour * 2
 		);
 		await thalesAMM.setBinaryOptionsMarketManager(manager.address, { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
@@ -918,6 +922,20 @@ contract('ThalesAMM', accounts => {
 					}
 				)
 			).to.be.revertedWith('Market is not in Trading phase');
+		});
+
+		it('Unsupported asset market', async () => {
+			let now = await currentTime();
+			let newMarket = await createMarket(
+				manager,
+				sAUDKey,
+				toUnit(12000),
+				now + day * 10,
+				toUnit(10),
+				initialCreator
+			);
+			let isMarketInAMMTrading = await thalesAMM.isMarketInAMMTrading(newMarket.address);
+			assert.equal(false, isMarketInAMMTrading);
 		});
 
 		it('Exercise market', async () => {

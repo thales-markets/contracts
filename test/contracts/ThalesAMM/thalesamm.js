@@ -924,6 +924,20 @@ contract('ThalesAMM', accounts => {
 			).to.be.revertedWith('Market is not in Trading phase');
 		});
 
+		it('Unsupported asset market', async () => {
+			let now = await currentTime();
+			let newMarket = await createMarket(
+				manager,
+				sAUDKey,
+				toUnit(12000),
+				now + day * 10,
+				toUnit(10),
+				initialCreator
+			);
+			let isMarketInAMMTrading = await thalesAMM.isMarketInAMMTrading(newMarket.address);
+			assert.equal(false, isMarketInAMMTrading);
+		});
+
 		it('Exercise market', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(

@@ -1,27 +1,5 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IPriceFeed",
-        "name": "_priceFeed",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_rewardToken",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -44,6 +22,196 @@
       }
     ],
     "name": "BuyIn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_buyInAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "BuyInAmountChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amuontOfPlayersinRoom",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewAmountOfPlayersInOpenRoom",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_claimTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewClaimTime",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_numberRounds",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewNumberOfRounds",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_oracleKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "NewOracleKeySetForRoom",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_numberOfPlayersAdded",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewPlayersAddedIntoRoom",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_numberOfPlayers",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewPlayersAllowed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_signUpPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewRoomSignUpPeriod",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roundChoosingLength",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewRoundChoosingLength",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roundLength",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewRoundLength",
     "type": "event"
   },
   {
@@ -274,6 +442,31 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      }
+    ],
+    "name": "UnclaimedRewardClaimed",
+    "type": "event"
+  },
+  {
     "constant": false,
     "inputs": [],
     "name": "acceptOwnership",
@@ -286,9 +479,29 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "string",
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_alowedPlayers",
+        "type": "address[]"
+      }
+    ],
+    "name": "addAllowedPlayersPerRoomClosedRoom",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "bytes32",
         "name": "asset",
-        "type": "string"
+        "type": "bytes32"
       }
     ],
     "name": "addAsset",
@@ -309,9 +522,9 @@
     "name": "allowedAssets",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "bytes32",
         "name": "",
-        "type": "string"
+        "type": "bytes32"
       }
     ],
     "payable": false,
@@ -375,6 +588,26 @@
       }
     ],
     "name": "claimRewardForRoom",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_treasuryAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimUnclaimedRewards",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -576,6 +809,85 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [],
+    "name": "initNonReentrant",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IPriceFeed",
+        "name": "_priceFeed",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_rewardToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minTimeSignUp",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minRoundTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minChooseTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_offsetBeteweenChooseAndEndRound",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minClaimTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxPlayersInClosedRoom",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minBuyIn",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "_allowedAssets",
+        "type": "bytes32[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minNumberOfRounds",
+        "type": "uint256"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [
       {
@@ -690,6 +1002,111 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "maxPlayersInClosedRoom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "minBuyIn",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "minChooseTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "minClaimTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "minNumberOfRounds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "minRoundTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "minTimeSignUp",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -771,6 +1188,21 @@
       }
     ],
     "name": "numberOfRoundsInRoom",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "offsetBeteweenChooseAndEndRound",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1007,6 +1439,21 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "pullFunds",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1394,32 +1841,12 @@
         "type": "uint256"
       },
       {
-        "internalType": "address[]",
-        "name": "_alowedPlayers",
-        "type": "address[]"
-      }
-    ],
-    "name": "setAlowedPlayersPerRoomClosedRoom",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_roomNumber",
-        "type": "uint256"
-      },
-      {
         "internalType": "uint256",
         "name": "_amuontOfPlayersinRoom",
         "type": "uint256"
       }
     ],
-    "name": "setAmuontOfPlayersinOpenRoom",
+    "name": "setAmuontOfPlayersInOpenRoom",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1564,6 +1991,26 @@
         "type": "uint256"
       },
       {
+        "internalType": "address[]",
+        "name": "_alowedPlayers",
+        "type": "address[]"
+      }
+    ],
+    "name": "setNewAllowedPlayersPerRoomClosedRoom",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
         "internalType": "uint256",
         "name": "_numberOfRoundsInRoom",
         "type": "uint256"
@@ -1605,6 +2052,21 @@
       }
     ],
     "name": "setOracleKey",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "setOwner",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1690,26 +2152,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_roundChoosingLength",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRoundChoosingLengthPerRoom",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_roomNumber",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_roundLength",
         "type": "uint256"
       }
@@ -1748,27 +2190,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "source",
-        "type": "string"
-      }
-    ],
-    "name": "stringToBytes32",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "result",
-        "type": "bytes32"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1832,6 +2253,42 @@
       }
     ],
     "name": "totalPlayersInARoomInARound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "unclaimedRewardPerRoom",
     "outputs": [
       {
         "internalType": "uint256",

@@ -1,14 +1,20 @@
 pragma solidity ^0.5.16;
 
-import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
-import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
+// external
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+
+// interfaces
 import "../interfaces/IPriceFeed.sol";
 
-contract ThalesRoyalePrivateRoom is Owned, Pausable {
+// internal
+import "../utils/proxy/ProxyReentrancyGuard.sol";
+import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/ProxyPausable.sol";
+
+contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
 
     /* ========== LIBRARIES ========== */
 
@@ -63,18 +69,7 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
     mapping(uint => uint) public rewardPerRoom;
     mapping(uint => uint) public rewardPerPlayerPerRoom;
     mapping(uint => mapping(address => bool)) public rewardCollectedPerRoom;
-
-    /* ========== CONSTRAINT VARIABLES ========== */
-
-    uint minTimeSignUp = 15 minutes;
-    uint minRoundTime = 30 minutes;
-    uint minChooseTime = 15 minutes;
-    uint offsetBeteweenChooseAndEndRound = 15 minutes;
-    uint minClaimTime = 24 hours;
-    uint maxPlayersInClosedRoom = 10;
-    uint minBuyIn = 1;
-
-    string [] public allowedAssets = ["BTC", "ETH", "LINK", "SNX"];
+    mapping(uint => uint) public unclaimedRewardPerRoom;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -83,13 +78,45 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
 
     uint public roomNumberCounter;
 
-    constructor(
+    uint public minTimeSignUp;
+    uint public minRoundTime;
+    uint public minChooseTime;
+    uint public offsetBeteweenChooseAndEndRound;
+    uint public minClaimTime;
+    uint public maxPlayersInClosedRoom;
+    uint public minBuyIn;
+    uint public minNumberOfRounds;
+    bytes32 [] public allowedAssets;
+
+    /* ========== CONSTRUCTOR ========== */
+
+    function initialize(
         address _owner,
         IPriceFeed _priceFeed,
-        address _rewardToken
-    ) public Owned(_owner) {
+        address _rewardToken,
+        uint _minTimeSignUp,
+        uint _minRoundTime,
+        uint _minChooseTime,
+        uint _offsetBeteweenChooseAndEndRound,
+        uint _minClaimTime,
+        uint _maxPlayersInClosedRoom,
+        uint _minBuyIn,
+        bytes32 [] memory _allowedAssets,
+        uint _minNumberOfRounds
+    ) public initializer {
+        setOwner(_owner);
+        initNonReentrant();
         priceFeed = _priceFeed;
         rewardToken = IERC20(_rewardToken);
+        minTimeSignUp = _minTimeSignUp;
+        minRoundTime = _minRoundTime;
+        minChooseTime = _minChooseTime;
+        offsetBeteweenChooseAndEndRound = _offsetBeteweenChooseAndEndRound;
+        minClaimTime = _minClaimTime;
+        maxPlayersInClosedRoom = _maxPlayersInClosedRoom;
+        minBuyIn = _minBuyIn;
+       allowedAssets = _allowedAssets;
+       minNumberOfRounds = _minNumberOfRounds;
     }
 
     /* ========== ROOM CREATION ========== */
@@ -108,14 +135,14 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         uint _claimTime
         ) external {
         require(_buyInAmount >= minBuyIn, "Buy in must be greather then minimum");
-        require(_roomSignUpPeriod >= minTimeSignUp, "Sign in period must be greather or equal then 15 min.");
-        require(_numberOfRoundsInRoom > 1, "Must be more then one round");
-        require(_roundChoosingLength >= minChooseTime, "Round chosing period must be more then 15min.");
-        require(_roundLength >= minRoundTime, "Round length must be more then 30 min.");
+        require(_roomSignUpPeriod >= minTimeSignUp, "Sign in period lower then minimum");
+        require(_numberOfRoundsInRoom >= minNumberOfRounds, "Must be more minimum rounds");
+        require(_roundChoosingLength >= minChooseTime, "Round chosing lower then minimum");
+        require(_roundLength >= minRoundTime, "Round length lower then minimum");
         require(_claimTime >= minClaimTime, "Claim time must be more then one day.");
-        require(_roundLength >= _roundChoosingLength + offsetBeteweenChooseAndEndRound, "Round length must be greather with minimum offset of 15min.");
+        require(_roundLength >= _roundChoosingLength + offsetBeteweenChooseAndEndRound, "Offset lower then minimum");
         require((_roomType == RoomType.CLOSED && _alowedPlayers.length > 0 && _alowedPlayers.length < maxPlayersInClosedRoom) ||
-                (_roomType == RoomType.OPEN && _amuontOfPlayersinRoom > 0), 
+                (_roomType == RoomType.OPEN && _amuontOfPlayersinRoom > 1), 
                 "Room must be open and have total players in room or closed with allowed players");
         require(isAssetAllowed(_oracleKey), "Not allowed assets");
         require(rewardToken.allowance(msg.sender, address(this)) >= _buyInAmount, "No allowance.");
@@ -199,6 +226,7 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         roundStartTimeInRoom[_roomNumber] = block.timestamp;
         roundEndTimeInRoom[_roomNumber] = roundStartTimeInRoom[_roomNumber] + roundLengthInRoom[_roomNumber];
         totalPlayersInARoomInARound[_roomNumber][1] = numberOfPlayersInRoom[_roomNumber];
+        unclaimedRewardPerRoom[_roomNumber] = rewardPerRoom[_roomNumber];
 
         emit RoyaleStartedForRoom(_roomNumber);
     }
@@ -308,6 +336,8 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
             // set collected -> true
             rewardCollectedPerRoom[_roomNumber][msg.sender] = true;
             
+            unclaimedRewardPerRoom[_roomNumber] = unclaimedRewardPerRoom[_roomNumber].sub(rewardPerPlayerPerRoom[_roomNumber]);
+
             // transfering rewardPerPlayer
             rewardToken.transfer(msg.sender, rewardPerPlayerPerRoom[_roomNumber]);
 
@@ -345,26 +375,11 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         emit BuyIn(_sender, _amount, _roomNumber);
     }
 
-    /* ========== PURE ========== */
-
-    function stringToBytes32(string memory source) public pure returns (bytes32 result) {
-
-        bytes memory tempEmptyStringTest = bytes(source);
-
-        if (tempEmptyStringTest.length == 0) {
-            return 0x0;
-        }
-
-        assembly {
-            result := mload(add(source, 32))
-        }
-    }
-
     /* ========== VIEW ========== */
 
     function isAssetAllowed(bytes32 _oracleKey) public view returns (bool) {
         for (uint256 i = 0; i < allowedAssets.length; i++) {
-            if(stringToBytes32(allowedAssets[i]) == _oracleKey){
+            if(allowedAssets[i] == _oracleKey){
                 return true;
             }
         }
@@ -393,33 +408,34 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         uint _roomNumber, 
         uint _buyInAmount
         ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
-                    
+                canChangeRoomVariables(_roomNumber) {      
         require(_buyInAmount >= minBuyIn, "Buy in must be greather then minimum");
-        require(buyInPerPlayerRerRoom[_roomNumber] - _buyInAmount == 0, "Same amount");
-        require(playerStartedSignUp[_roomNumber], "Player already sign up for room, no change allowed");
+        require(buyInPerPlayerRerRoom[_roomNumber] != _buyInAmount, "Same amount");
         
         // if _buyInAmount is increased 
-        if(_buyInAmount - buyInPerPlayerRerRoom[_roomNumber]  > 0){
+        if(_buyInAmount > buyInPerPlayerRerRoom[_roomNumber]){
             
-            require(rewardToken.allowance(msg.sender, address(this)) >= _buyInAmount - buyInPerPlayerRerRoom[_roomNumber], "No allowance.");
+            require(rewardToken.allowance(msg.sender, address(this)) >= _buyInAmount.sub(buyInPerPlayerRerRoom[_roomNumber]), "No allowance.");
             
             _buyIn(msg.sender, _roomNumber ,_buyInAmount - buyInPerPlayerRerRoom[_roomNumber]);
             buyInPerPlayerRerRoom[_roomNumber] = _buyInAmount;
         // or decreased
         }else{
-
             // get balance 
             uint balance = rewardToken.balanceOf(address(this));
 
             if (balance != 0){
+
+                uint difference = buyInPerPlayerRerRoom[_roomNumber].sub(_buyInAmount);
                 
-                rewardPerRoom[_roomNumber]= rewardPerRoom[_roomNumber] - (buyInPerPlayerRerRoom[_roomNumber] - _buyInAmount);
+                rewardPerRoom[_roomNumber]= rewardPerRoom[_roomNumber].sub(difference);
                 buyInPerPlayerRerRoom[_roomNumber] = _buyInAmount;
-                rewardToken.transfer(msg.sender, buyInPerPlayerRerRoom[_roomNumber] - _buyInAmount);
+                rewardToken.transfer(msg.sender, difference);
             
             }
         }
+
+        emit BuyInAmountChanged(_roomNumber, _buyInAmount);
     }
 
     function setRoundLength(
@@ -427,9 +443,13 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         uint _roundLength
         ) public onlyOwnerOfRoom(_roomNumber) 
                 canChangeRoomVariables(_roomNumber) {
-        require(_roundLength >= minRoundTime, "Round length must be more then 30 min.");
-        require(_roundLength >= roundChoosingLengthInRoom[_roomNumber] + offsetBeteweenChooseAndEndRound, "Round length must be greather with minimum offset of 15min.");
+        require(_roundLength >= minRoundTime, "Round length lower then minimum");
+        require(_roundLength >= roundChoosingLengthInRoom[_roomNumber] + offsetBeteweenChooseAndEndRound, "Offset lower then minimum");
+        
         roundLengthInRoom[_roomNumber] = _roundLength;
+
+        emit NewRoundLength(_roomNumber, _roundLength);
+
     }
 
     function setClaimTimePerRoom(
@@ -437,8 +457,12 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         uint _claimTime
         ) public onlyOwnerOfRoom(_roomNumber) 
                 canChangeRoomVariables(_roomNumber) {
-        require(_claimTime >= minClaimTime, "Claim time must be more then one day.");
+        require(_claimTime >= minClaimTime, "Claim time lower then minimum");
+        
         climeTimePerRoom[_roomNumber] = _claimTime;
+        
+        emit NewClaimTime(_roomNumber, _claimTime);
+
     }
 
     function setRoomSignUpPeriod(
@@ -446,8 +470,12 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         uint _roomSignUpPeriod
         ) public onlyOwnerOfRoom(_roomNumber) 
                 canChangeRoomVariables(_roomNumber) {
-        require(_roomSignUpPeriod >= minTimeSignUp, "Sign in period must be greather or equal then 15 min.");
+        require(_roomSignUpPeriod >= minTimeSignUp, "Sign in period lower then minimum");
+        
         roomSignUpPeriod[_roomNumber] = _roomSignUpPeriod;
+
+        emit NewRoomSignUpPeriod(_roomNumber, _roomSignUpPeriod);
+
     }
 
     function setNumberOfRoundsInRoom(
@@ -455,8 +483,11 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         uint _numberOfRoundsInRoom
         ) public onlyOwnerOfRoom(_roomNumber) 
                 canChangeRoomVariables(_roomNumber) {
-        require(_numberOfRoundsInRoom > 1, "Must be more then one round");
+        require(_numberOfRoundsInRoom > minNumberOfRounds, "Must be more then minimum");
+        
         numberOfRoundsInRoom[_roomNumber] = _numberOfRoundsInRoom;
+
+        emit NewNumberOfRounds(_roomNumber, _numberOfRoundsInRoom);
     }
 
     function setRoundChoosingLength(
@@ -464,19 +495,12 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         uint _roundChoosingLength
         ) public onlyOwnerOfRoom(_roomNumber) 
                 canChangeRoomVariables(_roomNumber) {
-        require(_roundChoosingLength >= minChooseTime, "Round chosing period must be more then 15min.");
-        require(roundLengthInRoom[_roomNumber] >= _roundChoosingLength + offsetBeteweenChooseAndEndRound, "Round length must be greather with minimum offset of 15min.");
+        require(_roundChoosingLength >= minChooseTime, "Round chosing lower then minimum");
+        require(roundLengthInRoom[_roomNumber] >= _roundChoosingLength + offsetBeteweenChooseAndEndRound, "Round length lower then minimum");
+        
         roundChoosingLengthInRoom[_roomNumber] = _roundChoosingLength;
-    }
 
-    function setRoundChoosingLengthPerRoom(
-        uint _roomNumber, 
-        uint _roundChoosingLength
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
-        require(_roundChoosingLength >= minChooseTime, "Round chosing period must be more then 15min.");
-        require(roundLengthInRoom[_roomNumber] >= _roundChoosingLength + offsetBeteweenChooseAndEndRound, "Round choosing length is more or less then minimal from round length");
-        roundChoosingLengthInRoom[_roomNumber] = _roundChoosingLength;
+        emit NewRoundChoosingLength(_roomNumber, _roundChoosingLength);
     }
 
     function setOracleKey(
@@ -485,32 +509,77 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         ) public onlyOwnerOfRoom(_roomNumber) 
                 canChangeRoomVariables(_roomNumber) {
         require(isAssetAllowed(_oracleKey), "Not allowed assets");
+        
         oracleKeyPerRoom[_roomNumber] = _oracleKey;
+
+        emit NewOracleKeySetForRoom(_roomNumber, _oracleKey);
 
     }
 
-    function setAlowedPlayersPerRoomClosedRoom(
+    function setNewAllowedPlayersPerRoomClosedRoom(
         uint _roomNumber, 
         address[] memory _alowedPlayers
         ) public onlyOwnerOfRoom(_roomNumber) 
                 canChangeRoomVariables(_roomNumber) {
+        require(roomTypePerRoom[_roomNumber] == RoomType.CLOSED && _alowedPlayers.length > 0, "Room need to be closed and  allowed players not empty");
 
+        // setting players - no play
+        for (uint i = 0; i < alowedPlayersPerRoom[roomNumberCounter].length; i++) {
+            playerCanPlayInRoom[roomNumberCounter][alowedPlayersPerRoom[roomNumberCounter][i]] = false;
+        }
+
+        // setting players that can play
         alowedPlayersPerRoom[_roomNumber] = _alowedPlayers;
-        numberOfAlowedPlayersInRoom[_roomNumber] = _alowedPlayers.length;
+        alowedPlayersPerRoom[_roomNumber].push(msg.sender);
+        numberOfAlowedPlayersInRoom[_roomNumber] = alowedPlayersPerRoom[_roomNumber].length;
+
+        for (uint i = 0; i < alowedPlayersPerRoom[_roomNumber].length; i++) {
+            playerCanPlayInRoom[_roomNumber][alowedPlayersPerRoom[_roomNumber][i]] = true;
+        }
+
+        emit NewPlayersAllowed(_roomNumber, numberOfAlowedPlayersInRoom[_roomNumber]);
+
     }
 
-    function setAmuontOfPlayersinOpenRoom(
+    function addAllowedPlayersPerRoomClosedRoom(
+        uint _roomNumber, 
+        address[] memory _alowedPlayers
+        ) public onlyOwnerOfRoom(_roomNumber) 
+                canChangeRoomVariables(_roomNumber) {
+        require(roomTypePerRoom[_roomNumber] == RoomType.CLOSED, "Type of room needs to be closed");
+
+        uint beforeAdding = numberOfAlowedPlayersInRoom[_roomNumber];
+
+        for (uint i = 0; i < _alowedPlayers.length; i++) {
+            // check if player is already in a closed grrop
+            if(!playerCanPlayInRoom[_roomNumber][_alowedPlayers[i]]){
+                alowedPlayersPerRoom[_roomNumber].push(_alowedPlayers[i]);
+                playerCanPlayInRoom[_roomNumber][_alowedPlayers[i]] = true;
+                numberOfAlowedPlayersInRoom[_roomNumber]++;
+            }
+        }
+
+        if(beforeAdding < numberOfAlowedPlayersInRoom[_roomNumber]){
+            emit NewPlayersAddedIntoRoom(_roomNumber, numberOfAlowedPlayersInRoom[_roomNumber] - beforeAdding);
+        }
+    }
+
+    function setAmuontOfPlayersInOpenRoom(
         uint _roomNumber, 
         uint _amuontOfPlayersinRoom
         ) public onlyOwnerOfRoom(_roomNumber) 
                 canChangeRoomVariables(_roomNumber) {
-        require(roomTypePerRoom[_roomNumber] == RoomType.OPEN);
+        require(roomTypePerRoom[_roomNumber] == RoomType.OPEN && _amuontOfPlayersinRoom > 1, "Must be more then one player and open room");
+        
         numberOfAlowedPlayersInRoom[_roomNumber] = _amuontOfPlayersinRoom;
+        
+        emit NewAmountOfPlayersInOpenRoom(_roomNumber, _amuontOfPlayersinRoom);
+
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    function addAsset(string memory asset) public onlyOwner {
+    function addAsset(bytes32 asset) public onlyOwner {
         allowedAssets.push(asset);
     }
 
@@ -546,11 +615,27 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         minBuyIn = _minBuyIn;
     }
 
+    function claimUnclaimedRewards(address _treasuryAddress, uint _roomNumber) external onlyOwner {
+        require(block.timestamp > roomEndTime[_roomNumber] + climeTimePerRoom[_roomNumber], "Time for reward claiming not expired");
+        require(unclaimedRewardPerRoom[_roomNumber] > 0, "Nothing to claim");
+
+        uint unclaimedAmount = unclaimedRewardPerRoom[_roomNumber];
+        rewardToken.transfer(_treasuryAddress, unclaimedAmount);
+        unclaimedRewardPerRoom[_roomNumber] = 0;
+
+        emit UnclaimedRewardClaimed(_roomNumber, _treasuryAddress, unclaimedAmount);
+    }
+
+    function pullFunds(address payable account) external onlyOwner {
+        rewardToken.safeTransfer(account, rewardToken.balanceOf(address(this)));
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier canChangeRoomVariables(uint _roomNumber) {
-        require(!roomStarted[_roomNumber], "Competition is started, can not change");
         require(!roomFinished[_roomNumber], "Competition is finished, can not change");
+        require(!roomStarted[_roomNumber], "Competition is started, can not change");
+        require(!playerStartedSignUp[_roomNumber], "Player already sign up for room, no change allowed");
         _;
     }
 
@@ -581,5 +666,16 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
     event RoyaleFinishedForRoom(uint _roomNumber);
     event BuyIn(address _user, uint _amount, uint _roomNumber);
     event RewardClaimed(uint _roomNumber, address _winner, uint _reward);
+    event NewAmountOfPlayersInOpenRoom(uint _roomNumber, uint _amuontOfPlayersinRoom);
+    event NewPlayersAddedIntoRoom(uint _roomNumber, uint _numberOfPlayersAdded);
+    event NewPlayersAllowed(uint _roomNumber, uint _numberOfPlayers);
+    event NewOracleKeySetForRoom(uint _roomNumber, bytes32 _oracleKey);
+    event BuyInAmountChanged(uint _roomNumber, uint _buyInAmount);
+    event NewRoundLength(uint _roomNumber, uint _roundLength);
+    event NewRoundChoosingLength(uint _roomNumber, uint _roundChoosingLength);
+    event NewRoomSignUpPeriod(uint _roomNumber, uint _signUpPeriod);
+    event NewNumberOfRounds(uint _roomNumber, uint _numberRounds);
+    event NewClaimTime(uint _roomNumber, uint _claimTime);
+    event UnclaimedRewardClaimed(uint _roomNumber, address account, uint reward);
 
 }

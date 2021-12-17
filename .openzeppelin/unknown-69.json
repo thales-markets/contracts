@@ -194,6 +194,11 @@
       "address": "0xbc4de74ced32De8d5Aeab3BcD2F47De58070f0cC",
       "txHash": "0x51dda2fe8ac47d12f998841321af085514cd037bdec5939972c56f2d59e061ac",
       "kind": "transparent"
+    },
+    {
+      "address": "0xD6c08135d6D85C696C6E60a7fb907E0691b94B93",
+      "txHash": "0x9ffe430d8659f876bd4bd03bb9a2f70dd91f7099d88bde782f2acc50a9f97e57",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -2289,6 +2294,456 @@
           },
           "t_bool": {
             "label": "bool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "90244ae47b4735d6ead6706daf14a19c10a20f67085b3ac7eeea110127065b58": {
+      "address": "0x87e3C6e879d08F362dCfC5Bad6d9bec0923F2884",
+      "txHash": "0x77ce4eab9fc0706be636fe1d199d8078d7f040da4553bd5ce5fa90e26c7ace4f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:5"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:17"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/ProxyPausable.sol:9"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyPausable.sol:10"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roomOwner",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:32"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "oracleKeyPerRoom",
+            "type": "t_mapping(t_uint256,t_bytes32)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:33"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roomCreationTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:34"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roomEndTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:35"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roomSignUpPeriod",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:36"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "numberOfRoundsInRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:37"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roundChoosingLengthInRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:38"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "climeTimePerRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:39"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roundLengthInRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:40"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "currentRoundInRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:41"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roomStarted",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:42"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roomFinished",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:43"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "playerStartedSignUp",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:44"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roomTypePerRoom",
+            "type": "t_mapping(t_uint256,t_enum(RoomType)19533)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:45"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "gameTypeInRoom",
+            "type": "t_mapping(t_uint256,t_enum(GameType)19530)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:46"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "alowedPlayersPerRoom",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:47"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "playersInRoom",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:48"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "playerSignedUpPerRoom",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:49"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "playerCanPlayInRoom",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:50"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "buyInPerPlayerRerRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:51"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "numberOfPlayersInRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:52"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "numberOfAlowedPlayersInRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:53"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roundTargetPriceInRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:55"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roundResultPerRoom",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:57"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "targetPricePerRoundPerRoom",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:58"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "finalPricePerRoundPerRoom",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:59"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "totalPlayersInARoomInARound",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:60"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "eliminatedPerRoundPerRoom",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:61"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roundStartTimeInRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:63"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roundEndTimeInRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:64"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "positionsPerRoundPerRoom",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_uint256)))",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:66"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "positionInARoundPerRoom",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:67"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "rewardPerRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:69"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "rewardPerPlayerPerRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:70"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "rewardCollectedPerRoom",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:71"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "unclaimedRewardPerRoom",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:72"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "rewardToken",
+            "type": "t_contract(IERC20)28021",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:76"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "priceFeed",
+            "type": "t_contract(IPriceFeed)23825",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:77"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "roomNumberCounter",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:79"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "minTimeSignUp",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:81"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "minRoundTime",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:82"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "minChooseTime",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:83"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "offsetBeteweenChooseAndEndRound",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:84"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "minClaimTime",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:85"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "maxPlayersInClosedRoom",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:86"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "minBuyIn",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:87"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "minNumberOfRounds",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:88"
+          },
+          {
+            "contract": "ThalesRoyalePrivateRoom",
+            "label": "allowedAssets",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts/ThalesRoyale/ThalesRoyalePrivateRoom.sol:89"
+          }
+        ],
+        "types": {
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_enum(RoomType)19533)": {
+            "label": "mapping(uint256 => enum ThalesRoyalePrivateRoom.RoomType)"
+          },
+          "t_enum(RoomType)19533": {
+            "label": "enum ThalesRoyalePrivateRoom.RoomType",
+            "members": [
+              "OPEN",
+              "CLOSED"
+            ]
+          },
+          "t_mapping(t_uint256,t_enum(GameType)19530)": {
+            "label": "mapping(uint256 => enum ThalesRoyalePrivateRoom.GameType)"
+          },
+          "t_enum(GameType)19530": {
+            "label": "enum ThalesRoyalePrivateRoom.GameType",
+            "members": [
+              "LAST_MAN_STANDING",
+              "LIMITED_NUMBER_OF_ROUNDS"
+            ]
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(uint256 => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_uint256)))": {
+            "label": "mapping(uint256 => mapping(uint256 => mapping(uint256 => uint256)))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))": {
+            "label": "mapping(uint256 => mapping(address => mapping(uint256 => uint256)))"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_contract(IERC20)28021": {
+            "label": "contract IERC20"
+          },
+          "t_contract(IPriceFeed)23825": {
+            "label": "contract IPriceFeed"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"

@@ -59,8 +59,8 @@ async function main() {
 	console.log('ProxyERC20sUSD address: ', ProxyERC20sUSD_address);
 	// const ProxyEscrowThalesAddress = getTargetAddress('ProxyEscrowThales', network);
 
-	const ProxyEscrow = await ethers.getContractFactory('ProxyEscrowThales');
-	const ProxyStaking = await ethers.getContractFactory('ProxyStakingThales');
+	const ProxyEscrow = await ethers.getContractFactory('EscrowThales');
+	const ProxyStaking = await ethers.getContractFactory('StakingThales');
 
 	let ProxyEscrow_deployed = await upgrades.deployProxy(ProxyEscrow, [
 		owner.address,

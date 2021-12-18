@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.16;
+pragma solidity 0.5.16;
 
 // Inheritance
 import "../interfaces/IPriceFeed.sol";
@@ -25,7 +25,7 @@ contract PriceFeed is IPriceFeed, Initializable, ProxyOwned {
     address public owner;
     address public nominatedOwner;
 
-    function initialize(address _owner) public initializer {
+    function initialize(address _owner) external initializer {
         setOwner(_owner);
     }
 

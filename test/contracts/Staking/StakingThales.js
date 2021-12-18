@@ -29,7 +29,7 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
-contract('ProxyStakingThales', accounts => {
+contract('StakingThales', accounts => {
 	const [first, second, third, owner] = accounts;
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
 	let ThalesDeployed,
@@ -68,8 +68,8 @@ contract('ProxyStakingThales', accounts => {
 	describe('Deploy ProxyStaking Thales', () => {
 		it('deploy all Contracts', async () => {
 			let Thales = artifacts.require('Thales');
-            let EscrowThales = artifacts.require('ProxyEscrowThales');
-            let StakingThales = artifacts.require('ProxyStakingThales');
+            let EscrowThales = artifacts.require('EscrowThales');
+            let StakingThales = artifacts.require('StakingThales');
             let OngoingAirdrop = artifacts.require('OngoingAirdrop');
             let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
             ThalesDeployed = await Thales.new({ from: owner });
@@ -160,8 +160,8 @@ contract('ProxyStakingThales', accounts => {
 
 	beforeEach(async () => {
 		let Thales = artifacts.require('Thales');
-		let EscrowThales = artifacts.require('ProxyEscrowThales');
-		let StakingThales = artifacts.require('ProxyStakingThales');
+		let EscrowThales = artifacts.require('EscrowThales');
+		let StakingThales = artifacts.require('StakingThales');
 		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
         let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 		ThalesDeployed = await Thales.new({ from: owner });

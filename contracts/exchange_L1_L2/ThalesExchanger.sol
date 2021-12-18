@@ -1,17 +1,16 @@
 pragma solidity ^0.5.16;
 
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 import "../utils/proxy/ProxyReentrancyGuard.sol";
 import "../utils/proxy/ProxyOwned.sol";
 import "../utils/proxy/ProxyPausable.sol";
-// import "openzeppelin-solidity-2.3.0/contracts/lifecycle/Pausable.sol";
 import "../interfaces/IThalesExchanger.sol";
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 import {iOVM_L1ERC20Bridge} from "@eth-optimism/contracts/iOVM/bridge/tokens/iOVM_L1ERC20Bridge.sol";
 
-contract ProxyThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
+contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     using SafeMath for uint;
     
     IERC20 public ThalesToken;

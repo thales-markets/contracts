@@ -2,28 +2,26 @@
 
 const { artifacts, contract, web3 } = require('hardhat');
 
-const { assert } = require('../../../utils/common');
+const { assert } = require('../../utils/common');
 
-const { currentTime, toUnit, bytesToString } = require('../../../utils')();
+const { currentTime, toUnit, bytesToString } = require('../../utils')();
 
 const {
 	onlyGivenAddressCanInvoke,
 	convertToDecimals,
 	encodeCall,
 	assertRevert,
-} = require('../../../utils/helpers');
+} = require('../../utils/helpers');
 
-const { toBytes32 } = require('../../../../index');
-const { setupAllContracts } = require('../../../utils/setup');
 const { expect } = require('chai');
-const { toWei } = require('web3-utils');
+
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const MAX_NUMBER = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
 const MockStandardBridgeL1 = artifacts.require('MockStandardBridgeL1');
 let Thales = artifacts.require('Thales');
 let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
-let ProxyThalesExchanger = artifacts.require('ProxyThalesExchanger');
+let ProxyThalesExchanger = artifacts.require('ThalesExchanger');
 let OP_Thales_L1 = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 let OP_Thales_L2 = artifacts.require('contracts/Token/OpThales_L2.sol:OpThales');
 

@@ -138,19 +138,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_zeroExAddress",
-        "type": "address"
-      }
-    ],
-    "name": "ZeroExAddressChanged",
-    "type": "event"
-  },
-  {
     "constant": false,
     "inputs": [],
     "name": "acceptOwnership",
@@ -208,49 +195,56 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "creator",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IERC20",
-        "name": "_sUSD",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IPriceFeed",
-        "name": "_priceFeed",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "oracleKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "strikePrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[2]",
-        "name": "times",
-        "type": "uint256[2]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "initialMint",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "customMarket",
-        "type": "bool"
-      },
-      {
-        "internalType": "address",
-        "name": "customOracle",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "creator",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IERC20",
+            "name": "_sUSD",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IPriceFeed",
+            "name": "_priceFeed",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "oracleKey",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "strikePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[2]",
+            "name": "times",
+            "type": "uint256[2]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "initialMint",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "customMarket",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "customOracle",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct BinaryOptionMarketFactory.BinaryOptionCreationMarketParameters",
+        "name": "_parameters",
+        "type": "tuple"
       }
     ],
     "name": "createMarket",
@@ -263,6 +257,21 @@
     ],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "limitOrderProvider",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -360,11 +369,26 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_zeroExAddress",
+        "name": "_limitOrderProvider",
         "type": "address"
       }
     ],
-    "name": "setZeroExAddress",
+    "name": "setLimitOrderProvider",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_thalesAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setThalesAMM",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -373,7 +397,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "zeroExAddress",
+    "name": "thalesAMM",
     "outputs": [
       {
         "internalType": "address",

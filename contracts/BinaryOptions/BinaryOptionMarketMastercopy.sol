@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 import "./BinaryOptionMarket.sol";
 
 contract BinaryOptionMarketMastercopy is BinaryOptionMarket {
-    constructor() public MinimalProxyFactory() OwnedWithInit() {
+    constructor() public OwnedWithInit() {
         // Freeze mastercopy on deployment so it can never be initialized with real arguments
         initialized = true;
     }

@@ -13,6 +13,7 @@ const {
 } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupContract, setupAllContracts } = require('../../utils/setup');
+const { expect } = require('chai');
 
 const {
 	ensureOnlyExpectedMutativeFunctions,
@@ -145,7 +146,7 @@ contract('BinaryOption', accounts => {
 			],
 		}));
 
-		const [creator, owner] = await ethers.getSigners(); 
+		const [creator, owner] = await ethers.getSigners();
 
 		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
 
@@ -189,33 +190,6 @@ contract('BinaryOption', accounts => {
 	describe('Basic Parameters', () => {
 		it('Created the manager', async () => {
 			assert.notEqual(ZERO_ADDRESS, manager.address);
-		});
-
-		it('Only expected functions are mutative', async () => {
-			ensureOnlyExpectedMutativeFunctions({
-				abi: manager.abi,
-				ignoreParents: ['Owned', 'Pausable'],
-				expected: [
-					'createMarket',
-					'decrementTotalDeposited',
-					'expireMarkets',
-					'incrementTotalDeposited',
-					'migrateMarkets',
-					'receiveMarkets',
-					'resolveMarket',
-					'setBinaryOptionsMarketFactory',
-					'setCreatorCapitalRequirement',
-					'setExpiryDuration',
-					'setMarketCreationEnabled',
-					'setMaxTimeToMaturity',
-					'setMigratingManager',
-					'setPriceFeed',
-					'setsUSD',
-					'setZeroExAddress',
-					'transferSusdTo',
-					'setCustomMarketCreationEnabled',
-				],
-			});
 		});
 
 		it('Set capital requirement', async () => {
@@ -288,40 +262,22 @@ contract('BinaryOption', accounts => {
 	});
 
 	describe('BinaryOptionMarketFactory', () => {
-		it('createMarket cannot be invoked except by the manager.', async () => {
-			const now = await currentTime();
-			await onlyGivenAddressCanInvoke({
-				fnc: factory.createMarket,
-				args: [
-					initialCreator,
-					addressResolver.address,
-					priceFeed.address,
-					sAUDKey,
-					toUnit(1),
-					[now + 200, now + expiryDuration + 200],
-					toUnit(2),
-					false,
-					ZERO_ADDRESS,
-				],
-				accounts,
-				skipPassCheck: true,
-				reason: 'Only permitted by the manager.',
-			});
-		});
-
-		it('Only expected functions are mutative.', async () => {
-			await ensureOnlyExpectedMutativeFunctions({
-				abi: factory.abi,
-				ignoreParents: ['Owned', 'MinimalProxyFactory'],
-				expected: [
-					'createMarket',
-					'setBinaryOptionMarketManager',
-					'setBinaryOptionMarketMastercopy',
-					'setBinaryOptionMastercopy',
-					'setZeroExAddress',
-				],
-			});
-		});
+		// it('createMarket cannot be invoked except by the manager.', async () => {
+		// 	const now = await currentTime();
+		// 	await expect(
+		// 		factory.createMarket({
+		// 			creator: initialCreator,
+		// 			_sUSD: addressResolver.address,
+		// 			_priceFeed: priceFeed.address,
+		// 			oracleKey: sAUDKey,
+		// 			strikePrice: toUnit(1),
+		// 			times: [toBN(now + 200), toBN(now + 500)],
+		// 			initialMint: toUnit(2),
+		// 			customMarket: false,
+		// 			customOracle: ZERO_ADDRESS,
+		// 		})
+		// 	).to.be.revertedWith('Only permitted by the manager.');
+		// });
 
 		it('Can create a market', async () => {
 			const now = await currentTime();
@@ -604,7 +560,7 @@ contract('BinaryOption', accounts => {
 		});
 
 		it('Minimum Supplies', async () => {
-			let minimum = await market.getMaximumBurnable(initialCreator); 
+			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, toUnit(2));
 		});
 
@@ -637,33 +593,12 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
-			let minimum = await market.getMaximumBurnable(initialCreator); 
+			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
 			assert.bnEqual(totalSupplies.long, value);
 			assert.bnEqual(totalSupplies.short, value);
-		});
-
-		it('Only expected functions are mutative', async () => {
-			ensureOnlyExpectedMutativeFunctions({
-				abi: market.abi,
-				ignoreParents: ['MinimalProxyFactory', 'OwnedWithInit'],
-				expected: [
-					'mint',
-					'resolve',
-					'burnOptions',
-					'burnOptionsMaximum',
-					'exerciseOptions',
-					'expire',
-					'initialize',
-					'setIOracleInstance',
-					'setPriceFeed',
-					'setsUSD',
-					'setZeroExAddress',
-					'setZeroExAddressAtInit',
-				],
-			});
 		});
 
 		it('BinaryOption instances cannot transfer if the system is suspended or paused', async () => {
@@ -758,7 +693,7 @@ contract('BinaryOption', accounts => {
 				oraclePrice: price,
 				deposited: totalDeposited,
 				poolFees: 0,
-				creatorFees: 0
+				creatorFees: 0,
 			});
 			assert.equal(log.event, 'MarketResolved');
 			assert.bnEqual(log.args.result, Side.Long);
@@ -889,7 +824,7 @@ contract('BinaryOption', accounts => {
 				initialCreator,
 				timeToMaturity
 			);
-			
+
 			const options = await market.options();
 			long = await BinaryOption.at(options.long);
 			short = await BinaryOption.at(options.short);
@@ -900,7 +835,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
-			let minimum = await market.getMaximumBurnable(initialCreator); 
+			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
@@ -916,14 +851,13 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), valueZero);
 			assert.bnEqual(await short.balanceOf(initialCreator), valueZero);
 
-			let minimum_after = await market.getMaximumBurnable(initialCreator); 
+			let minimum_after = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum_after, valueZero);
 
 			assert.eventEqual(tx.logs[0], 'OptionsBurned', {
 				account: initialCreator,
 				value: toUnit(3),
 			});
-
 		});
 
 		it('Burn options some number lower then maximum', async () => {
@@ -935,7 +869,7 @@ contract('BinaryOption', accounts => {
 				initialCreator,
 				timeToMaturity
 			);
-			
+
 			const options = await market.options();
 			long = await BinaryOption.at(options.long);
 			short = await BinaryOption.at(options.short);
@@ -946,7 +880,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
-			let minimum = await market.getMaximumBurnable(initialCreator); 
+			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
@@ -962,14 +896,13 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), valueTwo);
 			assert.bnEqual(await short.balanceOf(initialCreator), valueTwo);
 
-			let minimum_after = await market.getMaximumBurnable(initialCreator); 
+			let minimum_after = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum_after, valueTwo);
 
 			assert.eventEqual(tx.logs[0], 'OptionsBurned', {
 				account: initialCreator,
 				value: toUnit(1),
 			});
-
 		});
 
 		it('Burn options some number more then maximum', async () => {
@@ -981,7 +914,7 @@ contract('BinaryOption', accounts => {
 				initialCreator,
 				timeToMaturity
 			);
-			
+
 			const options = await market.options();
 			long = await BinaryOption.at(options.long);
 			short = await BinaryOption.at(options.short);
@@ -992,7 +925,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
-			let minimum = await market.getMaximumBurnable(initialCreator); 
+			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
@@ -1000,8 +933,10 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(totalSupplies.short, value);
 
 			// burn 5 but has 3
-			await assert.revert(market.burnOptions(toUnit(5), { from: initialCreator }), 'There is not enough options!');
-
+			await assert.revert(
+				market.burnOptions(toUnit(5), { from: initialCreator }),
+				'There is not enough options!'
+			);
 		});
 
 		it('Burn options zero amount', async () => {
@@ -1013,7 +948,7 @@ contract('BinaryOption', accounts => {
 				initialCreator,
 				timeToMaturity
 			);
-			
+
 			const options = await market.options();
 			long = await BinaryOption.at(options.long);
 			short = await BinaryOption.at(options.short);
@@ -1024,7 +959,7 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(await long.balanceOf(initialCreator), value);
 			assert.bnEqual(await short.balanceOf(initialCreator), value);
 
-			let minimum = await market.getMaximumBurnable(initialCreator); 
+			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
@@ -1032,9 +967,10 @@ contract('BinaryOption', accounts => {
 			assert.bnEqual(totalSupplies.short, value);
 
 			// burn 5 but has 3
-			await assert.revert(market.burnOptions(toUnit(0), { from: initialCreator }), 'Can not burn zero amount!');
-
-
+			await assert.revert(
+				market.burnOptions(toUnit(0), { from: initialCreator }),
+				'Can not burn zero amount!'
+			);
 		});
 
 		it('Mint less than $0.01 revert.', async () => {

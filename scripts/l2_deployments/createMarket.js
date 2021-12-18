@@ -30,9 +30,9 @@ async function main() {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 	}
-	if(networkObj.chainId == 10) {
-		networkObj.name = "optimistic";
-		network = 'optimistic'		
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimistic';
+		network = 'optimistic';
 	}
 
 	console.log('Account is:' + owner.address);
@@ -66,20 +66,12 @@ async function main() {
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 	console.log('Found proxysUSD at:' + proxysUSD.address);
 
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', 
-										{
-											libraries: {
-												SafeDecimalMath: safeDecimalMath.address,
-											},
-										}
-										);
+	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
 	let binaryOptionMarketAddress = getTargetAddress('BinaryOptionMarketManager', network);
 	let binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.attach(
 		binaryOptionMarketAddress
 	);
 	console.log('BinaryOptionMarketManager attached to:', binaryOptionMarketManagerDeployed.address);
-
-	console.log('All params set');
 
 	const sAUDKey = toBytes32('ETH');
 	const initialStrikePrice = w3utils.toWei('1');
@@ -98,15 +90,14 @@ async function main() {
 
 	const result = await binaryOptionMarketManagerDeployed.createMarket(
 		sAUDKey,
-		initialStrikePrice,
-		now + 360,
+		w3utils.toWei('5000'),
+		now + 360000,
 		initialStrikePrice,
 		false,
-		ZERO_ADDRESS,
-		{ gasLimit: 6000000 }
+		ZERO_ADDRESS
 	);
 	let marketCreated;
-	await result.wait().then(function (receipt) {
+	await result.wait().then(function(receipt) {
 		console.log('receipt', receipt);
 		let marketCreationArgs = receipt.events[receipt.events.length - 1].args;
 		for (var key in marketCreationArgs) {
@@ -124,25 +115,25 @@ async function main() {
 		address: marketCreated,
 		constructorArguments: [
 			sAUDKey,
-			initialStrikePrice,
-			now + 360,
+			w3utils.toWei('70000'),
+			now + 3600000,
 			initialStrikePrice,
 			false,
 			ZERO_ADDRESS,
 		],
-		contract: 'contracts/BinaryOptionMarket.sol:BinaryOptionMarket',
+		contract: 'contracts/BinaryOptions/BinaryOptionMarket.sol:BinaryOptionMarket',
 	});
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch((error) => {
+	.catch(error => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function (resolve) {
+	return new Promise(function(resolve) {
 		setTimeout(resolve, time);
 	});
 }

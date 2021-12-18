@@ -11,6 +11,8 @@ npx hardhat test test/contracts/SportsBinaryOptions/SportsFeed.js --optimizer
 npx hardhat test test/contracts/SportsBinaryOptions/CustomBinaryOptionMarket.js --optimizer
 npx hardhat test test/contracts/RetroDistribution/VestingEscrowStressTest.js --optimizer --gas
 npx hardhat test test/contracts/ThalesRoyale/royale.js
+npx hardhat test test/contracts/ThalesAMM/thalesamm.js
+
 
 npx hardhat coverage
 
@@ -19,4 +21,9 @@ sports:
 npx hardhat run --network kovan scripts/SportsBinaryOptions/createUSOpenMarkets.js
 
 optimistic kovan:
-npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/deployThalesRoyale.js
+npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyale/deployRoyale.js 
+npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyale/upgradeRoyale.js
+npx hardhat run --network optimisticKovan scripts/deployAMM/deployAMM.js
+
+optimistic:
+npx hardhat run --network optimistic scripts/deployAMM/deployAMM.js

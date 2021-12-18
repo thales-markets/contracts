@@ -24,7 +24,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const INFURA = process.env.INFURA;
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY;
 const PRIVATE_KEY_OPTIMISTIC_KOVAN = process.env.PRIVATE_KEY_OPTIMISTIC_KOVAN;
-const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : "http://127.0.0.1:8545";
+const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : 'http://127.0.0.1:8545';
 
 module.exports = {
 	etherscan: {
@@ -59,6 +59,15 @@ module.exports = {
 			},
 			{
 				version: '0.6.10',
+				settings: {
+					optimizer: {
+						enabled: true,
+						runs: 200,
+					},
+				},
+			},
+			{
+				version: '0.8.4',
 				settings: {
 					optimizer: {
 						enabled: true,
@@ -124,21 +133,25 @@ module.exports = {
 			url: 'https://mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
-		optimistic: {
+		optimisticLocal: {
 			url: LOCAL_OPT_IP,
 			accounts: {
-			  mnemonic: "test test test test test test test test test test test junk",
+				mnemonic: 'test test test test test test test test test test test junk',
 			},
 			gasPrice: 10000,
 		},
+		optimistic: {
+			url: 'https://mainnet.optimism.io',
+			accounts: [PRIVATE_KEY],
+		},
 		optimisticKovan: {
 			gasPrice: 10000,
-			url: "https://kovan.optimism.io",
+			url: 'https://kovan.optimism.io',
 			accounts: [PRIVATE_KEY],
 		},
 	},
 	gasReporter: {
-		enabled: (process.env.REPORT_GAS) ? true : false,
+		enabled: process.env.REPORT_GAS ? true : false,
 		showTimeSpent: true,
 		currency: 'USD',
 		maxMethodDiff: 25, // CI will fail if gas usage is > than this %
@@ -152,6 +165,6 @@ module.exports = {
 		clear: true,
 		flat: true,
 		only: [],
-		spacing: 2
-	  }
+		spacing: 2,
+	},
 };

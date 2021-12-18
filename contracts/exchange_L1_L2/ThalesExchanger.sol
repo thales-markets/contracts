@@ -1,17 +1,18 @@
 pragma solidity 0.5.16;
 
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
-import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
-import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "../utils/proxy/ProxyReentrancyGuard.sol";
+import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/ProxyPausable.sol";
 import "../interfaces/IThalesExchanger.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 import {iOVM_L1ERC20Bridge} from "@eth-optimism/contracts/iOVM/bridge/tokens/iOVM_L1ERC20Bridge.sol";
 
-contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
+contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     using SafeMath for uint;
-
+    
     IERC20 public ThalesToken;
     IERC20 public OpThalesToken;
     iOVM_L1ERC20Bridge public L1Bridge;
@@ -22,31 +23,25 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
     uint private constant OPTHALES_TO_THALES = 0;
     uint private constant MAX_APPROVAL = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
-    bool public enabledThalesToOpThales = true;
-    bool public enabledOpThalesToThales = true;
+    bool public enabledThalesToOpThales;
+    bool public enabledOpThalesToThales; 
 
-    event ExchangedThalesForOpThales(address sender, uint amount);
-    event ExchangedThalesForL2OpThales(address sender, uint amount);
-    event ExchangedOpThalesForThales(address sender, uint amount);
-    event L1BridgeChanged(address l1BridgeAddress);
-    event ThalesAdressSet(address thalesAddress);
-    event OpThalesAdressSet(address opThalesAddress);
-    event L2tokenAdressSet(address _l2TokenAddress);
-    event SetEnabledThalesToOpThales(bool _enable);
-    event SetEnabledOpThalesToThales(bool _enable);
-
-    constructor(
+    function initialize(
         address _owner,
         address thalesAddress,
         address opThalesAddress,
         address _l1BridgeAddress,
         address _l2TokenAddress
-    ) public Owned(_owner) {
+    ) public initializer {
+        setOwner(_owner);
+        initNonReentrant();
         ThalesToken = IERC20(thalesAddress);
         OpThalesToken = IERC20(opThalesAddress);
         L1Bridge = iOVM_L1ERC20Bridge(_l1BridgeAddress);
         OpThalesToken.approve(_l1BridgeAddress, MAX_APPROVAL);
         l2TokenAddress = _l2TokenAddress;
+        enabledThalesToOpThales = true;
+        enabledOpThalesToThales = true;
     }
 
     function setThalesAddress(address thalesAddress) external onlyOwner {
@@ -75,12 +70,18 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
     }
 
     function setL1StandardBridge(address _l1BridgeAddress) external onlyOwner {
+        require(_l1BridgeAddress != address(L1Bridge), "Address already set");
         if (address(L1Bridge) != address(0)) {
             OpThalesToken.approve(address(L1Bridge), 0);
         }
         L1Bridge = iOVM_L1ERC20Bridge(_l1BridgeAddress);
         OpThalesToken.approve(_l1BridgeAddress, MAX_APPROVAL);
         emit L1BridgeChanged(_l1BridgeAddress);
+    }
+
+    function approveUnlimitedOpThales() external onlyOwner {
+        require(address(OpThalesToken) != address(0), "Invalid address");
+        OpThalesToken.approve(address(L1Bridge), MAX_APPROVAL);
     }
 
     function exchangeThalesToOpThales(uint amount) external nonReentrant notPaused {
@@ -108,11 +109,6 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
         emit ExchangedThalesForL2OpThales(msg.sender, amount);
     }
 
-    function selfDestruct(address payable account) external onlyOwner {
-        OpThalesToken.transfer(account, OpThalesToken.balanceOf(address(this)));
-        ThalesToken.transfer(account, ThalesToken.balanceOf(address(this)));
-        selfdestruct(account);
-    }
 
     function _exchange(
         address _sender,
@@ -127,4 +123,14 @@ contract ThalesExchanger is IThalesExchanger, Owned, ReentrancyGuard, Pausable {
             ThalesToken.transfer(_sender, _amount);
         }
     }
+
+    event ExchangedThalesForOpThales(address sender, uint amount);
+    event ExchangedThalesForL2OpThales(address sender, uint amount);
+    event ExchangedOpThalesForThales(address sender, uint amount);
+    event L1BridgeChanged(address l1BridgeAddress);
+    event ThalesAdressSet(address thalesAddress);
+    event OpThalesAdressSet(address opThalesAddress);
+    event L2tokenAdressSet(address _l2TokenAddress);
+    event SetEnabledThalesToOpThales(bool _enable);
+    event SetEnabledOpThalesToThales(bool _enable);
 }

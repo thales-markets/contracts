@@ -70,13 +70,13 @@ contract BinaryOptionMarketFactory is Owned, MinimalProxyFactory {
         );
         emit MarketCreated(
             address(bom),
-            oracleKey,
-            strikePrice,
-            times[0],
-            times[1],
-            initialMint,
-            customMarket,
-            customOracle
+            _parameters.oracleKey,
+            _parameters.strikePrice,
+            _parameters.times[0],
+            _parameters.times[1],
+            _parameters.initialMint,
+            _parameters.customMarket,
+            _parameters.customOracle
         );
         return bom;
     }

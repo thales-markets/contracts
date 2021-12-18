@@ -87,7 +87,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         emit SetBinaryOptionsMarketFactory(_binaryOptionMarketFactory);
     }
 
-    function setWhitelistedAddresses(address[] memory _whitelistedAddresses) external onlyOwner {
+    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses) external onlyOwner {
         require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
         onlyWhitelistedAddressesCanCreateMarkets = true;
         for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {

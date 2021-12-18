@@ -138,6 +138,32 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_limitOrderProvider",
+        "type": "address"
+      }
+    ],
+    "name": "SetLimitOrderProvider",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_thalesAMM",
+        "type": "address"
+      }
+    ],
+    "name": "SetThalesAMM",
+    "type": "event"
+  },
+  {
     "constant": false,
     "inputs": [],
     "name": "acceptOwnership",

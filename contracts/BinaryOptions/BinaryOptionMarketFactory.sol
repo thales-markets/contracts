@@ -68,7 +68,6 @@ contract BinaryOptionMarketFactory is Owned, MinimalProxyFactory {
                 thalesAMM
             )
         );
-        return bom;
         emit MarketCreated(
             address(bom),
             oracleKey,
@@ -79,6 +78,7 @@ contract BinaryOptionMarketFactory is Owned, MinimalProxyFactory {
             customMarket,
             customOracle
         );
+        return bom;
     }
 
     /* ========== SETTERS ========== */

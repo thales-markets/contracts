@@ -219,7 +219,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint volatility
     ) public view returns (uint) {
         uint vt = volatility.div(100).mul(sqrt(timeLeftInDays.div(365))).div(1e9);
-        uint d1 = deciMath.ln(strike.mul(ONE).div(price), 99).mul(ONE).div(vt);
+        bool direction = strike >= price;
+        uint d1 = _getDL(price, strike, timeLeftInDays, volatility, vt);
         uint y = ONE.mul(ONE).div(ONE.add(d1.mul(2316419).div(1e7)));
         uint d2 = d1.mul(d1).div(2).div(ONE);
         uint z = _expneg(d2).mul(3989423).div(1e7);
@@ -232,8 +233,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint x1 = y5.add(y3).add(y1).sub(y4).sub(y2);
         uint x = ONE.sub(z.mul(x1).div(ONE));
         uint result = ONE.mul(1e2).sub(x.mul(1e2));
-
-        return result;
+        if (direction) {
+            return result;
+        } else {
+            return ONE.mul(1e2).sub(result);
+        }
     }
 
     function isMarketInAMMTrading(address market) public view returns (bool) {
@@ -278,6 +282,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
+        require(availableToBuyFromAMM(market, position) > 0, "Nothing available in the AMM");
+
         require(amount <= availableToBuyFromAMM(market, position), "Not enough liquidity.");
 
         uint sUSDPaid = buyFromAmmQuote(market, position, amount);
@@ -306,15 +312,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         spentOnMarket[market] = spentOnMarket[market].add(toMint);
         spentOnMarket[market] = spentOnMarket[market] <= sUSDPaid ? 0 : spentOnMarket[market].sub(sUSDPaid);
 
-        emit BoughtFromAmm(
-            msg.sender,
-            market,
-            position,
-            amount,
-            sUSDPaid,
-            address(sUSD),
-            address(target)
-        );
+        emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
     }
 
     function sellToAMM(
@@ -325,6 +323,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint additionalSlippage
     ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
+
+        require(availableToSellToAMM(market, position) > 0, "Nothing available in the AMM");
 
         require(amount <= availableToSellToAMM(market, position), "Cant buy that much");
 
@@ -429,13 +429,25 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         return balance;
     }
 
-    function _expneg(uint x) private view returns (uint result) {
+    function _expneg(uint x) public view returns (uint result) {
         result = (ONE * ONE) / _expNegPow(x);
     }
 
     function _expNegPow(uint x) internal view returns (uint result) {
         uint e = 2718280000000000000;
         result = deciMath.pow(e, x);
+    }
+
+    function _getDL(
+        uint price,
+        uint strike,
+        uint timeLeftInDays,
+        uint volatility,
+        uint vt
+    ) internal view returns (uint) {
+        uint lnBase = strike >= price ? strike.mul(ONE).div(price) : price.mul(ONE).div(strike);
+        uint d1 = deciMath.ln(lnBase, 99).mul(ONE).div(vt);
+        return d1;
     }
 
     function sqrt(uint y) internal pure returns (uint z) {

@@ -239,17 +239,6 @@ contract('ThalesAMM', accounts => {
 
 			let calculateOddsd22 = calculateOddsd2(3950, strike, 0.25, 120);
 			console.log('calculateOddsd22 is:' + calculateOddsd22);
-			// let _expneg = await thalesAMM._expneg(toUnit(30));
-			// console.log('_expneg is:' + _expneg / 1e18);
-			//
-			// _expneg = await thalesAMM._expneg(toUnit(50));
-			// console.log('_expneg is:' + _expneg / 1e18);
-			//
-			// _expneg = await thalesAMM._expneg(toUnit(89));
-			// console.log('_expneg is:' + _expneg / 1e18);
-			//
-			// _expneg = await thalesAMM._expneg(toUnit(90));
-			// console.log('_expneg is:' + _expneg / 1e18);
 
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
 			console.log('priceUp decimal is:' + priceUp / 1e18);

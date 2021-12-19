@@ -319,55 +319,6 @@ contract('ThalesAMM', accounts => {
 		console.log('availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18);
 	});
 
-	it('price fully unlikely', async () => {
-		let now = await currentTime();
-		let newMarket = await createMarket(
-			manager,
-			sETHKey,
-			toUnit(100),
-			now + hour * 8,
-			toUnit(10),
-			initialCreator
-		);
-
-		let calculatedOdds = calculateOdds(3950, 100, 0.25, 120);
-		console.log('calculatedOdds is:' + calculatedOdds);
-		let calculatedOddsContract = await thalesAMM.calculateOdds(
-			toUnit(3950),
-			toUnit(3000),
-			toUnit(0.25),
-			toUnit(120)
-		);
-		console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
-
-		let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-		console.log('priceUp decimal is:' + priceUp / 1e18);
-
-		let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-		console.log('priceDown decimal is:' + priceDown / 1e18);
-
-		let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-			newMarket.address,
-			Position.UP
-		);
-		console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
-
-		let availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
-		console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
-
-		let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
-			newMarket.address,
-			Position.DOWN
-		);
-		console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
-
-		let availableToSellToAMMDown = await thalesAMM.availableToSellToAMM(
-			newMarket.address,
-			Position.DOWN
-		);
-		console.log('availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18);
-	});
-
 });
 
 function calculateOdds(price, strike, days, volatility) {

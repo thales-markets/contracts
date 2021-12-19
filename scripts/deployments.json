@@ -86,7 +86,7 @@
 		"DeciMath": "0x5c779CFAe4b6B7a02c32938dDAbDada8AB60fb14",
 		"PriceFeedImplementation": "0x6B33b99E3D3213DF963375E6d94aBa968351f803",
 		"ThalesAMM": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
-		"ThalesAMMImplementation": "0xe1FD1c3D915F500a65D13EE462c78BdE4dB0Ff92"
+		"ThalesAMMImplementation": "0x129e14F5e79f1423b79D309A2a7eE43121554c2f"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity 0.5.16;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
@@ -84,9 +84,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     /* ========== SETTERS ========== */
     function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) external onlyOwner {
         binaryOptionMarketFactory = _binaryOptionMarketFactory;
+        emit SetBinaryOptionsMarketFactory(_binaryOptionMarketFactory);
     }
 
-    function setWhitelistedAddresses(address[] memory _whitelistedAddresses) public onlyOwner {
+    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses) external onlyOwner {
         require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
         onlyWhitelistedAddressesCanCreateMarkets = true;
         for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
@@ -94,28 +95,22 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         }
     }
 
-    function disableWhitelistedAddresses() public onlyOwner {
+    function disableWhitelistedAddresses() external onlyOwner {
         onlyWhitelistedAddressesCanCreateMarkets = false;
     }
 
-    function enableWhitelistedAddresses() public onlyOwner {
+    function enableWhitelistedAddresses() external onlyOwner {
         onlyWhitelistedAddressesCanCreateMarkets = true;
     }
 
-    function addWhitelistedAddress(address _address) public onlyOwner {
+    function addWhitelistedAddress(address _address) external onlyOwner {
         whitelistedAddresses[_address] = true;
     }
 
-    function removeWhitelistedAddress(address _address) public onlyOwner {
+    function removeWhitelistedAddress(address _address) external onlyOwner {
         delete whitelistedAddresses[_address];
     }
     /* ========== VIEWS ========== */
-
-    /* ---------- Related Contracts ---------- */
-
-    function _priceFeed() internal view returns (IPriceFeed) {
-        return priceFeed;
-    }
 
     /* ---------- Market Information ---------- */
 
@@ -178,10 +173,12 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     function setPriceFeed(address _address) external onlyOwner {
         priceFeed = IPriceFeed(_address);
+        emit SetPriceFeed(_address);
     }
 
     function setsUSD(address _address) external onlyOwner {
         sUSD = IERC20(_address);
+        emit SetsUSD(_address);
     }
 
     /* ---------- Deposit Management ---------- */
@@ -282,7 +279,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     ) external {
         //only to be called by markets themselves
         require(isKnownMarket(address(msg.sender)), "Market unknown.");
-        sUSD.transferFrom(sender, receiver, amount);
+        bool success = sUSD.transferFrom(sender, receiver, amount);
+        if (!success) {
+            revert("TransferFrom function failed");
+        }
     }
 
     function resolveMarket(address market) external {
@@ -309,19 +309,21 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
         }
     }
 
-    function setMarketCreationEnabled(bool enabled) public onlyOwner {
+    function setMarketCreationEnabled(bool enabled) external onlyOwner {
         if (enabled != marketCreationEnabled) {
             marketCreationEnabled = enabled;
             emit MarketCreationEnabledUpdated(enabled);
         }
     }
 
-    function setCustomMarketCreationEnabled(bool enabled) public onlyOwner {
+    function setCustomMarketCreationEnabled(bool enabled) external onlyOwner {
         customMarketCreationEnabled = enabled;
+        emit SetCustomMarketCreationEnabled(enabled);
     }
 
-    function setMigratingManager(BinaryOptionMarketManager manager) public onlyOwner {
+    function setMigratingManager(BinaryOptionMarketManager manager) external onlyOwner {
         _migratingManager = manager;
+        emit SetMigratingManager(address(manager));
     }
 
     function migrateMarkets(
@@ -413,4 +415,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     event ExpiryDurationUpdated(uint duration);
     event MaxTimeToMaturityUpdated(uint duration);
     event CreatorCapitalRequirementUpdated(uint value);
+    event SetBinaryOptionsMarketFactory(address _binaryOptionMarketFactory);
+    event SetZeroExAddress(address _zeroExAddress);
+    event SetPriceFeed(address _address);
+    event SetsUSD(address _address);
+    event SetCustomMarketCreationEnabled(bool enabled);
+    event SetMigratingManager(address manager);
 }

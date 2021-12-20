@@ -59,8 +59,8 @@ const deploymentFixture = async () => {
 	let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 	let ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: proxyOwner.address });
 	let ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: proxyOwner.address });
-	let EscrowThales = artifacts.require('ProxyEscrowThales');
-	let StakingThales = artifacts.require('ProxyStakingThales');
+	let EscrowThales = artifacts.require('EscrowThales');
+	let StakingThales = artifacts.require('StakingThales');
 	let EscrowImplementation = await EscrowThales.new({from:admin.address});
 	let StakingImplementation = await StakingThales.new({from:admin.address});
 	let StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);

@@ -1,17 +1,16 @@
-pragma solidity ^0.5.16;
+pragma solidity 0.5.16;
 
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 import "../utils/proxy/ProxyReentrancyGuard.sol";
 import "../utils/proxy/ProxyOwned.sol";
 import "../utils/proxy/ProxyPausable.sol";
-// import "openzeppelin-solidity-2.3.0/contracts/lifecycle/Pausable.sol";
 import "../interfaces/IThalesExchanger.sol";
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 import {iOVM_L1ERC20Bridge} from "@eth-optimism/contracts/iOVM/bridge/tokens/iOVM_L1ERC20Bridge.sol";
 
-contract ProxyThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
+contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     using SafeMath for uint;
     
     IERC20 public ThalesToken;
@@ -47,14 +46,27 @@ contract ProxyThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, Pr
 
     function setThalesAddress(address thalesAddress) external onlyOwner {
         ThalesToken = IERC20(thalesAddress);
+        emit ThalesAdressSet(thalesAddress);
     }
 
     function setOpThalesAddress(address opThalesAddress) external onlyOwner {
         OpThalesToken = IERC20(opThalesAddress);
+        emit OpThalesAdressSet(opThalesAddress);
     }
 
     function setL2TokenAddress(address _l2TokenAddress) external onlyOwner {
         l2TokenAddress = _l2TokenAddress;
+        emit L2tokenAdressSet(_l2TokenAddress);
+    }
+
+    function setEnabledThalesToOpThales(bool _enable) external onlyOwner {
+        enabledThalesToOpThales = _enable;
+        emit SetEnabledThalesToOpThales(_enable);
+    }
+
+    function setEnabledOpThalesToThales(bool _enable) external onlyOwner {
+        enabledOpThalesToThales = _enable;
+        emit SetEnabledOpThalesToThales(_enable);
     }
 
     function setL1StandardBridge(address _l1BridgeAddress) external onlyOwner {
@@ -65,14 +77,6 @@ contract ProxyThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, Pr
         L1Bridge = iOVM_L1ERC20Bridge(_l1BridgeAddress);
         OpThalesToken.approve(_l1BridgeAddress, MAX_APPROVAL);
         emit L1BridgeChanged(_l1BridgeAddress);
-    }
-
-     function setEnabledThalesToOpThales(bool _enable) external onlyOwner {
-        enabledThalesToOpThales = _enable;
-    }
-    
-    function setEnabledOpThalesToThales(bool _enable) external onlyOwner {
-        enabledOpThalesToThales = _enable;
     }
 
     function approveUnlimitedOpThales() external onlyOwner {
@@ -124,4 +128,9 @@ contract ProxyThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, Pr
     event ExchangedThalesForL2OpThales(address sender, uint amount);
     event ExchangedOpThalesForThales(address sender, uint amount);
     event L1BridgeChanged(address l1BridgeAddress);
+    event ThalesAdressSet(address thalesAddress);
+    event OpThalesAdressSet(address opThalesAddress);
+    event L2tokenAdressSet(address _l2TokenAddress);
+    event SetEnabledThalesToOpThales(bool _enable);
+    event SetEnabledOpThalesToThales(bool _enable);
 }

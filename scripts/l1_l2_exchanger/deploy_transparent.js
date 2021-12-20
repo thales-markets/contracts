@@ -26,7 +26,7 @@ async function main() {
 	const net_kovan = networkObj.name;
 			
 		
-	const ProxyThalesExchanger = await ethers.getContractFactory('ProxyThalesExchanger');
+	const ProxyThalesExchanger = await ethers.getContractFactory('ThalesExchanger');
 	const ThalesAddress = getTargetAddress('Thales', net_kovan);
 	const OpThalesL1Address = getTargetAddress('OpThales_L1', net_kovan);
 	const OpThalesL2Address = getTargetAddress('OpThales_L2', net_optimistic_kovan);

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.6.10;
+pragma solidity 0.6.10;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -9,7 +9,7 @@ contract OpThales is ERC20, Ownable {
     string private __name = "Optimistic Thales Token";
     string private __symbol = "opTHALES";
     uint8 private constant __decimals = 18;
-    uint private INITIAL_TOTAL_SUPPLY = 100000000;
+    uint private constant INITIAL_TOTAL_SUPPLY = 100000000;
 
     function name() public view override returns (string memory) {
         return __name;

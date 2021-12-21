@@ -73,8 +73,8 @@ async function main() {
 	);
 	console.log('BinaryOptionMarketManager attached to:', binaryOptionMarketManagerDeployed.address);
 
-	const sAUDKey = toBytes32('ETH');
-	const initialStrikePrice = w3utils.toWei('1');
+	const ETHKey = toBytes32('ETH');
+	const initialMint = w3utils.toWei('1');
 	const now = await currentTime();
 
 	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
@@ -88,11 +88,13 @@ async function main() {
 	);
 	approval.wait().then(console.log('Done approving'));
 
+	const hour = 60 * 60;
+
 	const result = await binaryOptionMarketManagerDeployed.createMarket(
-		sAUDKey,
-		w3utils.toWei('5000'),
-		now + 360000,
-		initialStrikePrice,
+		ETHKey,
+		w3utils.toWei('4000'),
+		now + hour*72,
+		initialMint,
 		false,
 		ZERO_ADDRESS
 	);
@@ -114,12 +116,12 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: marketCreated,
 		constructorArguments: [
-			sAUDKey,
-			w3utils.toWei('70000'),
-			now + 3600000,
-			initialStrikePrice,
+			ETHKey,
+			w3utils.toWei('4000'),
+			now + hour*72,
+			initialMint,
 			false,
-			ZERO_ADDRESS,
+			ZERO_ADDRESS
 		],
 		contract: 'contracts/BinaryOptions/BinaryOptionMarket.sol:BinaryOptionMarket',
 	});

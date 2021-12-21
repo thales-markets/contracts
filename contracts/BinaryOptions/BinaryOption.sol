@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity 0.5.16;
 
 // Inheritance
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
@@ -55,7 +55,7 @@ contract BinaryOption is IERC20, IBinaryOption {
         thalesAMM = _thalesAMM;
     }
 
-    function allowance(address owner, address spender) public view returns (uint256) {
+    function allowance(address owner, address spender) external view returns (uint256) {
         if (spender == limitOrderProvider || spender == thalesAMM) {
             return 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         } else {

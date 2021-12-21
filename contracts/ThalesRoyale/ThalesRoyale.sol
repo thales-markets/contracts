@@ -3,7 +3,6 @@ pragma solidity ^0.5.16;
 // external
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 
@@ -364,7 +363,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyP
         emit UnclaimedRewardClaimed(_season, _treasuryAddress, unclaimedAmount);
     }
 
-    function selfDestruct(address payable account) external onlyOwner {
+    function pullFunds(address payable account) external onlyOwner {
         rewardToken.safeTransfer(account, rewardToken.balanceOf(address(this)));
     }
 

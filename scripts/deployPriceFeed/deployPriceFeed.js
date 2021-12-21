@@ -1,4 +1,5 @@
 const { ethers, upgrades } = require('hardhat');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 const { toBytes32 } = require('../../index');
 const { setTargetAddress } = require('../helpers');
 
@@ -35,12 +36,34 @@ async function main() {
 	console.log('PriceFeed deployed to:', priceFeed.address);
 	setTargetAddress('PriceFeed', network, priceFeed.address);
 
+	const priceFeedImplementation = await getImplementationAddress(
+		ethers.provider,
+		priceFeed.address
+	);
+	setTargetAddress('PriceFeedImplementation', network, priceFeedImplementation);
+
 	const aggregators = require(`./aggregators/${network}.json`);
 	for (let [key, aggregator] of Object.entries(aggregators)) {
 		let tx = await priceFeed.addAggregator(toBytes32(key), aggregator);
 		await tx.wait().then(e => {
 			console.log('PriceFeed: addAggregator for', key);
 		});
+	}
+
+	try {
+		await hre.run('verify:verify', {
+			address: priceFeedImplementation,
+		});
+	} catch (e) {
+		console.log(e);
+	}
+
+	try {
+		await hre.run('verify:verify', {
+			address: priceFeed.address,
+		});
+	} catch (e) {
+		console.log(e);
 	}
 }
 

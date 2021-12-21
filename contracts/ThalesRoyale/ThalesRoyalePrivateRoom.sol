@@ -22,6 +22,11 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;
 
+    /* ========== CONSTANTS =========== */
+
+    uint public constant DOWN = 1;
+    uint public constant UP = 2;
+
     /* ========== ROOM TYPES ========== */
 
     enum GameType{LAST_MAN_STANDING, LIMITED_NUMBER_OF_ROUNDS}
@@ -30,6 +35,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     /* ========== ROOM VARIABLES ========== */
 
     mapping(uint => address) public roomOwner;
+    mapping(uint => bool) public roomPublished;
     mapping(uint => bytes32) public oracleKeyPerRoom;
     mapping(uint => uint) public roomCreationTime;
     mapping(uint => uint) public roomEndTime;
@@ -42,6 +48,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     mapping(uint => bool) public roomStarted;
     mapping(uint => bool) public roomFinished;
     mapping(uint => bool) public playerStartedSignUp;
+    mapping(uint => bool) public isReversedPositioningInRoom;
     mapping(uint => RoomType) public roomTypePerRoom;
     mapping(uint => GameType) public gameTypeInRoom;
     mapping(uint => address[]) public alowedPlayersPerRoom;
@@ -185,12 +192,14 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
 
         // automaticlly sign up owner of a group as first player
         _signUpOwnerIntoRoom(msg.sender, roomNumberCounter);
+
+        roomPublished[roomNumberCounter] = true;
     }
 
     /* ========== GAME ========== */
 
     function signUpForRoom(uint _roomNumber) external {
-        require(roomNumberCounter >= _roomNumber, "No private room stil created!");
+        require(roomPublished[_roomNumber], "Room deleted or not published yet");
         require(block.timestamp < (roomCreationTime[_roomNumber] + roomSignUpPeriod[_roomNumber]), "Sign up period has expired");
         require(playerSignedUpPerRoom[_roomNumber][msg.sender] == 0, "Player already signed up, for this room.");
         require(
@@ -216,6 +225,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     }
 
     function startRoyaleInRoom(uint _roomNumber) external onlyRoomParticipantes(_roomNumber) {
+        require(roomPublished[_roomNumber], "Room deleted or not published yet");
         require(block.timestamp > (roomCreationTime[_roomNumber] + roomSignUpPeriod[_roomNumber]), "Can not start until signup period expires for that room");
         require(roomStarted[_roomNumber] == false, "Royale already started for that room");
 
@@ -232,7 +242,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     }
 
     function takeAPositionInRoom(uint _roomNumber, uint _position) external onlyRoomParticipantes(_roomNumber) {
-        require(_position == 1 || _position == 2, "Position can only be 1 or 2");
+        require(_position == DOWN || _position == UP, "Position can only be 1 or 2");
         require(roomStarted[_roomNumber], "Competition not started yet");
         require(!roomFinished[_roomNumber], "Competition finished");
         require(positionInARoundPerRoom[_roomNumber][msg.sender][currentRoundInRoom[_roomNumber]] != _position, "Same position");
@@ -244,17 +254,17 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
         require(block.timestamp < roundStartTimeInRoom[_roomNumber] + roundChoosingLengthInRoom[_roomNumber], "Round positioning finished");
 
         // this block is when sender change positions in a round - first reduce
-        if(positionInARoundPerRoom[_roomNumber][msg.sender][currentRoundInRoom[_roomNumber]] == 1){
-            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][1]--;
-        }else if (positionInARoundPerRoom[_roomNumber][msg.sender][currentRoundInRoom[_roomNumber]] == 2) {
-            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][2]--;
+        if(positionInARoundPerRoom[_roomNumber][msg.sender][currentRoundInRoom[_roomNumber]] == DOWN){
+            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][DOWN]--;
+        }else if (positionInARoundPerRoom[_roomNumber][msg.sender][currentRoundInRoom[_roomNumber]] == UP) {
+            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][UP]--;
         }
 
         // set new value
         positionInARoundPerRoom[_roomNumber][msg.sender][currentRoundInRoom[_roomNumber]] = _position;
 
         // add number of positions
-        if(_position == 2){
+        if(_position == UP){
             positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][_position]++;
         }else{
             positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][_position]++;
@@ -275,29 +285,41 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
         uint currentPriceFromOracle = priceFeed.rateForCurrency(oracleKeyPerRoom[_roomNumber]);
 
         finalPricePerRoundPerRoom[_roomNumber][currentRound] = currentPriceFromOracle;
-        roundResultPerRoom[_roomNumber][currentRound] = currentPriceFromOracle >= roundTargetPriceInRoom[_roomNumber] ? 2 : 1;
+        roundResultPerRoom[_roomNumber][currentRound] = currentPriceFromOracle >= roundTargetPriceInRoom[_roomNumber] ? UP : DOWN;
         roundTargetPriceInRoom[_roomNumber] = currentPriceFromOracle;
 
-        uint winningPositionsPerRound = roundResultPerRoom[_roomNumber][currentRound] == 2 ? positionsPerRoundPerRoom[_roomNumber][currentRound][2] : positionsPerRoundPerRoom[_roomNumber][currentRound][1];
+        uint winningPositionsPerRound = roundResultPerRoom[_roomNumber][currentRound] == UP ? positionsPerRoundPerRoom[_roomNumber][currentRound][UP] : positionsPerRoundPerRoom[_roomNumber][currentRound][DOWN];
+        uint losingPositions = roundResultPerRoom[_roomNumber][currentRound] == DOWN ? positionsPerRoundPerRoom[_roomNumber][currentRound][UP] : positionsPerRoundPerRoom[_roomNumber][currentRound][DOWN];
 
         if (nextRound <= numberOfRoundsInRoom[_roomNumber] || gameTypeInRoom[_roomNumber] == GameType.LAST_MAN_STANDING){
             // setting total players for next round (round + 1) to be result of position in a previous round
-            totalPlayersInARoomInARound[_roomNumber][nextRound] = winningPositionsPerRound;
+            if(winningPositionsPerRound == 0 && gameTypeInRoom[_roomNumber] == GameType.LAST_MAN_STANDING){
+                totalPlayersInARoomInARound[_roomNumber][nextRound] = losingPositions;
+            }else{
+                totalPlayersInARoomInARound[_roomNumber][nextRound] = winningPositionsPerRound;
+            }
         }
 
         // setting eliminated players to be total players - number of winning players
-        eliminatedPerRoundPerRoom[_roomNumber][currentRound] = totalPlayersInARoomInARound[_roomNumber][currentRound] - winningPositionsPerRound;   
+        if(winningPositionsPerRound == 0 && gameTypeInRoom[_roomNumber] == GameType.LAST_MAN_STANDING){
+            eliminatedPerRoundPerRoom[_roomNumber][currentRound] = totalPlayersInARoomInARound[_roomNumber][currentRound] - losingPositions;   
+        }else{
+            eliminatedPerRoundPerRoom[_roomNumber][currentRound] = totalPlayersInARoomInARound[_roomNumber][currentRound] - winningPositionsPerRound;   
+        }
 
         // if no one is left no need to set values
-        if(winningPositionsPerRound > 0){
+        if(winningPositionsPerRound > 0 || (winningPositionsPerRound == 0 && gameTypeInRoom[_roomNumber] == GameType.LAST_MAN_STANDING)){
             currentRoundInRoom[_roomNumber] = nextRound;
             targetPricePerRoundPerRoom[_roomNumber][nextRound] = roundTargetPriceInRoom[_roomNumber];
+            isReversedPositioningInRoom[_roomNumber] = false;
         }
 
         // IF number of rounds is limmited and next round is crosses that limmit 
-        // OR wiining people is less or eqal to 1 FINISH game (LAST_MAN_STANDING)
+        // OR winning people is less or equal to 1 FINISH game (LIMITED_NUMBER_OF_ROUNDS)
+        // OR winning people is equal to 1 FINISH game (LAST_MAN_STANDING)
         if ((nextRound > numberOfRoundsInRoom[_roomNumber] && gameTypeInRoom[_roomNumber] == GameType.LIMITED_NUMBER_OF_ROUNDS)
-                || (winningPositionsPerRound <= 1)) {
+                || (winningPositionsPerRound <= 1 && gameTypeInRoom[_roomNumber] == GameType.LIMITED_NUMBER_OF_ROUNDS)
+                || (winningPositionsPerRound == 1 && gameTypeInRoom[_roomNumber] == GameType.LAST_MAN_STANDING)) {
 
             roomFinished[_roomNumber] = true;
 
@@ -315,6 +337,11 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
             emit RoundClosedInRoom(_roomNumber, currentRound, roundResultPerRoom[_roomNumber][currentRound]);
             emit RoyaleFinishedForRoom(_roomNumber);
         } else {
+            // need to reverse result because of isPlayerAliveInASpecificRoom() in positioning a new round so the play can continue
+            if(winningPositionsPerRound == 0 && gameTypeInRoom[_roomNumber] == GameType.LAST_MAN_STANDING){
+                isReversedPositioningInRoom[_roomNumber] = true;
+            }
+
             roundStartTimeInRoom[_roomNumber] = block.timestamp;
             roundEndTimeInRoom[_roomNumber] = roundStartTimeInRoom[_roomNumber] + roundLengthInRoom[_roomNumber];
             emit RoundClosedInRoom(_roomNumber, currentRound, roundResultPerRoom[_roomNumber][currentRound]);
@@ -328,22 +355,13 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
         require(rewardCollectedPerRoom[_roomNumber][msg.sender] == false, "Player already collected reward");
         require(block.timestamp < (roomEndTime[_roomNumber] + climeTimePerRoom[_roomNumber]), "Time for reward claiming expired");
 
-        // get balance 
-        uint balance = rewardToken.balanceOf(address(this));
-        
-        if (balance != 0){
-
-            // set collected -> true
-            rewardCollectedPerRoom[_roomNumber][msg.sender] = true;
-            
-            unclaimedRewardPerRoom[_roomNumber] = unclaimedRewardPerRoom[_roomNumber].sub(rewardPerPlayerPerRoom[_roomNumber]);
-
-            // transfering rewardPerPlayer
-            rewardToken.transfer(msg.sender, rewardPerPlayerPerRoom[_roomNumber]);
-
-            // emit event
-            emit RewardClaimed(_roomNumber, msg.sender, rewardPerPlayerPerRoom[_roomNumber]);
-        }
+        // set collected -> true
+        rewardCollectedPerRoom[_roomNumber][msg.sender] = true;
+        unclaimedRewardPerRoom[_roomNumber] = unclaimedRewardPerRoom[_roomNumber].sub(rewardPerPlayerPerRoom[_roomNumber]);
+        // transfering rewardPerPlayer
+        rewardToken.transfer(msg.sender, rewardPerPlayerPerRoom[_roomNumber]);
+        // emit event
+        emit RewardClaimed(_roomNumber, msg.sender, rewardPerPlayerPerRoom[_roomNumber]);
     }
 
     /* ========== INTERNALS ========== */
@@ -361,9 +379,6 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     }
 
     function _populateRewardForRoom(uint _roomNumber, uint _numberOfWinners) internal {
-        require(roomFinished[_roomNumber], "Royale must be finished");
-        require(_numberOfWinners > 0, "There is no alive players left in Royale");
-
         rewardPerPlayerPerRoom[_roomNumber] = rewardPerRoom[_roomNumber].div(_numberOfWinners);
     }
 
@@ -373,6 +388,25 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
         rewardPerRoom[_roomNumber] += _amount;
 
         emit BuyIn(_sender, _amount, _roomNumber);
+    }
+
+    function _isPlayerAliveInASpecificRoomReverseOrder(address player, uint _roomNumber) internal view returns (bool) {
+        if (roundResultPerRoom[_roomNumber][currentRoundInRoom[_roomNumber] - 1] == DOWN) {
+            return positionInARoundPerRoom[_roomNumber][player][currentRoundInRoom[_roomNumber] - 1] == UP;
+        } else if (roundResultPerRoom[_roomNumber][currentRoundInRoom[_roomNumber] - 1] == UP) {
+            return positionInARoundPerRoom[_roomNumber][player][currentRoundInRoom[_roomNumber] - 1] == DOWN;
+        }else{
+            return false;
+        }
+    }
+
+    function _isPlayerAliveInASpecificRoomNormalOrder(address player, uint _roomNumber) internal view returns (bool) {
+        if (currentRoundInRoom[_roomNumber] > 1) {
+            return (positionInARoundPerRoom[_roomNumber][player][currentRoundInRoom[_roomNumber] - 1] == roundResultPerRoom[_roomNumber][currentRoundInRoom[_roomNumber] - 1]);
+        } else {
+            return playerSignedUpPerRoom[_roomNumber][player] != 0;
+        }
+    
     }
 
     /* ========== VIEW ========== */
@@ -387,10 +421,10 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     }
 
     function isPlayerAliveInASpecificRoom(address player, uint _roomNumber) public view returns (bool) {
-        if (currentRoundInRoom[_roomNumber] > 1) {
-            return (positionInARoundPerRoom[_roomNumber][player][currentRoundInRoom[_roomNumber] - 1] == roundResultPerRoom[_roomNumber][currentRoundInRoom[_roomNumber] - 1]);
+        if (!isReversedPositioningInRoom[_roomNumber]) {
+            return _isPlayerAliveInASpecificRoomNormalOrder(player, _roomNumber);
         } else {
-            return playerSignedUpPerRoom[_roomNumber][player] != 0;
+            return _isPlayerAliveInASpecificRoomReverseOrder(player, _roomNumber);
         }
     }
 
@@ -402,13 +436,23 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
         return _player == roomOwner[_roomNumber];
     }
 
+    function canStartRoyaleInRoom(uint _roomNumber) public view returns (bool) {
+        return block.timestamp > (roomCreationTime[_roomNumber] + roomSignUpPeriod[_roomNumber]) && 
+            !roomStarted[_roomNumber];
+    }
+
+    function canCloseRoundInRoom(uint _roomNumber) public view returns (bool) {
+        return roomStarted[_roomNumber] && 
+            !roomFinished[_roomNumber] && 
+            block.timestamp > (roundStartTimeInRoom[_roomNumber] + roundLengthInRoom[_roomNumber]);
+    }
+
     /* ========== ROOM MANAGEMENT ========== */
 
     function setBuyInAmount(
         uint _roomNumber, 
         uint _buyInAmount
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {      
+        ) public canChangeRoomVariables(_roomNumber) {      
         require(_buyInAmount >= minBuyIn, "Buy in must be greather then minimum");
         require(buyInPerPlayerRerRoom[_roomNumber] != _buyInAmount, "Same amount");
         
@@ -421,18 +465,10 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
             buyInPerPlayerRerRoom[_roomNumber] = _buyInAmount;
         // or decreased
         }else{
-            // get balance 
-            uint balance = rewardToken.balanceOf(address(this));
-
-            if (balance != 0){
-
-                uint difference = buyInPerPlayerRerRoom[_roomNumber].sub(_buyInAmount);
-                
-                rewardPerRoom[_roomNumber]= rewardPerRoom[_roomNumber].sub(difference);
-                buyInPerPlayerRerRoom[_roomNumber] = _buyInAmount;
-                rewardToken.transfer(msg.sender, difference);
-            
-            }
+            uint difference = buyInPerPlayerRerRoom[_roomNumber].sub(_buyInAmount);
+            rewardPerRoom[_roomNumber]= rewardPerRoom[_roomNumber].sub(difference);
+            buyInPerPlayerRerRoom[_roomNumber] = _buyInAmount;
+            rewardToken.transfer(msg.sender, difference);
         }
 
         emit BuyInAmountChanged(_roomNumber, _buyInAmount);
@@ -441,8 +477,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     function setRoundLength(
         uint _roomNumber, 
         uint _roundLength
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
+        ) public canChangeRoomVariables(_roomNumber) {
         require(_roundLength >= minRoundTime, "Round length lower then minimum");
         require(_roundLength >= roundChoosingLengthInRoom[_roomNumber] + offsetBeteweenChooseAndEndRound, "Offset lower then minimum");
         
@@ -455,8 +490,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     function setClaimTimePerRoom(
         uint _roomNumber, 
         uint _claimTime
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
+        ) public canChangeRoomVariables(_roomNumber) {
         require(_claimTime >= minClaimTime, "Claim time lower then minimum");
         
         climeTimePerRoom[_roomNumber] = _claimTime;
@@ -468,8 +502,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     function setRoomSignUpPeriod(
         uint _roomNumber, 
         uint _roomSignUpPeriod
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
+        ) public canChangeRoomVariables(_roomNumber) {
         require(_roomSignUpPeriod >= minTimeSignUp, "Sign in period lower then minimum");
         
         roomSignUpPeriod[_roomNumber] = _roomSignUpPeriod;
@@ -481,8 +514,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     function setNumberOfRoundsInRoom(
         uint _roomNumber, 
         uint _numberOfRoundsInRoom
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
+        ) public canChangeRoomVariables(_roomNumber) {
         require(_numberOfRoundsInRoom > minNumberOfRounds, "Must be more then minimum");
         
         numberOfRoundsInRoom[_roomNumber] = _numberOfRoundsInRoom;
@@ -493,8 +525,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     function setRoundChoosingLength(
         uint _roomNumber, 
         uint _roundChoosingLength
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
+        ) public canChangeRoomVariables(_roomNumber) {
         require(_roundChoosingLength >= minChooseTime, "Round chosing lower then minimum");
         require(roundLengthInRoom[_roomNumber] >= _roundChoosingLength + offsetBeteweenChooseAndEndRound, "Round length lower then minimum");
         
@@ -506,8 +537,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     function setOracleKey(
         uint _roomNumber, 
         bytes32 _oracleKey
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
+        ) public canChangeRoomVariables(_roomNumber) {
         require(isAssetAllowed(_oracleKey), "Not allowed assets");
         
         oracleKeyPerRoom[_roomNumber] = _oracleKey;
@@ -519,8 +549,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     function setNewAllowedPlayersPerRoomClosedRoom(
         uint _roomNumber, 
         address[] memory _alowedPlayers
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
+        ) public canChangeRoomVariables(_roomNumber) {
         require(roomTypePerRoom[_roomNumber] == RoomType.CLOSED && _alowedPlayers.length > 0, "Room need to be closed and  allowed players not empty");
 
         // setting players - no play
@@ -541,39 +570,41 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
 
     }
 
-    function addAllowedPlayersPerRoomClosedRoom(
+    function addAllowedPlayerPerRoomClosedRoom(
         uint _roomNumber, 
-        address[] memory _alowedPlayers
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
+        address _alowedPlayer
+        ) public canChangeRoomVariables(_roomNumber) {
         require(roomTypePerRoom[_roomNumber] == RoomType.CLOSED, "Type of room needs to be closed");
+        require(!playerCanPlayInRoom[_roomNumber][_alowedPlayer], "Already allowed");
 
-        uint beforeAdding = numberOfAlowedPlayersInRoom[_roomNumber];
+        alowedPlayersPerRoom[_roomNumber].push(_alowedPlayer);
+        playerCanPlayInRoom[_roomNumber][_alowedPlayer] = true;
+        numberOfAlowedPlayersInRoom[_roomNumber]++;
 
-        for (uint i = 0; i < _alowedPlayers.length; i++) {
-            // check if player is already in a closed grrop
-            if(!playerCanPlayInRoom[_roomNumber][_alowedPlayers[i]]){
-                alowedPlayersPerRoom[_roomNumber].push(_alowedPlayers[i]);
-                playerCanPlayInRoom[_roomNumber][_alowedPlayers[i]] = true;
-                numberOfAlowedPlayersInRoom[_roomNumber]++;
-            }
-        }
-
-        if(beforeAdding < numberOfAlowedPlayersInRoom[_roomNumber]){
-            emit NewPlayersAddedIntoRoom(_roomNumber, numberOfAlowedPlayersInRoom[_roomNumber] - beforeAdding);
-        }
+        emit NewPlayerAddedIntoRoom(_roomNumber, _alowedPlayer);
     }
 
     function setAmuontOfPlayersInOpenRoom(
         uint _roomNumber, 
         uint _amuontOfPlayersinRoom
-        ) public onlyOwnerOfRoom(_roomNumber) 
-                canChangeRoomVariables(_roomNumber) {
+        ) public canChangeRoomVariables(_roomNumber) {
         require(roomTypePerRoom[_roomNumber] == RoomType.OPEN && _amuontOfPlayersinRoom > 1, "Must be more then one player and open room");
         
         numberOfAlowedPlayersInRoom[_roomNumber] = _amuontOfPlayersinRoom;
         
         emit NewAmountOfPlayersInOpenRoom(_roomNumber, _amuontOfPlayersinRoom);
+
+    }
+
+    function deleteRoom(
+        uint _roomNumber
+        ) public canChangeRoomVariables(_roomNumber) {
+        require(roomPublished[_roomNumber], "Already deleted");
+        
+        roomPublished[_roomNumber] = false;
+        rewardToken.safeTransfer(msg.sender, buyInPerPlayerRerRoom[_roomNumber]);
+
+        emit RoomDeleted(_roomNumber, msg.sender);
 
     }
 
@@ -620,8 +651,8 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
         require(unclaimedRewardPerRoom[_roomNumber] > 0, "Nothing to claim");
 
         uint unclaimedAmount = unclaimedRewardPerRoom[_roomNumber];
-        rewardToken.transfer(_treasuryAddress, unclaimedAmount);
         unclaimedRewardPerRoom[_roomNumber] = 0;
+        rewardToken.transfer(_treasuryAddress, unclaimedAmount);
 
         emit UnclaimedRewardClaimed(_roomNumber, _treasuryAddress, unclaimedAmount);
     }
@@ -633,19 +664,13 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     /* ========== MODIFIERS ========== */
 
     modifier canChangeRoomVariables(uint _roomNumber) {
-        require(!roomFinished[_roomNumber], "Competition is finished, can not change");
-        require(!roomStarted[_roomNumber], "Competition is started, can not change");
+        require(msg.sender == roomOwner[_roomNumber], "You are not owner of room.");
         require(!playerStartedSignUp[_roomNumber], "Player already sign up for room, no change allowed");
         _;
     }
 
-    modifier onlyOwnerOfRoom(uint _roomNumber) {
-        require(msg.sender == roomOwner[_roomNumber], "You are not owner of room.");
-        _;
-    }
-
     modifier onlyRoomParticipantes(uint _roomNumber) {
-        require(playerSignedUpPerRoom[_roomNumber][msg.sender] != 0 , "You are not room participante");
+        require(playerSignedUpPerRoom[_roomNumber][msg.sender] != 0 , "You are not room participant");
         _;
     }
 
@@ -667,7 +692,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     event BuyIn(address _user, uint _amount, uint _roomNumber);
     event RewardClaimed(uint _roomNumber, address _winner, uint _reward);
     event NewAmountOfPlayersInOpenRoom(uint _roomNumber, uint _amuontOfPlayersinRoom);
-    event NewPlayersAddedIntoRoom(uint _roomNumber, uint _numberOfPlayersAdded);
+    event NewPlayerAddedIntoRoom(uint _roomNumber, address _alowedPlayer);
     event NewPlayersAllowed(uint _roomNumber, uint _numberOfPlayers);
     event NewOracleKeySetForRoom(uint _roomNumber, bytes32 _oracleKey);
     event BuyInAmountChanged(uint _roomNumber, uint _buyInAmount);
@@ -677,5 +702,5 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     event NewNumberOfRounds(uint _roomNumber, uint _numberRounds);
     event NewClaimTime(uint _roomNumber, uint _claimTime);
     event UnclaimedRewardClaimed(uint _roomNumber, address account, uint reward);
-
+    event RoomDeleted(uint _roomNumber, address _roomOwner);
 }

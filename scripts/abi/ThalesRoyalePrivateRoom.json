@@ -130,12 +130,12 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "_numberOfPlayersAdded",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "_alowedPlayer",
+        "type": "address"
       }
     ],
-    "name": "NewPlayersAddedIntoRoom",
+    "name": "NewPlayerAddedIntoRoom",
     "type": "event"
   },
   {
@@ -326,6 +326,25 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_roomOwner",
+        "type": "address"
+      }
+    ],
+    "name": "RoomDeleted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "_round",
         "type": "uint256"
@@ -467,6 +486,36 @@
     "type": "event"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "DOWN",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "UP",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [],
     "name": "acceptOwnership",
@@ -484,12 +533,12 @@
         "type": "uint256"
       },
       {
-        "internalType": "address[]",
-        "name": "_alowedPlayers",
-        "type": "address[]"
+        "internalType": "address",
+        "name": "_alowedPlayer",
+        "type": "address"
       }
     ],
-    "name": "addAllowedPlayersPerRoomClosedRoom",
+    "name": "addAllowedPlayerPerRoomClosedRoom",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -572,6 +621,48 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "canCloseRoundInRoom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "canStartRoyaleInRoom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "payable": false,
@@ -733,6 +824,21 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_roomNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "deleteRoom",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -975,6 +1081,27 @@
       }
     ],
     "name": "isPlayerOwner",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "isReversedPositioningInRoom",
     "outputs": [
       {
         "internalType": "bool",
@@ -1632,6 +1759,27 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roomPublished",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "payable": false,

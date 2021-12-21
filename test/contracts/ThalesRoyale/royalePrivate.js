@@ -139,7 +139,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 	describe('ThalesRoyalePrivateRoom', () => {
 
 		it('Sign up before creation of room', async () => {
-			await expect(royale.signUpForRoom( 1, { from: first })).to.be.revertedWith('No private room stil created!');
+			await expect(royale.signUpForRoom( 1, { from: first })).to.be.revertedWith('Room deleted or not published yet');
 		});
 
 		it('Not allowed assets and check if asset is allowed', async () => {
@@ -152,6 +152,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			).to.be.revertedWith('Not allowed assets');
 
 			assert.equal(await royale.isAssetAllowed(toBytes32('BTC')), true);
+			assert.equal(await royale.isAssetAllowed(toBytes32('ETH')), true);
 			assert.equal(await royale.isAssetAllowed(toBytes32('GGG')), false);
 		});
 
@@ -593,7 +594,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		});
 
-		it('Start royale if user is not participante', async () => {
+		it('Start royale if user is not participant', async () => {
 			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
@@ -608,7 +609,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await fastForward(HOUR * 72 + 1);
 
-			await expect(royale.startRoyaleInRoom( roomNumberCounter, { from: fourth })).to.be.revertedWith('You are not room participante');
+			await expect(royale.startRoyaleInRoom( roomNumberCounter, { from: fourth })).to.be.revertedWith('You are not room participant');
 
 			roomStarted = await royale.roomStarted(roomNumberCounter);
 			assert.equal(roomStarted, false);
@@ -746,7 +747,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		});
 
-		it('Take a position player did not sign up, not participante', async () => {
+		it('Take a position player did not sign up, not participant', async () => {
 			
 			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
 			
@@ -759,9 +760,9 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 
-			await expect(royale.takeAPositionInRoom( roomNumberCounter,1, { from: third })).to.be.revertedWith('You are not room participante');
+			await expect(royale.takeAPositionInRoom( roomNumberCounter,1, { from: third })).to.be.revertedWith('You are not room participant');
 			
-			await expect(royale.takeAPositionInRoom( roomNumberCounter,2, { from: fourth })).to.be.revertedWith('You are not room participante');
+			await expect(royale.takeAPositionInRoom( roomNumberCounter,2, { from: fourth })).to.be.revertedWith('You are not room participant');
 			
 		});
 
@@ -920,7 +921,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		});
 
-		it('Close round player that are not participate', async () => {
+		it('Close round player that are not participat', async () => {
 
 			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
 			
@@ -931,7 +932,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await fastForward(HOUR * 72 + 1);
 
-			await expect(royale.closeRound( roomNumberCounter, { from: fourth })).to.be.revertedWith('You are not room participante');
+			await expect(royale.closeRound( roomNumberCounter, { from: fourth })).to.be.revertedWith('You are not room participant');
 
 		});
 
@@ -1008,7 +1009,11 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			assert.bnEqual(await royale.rewardPerRoom(roomNumberCounter), buyIn100 * 2);
 
+			assert.equal(await royale.canStartRoyaleInRoom(roomNumberCounter), false);
+
 			await fastForward(HOUR * 72 + 1);
+
+			assert.equal(await royale.canStartRoyaleInRoom(roomNumberCounter), true);
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 
@@ -1025,7 +1030,12 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			assert.equal(await royale.roomFinished(roomNumberCounter), false);
 
+			assert.equal(await royale.canCloseRoundInRoom(roomNumberCounter), false);
+
 			await fastForward(HOUR * 72 + 1);
+
+			assert.equal(await royale.canCloseRoundInRoom(roomNumberCounter), true);
+
 			const tx = await royale.closeRound(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), false);
@@ -1062,7 +1072,602 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		});
 
-		it('Win at last man standing', async () => {
+		it('Win at last man standing, all lose, continue to last man standing', async () => {
+
+			await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			
+			let roomNumberCounter = await royale.roomNumberCounter();
+			assert.equal(roomNumberCounter, 1);
+
+			assert.equal(await royale.isPlayerOwner(first, roomNumberCounter), true);
+
+			assert.bnEqual(await royale.rewardPerRoom(roomNumberCounter), buyIn100);
+
+			await royale.signUpForRoom( roomNumberCounter, { from: second });
+			await royale.signUpForRoom( roomNumberCounter, { from: third });
+			await expect(royale.signUpForRoom(roomNumberCounter, { from: fourth })).to.be.revertedWith('Can not sign up for room, not allowed or it is full');
+
+			assert.bnEqual(await royale.rewardPerRoom(roomNumberCounter), buyIn100 * 3);
+
+			await fastForward(HOUR * 72 + 1);
+
+			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
+
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1000);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 1), 1000);
+
+			// #1
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: second });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: third });
+
+			await MockPriceFeedDeployed.setPricetoReturn(1100);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 1), 1100);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1100);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 1), 3);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 2), 3);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 1), 0);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 2);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 2), 1100);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+			// #2
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: second });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: third });
+
+			await MockPriceFeedDeployed.setPricetoReturn(1200);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1200);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 2), 3);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 3), 2);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 2), 1);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 3);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 3), 1200);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+			// #3
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: second });
+
+			await MockPriceFeedDeployed.setPricetoReturn(1300);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 3), 1300);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1300);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 3), 2);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 4), 2);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 3), 0);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 4);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 4), 1300);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+			// #4 - IF LAST MAN STANDING PLAYS GO UNTILL ONE IS WINNER
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: second });
+			await expect(royale.takeAPositionInRoom(roomNumberCounter,1, { from: third })).to.be.revertedWith('Player no longer alive');
+
+			await MockPriceFeedDeployed.setPricetoReturn(1400);
+
+			await fastForward(HOUR * 72 + 1);
+			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 4), 1400);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1400);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 4), 2);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 5), 1);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 4), 1);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 5);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 5), 1400);
+			assert.equal(await royale.roomFinished(roomNumberCounter), true);
+
+			assert.equal(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100 * 3);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'RoundClosedInRoom', {
+				_roomNumber: roomNumberCounter,
+				_round: 4,
+				_result: 2
+			});
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[1], 'RoyaleFinishedForRoom', {
+				_roomNumber: roomNumberCounter
+			});
+		});
+
+		it('Win at last man standing, all lose, continue to last man standing, reverse', async () => {
+
+			await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			
+			let roomNumberCounter = await royale.roomNumberCounter();
+			assert.equal(roomNumberCounter, 1);
+
+			assert.equal(await royale.isPlayerOwner(first, roomNumberCounter), true);
+
+			assert.bnEqual(await royale.rewardPerRoom(roomNumberCounter), buyIn100);
+			
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			await royale.signUpForRoom( roomNumberCounter, { from: second });
+			await royale.signUpForRoom( roomNumberCounter, { from: third });
+			await expect(royale.signUpForRoom(roomNumberCounter, { from: fourth })).to.be.revertedWith('Can not sign up for room, not allowed or it is full');
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			assert.bnEqual(await royale.rewardPerRoom(roomNumberCounter), buyIn100 * 3);
+
+			await fastForward(HOUR * 72 + 1);
+
+			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
+
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1000);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 1), 1000);
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			// #1
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: second });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: third });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			await MockPriceFeedDeployed.setPricetoReturn(1100);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 1), 1100);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1100);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 1), 3);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 2), 3);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 1), 0);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 2);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 2), 1100);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+		
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			// #2
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: second });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: third });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			await MockPriceFeedDeployed.setPricetoReturn(1200);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1200);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 2), 3);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 3), 3);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 2), 0);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 3);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 3), 1200);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			// #3
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: second });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: third });
+
+			// all players that playedalive all miss position
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+
+			await MockPriceFeedDeployed.setPricetoReturn(1300);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			// all players that playedalive all miss position
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 3), 1300);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1300);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 3), 3);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 4), 3);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 3), 0);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 4);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 4), 1300);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+
+			// all players that playedalive all miss position
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			// #4 - IF LAST MAN STANDING PLAYS GO UNTILL ONE IS WINNER
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: second });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: third });
+
+			await MockPriceFeedDeployed.setPricetoReturn(1400);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 4), 1400);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1400);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 4), 3);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 5), 2);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 4), 1);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 5);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 5), 1400);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+			// #5 - IF LAST MAN STANDING PLAYS GO UNTILL ONE IS WINNER
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: third });
+			await expect(royale.takeAPositionInRoom(roomNumberCounter,1, { from: second })).to.be.revertedWith('Player no longer alive');
+
+			await MockPriceFeedDeployed.setPricetoReturn(1400);
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 5), 1400);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1400);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 5), 2);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 6), 2);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 5), 0);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 6);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 6), 1400);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+			// #6 - IF LAST MAN STANDING PLAYS GO UNTILL ONE IS WINNER
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: third });
+			await expect(royale.takeAPositionInRoom(roomNumberCounter,1, { from: second })).to.be.revertedWith('Player no longer alive');
+
+			await MockPriceFeedDeployed.setPricetoReturn(1400);
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			await fastForward(HOUR * 72 + 1);
+			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 6), 1400);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1400);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 6), 2);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 7), 1);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 6), 1);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 7);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 7), 1400);
+			assert.equal(await royale.roomFinished(roomNumberCounter), true);
+
+			assert.equal(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100 * 3);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'RoundClosedInRoom', {
+				_roomNumber: roomNumberCounter,
+				_round: 6,
+				_result: 2
+			});
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[1], 'RoyaleFinishedForRoom', {
+				_roomNumber: roomNumberCounter
+			});
+		});
+
+		it('Win at last man standing, all lose, continue to last man standing, check alive players', async () => {
+
+			await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 4, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			
+			let roomNumberCounter = await royale.roomNumberCounter();
+			assert.equal(roomNumberCounter, 1);
+
+			assert.equal(await royale.isPlayerOwner(first, roomNumberCounter), true);
+
+			assert.bnEqual(await royale.rewardPerRoom(roomNumberCounter), buyIn100);
+			
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			await royale.signUpForRoom( roomNumberCounter, { from: second });
+			await royale.signUpForRoom( roomNumberCounter, { from: third });
+			await royale.signUpForRoom( roomNumberCounter, { from: fourth });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), true);
+
+			assert.bnEqual(await royale.rewardPerRoom(roomNumberCounter), buyIn100 * 4);
+
+			await fastForward(HOUR * 72 + 1);
+
+			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
+
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1000);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 1), 1000);
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), true);
+
+			// #1
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: second });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: third });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), true);
+
+			await MockPriceFeedDeployed.setPricetoReturn(1100);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 1), 1100);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1100);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 1), 4);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 2), 3);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 1), 1);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 2);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 2), 1100);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+		
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			// #2
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: second });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: third });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			await MockPriceFeedDeployed.setPricetoReturn(1200);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1200);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 2), 3);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 3), 3);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 2), 0);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 3);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 3), 1200);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			// #3
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: second });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: third });
+
+			// all players that playedalive all miss position
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+
+			await MockPriceFeedDeployed.setPricetoReturn(1300);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			// all players that playedalive all miss position
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 3), 1300);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1300);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 3), 3);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 4), 3);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 3), 0);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 4);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 4), 1300);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+
+			// all players that playedalive all miss position
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			// #4 - IF LAST MAN STANDING PLAYS GO UNTILL ONE IS WINNER
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: second });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: third });
+
+			await MockPriceFeedDeployed.setPricetoReturn(1400);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 4), 1400);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1400);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 4), 3);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 5), 2);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 4), 1);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 5);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 5), 1400);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+			// #5 - IF LAST MAN STANDING PLAYS GO UNTILL ONE IS WINNER
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: third });
+			await expect(royale.takeAPositionInRoom(roomNumberCounter,1, { from: second })).to.be.revertedWith('Player no longer alive');
+
+			await MockPriceFeedDeployed.setPricetoReturn(1400);
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 5), 1400);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1400);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 5), 2);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 6), 2);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 5), 0);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 6);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 6), 1400);
+			assert.equal(await royale.roomFinished(roomNumberCounter), false);
+
+			// #6 - IF LAST MAN STANDING PLAYS GO UNTILL ONE IS WINNER
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
+			await expect(royale.takeAPositionInRoom(roomNumberCounter,1, { from: second })).to.be.revertedWith('Player no longer alive');
+
+			await MockPriceFeedDeployed.setPricetoReturn(1400);
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			await fastForward(HOUR * 72 + 1);
+			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(third, roomNumberCounter), false);
+			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
+
+			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 6), 1400);
+			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
+			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1400);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 6), 2);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 7), 1);
+			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 6), 1);
+			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 7);
+			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 7), 1400);
+			assert.equal(await royale.roomFinished(roomNumberCounter), true);
+
+			assert.equal(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100 * 4);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'RoundClosedInRoom', {
+				_roomNumber: roomNumberCounter,
+				_round: 6,
+				_result: 2
+			});
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[1], 'RoyaleFinishedForRoom', {
+				_roomNumber: roomNumberCounter
+			});
+		});
+
+		it('Win at last man standing, play untill one is winner', async () => {
 
 			await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
 			
@@ -1119,8 +1724,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
 			assert.equal(await royale.roundTargetPriceInRoom(roomNumberCounter), 1200);
-			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 1), 3);
 			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 2), 3);
+			assert.equal(await royale.totalPlayersInARoomInARound(roomNumberCounter, 3), 3);
 			assert.equal(await royale.eliminatedPerRoundPerRoom(roomNumberCounter, 2), 0);
 			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 3);
 			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 3), 1200);
@@ -1621,7 +2226,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 			
-			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn100, { from: first })).to.be.revertedWith('Competition is started, can not change');
+			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn100, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			// #1
 			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
@@ -1632,7 +2237,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound(roomNumberCounter, { from: second });
 
-			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn100, { from: first })).to.be.revertedWith('Competition is finished, can not change');
+			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn100, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 
@@ -1669,7 +2274,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 			
-			await expect(royale.setRoundLength(roomNumberCounter, 2 * HOUR, { from: first })).to.be.revertedWith('Competition is started, can not change');
+			await expect(royale.setRoundLength(roomNumberCounter, 2 * HOUR, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			// #1
 			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
@@ -1680,7 +2285,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound(roomNumberCounter, { from: second });
 
-			await expect(royale.setRoundLength(roomNumberCounter, 2 * HOUR, { from: first })).to.be.revertedWith('Competition is finished, can not change');
+			await expect(royale.setRoundLength(roomNumberCounter, 2 * HOUR, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 
@@ -1716,7 +2321,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 			
-			await expect(royale.setClaimTimePerRoom(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Competition is started, can not change');
+			await expect(royale.setClaimTimePerRoom(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			// #1
 			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
@@ -1727,7 +2332,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound(roomNumberCounter, { from: second });
 
-			await expect(royale.setClaimTimePerRoom(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Competition is finished, can not change');
+			await expect(royale.setClaimTimePerRoom(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 
@@ -1763,7 +2368,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 			
-			await expect(royale.setRoomSignUpPeriod(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Competition is started, can not change');
+			await expect(royale.setRoomSignUpPeriod(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			// #1
 			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
@@ -1774,7 +2379,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound(roomNumberCounter, { from: second });
 
-			await expect(royale.setRoomSignUpPeriod(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Competition is finished, can not change');
+			await expect(royale.setRoomSignUpPeriod(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 
@@ -1810,7 +2415,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 			
-			await expect(royale.setNumberOfRoundsInRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Competition is started, can not change');
+			await expect(royale.setNumberOfRoundsInRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			// #1
 			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
@@ -1821,7 +2426,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound(roomNumberCounter, { from: second });
 
-			await expect(royale.setNumberOfRoundsInRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Competition is finished, can not change');
+			await expect(royale.setNumberOfRoundsInRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 
@@ -1858,7 +2463,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 			
-			await expect(royale.setRoundChoosingLength(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Competition is started, can not change');
+			await expect(royale.setRoundChoosingLength(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			// #1
 			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
@@ -1869,7 +2474,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound(roomNumberCounter, { from: second });
 
-			await expect(royale.setRoundChoosingLength(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Competition is finished, can not change');
+			await expect(royale.setRoundChoosingLength(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 
@@ -1905,7 +2510,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 			
-			await expect(royale.setOracleKey(roomNumberCounter, SNX, { from: first })).to.be.revertedWith('Competition is started, can not change');
+			await expect(royale.setOracleKey(roomNumberCounter, SNX, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			// #1
 			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
@@ -1916,7 +2521,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound(roomNumberCounter, { from: second });
 
-			await expect(royale.setOracleKey(roomNumberCounter, SNX, { from: first })).to.be.revertedWith('Competition is finished, can not change');
+			await expect(royale.setOracleKey(roomNumberCounter, SNX, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 
@@ -1957,7 +2562,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: fourth })
 			
-			await expect(royale.setNewAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayersForAdding, { from: first })).to.be.revertedWith('Competition is started, can not change');
+			await expect(royale.setNewAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayersForAdding, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			// #1
 			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
@@ -1968,7 +2573,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound(roomNumberCounter, { from: fourth });
 
-			await expect(royale.setNewAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayersForAdding, { from: first })).to.be.revertedWith('Competition is finished, can not change');
+			await expect(royale.setNewAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayersForAdding, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 		
@@ -1979,7 +2584,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
 
-			await expect(royale.addAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayers, { from: first })).to.be.revertedWith('Type of room needs to be closed');
+			await expect(royale.addAllowedPlayerPerRoomClosedRoom(roomNumberCounter, third, { from: first })).to.be.revertedWith('Type of room needs to be closed');
 
 			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first })
 
@@ -1989,26 +2594,28 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			let numberOfAlowedPlayersInRoom = await royale.numberOfAlowedPlayersInRoom(roomNumberCounter);
 			assert.equal(numberOfAlowedPlayersInRoom, 3);
 
-			const tx_2 = await royale.addAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayersForAdding, { from: first });
+			const tx_2 = await royale.addAllowedPlayerPerRoomClosedRoom(roomNumberCounter, fourth, { from: first });
+			
+			await expect(royale.addAllowedPlayerPerRoomClosedRoom(roomNumberCounter, fourth, { from: first })).to.be.revertedWith('Already allowed');
 
 			numberOfAlowedPlayersInRoom = await royale.numberOfAlowedPlayersInRoom(roomNumberCounter);
 			assert.equal(numberOfAlowedPlayersInRoom, 4);
 
 			// check if event is emited
-			assert.eventEqual(tx_2.logs[0], 'NewPlayersAddedIntoRoom', {
+			assert.eventEqual(tx_2.logs[0], 'NewPlayerAddedIntoRoom', {
 				_roomNumber: roomNumberCounter,
-				_numberOfPlayersAdded: 1
+				_alowedPlayer: fourth
 			});
 
 			await royale.signUpForRoom( roomNumberCounter, { from: fourth });
 
-			await expect(royale.addAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayersForAdding, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
+			await expect(royale.addAllowedPlayerPerRoomClosedRoom(roomNumberCounter, fourth, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			await fastForward(HOUR * 72 + 1);
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: fourth })
 			
-			await expect(royale.addAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayersForAdding, { from: first })).to.be.revertedWith('Competition is started, can not change');
+			await expect(royale.addAllowedPlayerPerRoomClosedRoom(roomNumberCounter, fourth, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			// #1
 			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
@@ -2019,7 +2626,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound(roomNumberCounter, { from: fourth });
 
-			await expect(royale.addAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayersForAdding, { from: first })).to.be.revertedWith('Competition is finished, can not change');
+			await expect(royale.addAllowedPlayerPerRoomClosedRoom(roomNumberCounter, fourth, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 
@@ -2055,7 +2662,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 			
-			await expect(royale.setAmuontOfPlayersInOpenRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Competition is started, can not change');
+			await expect(royale.setAmuontOfPlayersInOpenRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			// #1
 			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
@@ -2066,7 +2673,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound(roomNumberCounter, { from: second });
 
-			await expect(royale.setAmuontOfPlayersInOpenRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Competition is finished, can not change');
+			await expect(royale.setAmuontOfPlayersInOpenRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 			const tx = await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first })
 
@@ -2074,6 +2681,54 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(roomNumberCounter, 2);
 
 			await expect(royale.setAmuontOfPlayersInOpenRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Must be more then one player and open room');
+
+		});
+
+		it('Delete room', async () => {
+
+			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			
+			let roomNumberCounter = await royale.roomNumberCounter();
+			assert.equal(roomNumberCounter, 1);
+
+			let numberOfAlowedPlayersInRoom = await royale.numberOfAlowedPlayersInRoom(roomNumberCounter);
+			assert.equal(numberOfAlowedPlayersInRoom, 3);
+
+			await expect(royale.deleteRoom(roomNumberCounter, { from: second })).to.be.revertedWith('You are not owner of room.');
+
+			const tx_2 = await royale.deleteRoom(roomNumberCounter, { from: first });
+
+			// check if event is emited
+			assert.eventEqual(tx_2.logs[0], 'RoomDeleted', {
+				_roomNumber: roomNumberCounter,
+				_roomOwner: first
+			});
+
+			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			
+			roomNumberCounter = await royale.roomNumberCounter();
+			assert.equal(roomNumberCounter, 2);
+
+			await royale.signUpForRoom( roomNumberCounter, { from: second });
+
+			await expect(royale.deleteRoom(roomNumberCounter, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
+
+			await fastForward(HOUR * 72 + 1);
+
+			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
+			
+			await expect(royale.deleteRoom(roomNumberCounter, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
+
+			// #1
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: second });
+
+			await MockPriceFeedDeployed.setPricetoReturn(1300);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRound(roomNumberCounter, { from: second });
+
+			await expect(royale.deleteRoom(roomNumberCounter, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 

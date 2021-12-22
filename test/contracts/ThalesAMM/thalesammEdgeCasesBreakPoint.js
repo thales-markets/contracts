@@ -216,13 +216,13 @@ contract('ThalesAMM', accounts => {
 
 	describe('Test AMM', () => {
 		it('price fully unlikely', async () => {
-			let strike = 5000; //2593 works 2592 doesnt
+			let strike = 4200; //2593 works 2592 doesnt
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
 				toUnit(strike),
-				now + hour * 8,
+				now + hour * 10,
 				toUnit(10),
 				initialCreator
 			);

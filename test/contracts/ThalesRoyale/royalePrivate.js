@@ -2698,6 +2698,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			const tx_2 = await royale.deleteRoom(roomNumberCounter, { from: first });
 
+			await expect(royale.setAmuontOfPlayersInOpenRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Deleted room');
+
 			// check if event is emited
 			assert.eventEqual(tx_2.logs[0], 'RoomDeleted', {
 				_roomNumber: roomNumberCounter,

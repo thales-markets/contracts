@@ -666,6 +666,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     modifier canChangeRoomVariables(uint _roomNumber) {
         require(msg.sender == roomOwner[_roomNumber], "You are not owner of room.");
         require(!playerStartedSignUp[_roomNumber], "Player already sign up for room, no change allowed");
+        require(roomPublished[_roomNumber], "Deleted room");
         _;
     }
 

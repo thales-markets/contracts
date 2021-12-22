@@ -1,8 +1,7 @@
 pragma solidity ^0.5.16;
 
-import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 
 import "../utils/proxy/ProxyReentrancyGuard.sol";
 import "../utils/proxy/ProxyOwned.sol";
@@ -11,12 +10,12 @@ import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
+import "../interfaces/ISNXRewards.sol";
 
 contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
-    using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;
 
     /* ========== STATE VARIABLES ========== */
@@ -24,6 +23,7 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     IEscrowThales public iEscrowThales;
     IERC20 public stakingToken;
     IERC20 public feeToken;
+    ISNXRewards public SNXRewards;
 
     uint public periodsOfStaking;
     uint public lastPeriodTimeStamp;
@@ -34,6 +34,7 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     uint public currentPeriodFees;
     bool public distributeFeesEnabled;
     uint public fixedPeriodReward;
+    uint public periodExtraReward;
     bool public claimEnabled;
 
     mapping(address => uint) public stakerLifetimeRewardsClaimed;
@@ -53,7 +54,6 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     mapping(address => uint) private _lastRewardsClaimedPeriod;
 
     uint private _contractVersion;
-
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -62,7 +62,8 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
         address _stakingToken, //THALES
         address _feeToken, //sUSD
         uint _durationPeriod,
-        uint _unstakeDurationPeriod
+        uint _unstakeDurationPeriod,
+        address _ISNXRewards
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -73,6 +74,8 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
         durationPeriod = _durationPeriod;
         unstakeDurationPeriod = _unstakeDurationPeriod;
         fixedPeriodReward = 100000 * 1e18;
+        periodExtraReward = 20000 * 1e18;
+        SNXRewards = ISNXRewards(_ISNXRewards);
     }
 
     /* ========== VIEWS ========== */
@@ -121,6 +124,11 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     function setFixedPeriodReward(uint _fixedReward) external onlyOwner {
         fixedPeriodReward = _fixedReward;
         emit FixedPeriodRewardChanged(_fixedReward);
+    }
+    
+    function setPeriodExtraReward(uint _extraReward) external onlyOwner {
+        periodExtraReward = _extraReward;
+        emit PeriodExtraRewardChanged(_extraReward);
     }
 
     function setClaimEnabled(bool _claimEnabled) external onlyOwner {
@@ -189,7 +197,7 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
 
         //Actions taken on every closed period
         currentPeriodRewards = fixedPeriodReward;
-        _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards);
+        _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
 
         currentPeriodFees = feeToken.balanceOf(address(this));
 
@@ -332,6 +340,14 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
         if ((_stakedBalances[account] == 0) || (_lastRewardsClaimedPeriod[account] == periodsOfStaking)) {
             return 0;
         }
+        (uint snx_rewards, ) = SNXRewards.feesAvailable(account);
+        if(snx_rewards > 0) {
+            return snx_rewards.mul(periodExtraReward).div(SNXRewards.totalRewardsAvailable())
+            .add(_stakedBalances[account]
+                .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
+                .mul(currentPeriodRewards)
+                .div(_totalStakedAmount.add(_totalEscrowedAmount)));
+        }
         return
             _stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
@@ -342,6 +358,14 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     function _calculateAvailableFeesToClaim(address account) internal view returns (uint) {
         if ((_stakedBalances[account] == 0) || (_lastRewardsClaimedPeriod[account] == periodsOfStaking)) {
             return 0;
+        }
+        ( , uint snx_fees) = SNXRewards.feesAvailable(account);
+        if(snx_fees > 0) {
+            return snx_fees.mul(periodExtraReward).div(SNXRewards.totalFeesAvailable())
+            .add(_stakedBalances[account]
+                .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
+                .mul(currentPeriodRewards)
+                .div(_totalStakedAmount.add(_totalEscrowedAmount)));
         }
         return
             _stakedBalances[account]
@@ -363,6 +387,7 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     event ClaimEnabled(bool enabled);
     event DistributeFeesEnabled(bool enabled);
     event FixedPeriodRewardChanged(uint value);
+    event PeriodExtraRewardChanged(uint value);
     event DurationPeriodChanged(uint value);
     event UnstakeDurationPeriodChanged(uint value);
     event EscrowChanged(address newEscrow);

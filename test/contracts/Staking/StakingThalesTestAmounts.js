@@ -38,6 +38,7 @@ contract('StakingThales', accounts => {
 		ThalesFeeDeployed,
 		StakingThalesDeployed,
 		EscrowThalesDeployed,
+		SNXRewardsDeployed,
 		OngoingAirdropDeployed,
         ProxyEscrowDeployed,
         ProxyStakingDeployed;
@@ -105,6 +106,8 @@ contract('StakingThales', accounts => {
 		let StakingThales = artifacts.require('StakingThales');
 		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
         let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
+		let SNXRewards = artifacts.require('SNXRewards');
+		SNXRewardsDeployed = await SNXRewards.new();
 		ThalesDeployed = await Thales.new({ from: owner });
 		ThalesFeeDeployed = await Thales.new({ from: owner });
 		OngoingAirdropDeployed = await OngoingAirdrop.new(
@@ -136,14 +139,15 @@ contract('StakingThales', accounts => {
 		
         initializeStalkingData = encodeCall(
 			'initialize',
-			['address', 'address', 'address', 'address', 'uint256', 'uint256'],
+			['address', 'address', 'address', 'address', 'uint256', 'uint256', 'address'],
 			[
 				owner,
                 EscrowThalesDeployed.address,
                 ThalesDeployed.address,
                 sUSDSynth.address,
                 WEEK,
-                WEEK
+                WEEK,
+				SNXRewardsDeployed.address
 			]
 		);
 

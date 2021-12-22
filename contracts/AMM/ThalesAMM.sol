@@ -24,6 +24,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
 
+    uint private constant MIN_SUPPORTED_PRICE = 10e16;
+    uint private constant MAX_SUPPORTED_PRICE = 90e16;
+
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
     address public manager;
@@ -70,7 +73,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position);
             // ignore extremes
-            if (basePrice >= ONE.sub(ONE_PERCENT) || basePrice <= ONE_PERCENT) {
+            if (basePrice <= MIN_SUPPORTED_PRICE || basePrice >= MAX_SUPPORTED_PRICE) {
                 return 0;
             }
             uint balance = _balanceOfPositionOnMarket(market, position);
@@ -116,7 +119,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position);
             // ignore extremes
-            if (basePrice >= ONE.sub(ONE_PERCENT) || basePrice <= ONE_PERCENT) {
+            if (basePrice <= MIN_SUPPORTED_PRICE || basePrice >= MAX_SUPPORTED_PRICE) {
                 return 0;
             }
             uint sell_max_price = basePrice.mul(ONE.sub(max_spread)).div(ONE);

@@ -61,6 +61,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 	const buyIn100 = toUnit(100); 
 	const buyIn101 = toUnit(101); 
 	const buyIn200 = toUnit(200); 
+	const buyIn201 = toUnit(200); 
 	const thalesQty = toUnit(5000); 
 
 	const empty = [];
@@ -103,7 +104,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		initializeRoyaleData = encodeCall(
 			'initialize',
 			['address', 'address', 'address', 'uint', 'uint', 'uint',
-			'uint', 'uint', 'uint', 'uint', 'bytes32[]', 'uint'],
+			'uint', 'uint', 'uint', 'bytes32[]', 'uint'],
 			[
 				owner,
 				priceFeedAddress,
@@ -112,7 +113,6 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 				30 * MINUTES,			// minRoundTime
 				15 * MINUTES,			// minChooseTime
 				15 * MINUTES,			// offsetBeteweenChooseAndEndRound
-				24 * HOUR,				// minClaimTime
 				10,						// maxPlayersInClosedRoom
 				1,						// minBuyIn
 				[BTC, ETH, SNX, LINK],	// _allowedAssets
@@ -145,8 +145,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		it('Not allowed assets and check if asset is allowed', async () => {
 
 			await expect(
-				royale.createARoom( 
-				toBytes32('GGG'), RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,
+				royale.createOpenRoom( 
+				toBytes32('GGG'), GameType.LAST_MAN_STANDING, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,
 					{ from: first }
 				)
 			).to.be.revertedWith('Not allowed assets');
@@ -158,8 +158,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Create room without buy in', async () => {
 			await expect(
-				royale.createARoom( 
-				SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyInZero, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,
+				royale.createOpenRoom( 
+				SNX, GameType.LAST_MAN_STANDING, buyInZero, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,
 				{ from: first }
 				)
 			).to.be.revertedWith('Buy in must be greather then minimum');
@@ -167,8 +167,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Minimum sign in period', async () => {
 			await expect(
-				royale.createARoom( 
-				SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 10, 10 * MINUTES, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,
+				royale.createOpenRoom( 
+				SNX, GameType.LAST_MAN_STANDING, buyIn100, 10, 10 * MINUTES, 7, 1 * HOUR, 2 * HOUR,
 				{ from: first }
 				)
 			).to.be.revertedWith('Sign in period lower then minimum');
@@ -176,8 +176,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Minimum rounds', async () => {
 			await expect(
-				royale.createARoom( 
-				SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 10, 1 * HOUR, 0, 1 * HOUR, 2 * HOUR, 2 * DAY,
+				royale.createOpenRoom( 
+				SNX, GameType.LAST_MAN_STANDING, buyIn100, 10, 1 * HOUR, 0, 1 * HOUR, 2 * HOUR,
 				{ from: first }
 				)
 			).to.be.revertedWith('Must be more minimum rounds');
@@ -185,8 +185,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Minimum round choosing', async () => {
 			await expect(
-				royale.createARoom( 
-				SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 10, 1 * HOUR, 10, 10 * MINUTES, 2 * HOUR, 2 * DAY,
+				royale.createOpenRoom( 
+				SNX, GameType.LAST_MAN_STANDING, buyIn100, 10, 1 * HOUR, 10, 10 * MINUTES, 2 * HOUR,
 				{ from: first }
 				)
 			).to.be.revertedWith('Round chosing lower then minimum');
@@ -194,8 +194,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Minimum round length', async () => {
 			await expect(
-				royale.createARoom( 
-				SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 10, 1 * HOUR, 10, 1 * HOUR, 29 * MINUTES, 2 * DAY,
+				royale.createOpenRoom( 
+				SNX, GameType.LAST_MAN_STANDING, buyIn100, 10, 1 * HOUR, 10, 1 * HOUR, 29 * MINUTES,
 				{ from: first }
 				)
 			).to.be.revertedWith('Round length lower then minimum');
@@ -203,8 +203,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Round length must be greather then choosing period PLUS MINIMUM OFFSET', async () => {
 			await expect(
-				royale.createARoom( 
-				SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 10, 1 * HOUR, 10, 29 * MINUTES, 35 * MINUTES, 2 * DAY,
+				royale.createOpenRoom( 
+				SNX, GameType.LAST_MAN_STANDING, buyIn100, 10, 1 * HOUR, 10, 29 * MINUTES, 35 * MINUTES,
 				{ from: first }
 				)
 			).to.be.revertedWith('Offset lower then minimum');
@@ -212,25 +212,25 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Create room CLOSED room without allowed players', async () => {
 			await expect(
-				royale.createARoom( 
-					SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, empty, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,
+				royale.createClosedRoom( 
+					SNX, GameType.LAST_MAN_STANDING, empty, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,
 					{ from: first }
 				)
-				).to.be.revertedWith('Room must be open and have total players in room or closed with allowed players');
+				).to.be.revertedWith('Need to have allowed player which number is not greather then max allowed players');
 		});
 
 		it('Create room OPEN room with allowed players', async () => {
 			await expect(
-				royale.createARoom( 
-					SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 0, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,
+				royale.createOpenRoom( 
+					SNX, GameType.LAST_MAN_STANDING, buyIn100, 0, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,
 					{ from: first }
 				)
-				).to.be.revertedWith('Room must be open and have total players in room or closed with allowed players');
+				).to.be.revertedWith('Room must be open and have total players in room');
 		});
 
 		it('Create OPEN room and check values', async () => {
 
-			const tx = await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first })
+			const tx = await royale.createOpenRoom(SNX, GameType.LAST_MAN_STANDING, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first })
 
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -285,7 +285,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		});
 
 		it('Create CLOSED room and check values', async () => {
-			const tx = await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first })
+			const tx = await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first })
 
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -345,7 +345,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		});
 
 		it('Create OPEN room and check values and sign up period has expired', async () => {
-			const tx = await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			const tx = await royale.createOpenRoom(SNX, GameType.LAST_MAN_STANDING, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 
 			await royale.signUpForRoom( 1, { from: second });
 
@@ -357,7 +357,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			it('Create OPEN room and check values and double sign up', async () => {
 
-			const tx = await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			const tx = await royale.createOpenRoom(SNX, GameType.LAST_MAN_STANDING, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 
 			await royale.signUpForRoom( 1, { from: second });
 
@@ -367,7 +367,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			it('Create OPEN room and check values and number of players in room reach limit', async () => {
 
-			const tx = await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			const tx = await royale.createOpenRoom(SNX, GameType.LAST_MAN_STANDING, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 
 			let roomNumberCounter = await royale.roomNumberCounter();
 
@@ -379,7 +379,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Create OPEN room, sign up with success and check values', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LAST_MAN_STANDING, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -418,7 +418,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		});
 
 		it('Create CLOSED room and check values and sign up period has expired', async () => {
-			const tx = await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			const tx = await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 
 			await royale.signUpForRoom( 1, { from: second });
 
@@ -429,7 +429,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		});
 
 		it('Create CLOSED room and check values and double sign up', async () => {
-			const tx = await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			const tx = await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, { from: first });
 
 			await royale.signUpForRoom( 1, { from: second });
 
@@ -438,7 +438,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			});
 
 			it('Create CLOSED room and check values and check if player is not allowed', async () => {
-			const tx = await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			const tx = await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 
 			let roomNumberCounter = await royale.roomNumberCounter();
 
@@ -452,7 +452,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Create CLOSED room, sign up with success and check values', async () => {
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 					
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -493,8 +493,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Create TWO rooms (open and closed), sign up with both', async () => {
 			
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LAST_MAN_STANDING, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 2);
@@ -573,7 +573,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		});
 
 		it('Start royale sign piriod is ongoing', async () => {
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -595,7 +595,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		});
 
 		it('Start royale if user is not participant', async () => {
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -623,7 +623,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Start royale already started', async () => {
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -644,7 +644,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Start royale and check values', async () => {
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -677,7 +677,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		});
 
 		it('Start royale and take a position which is not 1 or 2', async () => {
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -695,7 +695,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		});
 
 		it('Take a position royale not started', async () => {
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -712,7 +712,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			assert.bnEqual(await royale.rewardPerRoom(1), buyInZero);
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -738,7 +738,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.roomFinished(roomNumberCounter), false);
 
 			await fastForward(HOUR * 72 + 1);
-			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+			const tx = await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.roomFinished(roomNumberCounter), true);
 
@@ -749,7 +749,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Take a position player did not sign up, not participant', async () => {
 			
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -768,7 +768,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Same user take same position twice', async () => {
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -787,7 +787,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Take a position with royale which position time ends', async () => {
 			
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -806,7 +806,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Take a position check values', async () => {
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -846,7 +846,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Take a position with changing values and check values', async () => {
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -908,7 +908,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Close round competition not started', async () => {
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -917,13 +917,13 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await fastForward(HOUR * 72 + 1);
 
-			await expect(royale.closeRound( roomNumberCounter, { from: second })).to.be.revertedWith('Competition not started yet');
+			await expect(royale.closeRoundInARoom( roomNumberCounter, { from: second })).to.be.revertedWith('Competition not started yet');
 
 		});
 
 		it('Close round player that are not participat', async () => {
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -932,13 +932,13 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await fastForward(HOUR * 72 + 1);
 
-			await expect(royale.closeRound( roomNumberCounter, { from: fourth })).to.be.revertedWith('You are not room participant');
+			await expect(royale.closeRoundInARoom( roomNumberCounter, { from: fourth })).to.be.revertedWith('You are not room participant');
 
 		});
 
 		it('Close round competition finished', async () => {
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -957,7 +957,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await fastForward(HOUR * 72 + 1);
 
 			await fastForward(HOUR * 72 + 1);
-			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+			const tx = await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'RoundClosedInRoom', {
@@ -971,12 +971,12 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 				_roomNumber: roomNumberCounter
 			});
 
-			await expect(royale.closeRound( roomNumberCounter, { from: second })).to.be.revertedWith('Competition finished');
+			await expect(royale.closeRoundInARoom( roomNumberCounter, { from: second })).to.be.revertedWith('Competition finished');
 		});
 
 		it('Close round round still ongoing', async () => {
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -987,7 +987,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
 
-			await expect(royale.closeRound( roomNumberCounter, { from: second })).to.be.revertedWith('Can not close round yet');
+			await expect(royale.closeRoundInARoom( roomNumberCounter, { from: second })).to.be.revertedWith('Can not close round yet');
 
 		});
 
@@ -995,7 +995,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			assert.bnEqual(await royale.rewardPerRoom(1), buyInZero);
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 2, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -1036,7 +1036,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			assert.equal(await royale.canCloseRoundInRoom(roomNumberCounter), true);
 
-			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+			const tx = await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), false);
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), true);
@@ -1054,7 +1054,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 2), 1100);
 			assert.equal(await royale.roomFinished(roomNumberCounter), true);
 
-			assert.equal(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100 * 2);
+			assert.equal(await royale.rewardPerWinnerPerRoom(roomNumberCounter), buyIn100 * 2);
 
 			assert.notEqual(await royale.roomEndTime(roomNumberCounter), 0);
 
@@ -1074,7 +1074,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Win at last man standing, all lose, continue to last man standing', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LAST_MAN_STANDING, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -1104,7 +1104,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 1), 1100);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1124,7 +1124,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1200);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1143,7 +1143,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 3), 1300);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1163,7 +1163,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1400);
 
 			await fastForward(HOUR * 72 + 1);
-			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+			const tx = await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 4), 1400);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1175,7 +1175,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 5), 1400);
 			assert.equal(await royale.roomFinished(roomNumberCounter), true);
 
-			assert.equal(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100 * 3);
+			assert.equal(await royale.rewardPerWinnerPerRoom(roomNumberCounter), buyIn100 * 3);
 
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'RoundClosedInRoom', {
@@ -1192,7 +1192,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Win at last man standing, all lose, continue to last man standing, reverse', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LAST_MAN_STANDING, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -1242,7 +1242,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 1), 1100);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1272,7 +1272,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1200);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1304,7 +1304,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			// all players that playedalive all miss position
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
@@ -1337,7 +1337,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1400);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
@@ -1367,7 +1367,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
@@ -1397,7 +1397,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
 
 			await fastForward(HOUR * 72 + 1);
-			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+			const tx = await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
@@ -1414,7 +1414,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 7), 1400);
 			assert.equal(await royale.roomFinished(roomNumberCounter), true);
 
-			assert.equal(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100 * 3);
+			assert.equal(await royale.rewardPerWinnerPerRoom(roomNumberCounter), buyIn100 * 3);
 
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'RoundClosedInRoom', {
@@ -1431,7 +1431,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Win at last man standing, all lose, continue to last man standing, check alive players', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 4, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LAST_MAN_STANDING, buyIn100, 4, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -1481,7 +1481,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 1), 1100);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1511,7 +1511,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1200);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1543,7 +1543,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			// all players that playedalive all miss position
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
@@ -1576,7 +1576,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1400);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
@@ -1606,7 +1606,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
@@ -1635,7 +1635,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(fourth, roomNumberCounter), false);
 
 			await fastForward(HOUR * 72 + 1);
-			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+			const tx = await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(first, roomNumberCounter), true);
 			assert.equal(await royale.isPlayerAliveInASpecificRoom(second, roomNumberCounter), false);
@@ -1652,7 +1652,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 7), 1400);
 			assert.equal(await royale.roomFinished(roomNumberCounter), true);
 
-			assert.equal(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100 * 4);
+			assert.equal(await royale.rewardPerWinnerPerRoom(roomNumberCounter), buyIn100 * 4);
 
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'RoundClosedInRoom', {
@@ -1669,7 +1669,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Win at last man standing, play untill one is winner', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LAST_MAN_STANDING, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LAST_MAN_STANDING, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -1699,7 +1699,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 1), 1100);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1719,7 +1719,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1200);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1739,7 +1739,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 3), 1300);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1759,7 +1759,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1400);
 
 			await fastForward(HOUR * 72 + 1);
-			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+			const tx = await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 4), 1400);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1771,7 +1771,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 5), 1400);
 			assert.equal(await royale.roomFinished(roomNumberCounter), true);
 
-			assert.equal(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100 * 3);
+			assert.equal(await royale.rewardPerWinnerPerRoom(roomNumberCounter), buyIn100 * 3);
 
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'RoundClosedInRoom', {
@@ -1788,7 +1788,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Win at limited number of rounds one player finished before each', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -1818,7 +1818,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 1), 1100);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1838,7 +1838,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1200);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1858,7 +1858,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+			const tx = await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 3), 1300);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1870,7 +1870,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 4), 1300);
 			assert.equal(await royale.roomFinished(roomNumberCounter), true);
 
-			assert.equal(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100 * 3);
+			assert.equal(await royale.rewardPerWinnerPerRoom(roomNumberCounter), buyIn100 * 3);
 
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'RoundClosedInRoom', {
@@ -1887,7 +1887,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Win at limited number of rounds two players win', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -1917,7 +1917,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 1), 1100);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1937,7 +1937,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1200);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1957,7 +1957,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+			const tx = await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 3), 1300);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -1969,7 +1969,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.targetPricePerRoundPerRoom(roomNumberCounter, 4), 1300);
 			assert.equal(await royale.roomFinished(roomNumberCounter), true);
 
-			assert.equal(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100 * 1.5);
+			assert.equal(await royale.rewardPerWinnerPerRoom(roomNumberCounter), buyIn100 * 1.5);
 
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'RoundClosedInRoom', {
@@ -1985,7 +1985,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		});
 
 		it('Win at limited number of rounds three players loose at end they win', async () => {
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -2015,7 +2015,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 1), 1100);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -2035,7 +2035,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1200);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 2), 1200);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -2055,7 +2055,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			const tx = await royale.closeRound(roomNumberCounter, { from: second });
+			const tx = await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			assert.equal(await royale.finalPricePerRoundPerRoom(roomNumberCounter, 3), 1300);
 			assert.equal(await royale.roundResultPerRoom(roomNumberCounter, 1), 2);
@@ -2066,7 +2066,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			assert.equal(await royale.currentRoundInRoom(roomNumberCounter), 3); // end game
 			assert.equal(await royale.roomFinished(roomNumberCounter), true);
 
-			assert.bnEqual(await royale.rewardPerPlayerPerRoom(roomNumberCounter), buyIn100);
+			assert.bnEqual(await royale.rewardPerWinnerPerRoom(roomNumberCounter), buyIn100);
 			
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'SplitBetweenLoosers', {
@@ -2090,7 +2090,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Two players win and one claim one expired and check require statements', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -2117,7 +2117,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1100);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			// #2
 			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
@@ -2127,7 +2127,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1200);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			// #3
 			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: first });
@@ -2139,7 +2139,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await expect(royale.claimRewardForRoom(roomNumberCounter, { from: first })).to.be.revertedWith('Royale must be finished!');
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 			assert.equal(await royale.roomFinished(roomNumberCounter), true);
 
 			await expect(royale.claimRewardForRoom(roomNumberCounter, { from: third })).to.be.revertedWith('Player is not alive');
@@ -2155,16 +2155,12 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await expect(royale.claimRewardForRoom(roomNumberCounter, { from: first })).to.be.revertedWith('Player already collected reward');
 			
-			await fastForward(HOUR * 72 + 1);
-
-			await expect(royale.claimRewardForRoom(roomNumberCounter, { from: second })).to.be.revertedWith('Time for reward claiming expired');
-
 		});
 	});
 	describe('Room management', () => {
 		it('Try to set buy in, and buy in amount checking', async () => {
 			
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -2177,12 +2173,12 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn99, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 2);
 
-			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn101, { from: first })).to.be.revertedWith('No allowance.');
+			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn201, { from: first })).to.be.revertedWith('No allowance.');
 			
 			await ThalesDeployed.approve(royale.address, toUnit(1), { from: first });
 
@@ -2235,7 +2231,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn100, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
@@ -2243,7 +2239,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Set round length, and check values', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -2283,62 +2279,15 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			await expect(royale.setRoundLength(roomNumberCounter, 2 * HOUR, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
 		});
 
-		it('Set claim time, and check values', async () => {
-
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
-			
-			let roomNumberCounter = await royale.roomNumberCounter();
-			assert.equal(roomNumberCounter, 1);
-
-			let climeTimePerRoom = await royale.climeTimePerRoom(roomNumberCounter);
-			assert.equal(climeTimePerRoom, 2 * DAY);
-
-			await expect(royale.setClaimTimePerRoom(roomNumberCounter, 2 * DAY, { from: second })).to.be.revertedWith('You are not owner of room.');
-			await expect(royale.setClaimTimePerRoom(roomNumberCounter, 0.5 * DAY, { from: first })).to.be.revertedWith('Claim time lower then minimum');
-
-			const tx_2 = await royale.setClaimTimePerRoom(roomNumberCounter, 3 * DAY, { from: first });
-
-			climeTimePerRoom = await royale.climeTimePerRoom(roomNumberCounter);
-			assert.equal(climeTimePerRoom, 3 * DAY);
-
-			// check if event is emited
-			assert.eventEqual(tx_2.logs[0], 'NewClaimTime', {
-				_roomNumber: roomNumberCounter,
-				_claimTime: 3 * DAY
-			});
-
-			await royale.signUpForRoom( roomNumberCounter, { from: second });
-
-			await expect(royale.setClaimTimePerRoom(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
-
-			await fastForward(HOUR * 72 + 1);
-
-			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
-			
-			await expect(royale.setClaimTimePerRoom(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
-
-			// #1
-			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
-			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: second });
-
-			await MockPriceFeedDeployed.setPricetoReturn(1300);
-
-			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
-
-			await expect(royale.setClaimTimePerRoom(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
-
-		});
-
 		it('Set sign up period, check values', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -2377,7 +2326,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			await expect(royale.setRoomSignUpPeriod(roomNumberCounter, 3 * DAY, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
@@ -2385,7 +2334,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Set number of rounds', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -2424,7 +2373,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			await expect(royale.setNumberOfRoundsInRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
@@ -2432,7 +2381,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Set round choosing length', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -2472,7 +2421,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			await expect(royale.setRoundChoosingLength(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
@@ -2480,7 +2429,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Set oracle key, check values', async () => {
 
-			await royale.createARoom(ETH, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(ETH, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -2519,7 +2468,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			await expect(royale.setOracleKey(roomNumberCounter, SNX, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
@@ -2527,14 +2476,14 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Set allowed players in closed room, check values', async () => {
 
-			await royale.createARoom(ETH, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(ETH, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
 
 			await expect(royale.setNewAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayers, { from: first })).to.be.revertedWith('Room need to be closed and  allowed players not empty');
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first })
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, { from: first })
 
 			roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 2);
@@ -2571,7 +2520,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: fourth });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: fourth });
 
 			await expect(royale.setNewAllowedPlayersPerRoomClosedRoom(roomNumberCounter, allowedPlayersForAdding, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
@@ -2579,14 +2528,14 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 		
 		it('Add allowed players in closed room, take position with added player', async () => {
 			
-			await royale.createARoom(ETH, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(ETH, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
 
 			await expect(royale.addAllowedPlayerPerRoomClosedRoom(roomNumberCounter, third, { from: first })).to.be.revertedWith('Type of room needs to be closed');
 
-			await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first })
+			await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, { from: first })
 
 			roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 2);
@@ -2624,7 +2573,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: fourth });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: fourth });
 
 			await expect(royale.addAllowedPlayerPerRoomClosedRoom(roomNumberCounter, fourth, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
@@ -2632,7 +2581,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Set amount of players, check values', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -2671,11 +2620,11 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			await expect(royale.setAmuontOfPlayersInOpenRoom(roomNumberCounter, 7, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 
-			const tx = await royale.createARoom(SNX, RoomType.CLOSED, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 10, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first })
+			const tx = await royale.createClosedRoom(SNX, GameType.LAST_MAN_STANDING, allowedPlayers, buyIn100, 1 * HOUR, 7, 1 * HOUR, 2 * HOUR, { from: first })
 
 			roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 2);
@@ -2686,7 +2635,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 		it('Delete room', async () => {
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR,{ from: first });
 			
 			let roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 1);
@@ -2706,7 +2655,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 				_roomOwner: first
 			});
 
-			await royale.createARoom(SNX, RoomType.OPEN, GameType.LIMITED_NUMBER_OF_ROUNDS, empty, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, 2 * DAY,{ from: first });
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
 			
 			roomNumberCounter = await royale.roomNumberCounter();
 			assert.equal(roomNumberCounter, 2);
@@ -2728,7 +2677,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound(roomNumberCounter, { from: second });
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
 
 			await expect(royale.deleteRoom(roomNumberCounter, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
 

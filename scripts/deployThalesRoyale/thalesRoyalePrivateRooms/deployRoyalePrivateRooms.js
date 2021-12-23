@@ -59,9 +59,8 @@ async function main() {
 			30 * min,				// minRoundTime
 			15 * min,				// minChooseTime
 			15 * min,				// offsetBeteweenChooseAndEndRound
-			24 * hour,				// minClaimTime
 			10,						// maxPlayersInClosedRoom
-			1,						// minBuyIn
+			w3utils.toWei('1'),		// minBuyIn
 			[BTC, ETH, SNX, LINK],	// allowedAssets
 			2						// _minNumberOfRounds
         ]

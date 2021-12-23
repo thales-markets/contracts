@@ -495,18 +495,6 @@
             "label": "aggregatorKeys",
             "type": "t_array(t_bytes32)dyn_storage",
             "src": "contracts/PriceFeed/PriceFeed.sol:24"
-          },
-          {
-            "contract": "PriceFeed",
-            "label": "owner",
-            "type": "t_address",
-            "src": "contracts/PriceFeed/PriceFeed.sol:25"
-          },
-          {
-            "contract": "PriceFeed",
-            "label": "nominatedOwner",
-            "type": "t_address",
-            "src": "contracts/PriceFeed/PriceFeed.sol:26"
           }
         ],
         "types": {
@@ -2468,6 +2456,133 @@
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "783d4fa41558fc975676f17b3b07e4f1fcec87a797a4fdb3e79a82f1dc7af889": {
+      "address": "0xf97a2dAb5292984a273A7b179A328b8Eac1BD44F",
+      "txHash": "0xd988ce195e469f917514575a1b6fb02467a8a2731090ffc4b74d054a1cfaf5fc",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "aggregators",
+            "type": "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)141)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:25"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "currencyKeyDecimals",
+            "type": "t_mapping(t_bytes32,t_uint8)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:27"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "aggregatorKeys",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts/PriceFeed/PriceFeed.sol:29"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "currencyKeys",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts/PriceFeed/PriceFeed.sol:32"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "pools",
+            "type": "t_mapping(t_bytes32,t_contract(IUniswapV3Pool)639)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:33"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "twapInterval",
+            "type": "t_uint32",
+            "src": "contracts/PriceFeed/PriceFeed.sol:35"
+          }
+        ],
+        "types": {
+          "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)141)": {
+            "label": "mapping(bytes32 => contract AggregatorV2V3Interface)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_contract(AggregatorV2V3Interface)141": {
+            "label": "contract AggregatorV2V3Interface"
+          },
+          "t_mapping(t_bytes32,t_uint8)": {
+            "label": "mapping(bytes32 => uint8)"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_mapping(t_bytes32,t_contract(IUniswapV3Pool)639)": {
+            "label": "mapping(bytes32 => contract IUniswapV3Pool)"
+          },
+          "t_contract(IUniswapV3Pool)639": {
+            "label": "contract IUniswapV3Pool"
+          },
+          "t_uint32": {
+            "label": "uint32"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
           }
         }
       }

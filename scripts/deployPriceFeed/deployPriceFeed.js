@@ -50,6 +50,12 @@ async function main() {
 		});
 	}
 
+	// RAI/WETH pool kovan 0x3641abc98ef25ce74939fd15f04a4da677f45e0f
+    let tx = await priceFeed.addPool(toBytes32('RAI'), '0x3641abc98ef25ce74939fd15f04a4da677f45e0f');
+    await tx.wait().then(e => {
+		console.log('PriceFeed: addPool for RAI');
+	});
+
 	try {
 		await hre.run('verify:verify', {
 			address: priceFeedImplementation,
@@ -60,7 +66,7 @@ async function main() {
 
 	try {
 		await hre.run('verify:verify', {
-			address: priceFeed.address,
+			address: '0xe3C2b544E2aDCe2d59815cA78396B811F52BA3e0',
 		});
 	} catch (e) {
 		console.log(e);

@@ -14,6 +14,15 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimistic';
+		network = 'optimistic';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
@@ -22,12 +31,6 @@ async function main() {
 
 	const PriceFeed = await ethers.getContractFactory('PriceFeed');
 	await upgrades.upgradeProxy(priceFeedAddress, PriceFeed);
-
-	// RAI/WETH pool 0x3641abc98ef25ce74939fd15f04a4da677f45e0f
-    let tx = await priceFeedDeployed.addPool(toBytes32('RAI'), '0x3641abc98ef25ce74939fd15f04a4da677f45e0f');
-    await tx.wait().then(e => {
-		console.log('PriceFeed: addPool for RAI');
-	});
 
 	console.log('PriceFeed upgraded');
 }

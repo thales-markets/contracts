@@ -331,7 +331,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         if ((_stakedBalances[account] == 0) || (_lastRewardsClaimedPeriod[account] == periodsOfStaking)) {
             return 0;
         }
-        (uint snx_rewards, ) = SNXRewards.feesAvailable(account);
+        // If the SNX has not claimed the available rewards yet
+        ( , uint snx_rewards) = SNXRewards.feesAvailable(account);
         if(snx_rewards > 0) {
             return snx_rewards.mul(periodExtraReward).div(SNXRewards.totalRewardsAvailable())
             .add(_stakedBalances[account]
@@ -350,7 +351,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         if ((_stakedBalances[account] == 0) || (_lastRewardsClaimedPeriod[account] == periodsOfStaking)) {
             return 0;
         }
-        ( , uint snx_fees) = SNXRewards.feesAvailable(account);
+        (uint snx_fees, ) = SNXRewards.feesAvailable(account);
         if(snx_fees > 0) {
             return snx_fees.mul(periodExtraReward).div(SNXRewards.totalFeesAvailable())
             .add(_stakedBalances[account]

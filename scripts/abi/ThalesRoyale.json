@@ -4,31 +4,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "season",
-        "type": "uint256"
-      }
-    ],
-    "name": "BuyIn",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "season",
         "type": "uint256"
@@ -209,29 +184,34 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
+    "constant": true,
+    "inputs": [],
+    "name": "DOWN",
+    "outputs": [
       {
-        "indexed": false,
         "internalType": "uint256",
-        "name": "season",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "reward",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "UnclaimedRewardClaimed",
-    "type": "event"
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "UP",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "constant": false,
@@ -289,15 +269,6 @@
   },
   {
     "constant": false,
-    "inputs": [],
-    "name": "claimRewardForCurrentSeason",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
     "inputs": [
       {
         "internalType": "uint256",
@@ -306,41 +277,6 @@
       }
     ],
     "name": "claimRewardForSeason",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "claimTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_treasuryAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_season",
-        "type": "uint256"
-      }
-    ],
-    "name": "claimUnclaimedRewards",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -462,11 +398,6 @@
       {
         "internalType": "uint256",
         "name": "_roundLength",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_claimTime",
         "type": "uint256"
       },
       {
@@ -698,32 +629,6 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "playersPerSeason",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -796,12 +701,17 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_season",
+        "type": "uint256"
       }
     ],
-    "name": "pullFunds",
+    "name": "putFunds",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -842,7 +752,7 @@
         "type": "uint256"
       }
     ],
-    "name": "rewardPerPlayerPerSeason",
+    "name": "rewardPerSeason",
     "outputs": [
       {
         "internalType": "uint256",
@@ -863,7 +773,7 @@
         "type": "uint256"
       }
     ],
-    "name": "rewardPerSeason",
+    "name": "rewardPerWinnerPerSeason",
     "outputs": [
       {
         "internalType": "uint256",
@@ -894,6 +804,27 @@
     "constant": true,
     "inputs": [],
     "name": "roundChoosingLength",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "roundInASeason",
     "outputs": [
       {
         "internalType": "uint256",
@@ -951,27 +882,6 @@
     "constant": true,
     "inputs": [],
     "name": "roundLength",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "roundPerSeason",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1178,21 +1088,6 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_claimTime",
-        "type": "uint256"
-      }
-    ],
-    "name": "setClaimTime",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
         "internalType": "bool",
         "name": "_nextSeasonStartsAutomatically",
         "type": "bool"
@@ -1269,41 +1164,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_reward",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRewards",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_reward",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_season",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRewardsForSpecificSeason",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "_roundChoosingLength",
         "type": "uint256"
       }
@@ -1324,21 +1184,6 @@
       }
     ],
     "name": "setRoundLength",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_rounds",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRoundNumber",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1416,7 +1261,7 @@
   {
     "constant": false,
     "inputs": [],
-    "name": "startRoyale",
+    "name": "startRoyaleInASeason",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

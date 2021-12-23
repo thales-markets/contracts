@@ -69,11 +69,10 @@ async function main() {
         signUpPeriod,			//7
         roundChoosingLength,	//8
         roundLength,			//9
-        claimTime,				//10
-        season, 				//11
-        buyIn,					//12
-        true,					//13
-        pauseBetweenSeasonsTime	//14
+        season, 				//10
+        buyIn,					//11
+        true,					//12
+        pauseBetweenSeasonsTime	//13
         ]
     );
 	await royale.deployed();

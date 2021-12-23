@@ -108,6 +108,44 @@
     "type": "event"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint160",
+        "name": "sqrtPriceX96",
+        "type": "uint160"
+      }
+    ],
+    "name": "_getPriceFromSqrtPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "priceX96",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "pool",
+        "type": "address"
+      }
+    ],
+    "name": "_getTwap",
+    "outputs": [
+      {
+        "internalType": "uint160",
+        "name": "sqrtPriceX96",
+        "type": "uint160"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -240,25 +278,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint160",
-        "name": "sqrtPriceX96",
-        "type": "uint160"
-      }
-    ],
-    "name": "getPriceX96FromSqrtPriceX96",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "priceX96",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "getRates",
     "outputs": [
@@ -266,30 +285,6 @@
         "internalType": "uint256[]",
         "name": "rates",
         "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "uniswapV3Pool",
-        "type": "address"
-      },
-      {
-        "internalType": "uint32",
-        "name": "twapInterval",
-        "type": "uint32"
-      }
-    ],
-    "name": "getSqrtTwapX96",
-    "outputs": [
-      {
-        "internalType": "uint160",
-        "name": "sqrtPriceX96",
-        "type": "uint160"
       }
     ],
     "stateMutability": "view",
@@ -451,6 +446,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint32",
+        "name": "_twapInterval",
+        "type": "uint32"
+      }
+    ],
+    "name": "setTwapInterval",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "proxyAddress",
         "type": "address"
@@ -459,6 +467,19 @@
     "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "twapInterval",
+    "outputs": [
+      {
+        "internalType": "uint32",
+        "name": "",
+        "type": "uint32"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

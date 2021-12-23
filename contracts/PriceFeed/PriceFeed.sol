@@ -13,8 +13,14 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 // AggregatorInterface from Chainlink represents a decentralized pricing network for a single currency key
 import "@chainlink/contracts-0.0.10/src/v0.5/interfaces/AggregatorV2V3Interface.sol";
 
-contract PriceFeed is Initializable, ProxyOwned, TwapGetter {
+import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
+import "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol";
+import "@uniswap/v3-core/contracts/libraries/FullMath.sol";
+
+contract PriceFeed is Initializable, ProxyOwned {
     using SafeMath for uint;
+    uint256 internal constant Q192 = 0x1000000000000000000000000000000000000000000000000;
 
     // Decentralized oracle networks that feed into pricing aggregators
     mapping(bytes32 => AggregatorV2V3Interface) public aggregators;
@@ -27,6 +33,8 @@ contract PriceFeed is Initializable, ProxyOwned, TwapGetter {
     bytes32[] public currencyKeys;
     mapping(bytes32 => IUniswapV3Pool) public pools;
 
+    uint32 public twapInterval;
+
     struct RateAndUpdatedTime {
         uint216 rate;
         uint40 time;
@@ -34,6 +42,7 @@ contract PriceFeed is Initializable, ProxyOwned, TwapGetter {
 
     function initialize(address _owner) public initializer {
         setOwner(_owner);
+        twapInterval = 300;
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
@@ -118,6 +127,10 @@ contract PriceFeed is Initializable, ProxyOwned, TwapGetter {
         return false;
     }
 
+    function setTwapInterval(uint32 _twapInterval) external onlyOwner {
+        twapInterval = _twapInterval;
+    }
+
     function _formatAnswer(bytes32 currencyKey, int256 rate) internal view returns (uint) {
         require(rate >= 0, "Negative rate not supported");
         if (currencyKeyDecimals[currencyKey] > 0) {
@@ -130,7 +143,7 @@ contract PriceFeed is Initializable, ProxyOwned, TwapGetter {
     function _getRateAndUpdatedTime(bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
         AggregatorV2V3Interface aggregator = aggregators[currencyKey];
         IUniswapV3Pool pool = pools[currencyKey];
-        require(address(aggregator) != address(0) && address(pool) != address(0), "No aggregator or pool exists for key");
+        require(address(aggregator) != address(0) || address(pool) != address(0), "No aggregator or pool exists for key");
 
         if (aggregator != AggregatorV2V3Interface(0)) {
             // this view from the aggregator is the most gas efficient but it can throw when there's no data,
@@ -147,9 +160,31 @@ contract PriceFeed is Initializable, ProxyOwned, TwapGetter {
                 return RateAndUpdatedTime({rate: uint216(_formatAnswer(currencyKey, answer)), time: uint40(updatedAt)});
             }
         } else {
-            uint256 answer = getPriceX96FromSqrtPriceX96(getSqrtTwapX96(address(pool), 300));
-            return RateAndUpdatedTime({rate: uint216(answer), time: uint40(block.timestamp)});
+            uint256 answer =_getPriceFromSqrtPrice(_getTwap(address(pool)));
+            return RateAndUpdatedTime({rate: uint216(_formatAnswer(currencyKey, int256(answer))), time: uint40(block.timestamp)});
         }
+    }
+
+    function _getTwap(address pool) public view returns (uint160 sqrtPriceX96) {
+        if (twapInterval == 0) {
+            // return the current price if twapInterval == 0
+            (sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
+        } else {
+            uint32[] memory secondsAgos = new uint32[](2);
+            secondsAgos[0] = twapInterval; // from (before)
+            secondsAgos[1] = 0; // to (now)
+
+            (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(secondsAgos);
+
+            // tick(imprecise as it's an integer) to price
+            sqrtPriceX96 = TickMath.getSqrtRatioAtTick(
+                int24((tickCumulatives[1] - tickCumulatives[0]) / twapInterval)
+            );
+        }
+    }
+
+    function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) public pure returns(uint256 priceX96) {
+        return FullMath.mulDiv(sqrtPriceX96, sqrtPriceX96 * 10**18, Q192);
     }
 
     /* ========== EVENTS ========== */

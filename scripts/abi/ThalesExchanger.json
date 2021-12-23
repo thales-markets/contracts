@@ -1,37 +1,5 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "thalesAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "opThalesAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_l1BridgeAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_l2TokenAddress",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -107,6 +75,32 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_l2TokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "L2tokenAdressSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "opThalesAddress",
+        "type": "address"
+      }
+    ],
+    "name": "OpThalesAdressSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -144,6 +138,45 @@
       }
     ],
     "name": "PauseChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_enable",
+        "type": "bool"
+      }
+    ],
+    "name": "SetEnabledOpThalesToThales",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_enable",
+        "type": "bool"
+      }
+    ],
+    "name": "SetEnabledThalesToOpThales",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "thalesAddress",
+        "type": "address"
+      }
+    ],
+    "name": "ThalesAdressSet",
     "type": "event"
   },
   {
@@ -195,6 +228,15 @@
     "constant": false,
     "inputs": [],
     "name": "acceptOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "approveUnlimitedOpThales",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -270,6 +312,50 @@
       }
     ],
     "name": "exchangeThalesToOpThales",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "initNonReentrant",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "thalesAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "opThalesAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_l1BridgeAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_l2TokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -369,21 +455,6 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "selfDestruct",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
         "internalType": "bool",
         "name": "_enable",
         "type": "bool"
@@ -459,6 +530,21 @@
     "constant": false,
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "setOwner",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "internalType": "bool",
         "name": "_paused",
         "type": "bool"
@@ -480,6 +566,21 @@
       }
     ],
     "name": "setThalesAddress",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnershipAtInit",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

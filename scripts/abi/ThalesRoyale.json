@@ -1,82 +1,5 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_oracleKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "contract IPriceFeed",
-        "name": "_priceFeed",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_initialReward",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_rewardToken",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_rounds",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_signUpPeriod",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_roundChoosingLength",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_roundLength",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_claimTime",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_season",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_buyInAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "_nextSeasonStartsAutomatically",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_pauseBetweenSeasonsTime",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -485,6 +408,95 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [],
+    "name": "initNonReentrant",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_oracleKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "contract IPriceFeed",
+        "name": "_priceFeed",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_initialReward",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_rewardToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_rounds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_signUpPeriod",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_roundChoosingLength",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_roundLength",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_claimTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_season",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyInAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_nextSeasonStartsAutomatically",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_pauseBetweenSeasonsTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [
       {
@@ -778,6 +790,21 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "pullFunds",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1136,21 +1163,6 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "selfDestruct",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_buyInAmount",
         "type": "uint256"
@@ -1187,6 +1199,21 @@
       }
     ],
     "name": "setNextSeasonStartsAutomatically",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "setOwner",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1460,6 +1487,21 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

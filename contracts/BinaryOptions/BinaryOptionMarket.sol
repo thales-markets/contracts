@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity 0.5.16;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
@@ -53,6 +53,8 @@ contract BinaryOptionMarket is OwnedWithInit, IBinaryOptionMarket {
         address iOracleInstanceAddress;
         address long;
         address short;
+        address limitOrderProvider;
+        address thalesAMM;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -106,8 +108,8 @@ contract BinaryOptionMarket is OwnedWithInit, IBinaryOptionMarket {
         options.short = BinaryOption(_parameters.short);
         // abi.encodePacked("sLONG: ", _oracleKey)
         // consider naming the option: sLongBTC>50@2021.12.31
-        options.long.initialize("Binary Option Long", "sLONG");
-        options.short.initialize("Binary Option Short", "sSHORT");
+        options.long.initialize("Binary Option Long", "sLONG", _parameters.limitOrderProvider, _parameters.thalesAMM);
+        options.short.initialize("Binary Option Short", "sSHORT", _parameters.limitOrderProvider, _parameters.thalesAMM);
         _mint(creator, initialMint);
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
@@ -286,14 +288,17 @@ contract BinaryOptionMarket is OwnedWithInit, IBinaryOptionMarket {
     /* ---------- Custom oracle configuration ---------- */
     function setIOracleInstance(address _address) external onlyOwner {
         iOracleInstance = IOracleInstance(_address);
+        emit SetIOracleInstance(_address);
     }
 
     function setPriceFeed(address _address) external onlyOwner {
         priceFeed = IPriceFeed(_address);
+        emit SetPriceFeed(_address);
     }
 
     function setsUSD(address _address) external onlyOwner {
         sUSD = IERC20(_address);
+        emit SetsUSD(_address);
     }
 
     /* ---------- Market Resolution ---------- */
@@ -365,6 +370,7 @@ contract BinaryOptionMarket is OwnedWithInit, IBinaryOptionMarket {
 
     function expire(address payable beneficiary) external onlyOwner {
         require(_expired(), "Unexpired options remaining");
+        emit Expired(beneficiary);
         _selfDestruct(beneficiary);
     }
 
@@ -399,4 +405,10 @@ contract BinaryOptionMarket is OwnedWithInit, IBinaryOptionMarket {
 
     event OptionsExercised(address indexed account, uint value);
     event OptionsBurned(address indexed account, uint value);
+    event SetZeroExAddress(address _zeroExAddress);
+    event SetZeroExAddressAtInit(address _zeroExAddress);
+    event SetsUSD(address _address);
+    event SetPriceFeed(address _address);
+    event SetIOracleInstance(address _address);
+    event Expired(address beneficiary);
 }

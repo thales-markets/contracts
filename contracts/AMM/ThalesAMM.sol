@@ -1,11 +1,13 @@
 pragma solidity ^0.5.16;
 
-import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
-import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
 import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
-import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+
+import "../utils/proxy/ProxyReentrancyGuard.sol";
+import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/ProxyPausable.sol";
 
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
@@ -13,25 +15,29 @@ import "../interfaces/IBinaryOptionMarketManager.sol";
 import "../interfaces/IBinaryOption.sol";
 import "./DeciMath.sol";
 
-contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
+contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
     using SafeMath for uint;
     using SafeDecimalMath for uint;
 
     DeciMath public deciMath;
 
     uint private constant ONE = 1e18;
+    uint private constant ONE_PERCENT = 1e16;
+
+    uint private constant MIN_SUPPORTED_PRICE = 10e16;
+    uint private constant MAX_SUPPORTED_PRICE = 90e16;
 
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
     address public manager;
 
-    uint public capPerMarket = 1000 * 1e18;
-    uint public min_spread = 1e16; //1%
-    uint public max_spread = 5e16; //5%
+    uint public capPerMarket;
+    uint public min_spread;
+    uint public max_spread;
 
     mapping(bytes32 => uint) public impliedVolatilityPerAsset;
 
-    uint public minimalTimeLeftToMaturity = 2 hours;
+    uint public minimalTimeLeftToMaturity;
 
     struct MarketSkew {
         uint longs;
@@ -42,37 +48,45 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
 
     mapping(address => uint) public spentOnMarket;
 
-    constructor(
+    function initialize(
         address _owner,
         IPriceFeed _priceFeed,
         IERC20 _sUSD,
         uint _capPerMarket,
-        DeciMath _deciMath
-    ) public Owned(_owner) {
+        DeciMath _deciMath,
+        uint _min_spread,
+        uint _max_spread,
+        uint _minimalTimeLeftToMaturity
+    ) public initializer {
+        setOwner(_owner);
+        initNonReentrant();
         priceFeed = _priceFeed;
         sUSD = _sUSD;
         capPerMarket = _capPerMarket;
         deciMath = _deciMath;
+        min_spread = _min_spread;
+        max_spread = _max_spread;
+        minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
     }
 
     function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position);
             // ignore extremes
-            if (basePrice >= ONE.sub(1e16) || basePrice <= 1e16) {
+            if (basePrice <= MIN_SUPPORTED_PRICE || basePrice >= MAX_SUPPORTED_PRICE) {
                 return 0;
             }
             uint balance = _balanceOfPositionOnMarket(market, position);
-            uint buy_max_price = basePrice.mul(ONE.add(max_spread)).div(1e18);
+            uint buy_max_price = basePrice.mul(ONE.add(max_spread)).div(ONE);
             // ignore extremes
-            if (buy_max_price >= ONE.sub(1e16) || buy_max_price <= 1e16) {
+            if (buy_max_price >= ONE.sub(ONE_PERCENT) || buy_max_price <= ONE_PERCENT) {
                 return 0;
             }
             uint divider_max_price = ONE.sub(buy_max_price);
-            uint additionalBufferFromSelling = balance.mul(buy_max_price).div(1e18);
+            uint additionalBufferFromSelling = balance.mul(buy_max_price).div(ONE);
             uint availableUntilCapSUSD = capPerMarket.sub(spentOnMarket[market]).add(additionalBufferFromSelling);
 
-            return balance.add(availableUntilCapSUSD.div(divider_max_price).mul(1e18));
+            return balance.add(availableUntilCapSUSD.div(divider_max_price).mul(ONE));
         } else {
             return 0;
         }
@@ -87,7 +101,7 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
             return 0;
         }
         uint basePrice = price(market, position);
-        return amount.mul(basePrice.mul(ONE.add(buyPriceImpact(market, position, amount))).div(1e18)).div(1e18);
+        return amount.mul(basePrice.mul(ONE.add(_buyPriceImpact(market, position, amount))).div(ONE)).div(ONE);
     }
 
     function buyPriceImpact(
@@ -98,41 +112,26 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         if (amount > availableToBuyFromAMM(market, position)) {
             return 0;
         }
-        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-        uint balancePosition = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
-        uint balanceOtherSide = position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
-        uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
-        uint balanceOtherSideAfter =
-            balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
-        uint pricePaid = _minimalBuyPrice(market, position).mul(amount).div(1e18);
-        if (balancePositionAfter >= balanceOtherSideAfter) {
-            //minimal price impact as it will balance the AMM exposure
-            return min_spread;
-        } else {
-            uint basePriceOtherSide = price(market, position == Position.Long ? Position.Short : Position.Long);
-            uint skew = balanceOtherSideAfter.sub(balancePositionAfter);
-            uint maxPossibleSkew = capPerMarket.mul(1e18).div(basePriceOtherSide);
-            return min_spread.add(max_spread.sub(min_spread).mul(skew.mul(1e18).div(maxPossibleSkew)).div(1e18));
-        }
+        return _buyPriceImpact(market, position, amount);
     }
 
     function availableToSellToAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position);
             // ignore extremes
-            if (basePrice >= ONE.sub(1e16) || basePrice <= 1e16) {
+            if (basePrice <= MIN_SUPPORTED_PRICE || basePrice >= MAX_SUPPORTED_PRICE) {
                 return 0;
             }
-            uint sell_max_price = basePrice.mul(ONE.sub(max_spread)).div(1e18);
+            uint sell_max_price = basePrice.mul(ONE.sub(max_spread)).div(ONE);
             require(sell_max_price > 0, "div by zero sell_max_price");
             (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
             uint balanceOfTheOtherSide =
                 position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
 
             // can burn straight away balanceOfTheOtherSide
-            uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(1e18);
+            uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
             uint usdAvailable = capPerMarket.add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
-            return usdAvailable.div(sell_max_price).mul(1e18).add(balanceOfTheOtherSide);
+            return usdAvailable.div(sell_max_price).mul(ONE).add(balanceOfTheOtherSide);
         } else return 0;
     }
 
@@ -145,7 +144,7 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
             return 0;
         }
         uint basePrice = price(market, position);
-        return amount.mul(basePrice.mul(ONE.sub(sellPriceImpact(market, position, amount))).div(1e18)).div(1e18);
+        return amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
     }
 
     function sellPriceImpact(
@@ -156,22 +155,7 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         if (amount > availableToSellToAMM(market, position)) {
             return 0;
         }
-        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-        uint balancePosition = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
-        uint balanceOtherSide = position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
-        uint balancePositionAfter = balancePosition.add(amount);
-        uint pricePaid = _minimalSellPrice(market, position).mul(amount).div(1e18);
-        if (balancePositionAfter < balanceOtherSide) {
-            //minimal price impact as it will balance the AMM exposure
-            return min_spread;
-        } else {
-            uint basePrice = price(market, position);
-            uint skew = balancePositionAfter.sub(balanceOtherSide);
-            require(basePrice > 0, "div by zero basePrice");
-            uint maxPossibleSkew = capPerMarket.mul(1e18).div(basePrice);
-            require(maxPossibleSkew > 0, "div by zero maxPossibleSkew");
-            return min_spread.add(max_spread.sub(min_spread).mul(skew.mul(1e18).div(maxPossibleSkew)).div(1e18));
-        }
+        return _sellPriceImpact(market, position, amount);
     }
 
     function price(address market, Position position) public view returns (uint) {
@@ -181,7 +165,7 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
             (uint maturity, uint destructino) = marketContract.times();
 
             uint timeLeftToMaturity = maturity - block.timestamp;
-            uint timeLeftToMaturityInDays = timeLeftToMaturity.mul(1e18).div(86400);
+            uint timeLeftToMaturityInDays = timeLeftToMaturity.mul(ONE).div(86400);
             uint oraclePrice = marketContract.oraclePrice();
 
             (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
@@ -208,21 +192,26 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         uint volatility
     ) public view returns (uint) {
         uint vt = volatility.div(100).mul(sqrt(timeLeftInDays.div(365))).div(1e9);
-        uint d1 = deciMath.ln(strike.mul(1e18).div(price), 99).mul(1e18).div(vt);
-        uint y = ONE.mul(1e18).div(ONE.add(d1.mul(2316419).div(1e7)));
-        uint d2 = d1.mul(d1).div(2).div(1e18);
+        bool direction = strike >= price;
+        uint lnBase = strike >= price ? strike.mul(ONE).div(price) : price.mul(ONE).div(strike);
+        uint d1 = deciMath.ln(lnBase, 99).mul(ONE).div(vt);
+        uint y = ONE.mul(ONE).div(ONE.add(d1.mul(2316419).div(1e7)));
+        uint d2 = d1.mul(d1).div(2).div(ONE);
         uint z = _expneg(d2).mul(3989423).div(1e7);
 
-        uint y5 = deciMath.pow(y, 5 * 1e18).mul(1330274).div(1e6);
-        uint y4 = deciMath.pow(y, 4 * 1e18).mul(1821256).div(1e6);
-        uint y3 = deciMath.pow(y, 3 * 1e18).mul(1781478).div(1e6);
-        uint y2 = deciMath.pow(y, 2 * 1e18).mul(356538).div(1e6);
+        uint y5 = deciMath.pow(y, 5 * ONE).mul(1330274).div(1e6);
+        uint y4 = deciMath.pow(y, 4 * ONE).mul(1821256).div(1e6);
+        uint y3 = deciMath.pow(y, 3 * ONE).mul(1781478).div(1e6);
+        uint y2 = deciMath.pow(y, 2 * ONE).mul(356538).div(1e6);
         uint y1 = y.mul(3193815).div(1e7);
         uint x1 = y5.add(y3).add(y1).sub(y4).sub(y2);
-        uint x = ONE.sub(z.mul(x1).div(1e18));
+        uint x = ONE.sub(z.mul(x1).div(ONE));
         uint result = ONE.mul(1e2).sub(x.mul(1e2));
-
-        return result;
+        if (direction) {
+            return result;
+        } else {
+            return ONE.mul(1e2).sub(result);
+        }
     }
 
     function isMarketInAMMTrading(address market) public view returns (bool) {
@@ -267,31 +256,26 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
     ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
-        require(amount <= availableToBuyFromAMM(market, position), "Not enough liquidity.");
+        uint availableToBuyFromAMMATM = availableToBuyFromAMM(market, position);
+        require(availableToBuyFromAMMATM > 0 && amount <= availableToBuyFromAMMATM, "Not enough liquidity.");
 
         uint sUSDPaid = buyFromAmmQuote(market, position, amount);
         require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
         require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
-
-        require(sUSDPaid.mul(ONE).div(expectedPayout) <= (ONE.add(additionalSlippage)), "Slippage too high");
-
-        require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
+        require(sUSDPaid.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high");
 
         sUSD.transferFrom(msg.sender, address(this), sUSDPaid);
 
-        uint availableInContract = _balanceOfPositionOnMarket(market, position);
-
-        uint toMint = 0;
-        if (availableInContract < amount) {
-            toMint = amount.sub(availableInContract);
+        uint toMint = _getMintableAmount(market, position, amount);
+        if (toMint > 0) {
             require(sUSD.balanceOf(address(this)) >= toMint, "Not enough sUSD in contract.");
             IBinaryOptionMarket(market).mint(toMint);
+            spentOnMarket[market] = spentOnMarket[market].add(toMint);
         }
 
         (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-        IERC20(address(position == Position.Long ? long : short)).transfer(msg.sender, amount);
-
-        spentOnMarket[market] = spentOnMarket[market].add(toMint);
+        IBinaryOption target = position == Position.Long ? long : short;
+        IERC20(address(target)).transfer(msg.sender, amount);
 
         if (spentOnMarket[market] <= sUSDPaid) {
             spentOnMarket[market] = 0;
@@ -299,7 +283,7 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
             spentOnMarket[market] = spentOnMarket[market].sub(sUSDPaid);
         }
 
-        emit BoughtFromAmm(msg.sender, market, position, amount);
+        emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
     }
 
     function sellToAMM(
@@ -311,7 +295,8 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
     ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
-        require(amount <= availableToSellToAMM(market, position), "Cant buy that much");
+        uint availableToSellToAMMATM = availableToSellToAMM(market, position);
+        require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
 
         uint pricePaid = sellToAmmQuote(market, position, amount);
         require(expectedPayout.mul(ONE).div(pricePaid) <= (ONE.add(additionalSlippage)), "Slippage too high");
@@ -334,13 +319,13 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         sUSD.transfer(msg.sender, pricePaid);
 
         spentOnMarket[market] = spentOnMarket[market].add(pricePaid);
-        if (spentOnMarket[market] < sUSDFromBurning) {
+        if (spentOnMarket[market] <= sUSDFromBurning) {
             spentOnMarket[market] = 0;
         } else {
             spentOnMarket[market] = spentOnMarket[market].sub(sUSDFromBurning);
         }
 
-        emit SoldToAMM(msg.sender, market, position, amount);
+        emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), address(target));
     }
 
     function exerciseMaturedMarket(address market) external {
@@ -356,30 +341,37 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
     // setters
     function setMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity) public onlyOwner {
         minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
+        emit SetMinimalTimeLeftToMaturity(_minimalTimeLeftToMaturity);
     }
 
     function setMinSpread(uint _spread) public onlyOwner {
         min_spread = _spread;
+        emit SetMinSpread(_spread);
     }
 
     function setMaxSpread(uint _spread) public onlyOwner {
         max_spread = _spread;
+        emit SetMaxSpread(_spread);
     }
 
     function setImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility) public onlyOwner {
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
+        emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);
     }
 
     function setCapPerMarket(uint _capPerMarket) public onlyOwner {
         capPerMarket = _capPerMarket;
+        emit SetCapPerMarket(_capPerMarket);
     }
 
     function setPriceFeed(IPriceFeed _priceFeed) public onlyOwner {
         priceFeed = _priceFeed;
+        emit SetPriceFeed(address(_priceFeed));
     }
 
     function setSUSD(IERC20 _sUSD) public onlyOwner {
         sUSD = _sUSD;
+        emit SetSUSD(address(sUSD));
     }
 
     function setBinaryOptionsMarketManager(address _manager) public onlyOwner {
@@ -388,16 +380,75 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         }
         manager = _manager;
         sUSD.approve(manager, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+        emit SetBinaryOptionsMarketManager(_manager);
     }
 
     // Internal functions
 
+    function _buyPriceImpact(
+        address market,
+        Position position,
+        uint amount
+    ) internal view returns (uint) {
+        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+        uint balancePosition = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
+        uint balanceOtherSide = position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
+        uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
+        uint balanceOtherSideAfter =
+            balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
+        uint pricePaid = _minimalBuyPrice(market, position).mul(amount).div(ONE);
+        if (balancePositionAfter >= balanceOtherSideAfter) {
+            //minimal price impact as it will balance the AMM exposure
+            return min_spread;
+        } else {
+            uint basePriceOtherSide = price(market, position == Position.Long ? Position.Short : Position.Long);
+            uint skew = balanceOtherSideAfter.sub(balancePositionAfter);
+            uint maxPossibleSkew = capPerMarket.mul(ONE).div(basePriceOtherSide);
+            return min_spread.add(max_spread.sub(min_spread).mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE));
+        }
+    }
+
+    function _sellPriceImpact(
+        address market,
+        Position position,
+        uint amount
+    ) internal view returns (uint) {
+        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+        uint balancePosition = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
+        uint balanceOtherSide = position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
+        uint balancePositionAfter = balancePosition.add(amount);
+        uint pricePaid = _minimalSellPrice(market, position).mul(amount).div(ONE);
+        if (balancePositionAfter < balanceOtherSide) {
+            //minimal price impact as it will balance the AMM exposure
+            return min_spread;
+        } else {
+            uint basePrice = price(market, position);
+            uint skew = balancePositionAfter.sub(balanceOtherSide);
+            require(basePrice > 0, "div by zero basePrice");
+            uint maxPossibleSkew = capPerMarket.mul(ONE).div(basePrice);
+            require(maxPossibleSkew > 0, "div by zero maxPossibleSkew");
+            return min_spread.add(max_spread.sub(min_spread).mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE));
+        }
+    }
+
+    function _getMintableAmount(
+        address market,
+        Position position,
+        uint amount
+    ) internal view returns (uint mintable) {
+        uint availableInContract = _balanceOfPositionOnMarket(market, position);
+        mintable = 0;
+        if (availableInContract < amount) {
+            mintable = amount.sub(availableInContract);
+        }
+    }
+
     function _minimalBuyPrice(address market, Position position) internal view returns (uint) {
-        return price(market, position).mul(ONE.add(min_spread)).div(1e18);
+        return price(market, position).mul(ONE.add(min_spread)).div(ONE);
     }
 
     function _minimalSellPrice(address market, Position position) internal view returns (uint) {
-        return price(market, position).mul(ONE.sub(min_spread)).div(1e18);
+        return price(market, position).mul(ONE.sub(min_spread)).div(ONE);
     }
 
     function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint) {
@@ -406,11 +457,11 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         return balance;
     }
 
-    function _expneg(uint x) private view returns (uint result) {
-        result = (1e18 * 1e18) / _expnegpow(x);
+    function _expneg(uint x) internal view returns (uint result) {
+        result = (ONE * ONE) / _expNegPow(x);
     }
 
-    function _expnegpow(uint x) internal view returns (uint result) {
+    function _expNegPow(uint x) internal view returns (uint result) {
         uint e = 2718280000000000000;
         result = deciMath.pow(e, x);
     }
@@ -428,13 +479,36 @@ contract ThalesAMM is Owned, Pausable, ReentrancyGuard {
         }
     }
 
-    //selfdestruct
-    function selfDestruct(address payable account) external onlyOwner {
+    function retrieveSUSD(address payable account) external onlyOwner {
         sUSD.transfer(account, sUSD.balanceOf(address(this)));
-        selfdestruct(account);
     }
 
     // events
-    event SoldToAMM(address seller, address market, Position position, uint amount);
-    event BoughtFromAmm(address buyer, address market, Position position, uint amount);
+    event SoldToAMM(
+        address seller,
+        address market,
+        Position position,
+        uint amount,
+        uint sUSDPaid,
+        address susd,
+        address asset
+    );
+    event BoughtFromAmm(
+        address buyer,
+        address market,
+        Position position,
+        uint amount,
+        uint sUSDPaid,
+        address susd,
+        address asset
+    );
+
+    event SetBinaryOptionsMarketManager(address _manager);
+    event SetSUSD(address sUSD);
+    event SetPriceFeed(address _priceFeed);
+    event SetCapPerMarket(uint _capPerMarket);
+    event SetImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility);
+    event SetMaxSpread(uint _spread);
+    event SetMinSpread(uint _spread);
+    event SetMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity);
 }

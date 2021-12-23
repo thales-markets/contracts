@@ -142,7 +142,7 @@ module.exports = {
 		},
 		optimistic: {
 			url: 'https://mainnet.optimism.io',
-			accounts: [PRIVATE_KEY]
+			accounts: [PRIVATE_KEY],
 		},
 		optimisticKovan: {
 			gasPrice: 10000,

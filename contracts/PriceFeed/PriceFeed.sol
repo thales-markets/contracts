@@ -3,7 +3,6 @@ pragma solidity >=0.5.0 <=0.7.6;
 
 // Inheritance
 import "../utils/proxy/ProxyOwned.sol";
-import "./TwapGetter.sol";
 
 // Libraries
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
@@ -40,7 +39,7 @@ contract PriceFeed is Initializable, ProxyOwned {
         uint40 time;
     }
 
-    function initialize(address _owner) public initializer {
+    function initialize(address _owner) external initializer {
         setOwner(_owner);
         twapInterval = 300;
     }

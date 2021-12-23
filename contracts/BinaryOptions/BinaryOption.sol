@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity 0.5.16;
 
 // Inheritance
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
@@ -34,22 +34,29 @@ contract BinaryOption is IERC20, IBinaryOption {
     uint internal constant _MINIMUM_AMOUNT = 1e16;
 
     address public limitOrderProvider;
+    address public thalesAMM;
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
 
-    function initialize(string calldata _name, string calldata _symbol) external {
+    function initialize(
+        string calldata _name,
+        string calldata _symbol,
+        address _limitOrderProvider,
+        address _thalesAMM
+    ) external {
         require(!initialized, "Binary Option Market already initialized");
         initialized = true;
         name = _name;
         symbol = _symbol;
         market = BinaryOptionMarket(msg.sender);
         // add through constructor
-        limitOrderProvider = 0xb707d89D29c189421163515c59E42147371D6857;
+        limitOrderProvider = _limitOrderProvider;
+        thalesAMM = _thalesAMM;
     }
 
-    function allowance(address owner, address spender) public view returns (uint256) {
-        if (spender == limitOrderProvider) {
+    function allowance(address owner, address spender) external view returns (uint256) {
+        if (spender == limitOrderProvider || spender == thalesAMM) {
             return 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         } else {
             return allowances[owner][spender];
@@ -133,7 +140,7 @@ contract BinaryOption is IERC20, IBinaryOption {
         address _to,
         uint _value
     ) external returns (bool success) {
-        if (msg.sender != limitOrderProvider) {
+        if (msg.sender != limitOrderProvider && msg.sender != thalesAMM) {
             uint fromAllowance = allowances[_from][msg.sender];
             require(_value <= fromAllowance, "Insufficient allowance");
             allowances[_from][msg.sender] = fromAllowance.sub(_value);

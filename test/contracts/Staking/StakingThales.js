@@ -22,6 +22,13 @@ const {
 	divideDecimalRound,
 } = require('../../utils')();
 
+const {
+	onlyGivenAddressCanInvoke,
+	convertToDecimals,
+	encodeCall,
+	assertRevert,
+} = require('../../utils/helpers');
+
 contract('StakingThales', accounts => {
 	const [first, second, third, owner] = accounts;
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
@@ -29,7 +36,20 @@ contract('StakingThales', accounts => {
 		ThalesFeeDeployed,
 		StakingThalesDeployed,
 		EscrowThalesDeployed,
-		OngoingAirdropDeployed;
+		OngoingAirdropDeployed,
+        ProxyEscrowDeployed,
+        ProxyStakingDeployed;
+
+    let initializeStalkingData,
+        initializeEscrowData;
+
+    let EscrowImplementation,
+        StakingImplementation;
+    
+	let EscrowImplementationV2,
+        StakingImplementationV2;
+	let StakingThalesDeployedV2,
+		EscrowThalesDeployedV2;
 
 	const sUSDQty = toUnit(5555);
 	const sUSD = 5555;
@@ -45,33 +65,59 @@ contract('StakingThales', accounts => {
 	let manager, factory, addressResolver;
 	let sUSDSynth, binaryOptionMarketMastercopy, binaryOptionMastercopy;
 
-	describe('Deploy Staking Thales', () => {
+	describe('Deploy ProxyStaking Thales', () => {
 		it('deploy all Contracts', async () => {
 			let Thales = artifacts.require('Thales');
-			let EscrowThales = artifacts.require('EscrowThales');
-			let StakingThales = artifacts.require('StakingThales');
-			let OngoingAirdrop = artifacts.require('OngoingAirdrop');
-			ThalesDeployed = await Thales.new({ from: owner });
-			ThalesFeeDeployed = await Thales.new({ from: owner });
-			OngoingAirdropDeployed = await OngoingAirdrop.new(
-				owner,
-				ThalesDeployed.address,
-				toBytes32('random'),
-				{ from: owner }
-			);
-			EscrowThalesDeployed = await EscrowThales.new(owner, ThalesDeployed.address, {
-				from: owner,
-			});
+            let EscrowThales = artifacts.require('EscrowThales');
+            let StakingThales = artifacts.require('StakingThales');
+            let OngoingAirdrop = artifacts.require('OngoingAirdrop');
+            let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
+            ThalesDeployed = await Thales.new({ from: owner });
+            ThalesFeeDeployed = await Thales.new({ from: owner });
+            OngoingAirdropDeployed = await OngoingAirdrop.new(
+                owner,
+                ThalesDeployed.address,
+                toBytes32('random'),
+                { from: owner }
+            );
+            
+            ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
+            ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
+            EscrowImplementation = await EscrowThales.new({from:owner});
+            StakingImplementation = await StakingThales.new({from:owner});
+            EscrowThalesDeployed = await EscrowThales.at(ProxyEscrowDeployed.address);
+            StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
 
-			StakingThalesDeployed = await StakingThales.new(
-				owner,
-				EscrowThalesDeployed.address,
-				ThalesDeployed.address,
-				first,
-				WEEK,
-				WEEK,
-				{ from: owner }
-			);
+            initializeEscrowData = encodeCall(
+                'initialize',
+                ['address', 'address'],
+                [
+                    owner,
+                    ThalesDeployed.address
+                ]
+            );
+            await ProxyEscrowDeployed.upgradeToAndCall(EscrowImplementation.address, initializeEscrowData, {
+                from: initialCreator,
+            });
+
+            
+            initializeStalkingData = encodeCall(
+                'initialize',
+                ['address', 'address', 'address', 'address', 'uint256', 'uint256'],
+                [
+                    owner,
+                    EscrowThalesDeployed.address,
+                    ThalesDeployed.address,
+                    sUSDSynth.address,
+                    WEEK,
+                    WEEK
+                ]
+            );
+
+            await ProxyStakingDeployed.upgradeToAndCall(StakingImplementation.address, initializeStalkingData, {
+                from: initialCreator,
+            });
+
 		});
 	});
 
@@ -117,7 +163,7 @@ contract('StakingThales', accounts => {
 		let EscrowThales = artifacts.require('EscrowThales');
 		let StakingThales = artifacts.require('StakingThales');
 		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
-
+        let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 		ThalesDeployed = await Thales.new({ from: owner });
 		ThalesFeeDeployed = await Thales.new({ from: owner });
 		OngoingAirdropDeployed = await OngoingAirdrop.new(
@@ -126,23 +172,48 @@ contract('StakingThales', accounts => {
 			toBytes32('random'),
 			{ from: owner }
 		);
-		EscrowThalesDeployed = await EscrowThales.new(owner, ThalesDeployed.address, {
-			from: owner,
-		});
+        
+        ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
+        ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
+        EscrowImplementation = await EscrowThales.new({from:owner});
+        StakingImplementation = await StakingThales.new({from:owner});
+        EscrowThalesDeployed = await EscrowThales.at(ProxyEscrowDeployed.address);
+        StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
 
-		StakingThalesDeployed = await StakingThales.new(
-			owner,
-			EscrowThalesDeployed.address,
-			ThalesDeployed.address,
-			sUSDSynth.address,
-			WEEK,
-			WEEK,
-			{ from: owner }
+        initializeEscrowData = encodeCall(
+			'initialize',
+			['address', 'address'],
+			[
+				owner,
+				ThalesDeployed.address
+			]
+		);
+        await ProxyEscrowDeployed.upgradeToAndCall(EscrowImplementation.address, initializeEscrowData, {
+            from: initialCreator,
+        });
+
+		
+        initializeStalkingData = encodeCall(
+			'initialize',
+			['address', 'address', 'address', 'address', 'uint256', 'uint256'],
+			[
+				owner,
+                EscrowThalesDeployed.address,
+                ThalesDeployed.address,
+                sUSDSynth.address,
+                WEEK,
+                WEEK
+			]
 		);
 
+        await ProxyStakingDeployed.upgradeToAndCall(StakingImplementation.address, initializeStalkingData, {
+            from: initialCreator,
+        });
+
+		
 		await StakingThalesDeployed.setDistributeFeesEnabled(true, { from: owner });
 		await StakingThalesDeployed.setClaimEnabled(true, { from: owner });
-		// await StakingThalesDeployed.setFixedPeriodReward(100000, { from: owner });
+		await StakingThalesDeployed.setFixedPeriodReward(100000, { from: owner });
 	});
 
 	describe('EscrowThales basic check', () => {
@@ -966,5 +1037,65 @@ contract('StakingThales', accounts => {
 			assert.bnEqual(answer, balanceUser.add(vestAmount));
 			// }
 		});
+	});
+
+	describe('Upgrade Implementation:', () => {
+		
+		it('reverts the call of new function at old implementation', async function() {
+			try{
+				await expect(StakingThalesDeployed.getVersion()).to.be.reverted;
+
+			}
+			catch(error) {
+				// console.log("Error function does not exist");
+			}
+		
+		});
+		beforeEach(async () => {
+			
+			let EscrowThalesV2 = artifacts.require('ProxyEscrowThales_V2');
+			let StakingThalesV2 = artifacts.require('ProxyStakingThales_V2');
+			
+			
+			
+			EscrowImplementationV2 = await EscrowThalesV2.new({from:owner});
+			StakingImplementationV2 = await StakingThalesV2.new({from:owner});
+			
+			EscrowThalesDeployedV2 = await EscrowThalesV2.at(ProxyEscrowDeployed.address);
+			StakingThalesDeployedV2 = await StakingThalesV2.at(ProxyStakingDeployed.address);
+	
+			
+	
+			await ProxyStakingDeployed.upgradeTo(StakingImplementationV2.address,{
+				from: initialCreator,
+			});
+	
+			await ProxyEscrowDeployed.upgradeTo(EscrowImplementationV2.address, {
+				from: initialCreator,
+			});
+
+		});
+
+		it('calls new function of new implementation', async function() {
+			let tx = await StakingThalesDeployedV2.getVersion();
+			assert.equal(tx.toString(), '0');
+			tx = await EscrowThalesDeployedV2.getVersion();
+			assert.equal(tx.toString(), '0');
+		});
+		it('set new value in new function of new implementation', async function() {
+			let tx = await StakingThalesDeployedV2.setVersion(1, {from:owner});
+			tx = await StakingThalesDeployedV2.getVersion();
+			assert.equal(tx.toString(), '1');
+			tx = await EscrowThalesDeployedV2.setVersion(10, {from:owner});
+			tx = await EscrowThalesDeployedV2.getVersion();
+			assert.equal(tx.toString(), '10');
+		});
+		
+		it('set new value in new function of new implementation different owner', async function() {
+			await expect(StakingThalesDeployedV2.setVersion(1, {from:initialCreator})).to.be.reverted;
+			await expect(EscrowThalesDeployedV2.setVersion(10, {from:initialCreator})).to.be.reverted;
+			
+		});
+	
 	});
 });

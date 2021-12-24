@@ -247,7 +247,7 @@ contract('ThalesAMM', accounts => {
 			console.log('availableToBuyFromAMM UP decimal is:' + availableToBuyFromAMM / 1e18);
 
 
-			let buyPriceImpactPostBuy = await thalesAMM._buyPriceImpactTest(
+			let buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
 				newMarket.address,
 				Position.UP,
 				toUnit(1)
@@ -255,7 +255,7 @@ contract('ThalesAMM', accounts => {
 			console.log('buyPriceImpact 1  decimal is:' + buyPriceImpactPostBuy / 1e18);
 
 
-			 buyPriceImpactPostBuy = await thalesAMM._buyPriceImpactTest(
+			 buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
 					newMarket.address,
 					Position.UP,
 					toUnit(availableToBuyFromAMM / 1e18)

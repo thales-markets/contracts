@@ -407,10 +407,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             //minimal price impact as it will balance the AMM exposure
             return min_spread;
         } else {
-            uint basePrice = price(market, position == Position.Long ? Position.Long : Position.Short);
-            uint maxBasePrice = basePrice.mul(ONE.add(max_spread)).div(ONE);
+            uint maxPossibleSkew = balanceOtherSide.add(availableToBuyFromAMM(market, position)).sub(balancePosition);
             uint skew = balanceOtherSideAfter.sub(balancePositionAfter);
-            uint maxPossibleSkew = capPerMarket.mul(ONE).div(ONE.sub(maxBasePrice));
             return min_spread.add(max_spread.sub(min_spread).mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE));
         }
     }

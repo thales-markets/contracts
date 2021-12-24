@@ -7,7 +7,7 @@
       "hash": "0x5282a6e3fdb1e61533114c19fab5aa6613bd267f70e29f9b286788c37d5acf31",
       "type": 0,
       "accessList": null,
-      "blockHash": "0x01d9c183b09cf90d55a263987606691533a4a3290f7fc84bea6882e05ec3221e",
+      "blockHash": "0x2043eb15963a2e1b6175782951a4ce5c4dd55ce56335548c2e58a58829cb7834",
       "blockNumber": 10,
       "transactionIndex": 0,
       "confirmations": 1,
@@ -483,11 +483,6 @@
     {
       "address": "0x2bdCC0de6bE1f7D2ee689a0342D76F52E8EFABa3",
       "txHash": "0x101da7e127292fda56891a1ef7d30377dfeed356b3baec869d4227bb3b1597cc",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x162A433068F51e18b7d13932F27e66a3f99E6890",
-      "txHash": "0x9d7da5af53697f48e38f3bd6a98723465c1dc0a025414e49cddf566f979b13a4",
       "kind": "transparent"
     },
     {
@@ -1136,21 +1131,6 @@
       "kind": "transparent"
     },
     {
-      "address": "0x70e0bA845a1A0F2DA3359C97E0285013525FFC49",
-      "txHash": "0x780c08e2cf3534293d087b67aeaabf52a0dea5c60304d19d58c26b47dd67c45f",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x922D6956C99E12DFeB3224DEA977D0939758A1Fe",
-      "txHash": "0xd2fa7b2d4009c5040a697bc4bf874bb658b430f394ae38d3aa07702df793a00a",
-      "kind": "transparent"
-    },
-    {
-      "address": "0x5081a39b8A5f0E35a8D959395a630b68B74Dd30f",
-      "txHash": "0x11bcb530d1d4d7df936f638df7e590e5af6fd027aa200e045d04de0c5277ed77",
-      "kind": "transparent"
-    },
-    {
       "address": "0xDC11f7E700A4c898AE5CAddB1082cFfa76512aDD",
       "txHash": "0xe86203a1fc61384d38da387b4cb8980ee5c702b98a2750f6f81ccaea32237c7c",
       "kind": "transparent"
@@ -1361,11 +1341,6 @@
       "kind": "transparent"
     },
     {
-      "address": "0x99bbA657f2BbC93c02D617f8bA121cB8Fc104Acf",
-      "txHash": "0x285106d9475b458a7d599752fc874d91124ac8284220929dac1b39c2f98af375",
-      "kind": "transparent"
-    },
-    {
       "address": "0x0E801D84Fa97b50751Dbf25036d067dCf18858bF",
       "txHash": "0x43e7869f2967b4ff8b5ed68ddd262ee8b113b9a73700cc5aac2ab0189c79214f",
       "kind": "transparent"
@@ -1378,11 +1353,6 @@
     {
       "address": "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575",
       "txHash": "0x4731d30466268ee8226704fac254a1e5f8957222bebde55f7f523704961c1c44",
-      "kind": "transparent"
-    },
-    {
-      "address": "0xB0D4afd8879eD9F52b28595d31B441D079B2Ca07",
-      "txHash": "0x7c8e9bc558726e3514b99f040270f5aad196593070fc1028c51a09dbd89550cf",
       "kind": "transparent"
     },
     {
@@ -1456,11 +1426,6 @@
       "kind": "transparent"
     },
     {
-      "address": "0x1429859428C0aBc9C2C47C8Ee9FBaf82cFA0F20f",
-      "txHash": "0x48e1e9370278a920d7ea94daf31957575b4456ffa487d72e89766a7dd4e2e79b",
-      "kind": "transparent"
-    },
-    {
       "address": "0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB",
       "txHash": "0xbba9028a34023464f7ec55c1a7b7437c0dd90038cc3dd1b470776ee7a5ff73f6",
       "kind": "transparent"
@@ -1501,6 +1466,31 @@
       "kind": "transparent"
     },
     {
+      "address": "0x70e0bA845a1A0F2DA3359C97E0285013525FFC49",
+      "txHash": "0x7e95998ffd62095341aebf4d688e5f0074ae1e429aaa29ca2f882a4289ec6369",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1429859428C0aBc9C2C47C8Ee9FBaf82cFA0F20f",
+      "txHash": "0x0d32d0b5c11f8801c4e400cb6a382cdb30843c98b3b27d80f8de8f44b2a2a100",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xB0D4afd8879eD9F52b28595d31B441D079B2Ca07",
+      "txHash": "0x194493161e08b978f8e76f4b68c8e6ae8f0f95d6f48d2e3bebf2bb2a76a6d40e",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x162A433068F51e18b7d13932F27e66a3f99E6890",
+      "txHash": "0x32c06a528fd10744f3d2730ebc7dfb2579d04ad00d2ea1e783367840e10e2e70",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x922D6956C99E12DFeB3224DEA977D0939758A1Fe",
+      "txHash": "0x6470b39ddd65c2518d1b2c5d9dfc274e5a7f77f1dc2d7c44f71fcd0b7554a2d9",
+      "kind": "transparent"
+    },
+    {
       "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
       "txHash": "0x63dbe884acbdb6062e6b61af7811b03162d38c03839d80d24f90a7fccaea175f",
       "kind": "transparent"
@@ -1512,7 +1502,27 @@
     },
     {
       "address": "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f",
-      "txHash": "0xaf7b8273e42a491dbdfc6dcb99351e77f3132962d24577fcdff178fe32660ccd",
+      "txHash": "0x95da8b207933185c8adc92b36ec5337e770193919e70e7f70743f8a1899cea6f",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x4826533B4897376654Bb4d4AD88B7faFD0C98528",
+      "txHash": "0x0cd578474aa71c56fedec147d9d0a49447382ed62cd233323d6eeea45de13e06",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x99bbA657f2BbC93c02D617f8bA121cB8Fc104Acf",
+      "txHash": "0x67344b945bddf9751731b21234e2063d318aec23efea8ccd2082ae08c4d695e8",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5081a39b8A5f0E35a8D959395a630b68B74Dd30f",
+      "txHash": "0xa189296687f313ce678765048f74612c60a350c3be01dc04a3a616ae5274cc66",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x1fA02b2d6A771842690194Cf62D91bdd92BfE28d",
+      "txHash": "0xe4730da2a4482054c9c8978c35be9d7b955f36c103cd42dec85d2ccde052c1ff",
       "kind": "transparent"
     }
   ],
@@ -2709,13 +2719,13 @@
           {
             "contract": "EscrowThales",
             "label": "vestingToken",
-            "type": "t_contract(IERC20)28379",
+            "type": "t_contract(IERC20)28442",
             "src": "contracts/EscrowAndStaking/EscrowThales.sol:18"
           },
           {
             "contract": "EscrowThales",
             "label": "iStakingThales",
-            "type": "t_contract(IStakingThales)23937",
+            "type": "t_contract(IStakingThales)24000",
             "src": "contracts/EscrowAndStaking/EscrowThales.sol:19"
           },
           {
@@ -2774,10 +2784,10 @@
           }
         ],
         "types": {
-          "t_contract(IERC20)28379": {
+          "t_contract(IERC20)28442": {
             "label": "contract IERC20"
           },
-          "t_contract(IStakingThales)23937": {
+          "t_contract(IStakingThales)24000": {
             "label": "contract IStakingThales"
           },
           "t_address": {
@@ -3282,9 +3292,9 @@
         }
       }
     },
-    "65af4d7b1d9a292b8cd74abed3ae36363a00e0f8f363e48305e8ed5e038272fd": {
+    "5ac30f383ab5a40e7b0e17be877b066af6ccd6390ca81e83915deb255786e2d5": {
       "address": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
-      "txHash": "0x18497426d17fc3a0f6f55a87466850e4afcf383eea6c524e4b18c48bb9065e8b",
+      "txHash": "0x01b653d7ae68b3e3da27bbe789e83c4f0f4f33c2d1a3933d63861137be4e8846",
       "layout": {
         "storage": [
           {
@@ -3356,25 +3366,25 @@
           {
             "contract": "StakingThales",
             "label": "iEscrowThales",
-            "type": "t_contract(IEscrowThales)23761",
+            "type": "t_contract(IEscrowThales)23804",
             "src": "contracts/EscrowAndStaking/StakingThales.sol:23"
           },
           {
             "contract": "StakingThales",
             "label": "stakingToken",
-            "type": "t_contract(IERC20)28379",
+            "type": "t_contract(IERC20)28442",
             "src": "contracts/EscrowAndStaking/StakingThales.sol:24"
           },
           {
             "contract": "StakingThales",
             "label": "feeToken",
-            "type": "t_contract(IERC20)28379",
+            "type": "t_contract(IERC20)28442",
             "src": "contracts/EscrowAndStaking/StakingThales.sol:25"
           },
           {
             "contract": "StakingThales",
             "label": "SNXRewards",
-            "type": "t_contract(ISNXRewards)23867",
+            "type": "t_contract(ISNXRewards)23930",
             "src": "contracts/EscrowAndStaking/StakingThales.sol:26"
           },
           {
@@ -3439,97 +3449,109 @@
           },
           {
             "contract": "StakingThales",
+            "label": "totalSNXRewardsInPeriod",
+            "type": "t_uint256",
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:38"
+          },
+          {
+            "contract": "StakingThales",
+            "label": "totalSNXFeesInPeriod",
+            "type": "t_uint256",
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:39"
+          },
+          {
+            "contract": "StakingThales",
             "label": "claimEnabled",
             "type": "t_bool",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:38"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:40"
           },
           {
             "contract": "StakingThales",
             "label": "stakerLifetimeRewardsClaimed",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:40"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:42"
           },
           {
             "contract": "StakingThales",
             "label": "stakerFeesClaimed",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:41"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:43"
           },
           {
             "contract": "StakingThales",
             "label": "_totalStakedAmount",
             "type": "t_uint256",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:43"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:45"
           },
           {
             "contract": "StakingThales",
             "label": "_totalEscrowedAmount",
             "type": "t_uint256",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:44"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:46"
           },
           {
             "contract": "StakingThales",
             "label": "_totalPendingStakeAmount",
             "type": "t_uint256",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:45"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:47"
           },
           {
             "contract": "StakingThales",
             "label": "_totalUnclaimedRewards",
             "type": "t_uint256",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:46"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:48"
           },
           {
             "contract": "StakingThales",
             "label": "_totalRewardsClaimed",
             "type": "t_uint256",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:47"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:49"
           },
           {
             "contract": "StakingThales",
             "label": "_totalRewardFeesClaimed",
             "type": "t_uint256",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:48"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:50"
           },
           {
             "contract": "StakingThales",
             "label": "lastUnstakeTime",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:50"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:52"
           },
           {
             "contract": "StakingThales",
             "label": "unstaking",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:51"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:53"
           },
           {
             "contract": "StakingThales",
             "label": "unstakingAmount",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:52"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:54"
           },
           {
             "contract": "StakingThales",
             "label": "_stakedBalances",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:53"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:55"
           },
           {
             "contract": "StakingThales",
             "label": "_lastRewardsClaimedPeriod",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/EscrowAndStaking/StakingThales.sol:54"
+            "src": "contracts/EscrowAndStaking/StakingThales.sol:56"
           }
         ],
         "types": {
-          "t_contract(IEscrowThales)23761": {
+          "t_contract(IEscrowThales)23804": {
             "label": "contract IEscrowThales"
           },
-          "t_contract(IERC20)28379": {
+          "t_contract(IERC20)28442": {
             "label": "contract IERC20"
           },
-          "t_contract(ISNXRewards)23867": {
+          "t_contract(ISNXRewards)23930": {
             "label": "contract ISNXRewards"
           },
           "t_uint256": {

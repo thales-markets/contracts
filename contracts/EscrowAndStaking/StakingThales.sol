@@ -35,6 +35,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     bool public distributeFeesEnabled;
     uint public fixedPeriodReward;
     uint public periodExtraReward;
+    uint public totalSNXRewardsInPeriod;
+    uint public totalSNXFeesInPeriod;
     bool public claimEnabled;
 
     mapping(address => uint) public stakerLifetimeRewardsClaimed;
@@ -145,6 +147,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit UnstakeDurationPeriodChanged(_unstakeDurationPeriod);
     }
 
+    function setSNXRewards(address _snxRewards) public onlyOwner {
+        require(_snxRewards != address(0), "Invalid address");
+        SNXRewards = ISNXRewards(_snxRewards);
+    }
+
     // Set EscrowThales contract address
     function setEscrow(address _escrowThalesContract) public onlyOwner {
         if (address(iEscrowThales) != address(0)) {
@@ -189,7 +196,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         //Actions taken on every closed period
         currentPeriodRewards = fixedPeriodReward;
         _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
-
+        totalSNXFeesInPeriod = SNXRewards.totalFeesAvailable();
+        totalSNXRewardsInPeriod = SNXRewards.totalRewardsAvailable();
+        
         currentPeriodFees = feeToken.balanceOf(address(this));
 
         emit ClosedPeriod(periodsOfStaking, lastPeriodTimeStamp);
@@ -333,8 +342,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         }
         // If the SNX has not claimed the available rewards yet
         ( , uint snx_rewards) = SNXRewards.feesAvailable(account);
-        if(snx_rewards > 0) {
-            return snx_rewards.mul(periodExtraReward).div(SNXRewards.totalRewardsAvailable())
+        if(totalSNXRewardsInPeriod > 0 && snx_rewards > 0) {
+            return snx_rewards.mul(periodExtraReward).div(totalSNXRewardsInPeriod)
             .add(_stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
                 .mul(currentPeriodRewards)
@@ -352,8 +361,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             return 0;
         }
         (uint snx_fees, ) = SNXRewards.feesAvailable(account);
-        if(snx_fees > 0) {
-            return snx_fees.mul(periodExtraReward).div(SNXRewards.totalFeesAvailable())
+        if(totalSNXFeesInPeriod > 0 && snx_fees > 0) {
+            return snx_fees.mul(periodExtraReward).div(totalSNXFeesInPeriod)
             .add(_stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
                 .mul(currentPeriodRewards)

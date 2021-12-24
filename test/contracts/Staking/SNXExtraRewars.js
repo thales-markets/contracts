@@ -141,7 +141,7 @@ contract('StakingThales', accounts => {
         ]); 
        
 
-		
+		await SNXRewardsDeployed.setTotalRewards(toWei('0'));
 		await StakingThalesDeployed.connect(owner).setDistributeFeesEnabled(true);
 		await StakingThalesDeployed.connect(owner).setClaimEnabled(true);
 		await StakingThalesDeployed.connect(owner).setFixedPeriodReward(100000);
@@ -193,52 +193,121 @@ contract('StakingThales', accounts => {
 		});
     });
 
-	// describe('Upgrade Implementation:', () => {
-		
-	// 	it('reverts the call of new function at old implementation', async function() {
-	// 		try{
-	// 			await expect(StakingThalesDeployed.getVersion()).to.be.reverted;
-
-	// 		}
-	// 		catch(error) {
-	// 			// console.log("Error function does not exist");
-	// 		}
-		
-	// 	});
-	// 	beforeEach(async () => {
-	// 		// const signers = await ethers.getSigners();
-    //         // owner = signers[0];
-    //         // firstSigner = signers[1];
-    // 		let  EscrowThalesV2 = await ethers.getContractFactory('ProxyEscrowThales_V2');
-	//         let StakingThalesV2 = await ethers.getContractFactory('ProxyStakingThales_V2');
-
-    //         EscrowThalesDeployedV2 = await upgrades.upgradeProxy(EscrowThalesDeployed.address, EscrowThalesV2);
-
-    //         StakingThalesDeployedV2 = await upgrades.upgradeProxy(StakingThalesDeployed.address, StakingThalesV2);
+	describe('Without SNX rewards :', () => {
+		beforeEach(async () => {
+			await SNXRewardsDeployed.setTotalRewards(toWei('0', 'ether'));
+			await SNXRewardsDeployed.setTotalFees(toWei('0', 'ether'));
+			await SNXRewardsDeployed.setRewards(toWei('0', 'ether'));
+			await SNXRewardsDeployed.setFees(toWei('0', 'ether'));
 			
-			
-	// 	});
+		});
+		it('Staking & claimable with 1 user SNX staker, other not', async () => {
 
-	// 	it('calls new function of new implementation', async function() {
-	// 		let tx = await StakingThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '0');
-	// 		tx = await EscrowThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '0');
-	// 	});
-	// 	it('set new value in new function of new implementation', async function() {
-	// 		let tx = await StakingThalesDeployedV2.connect(owner).setVersion(1);
-	// 		tx = await StakingThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '1');
-	// 		tx = await EscrowThalesDeployedV2.connect(owner).setVersion(10);
-	// 		tx = await EscrowThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '10');
-	// 	});
-		
-	// 	it('set new value in new function of new implementation different owner', async function() {
-	// 		await expect(StakingThalesDeployedV2.connect(firstSigner).setVersion(1)).to.be.reverted;
-	// 		await expect(EscrowThalesDeployedV2.connect(firstSigner).setVersion(10)).to.be.reverted;
+            let stake = [1500, 1500];
+			let users = [firstSigner, secondSigner];
+			let weeks = 11;
+            let deposit = 100;
+			let answer;
+
+			await StakingThalesDeployed.connect(owner).setFixedPeriodReward(toWei(deposit.toString(), "ether"));
+			await EscrowThalesDeployed.connect(owner).setStakingThalesContract(StakingThalesDeployed.address);
+			await sUSDSynth.issue(initialCreator, toWei((deposit*weeks).toString(), "ether"));
+			await sUSDSynth.transfer(StakingThalesDeployed.address, toWei((deposit*weeks).toString(), "ether"), {
+				from: initialCreator,
+			});
+			await ThalesDeployed.transfer(StakingThalesDeployed.address, toWei((deposit*weeks).toString(), "ether"), {
+				from: owner.address,
+			});
+			await StakingThalesDeployed.connect(owner).startStakingPeriod();
+			for (let i = 0; i < users.length; i++) {
+				await ThalesDeployed.transfer(users[i].address, toWei(stake[i].toString(), "ether"), { from: owner.address });
+				await ThalesDeployed.approve(StakingThalesDeployed.address, toWei(stake[i].toString(), "ether"), { from: users[i].address });
+				await StakingThalesDeployed.connect(users[i]).stake(toWei(stake[i].toString(), "ether"));
+			}
+
+			await fastForward(WEEK + SECOND);
+			answer = await StakingThalesDeployed.connect(firstSigner).totalSNXRewardsInPeriod();
+			console.log("TotalRewards in period: ", answer.toString());
+			answer = await SNXRewardsDeployed.totalRewardsAvailable();
+			console.log("TotalRewards from SNX in period: ", answer.toString());
+			await StakingThalesDeployed.connect(secondSigner).closePeriod();
+			await SNXRewardsDeployed.setRewards(toWei('0', 'ether'));
+			answer = await SNXRewardsDeployed.feesAvailable(firstSigner.address);
+			console.log("Rewards: ", answer[1].toString());
+			answer = await StakingThalesDeployed.connect(firstSigner).totalSNXRewardsInPeriod();
+			console.log("TotalRewards in period: ", answer.toString());
+			answer = await SNXRewardsDeployed.totalRewardsAvailable();
+			console.log("TotalRewards from SNX in period: ", answer.toString());
+
+			answer = await StakingThalesDeployed.connect(firstSigner).getRewardsAvailable(firstSigner.address);
+			console.log("User 1 claimable: ", answer.toString());
 			
-	// 	});
+			await SNXRewardsDeployed.setRewards(toWei('50', 'ether'));
+			answer = await SNXRewardsDeployed.feesAvailable(firstSigner.address);
+			console.log("Rewards: ", answer[1].toString())
+			answer = await StakingThalesDeployed.connect(secondSigner).getRewardsAvailable(secondSigner.address);
+			console.log("User 2 claimable: ", answer.toString());
+
+		});
 	
-	// });
+	});
+	describe('With SNX rewards :', () => {
+		
+		beforeEach(async () => {
+			await SNXRewardsDeployed.setTotalRewards(toWei('20', 'ether'));
+			await SNXRewardsDeployed.setTotalFees(toWei('20', 'ether'));
+			await SNXRewardsDeployed.setRewards(toWei('0', 'ether'));
+			await SNXRewardsDeployed.setFees(toWei('0', 'ether'));
+			
+		});
+		it('Staking & claimable with 1 user SNX staker, other not', async () => {
+
+            let stake = [1500, 1500];
+			let users = [firstSigner, secondSigner];
+			let weeks = 11;
+            let deposit = 100;
+			let answer;
+
+			await StakingThalesDeployed.connect(owner).setFixedPeriodReward(toWei(deposit.toString(), "ether"));
+			await EscrowThalesDeployed.connect(owner).setStakingThalesContract(StakingThalesDeployed.address);
+			await sUSDSynth.issue(initialCreator, toWei((deposit*weeks).toString(), "ether"));
+			await sUSDSynth.transfer(StakingThalesDeployed.address, toWei((deposit*weeks).toString(), "ether"), {
+				from: initialCreator,
+			});
+			await ThalesDeployed.transfer(StakingThalesDeployed.address, toWei((deposit*weeks).toString(), "ether"), {
+				from: owner.address,
+			});
+			await StakingThalesDeployed.connect(owner).startStakingPeriod();
+			for (let i = 0; i < users.length; i++) {
+				await ThalesDeployed.transfer(users[i].address, toWei(stake[i].toString(), "ether"), { from: owner.address });
+				await ThalesDeployed.approve(StakingThalesDeployed.address, toWei(stake[i].toString(), "ether"), { from: users[i].address });
+				await StakingThalesDeployed.connect(users[i]).stake(toWei(stake[i].toString(), "ether"));
+			}
+
+			await fastForward(WEEK + SECOND);
+			answer = await StakingThalesDeployed.connect(firstSigner).totalSNXRewardsInPeriod();
+			console.log("TotalRewards in period: ", answer.toString());
+			answer = await SNXRewardsDeployed.totalRewardsAvailable();
+			console.log("TotalRewards from SNX in period: ", answer.toString());
+			await StakingThalesDeployed.connect(secondSigner).closePeriod();
+			await SNXRewardsDeployed.setRewards(toWei('0', 'ether'));
+			answer = await SNXRewardsDeployed.feesAvailable(firstSigner.address);
+			console.log("Rewards: ", answer[1].toString());
+			answer = await StakingThalesDeployed.connect(firstSigner).totalSNXRewardsInPeriod();
+			console.log("TotalRewards in period: ", answer.toString());
+			answer = await SNXRewardsDeployed.totalRewardsAvailable();
+			console.log("TotalRewards from SNX in period: ", answer.toString());
+
+			answer = await StakingThalesDeployed.connect(firstSigner).getRewardsAvailable(firstSigner.address);
+			console.log("User 1 claimable: ", answer.toString());
+			
+			await SNXRewardsDeployed.setRewards(toWei('1', 'ether'));
+			answer = await SNXRewardsDeployed.feesAvailable(firstSigner.address);
+			console.log("Rewards: ", answer[1].toString())
+			answer = await StakingThalesDeployed.connect(secondSigner).getRewardsAvailable(secondSigner.address);
+			console.log("User 2 claimable: ", answer.toString());
+
+		});
+	
+	});
 });

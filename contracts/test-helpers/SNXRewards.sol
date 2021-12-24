@@ -21,7 +21,7 @@ contract SNXRewards is ISNXRewards {
     }
 
     function feesAvailable(address account) external view returns (uint, uint) {
-        return (rewards, fees);
+        return (fees, rewards);
     }
 
     function setRewards(uint _rewards) external {

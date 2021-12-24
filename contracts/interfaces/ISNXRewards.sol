@@ -9,4 +9,9 @@ interface ISNXRewards {
     function totalRewardsAvailable() external view returns (uint);
 
     function feesAvailable(address account) external view returns (uint, uint);
+
+    function setRewards(uint _rewards) external ;
+    function setFees(uint _fees) external ;
+    function setTotalRewards(uint _rewards) external ;
+    function setTotalFees(uint _fees) external ;
 }

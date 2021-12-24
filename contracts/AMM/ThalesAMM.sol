@@ -133,6 +133,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
             // can burn straight away balanceOfTheOtherSide
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
+            if (capPerMarket.add(balanceOfTheOtherSide) < spentOnMarket[market].add(willPay)) {
+                return 0;
+            }
             uint usdAvailable = capPerMarket.add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
             return usdAvailable.div(sell_max_price).mul(ONE).add(balanceOfTheOtherSide);
         } else return 0;
@@ -392,7 +395,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address market,
         Position position,
         uint amount
-    ) internal view returns (uint) {
+    ) external view returns (uint) {
         (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
         uint balancePosition = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
         uint balanceOtherSide = position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
@@ -404,9 +407,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             //minimal price impact as it will balance the AMM exposure
             return min_spread;
         } else {
-            uint basePriceOtherSide = price(market, position == Position.Long ? Position.Short : Position.Long);
+            uint basePrice = price(market, position == Position.Long ? Position.Long : Position.Short);
+            uint maxBasePrice = basePrice.mul(ONE.add(max_spread)).div(ONE);
             uint skew = balanceOtherSideAfter.sub(balancePositionAfter);
-            uint maxPossibleSkew = capPerMarket.mul(ONE).div(basePriceOtherSide);
+            uint maxPossibleSkew = capPerMarket.mul(ONE).div(ONE.sub(maxBasePrice));
             return min_spread.add(max_spread.sub(min_spread).mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE));
         }
     }

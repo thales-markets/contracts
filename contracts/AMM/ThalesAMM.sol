@@ -395,7 +395,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address market,
         Position position,
         uint amount
-    ) external view returns (uint) {
+    ) internal view returns (uint) {
         (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
         uint balancePosition = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
         uint balanceOtherSide = position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));

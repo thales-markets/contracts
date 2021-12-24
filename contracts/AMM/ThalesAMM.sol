@@ -84,7 +84,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             }
             uint divider_max_price = ONE.sub(buy_max_price);
             uint additionalBufferFromSelling = balance.mul(buy_max_price).div(ONE);
-            uint availableUntilCapSUSD = capPerMarket.sub(spentOnMarket[market]).add(additionalBufferFromSelling);
+            if (capPerMarket.add(additionalBufferFromSelling) <= spentOnMarket[market]) {
+                return 0;
+            }
+            uint availableUntilCapSUSD = capPerMarket.add(additionalBufferFromSelling).sub(spentOnMarket[market]);
 
             return balance.add(availableUntilCapSUSD.div(divider_max_price).mul(ONE));
         } else {

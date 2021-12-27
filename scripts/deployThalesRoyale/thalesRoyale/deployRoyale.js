@@ -70,8 +70,7 @@ async function main() {
         roundChoosingLength,	//8
         roundLength,			//9
         buyIn,					//10
-        true,					//11
-        pauseBetweenSeasonsTime	//12
+        pauseBetweenSeasonsTime	//11
         ]
     );
 	await royale.deployed();

@@ -402,11 +402,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_season",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_buyInAmount",
         "type": "uint256"
       },

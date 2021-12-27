@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity >=0.5.16 <=0.7.6;
 
 // external
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
@@ -82,23 +82,22 @@ contract ThalesRoyale is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyP
         uint _signUpPeriod,
         uint _roundChoosingLength,
         uint _roundLength,
-        uint _season,
         uint _buyInAmount,
         bool _nextSeasonStartsAutomatically,
         uint _pauseBetweenSeasonsTime
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
+        season = 1;
+        seasonCreationTime[season] = block.timestamp;
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
-        rewardPerSeason[_season] = _initialReward;
+        rewardPerSeason[season] = _initialReward;
         rewardToken = IERC20(_rewardToken);
         rounds = _rounds;
         signUpPeriod = _signUpPeriod;
         roundChoosingLength = _roundChoosingLength;
         roundLength = _roundLength;
-        season = _season;
-        seasonCreationTime[_season] = block.timestamp;
         buyInAmount = _buyInAmount;
         nextSeasonStartsAutomatically = _nextSeasonStartsAutomatically;
         pauseBetweenSeasonsTime = _pauseBetweenSeasonsTime;

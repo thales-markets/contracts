@@ -75,8 +75,7 @@ contract('ThalesRoyale', accounts => {
 		initializeRoyaleData = encodeCall(
 			'initialize',
 			['address', 'bytes32', 'address', 'uint', 'address', 'uint',
-			'uint', 'uint', 'uint', 'uint', 'uint',
-			'bool', 'uint'],
+			'uint', 'uint', 'uint', 'uint', 'bool', 'uint'],
 			[
 				owner,
 				toBytes32('SNX'),
@@ -87,7 +86,6 @@ contract('ThalesRoyale', accounts => {
 				DAY * 3,
 				HOUR * 8,
 				DAY,
-				season_1, // season 1
 				toUnit(2500),
 				false,
 				HOUR * 1

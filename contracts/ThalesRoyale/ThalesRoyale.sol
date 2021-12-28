@@ -302,6 +302,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     function putFunds(uint _amount, uint _season) external onlyOwner {
         require(_amount > 0, "Amount must be more then zero");
+        require(_season >= season, "Cant put funds in a past");
         _putFunds(_amount, _season);
     }
 

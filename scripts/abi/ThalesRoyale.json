@@ -371,11 +371,6 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "_initialReward",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "_rewardToken",
         "type": "address"
@@ -406,14 +401,14 @@
         "type": "uint256"
       },
       {
-        "internalType": "bool",
-        "name": "_nextSeasonStartsAutomatically",
-        "type": "bool"
-      },
-      {
         "internalType": "uint256",
         "name": "_pauseBetweenSeasonsTime",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_nextSeasonStartsAutomatically",
+        "type": "bool"
       }
     ],
     "name": "initialize",

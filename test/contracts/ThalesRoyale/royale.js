@@ -73,24 +73,23 @@ contract('ThalesRoyale', accounts => {
 		royale = await ThalesRoyale.at(ThalesRoyaleDeployed.address);
 
 		initializeRoyaleData = encodeCall(
-			'initialize',
-			['address', 'bytes32', 'address', 'uint', 'address', 'uint',
-			'uint', 'uint', 'uint', 'uint', 'bool', 'uint'],
-			[
-				owner,
-				toBytes32('SNX'),
-				priceFeedAddress,
-				thalesQty_0, // initial
-				ThalesDeployed.address,
-				7,
-				DAY * 3,
-				HOUR * 8,
-				DAY,
-				toUnit(2500),
-				false,
-				HOUR * 1
-			]
-		);
+            'initialize',
+            ['address', 'bytes32', 'address', 'address', 'uint',
+            'uint', 'uint', 'uint', 'uint', 'uint', 'bool'],
+            [
+                owner,
+                toBytes32('SNX'),
+                priceFeedAddress,
+                ThalesDeployed.address,
+                7,
+                DAY * 3,
+                HOUR * 8,
+                DAY,
+                toUnit(2500),
+                HOUR * 1,
+                true
+            ]
+        );
 
 		await ThalesRoyaleDeployed.upgradeToAndCall(ThalesRoyaleImplementation.address, initializeRoyaleData, {
 			from: owner,
@@ -1407,8 +1406,8 @@ contract('ThalesRoyale', accounts => {
 		// NEW SEASON!!!
 
 		// aprove new amount in pool (add aditional 5000, bacause in a pool is already 5000)
-		await ThalesDeployed.transfer(royale.address, toUnit(5000), { from: owner });
-		await ThalesDeployed.approve(royale.address, toUnit(5000), { from: owner });
+		await ThalesDeployed.transfer(royale.address, toUnit(10000), { from: owner });
+        await ThalesDeployed.approve(royale.address, toUnit(10000), { from: owner });
 		await ThalesDeployed.transfer(first, toUnit(2500), { from: owner });
 		await ThalesDeployed.approve(royale.address, toUnit(2500), { from: first });
 		await ThalesDeployed.transfer(second, toUnit(2500), { from: owner });
@@ -1422,13 +1421,24 @@ contract('ThalesRoyale', accounts => {
 		let reward_s2 = await royale.rewardPerSeason(season_2);
 		assert.bnEqual(reward_s2, toUnit(0));
 
+		// put funds
+		await expect(royale.putFunds(toUnit(10000), season_2, { from: first })).to.be.revertedWith(
+		'Only the contract owner may perform this action'
+		);
+	
+		await expect(royale.putFunds(toUnit(0), season_2, { from: owner })).to.be.revertedWith(
+			'Amount must be more then zero'
+		);
+	
+		await royale.putFunds(toUnit(10000), season_2, { from: owner });
+
 		await royale.signUp({ from: first });
 		await royale.signUp({ from: second });
 		await royale.signUp({ from: third });
 		await royale.signUp({ from: fourth });
 
 		let reward_s2_aftersignup = await royale.rewardPerSeason(season_2);
-		assert.bnEqual(reward_s2_aftersignup, toUnit(10000));
+		assert.bnEqual(reward_s2_aftersignup, toUnit(20000));
 
 		await fastForward(HOUR * 72 + 1);
 		await royale.startRoyaleInASeason();
@@ -1509,7 +1519,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(false, isPlayerFourthAlive_s2);
 
 		let rewardPerPlayer_s2 = await royale.rewardPerWinnerPerSeason(season_2);
-		assert.bnEqual(rewardPerPlayer_s2, toUnit(10000));
+		assert.bnEqual(rewardPerPlayer_s2, toUnit(20000));
 
 		await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
 
@@ -1527,7 +1537,7 @@ contract('ThalesRoyale', accounts => {
 		assert.eventEqual(tx_s2.logs[0], 'RewardClaimed', {
 			season: season_2,
 			winner: first,
-			reward: toUnit(10000),
+			reward: toUnit(20000),
 		});
 
 		let isPlayerOneClaimedReward_after_s2 = await royale.rewardCollectedPerSeason(season_2, first);

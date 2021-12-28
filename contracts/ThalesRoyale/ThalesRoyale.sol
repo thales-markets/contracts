@@ -79,14 +79,14 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         address _owner,
         bytes32 _oracleKey,
         IPriceFeed _priceFeed,
-        uint _initialReward,
         address _rewardToken,
         uint _rounds,
         uint _signUpPeriod,
         uint _roundChoosingLength,
         uint _roundLength,
         uint _buyInAmount,
-        uint _pauseBetweenSeasonsTime
+        uint _pauseBetweenSeasonsTime,
+        bool _nextSeasonStartsAutomatically
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -95,7 +95,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         seasonCreationTime[season] = block.timestamp;
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
-        rewardPerSeason[season] = _initialReward;
         rewardToken = IERC20Upgradeable(_rewardToken);
         rounds = _rounds;
         signUpPeriod = _signUpPeriod;
@@ -103,6 +102,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         roundLength = _roundLength;
         buyInAmount = _buyInAmount;
         pauseBetweenSeasonsTime = _pauseBetweenSeasonsTime;
+        nextSeasonStartsAutomatically = _nextSeasonStartsAutomatically;
     }
 
     /* ========== GAME ========== */
@@ -235,11 +235,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         _claimRewardForSeason(_season);
     }
 
-    function putFunds(uint _amount, uint _season) external onlyWinners (_season) {
-        require(_amount > 0, "Amount must be more then zero");
-        _putFunds(_amount, _season);
-    }
-
     /* ========== VIEW ========== */
 
     function canCloseRound() public view returns (bool) {
@@ -304,6 +299,11 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */
+
+    function putFunds(uint _amount, uint _season) external onlyOwner {
+        require(_amount > 0, "Amount must be more then zero");
+        _putFunds(_amount, _season);
+    }
 
      function setNextSeasonStartsAutomatically(bool _nextSeasonStartsAutomatically) public onlyOwner {
         nextSeasonStartsAutomatically = _nextSeasonStartsAutomatically;

@@ -49,7 +49,7 @@ contract('ThalesAMM', accounts => {
 	const [first, owner, second, third, fourth] = accounts;
 
 	const sUSDQty = toUnit(100000);
-	const sUSDQtyAmm = toUnit(1000);
+	const sUSDQtyAmm = toUnit(5000);
 
 	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
@@ -142,7 +142,7 @@ contract('ThalesAMM', accounts => {
 		const timestamp = await currentTime();
 
 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
-		await aggregator_sETH.setLatestAnswer(convertToDecimals(3950, 8), timestamp);
+		await aggregator_sETH.setLatestAnswer(convertToDecimals(50720, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
 		const [creator, owner] = await ethers.getSigners();
@@ -198,14 +198,14 @@ contract('ThalesAMM', accounts => {
 			owner,
 			priceFeedAddress,
 			sUSDSynth.address,
-			toUnit(1000),
+			toUnit(5000),
 			deciMath.address,
-			toUnit(0.01),
-			toUnit(0.05),
-			hour * 2
+			toUnit(0.02),
+			toUnit(0.12),
+			hour * 24
 		);
 		await thalesAMM.setBinaryOptionsMarketManager(manager.address, { from: owner });
-		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
+		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(80), { from: owner });
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 	});
 
@@ -216,61 +216,52 @@ contract('ThalesAMM', accounts => {
 
 	describe('Test AMM', () => {
 		it('price fully unlikely', async () => {
-			let strike = 4200; //2593 works 2592 doesnt
+			let strike = 44000; //2593 works 2592 doesnt
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
 				toUnit(strike),
-				now + hour * 10,
+				now + day * 13,
 				toUnit(10),
 				initialCreator
 			);
 
-			let calculatedOdds = calculateOdds(3950, strike, 0.25, 120);
+			let calculatedOdds = calculateOdds(50720, strike, 13, 80);
 			console.log('calculatedOdds is:' + calculatedOdds);
 			let calculatedOddsContract = await thalesAMM.calculateOdds(
-				toUnit(3950),
+				toUnit(50720),
 				toUnit(strike),
-				toUnit(0.25),
-				toUnit(120)
+				toUnit(13),
+				toUnit(80)
 			);
 			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
 
-			let calculateOddsd22 = calculateOddsd2(3950, strike, 0.25, 120);
-			console.log('calculateOddsd22 is:' + calculateOddsd22);
-
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
 			console.log('priceUp decimal is:' + priceUp / 1e18);
-
-			let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-			console.log('priceDown decimal is:' + priceDown / 1e18);
 
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+			console.log('availableToBuyFromAMM UP decimal is:' + availableToBuyFromAMM / 1e18);
 
-			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
-				newMarket.address,
-				Position.UP
-			);
-			console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
 
-			let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
+			let buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
 				newMarket.address,
-				Position.DOWN
+				Position.UP,
+				toUnit(1)
 			);
-			console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
+			console.log('buyPriceImpact 1  decimal is:' + buyPriceImpactPostBuy / 1e18);
 
-			let availableToSellToAMMDown = await thalesAMM.availableToSellToAMM(
-				newMarket.address,
-				Position.DOWN
-			);
-			console.log(
-				'availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18
-			);
+
+			 buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18)
+				);
+				console.log('buyPriceImpact post buy max  decimal is:' + buyPriceImpactPostBuy / 1e18);
+
 		});
 	});
 });
@@ -310,40 +301,3 @@ function calculateOdds(price, strike, days, volatility) {
 	return Math.floor((1 - x) * 1000) / 10;
 }
 
-function calculateOddsd2(price, strike, days, volatility) {
-	let p = price;
-	let q = strike;
-	let t = days / 365;
-	let v = volatility / 100;
-
-	let tt = Math.sqrt(t);
-	let vt = v * tt;
-	let lnpq = Math.log(q / p);
-	let d1 = lnpq / vt;
-	let y9 = 1 + 0.2316419 * Math.abs(d1);
-
-	let y = Math.floor((1 / y9) * 100000) / 100000;
-	let z1 = Math.exp(-((d1 * d1) / 2));
-	let d2 = -((d1 * d1) / 2);
-	return d2;
-}
-
-function calculateOddsZ(price, strike, days, volatility) {
-	let p = price;
-	let q = strike;
-	let t = days / 365;
-	let v = volatility / 100;
-
-	let tt = Math.sqrt(t);
-	let vt = v * tt;
-	let lnpq = Math.log(q / p);
-	let d1 = lnpq / vt;
-	let y9 = 1 + 0.2316419 * Math.abs(d1);
-
-	let y = Math.floor((1 / y9) * 100000) / 100000;
-	let z1 = Math.exp(-((d1 * d1) / 2));
-	let d2 = -((d1 * d1) / 2);
-	let d3 = Math.exp(d2);
-	let z = Math.floor(0.3989423 * d3 * 100000) / 100000;
-	return z;
-}

@@ -259,8 +259,10 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
+    "constant": true,
+    "inputs": [],
+    "name": "DOWN",
+    "outputs": [
       {
         "indexed": false,
         "internalType": "address",

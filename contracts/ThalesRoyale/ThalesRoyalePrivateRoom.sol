@@ -45,7 +45,6 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
     mapping(uint => uint) public currentRoundInRoom;
     mapping(uint => bool) public roomStarted;
     mapping(uint => bool) public roomFinished;
-    mapping(uint => bool) public playerStartedSignUp;
     mapping(uint => bool) public isReversedPositioningInRoom;
     mapping(uint => RoomType) public roomTypePerRoom;
     mapping(uint => GameType) public gameTypeInRoom;
@@ -157,9 +156,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
         oracleKeyPerRoom[roomNumberCounter] = _oracleKey;
 
         // open room properties
-        numberOfAlowedPlayersInRoom[roomNumberCounter] = _amuontOfPlayersinRoom;
-        playerCanPlayInRoom[roomNumberCounter][msg.sender] = true;
-        
+        numberOfAlowedPlayersInRoom[roomNumberCounter] = _amuontOfPlayersinRoom;        
 
         // adding amount
         buyInPerPlayerRerRoom[roomNumberCounter] = _buyInAmount;
@@ -237,21 +234,14 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
         require(playerSignedUpPerRoom[_roomNumber][msg.sender] == 0, "Player already signed up, for this room.");
         require(
                 (roomTypePerRoom[_roomNumber] == RoomType.CLOSED && isPlayerAllowed(msg.sender, _roomNumber)) ||
-                (roomTypePerRoom[_roomNumber] == RoomType.OPEN && numberOfPlayersInRoom[_roomNumber] < numberOfAlowedPlayersInRoom[roomNumberCounter])
+                (roomTypePerRoom[_roomNumber] == RoomType.OPEN && haveSpaceInRoom(_roomNumber))
             , "Can not sign up for room, not allowed or it is full");
         require(rewardToken.balanceOf(msg.sender) >= buyInPerPlayerRerRoom[_roomNumber], "No enough tokens");
 
         numberOfPlayersInRoom[_roomNumber]++;
         playerSignedUpPerRoom[_roomNumber][msg.sender] = block.timestamp;
-        if (roomTypePerRoom[_roomNumber] == RoomType.OPEN){
-            playerCanPlayInRoom[_roomNumber][msg.sender] = true;
-        }
 
         _buyIn(msg.sender, _roomNumber, buyInPerPlayerRerRoom[_roomNumber]);
-
-        if(!playerStartedSignUp[_roomNumber]){
-            playerStartedSignUp[_roomNumber] = true;
-        }
 
         emit SignedUpInARoom(msg.sender, _roomNumber);
     }
@@ -461,6 +451,10 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
         return playerCanPlayInRoom[_roomNumber][_player];
     }
 
+    function haveSpaceInRoom(uint _roomNumber) public view returns (bool) {
+        return numberOfPlayersInRoom[_roomNumber] < numberOfAlowedPlayersInRoom[roomNumberCounter];
+    }
+
     function isPlayerOwner(address _player, uint _roomNumber) public view returns (bool) {
         return _player == roomOwner[_roomNumber];
     }
@@ -667,7 +661,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, ProxyReentrancyGu
 
     modifier canChangeRoomVariables(uint _roomNumber) {
         require(msg.sender == roomOwner[_roomNumber], "You are not owner of room.");
-        require(!playerStartedSignUp[_roomNumber], "Player already sign up for room, no change allowed");
+        require(numberOfPlayersInRoom[_roomNumber] < 2, "Player already sign up for room, no change allowed");
         require(roomPublished[_roomNumber], "Deleted room");
         _;
     }

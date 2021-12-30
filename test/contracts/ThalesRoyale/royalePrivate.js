@@ -253,8 +253,6 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			
 			assert.equal(await royale.numberOfAlowedPlayersInRoom(roomNumberCounter), 10);
 
-			assert.equal(await royale.playerCanPlayInRoom(roomNumberCounter, first), true);
-
 			assert.bnEqual(await royale.buyInPerPlayerRerRoom(roomNumberCounter), buyIn100);
 
 			// check if event is emited
@@ -398,11 +396,6 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			let playersInRoom_after = await royale.numberOfPlayersInRoom(roomNumberCounter);
 			assert.equal(playersInRoom_after, 2);
 
-			assert.equal(await royale.playerCanPlayInRoom(roomNumberCounter, first), true);
-			assert.equal(await royale.playerCanPlayInRoom(roomNumberCounter, second), true);
-			assert.equal(await royale.playerCanPlayInRoom(roomNumberCounter, third), false);
-			assert.equal(await royale.playerCanPlayInRoom(roomNumberCounter, fourth), false);
-			
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'BuyIn', {
 				_user: second,
@@ -551,11 +544,6 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 			
 			let playersInRoom_after = await royale.numberOfPlayersInRoom(openRoomId);
 			assert.equal(playersInRoom_after, 2);
-			
-			assert.equal(await royale.playerCanPlayInRoom(openRoomId, first), true);
-			assert.equal(await royale.playerCanPlayInRoom(openRoomId, second), true);
-			assert.equal(await royale.playerCanPlayInRoom(openRoomId, third), false);
-			assert.equal(await royale.playerCanPlayInRoom(openRoomId, fourth), false);
 			
 			// check if event is emited
 			assert.eventEqual(tx_open.logs[0], 'BuyIn', {

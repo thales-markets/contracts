@@ -28,6 +28,11 @@ All markets are resolved via decentralized chainlink feeds.
 
 ## Repo Guide
 
+### Audits
+- https://www.certik.com/projects/thales
+- https://iosiro.com/audits/thales-airdrop-and-staking-smart-contract-audit
+- https://iosiro.com/audits/thales-binary-option-market-smart-contract-audit
+
 ### Contracts
 
 BinaryOption  

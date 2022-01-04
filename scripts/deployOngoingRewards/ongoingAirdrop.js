@@ -64,40 +64,7 @@ async function ongoingAirdrop() {
 	if (STAKING_THALES) {
 		const stakingTimestamp = await stakingThales.startTimeStamp();
 		if (stakingTimestamp.toString() > 0) {
-			// check if staking has begun
-			// const closedPeriodEvents = await stakingThalesContract.getPastEvents('ClosedPeriod', {
-			// 	fromBlock: 0,
-			// 	toBlock: 'latest',
-			// });
-			// let lastClosedPeriodBlockNumber = 0;
-			//
-			// if (closedPeriodEvents.length) {
-			// 	lastClosedPeriodBlockNumber = closedPeriodEvents[closedPeriodEvents.length - 1].blockNumber; // get last ClosedPeriod event block number
-			// }
-
-			// closePeriod() logic
 			try {
-				// const lastPeriodTimeStamp = (await stakingThales.lastPeriodTimeStamp()).toString();
-				// const durationPeriod = (await stakingThales.durationPeriod()).toString();
-				// const closingDate = new Date(lastPeriodTimeStamp * 1000.0 + durationPeriod * 1000.0);
-				// const now = new Date();
-				//
-				// console.log('lastPeriodTS', lastPeriodTimeStamp);
-				// console.log('durationPeriod', durationPeriod);
-				// console.log('closingDate', closingDate.getTime());
-
-				// if (now.getTime() > closingDate.getTime()) {
-				// TODO: close through gnosis
-				// let tx = await stakingThales.closePeriod();
-				// await tx
-				// 	.wait()
-				// 	.then(e => {
-				// 		console.log('StakingThales: period closed');
-				// 	})
-				// 	.catch(e => {
-				// 		console.err(e);
-				// 		return;
-				// 	});
 
 				if (includeStakingRewards) {
 					const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
@@ -123,10 +90,6 @@ async function ongoingAirdrop() {
 						}
 					}
 				}
-				// } else {
-				// 	console.log("StakingThales: it's not time yet to close period");
-				// 	return;
-				// }
 			} catch (e) {
 				console.log('StakingThales: failed to close the period', e);
 				return;
@@ -166,64 +129,63 @@ async function ongoingAirdrop() {
 	// encode user address and balance using web3 encodePacked
 	let kk = 0;
 	let claimers = await getAllClaimers();
-	for (let address of Object.keys(ongoingRewards)) {
-		console.log('checking address:' + address + ' which is ' + kk++ + '.');
-		address = address.toLowerCase();
-		addressesToSkip.add(address);
-		// check last period merkle distribution
-		var index = lastMerkleDistribution
-			.map(function(e) {
-				return e.address;
-			})
-			.indexOf(address);
-
-		//TODO: change to subgraph to get claims after the last setRoot event
-		let claimed = 0;
-		claimed = claimers.includes(address);
-		if (claimed) {
-			console.log(address + ' has already claimed');
-		} else {
-			console.log(address + ' has not claimed for this week');
-		}
-
-		let amount = Big(ongoingRewards[address])
-			.times(TOTAL_AMOUNT)
-			.div(totalScore)
-			.round();
-
-		// check if the address is in stakingRewards
-		let stakingReward = Big(stakingRewards[address] ? stakingRewards[address] : 0);
-		if (stakingReward > 0) {
-			amount = amount.add(stakingReward);
-		}
-
-		// adding only new amounts to totalBalance value
-		totalBalance = totalBalance.add(amount);
-		let previousBalance = 0;
-		// if address hasn't claimed add to amount prev value
-		if (claimed == 0 && lastMerkleDistribution[index]) {
-			amount = amount.add(lastMerkleDistribution[index].balance);
-			previousBalance = lastMerkleDistribution[index].balance;
-		}
-
-		let hash = keccak256(
-			web3.utils.encodePacked(i, address, numberExponentToLarge(amount.toString()))
-		);
-		let balance = {
-			address,
-			balance: numberExponentToLarge(amount.toString()),
-			stakingBalance: numberExponentToLarge(stakingReward),
-			previousBalance,
-			proof: '',
-			hash,
-			index: i,
-		};
-
-		stakingReward[address] = 0;
-		userBalanceHashes.push(hash);
-		userBalanceAndHashes.push(balance);
-		++i;
-	}
+	// for (let address of Object.keys(ongoingRewards)) {
+	// 	console.log('checking address:' + address + ' which is ' + kk++ + '.');
+	// 	address = address.toLowerCase();
+	// 	addressesToSkip.add(address);
+	// 	// check last period merkle distribution
+	// 	var index = lastMerkleDistribution
+	// 		.map(function(e) {
+	// 			return e.address;
+	// 		})
+	// 		.indexOf(address);
+	//
+	// 	let claimed = 0;
+	// 	claimed = claimers.includes(address);
+	// 	if (claimed) {
+	// 		console.log(address + ' has already claimed');
+	// 	} else {
+	// 		console.log(address + ' has not claimed for this week');
+	// 	}
+	//
+	// 	let amount = Big(ongoingRewards[address])
+	// 		.times(TOTAL_AMOUNT)
+	// 		.div(totalScore)
+	// 		.round();
+	//
+	// 	// check if the address is in stakingRewards
+	// 	let stakingReward = Big(stakingRewards[address] ? stakingRewards[address] : 0);
+	// 	if (stakingReward > 0) {
+	// 		amount = amount.add(stakingReward);
+	// 	}
+	//
+	// 	// adding only new amounts to totalBalance value
+	// 	totalBalance = totalBalance.add(amount);
+	// 	let previousBalance = 0;
+	// 	// if address hasn't claimed add to amount prev value
+	// 	if (claimed == 0 && lastMerkleDistribution[index]) {
+	// 		amount = amount.add(lastMerkleDistribution[index].balance);
+	// 		previousBalance = lastMerkleDistribution[index].balance;
+	// 	}
+	//
+	// 	let hash = keccak256(
+	// 		web3.utils.encodePacked(i, address, numberExponentToLarge(amount.toString()))
+	// 	);
+	// 	let balance = {
+	// 		address,
+	// 		balance: numberExponentToLarge(amount.toString()),
+	// 		stakingBalance: numberExponentToLarge(stakingReward),
+	// 		previousBalance,
+	// 		proof: '',
+	// 		hash,
+	// 		index: i,
+	// 	};
+	//
+	// 	stakingReward[address] = 0;
+	// 	userBalanceHashes.push(hash);
+	// 	userBalanceAndHashes.push(balance);
+	// 	++i;
+	// }
 
 	// Add staking rewards to merkle tree
 	kk = 0;

@@ -35,9 +35,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     uint public min_spread;
     uint public max_spread;
 
-    address public safeBox;
-    uint public safeBoxImpact;
-
     mapping(bytes32 => uint) public impliedVolatilityPerAsset;
 
     uint public minimalTimeLeftToMaturity;
@@ -50,6 +47,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     enum Position {Long, Short}
 
     mapping(address => uint) public spentOnMarket;
+
+    address public safeBox;
+    uint public safeBoxImpact;
 
     function initialize(
         address _owner,

@@ -1,5 +1,6 @@
 const { ethers, upgrades } = require('hardhat');
-const { getTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -24,6 +25,17 @@ async function main() {
 	await upgrades.upgradeProxy(priceFeedAddress, PriceFeed);
 
 	console.log('PriceFeed upgraded');
+
+	const priceFeedImplementation = await getImplementationAddress(ethers.provider, priceFeedAddress);
+	setTargetAddress('PriceFeedImplementation', network, priceFeedImplementation);
+
+	try {
+		await hre.run('verify:verify', {
+			address: priceFeedImplementation,
+		});
+	} catch (e) {
+		console.log(e);
+	}
 }
 
 main()

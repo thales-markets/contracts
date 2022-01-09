@@ -456,12 +456,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) internal view returns (uint) {
         (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter =
-            balanceOtherSide > 0
-                ? balanceOtherSide > amount ? 0 : amount.sub(balanceOtherSide)
-                : balancePosition.add(amount);
+            balancePosition > 0 ? balancePosition.add(amount) : balanceOtherSide > amount ? 0 : amount.sub(balanceOtherSide);
         uint minImpact = min_spread.add(safeBoxImpact);
         uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide.sub(amount) : 0;
-        if (balancePositionAfter < balanceOtherSide) {
+        if (balancePositionAfter < balanceOtherSideAfter) {
             //minimal price impact as it will balance the AMM exposure
             return minImpact;
         } else {

@@ -246,6 +246,18 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         return !seasonStart[season] && block.timestamp > (seasonCreationTime[season] + signUpPeriod);
     }
 
+    function canStartNewSeason() public view returns (bool) {
+        return nextSeasonStartsAutomatically && block.timestamp > royaleSeasonEndTime[season] + pauseBetweenSeasonsTime;
+    }
+
+    function hasParticipatedInCurrentOrLastRoyale(address _player) public view returns (bool) {
+        if (season > 1) {
+            return playerSignedUpPerSeason[season][_player] > 0 || playerSignedUpPerSeason[season - 1][_player] > 0;
+        } else {
+            return playerSignedUpPerSeason[season][_player] > 0;
+        }
+    }
+
     function isPlayerAliveInASpecificSeason(address player, uint _season) public view returns (bool) {
         if (roundInASeason[_season] > 1) {
             return (positionInARoundPerSeason[_season][player][roundInASeason[_season] - 1] == roundResultPerSeason[_season][roundInASeason[_season] - 1]);

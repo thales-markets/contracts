@@ -947,6 +947,12 @@ contract('ThalesRoyale', accounts => {
 			let canStartFalseAfterClose = await royale.canStartRoyale();
 			assert.equal(false, canStartFalseAfterClose);
 
+			let hasParticipatedInCurrentOrLastRoyale = await royale.hasParticipatedInCurrentOrLastRoyale(first);
+			assert.equal(hasParticipatedInCurrentOrLastRoyale, true);
+
+			hasParticipatedInCurrentOrLastRoyale = await royale.hasParticipatedInCurrentOrLastRoyale(fourth);
+			assert.equal(hasParticipatedInCurrentOrLastRoyale, false);
+
 		});
 
 		it('check the changing positions', async () => {
@@ -1396,7 +1402,13 @@ contract('ThalesRoyale', accounts => {
 			'Player already collected reward'
 		);
 
+		let canStartNewSeason = await royale.canStartNewSeason();
+		assert.equal(canStartNewSeason, false);
+
 		await fastForward(WEEK * 1 + 1);
+
+		canStartNewSeason = await royale.canStartNewSeason();
+		assert.equal(canStartNewSeason, true);
 
 		const tx1 = await royale.startNewSeason({ from: owner });
 
@@ -1408,6 +1420,9 @@ contract('ThalesRoyale', accounts => {
 		// season updated
 		let s2 = await royale.season();
 		assert.bnEqual(season_2, s2);
+
+		let hasParticipatedInCurrentOrLastRoyale = await royale.hasParticipatedInCurrentOrLastRoyale(first);
+		assert.equal(hasParticipatedInCurrentOrLastRoyale, true);
 
 		// NEW SEASON!!!
 

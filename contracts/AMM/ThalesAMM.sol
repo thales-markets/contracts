@@ -84,7 +84,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             }
             uint divider_max_price = ONE.sub(buy_max_price);
             uint additionalBufferFromSelling = balance.mul(buy_max_price).div(ONE);
-            uint availableUntilCapSUSD = capPerMarket.sub(spentOnMarket[market]).add(additionalBufferFromSelling);
+            if (capPerMarket.add(additionalBufferFromSelling) <= spentOnMarket[market]) {
+                return 0;
+            }
+            uint availableUntilCapSUSD = capPerMarket.add(additionalBufferFromSelling).sub(spentOnMarket[market]);
 
             return balance.add(availableUntilCapSUSD.div(divider_max_price).mul(ONE));
         } else {
@@ -130,6 +133,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
             // can burn straight away balanceOfTheOtherSide
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
+            if (capPerMarket.add(balanceOfTheOtherSide) < spentOnMarket[market].add(willPay)) {
+                return 0;
+            }
             uint usdAvailable = capPerMarket.add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
             return usdAvailable.div(sell_max_price).mul(ONE).add(balanceOfTheOtherSide);
         } else return 0;
@@ -401,9 +407,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             //minimal price impact as it will balance the AMM exposure
             return min_spread;
         } else {
-            uint basePriceOtherSide = price(market, position == Position.Long ? Position.Short : Position.Long);
+            uint maxPossibleSkew = balanceOtherSide.add(availableToBuyFromAMM(market, position)).sub(balancePosition);
             uint skew = balanceOtherSideAfter.sub(balancePositionAfter);
-            uint maxPossibleSkew = capPerMarket.mul(ONE).div(basePriceOtherSide);
             return min_spread.add(max_spread.sub(min_spread).mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE));
         }
     }

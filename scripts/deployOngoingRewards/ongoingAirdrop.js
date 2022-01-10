@@ -64,40 +64,7 @@ async function ongoingAirdrop() {
 	if (STAKING_THALES) {
 		const stakingTimestamp = await stakingThales.startTimeStamp();
 		if (stakingTimestamp.toString() > 0) {
-			// check if staking has begun
-			// const closedPeriodEvents = await stakingThalesContract.getPastEvents('ClosedPeriod', {
-			// 	fromBlock: 0,
-			// 	toBlock: 'latest',
-			// });
-			// let lastClosedPeriodBlockNumber = 0;
-			//
-			// if (closedPeriodEvents.length) {
-			// 	lastClosedPeriodBlockNumber = closedPeriodEvents[closedPeriodEvents.length - 1].blockNumber; // get last ClosedPeriod event block number
-			// }
-
-			// closePeriod() logic
 			try {
-				// const lastPeriodTimeStamp = (await stakingThales.lastPeriodTimeStamp()).toString();
-				// const durationPeriod = (await stakingThales.durationPeriod()).toString();
-				// const closingDate = new Date(lastPeriodTimeStamp * 1000.0 + durationPeriod * 1000.0);
-				// const now = new Date();
-				//
-				// console.log('lastPeriodTS', lastPeriodTimeStamp);
-				// console.log('durationPeriod', durationPeriod);
-				// console.log('closingDate', closingDate.getTime());
-
-				// if (now.getTime() > closingDate.getTime()) {
-				// TODO: close through gnosis
-				// let tx = await stakingThales.closePeriod();
-				// await tx
-				// 	.wait()
-				// 	.then(e => {
-				// 		console.log('StakingThales: period closed');
-				// 	})
-				// 	.catch(e => {
-				// 		console.err(e);
-				// 		return;
-				// 	});
 
 				if (includeStakingRewards) {
 					const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
@@ -123,10 +90,6 @@ async function ongoingAirdrop() {
 						}
 					}
 				}
-				// } else {
-				// 	console.log("StakingThales: it's not time yet to close period");
-				// 	return;
-				// }
 			} catch (e) {
 				console.log('StakingThales: failed to close the period', e);
 				return;
@@ -177,7 +140,6 @@ async function ongoingAirdrop() {
 			})
 			.indexOf(address);
 
-		//TODO: change to subgraph to get claims after the last setRoot event
 		let claimed = 0;
 		claimed = claimers.includes(address);
 		if (claimed) {
@@ -186,10 +148,7 @@ async function ongoingAirdrop() {
 			console.log(address + ' has not claimed for this week');
 		}
 
-		let amount = Big(ongoingRewards[address])
-			.times(TOTAL_AMOUNT)
-			.div(totalScore)
-			.round();
+		let amount = Big(0);
 
 		// check if the address is in stakingRewards
 		let stakingReward = Big(stakingRewards[address] ? stakingRewards[address] : 0);

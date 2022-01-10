@@ -32,34 +32,12 @@ async function main() {
 	console.log('Found ThalesAMM at:', thalesAmmAddress);
 
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
-	await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
-
-	console.log('ThalesAMM upgraded');
 
 	const ThalesAMMImplementation = await getImplementationAddress(ethers.provider, thalesAmmAddress);
 
 	console.log('Implementation ThalesAMM: ', ThalesAMMImplementation);
 
 	setTargetAddress('ThalesAMMImplementation', network, ThalesAMMImplementation);
-
-	let ThalesAMM_deployed = ThalesAMM.attach(thalesAmmAddress);
-
-	let safeBoxAddress = getTargetAddress('SafeBox', network);
-
-	let tx = await ThalesAMM_deployed.setSafeBox(safeBoxAddress);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setSafeBox');
-	});
-
-	tx = await ThalesAMM_deployed.setSafeBoxImpact(w3utils.toWei('0.01'));
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setSafeBoxImpact');
-	});
-
-	tx = await ThalesAMM_deployed.setMinSpread(w3utils.toWei('0.01'));
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setMinSpread');
-	});
 
 	try {
 		await hre.run('verify:verify', {

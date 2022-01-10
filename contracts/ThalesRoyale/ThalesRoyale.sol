@@ -1,25 +1,29 @@
-pragma solidity >=0.5.16 <=0.7.6;
+pragma solidity ^0.8.0;
 
 // external
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+
 
 // interfaces
 import "../interfaces/IPriceFeed.sol";
 
 // internal
-import "../utils/proxy/ProxyReentrancyGuard.sol";
-import "../utils/proxy/ProxyOwned.sol";
-import "../utils/proxy/ProxyPausable.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
-contract ThalesRoyale is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
+contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard, AccessControlUpgradeable {
 
     /* ========== LIBRARIES ========== */
 
-    using SafeMath for uint;
-    using SafeERC20 for IERC20;
+    using SafeMathUpgradeable for uint;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
     
     /* ========== CONSTANTS =========== */
 
@@ -28,7 +32,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyP
 
     /* ========== STATE VARIABLES ========== */
 
-    IERC20 public rewardToken;
+    IERC20Upgradeable public rewardToken;
     bytes32 public oracleKey;
     IPriceFeed public priceFeed;
 
@@ -88,10 +92,11 @@ contract ThalesRoyale is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyP
         setOwner(_owner);
         initNonReentrant();
         season = 1;
+        nextSeasonStartsAutomatically = true;
         seasonCreationTime[season] = block.timestamp;
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
-        rewardToken = IERC20(_rewardToken);
+        rewardToken = IERC20Upgradeable(_rewardToken);
         rounds = _rounds;
         signUpPeriod = _signUpPeriod;
         roundChoosingLength = _roundChoosingLength;

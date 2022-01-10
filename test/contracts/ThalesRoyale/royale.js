@@ -150,6 +150,12 @@ contract('ThalesRoyale', accounts => {
 			await fastForward(DAY * 4);
 			await expect(royale.signUp({ from: first })).to.be.revertedWith('Sign up period has expired');
 		});
+		
+		it('No one is signed up try to start', async () => {
+			await fastForward(HOUR * 72 + 1);
+			await expect(royale.startRoyaleInASeason({ from: first })).to.be.revertedWith('Can not start, no players in a season');
+
+		});
 
 		it('Cant start new season if this not finished', async () => {
 

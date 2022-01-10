@@ -312,19 +312,37 @@ contract('Price Feed', async accounts => {
 				
 			});
 
-			describe('when an aggregator is added for LYRA', () => {
-				const newRate = 12345.67;
-				let timestamp;
-				beforeEach(async () => {
-					timestamp = await currentTime();
-					await instance.connect(ownerSigner).addAggregator(LYRA, aggregatorLYRA.address);
-					await aggregatorLYRA.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
-				});
-				it('the specific number is returned from aggregator not from pool', async () => {
-					const result = await instance.connect(accountOneSigner).rateForCurrency(LYRA);
-					assert.bnEqual(result, toUnit(newRate.toString()));
-				});
+		});
+
+		describe('when an aggregator is added for LYRA', () => {
+			const newRate = 12345.67;
+			let timestamp;
+			beforeEach(async () => {
+				timestamp = await currentTime();
+				await instance.connect(ownerSigner).addAggregator(LYRA, aggregatorLYRA.address);
+				await aggregatorLYRA.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
 			});
+			it('the specific number is returned from aggregator not from pool', async () => {
+				const result = await instance.connect(accountOneSigner).rateForCurrency(LYRA);
+				assert.bnEqual(result, toUnit(newRate.toString()));
+			});
+
+			it('cannot add pool for LYRA if aggregator already exists', async () => {
+				await assert.revert(
+					instance.connect(ownerSigner).addPool(LYRA, pool_LYRA_DAI.address),
+					'Aggregator already exists for key'
+				);
+			});
+
+			it('can add pool for LYRA when aggregator is removed', async () => {
+				await instance.connect(ownerSigner).removeAggregator(LYRA);
+				await instance.connect(ownerSigner).addPool(LYRA, pool_LYRA_DAI.address);
+
+				assert.equal(await instance.connect(ownerSigner).pools(LYRA), pool_LYRA_DAI.address);
+				assert.equal(await instance.connect(ownerSigner).aggregators(LYRA), ZERO_ADDRESS);
+					
+			});
+
 		});
 	});
 });

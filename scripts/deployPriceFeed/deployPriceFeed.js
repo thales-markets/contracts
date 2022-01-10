@@ -66,7 +66,7 @@ async function main() {
 
 	try {
 		await hre.run('verify:verify', {
-			address: '0xe3C2b544E2aDCe2d59815cA78396B811F52BA3e0',
+			address: priceFeed.address,
 		});
 	} catch (e) {
 		console.log(e);

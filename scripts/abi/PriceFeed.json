@@ -108,44 +108,6 @@
     "type": "event"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint160",
-        "name": "sqrtPriceX96",
-        "type": "uint160"
-      }
-    ],
-    "name": "_getPriceFromSqrtPrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "priceX96",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "pool",
-        "type": "address"
-      }
-    ],
-    "name": "_getTwap",
-    "outputs": [
-      {
-        "internalType": "uint160",
-        "name": "sqrtPriceX96",
-        "type": "uint160"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],

@@ -59,6 +59,10 @@ contract PriceFeed is Initializable, ProxyOwned {
     }
 
     function addPool(bytes32 currencyKey, address poolAddress) external onlyOwner {
+        // check if aggregator exists for given currency key
+        AggregatorV2V3Interface aggregator = aggregators[currencyKey];
+        require(address(aggregator) == address(0), "Aggregator already exists for key");
+
         IUniswapV3Pool pool = IUniswapV3Pool(poolAddress);
         (uint160 sqrtPriceX96, , , , , , ) = pool.slot0();
         require(sqrtPriceX96 > 0, "Given Pool is invalid");
@@ -164,7 +168,7 @@ contract PriceFeed is Initializable, ProxyOwned {
         }
     }
 
-    function _getTwap(address pool) public view returns (uint160 sqrtPriceX96) {
+    function _getTwap(address pool) internal view returns (uint160 sqrtPriceX96) {
         if (twapInterval == 0) {
             // return the current price if twapInterval == 0
             (sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
@@ -182,7 +186,7 @@ contract PriceFeed is Initializable, ProxyOwned {
         }
     }
 
-    function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) public pure returns(uint256 priceX96) {
+    function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns(uint256 priceX96) {
         return FullMath.mulDiv(sqrtPriceX96, sqrtPriceX96 * 10**18, Q192);
     }
 

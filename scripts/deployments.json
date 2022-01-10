@@ -103,13 +103,15 @@
 		"OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224",
 		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
 		"PriceFeedImplementation": "0x8C9f8b38cDCF1911Cb470326a435c4C1b192A80D",
-		"DeciMath": "0x3c929BeF3f8886Ceac0a35Abd14849bc846ed0a2",
+		"DeciMath": "0x7ECDc3b7dc48a0c21857f6d3442dd440E572d4A9",
 		"ThalesAMMImplementation": "0x97067c63C40e49a4aF33b2978a57064C1866e368",
 		"ThalesAMM": "0xB0437C95551738FC48e2656017B70344d269f337",
 		"ProxyStakingThales": "0x3eD7fba8d640B2ED4E0a57607185FaB0f228515C",
 		"ProxyEscrowThales": "0x1A16ebD0a9855A9537aa3bc30989634ec3043Df2",
 		"ProxyStakingThalesImplementation": "0xEBB06f3ca3980d71EcccC99Fd7CA1080bF82Becd",
-		"ProxyEscrowThalesImplementation": "0x4f8A0ca4af3e58EB992ac2D3573065117CDB5CA0"
+		"ProxyEscrowThalesImplementation": "0x4f8A0ca4af3e58EB992ac2D3573065117CDB5CA0",
+		"SafeBox": "0xd95Dcde5423E9cdD904DA62cd72423C8823850c9",
+		"SafeBoxImplementation": "0xB538FdA30AFD9b4961C9Fd57281e1EEd04d17392"
 	},
 	"localhost": {
 		"Airdrop": "",

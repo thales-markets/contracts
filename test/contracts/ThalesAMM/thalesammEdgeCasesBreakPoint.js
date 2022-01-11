@@ -45,7 +45,7 @@ const Phase = {
 };
 
 contract('ThalesAMM', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
+	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
 	const [first, owner, second, third, fourth] = accounts;
 
 	const sUSDQty = toUnit(100000);
@@ -206,6 +206,8 @@ contract('ThalesAMM', accounts => {
 		);
 		await thalesAMM.setBinaryOptionsMarketManager(manager.address, { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(80), { from: owner });
+		await thalesAMM.setSafeBoxImpact(toUnit(0.01), { from: owner });
+		await thalesAMM.setSafeBox(safeBox, { from: owner });
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 	});
 

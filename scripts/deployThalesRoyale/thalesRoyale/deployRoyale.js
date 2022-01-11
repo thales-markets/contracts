@@ -63,17 +63,14 @@ async function main() {
         owner.address, 			//1
         asset, 					//2
         priceFeedAddress,		//3
-        zeroAmount,				//4
-        rewardTokenAddress,		//5
-        rounds,					//6
-        signUpPeriod,			//7
-        roundChoosingLength,	//8
-        roundLength,			//9
-        claimTime,				//10
-        season, 				//11
-        buyIn,					//12
-        true,					//13
-        pauseBetweenSeasonsTime	//14
+        rewardTokenAddress,		//4
+        rounds,					//5
+        signUpPeriod,			//6
+        roundChoosingLength,	//7
+        roundLength,			//8
+        buyIn,					//9
+        pauseBetweenSeasonsTime,//10
+        true					//11
         ]
     );
 	await royale.deployed();

@@ -7,7 +7,7 @@
       "hash": "0x5282a6e3fdb1e61533114c19fab5aa6613bd267f70e29f9b286788c37d5acf31",
       "type": 0,
       "accessList": null,
-      "blockHash": "0xcbeee102e3383b6b1d073486b229a6f9e5c5b5b1a57c6febc3c234dd8047db4e",
+      "blockHash": "0x01d9c183b09cf90d55a263987606691533a4a3290f7fc84bea6882e05ec3221e",
       "blockNumber": 10,
       "transactionIndex": 0,
       "confirmations": 1,
@@ -1724,9 +1724,6 @@
           },
           "t_mapping(t_address,t_uint256)": {
             "label": "mapping(address => uint256)"
-          },
-          "t_bool": {
-            "label": "bool"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"

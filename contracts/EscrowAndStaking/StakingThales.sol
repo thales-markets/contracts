@@ -11,6 +11,7 @@ import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ISNXRewards.sol";
+import "../interfaces/IThalesRoyale.sol";
 
 contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     /* ========== LIBRARIES ========== */
@@ -24,6 +25,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     IERC20 public stakingToken;
     IERC20 public feeToken;
     ISNXRewards public SNXRewards;
+    IThalesRoyale public thalesRoyale;
 
     uint public periodsOfStaking;
     uint public lastPeriodTimeStamp;
@@ -152,6 +154,13 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function setSNXRewards(address _snxRewards) public onlyOwner {
         require(_snxRewards != address(0), "Invalid address");
         SNXRewards = ISNXRewards(_snxRewards);
+        emit SNXRewardsAddressChanged(_snxRewards);
+    }
+    
+    function setThalesRoyale(address _royale) public onlyOwner {
+        require(_royale != address(0), "Invalid address");
+        thalesRoyale = IThalesRoyale(_royale);
+        emit ThalesRoyaleAddressChanged(_royale);
     }
 
     // Set EscrowThales contract address
@@ -372,7 +381,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function _calculateExtraReward(address account, uint baseReward) internal view returns (uint) {
         uint extraReward = HUNDRED;
         uint staked = _getSNXStakedForAccount(account);
-        bool participatedInLastRounds;
+        
         uint totalAMMVolume = _getTotalAMMVolume(account);
         uint avgAMMVolume = _getAvgAMMVolume(account);
 
@@ -392,7 +401,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             // extraReward = extraReward.add(_getAvgAMMVolume(account).mul(12).div(baseReward));
         }
 
-        if(participatedInLastRounds) {
+        if(address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account)) {
             extraReward = extraReward.add(3);
         }
 
@@ -430,4 +439,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event UnstakeDurationPeriodChanged(uint value);
     event EscrowChanged(address newEscrow);
     event StakingPeriodStarted();
+    event SNXRewardsAddressChanged(address snxRewards);
+    event ThalesRoyaleAddressChanged(address royale);
 }

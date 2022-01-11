@@ -7,7 +7,7 @@
       "hash": "0x5282a6e3fdb1e61533114c19fab5aa6613bd267f70e29f9b286788c37d5acf31",
       "type": 0,
       "accessList": null,
-      "blockHash": "0xcdcc98c9b6c753cf1bffe8736ce264ff036621174cbf2f32440f0731f8380544",
+      "blockHash": "0x01d9c183b09cf90d55a263987606691533a4a3290f7fc84bea6882e05ec3221e",
       "blockNumber": 10,
       "transactionIndex": 0,
       "confirmations": 1,
@@ -1189,62 +1189,62 @@
   "impls": {
     "a8871540c290415451d9459595a1ca6069fc66949fca754a61d99bddde319f76": {
       "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0xb11d241df02ae4369c47ff05eba91742f514abd4b3c67e37236c853d891d9802",
+      "txHash": "0x87123859e8685fe11683b1a3abcfd01464a10295f7a5b922f230e90ecb2cea96",
       "layout": {
         "storage": [
           {
             "contract": "Initializable",
             "label": "initialized",
             "type": "t_bool",
-            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:23"
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
           },
           {
             "contract": "Initializable",
             "label": "initializing",
             "type": "t_bool",
-            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:28"
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
           },
           {
             "contract": "Initializable",
             "label": "______gap",
             "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:63"
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
           },
           {
             "contract": "ProxyOwned",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:5"
+            "src": "contracts/utils/proxy/ProxyOwned.sol:5"
           },
           {
             "contract": "ProxyOwned",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:6"
+            "src": "contracts/utils/proxy/ProxyOwned.sol:6"
           },
           {
             "contract": "ProxyOwned",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:7"
+            "src": "contracts/utils/proxy/ProxyOwned.sol:7"
           },
           {
             "contract": "ProxyOwned",
             "label": "_transferredAtInit",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:8"
+            "src": "contracts/utils/proxy/ProxyOwned.sol:8"
           },
           {
             "contract": "PriceFeed",
             "label": "aggregators",
             "type": "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)140)",
-            "src": "contracts\\PriceFeed\\PriceFeed.sol:20"
+            "src": "contracts/PriceFeed/PriceFeed.sol:20"
           },
           {
             "contract": "PriceFeed",
             "label": "currencyKeyDecimals",
             "type": "t_mapping(t_bytes32,t_uint8)",
-            "src": "contracts\\PriceFeed\\PriceFeed.sol:21"
+            "src": "contracts/PriceFeed/PriceFeed.sol:21"
           },
           {
             "contract": "PriceFeed",

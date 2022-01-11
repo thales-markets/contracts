@@ -99,7 +99,7 @@ contract PriceFeed is Initializable, ProxyOwned {
 
     function getRates() external view returns (uint[] memory rates) {
         uint count = 0;
-        rates = new uint[](currencyKeys.length );
+        rates = new uint[](currencyKeys.length);
         for (uint i = 0; i < currencyKeys.length; i++) {
             bytes32 currencyKey = currencyKeys[i];
             rates[count++] = _getRateAndUpdatedTime(currencyKey).rate;
@@ -163,8 +163,12 @@ contract PriceFeed is Initializable, ProxyOwned {
                 return RateAndUpdatedTime({rate: uint216(_formatAnswer(currencyKey, answer)), time: uint40(updatedAt)});
             }
         } else {
-            uint256 answer =_getPriceFromSqrtPrice(_getTwap(address(pool)));
-            return RateAndUpdatedTime({rate: uint216(_formatAnswer(currencyKey, int256(answer))), time: uint40(block.timestamp)});
+            uint256 answer = _getPriceFromSqrtPrice(_getTwap(address(pool)));
+            return
+                RateAndUpdatedTime({
+                    rate: uint216(_formatAnswer(currencyKey, int256(answer))),
+                    time: uint40(block.timestamp)
+                });
         }
     }
 
@@ -180,14 +184,18 @@ contract PriceFeed is Initializable, ProxyOwned {
             (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(secondsAgos);
 
             // tick(imprecise as it's an integer) to price
-            sqrtPriceX96 = TickMath.getSqrtRatioAtTick(
-                int24((tickCumulatives[1] - tickCumulatives[0]) / twapInterval)
-            );
+            sqrtPriceX96 = TickMath.getSqrtRatioAtTick(int24((tickCumulatives[1] - tickCumulatives[0]) / twapInterval));
         }
     }
 
-    function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns(uint256 priceX96) {
+    function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns (uint256 priceX96) {
         return FullMath.mulDiv(sqrtPriceX96, sqrtPriceX96 * 10**18, Q192);
+    }
+
+    function transferCurrencyKeys() external onlyOwner {
+        for (uint i = 0; i < aggregatorKeys.length; i++) {
+            currencyKeys[i] = aggregatorKeys[i];
+        }
     }
 
     /* ========== EVENTS ========== */

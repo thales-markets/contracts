@@ -86,7 +86,7 @@ contract('ThalesRoyale', accounts => {
                 HOUR * 8,
                 DAY,
                 toUnit(2500),
-                HOUR * 1,
+                WEEK * 4,
                 true
             ]
         );
@@ -140,7 +140,7 @@ contract('ThalesRoyale', accounts => {
 		it('Signing up No enough tokens', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.setBuyInAmount(toUnit(3500000000),{ from: owner });
-			await expect(royale.signUp({ from: first })).to.be.revertedWith('Not enough sUSD for buy in');
+			await expect(royale.signUp({ from: first })).to.be.revertedWith('No enough sUSD for buy in');
 		});
 
 		it('Signing up with allowance check event', async () => {

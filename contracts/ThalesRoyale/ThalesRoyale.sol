@@ -17,6 +17,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
 contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
+    
     /* ========== LIBRARIES ========== */
 
     using SafeMathUpgradeable for uint;
@@ -58,7 +59,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     mapping(uint => uint) public roundInSeasonEndTime;
     mapping(uint => uint) public roundInASeasonStartTime;
     mapping(uint => mapping(address => uint256)) public playerSignedUpPerSeason;
-    mapping(uint => uint) public seasonStartedTime;
     mapping(uint => mapping(uint => uint)) public roundResultPerSeason;
     mapping(uint => mapping(uint => uint)) public targetPricePerRoundPerSeason;
     mapping(uint => mapping(uint => uint)) public finalPricePerRoundPerSeason;
@@ -88,7 +88,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
-        nextSeasonStartsAutomatically = true;
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
         rewardToken = IERC20Upgradeable(_rewardToken);
@@ -107,7 +106,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(season > 0, "Initialize first season");
         require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
         require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");
-        require(rewardToken.balanceOf(msg.sender) >= buyInAmount, "No enough tokens");
+        require(rewardToken.balanceOf(msg.sender) >= buyInAmount, "No enough sUSD for buy in");
         require(rewardToken.allowance(msg.sender, address(this)) >= buyInAmount, "No allowance.");
 
 
@@ -260,7 +259,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     function canStartNewSeason() public view returns (bool) {
-        return nextSeasonStartsAutomatically && block.timestamp > royaleSeasonEndTime[season] + pauseBetweenSeasonsTime;
+        return nextSeasonStartsAutomatically && block.timestamp > seasonCreationTime[season] + pauseBetweenSeasonsTime;
     }
 
     function hasParticipatedInCurrentOrLastRoyale(address _player) public view returns (bool) {
@@ -376,7 +375,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     modifier seasonCanStart () {
         require( msg.sender == owner || canStartNewSeason(), "Only owner can start season before pause between two seasons");
-        require(seasonFinish[season] || season == 0, "Previous season must be finished");
+        require(seasonFinished[season] || season == 0, "Previous season must be finished");
         _;
     }
 

@@ -98,7 +98,7 @@
         "BinaryOptionMarketManager": "0x6382660BF24f5e7BeC43a7D47591F823488FDB8D",
         "BinaryOptionMarketData": "0xdBDAB336Cd97DB0F361DbD8C47EB4731674B62d7",
         "PriceFeed": "0x3c22C1bBC552A43b101b003dF5230322EA09CeD0",
-        "ThalesRoyale": "0x2d385352674cBb8468723Bc01efC00998c10fc96",
+        "ThalesRoyale": "0xb094Fc3ACc9e49f3dd3EDFF2494bA459183e454d",
         "ThalesRoyalePrivateRoom": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
         "OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224",
         "LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
@@ -110,7 +110,7 @@
         "ProxyEscrowThales": "0xb9615f837E60EdBECe26A91670FA42b02c9881D7",
         "ProxyStakingThalesImplementation": "0xEBB06f3ca3980d71EcccC99Fd7CA1080bF82Becd",
         "ProxyEscrowThalesImplementation": "0x4f8A0ca4af3e58EB992ac2D3573065117CDB5CA0",
-        "ThalesRoyaleImplementation": "0xF1b35FAC306cd6fB0008c229f056314c139a3c66",
+        "ThalesRoyaleImplementation": "0xCf26d6Bcc834e5c65AD5Ee9fe30b98d02Bc3C372",
         "ThalesRoyaleDeployed": "0xd885521B35F3DFbc128B38f8897109eba829472e"
     },
     "localhost": {

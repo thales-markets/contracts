@@ -11,9 +11,10 @@ import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ISNXRewards.sol";
+import "../interfaces/IThalesRoyale.sol";
 
 contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
-/* ========== LIBRARIES ========== */
+    /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
     using SafeERC20 for IERC20;
@@ -24,6 +25,7 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     IERC20 public stakingToken;
     IERC20 public feeToken;
     ISNXRewards public SNXRewards;
+    IThalesRoyale public thalesRoyale;
 
     uint public periodsOfStaking;
     uint public lastPeriodTimeStamp;
@@ -55,8 +57,9 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     mapping(address => uint) private _stakedBalances;
     mapping(address => uint) private _lastRewardsClaimedPeriod;
 
-    uint public _contractVersion;
+    uint constant HUNDRED = 100;
 
+    uint public _contractVersion;
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -152,7 +155,15 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     function setSNXRewards(address _snxRewards) public onlyOwner {
         require(_snxRewards != address(0), "Invalid address");
         SNXRewards = ISNXRewards(_snxRewards);
+        emit SNXRewardsAddressChanged(_snxRewards);
     }
+    
+    function setThalesRoyale(address _royale) public onlyOwner {
+        require(_royale != address(0), "Invalid address");
+        thalesRoyale = IThalesRoyale(_royale);
+        emit ThalesRoyaleAddressChanged(_royale);
+    }
+
 
     function getVersion() external view returns (uint) {
         return _contractVersion;
@@ -350,20 +361,12 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
         if ((_stakedBalances[account] == 0) || (_lastRewardsClaimedPeriod[account] == periodsOfStaking)) {
             return 0;
         }
-        // If the SNX has not claimed the available rewards yet
-        ( , uint snx_rewards) = SNXRewards.feesAvailable(account);
-        if(totalSNXRewardsInPeriod > 0 && snx_rewards > 0) {
-            return snx_rewards.mul(periodExtraReward).div(totalSNXRewardsInPeriod)
-            .add(_stakedBalances[account]
-                .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
-                .mul(currentPeriodRewards)
-                .div(_totalStakedAmount.add(_totalEscrowedAmount)));
-        }
-        return
-            _stakedBalances[account]
+        uint baseReward = _stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
                 .mul(currentPeriodRewards)
                 .div(_totalStakedAmount.add(_totalEscrowedAmount));
+        uint totalReward = _calculateExtraReward(account, baseReward);
+        return totalReward;
     }
 
     function _calculateAvailableFeesToClaim(address account) internal view returns (uint) {
@@ -385,6 +388,49 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
                 .div(_totalStakedAmount.add(_totalEscrowedAmount));
     }
 
+    function _calculateExtraReward(address account, uint baseReward) internal view returns (uint) {
+        uint extraReward = HUNDRED;
+        uint staked = _getSNXStakedForAccount(account);
+        
+        uint totalAMMVolume = _getTotalAMMVolume(account);
+        uint avgAMMVolume = _getAvgAMMVolume(account);
+
+        // SNX staked more than base reward
+        if(staked >= baseReward) {
+            extraReward = extraReward.add(15);
+        }
+        else {
+            // extraReward = extraReward.add(staked.mul(15).div(baseReward));
+        }
+
+        // AMM Volume 10x Thales base reward
+        if(totalAMMVolume >= baseReward.mul(10)) {
+            extraReward = extraReward.add(12);
+        }
+        else {
+            // extraReward = extraReward.add(_getAvgAMMVolume(account).mul(12).div(baseReward));
+        }
+
+        if(address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account)) {
+            extraReward = extraReward.add(3);
+        }
+
+        return baseReward.mul(extraReward).div(HUNDRED);           
+    }
+
+    function _getSNXStakedForAccount(address account) internal view returns (uint) {
+        return 1;
+    }
+    function _getTotalAMMVolume(address account) internal view returns (uint) {
+        return 1;
+    }
+    function _getAvgAMMVolume(address account) internal view returns (uint) {
+        return 1;
+    }
+    
+
+
+
     /* ========== EVENTS ========== */
 
     event RewardAdded(uint reward);
@@ -403,4 +449,8 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     event UnstakeDurationPeriodChanged(uint value);
     event EscrowChanged(address newEscrow);
     event StakingPeriodStarted();
+    event SNXRewardsAddressChanged(address snxRewards);
+    event ThalesRoyaleAddressChanged(address royale);
 }
+
+ 

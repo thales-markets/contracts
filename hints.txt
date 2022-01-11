@@ -24,6 +24,8 @@ optimistic kovan:
 npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyale/deployRoyale.js 
 npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyale/upgradeRoyale.js
 npx hardhat run --network optimisticKovan scripts/deployAMM/deployAMM.js
+npx hardhat run --network optimisticKovan scripts/deployAMM/upgradeAMM.js
+npx hardhat run --network optimisticKovan scripts/l2_deployments/createMarket.js
 
 optimistic:
 npx hardhat run --network optimistic scripts/deployAMM/deployAMM.js

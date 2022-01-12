@@ -41,17 +41,6 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	priceFeedAddress = getTargetAddress('PriceFeed', network);
-	console.log('Found PriceFeed at:' + priceFeedAddress);
-
-	const DeciMath = await ethers.getContractFactory('DeciMath');
-	const deciMath = await DeciMath.deploy();
-	await deciMath.deployed();
-
-	console.log('DeciMath deployed to:', deciMath.address);
-	setTargetAddress('DeciMath', network, deciMath.address);
-
-	const hour = 60 * 60;
 	const SafeBox = await ethers.getContractFactory('SafeBox');
 	let SafeBoxDeployed = await upgrades.deployProxy(SafeBox, [owner.address, ProxyERC20sUSDaddress]);
 	await SafeBoxDeployed.deployed();

@@ -16,21 +16,25 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-
+	let mainnet_provider;
 	if (network == 'homestead') {
 		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
+		return 0;
+	}
+	if (networkObj.chainId == 42) {
+		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimisticKovan\'")
 		return 0;
 	}
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
+		mainnet_provider = new ethers.providers.InfuraProvider("kovan");
 	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimistic';
 		network = 'optimistic';
+		mainnet_provider = new ethers.providers.InfuraProvider("homestead");
 	}
-	
-	let mainnet_provider = new ethers.providers.InfuraProvider("homestead");	
 	const l1Wallet = new ethers.Wallet(user_key, mainnet_provider);
 	const l2Wallet = new ethers.Wallet(user_key, ethers.provider);
 

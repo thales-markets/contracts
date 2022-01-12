@@ -14,6 +14,9 @@ async function main() {
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
+	if (networkObj.chainId == 42) {
+		network = 'kovan';
+	}
 	if (networkObj.chainId == 69) {
 		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
 		return 0;

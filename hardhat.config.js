@@ -146,7 +146,7 @@ module.exports = {
 		},
 		optimisticKovan: {
 			gasPrice: 10000,
-			url: 'https://kovan.optimism.io',
+			url: 'https://optimism-kovan.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
 	},

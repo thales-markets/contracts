@@ -1137,7 +1137,7 @@
         "type": "uint256"
       }
     ],
-    "name": "seasonFinish",
+    "name": "seasonFinished",
     "outputs": [
       {
         "internalType": "bool",
@@ -1156,7 +1156,7 @@
         "type": "uint256"
       }
     ],
-    "name": "seasonStart",
+    "name": "seasonStarted",
     "outputs": [
       {
         "internalType": "bool",

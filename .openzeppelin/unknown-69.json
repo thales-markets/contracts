@@ -2911,13 +2911,13 @@
           {
             "contract": "ThalesAMM",
             "label": "priceFeed",
-            "type": "t_contract(IPriceFeed)23865",
+            "type": "t_contract(IPriceFeed)22335",
             "src": "contracts\\AMM\\ThalesAMM.sol:30"
           },
           {
             "contract": "ThalesAMM",
             "label": "sUSD",
-            "type": "t_contract(IERC20)43801",
+            "type": "t_contract(IERC20)42271",
             "src": "contracts\\AMM\\ThalesAMM.sol:31"
           },
           {
@@ -2979,91 +2979,32 @@
           "t_contract(DeciMath)8197": {
             "label": "contract DeciMath"
           },
-          "t_contract(IPriceFeed)23865": {
+          "t_contract(IPriceFeed)22335": {
             "label": "contract IPriceFeed"
           },
-          "t_contract(IERC20)43801": {
+          "t_contract(IERC20)42271": {
             "label": "contract IERC20"
           },
           "t_address": {
             "label": "address"
           },
+          "t_uint256": {
+            "label": "uint256"
           },
-          "t_array(t_uint256)50_storage": {
-            "label": "uint256[50]"
-          }
-        }
-      }
-    },
-    "d530cb9de04504cc5735c88b580d48991e79410b81dff9bd15f2d4a0a4794a51": {
-      "address": "0xB538FdA30AFD9b4961C9Fd57281e1EEd04d17392",
-      "txHash": "0x3e6de486dc45812108fe8dace7e63f48866725b73b5d519aabd0c85192800356",
-      "layout": {
-        "storage": [
-          {
-            "contract": "ProxyOwned",
-            "label": "owner",
-            "type": "t_address",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:5"
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
           },
-          {
-            "contract": "ProxyOwned",
-            "label": "nominatedOwner",
-            "type": "t_address",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:6"
+          "t_bytes32": {
+            "label": "bytes32"
           },
-          {
-            "contract": "ProxyOwned",
-            "label": "_initialized",
-            "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:7"
-          },
-          {
-            "contract": "ProxyOwned",
-            "label": "_transferredAtInit",
-            "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:8"
-          },
-          {
-            "contract": "Initializable",
-            "label": "initialized",
-            "type": "t_bool",
-            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:23"
-          },
-          {
-            "contract": "Initializable",
-            "label": "initializing",
-            "type": "t_bool",
-            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:28"
-          },
-          {
-            "contract": "Initializable",
-            "label": "______gap",
-            "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:63"
-          },
-          {
-            "contract": "SafeBox",
-            "label": "sUSD",
-            "type": "t_contract(IERC20)28201",
-            "src": "contracts\\AMM\\SafeBox.sol:11"
-          }
-        ],
-        "types": {
-          "t_contract(IERC20)28201": {
-            "label": "contract IERC20"
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
           },
           "t_bool": {
             "label": "bool"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"
-          },
-          "t_uint256": {
-            "label": "uint256"
-          },
-          "t_address": {
-            "label": "address"
           }
         }
       }

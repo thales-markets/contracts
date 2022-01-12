@@ -44,23 +44,6 @@ async function main() {
 
 	let ThalesAMM_deployed = ThalesAMM.attach(thalesAmmAddress);
 
-	let safeBoxAddress = getTargetAddress('SafeBox', network);
-
-	let tx = await ThalesAMM_deployed.setSafeBox(safeBoxAddress);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setSafeBox');
-	});
-
-	tx = await ThalesAMM_deployed.setSafeBoxImpact(w3utils.toWei('0.01'));
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setSafeBoxImpact');
-	});
-
-	tx = await ThalesAMM_deployed.setMinSpread(w3utils.toWei('0.01'));
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setMinSpread');
-	});
-
 	try {
 		await hre.run('verify:verify', {
 			address: ThalesAMMImplementation,

@@ -20,23 +20,45 @@ async function main() {
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
-    console.log(networkObj)
+    let network = networkObj.name;
+	let net_optimistic = '';
 	
-	const net_optimistic_kovan = 'optimisticKovan';
-	const net_kovan = networkObj.name;
+	if (network == 'homestead') {
+		network = 'mainnet';
+		net_optimistic = 'optimistic';
+	}
+	if (networkObj.chainId == 42) {
+		network = 'kovan';
+		net_optimistic = 'optimisticKovan';
+	}
+	if (networkObj.chainId == 69) {
+		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
+		return 0;
+	}
+	if (networkObj.chainId == 10) {
+		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
+		return 0;
+	}
+	
 			
 		
 	const ProxyThalesExchanger = await ethers.getContractFactory('ThalesExchanger');
-	const ThalesAddress = getTargetAddress('Thales', net_kovan);
-	const OpThalesL1Address = getTargetAddress('OpThales_L1', net_kovan);
-	const OpThalesL2Address = getTargetAddress('OpThales_L2', net_optimistic_kovan);
-	const L1StandardBridgeAddress = getTargetAddress('L1StandardBridge', net_kovan);
+	const ThalesAddress = getTargetAddress('Thales', network);
+	const OpThalesL1Address = getTargetAddress('OpThales_L1', network);
+	const OpThalesL2Address = getTargetAddress('OpThales_L2', net_optimistic);
+	const L1StandardBridgeAddress = getTargetAddress('L1StandardBridge', network);
 
-	console.log("Thales on Kovan at: ", ThalesAddress);
+	if(ThalesAddress == undefined || OpThalesL1Address == undefined || OpThalesL2Address == undefined || L1StandardBridgeAddress == undefined) {
+		console.log("Some deployments are missing");
+		console.log("Thales:", ThalesAddress, "\nOpThales on L1: ", OpThalesL1Address, "\nOpThales on L2: ", OpThalesL2Address, "\nL1 Standard Bridge: ", L1StandardBridgeAddress);
+		return 0;
+	}
+
+	console.log("Thales on L1: ", ThalesAddress);
 	console.log("OpThales on L1: ", OpThalesL1Address);
 	console.log("OpThales on L2: ", OpThalesL2Address);
 			
-	console.log("L1 Bridge on Kovan at: ", L1StandardBridgeAddress);
+	console.log("L1 Standard Bridge on L1: ", L1StandardBridgeAddress);
 
 	const ProxyThalesExchanger_deployed = await upgrades.deployProxy(ProxyThalesExchanger, 
 		[
@@ -53,8 +75,8 @@ async function main() {
 	const ProxyThalesExchangerImplementation = await getImplementationAddress(ethers.provider, ProxyThalesExchanger_deployed.address);
 	
 	console.log("Implementation ProxyThalesExchanger: ", ProxyThalesExchangerImplementation);
-	setTargetAddress('ProxyThalesExchanger', net_kovan, ProxyThalesExchanger_deployed.address);
-	setTargetAddress('ProxyThalesExchangerImplementation', net_kovan, ProxyThalesExchangerImplementation);
+	setTargetAddress('ProxyThalesExchanger', network, ProxyThalesExchanger_deployed.address);
+	setTargetAddress('ProxyThalesExchangerImplementation', network, ProxyThalesExchangerImplementation);
 
 
 }

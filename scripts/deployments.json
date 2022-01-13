@@ -86,7 +86,8 @@
 		"DeciMath": "0x5c779CFAe4b6B7a02c32938dDAbDada8AB60fb14",
 		"PriceFeedImplementation": "0x6B33b99E3D3213DF963375E6d94aBa968351f803",
 		"ThalesAMM": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
-		"ThalesAMMImplementation": "0x516c96B8cBc19F70B3783cCDC74327b2D9f2D644"
+		"ThalesAMMImplementation": "0x516c96B8cBc19F70B3783cCDC74327b2D9f2D644",
+		"SafeBox": "0xe853207c30f3c32eda9aeffddc67357d5332978c"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
@@ -104,14 +105,15 @@
 		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
 		"PriceFeedImplementation": "0x8C9f8b38cDCF1911Cb470326a435c4C1b192A80D",
 		"DeciMath": "0x3c929BeF3f8886Ceac0a35Abd14849bc846ed0a2",
-		"ThalesAMMImplementation": "0xcA18480d7f31706e562ed68311B62cF8d560eE97",
+		"ThalesAMMImplementation": "0x97067c63C40e49a4aF33b2978a57064C1866e368",
 		"ThalesAMM": "0xB0437C95551738FC48e2656017B70344d269f337",
 		"ProxyStakingThales": "0x3eD7fba8d640B2ED4E0a57607185FaB0f228515C",
 		"ProxyEscrowThales": "0xb9615f837E60EdBECe26A91670FA42b02c9881D7",
 		"ProxyStakingThalesImplementation": "0xEBB06f3ca3980d71EcccC99Fd7CA1080bF82Becd",
 		"ProxyEscrowThalesImplementation": "0x4f8A0ca4af3e58EB992ac2D3573065117CDB5CA0",
 		"ThalesRoyaleImplementation": "0xF1b35FAC306cd6fB0008c229f056314c139a3c66",
-		"ThalesRoyaleDeployed": "0xd885521B35F3DFbc128B38f8897109eba829472e"
+		"ThalesRoyaleDeployed": "0xd885521B35F3DFbc128B38f8897109eba829472e",
+		"SafeBox": "0x8314125c8b68af2afd0d151eb4a551e88128a2ae"
 	},
 	"localhost": {
 		"Airdrop": "",

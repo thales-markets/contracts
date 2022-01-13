@@ -92,6 +92,11 @@
       "kind": "transparent"
     },
     {
+      "address": "0xf14FfF47fe9e20e188C24140f2791E5b1d33bEad",
+      "txHash": "0x6416f30dd65cff9f3aaf9bc122c571077b7cd429e0c33b3b7bfb2311e22142da",
+      "kind": "transparent"
+    },
+    {
       "address": "0x5647946fC3a3A582d7c1300B86b9ef3A3da9B9A7",
       "txHash": "0x3be9f0466edd63bcc94ea2b29007b0ce4c8dbf8fb52f694bc76a05e194bca1e7",
       "kind": "transparent"
@@ -804,6 +809,79 @@
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "d530cb9de04504cc5735c88b580d48991e79410b81dff9bd15f2d4a0a4794a51": {
+      "address": "0xd43E5687455774a96feC1d4b0f1e02B0F9cA05C7",
+      "txHash": "0xc34dfcbdf2bf12aa76dc521ff09198b810641d4f90a845802bf79d655bb95d36",
+      "layout": {
+        "storage": [
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:5"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:63"
+          },
+          {
+            "contract": "SafeBox",
+            "label": "sUSD",
+            "type": "t_contract(IERC20)26637",
+            "src": "contracts\\AMM\\SafeBox.sol:11"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20)26637": {
+            "label": "contract IERC20"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_address": {
+            "label": "address"
           }
         }
       }

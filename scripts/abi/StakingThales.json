@@ -7,6 +7,25 @@
         "internalType": "address",
         "name": "account",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "AMMVolumeUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
       }
     ],
     "name": "CancelUnstake",
@@ -241,6 +260,19 @@
     "anonymous": false,
     "inputs": [],
     "name": "StakingPeriodStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "amm",
+        "type": "address"
+      }
+    ],
+    "name": "ThalesAMMAddressChanged",
     "type": "event"
   },
   {
@@ -954,6 +986,21 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_thalesAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setThalesAMM",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_royale",
         "type": "address"
       }
@@ -1114,6 +1161,21 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "thalesAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "thalesRoyale",
     "outputs": [
       {
@@ -1250,6 +1312,26 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateVolume",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

@@ -58,6 +58,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     mapping(uint => uint) public royaleSeasonEndTime;
     mapping(uint => uint) public roundInSeasonEndTime;
     mapping(uint => uint) public roundInASeasonStartTime;
+    mapping(uint => address[]) public playersPerSeason;
     mapping(uint => mapping(address => uint256)) public playerSignedUpPerSeason;
     mapping(uint => mapping(uint => uint)) public roundResultPerSeason;
     mapping(uint => mapping(uint => uint)) public targetPricePerRoundPerSeason;
@@ -111,6 +112,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
 
         playerSignedUpPerSeason[season][msg.sender] = block.timestamp;
+        playersPerSeason[season].push(msg.sender);
         signedUpPlayersCount[season]++;
 
         _buyIn(msg.sender, buyInAmount);

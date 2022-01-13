@@ -1,5 +1,6 @@
 const { ethers, upgrades } = require('hardhat');
-const { getTargetAddress } = require('../../helpers');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 async function main() {
 	
@@ -35,6 +36,14 @@ async function main() {
 	await upgrades.upgradeProxy(thalesRoyaleAddress, ThalesRoyale);
 
 	console.log('ThalesRoyale upgraded');
+
+	const implementation = await getImplementationAddress(ethers.provider, thalesRoyaleAddress);
+	console.log('ThalesRoyaleImplementation: ', implementation);
+    setTargetAddress('ThalesRoyaleImplementation', network, implementation);
+
+    await hre.run('verify:verify', {
+        address: implementation
+    });
 }
 
 main()

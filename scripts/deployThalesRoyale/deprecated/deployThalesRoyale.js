@@ -92,7 +92,7 @@ async function main() {
 		'initialize',
 		['address', 'bytes32', 'address', 'uint', 'address', // 5
 		'uint','uint', 'uint', 'uint', 'uint', // 5
-		'uint', 'uint','bool', 'uint'], // 4
+		'bool', 'uint'], // 2
 		[
 			owner.address, 			//1
 			asset, 					//2
@@ -103,11 +103,9 @@ async function main() {
 			signUpPeriod,			//7
 			roundChoosingLength,	//8
 			roundLength,			//9
-			claimTime,				//10
-			season, 				//11
-			buyIn,					//12
-			false,					//13
-			pauseBetweenSeasonsTime	//14
+			buyIn,					//10
+			false,					//11
+			pauseBetweenSeasonsTime	//12
 		]
 	);
 

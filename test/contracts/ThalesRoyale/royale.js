@@ -130,9 +130,9 @@ contract('ThalesRoyale', accounts => {
 			await expect(royale.signUp({ from: first })).to.be.revertedWith('Player already signed up');
 		});
 
-		it('Signing up No enough tokens', async () => {
+		it('Signing up Not enough sUSD for buy in', async () => {
 			await royale.setBuyInAmount(toUnit(3500000000),{ from: owner });
-			await expect(royale.signUp({ from: first })).to.be.revertedWith('No enough tokens');
+			await expect(royale.signUp({ from: first })).to.be.revertedWith('Not enough sUSD for buy in');
 		});
 
 		it('Signing up with allowance check event', async () => {

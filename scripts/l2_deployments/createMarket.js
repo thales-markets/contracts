@@ -92,7 +92,7 @@ async function main() {
 
 	const result = await binaryOptionMarketManagerDeployed.createMarket(
 		ETHKey,
-		w3utils.toWei('4000'),
+		w3utils.toWei('3400'),
 		now + hour*72,
 		initialMint,
 		false,

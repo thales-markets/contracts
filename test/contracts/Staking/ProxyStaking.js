@@ -186,24 +186,18 @@ contract('StakingThales', accounts => {
 			await expect(EscrowThalesDeployed.addToEscrow(ZERO_ADDRESS, 0)).to.be.revertedWith(
 				'Invalid address'
 			);
-			// await expect(EscrowThalesDeployed.vest(0,{from:ZERO_ADDRESS})).to.be.revertedWith("Invalid address");
-			// await expect(EscrowThalesDeployed.moveToStakerSilo(ZERO_ADDRESS, 10, 11)).to.be.revertedWith("Invalid address");
 		});
 	});
 
 	
 
-	describe('Upgrade Implementation:', () => {
-		
+	describe('Upgrade Implementation:', () => {		
 		it('reverts the call of new function at old implementation', async function() {
 			try{
 				await expect(StakingThalesDeployed.getVersion()).to.be.reverted;
-
 			}
 			catch(error) {
-				// console.log("Error function does not exist");
 			}
-		
 		});
 		beforeEach(async () => {
 			const signers = await ethers.getSigners();
@@ -215,8 +209,6 @@ contract('StakingThales', accounts => {
             EscrowThalesDeployedV2 = await upgrades.upgradeProxy(EscrowThalesDeployed.address, EscrowThalesV2);
 
             StakingThalesDeployedV2 = await upgrades.upgradeProxy(StakingThalesDeployed.address, StakingThalesV2);
-			
-			
 		});
 
 		it('calls new function of new implementation', async function() {
@@ -240,5 +232,50 @@ contract('StakingThales', accounts => {
 			
 		});
 	
+	});
+
+	describe('Change ownership:', () => {
+		
+		beforeEach(async () => {
+			const signers = await ethers.getSigners();
+			owner = signers[0];
+			firstSigner = signers[1];
+		});
+
+		describe('to different ProxyAdmin:', () => {
+
+			it('Owner not changed, function reverted using Proxy Admin', async function() {
+				
+				await upgrades.admin.transferProxyAdminOwnership(firstSigner.address);
+
+				await expect(EscrowThalesDeployed.connect(firstSigner).setStakingThalesContract(owner.address)).to.be.reverted;
+						
+			});
+			it('Owner not changed, function not reverted using old Owner', async function() {
+				
+				// console.log("Proxy Admin is: ",firstSigner.address);
+
+				let answer = await EscrowThalesDeployed.connect(owner).owner();
+				// console.log("Owner is: ",answer);
+				let setStakingAddress = await EscrowThalesDeployed.connect(owner).setStakingThalesContract(firstSigner.address);
+				let getStakingAddress = await EscrowThalesDeployed.iStakingThales();
+				assert.equal(firstSigner.address, getStakingAddress);
+						
+			});
+			it('Owner changed, function not reverted', async function() {
+				// console.log("Proxy Admin is: ",firstSigner.address);
+				let answer = await EscrowThalesDeployed.connect(owner).owner();
+				// console.log("Owner is: ",answer);
+				await EscrowThalesDeployed.connect(owner).nominateNewOwner(firstSigner.address);
+				await EscrowThalesDeployed.connect(firstSigner).acceptOwnership();
+				answer = await EscrowThalesDeployed.connect(owner).owner();
+				// console.log("New owner is: ",answer);
+				let setStakingAddress = await EscrowThalesDeployed.connect(firstSigner).setStakingThalesContract(owner.address);
+				let getStakingAddress = await EscrowThalesDeployed.iStakingThales();
+				assert.equal(owner.address, getStakingAddress);
+						
+			});
+		});
+
 	});
 });

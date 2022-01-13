@@ -11,7 +11,8 @@
 		"BinaryOptionMarketMastercopy": "",
 		"BinaryOptionMarketFactory": "",
 		"BinaryOptionMarketManager": "",
-		"BinaryOptionMarketData": ""
+		"BinaryOptionMarketData": "",
+		"L1StandardBridge": "0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1"
 	},
 	"ropsten": {
 		"Airdrop": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",
@@ -46,13 +47,12 @@
 		"BinaryOptionsMarketFactory": "0x0314824253cEc50d144d60CfEA3742874Df72B92",
 		"BinaryOptionMarketData": "0x42Af0890d254387110555A46d261B9e4f6E327Ac",
 		"OpThales_L1": "0x008e86b2e21ce8d71C4700A9a174D151839cFbc7",
-		"ThalesExchanger": "0x7b9a3a5599B26a3243b50cf6e1506f7bE180aC3c",
 		"OwnedUpgradeabilityProxy": "0x7596C9aA9ce105610324AcC27D943C5235518701",
 		"L1StandardBridge": "0x22F24361D548e5FaAfb36d1437839f080363982B",
-		"ProxyThalesExchanger": "0xC5c9F092123758E0c6B19caadff2cE8B9Ac2360D",
+		"ProxyThalesExchanger": "0x5647946fC3a3A582d7c1300B86b9ef3A3da9B9A7",
 		"ProxyStakingThales": "0xc517D5A81Be4489282cDe30A77Fc1Ad74f6D8AeD",
 		"ProxyEscrowThales": "0x3Ea294aee4c588A0DCf5a155bDBB1674431c3922",
-		"ProxyThalesExchangerImplementation": "0x1687fDC8A409Be442e2dD3DE42b1fcC974Ac9eE8",
+		"ProxyThalesExchangerImplementation": "0x76dAA265758E7c153060fBf845d463663076584b",
 		"ProxyStakingThalesImplementation": "0x062106C253029A0065c3829dB00f6483444510C9",
 		"ProxyEscrowThalesImplementation": "0x596C785d91A18CC6f25861770f5238d176946B53",
 		"PriceFeed": "0x8090b8cB80E21811c61B382851974ce7c70Da29F"
@@ -86,7 +86,8 @@
 		"DeciMath": "0x5c779CFAe4b6B7a02c32938dDAbDada8AB60fb14",
 		"PriceFeedImplementation": "0x6B33b99E3D3213DF963375E6d94aBa968351f803",
 		"ThalesAMM": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
-		"ThalesAMMImplementation": "0x516c96B8cBc19F70B3783cCDC74327b2D9f2D644"
+		"ThalesAMMImplementation": "0x516c96B8cBc19F70B3783cCDC74327b2D9f2D644",
+		"SafeBox": "0xe853207c30f3c32eda9aeffddc67357d5332978c"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
@@ -98,18 +99,21 @@
 		"BinaryOptionMarketManager": "0x6382660BF24f5e7BeC43a7D47591F823488FDB8D",
 		"BinaryOptionMarketData": "0xdBDAB336Cd97DB0F361DbD8C47EB4731674B62d7",
 		"PriceFeed": "0x3c22C1bBC552A43b101b003dF5230322EA09CeD0",
-		"ThalesRoyale": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
+		"ThalesRoyale": "0x2e40F16f97a1FD9803f8fD4c455647Dd58da8D55",
 		"ThalesRoyalePrivateRoom": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
 		"OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224",
 		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
 		"PriceFeedImplementation": "0x8C9f8b38cDCF1911Cb470326a435c4C1b192A80D",
 		"DeciMath": "0x3c929BeF3f8886Ceac0a35Abd14849bc846ed0a2",
-		"ThalesAMMImplementation": "0xcA18480d7f31706e562ed68311B62cF8d560eE97",
+		"ThalesAMMImplementation": "0x97067c63C40e49a4aF33b2978a57064C1866e368",
 		"ThalesAMM": "0xB0437C95551738FC48e2656017B70344d269f337",
 		"ProxyStakingThales": "0x3eD7fba8d640B2ED4E0a57607185FaB0f228515C",
-		"ProxyEscrowThales": "0x1A16ebD0a9855A9537aa3bc30989634ec3043Df2",
+		"ProxyEscrowThales": "0xb9615f837E60EdBECe26A91670FA42b02c9881D7",
 		"ProxyStakingThalesImplementation": "0xEBB06f3ca3980d71EcccC99Fd7CA1080bF82Becd",
-		"ProxyEscrowThalesImplementation": "0x4f8A0ca4af3e58EB992ac2D3573065117CDB5CA0"
+		"ProxyEscrowThalesImplementation": "0x4f8A0ca4af3e58EB992ac2D3573065117CDB5CA0",
+		"ThalesRoyaleImplementation": "0xEbEA404ABacd34aD7d1915c063ef9c60D79739c6",
+		"ThalesRoyaleDeployed": "0xd885521B35F3DFbc128B38f8897109eba829472e",
+		"SafeBox": "0x8314125c8b68af2afd0d151eb4a551e88128a2ae"
 	},
 	"localhost": {
 		"Airdrop": "",

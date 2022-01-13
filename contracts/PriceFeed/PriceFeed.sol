@@ -3,6 +3,7 @@ pragma solidity >=0.5.0 <=0.7.6;
 
 // Inheritance
 import "../utils/proxy/ProxyOwned.sol";
+import "../interfaces/IUniswapMath.sol";
 
 // Libraries
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
@@ -13,11 +14,9 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@chainlink/contracts-0.0.10/src/v0.5/interfaces/AggregatorV2V3Interface.sol";
 
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
-import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import "@uniswap/v3-core/contracts/libraries/FixedPoint96.sol";
-import "@uniswap/v3-core/contracts/libraries/FullMath.sol";
 
-contract PriceFeed is Initializable, ProxyOwned {
+contract PriceFeed is Initializable, ProxyOwned, IUniswapMath {
     using SafeMath for uint;
     uint256 internal constant Q192 = 0x1000000000000000000000000000000000000000000000000;
 
@@ -184,12 +183,12 @@ contract PriceFeed is Initializable, ProxyOwned {
             (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(secondsAgos);
 
             // tick(imprecise as it's an integer) to price
-            sqrtPriceX96 = TickMath.getSqrtRatioAtTick(int24((tickCumulatives[1] - tickCumulatives[0]) / twapInterval));
+            sqrtPriceX96 = IUniswapMath.getSqrtRatioAtTick(int24((tickCumulatives[1] - tickCumulatives[0]) / twapInterval));
         }
     }
 
     function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns (uint256 priceX96) {
-        return FullMath.mulDiv(sqrtPriceX96, sqrtPriceX96 * 10**18, Q192);
+        return IUniswapMath.mulDiv(sqrtPriceX96, sqrtPriceX96 * 10**18, Q192);
     }
 
     function transferCurrencyKeys() external onlyOwner {

@@ -431,9 +431,23 @@ contract('ThalesRoyale', accounts => {
 
 			assert.equal(false, isPlayerFirstAlive);
 
+			let totalPlayers = await royale.getPlayersForSeason(season_1);
+			assert.equal(0, totalPlayers.length);
+
 			await royale.signUp({ from: first });
+
+			totalPlayers = await royale.getPlayersForSeason(season_1);
+			assert.equal(1, totalPlayers.length);
+
 			await royale.signUp({ from: second });
+
+			totalPlayers = await royale.getPlayersForSeason(season_1);
+			assert.equal(2, totalPlayers.length);
+
 			await royale.signUp({ from: third });
+
+			totalPlayers = await royale.getPlayersForSeason(season_1);
+			assert.equal(3, totalPlayers.length);
 
 			isPlayerFirstAlive = await royale.isPlayerAlive(first);
 

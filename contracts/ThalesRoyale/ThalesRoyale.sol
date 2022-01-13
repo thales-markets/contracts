@@ -290,6 +290,10 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         }
     }
 
+    function getPlayersForSeason(uint _season) public view returns (address[] memory) {
+        return playersPerSeason[_season];
+    }
+
     /* ========== INTERNALS ========== */
 
     function _populateReward(uint numberOfWinners) internal {

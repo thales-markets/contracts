@@ -193,6 +193,7 @@ contract PriceFeed is Initializable, ProxyOwned {
     }
 
     function transferCurrencyKeys() external onlyOwner {
+        require(currencyKeys.length == 0, "Currency keys is not empty");
         for (uint i = 0; i < aggregatorKeys.length; i++) {
             currencyKeys[i] = aggregatorKeys[i];
         }

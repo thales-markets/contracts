@@ -36,7 +36,8 @@ async function main() {
 
 	const priceFeed = await ethers.getContractFactory('PriceFeed');
 	let priceFeedAddress = getTargetAddress('PriceFeed', network);
-	// TODO change reward token address to sUSD
+
+	// !!!!!!!! TODO change reward token address to sUSD !!!!!!!!
 	let rewardTokenAddress = getTargetAddress('PriceFeed', network);
 
 	const min = 60;
@@ -49,13 +50,10 @@ async function main() {
 	const signUpPeriod = day * 3;
 	const roundChoosingLength = hour * 8;
 	const roundLength = day;
-	const claimTime = week;
-	const pauseBetweenSeasonsTime = hour * 24;
+	const pauseBetweenSeasonsTime = week * 2;
 
-	const season = 1;
-	const zeroAmount = 0;
 	const rounds = 6;
-	const buyIn = w3utils.toWei('10');
+	const buyIn = w3utils.toWei('20');
 
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const royale = await upgrades.deployProxy(ThalesRoyale, 

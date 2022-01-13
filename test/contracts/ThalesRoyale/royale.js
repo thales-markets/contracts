@@ -86,7 +86,7 @@ contract('ThalesRoyale', accounts => {
                 HOUR * 8,
                 DAY,
                 toUnit(2500),
-                HOUR * 1,
+                WEEK * 4,
                 true
             ]
         );
@@ -114,7 +114,14 @@ contract('ThalesRoyale', accounts => {
 	});
 
 	describe('Init', () => {
+
 		it('Signing up cant be called twice', async () => {
+			await expect(royale.signUp({ from: first })).to.be.revertedWith('Initialize first season');
+		});
+
+		it('Signing up cant be called twice', async () => {
+
+			await royale.startNewSeason({ from: owner });
 
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -130,12 +137,14 @@ contract('ThalesRoyale', accounts => {
 			await expect(royale.signUp({ from: first })).to.be.revertedWith('Player already signed up');
 		});
 
-		it('Signing up Not enough sUSD for buy in', async () => {
+		it('Signing up No enough tokens', async () => {
+			await royale.startNewSeason({ from: owner });
 			await royale.setBuyInAmount(toUnit(3500000000),{ from: owner });
-			await expect(royale.signUp({ from: first })).to.be.revertedWith('Not enough sUSD for buy in');
+			await expect(royale.signUp({ from: first })).to.be.revertedWith('No enough sUSD for buy in');
 		});
 
 		it('Signing up with allowance check event', async () => {
+			await royale.startNewSeason({ from: owner });
 
 			const tx = await royale.signUp({ from: first });
 
@@ -147,17 +156,22 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('Signing up only possible in specified time', async () => {
+			await royale.startNewSeason({ from: owner });
+
 			await fastForward(DAY * 4);
 			await expect(royale.signUp({ from: first })).to.be.revertedWith('Sign up period has expired');
 		});
 		
 		it('No one is signed up try to start', async () => {
+			await royale.startNewSeason({ from: owner });
+
 			await fastForward(HOUR * 72 + 1);
 			await expect(royale.startRoyaleInASeason({ from: first })).to.be.revertedWith('Can not start, no players in a season');
 
 		});
 
 		it('Cant start new season if this not finished', async () => {
+			await royale.startNewSeason({ from: owner });
 
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -181,6 +195,8 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('check require statements', async () => {
+			await royale.startNewSeason({ from: owner });
+
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
 
@@ -206,6 +222,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('take a losing position and end first round and try to take a position in 2nd round player not alive', async () => {
+			await royale.startNewSeason({ from: owner });
 			let isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
 			assert.equal(false, isPlayerFirstAlive);
@@ -275,6 +292,8 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('take a losing position end royale no players left', async () => {
+			await royale.startNewSeason({ from: owner });
+
 			let isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
 			assert.equal(false, isPlayerFirstAlive);
@@ -354,6 +373,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('take a winning position and end first round and try to take a position in 2nd round', async () => {
+			await royale.startNewSeason({ from: owner });
 			let isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
 			assert.equal(false, isPlayerFirstAlive);
@@ -406,6 +426,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('take a winning position and end first round then skip 2nd round', async () => {
+			await royale.startNewSeason({ from: owner });
 			let isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
 			assert.equal(false, isPlayerFirstAlive);
@@ -467,6 +488,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('win till the end', async () => {
+			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
 			await royale.signUp({ from: third });
@@ -591,6 +613,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('take a winning position and end first round then skip 2nd round', async () => {
+			await royale.startNewSeason({ from: owner });
 			let isPlayerFirstAlive = await royale.isPlayerAlive(first);
 
 			assert.equal(false, isPlayerFirstAlive);
@@ -627,6 +650,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('win till the end', async () => {
+			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
 
@@ -686,6 +710,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('win till the end', async () => {
+			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
 			await royale.signUp({ from: third });
@@ -760,6 +785,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('win till the end and check results', async () => {
+			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
 			await royale.signUp({ from: third });
@@ -899,6 +925,7 @@ contract('ThalesRoyale', accounts => {
 
 
 		it('check the changing positions require to send different one', async () => {
+			await royale.startNewSeason({ from: owner });
 
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -919,6 +946,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('check if can start royale', async () => {
+			await royale.startNewSeason({ from: owner });
 
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -956,6 +984,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('check the changing positions', async () => {
+			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
 			await royale.signUp({ from: third });
@@ -1151,6 +1180,7 @@ contract('ThalesRoyale', accounts => {
 	});
 
 	it('Win and collect reward', async () => {
+		await royale.startNewSeason({ from: owner });
 
 		// check rewards
 		let reward = await royale.rewardPerSeason(season_1);
@@ -1273,6 +1303,7 @@ contract('ThalesRoyale', accounts => {
 	});
 
 	it('Win and collect rewards and start new season', async () => {
+		await royale.startNewSeason({ from: owner });
 
 		// check rewards
 		let reward = await royale.rewardPerSeason(season_1);
@@ -1284,7 +1315,14 @@ contract('ThalesRoyale', accounts => {
 		await royale.signUp({ from: fourth });
 
 		await fastForward(HOUR * 72 + 1);
-		await royale.startRoyaleInASeason();
+		const trx = await royale.startRoyaleInASeason();
+
+		// check if event is emited
+		assert.eventEqual(trx.logs[0], 'RoyaleStarted', {
+			season: season_1,
+			totalPlayers: 4,
+			totalReward: toUnit(10000),
+		});
 
 		await royale.takeAPosition(2, { from: first });
 		await royale.takeAPosition(2, { from: second });
@@ -1349,7 +1387,19 @@ contract('ThalesRoyale', accounts => {
 		await royale.takeAPosition(2, { from: second });
 		await royale.takeAPosition(1, { from: third });
 		await fastForward(HOUR * 72 + 1);
-		await royale.closeRound();
+		const trx_2 = await royale.closeRound();
+
+		// check if event is emited
+		assert.eventEqual(trx_2.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 7,
+			result: 2,
+		});
+		assert.eventEqual(trx_2.logs[1], 'RoyaleFinished', {
+			season: season_1,
+			numberOfWinners: 2,
+			rewardPerWinner: toUnit(5000),
+		});
 
 		let isPlayerFirstAlive = await royale.isPlayerAlive(first);
 		let isPlayerSecondAlive = await royale.isPlayerAlive(second);
@@ -1441,11 +1491,6 @@ contract('ThalesRoyale', accounts => {
 		// check rewards
 		let reward_s2 = await royale.rewardPerSeason(season_2);
 		assert.bnEqual(reward_s2, toUnit(0));
-
-		// put funds
-		await expect(royale.putFunds(toUnit(10000), season_2, { from: first })).to.be.revertedWith(
-		'Only the contract owner may perform this action'
-		);
 	
 		await expect(royale.putFunds(toUnit(0), season_2, { from: owner })).to.be.revertedWith(
 			'Amount must be more then zero'
@@ -1582,6 +1627,7 @@ contract('ThalesRoyale', accounts => {
 	});
 
 	it('Two players take loosing positions no one left but they can collect and they are winners', async () => {
+		await royale.startNewSeason({ from: owner });
 
 		// check rewards
 		let reward = await royale.rewardPerSeason(season_1);

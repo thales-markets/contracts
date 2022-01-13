@@ -304,7 +304,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     function _claimRewardForSeason(address _winner, uint _season) internal {
         require(rewardPerSeason[_season] > 0, "Reward must be set");
-        require(rewardCollectedPerSeason[_season][_winner] == false, "Player already collected reward");
+        require(!rewardCollectedPerSeason[_season][_winner], "Player already collected reward");
         require(rewardToken.balanceOf(address(this)) >= rewardPerWinnerPerSeason[_season], "Not enough balance for rewards");
 
         // set collected -> true

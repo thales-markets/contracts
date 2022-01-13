@@ -11,7 +11,8 @@
 		"BinaryOptionMarketMastercopy": "",
 		"BinaryOptionMarketFactory": "",
 		"BinaryOptionMarketManager": "",
-		"BinaryOptionMarketData": ""
+		"BinaryOptionMarketData": "",
+		"L1StandardBridge": "0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1"
 	},
 	"ropsten": {
 		"Airdrop": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",
@@ -46,13 +47,12 @@
 		"BinaryOptionsMarketFactory": "0x0314824253cEc50d144d60CfEA3742874Df72B92",
 		"BinaryOptionMarketData": "0x42Af0890d254387110555A46d261B9e4f6E327Ac",
 		"OpThales_L1": "0x008e86b2e21ce8d71C4700A9a174D151839cFbc7",
-		"ThalesExchanger": "0x7b9a3a5599B26a3243b50cf6e1506f7bE180aC3c",
 		"OwnedUpgradeabilityProxy": "0x7596C9aA9ce105610324AcC27D943C5235518701",
 		"L1StandardBridge": "0x22F24361D548e5FaAfb36d1437839f080363982B",
-		"ProxyThalesExchanger": "0xC5c9F092123758E0c6B19caadff2cE8B9Ac2360D",
+		"ProxyThalesExchanger": "0x5647946fC3a3A582d7c1300B86b9ef3A3da9B9A7",
 		"ProxyStakingThales": "0xc517D5A81Be4489282cDe30A77Fc1Ad74f6D8AeD",
 		"ProxyEscrowThales": "0x3Ea294aee4c588A0DCf5a155bDBB1674431c3922",
-		"ProxyThalesExchangerImplementation": "0x1687fDC8A409Be442e2dD3DE42b1fcC974Ac9eE8",
+		"ProxyThalesExchangerImplementation": "0x76dAA265758E7c153060fBf845d463663076584b",
 		"ProxyStakingThalesImplementation": "0x062106C253029A0065c3829dB00f6483444510C9",
 		"ProxyEscrowThalesImplementation": "0x596C785d91A18CC6f25861770f5238d176946B53",
 		"ProxyPriceFeed": "0x9800ea969f1647edE2D954a3C82DE891549F41C2"

@@ -141,7 +141,7 @@ contract('StakingThales', accounts => {
         ]); 
        
 
-		await SNXRewardsDeployed.setTotalRewards(toWei('0'));
+		// await SNXRewardsDeployed.setTotalRewards(toWei('0'));
 		await StakingThalesDeployed.connect(owner).setDistributeFeesEnabled(true);
 		await StakingThalesDeployed.connect(owner).setClaimEnabled(true);
 		await StakingThalesDeployed.connect(owner).setFixedPeriodReward(100000);

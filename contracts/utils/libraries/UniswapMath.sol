@@ -7,7 +7,9 @@ pragma solidity >=0.5.0 <0.8.0;
 /// prices between 2**-128 and 2**128
 /// @dev Handles "phantom overflow" i.e., allows multiplication and division where an intermediate value overflows 256 bits
 
-contract IUniswapMath {
+library UniswapMath {
+    uint256 internal constant Q192 = 0x1000000000000000000000000000000000000000000000000;
+
     /// @dev The minimum tick that may be passed to #getSqrtRatioAtTick computed from log base 1.0001 of 2**-128
     int24 internal constant MIN_TICK = -887272;
     /// @dev The maximum tick that may be passed to #getSqrtRatioAtTick computed from log base 1.0001 of 2**128

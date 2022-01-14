@@ -3,7 +3,7 @@ pragma solidity >=0.5.0 <=0.7.6;
 import "./interfaces/IUniswapPool.sol";
 import "./libraries/Tick.sol";
 import "./libraries/Oracle.sol";
-import "../interfaces/IUniswapMath.sol";
+import "../utils/libraries/UniswapMath.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3PoolDeployer.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "@uniswap/v3-core/contracts/interfaces/IERC20Minimal.sol";
@@ -34,7 +34,7 @@ abstract contract NoDelegateCall {
     }
 }
 
-contract MockUniswapV3Pool is IUniswapPool, NoDelegateCall, IUniswapMath {
+contract MockUniswapV3Pool is IUniswapPool, NoDelegateCall {
     using Tick for mapping(int24 => Tick.Info);
     using Oracle for Oracle.Observation[65535];
     address public immutable override factory;
@@ -113,7 +113,7 @@ contract MockUniswapV3Pool is IUniswapPool, NoDelegateCall, IUniswapMath {
 
     function initialize(uint160 sqrtPriceX96) external override {
         require(slot0.sqrtPriceX96 == 0, "AI");
-        int24 tick = IUniswapMath.getTickAtSqrtRatio(sqrtPriceX96);
+        int24 tick = UniswapMath.getTickAtSqrtRatio(sqrtPriceX96);
         (uint16 cardinality, uint16 cardinalityNext) = observations.initialize(_blockTimestamp());
         slot0 = Slot0({
             sqrtPriceX96: sqrtPriceX96,

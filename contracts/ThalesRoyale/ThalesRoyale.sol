@@ -57,6 +57,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     mapping(uint => bool) public seasonStarted;
     mapping(uint => bool) public seasonFinished;
     mapping(uint => uint) public seasonCreationTime;
+    mapping(uint => bool) public royaleInSeasonStarted;
     mapping(uint => uint) public royaleSeasonEndTime;
     mapping(uint => uint) public roundInSeasonEndTime;
     mapping(uint => uint) public roundInASeasonStartTime;
@@ -124,12 +125,12 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     function startRoyaleInASeason() external {
         require(block.timestamp > (seasonCreationTime[season] + signUpPeriod), "Can't start until signup period expires");
         require(signedUpPlayersCount[season] > 0, "Can not start, no players in a season");
-        require(!seasonStarted[season], "Already started");
+        require(!royaleInSeasonStarted[season], "Already started");
 
         roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
         roundInASeason[season] = 1;
         targetPricePerRoundPerSeason[season][roundInASeason[season]] = roundTargetPrice;
-        seasonStarted[season] = true;
+        royaleInSeasonStarted[season] = true;
         roundInASeasonStartTime[season] = block.timestamp;
         roundInSeasonEndTime[season] = roundInASeasonStartTime[season] + roundLength;
         totalPlayersPerRoundPerSeason[season][roundInASeason[season]] = signedUpPlayersCount[season];
@@ -140,7 +141,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     function takeAPosition(uint position) external {
         require(position == DOWN || position == UP, "Position can only be 1 or 2");
-        require(seasonStarted[season], "Competition not started yet");
+        require(royaleInSeasonStarted[season], "Competition not started yet");
         require(!seasonFinished[season], "Competition finished");
         require(playerSignedUpPerSeason[season][msg.sender] != 0, "Player did not sign up");
         require(positionInARoundPerSeason[season][msg.sender][roundInASeason[season]] != position, "Same position");
@@ -176,7 +177,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     function closeRound() external {
-        require(seasonStarted[season], "Competition not started yet");
+        require(royaleInSeasonStarted[season], "Competition not started yet");
         require(!seasonFinished[season], "Competition finished");
         require(block.timestamp > (roundInASeasonStartTime[season] + roundLength), "Can't close round yet");
 
@@ -239,6 +240,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     function startNewSeason() external seasonCanStart {
         season = season + 1;
         seasonCreationTime[season] = block.timestamp;
+        seasonStarted[season] = true;
 
         emit NewSeasonStarted(season);
     }
@@ -251,13 +253,13 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     function canCloseRound() public view returns (bool) {
         return
-            seasonStarted[season] &&
+            royaleInSeasonStarted[season] &&
             !seasonFinished[season] &&
             block.timestamp > (roundInASeasonStartTime[season] + roundLength);
     }
 
     function canStartRoyale() public view returns (bool) {
-        return !seasonStarted[season] && block.timestamp > (seasonCreationTime[season] + signUpPeriod);
+        return !royaleInSeasonStarted[season] && block.timestamp > (seasonCreationTime[season] + signUpPeriod);
     }
 
     function canStartNewSeason() public view returns (bool) {

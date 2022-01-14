@@ -47,7 +47,7 @@ async function checkForMultisigs() {
 				if (isContract) {
 					console.log('Staker ' + stakerAddress + ' is a contract');
 				}
-				stakers.push(stakerAddress);
+				stakers.add(stakerAddress);
 			}
 		}
 	}

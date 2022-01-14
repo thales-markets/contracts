@@ -15,39 +15,50 @@ const STAKING_THALES = getTargetAddress('StakingThales', 'mainnet');
 const stakingThalesABI = require('../abi/StakingThales.json');
 const stakingThalesContract = new web3.eth.Contract(stakingThalesABI, STAKING_THALES);
 
+const Escrow_THALES = getTargetAddress('EscrowThales', 'mainnet');
+const EscrowThalesABI = require('../abi/EscrowThales.json');
+const escrowThalesContract = new web3.eth.Contract(EscrowThalesABI, Escrow_THALES);
+
 async function checkForMultisigs() {
 	const StakingThales = await ethers.getContractFactory('StakingThales');
 	let stakingThales = await StakingThales.attach(STAKING_THALES);
 
-	const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
+	const EscrowThales = await ethers.getContractFactory('EscrowThales');
+	let escrowThales = await EscrowThales.attach(Escrow_THALES);
+
+	const addToEscrowEvents = await escrowThalesContract.getPastEvents('AddedToEscrow', {
 		fromBlock: 0,
 		toBlock: 'latest',
 	});
 
-	let stakers = new Set();
+	let escrowers = new Set();
 
-	for (let i = 0; i < stakedEvents.length; ++i) {
-		let stakerAddress = stakedEvents[i].returnValues.user.toLowerCase();
-		if (!stakers.has(stakerAddress)) {
-			let stakedBalanceOf = await stakingThales.stakedBalanceOf(stakerAddress);
+	for (let i = 0; i < addToEscrowEvents.length; ++i) {
+		let escrowerAddress = addToEscrowEvents[i].returnValues.acount.toLowerCase();
+		if (!escrowers.has(escrowerAddress)) {
+			let stakedBalanceOf = await stakingThales.stakedBalanceOf(escrowerAddress);
 			stakedBalanceOf = stakedBalanceOf / 1e18;
-			let contractChecker = await web3.eth.getCode(stakerAddress);
+			let contractChecker = await web3.eth.getCode(escrowerAddress);
+
+			let escrowedBalanceOf = await escrowThales.totalAccountEscrowedAmount(escrowerAddress);
+			escrowedBalanceOf = escrowedBalanceOf / 1e18;
+
 			let isContract = contractChecker != '0x';
-			if (stakedBalanceOf > 0) {
+			if (escrowedBalanceOf > 0) {
 				console.log(
 					'Pushing ' +
 						i +
-						'. staker ' +
-						stakerAddress +
+						'. escrower ' +
+						escrowerAddress +
 						' with balance ' +
-						stakedBalanceOf +
-						' with contract checker being ' +
-						contractChecker
+						escrowedBalanceOf +
+						' with staked balance ' +
+						stakedBalanceOf
 				);
 				if (isContract) {
-					console.log('Staker ' + stakerAddress + ' is a contract');
+					console.log('Escrower ' + escrowerAddress + ' is a contract');
 				}
-				stakers.push(stakerAddress);
+				escrowers.add(escrowerAddress);
 			}
 		}
 	}

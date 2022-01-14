@@ -12,7 +12,7 @@ async function main() {
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
-	let network = networkObj.name;
+	let mainnetNetwork = 'mainnet';
 
 	if (network == 'homestead') {
 		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
@@ -25,6 +25,7 @@ async function main() {
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
+		mainnetNetwork = 'kovan';
 	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimistic';
@@ -32,7 +33,7 @@ async function main() {
 	}
 	
 
-	const OP_Thales_L1_Address = getTargetAddress('OpThales_L1', 'mainnet');
+	const OP_Thales_L1_Address = getTargetAddress('OpThales_L1', mainnetNetwork);
 	if(OP_Thales_L1_Address == undefined) {
 		console.log("Please first deploy OpTHALES on L1");
 		return 0;

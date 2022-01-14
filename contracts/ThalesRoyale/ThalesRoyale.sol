@@ -58,6 +58,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     mapping(uint => uint) public royaleSeasonEndTime;
     mapping(uint => uint) public roundInSeasonEndTime;
     mapping(uint => uint) public roundInASeasonStartTime;
+    mapping(uint => address[]) public playersPerSeason;
     mapping(uint => mapping(address => uint256)) public playerSignedUpPerSeason;
     mapping(uint => mapping(uint => uint)) public roundResultPerSeason;
     mapping(uint => mapping(uint => uint)) public targetPricePerRoundPerSeason;
@@ -111,6 +112,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
 
         playerSignedUpPerSeason[season][msg.sender] = block.timestamp;
+        playersPerSeason[season].push(msg.sender);
         signedUpPlayersCount[season]++;
 
         _buyIn(msg.sender, buyInAmount);
@@ -288,6 +290,10 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         }
     }
 
+    function getPlayersForSeason(uint _season) public view returns (address[] memory) {
+        return playersPerSeason[_season];
+    }
+
     /* ========== INTERNALS ========== */
 
     function _populateReward(uint numberOfWinners) internal {
@@ -304,7 +310,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     function _claimRewardForSeason(address _winner, uint _season) internal {
         require(rewardPerSeason[_season] > 0, "Reward must be set");
-        require(rewardCollectedPerSeason[_season][_winner] == false, "Player already collected reward");
+        require(!rewardCollectedPerSeason[_season][_winner], "Player already collected reward");
         require(rewardToken.balanceOf(address(this)) >= rewardPerWinnerPerSeason[_season], "Not enough balance for rewards");
 
         // set collected -> true

@@ -4,36 +4,26 @@ import "../interfaces/ISNXRewards.sol";
 
 contract SNXRewards is ISNXRewards {
 
-    uint public rewards;
-    uint public fees;
-    
-    uint public totalRewards;
-    uint public totalFees;
+    mapping(address => uint) public accountDebtRatio;
+    mapping(address => bool) public feesClaimable;
 
     constructor() public {}
     /* ========== VIEWS / VARIABLES ========== */
-    function totalFeesAvailable() external view returns (uint) {
-        return totalFees;
+    function isFeesClaimable(address account) external view returns (bool){
+        return feesClaimable[account];
     }
 
-    function totalRewardsAvailable() external view returns (uint) {
-        return totalRewards;
+    function effectiveDebtRatioForPeriod(address account, uint period) external view returns (uint){
+        require(period != 0, "Current period is not closed yet");
+        require(period < 2, "Exceeds the FEE_PERIOD_LENGTH");
+        return accountDebtRatio[account];
     }
 
-    function feesAvailable(address account) external view returns (uint, uint) {
-        return (fees, rewards);
+    function setAccountDebtRatio(address account, uint debtRatio) external {
+        accountDebtRatio[account] = debtRatio;
     }
-
-    function setRewards(uint _rewards) external {
-        rewards = _rewards;
+    function setFeesClaimable(address account, bool claimable) external {
+        feesClaimable[account] = claimable;
     }
-    function setFees(uint _fees) external {
-        fees = _fees;
-    }
-    function setTotalRewards(uint _rewards) external {
-        totalRewards = _rewards;
-    }
-    function setTotalFees(uint _fees) external {
-        totalFees = _fees;
-    }
+    
 }

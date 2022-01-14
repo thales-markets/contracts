@@ -6,89 +6,14 @@
         "internalType": "address",
         "name": "account",
         "type": "address"
-      }
-    ],
-    "name": "feesAvailable",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "period",
         "type": "uint256"
       }
     ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_fees",
-        "type": "uint256"
-      }
-    ],
-    "name": "setFees",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_rewards",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRewards",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_fees",
-        "type": "uint256"
-      }
-    ],
-    "name": "setTotalFees",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_rewards",
-        "type": "uint256"
-      }
-    ],
-    "name": "setTotalRewards",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "totalFeesAvailable",
+    "name": "effectiveDebtRatioForPeriod",
     "outputs": [
       {
         "internalType": "uint256",
@@ -102,17 +27,63 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "totalRewardsAvailable",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "isFeesClaimable",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "debtRatio",
+        "type": "uint256"
+      }
+    ],
+    "name": "setAccountDebtRatio",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "claimable",
+        "type": "bool"
+      }
+    ],
+    "name": "setFeesClaimable",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

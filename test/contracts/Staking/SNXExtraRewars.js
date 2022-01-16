@@ -86,6 +86,8 @@ contract('StakingThales', accounts => {
 	// 		],
 	// 	}));
 
+	
+
 	// 	manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
 
 	// 	factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });

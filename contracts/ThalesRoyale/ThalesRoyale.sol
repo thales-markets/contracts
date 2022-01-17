@@ -316,7 +316,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         rewardPerSeason[season] += amountBuyIn;
     }
 
-    function _calculateSafeBoxOnAmount(uint _amount) internal returns (uint, uint) {
+    function _calculateSafeBoxOnAmount(uint _amount) internal view returns (uint, uint) {
         uint amountSafeBox = 0;
 
         if (safeBoxPercentage > 0) {

@@ -1,6 +1,7 @@
 const { ethers } = require('hardhat');
 const { getTargetAddress} = require('../../helpers');
 const w3utils = require('web3-utils');
+const snx = require('synthetix-2.50.4-ovm');
 
 async function main() {
     
@@ -8,6 +9,7 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	let ProxyERC20sUSDaddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -45,10 +47,17 @@ async function main() {
 		thalesRoyaleAddress
 	);
 
-	const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSD.address);
+	if (networkObj.chainId == 10 || networkObj.chainId == 69) {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	} else {
+		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
+		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
+	}
+
+	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSDaddress);
+
 	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
-	let contract = new ethers.Contract(ProxyERC20sUSD.address, abi, owner);	
+	let contract = new ethers.Contract(ProxyERC20sUSDaddress, abi, owner);	
 	
 	await contract.approve(royale.address, initialFund, {
 		from: owner.address,

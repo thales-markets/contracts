@@ -214,6 +214,36 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit Staked(msg.sender, amount);
     }
 
+    function stakeOnBehalf(uint amount, address staker) external nonReentrant notPaused onlyOwner {
+        require(startTimeStamp > 0, "Staking period has not started");
+        require(amount > 0, "Cannot stake 0");
+        require(
+            stakingToken.allowance(msg.sender, address(this)) >= amount,
+            "No allowance. Please grant StakingThales allowance"
+        );
+        require(unstaking[staker] == false, "Cannot stake, the staker is paused from staking due to unstaking");
+        // Check if there are not claimable rewards from last period.
+        // Claim them, and add new stake
+        if ((_lastRewardsClaimedPeriod[staker] < periodsOfStaking) && claimEnabled && _stakedBalances[staker] > 0) {
+            _claimReward(staker);
+        }
+
+        // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
+        if (_stakedBalances[staker] == 0) {
+            if (iEscrowThales.totalAccountEscrowedAmount(staker) > 0) {
+                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
+                    iEscrowThales.totalAccountEscrowedAmount(staker)
+                );
+            }
+        }
+
+        _totalStakedAmount = _totalStakedAmount.add(amount);
+        _stakedBalances[staker] = _stakedBalances[staker].add(amount);
+        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
+
+        emit StakedOnBehalf(msg.sender, staker, amount);
+    }
+
     function startUnstake(uint amount) external {
         require(amount > 0, "Cannot unstake 0");
         require(_stakedBalances[msg.sender] >= amount, "Account doesnt have that much staked");
@@ -342,6 +372,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     event RewardAdded(uint reward);
     event Staked(address user, uint amount);
+    event StakedOnBehalf(address user, address staker, uint amount);
     event ClosedPeriod(uint PeriodOfStaking, uint lastPeriodTimeStamp);
     event RewardsClaimed(address account, uint unclaimedReward);
     event FeeRewardsClaimed(address account, uint unclaimedFees);

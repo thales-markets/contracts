@@ -7,12 +7,12 @@ const {
 	txLog,
 	setTargetAddress,
 	getTargetAddress,
-} = require('../helpers.js');
+} = require('../../helpers.js');
 
 const fs = require('fs');
 
 const STAKING_THALES = getTargetAddress('StakingThales', 'mainnet');
-const stakingThalesABI = require('../abi/StakingThales.json');
+const stakingThalesABI = require('../../abi/StakingThales.json');
 const stakingThalesContract = new web3.eth.Contract(stakingThalesABI, STAKING_THALES);
 
 async function checkForMultisigs() {

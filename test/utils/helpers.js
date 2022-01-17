@@ -8,6 +8,9 @@ const { assert } = require('./common');
 const { currentTime, toUnit } = require('./index')();
 const { toBytes32 } = require('../../index');
 const abi = require('ethereumjs-abi');
+const Big = require('big.js');
+const { BigNumber } = require('ethers');
+const { numberExponentToLarge } = require('../../scripts/helpers');
 
 module.exports = {
 
@@ -293,4 +296,13 @@ module.exports = {
 	getEventByName({ tx, name }) {
 		return tx.logs.find(({ event }) => event === name);
 	},
+	// returns the sqrt price as a 64x96
+    encodePriceSqrt(reserve1, reserve0) {
+		return numberExponentToLarge(Big(reserve1)
+			.div(reserve0)
+			.sqrt()
+			.mul(Big(2).pow(96))
+			.round()
+			.toString());
+  	}
 };

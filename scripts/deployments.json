@@ -87,7 +87,9 @@
         "PriceFeedImplementation": "0x6B33b99E3D3213DF963375E6d94aBa968351f803",
         "ThalesAMM": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
         "ThalesAMMImplementation": "0x516c96B8cBc19F70B3783cCDC74327b2D9f2D644",
-        "SafeBox": "0xe853207c30f3c32eda9aeffddc67357d5332978c"
+        "SafeBox": "0xe853207c30f3c32eda9aeffddc67357d5332978c",
+        "PriceFeedTwap": "0x22e12A53CB40533707881607F808c7939cdE9e0c",
+        "PriceFeedTwapImplementation": "0x5D3174731F2A8c564FCFb2120709F69059642D4e"
     },
     "optimisticKovan": {
         "AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
@@ -99,7 +101,7 @@
         "BinaryOptionMarketManager": "0x6382660BF24f5e7BeC43a7D47591F823488FDB8D",
         "BinaryOptionMarketData": "0xdBDAB336Cd97DB0F361DbD8C47EB4731674B62d7",
         "PriceFeed": "0x3c22C1bBC552A43b101b003dF5230322EA09CeD0",
-        "ThalesRoyale": "0xC8182b4958A5EFC30cAE2A330e01AEa1bad118A0",
+        "ThalesRoyale": "0x04447580f89b0555939a3b1341189C38d9C40Fb4",
         "ThalesRoyalePrivateRoom": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
         "OpThales_L2": "0x6002a8F2A8dC0B704080765cE96aac63D5f7B224",
         "LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
@@ -111,7 +113,7 @@
         "ProxyEscrowThales": "0xb9615f837E60EdBECe26A91670FA42b02c9881D7",
         "ProxyStakingThalesImplementation": "0xEBB06f3ca3980d71EcccC99Fd7CA1080bF82Becd",
         "ProxyEscrowThalesImplementation": "0x4f8A0ca4af3e58EB992ac2D3573065117CDB5CA0",
-        "ThalesRoyaleImplementation": "0xEbEA404ABacd34aD7d1915c063ef9c60D79739c6",
+        "ThalesRoyaleImplementation": "0xe5d7745fd6018f7BF3dEFfC62f5eB17aCD7362b6",
         "ThalesRoyaleDeployed": "0xd885521B35F3DFbc128B38f8897109eba829472e",
         "SafeBox": "0x8314125c8b68af2afd0d151eb4a551e88128a2ae"
     },

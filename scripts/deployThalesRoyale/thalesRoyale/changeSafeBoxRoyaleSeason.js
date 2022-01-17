@@ -1,7 +1,6 @@
 const { ethers } = require('hardhat');
 const { getTargetAddress} = require('../../helpers');
 const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
 
 async function main() {
     
@@ -9,7 +8,6 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let ProxyERC20sUSDaddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -34,10 +32,10 @@ async function main() {
 
     /* ========== PROPERTIES ========== */
 
-	const season = 1; // CHANGE for season
-	const initialFund = w3utils.toWei('1000'); // CHANGE for amount
+	const safeBoxPercentage = 5; // CHANGE for percntage
+	const safeBox = owner.address // CHANGE for address
 
-    /* ========== PUT FUNDS IN ROYALE ========== */
+    /* ========== SAFE BOX FOR ROYALE ========== */
 
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const thalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
@@ -47,37 +45,20 @@ async function main() {
 		thalesRoyaleAddress
 	);
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 69) {
-		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	} else {
-		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
-	}
-
-	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSDaddress);
-
-	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
-	let contract = new ethers.Contract(ProxyERC20sUSDaddress, abi, owner);	
-	
-	await contract.approve(royale.address, initialFund, {
-		from: owner.address,
-	});
-	delay(5000); // need some time to  finish approval
-	console.log('Done approving');
-
-	// put funds
-	let tx = await royale.putFunds(initialFund, season);
+	// setSafeBoxPercentage
+	let tx = await royale.setSafeBoxPercentage(safeBoxPercentage);
 	
 	await tx.wait().then(e => {
-		console.log('Funds updated for a season: ', season);
+		console.log('Safe box percentage: ', safeBoxPercentage);
 	});
 
-}
-
-function delay(time) {
-	return new Promise(function (resolve) {
-		setTimeout(resolve, time);
+	// setSafeBox
+	tx = await royale.setSafeBox(safeBox);
+	
+	await tx.wait().then(e => {
+		console.log('Safe box address: ', safeBox);
 	});
+
 }
 
 main()

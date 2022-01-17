@@ -1,6 +1,7 @@
 const { ethers, upgrades } = require('hardhat');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
+const { toBytes32 } = require('../../../index');
+const { setTargetAddress } = require('../../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -26,25 +27,16 @@ async function main() {
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
+	console.log('Network id:' + networkObj.chainId);
 
-	const priceFeedAddress = getTargetAddress('PriceFeed', network);
-	console.log('Found PriceFeed at:', priceFeedAddress);
+	const IUniswapV3Pool = await ethers.getContractAt('IUniswapV3Pool', '0xf334f6104a179207ddacfb41fa3567feea8595c2');
 
-	const PriceFeed = await ethers.getContractFactory('PriceFeed');
-	await upgrades.upgradeProxy(priceFeedAddress, PriceFeed);
+	let secondsAgo = [];
+	secondsAgo.push(300); // from (before)
+	secondsAgo.push[0]; // to (now)
 
-	console.log('PriceFeed upgraded');
-
-	const priceFeedImplementation = await getImplementationAddress(ethers.provider, priceFeedAddress);
-	setTargetAddress('PriceFeedImplementation', network, priceFeedImplementation);
-
-	try {
-		await hre.run('verify:verify', {
-			address: priceFeedImplementation,
-		});
-	} catch (e) {
-		console.log(e);
-	}
+	let result = await IUniswapV3Pool.observe(secondsAgo);
+	console.log('Result is ' + result);
 }
 
 main()

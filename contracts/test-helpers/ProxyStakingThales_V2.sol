@@ -68,6 +68,7 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     mapping(address => uint) private lastAMMUpdatePeriod;
     mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private stakerAMMVolume;
 
+    bool public extraRewardsActive;
     uint public _contractVersion;
 
     /* ========== CONSTRUCTOR ========== */
@@ -172,6 +173,11 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
         require(_royale != address(0), "Invalid address");
         thalesRoyale = IThalesRoyale(_royale);
         emit ThalesRoyaleAddressChanged(_royale);
+    }
+     
+    function setExtraRewards(bool _extraRewardsActive) public onlyOwner {
+        extraRewardsActive = _extraRewardsActive;
+        emit ExtraRewardsChanged(_extraRewardsActive);
     }
 
     function setThalesAMM(address _thalesAMM) public onlyOwner {
@@ -500,4 +506,5 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     event ThalesRoyaleAddressChanged(address royale);
     event ThalesAMMAddressChanged(address amm);
     event AMMVolumeUpdated(address account, uint amount);
+    event ExtraRewardsChanged(bool extrarewardsactive);
 }

@@ -53,7 +53,7 @@ async function main() {
 	const pauseBetweenSeasonsTime = week * 2;
 
 	const rounds = 6;
-	const buyIn = w3utils.toWei('20');
+	const buyIn = w3utils.toWei('30');
 
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const royale = await upgrades.deployProxy(ThalesRoyale, 

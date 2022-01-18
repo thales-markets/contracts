@@ -126,6 +126,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(block.timestamp > (seasonCreationTime[season] + signUpPeriod), "Can't start until signup period expires");
         require(signedUpPlayersCount[season] > 0, "Can not start, no players in a season");
         require(!royaleInSeasonStarted[season], "Already started");
+        require(seasonStarted[season], "Season not started yet");
 
         roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
         roundInASeason[season] = 1;
@@ -259,7 +260,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     function canStartRoyale() public view returns (bool) {
-        return !royaleInSeasonStarted[season] && block.timestamp > (seasonCreationTime[season] + signUpPeriod);
+        return seasonStarted[season] && !royaleInSeasonStarted[season] && block.timestamp > (seasonCreationTime[season] + signUpPeriod);
     }
 
     function canStartNewSeason() public view returns (bool) {

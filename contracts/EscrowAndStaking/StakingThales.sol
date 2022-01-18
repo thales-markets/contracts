@@ -418,26 +418,12 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint extraReward = HUNDRED;
         uint stakedSNX = _getSNXStakedForAccount(account);
 
-        uint totalAMMVolume = _getTotalAMMVolume(account);
-        uint avgAMMVolume = _getAvgAMMVolume(account);
-
         // SNX staked more than base reward
-        if (stakedSNX >= baseReward) {
-            extraReward = extraReward.add(15);
-        } else {
-            extraReward = extraReward.add(stakedSNX.mul(15).div(baseReward));
-        }
-
+        extraReward = stakedSNX >= baseReward ? extraReward = extraReward.add(15) : extraReward.add(stakedSNX.mul(15).div(baseReward));
         // AMM Volume 10x Thales base reward
-        if (_getTotalAMMVolume(account) >= baseReward.mul(10)) {
-            extraReward = extraReward.add(12);
-        } else {
-            extraReward = extraReward.add(_getAvgAMMVolume(account).mul(12).div(baseReward));
-        }
-
-        if (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account)) {
-            extraReward = extraReward.add(3);
-        }
+        extraReward = _getTotalAMMVolume(account) >= baseReward.mul(10) ? extraReward.add(12) : extraReward.add(_getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(12).div(baseReward.mul(10)));
+        // ThalesRoyale participation
+        extraReward = (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account)) ? extraReward.add(3) : extraReward;
 
         return baseReward.mul(extraReward).div(HUNDRED);
     }
@@ -461,13 +447,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 totalAMMforAccount = totalAMMforAccount.add(stakerAMMVolume[account][i].amount);
         }
         return totalAMMforAccount;
-    }
-
-    function _getAvgAMMVolume(address account) internal view returns (uint) {
-        return
-            periodsOfStaking >= lastAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS)
-                ? 0
-                : _getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS);
     }
 
     /* ========== EVENTS ========== */

@@ -4,7 +4,7 @@ const { web3 } = require('hardhat');
 const { deployArgs, bn } = require('../../snx-data/xsnx-snapshot/helpers');
 const { getTargetAddress, setTargetAddress } = require('../../helpers.js');
 
-let airdropMigration = require('./airdropMigration.json');
+let airdropMigration = require('../airdropMigration/airdropMigration.json');
 
 // maybe just calculate this based on the number od addreeses, total amount is 2 million
 const THALES_AMOUNT = web3.utils.toWei('137');
@@ -45,7 +45,7 @@ async function deploy_airdrop() {
 	for (let aidropMigratee of airdropMigration) {
 		let address = aidropMigratee.address;
 		address = address.toLowerCase();
-		if (duplicateCheckerSet.has(address)||aidropMigratee.isContract) {
+		if (duplicateCheckerSet.has(address) || !aidropMigratee.isContract) {
 			// dont airdrop same address more than once
 			continue;
 		} else {
@@ -75,7 +75,7 @@ async function deploy_airdrop() {
 		userBalanceAndHashes[ubh].proof = merkleTree.getHexProof(userBalanceAndHashes[ubh].hash);
 	}
 	fs.writeFileSync(
-		`scripts/THALES_migration/airdropMigration/airdrop-hashes-l2.json`,
+		`scripts/THALES_migration/handleContracts/airdrop-hashes-contracts.json`,
 		JSON.stringify(userBalanceAndHashes),
 		function(err) {
 			if (err) return console.log(err);
@@ -92,9 +92,9 @@ async function deploy_airdrop() {
 	// deploy Airdrop contract
 	const airdrop = await deployArgs('Airdrop', owner.address, thalesAddress, root);
 	await airdrop.deployed();
-	console.log('OptimisticAirdrop deployed at', airdrop.address);
+	console.log('AirdropContracs deployed at', airdrop.address);
 	// update deployments.json file
-	setTargetAddress('OptimisticAirdrop', network, airdrop.address);
+	setTargetAddress('AirdropContracs', network, airdrop.address);
 
 	await hre.run('verify:verify', {
 		address: airdrop.address,

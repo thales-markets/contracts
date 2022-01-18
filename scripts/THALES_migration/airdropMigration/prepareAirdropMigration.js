@@ -31,13 +31,19 @@ async function checkForMultisigs() {
 	}
 
 	let pendingClaimers = [];
+
 	let i = 0;
 	for (let address of Object.keys(l1Airdropees)) {
 		console.log('Processing ' + i + ' . address');
+		let contractChecker = await web3.eth.getCode(address);
+		let isContract = contractChecker != '0x';
 		i++;
 		address = address.toLowerCase();
 		if (!claimers.has(address)) {
-			pendingClaimers.push(address);
+			let pendingClaimerObject = {};
+			pendingClaimerObject.address = address;
+			pendingClaimerObject.isContract = isContract;
+			pendingClaimers.push(pendingClaimerObject);
 		}
 	}
 

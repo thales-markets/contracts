@@ -263,8 +263,13 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         return seasonStarted[season] && !royaleInSeasonStarted[season] && block.timestamp > (seasonCreationTime[season] + signUpPeriod);
     }
 
+    function canSeasonBeAutomaticallyStartedAfterSomePeriod() public view returns (bool) {
+        return nextSeasonStartsAutomatically && 
+        (block.timestamp > seasonCreationTime[season] + pauseBetweenSeasonsTime);
+    }
+
     function canStartNewSeason() public view returns (bool) {
-        return nextSeasonStartsAutomatically && block.timestamp > seasonCreationTime[season] + pauseBetweenSeasonsTime;
+        return canSeasonBeAutomaticallyStartedAfterSomePeriod() && (seasonFinished[season] || season == 0);
     }
 
     function hasParticipatedInCurrentOrLastRoyale(address _player) public view returns (bool) {
@@ -415,7 +420,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     /* ========== MODIFIERS ========== */
 
     modifier seasonCanStart() {
-        require(msg.sender == owner || canStartNewSeason(), "Only owner can start season before pause between two seasons");
+        require(msg.sender == owner || canSeasonBeAutomaticallyStartedAfterSomePeriod(), "Only owner can start season before pause between two seasons");
         require(seasonFinished[season] || season == 0, "Previous season must be finished");
         _;
     }

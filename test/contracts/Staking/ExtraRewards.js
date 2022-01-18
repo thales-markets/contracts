@@ -336,14 +336,12 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.connect(owner).setExtraRewards(true);
 			await SNXRewardsDeployed.setAccountDebtRatio(firstSigner.address, toWei('0', 'ether'));
 			await StakingThalesDeployed.setThalesAMM(owner.address);
-			console.log((baseReward-1)*10)
-			console.log(baseReward*10)
 			await StakingThalesDeployed.updateVolume(firstSigner.address, toWei(((baseReward-1)*10).toString(), 'ether'))
 			
 			answer = await StakingThalesDeployed.connect(firstSigner).getRewardsAvailable(firstSigner.address);
-			result = Math.floor(12);
+			result = 100+Math.floor(12*((baseReward-1)/(4*baseReward)));
 
-			// assert.equal(fromWei(answer.toString(), "ether"), result.toString());
+			assert.equal(fromWei(answer.toString(), "ether"), result.toString());
 			// console.log("Claimable rewards (first user): ", fromWei(answer.toString(), "ether"));
 			// console.log("Calculated rewards (first user): ", result.toString());
 			// console.log("Claimable rewards (first user): ", answer.toString());

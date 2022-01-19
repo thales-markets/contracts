@@ -3,6 +3,7 @@ const { toBytes32 } = require('../../../index');
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
 const w3utils = require('web3-utils');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
+const snx = require('synthetix-2.50.4-ovm');
 
 async function main() {
     
@@ -10,6 +11,7 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	let rewardTokenAddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -37,8 +39,14 @@ async function main() {
 	const priceFeed = await ethers.getContractFactory('PriceFeed');
 	let priceFeedAddress = getTargetAddress('PriceFeed', network);
 
-	// !!!!!!!! TODO change reward token address to sUSD !!!!!!!!
-	let rewardTokenAddress = getTargetAddress('PriceFeed', network);
+	if (networkObj.chainId == 10 || networkObj.chainId == 69) {
+		rewardTokenAddress = getTargetAddress('ProxysUSD', network);
+	} else {
+		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
+		rewardTokenAddress = ProxyERC20sUSD.address;
+	}
+
+	console.log('Found ProxyERC20sUSD at:' + rewardTokenAddress);
 
 	const min = 60;
 	const hour = 60 * 60;

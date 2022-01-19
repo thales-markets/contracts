@@ -4,10 +4,11 @@ pragma solidity ^0.5.16;
 
 interface ISNXRewards {
     /* ========== VIEWS / VARIABLES ========== */
-    function isFeesClaimable(address account) external view returns (bool);
-    function effectiveDebtRatioForPeriod(address account, uint period) external view returns (uint);
+    function collateralisationRatioAndAnyRatesInvalid(address account) external view returns (uint, bool);
+    function debtBalanceOf(address _issuer, bytes32 currencyKey) external view returns (uint);
+    function issuanceRatio() external view returns (uint);
 
-    function setAccountDebtRatio(address account, uint debtRatio) external;
-    function setFeesClaimable(address account, bool claimable) external;
+    function setCRatio(address account, uint _c_ratio) external;
+    function setIssuanceRatio(uint _issuanceRation) external;
     
 }

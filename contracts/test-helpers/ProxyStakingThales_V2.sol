@@ -12,6 +12,7 @@ import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ISNXRewards.sol";
 import "../interfaces/IThalesRoyale.sol";
+import "../interfaces/IPriceFeed.sol";
 
 contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     /* ========== LIBRARIES ========== */
@@ -26,6 +27,7 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     IERC20 public feeToken;
     ISNXRewards public SNXRewards;
     IThalesRoyale public thalesRoyale;
+    IPriceFeed public priceFeed;
 
     uint public periodsOfStaking;
     uint public lastPeriodTimeStamp;
@@ -184,6 +186,12 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
         require(_thalesAMM != address(0), "Invalid address");
         thalesAMM = _thalesAMM;
         emit ThalesAMMAddressChanged(_thalesAMM);
+    }
+
+    function setPriceFeed(address _priceFeed) public onlyOwner {
+        require(_priceFeed != address(0), "Invalid address");
+        priceFeed = IPriceFeed(_priceFeed);
+        emit PriceFeedAddressChanged(_priceFeed);
     }
 
     function getVersion() external view returns (uint) {
@@ -457,13 +465,17 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     }
 
     function _getSNXStakedForAccount(address account) internal view returns (uint) {
-        if(SNXRewards.isFeesClaimable(account)){
-            return SNXRewards.effectiveDebtRatioForPeriod(account, 1);
+        (uint cratio, ) = SNXRewards.collateralisationRatioAndAnyRatesInvalid(account);
+        uint issuanceRation = SNXRewards.issuanceRatio();
+        uint snxPrice = priceFeed.rateForCurrency("SNX");
+        if(cratio < SNXRewards.issuanceRatio()) {
+            return 1;
         }
         else {
             return 0;
         }
     }
+
 
     function _getTotalAMMVolume(address account) internal view returns (uint) {
         uint totalAMMforAccount;
@@ -507,4 +519,5 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     event ThalesAMMAddressChanged(address amm);
     event AMMVolumeUpdated(address account, uint amount);
     event ExtraRewardsChanged(bool extrarewardsactive);
+    event PriceFeedAddressChanged(address pricefeed);
 }

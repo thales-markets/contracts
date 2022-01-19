@@ -4,26 +4,38 @@ import "../interfaces/ISNXRewards.sol";
 
 contract SNXRewards is ISNXRewards {
 
-    mapping(address => uint) public accountDebtRatio;
-    mapping(address => bool) public feesClaimable;
+    mapping(address => uint) public c_ratio;
+    mapping(address => uint) public debtBalance;
+    uint public issuanceGeneralRatio;
+
 
     constructor() public {}
     /* ========== VIEWS / VARIABLES ========== */
-    function isFeesClaimable(address account) external view returns (bool){
-        return feesClaimable[account];
+    function collateralisationRatioAndAnyRatesInvalid(address _account)
+        external
+        view
+        returns (uint, bool) {
+
+        return (c_ratio[_account], false);
+    }
+    
+    function debtBalanceOf(address _issuer, bytes32 currencyKey) external view returns (uint) {
+        return debtBalance[_issuer];
     }
 
-    function effectiveDebtRatioForPeriod(address account, uint period) external view returns (uint){
-        require(period != 0, "Current period is not closed yet");
-        require(period < 2, "Exceeds the FEE_PERIOD_LENGTH");
-        return accountDebtRatio[account];
+    function issuanceRatio() external view returns (uint) {
+        return issuanceGeneralRatio;
     }
 
-    function setAccountDebtRatio(address account, uint debtRatio) external {
-        accountDebtRatio[account] = debtRatio;
+    function setCRatio(address account, uint _c_ratio) external {
+        c_ratio[account] = _c_ratio;
     }
-    function setFeesClaimable(address account, bool claimable) external {
-        feesClaimable[account] = claimable;
+    
+    function setDebtBalance(address account, uint _debtBalance) external {
+        debtBalance[account] = _debtBalance;
+    }
+    function setIssuanceRatio(uint _issuanceRation) external {
+        issuanceGeneralRatio = _issuanceRation;
     }
     
 }

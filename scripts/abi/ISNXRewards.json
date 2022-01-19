@@ -6,14 +6,40 @@
         "internalType": "address",
         "name": "account",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "period",
-        "type": "uint256"
       }
     ],
-    "name": "effectiveDebtRatioForPeriod",
+    "name": "collateralisationRatioAndAnyRatesInvalid",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_issuer",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "debtBalanceOf",
     "outputs": [
       {
         "internalType": "uint256",
@@ -27,19 +53,13 @@
   },
   {
     "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "isFeesClaimable",
+    "inputs": [],
+    "name": "issuanceRatio",
     "outputs": [
       {
-        "internalType": "bool",
+        "internalType": "uint256",
         "name": "",
-        "type": "bool"
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -56,11 +76,11 @@
       },
       {
         "internalType": "uint256",
-        "name": "debtRatio",
+        "name": "_c_ratio",
         "type": "uint256"
       }
     ],
-    "name": "setAccountDebtRatio",
+    "name": "setCRatio",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -70,17 +90,12 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "claimable",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "_issuanceRation",
+        "type": "uint256"
       }
     ],
-    "name": "setFeesClaimable",
+    "name": "setIssuanceRatio",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

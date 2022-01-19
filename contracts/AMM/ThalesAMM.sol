@@ -289,7 +289,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         IBinaryOption target = position == Position.Long ? long : short;
         IERC20(address(target)).transfer(msg.sender, amount);
 
-        // stakingThales.updateVolume(msg.sender, amount);
+        if(address(stakingThales) != address(0)){
+            stakingThales.updateVolume(msg.sender, amount);
+        }
         _updateSpentOnOnMarketOnBuy(market, position, amount, sUSDPaid);
 
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
@@ -327,7 +329,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         sUSD.transfer(msg.sender, pricePaid);
 
-        // stakingThales.updateVolume(msg.sender, amount);
+        if(address(stakingThales) != address(0)){
+            stakingThales.updateVolume(msg.sender, amount);
+        }
         _updateSpentOnMarketOnSell(market, position, amount, pricePaid, sUSDFromBurning);
 
         emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), address(target));

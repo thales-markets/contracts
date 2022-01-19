@@ -16,14 +16,21 @@ async function deploy_ongoing_airdrop() {
 	let accounts = await ethers.getSigners();
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	let THALES, Thales;
 	if (network === 'homestead') {
 		network = 'mainnet';
 	} else if (network === 'unknown') {
 		network = 'localhost';
+		THALES = getTargetAddress('OpThales_L1', network);
+		Thales = await ethers.getContractFactory('Thales');
+	}
+	else if (networkObj.chainId == 69) {
+		network = 'optimisticKovan';
+		THALES = getTargetAddress('OpThales_L2', network);
+		Thales = await ethers.getContractFactory('OpThales_L2');
 	}
 	console.log('Network name:' + network);
 
-	const THALES = getTargetAddress('Thales', network);
 	let owner = accounts[0];
 
 	let userBalanceAndHashes = [];
@@ -85,7 +92,7 @@ async function deploy_ongoing_airdrop() {
 		}
 	);
 
-	const Thales = await ethers.getContractFactory('Thales');
+	
 	let thales = await Thales.attach(THALES);
 
 	const ongoingAirdrop = await deployArgs('OngoingAirdrop', owner.address, thales.address, root);
@@ -98,11 +105,11 @@ async function deploy_ongoing_airdrop() {
 
 	// deploy EscrowThales
 	const EscrowThales = await ethers.getContractFactory('EscrowThales');
-	const escrowThales = await EscrowThales.deploy(owner.address, thales.address);
-	await escrowThales.deployed();
+	const EscrowAddress = getTargetAddress('OpThales_L2', network);
+	const escrowThales = await EscrowThales.attach(EscrowAddress);
 	console.log('EscrowThales deployed at', escrowThales.address);
 	// update deployments.json file
-	setTargetAddress('EscrowThales', network, escrowThales.address);
+	// setTargetAddress('EscrowThales', network, escrowThales.address);
 
 	// set OngoingAirdrop address
 	let tx = await escrowThales.setAirdropContract(ongoingAirdrop.address);
@@ -110,16 +117,16 @@ async function deploy_ongoing_airdrop() {
 		console.log('EscrowThales: setAirdropContract');
 	});
 
-	tx = await thales.transfer(
-		ongoingAirdrop.address,
-		numberExponentToLarge(totalBalance.toString())
-	);
-	await tx.wait().then(e => {
-		console.log('Thales: transfer');
-	});
+	// tx = await thales.transfer(
+	// 	ongoingAirdrop.address,
+	// 	numberExponentToLarge(totalBalance.toString())
+	// );
+	// await tx.wait().then(e => {
+	// 	console.log('Thales: transfer');
+	// });
 
 	// set EscrowThales address
-	await ongoingAirdrop.setEscrow(escrowThales.address);
+	await ongoingAirdrop.setEscrow(escrowThales.address, {from:owner.address});
 	await tx.wait().then(e => {
 		console.log('OngoingAirdrop: setEscrow');
 	});
@@ -129,10 +136,10 @@ async function deploy_ongoing_airdrop() {
 		constructorArguments: [owner.address, thales.address, root],
 	});
 
-	await hre.run('verify:verify', {
-		address: escrowThales.address,
-		constructorArguments: [owner.address, thales.address],
-	});
+	// await hre.run('verify:verify', {
+	// 	address: escrowThales.address,
+	// 	constructorArguments: [owner.address, thales.address],
+	// });
 }
 
 deploy_ongoing_airdrop()

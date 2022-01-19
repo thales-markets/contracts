@@ -16,6 +16,7 @@ const fs = require('fs');
 const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
 
 const user_key1 = process.env.PRIVATE_KEY;
+const ISSUER_ADDR = '0x42d9ac3ebebb9479f24360847350b4F7EADECE50';
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -75,6 +76,7 @@ async function main() {
 		ProxyERC20sUSD_address,
 		durationPeriod,
 		unstakeDurationPeriod,
+		ISSUER_ADDR
 	]);
 	let tx = await ProxyStaking_deployed.deployed();
 

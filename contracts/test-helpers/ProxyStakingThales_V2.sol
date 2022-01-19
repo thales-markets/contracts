@@ -194,6 +194,10 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
         emit PriceFeedAddressChanged(_priceFeed);
     }
 
+    function getSNXStaked(address account) external view returns (uint) {
+        return _getSNXStakedForAccount(account);
+    }
+
     function getVersion() external view returns (uint) {
         return _contractVersion;
     }

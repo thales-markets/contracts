@@ -92,7 +92,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         durationPeriod = _durationPeriod;
         unstakeDurationPeriod = _unstakeDurationPeriod;
         fixedPeriodReward = 100000 * 1e18;
-        periodExtraReward = 20000 * 1e18;
+        periodExtraReward = 30000 * 1e18;
         SNXRewards = ISNXRewards(_ISNXRewards);
     }
 
@@ -169,7 +169,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         SNXRewards = ISNXRewards(_snxRewards);
         emit SNXRewardsAddressChanged(_snxRewards);
     }
-    
+
     function setExtraRewards(bool _extraRewardsActive) public onlyOwner {
         extraRewardsActive = _extraRewardsActive;
         emit ExtraRewardsChanged(_extraRewardsActive);
@@ -186,7 +186,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         thalesAMM = _thalesAMM;
         emit ThalesAMMAddressChanged(_thalesAMM);
     }
-    
+
     function setPriceFeed(address _priceFeed) public onlyOwner {
         require(_priceFeed != address(0), "Invalid address");
         priceFeed = IPriceFeed(_priceFeed);
@@ -201,6 +201,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         iEscrowThales = IEscrowThales(_escrowThalesContract);
         stakingToken.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         emit EscrowChanged(_escrowThalesContract);
+    }
+
+    function getSNXStaked(address account) external view returns (uint) {
+        return _getSNXStakedForAccount(account);
     }
 
     /* ========== PUBLIC ========== */
@@ -339,19 +343,17 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function updateVolume(address account, uint amount) external {
         require(msg.sender == address(thalesAMM), "Invalid address");
         require(msg.sender != address(0), "Invalid address");
-        if (_stakedBalances[account] > 0) {
-            if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
-                stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
-                stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
-                lastAMMUpdatePeriod[account] = periodsOfStaking;
-            }
-            stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = stakerAMMVolume[account][
-                periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-            ]
-                .amount
-                .add(amount);
-            emit AMMVolumeUpdated(account, amount);
+        if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
+            stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
+            stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
+            lastAMMUpdatePeriod[account] = periodsOfStaking;
         }
+        stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = stakerAMMVolume[account][
+            periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
+        ]
+            .amount
+            .add(amount);
+        emit AMMVolumeUpdated(account, amount);
     }
 
     /*  Selfdestruct operation potentially harmful for proxy contracts
@@ -410,7 +412,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         if ((_stakedBalances[account] == 0) || (_lastRewardsClaimedPeriod[account] == periodsOfStaking)) {
             return 0;
         }
-        
+
         return
             _stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
@@ -419,7 +421,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function _calculateExtraReward(address account, uint baseReward) internal view returns (uint) {
-        if(!extraRewardsActive) {
+        if (!extraRewardsActive) {
             return baseReward;
         }
 
@@ -427,17 +429,19 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint stakedSNX = _getSNXStakedForAccount(account);
 
         // SNX staked more than base reward
-        extraReward = stakedSNX >= baseReward ? extraReward = extraReward.add(15) : extraReward.add(stakedSNX.mul(15).div(baseReward));
+        extraReward = stakedSNX >= baseReward
+            ? extraReward = extraReward.add(15)
+            : extraReward.add(stakedSNX.mul(15).div(baseReward));
         // AMM Volume 10x Thales base reward
-        extraReward = _getTotalAMMVolume(account) >= baseReward.mul(10) ? extraReward.add(12) : extraReward.add(_getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(12).div(baseReward.mul(10)));
+        extraReward = _getTotalAMMVolume(account) >= baseReward.mul(10)
+            ? extraReward.add(12)
+            : extraReward.add(_getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(12).div(baseReward.mul(10)));
         // ThalesRoyale participation
-        extraReward = (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account)) ? extraReward.add(3) : extraReward;
+        extraReward = (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account))
+            ? extraReward.add(3)
+            : extraReward;
 
         return baseReward.mul(extraReward).div(HUNDRED);
-    }
-
-    function getSNXStaked(address account) external view returns (uint) {
-        return _getSNXStakedForAccount(account);
     }
 
     function _getSNXStakedForAccount(address account) internal view returns (uint) {
@@ -445,10 +449,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint issuanceRatio = SNXRewards.issuanceRatio();
         uint snxPrice = priceFeed.rateForCurrency("SNX");
         uint debt = SNXRewards.debtBalanceOf(account, "SNX");
-        if(cRatio < issuanceRatio) {
+        if (cRatio < issuanceRatio) {
             return (cRatio.mul(cRatio).mul(debt)).div(issuanceRatio.mul(snxPrice).mul(HUNDRED));
-        }
-        else {
+        } else {
             return (cRatio.mul(debt)).div(snxPrice.mul(HUNDRED));
         }
     }

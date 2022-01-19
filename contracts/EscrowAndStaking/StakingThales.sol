@@ -437,11 +437,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function getSNXStaked(address account) external view returns (uint) {
-        // return priceFeed.rateForCurrency("SNX");
-        // return SNXRewards.debtBalanceOf(account, "SNX");
-        // (uint cRatio, ) = SNXRewards.collateralisationRatioAndAnyRatesInvalid(account);
-        // return cRatio;
-        // return SNXRewards.debtBalanceOf(account, "SNX");
         return _getSNXStakedForAccount(account);
     }
 

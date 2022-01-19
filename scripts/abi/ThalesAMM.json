@@ -235,6 +235,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "SetStakingThales",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "seller",
         "type": "address"
       },
@@ -1152,6 +1165,21 @@
       }
     ],
     "name": "setSafeBoxImpact",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "contract IStakingThales",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "setStakingThales",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

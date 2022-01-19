@@ -126,6 +126,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(block.timestamp > (seasonCreationTime[season] + signUpPeriod), "Can't start until signup period expires");
         require(signedUpPlayersCount[season] > 0, "Can not start, no players in a season");
         require(!royaleInSeasonStarted[season], "Already started");
+        require(seasonStarted[season], "Season not started yet");
 
         roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
         roundInASeason[season] = 1;
@@ -259,14 +260,19 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     function canStartRoyale() public view returns (bool) {
-        return !royaleInSeasonStarted[season] && block.timestamp > (seasonCreationTime[season] + signUpPeriod);
+        return seasonStarted[season] && !royaleInSeasonStarted[season] && block.timestamp > (seasonCreationTime[season] + signUpPeriod);
+    }
+
+    function canSeasonBeAutomaticallyStartedAfterSomePeriod() public view returns (bool) {
+        return nextSeasonStartsAutomatically && 
+        (block.timestamp > seasonCreationTime[season] + pauseBetweenSeasonsTime);
     }
 
     function canStartNewSeason() public view returns (bool) {
-        return nextSeasonStartsAutomatically && block.timestamp > seasonCreationTime[season] + pauseBetweenSeasonsTime;
+        return canSeasonBeAutomaticallyStartedAfterSomePeriod() && (seasonFinished[season] || season == 0);
     }
 
-    function hasParticipatedInCurrentOrLastRoyale(address _player) public view returns (bool) {
+    function hasParticipatedInCurrentOrLastRoyale(address _player) external view returns (bool) {
         if (season > 1) {
             return playerSignedUpPerSeason[season][_player] > 0 || playerSignedUpPerSeason[season - 1][_player] > 0;
         } else {
@@ -360,7 +366,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     function putFunds(uint _amount, uint _season) external {
         require(_amount > 0, "Amount must be more then zero");
         require(_season >= season, "Cant put funds in a past");
-        require(rewardToken.allowance(msg.sender, address(this)) >= buyInAmount, "No allowance.");
+        require(rewardToken.allowance(msg.sender, address(this)) >= _amount, "No allowance.");
 
         _putFunds(msg.sender, _amount, _season);
     }
@@ -414,7 +420,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     /* ========== MODIFIERS ========== */
 
     modifier seasonCanStart() {
-        require(msg.sender == owner || canStartNewSeason(), "Only owner can start season before pause between two seasons");
+        require(msg.sender == owner || canSeasonBeAutomaticallyStartedAfterSomePeriod(), "Only owner can start season before pause between two seasons");
         require(seasonFinished[season] || season == 0, "Previous season must be finished");
         _;
     }

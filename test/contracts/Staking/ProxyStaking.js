@@ -39,6 +39,7 @@ contract('StakingThales', accounts => {
 		StakingThalesDeployed,
 		EscrowThalesDeployed,
 		OngoingAirdropDeployed,
+		SNXRewardsDeployed,
         ProxyEscrowDeployed,
         ProxyStakingDeployed;
 
@@ -111,9 +112,11 @@ contract('StakingThales', accounts => {
         let EscrowThales = await ethers.getContractFactory('EscrowThales');
         let StakingThales = await ethers.getContractFactory('StakingThales');
         let OngoingAirdrop = artifacts.require('OngoingAirdrop');
+        let SNXRewards = artifacts.require('SNXRewards');
         let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
         ThalesDeployed = await Thales.new({ from: owner.address });
         ThalesFeeDeployed = await Thales.new({ from: owner.address });
+		SNXRewardsDeployed = await SNXRewards.new();
         OngoingAirdropDeployed = await OngoingAirdrop.new(
             owner.address,
             ThalesDeployed.address,
@@ -132,7 +135,8 @@ contract('StakingThales', accounts => {
             ThalesDeployed.address,
             ThalesFeeDeployed.address,
             WEEK,
-            WEEK
+            WEEK,
+			SNXRewardsDeployed.address
         ]); 
        
 

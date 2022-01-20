@@ -61,6 +61,10 @@ async function executeStakingAndEscrowMigration() {
 
 	i = 0;
 	for (let migratedStakerOrEscrower of migrationInput) {
+		if (migratedStakerOrEscrower.isContract) {
+			console.log('Skipping ' + migratedStakerOrEscrower.wallet + ' as its a contract!');
+			continue;
+		}
 		//send directly if not a staker
 		console.log('Processing migratedStakerOrEscrower ' + migratedStakerOrEscrower);
 		if (migratedStakerOrEscrower.totalStaked == 0) {
@@ -89,7 +93,7 @@ async function executeStakingAndEscrowMigration() {
 			if (balance == 0) {
 				tx = await owner.sendTransaction({
 					to: migratedStakerOrEscrower.wallet,
-					value: w3utils.toWei('0.003125'),
+					value: ethers.utils.parseUnits('0.003125'),
 				});
 				await tx.wait().then(e => {
 					txLog(tx, 'send ETH to ' + migratedStakerOrEscrower.wallet);

@@ -46,13 +46,13 @@ async function main() {
 	console.log('Escrow proxy:', ProxyEscrow);
 	console.log('Staking proxy:', ProxyStaking);
 
-	// try {
-	// 	await hre.run('verify:verify', {
-	// 		address: EscrowImplementation,
-	// 	});
-	// } catch (e) {
-	// 	console.log(e);
-	// }
+	try {
+		await hre.run('verify:verify', {
+			address: EscrowImplementation,
+		});
+	} catch (e) {
+		console.log(e);
+	}
 	try {
 		await hre.run('verify:verify', {
 			address: StakingImplementation,

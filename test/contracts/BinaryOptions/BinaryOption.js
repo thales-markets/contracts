@@ -44,7 +44,7 @@ const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 contract('BinaryOption', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersizer, secondCreator] = accounts;
-
+	let creator, owner;
 	const sUSDQty = toUnit(10000);
 
 	const capitalRequirement = toUnit(2);
@@ -73,18 +73,17 @@ contract('BinaryOption', accounts => {
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.createMarket(
+		const tx = await man.connect(creator).createMarket(
 			oracleKey,
-			strikePrice,
+			strikePrice.toString(),
 			maturity,
-			initialMint,
+			initialMint.toString(),
 			false,
-			ZERO_ADDRESS,
-			{
-				from: creator,
-			}
+			ZERO_ADDRESS
 		);
-		return BinaryOptionMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);
+		let receipt = await tx.wait();
+		const marketEvent = receipt.events.find((event) => event['event'] && event['event'] === 'MarketCreated');
+		return BinaryOptionMarket.at(marketEvent.args.market);
 	};
 
 	before(async () => {
@@ -114,28 +113,24 @@ contract('BinaryOption', accounts => {
 			contracts: [
 				'FeePool',
 				'PriceFeed',
+				'BinaryOptionMarketManager',
 				'BinaryOptionMarketMastercopy',
 				'BinaryOptionMastercopy',
 				'BinaryOptionMarketFactory',
 			],
 		}));
 
-		const [creator, owner] = await ethers.getSigners();
-		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
+	    [creator, owner] = await ethers.getSigners();
 
-		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
-		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
-			from: managerOwner,
-		});
-		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
+		await manager.connect(creator).setBinaryOptionsMarketFactory(factory.address);
+		await factory.connect(owner).setBinaryOptionMarketManager(manager.address);
+		await factory.connect(owner).setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address);
+		await factory.connect(owner).setBinaryOptionMastercopy(binaryOptionMastercopy.address);
 
 		let aggregatorAUD = await MockAggregator.new({ from: managerOwner });
 		aggregatorAUD.setDecimals('8');
 		const timestamp = await currentTime();
 		await aggregatorAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
-
-		console.log('owner', await priceFeed.owner());
-		console.log('owner signer', owner.address);
 
 		await priceFeed.connect(owner).addAggregator(AUDKey, aggregatorAUD.address);
 
@@ -155,14 +150,16 @@ contract('BinaryOption', accounts => {
 	describe('Transfers', () => {
 		it('Can transfer tokens.', async () => {
 			const newValue = toUnit(1);
-			await manager.setCreatorCapitalRequirement(newValue, { from: managerOwner });
+			await manager.connect(creator).setCreatorCapitalRequirement(newValue.toString());
 			let now = await currentTime();
-			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), initialCreator);
+			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), creator);
 			await fastForward(100);
 
 			const options = await market.options();
 			long = await BinaryOption.at(options.long);
 			short = await BinaryOption.at(options.short);
+
+			console.log('long', options.long);
 
 			await long.transfer(minter, toUnit(1), { from: initialCreator });
 
@@ -270,7 +267,7 @@ contract('BinaryOption', accounts => {
 
 		it('Can transferFrom tokens.', async () => {
 			let now = await currentTime();
-			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), initialCreator);
+			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), creator);
 			await fastForward(100);
 
 			const options = await market.options();

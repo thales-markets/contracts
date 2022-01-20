@@ -26,10 +26,7 @@ const {
 } = require('../../utils/helpers');
 
 let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
-let BinaryOptionMarket,
-	sUSDSynth,
-	binaryOptionMarketMastercopy,
-	binaryOptionMastercopy;
+let BinaryOptionMarket, sUSDSynth, binaryOptionMarketMastercopy, binaryOptionMastercopy;
 let market, long, short, BinaryOption, Synth;
 let customMarket;
 let customOracle;
@@ -42,8 +39,14 @@ const Phase = {
 	Expiry: toBN(2),
 };
 
+async function transactionEvent(tx, eventName) {
+	let receipt = await tx.wait();
+	return receipt.events.find(event => event['event'] && event['event'] === eventName);
+}
+
 contract('BinaryOption', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
+	let creator, owner;
 
 	const sUSDQty = toUnit(10000);
 
@@ -66,13 +69,6 @@ contract('BinaryOption', accounts => {
 	const Side = {
 		Long: toBN(0),
 		Short: toBN(1),
-	};
-
-	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.createMarket(oracleKey, strikePrice, maturity, initialMint, {
-			from: creator,
-		});
-		return BinaryOptionMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);
 	};
 
 	before(async () => {
@@ -106,13 +102,13 @@ contract('BinaryOption', accounts => {
 			],
 		}));
 
-		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
+		[creator, owner] = await ethers.getSigners();
 
-		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
-		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
-			from: managerOwner,
-		});
-		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
+		await manager.connect(creator).setBinaryOptionsMarketFactory(factory.address);
+
+		await factory.connect(owner).setBinaryOptionMarketManager(manager.address);
+		await factory.connect(owner).setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address);
+		await factory.connect(owner).setBinaryOptionMastercopy(binaryOptionMastercopy.address);
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
@@ -132,39 +128,40 @@ contract('BinaryOption', accounts => {
 			let feed = await FlippeningRatioOracleContract.new(
 				managerOwner,
 				ETH_TOTAL_MARKETCAP,
-				BTC_TOTAL_MARKETCAP,
+				BTC_TOTAL_MARKETCAP
 			);
 
 			// await feed.setResult('0x5b22555341222c2243484e222c22474252225d00000000000000000000000000', {
 			// 	from: managerOwner,
 			// });
 
-			let FlippeningRatioOracleInstanceContract = artifacts.require('FlippeningRatioOracleInstance');
+			let FlippeningRatioOracleInstanceContract = artifacts.require(
+				'FlippeningRatioOracleInstance'
+			);
 
 			customOracle = await FlippeningRatioOracleInstanceContract.new(
 				managerOwner,
 				feed.address,
 				'BTC/ETH Flippening Market',
-		        toUnit(0.3),
+				toUnit(0.3),
 				'flippening markets'
 			);
 
 			const now = await currentTime();
 
-			const result = await manager.createMarket(
+			const result = await manager.connect(creator).createMarket(
 				toBytes32(''),
 				0,
 				now + timeToMaturity,
-				toUnit(2),
+				toUnit(2).toString(),
 				true,
-				customOracle.address,
-				{
-					from: managerOwner,
-				}
+				customOracle.address
 			);
 
+			const event = await transactionEvent(result, 'MarketCreated');
+
 			customMarket = await BinaryOptionMarket.at(
-				getEventByName({ tx: result, name: 'MarketCreated' }).args.market
+				event.args.market
 			);
 			const options = await customMarket.options();
 			long = await BinaryOption.at(options.long);
@@ -172,8 +169,8 @@ contract('BinaryOption', accounts => {
 			let longAddress = long.address;
 			let shortAddress = short.address;
 
-			assert.eventEqual(getEventByName({ tx: result, name: 'MarketCreated' }), 'MarketCreated', {
-				creator: managerOwner,
+			assert.eventEqual(event, 'MarketCreated', {
+				creator: initialCreator,
 				oracleKey: toBytes32(''),
 				strikePrice: 0,
 				maturityDate: toBN(now + timeToMaturity),
@@ -218,10 +215,10 @@ contract('BinaryOption', accounts => {
 		});
 
 		it('Exercising options on custom market', async () => {
-			assert.bnEqual(await long.balanceOf(managerOwner), toBN("2000000000000000000"));
-			const tx1 = await customMarket.exerciseOptions({ from: managerOwner });
+			assert.bnEqual(await long.balanceOf(initialCreator), toBN('2000000000000000000'));
+			const tx1 = await customMarket.exerciseOptions({ from: initialCreator });
 			// options no longer in the wallet
-			assert.bnEqual(await long.balanceOf(managerOwner), toBN(0));
+			assert.bnEqual(await long.balanceOf(initialCreator), toBN(0));
 		});
 	});
 });

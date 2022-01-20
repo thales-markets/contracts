@@ -3,8 +3,8 @@ pragma experimental ABIEncoderV2;
 
 // Inheritance
 import "../interfaces/IBinaryOptionMarketManager.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
-import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
+import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/ProxyPausable.sol";
 
 // Libraries
 import "synthetix-2.50.4-ovm/contracts/AddressSetLib.sol";
@@ -17,8 +17,9 @@ import "./BinaryOption.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
 import "../interfaces/IPriceFeed.sol";
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
-contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManager {
+contract BinaryOptionMarketManager is Initializable, ProxyOwned, ProxyPausable, IBinaryOptionMarketManager {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
@@ -41,10 +42,10 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     Durations public durations;
     uint public capitalRequirement;
 
-    bool public marketCreationEnabled = true;
-    bool public customMarketCreationEnabled = false;
+    bool public marketCreationEnabled;
+    bool public customMarketCreationEnabled;
 
-    bool public onlyWhitelistedAddressesCanCreateMarkets = false;
+    bool public onlyWhitelistedAddressesCanCreateMarkets;
     mapping(address => bool) public whitelistedAddresses;
 
     uint public totalDeposited;
@@ -61,24 +62,28 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(
+    function initialize(
         address _owner,
         IERC20 _sUSD,
         IPriceFeed _priceFeed,
         uint _expiryDuration,
         uint _maxTimeToMaturity,
         uint _creatorCapitalRequirement
-    ) public Owned(_owner) Pausable() {
+    ) external initializer {
+        setOwner(_owner);
         priceFeed = _priceFeed;
         sUSD = _sUSD;
 
         // Temporarily change the owner so that the setters don't revert.
         owner = msg.sender;
+        
+        marketCreationEnabled = true;
+        customMarketCreationEnabled = false;
+        onlyWhitelistedAddressesCanCreateMarkets = false;
 
         setExpiryDuration(_expiryDuration);
         setMaxTimeToMaturity(_maxTimeToMaturity);
         setCreatorCapitalRequirement(_creatorCapitalRequirement);
-        owner = _owner;
     }
 
     /* ========== SETTERS ========== */
@@ -110,6 +115,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
     function removeWhitelistedAddress(address _address) external onlyOwner {
         delete whitelistedAddresses[_address];
     }
+
     /* ========== VIEWS ========== */
 
     /* ---------- Market Information ---------- */
@@ -220,7 +226,7 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
             require(address(0) != customOracle, "Invalid custom oracle");
         }
 
-        if(onlyWhitelistedAddressesCanCreateMarkets) {
+        if (onlyWhitelistedAddressesCanCreateMarkets) {
             require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
         }
 
@@ -233,20 +239,19 @@ contract BinaryOptionMarketManager is Owned, Pausable, IBinaryOptionMarketManage
 
         require(capitalRequirement <= initialMint, "Insufficient capital");
 
-        BinaryOptionMarket market =
-            BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
-                BinaryOptionMarketFactory.BinaryOptionCreationMarketParameters(
-                    msg.sender,
-                    sUSD,
-                    priceFeed,
-                    oracleKey,
-                    strikePrice,
-                    [maturity, expiry],
-                    initialMint,
-                    customMarket,
-                    customOracle
-                )
-            );
+        BinaryOptionMarket market = BinaryOptionMarketFactory(binaryOptionMarketFactory).createMarket(
+            BinaryOptionMarketFactory.BinaryOptionCreationMarketParameters(
+                msg.sender,
+                sUSD,
+                priceFeed,
+                oracleKey,
+                strikePrice,
+                [maturity, expiry],
+                initialMint,
+                customMarket,
+                customOracle
+            )
+        );
 
         _activeMarkets.add(address(market));
 

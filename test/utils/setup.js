@@ -63,12 +63,7 @@ const mockToken = async ({
 			})
 	);
 	if (process.env.DEBUG) {
-		log(
-			'Deployed token',
-			synth,
-			'to',
-			token.address
-		);
+		log('Deployed token', synth, 'to', token.address);
 	}
 	await Promise.all([
 		tokenState.setAssociatedContract(token.address, { from: owner }),
@@ -241,12 +236,16 @@ const setupContract = async ({
 		],
 	};
 
+	const proxyContracts = ['PriceFeed', 'BinaryOptionMarketFactory', 'BinaryOptionMarketManager'];
+
 	let instance;
 	try {
-
-		if(contract == 'PriceFeed') {
-			const PriceFeed = await ethers.getContractFactory('PriceFeed');
-			instance = await upgrades.deployProxy(PriceFeed, [owner]);
+		if (proxyContracts.includes(contract)) {
+			const Contract = await ethers.getContractFactory(contract);
+			if (process.env.DEBUG) {
+				console.log(contract, defaultArgs[contract]);
+			}
+			instance = await upgrades.deployProxy(Contract, defaultArgs[contract]);
 		} else {
 			instance = await create({
 				constructorArgs: args.length > 0 ? args : defaultArgs[contract],

@@ -47,6 +47,7 @@ const Phase = {
 contract('ThalesAMM', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
 	const [first, owner, second, third, fourth] = accounts;
+	let creatorSigner, ownerSigner;
 
 	const sUSDQty = toUnit(100000);
 	const sUSDQtyAmm = toUnit(5000);
@@ -77,18 +78,17 @@ contract('ThalesAMM', accounts => {
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.createMarket(
+		const tx = await man.connect(creator).createMarket(
 			oracleKey,
-			strikePrice,
+			strikePrice.toString(),
 			maturity,
-			initialMint,
+			initialMint.toString(),
 			false,
-			ZERO_ADDRESS,
-			{
-				from: creator,
-			}
+			ZERO_ADDRESS
 		);
-		return BinaryOptionMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);
+		let receipt = await tx.wait();
+		const marketEvent = receipt.events.find((event) => event['event'] && event['event'] === 'MarketCreated');
+		return BinaryOptionMarket.at(marketEvent.args.market);
 	};
 
 	before(async () => {
@@ -120,17 +120,17 @@ contract('ThalesAMM', accounts => {
 				'PriceFeed',
 				'BinaryOptionMarketMastercopy',
 				'BinaryOptionMastercopy',
-				'BinaryOptionMarketFactory',
+				'BinaryOptionMarketFactory',				
 			],
 		}));
 
-		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
+		[creatorSigner, ownerSigner] = await ethers.getSigners();
 
-		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
-		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
-			from: managerOwner,
-		});
-		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
+		await manager.connect(creatorSigner).setBinaryOptionsMarketFactory(factory.address);
+
+		await factory.connect(ownerSigner).setBinaryOptionMarketManager(manager.address);
+		await factory.connect(ownerSigner).setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address);
+		await factory.connect(ownerSigner).setBinaryOptionMastercopy(binaryOptionMastercopy.address);
 
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 		aggregator_sETH = await MockAggregator.new({ from: managerOwner });
@@ -145,15 +145,13 @@ contract('ThalesAMM', accounts => {
 		await aggregator_sETH.setLatestAnswer(convertToDecimals(50720, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
-		const [creator, owner] = await ethers.getSigners();
+		await priceFeed.connect(ownerSigner).addAggregator(sAUDKey, aggregator_sAUD.address);
 
-		await priceFeed.connect(owner).addAggregator(sAUDKey, aggregator_sAUD.address);
+		await priceFeed.connect(ownerSigner).addAggregator(sETHKey, aggregator_sETH.address);
 
-		await priceFeed.connect(owner).addAggregator(sETHKey, aggregator_sETH.address);
+		await priceFeed.connect(ownerSigner).addAggregator(sUSDKey, aggregator_sUSD.address);
 
-		await priceFeed.connect(owner).addAggregator(sUSDKey, aggregator_sUSD.address);
-
-		await priceFeed.connect(owner).addAggregator(nonRate, aggregator_nonRate.address);
+		await priceFeed.connect(ownerSigner).addAggregator(nonRate, aggregator_nonRate.address);
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
@@ -226,7 +224,7 @@ contract('ThalesAMM', accounts => {
 				toUnit(strike),
 				now + day * 13,
 				toUnit(10),
-				initialCreator
+				creatorSigner
 			);
 
 			let calculatedOdds = calculateOdds(50720, strike, 13, 80);

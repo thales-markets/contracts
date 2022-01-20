@@ -2,7 +2,7 @@ pragma solidity 0.5.16;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "../utils/proxy/ProxyOwned.sol";
 
 // Internal references
 import "./BinaryOption.sol";
@@ -12,8 +12,9 @@ import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
 import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
 import "synthetix-2.50.4-ovm/contracts/MinimalProxyFactory.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
-contract BinaryOptionMarketFactory is Owned, MinimalProxyFactory {
+contract BinaryOptionMarketFactory is Initializable, ProxyOwned, MinimalProxyFactory {
     /* ========== STATE VARIABLES ========== */
     address public binaryOptionMarketManager;
 
@@ -35,9 +36,11 @@ contract BinaryOptionMarketFactory is Owned, MinimalProxyFactory {
         address customOracle;
     }
 
-    /* ========== CONSTRUCTOR ========== */
+    /* ========== INITIALIZER ========== */
 
-    constructor(address _owner) public Owned(_owner) MinimalProxyFactory() {}
+    function initialize(address _owner) external initializer {
+        setOwner(_owner);
+    }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 

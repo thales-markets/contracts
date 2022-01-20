@@ -8,7 +8,6 @@ const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../../utils/co
 const { toBytes32 } = require('../../../../index');
 const { expect } = require('chai');
 const { toDecimal } = require('web3-utils');
-const { ethers } = require('ethers');
 const { setupContract, setupAllContracts } = require('../../../utils/setup');
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -140,13 +139,13 @@ contract('StakingThales', accounts => {
 			],
 		}));
 
-		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
+		const [creatorSigner, ownerSigner] = await ethers.getSigners();
 
-		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
-		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
-			from: managerOwner,
-		});
-		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
+		await manager.connect(creatorSigner).setBinaryOptionsMarketFactory(factory.address);
+
+		await factory.connect(ownerSigner).setBinaryOptionMarketManager(manager.address);
+		await factory.connect(ownerSigner).setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address);
+		await factory.connect(ownerSigner).setBinaryOptionMastercopy(binaryOptionMastercopy.address);
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),

@@ -71,6 +71,7 @@ async function createMarketAndMintMore(
 
 contract('BinaryOptionMarketManager', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator, ,] = accounts;
+	let creator, owner, minterSigner, dummySigner;
 
 	const sUSDQty = toUnit(10000);
 
@@ -93,18 +94,21 @@ contract('BinaryOptionMarketManager', accounts => {
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.createMarket(
-			oracleKey,
-			strikePrice,
-			maturity,
-			initialMint,
-			false,
-			ZERO_ADDRESS,
-			{
-				from: creator,
-			}
+		const tx = await man
+			.connect(creator)
+			.createMarket(
+				oracleKey,
+				strikePrice.toString(),
+				maturity,
+				initialMint.toString(),
+				false,
+				ZERO_ADDRESS
+			);
+		let receipt = await tx.wait();
+		const marketEvent = receipt.events.find(
+			event => event['event'] && event['event'] === 'MarketCreated'
 		);
-		return BinaryOptionMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);
+		return BinaryOptionMarket.at(marketEvent.args.market);
 	};
 
 	before(async () => {
@@ -132,24 +136,23 @@ contract('BinaryOptionMarketManager', accounts => {
 			accounts,
 			synths: ['sUSD'],
 			contracts: [
-				'FeePool',
 				'PriceFeed',
 				'BinaryOptionMarketMastercopy',
 				'BinaryOptionMastercopy',
 				'BinaryOptionMarketFactory',
+				'BinaryOptionMarketManager',
 			],
 		}));
-		const [creator, owner] = await ethers.getSigners();
+		[creator, owner, minterSigner, dummySigner] = await ethers.getSigners();
 
 		console.log('proxy', sUSDSynth.address);
 
-		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
-
-		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
-		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
-			from: managerOwner,
-		});
-		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
+		await manager.connect(creator).setBinaryOptionsMarketFactory(factory.address);
+		await factory.connect(owner).setBinaryOptionMarketManager(manager.address);
+		await factory
+			.connect(owner)
+			.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address);
+		await factory.connect(owner).setBinaryOptionMastercopy(binaryOptionMastercopy.address);
 
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 		aggregator_sAUD.setDecimals('8');
@@ -172,19 +175,19 @@ contract('BinaryOptionMarketManager', accounts => {
 	describe('Market tracking', () => {
 		it('Multiple markets can exist simultaneously, and debt is tracked properly across them.', async () => {
 			const newValue = toUnit(1);
-			const tx = await manager.setCreatorCapitalRequirement(newValue, { from: managerOwner });
+			const tx = await manager.connect(creator).setCreatorCapitalRequirement(newValue.toString());
 
 			const now = await currentTime();
 			const markets = await Promise.all(
 				[toUnit(1), toUnit(2), toUnit(3)].map(price =>
-					createMarket(manager, sAUDKey, price, now + 200, toUnit(1), initialCreator)
+					createMarket(manager, sAUDKey, price, now + 200, toUnit(1), creator)
 				)
 			);
 
 			let beforeDeposit = await manager.totalDeposited();
 			assert.bnEqual(beforeDeposit, toUnit(3));
 			await markets[0].mint(toUnit(2), { from: initialCreator });
-			let afterDeposit = toUnit(2).add(beforeDeposit);
+			let afterDeposit = toUnit(5);
 
 			assert.bnEqual(await manager.totalDeposited(), afterDeposit);
 			console.log('current', await currentTime());
@@ -203,11 +206,11 @@ contract('BinaryOptionMarketManager', accounts => {
 			assert.bnEqual(await markets[1].result(), toBN(0));
 			assert.bnEqual(await markets[2].result(), toBN(1));
 
-			await manager.expireMarkets([markets[1].address], { from: managerOwner });
+			await manager.connect(creator).expireMarkets([markets[1].address]);
 
 			assert.bnEqual(await manager.totalDeposited(), afterDeposit.sub(toUnit(1)));
-			await manager.expireMarkets([markets[0].address], { from: managerOwner });
-			await manager.expireMarkets([markets[2].address], { from: managerOwner });
+			await manager.connect(creator).expireMarkets([markets[0].address]);
+			await manager.connect(creator).expireMarkets([markets[2].address]);
 		});
 
 		it('Market resolution fails for unknown markets', async () => {
@@ -222,9 +225,7 @@ contract('BinaryOptionMarketManager', accounts => {
 			const markets = await Promise.all(
 				new Array(numMarkets)
 					.fill(0)
-					.map(() =>
-						createMarket(manager, sAUDKey, toUnit(1), now + 200, toUnit(1), initialCreator)
-					)
+					.map(() => createMarket(manager, sAUDKey, toUnit(1), now + 200, toUnit(1), creator))
 			);
 			assert.bnEqual(await manager.numMaturedMarkets(), toBN(0));
 			assert.equal((await manager.maturedMarkets(0, 100)).length, 0);
@@ -265,7 +266,7 @@ contract('BinaryOptionMarketManager', accounts => {
 			evenMarkets.forEach((p, i) => assert.equal(p, recordedMarkets[i]));
 
 			// Destroy those markets
-			await manager.expireMarkets(evenMarkets, { from: managerOwner });
+			await manager.connect(creator).expireMarkets(evenMarkets);
 
 			// Mature the rest of the markets
 			await Promise.all(oddMarkets.map(m => manager.resolveMarket(m)));
@@ -277,14 +278,14 @@ contract('BinaryOptionMarketManager', accounts => {
 			// Can remove the last market
 			const lastMarket = (await manager.maturedMarkets(numMarkets / 2 - 1, 1))[0];
 			assert.isTrue(remainingMarkets.includes(lastMarket));
-			await manager.expireMarkets([lastMarket], { from: managerOwner });
+			await manager.connect(creator).expireMarkets([lastMarket]);
 			remainingMarkets = await manager.maturedMarkets(0, 100);
 			remainingMarketsSorted = [...remainingMarkets].sort();
 			assert.bnEqual(await manager.numMaturedMarkets(), toBN(numMarkets / 2 - 1));
 			assert.isFalse(remainingMarketsSorted.includes(lastMarket));
 
 			// Destroy the remaining markets.
-			await manager.expireMarkets(remainingMarketsSorted, { from: managerOwner });
+			await manager.connect(creator).expireMarkets(remainingMarketsSorted);
 			assert.bnEqual(await manager.numActiveMarkets(), toBN(0));
 			assert.equal((await manager.activeMarkets(0, 100)).length, 0);
 			assert.bnEqual(await manager.numMaturedMarkets(), toBN(0));
@@ -306,7 +307,7 @@ contract('BinaryOptionMarketManager', accounts => {
 
 			for (let i = 1; i <= numMarkets; i++) {
 				markets.push(
-					await createMarket(manager, sAUDKey, toUnit(i), now + 100, toUnit(1), initialCreator)
+					await createMarket(manager, sAUDKey, toUnit(i), now + 100, toUnit(1), creator)
 				);
 			}
 
@@ -375,25 +376,19 @@ contract('BinaryOptionMarketManager', accounts => {
 				toUnit(1),
 				now + 100,
 				toUnit(3),
-				initialCreator
+				creator
 			);
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await manager.resolveMarket(newMarket.address);
-			await onlyGivenAddressCanInvoke({
-				fnc: manager.expireMarkets,
-				args: [[newMarket.address]],
-				address: managerOwner,
-				accounts,
-				skipPassCheck: true,
-				reason: 'Only the contract owner may perform this action',
-			});
+			const REVERT = 'Only the contract owner may perform this action';
+			await assert.revert(manager.connect(minterSigner).expireMarkets([newMarket.address]), REVERT);
 		});
 	});
 
 	describe('Manager conducts all sUSD transfers', () => {
 		it('Can not be called by non market address', async () => {
 			await assert.revert(
-				manager.transferSusdTo(initialCreator, exerciser, toUnit(1)),
+				manager.transferSusdTo(initialCreator, exerciser, toUnit(1).toString()),
 				'Market unknown'
 			);
 		});
@@ -402,20 +397,16 @@ contract('BinaryOptionMarketManager', accounts => {
 	describe('Deposit management', () => {
 		it('Only active markets can modify the total deposits.', async () => {
 			const now = await currentTime();
-			await createMarket(manager, sAUDKey, toUnit(1), now + 100, toUnit(3), initialCreator);
+			await createMarket(manager, sAUDKey, toUnit(1), now + 100, toUnit(3), creator);
 
-			await onlyGivenAddressCanInvoke({
-				fnc: manager.incrementTotalDeposited,
-				args: [toUnit(2)],
-				accounts,
-				reason: 'Permitted only for active markets',
-			});
-			await onlyGivenAddressCanInvoke({
-				fnc: manager.decrementTotalDeposited,
-				args: [toUnit(2)],
-				accounts,
-				reason: 'Permitted only for known markets',
-			});
+			await assert.revert(
+				manager.connect(minterSigner).incrementTotalDeposited(toUnit(2).toString()),
+				'Permitted only for active markets'
+			);
+			await assert.revert(
+				manager.connect(minterSigner).decrementTotalDeposited(toUnit(2).toString()),
+				'Permitted only for known markets'
+			);
 		});
 		it('Creating and destroying a market affects total deposits properly.', async () => {
 			const now = await currentTime();
@@ -426,15 +417,15 @@ contract('BinaryOptionMarketManager', accounts => {
 				toUnit(1),
 				now + 200,
 				toUnit(5),
-				initialCreator
+				creator
 			);
-			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(5)));
+			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(5).toString()));
 
 			await fastForward(expiryDuration + 1000);
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(5, 8), await currentTime());
 
 			await manager.resolveMarket(newMarket.address);
-			await manager.expireMarkets([newMarket.address], { from: managerOwner });
+			await manager.connect(creator).expireMarkets([newMarket.address]);
 
 			assert.bnEqual(await manager.totalDeposited(), depositBefore);
 		});
@@ -447,12 +438,12 @@ contract('BinaryOptionMarketManager', accounts => {
 				toUnit(1),
 				now + 200,
 				toUnit(5),
-				initialCreator
+				creator
 			);
-			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(5)));
+			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(5).toString()));
 
 			await newMarket.mint(toUnit(2), { from: initialCreator });
-			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(7)));
+			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(7).toString()));
 		});
 	});
 
@@ -465,7 +456,7 @@ contract('BinaryOptionMarketManager', accounts => {
 
 			for (const p of [1, 2, 3]) {
 				markets.push(
-					await createMarket(manager, sAUDKey, toUnit(p), now + 100, toUnit(1), initialCreator)
+					await createMarket(manager, sAUDKey, toUnit(p), now + 100, toUnit(1), creator)
 				);
 			}
 
@@ -495,35 +486,28 @@ contract('BinaryOptionMarketManager', accounts => {
 			);
 			await sUSDSynth.approve(newManager.address, toUnit(1000), { from: minter });
 
-			await newManager.setMigratingManager(manager.address, { from: managerOwner });
+			await newManager.connect(creator).setMigratingManager(manager.address);
 		});
 		it('Migrating manager can be set', async () => {
-			await manager.setMigratingManager(initialCreator, { from: managerOwner });
+			await manager.connect(creator).setMigratingManager(initialCreator);
 		});
 
 		it("Can't migrate to self", async () => {
 			await assert.revert(
-				manager.migrateMarkets(manager.address, true, [markets[0].address], {
-					from: managerOwner,
-				}),
+				manager.connect(creator).migrateMarkets(manager.address, true, [markets[0].address]),
 				"Can't migrate to self"
 			);
 		});
 
 		it('Migrating manager can only be set by the manager owner', async () => {
-			await onlyGivenAddressCanInvoke({
-				fnc: manager.setMigratingManager,
-				args: [initialCreator],
-				accounts,
-				address: managerOwner,
-				reason: 'Only the contract owner may perform this action',
-			});
+			await assert.revert(
+				manager.connect(minterSigner).setMigratingManager(initialCreator),
+				'Only the contract owner may perform this action'
+			);
 		});
 
 		it('Markets can be migrated between factories.', async () => {
-			await manager.migrateMarkets(newManager.address, true, [markets[1].address], {
-				from: managerOwner,
-			});
+			await manager.connect(creator).migrateMarkets(newManager.address, true, [markets[1].address]);
 
 			const oldMarkets = await manager.activeMarkets(0, 100);
 			assert.bnEqual(await manager.numActiveMarkets(), toBN(12));
@@ -542,24 +526,18 @@ contract('BinaryOptionMarketManager', accounts => {
 		});
 
 		it('Markets cannot be migrated between factories if the migrating manager unset', async () => {
-			await newManager.setMigratingManager('0x' + '0'.repeat(40), { from: managerOwner });
+			await newManager.connect(creator).setMigratingManager('0x' + '0'.repeat(40));
 			await assert.revert(
-				manager.migrateMarkets(newManager.address, true, [markets[0].address], {
-					from: managerOwner,
-				}),
+				manager.connect(creator).migrateMarkets(newManager.address, true, [markets[0].address]),
 				'Only permitted for migrating manager.'
 			);
 		});
 
 		it('Markets can only be migrated by the owner.', async () => {
-			onlyGivenAddressCanInvoke({
-				fnc: manager.migrateMarkets,
-				args: [newManager.address, true, [markets[1].address]],
-				accounts,
-				address: managerOwner,
-				skipPassCheck: true,
-				reason: 'Only the contract owner may perform this action',
-			});
+			await assert.revert(
+				manager.connect(minterSigner).migrateMarkets(newManager.address, true, [markets[1].address]),
+				'Only the contract owner may perform this action'
+			);
 		});
 
 		it('An empty migration does nothing, as does migration from an empty manager', async () => {
@@ -575,58 +553,46 @@ contract('BinaryOptionMarketManager', accounts => {
 					toUnit('2'), // Capital requirement
 				],
 			});
-			await newerManager.setMigratingManager(newManager.address, { from: managerOwner });
-			await newManager.migrateMarkets(newerManager.address, true, [], { from: managerOwner });
+			await newerManager.connect(creator).setMigratingManager(newManager.address);
+			await newManager.connect(creator).migrateMarkets(newerManager.address, true, []);
 			assert.equal(await newerManager.numActiveMarkets(), 0);
 		});
 
 		it('Receiving an empty market list does nothing.', async () => {
-			await newerManager.setMigratingManager(managerOwner, { from: managerOwner });
-			await newerManager.receiveMarkets(true, [], { from: managerOwner });
+			await newerManager.connect(creator).setMigratingManager(managerOwner);
+			await newerManager.connect(owner).receiveMarkets(true, []);
 			assert.bnEqual(await newerManager.numActiveMarkets(), 0);
 		});
 
 		it('Cannot receive duplicate markets.', async () => {
-			await newerManager.setMigratingManager(manager.address, { from: managerOwner });
-			await manager.migrateMarkets(newerManager.address, true, [markets[0].address], {
-				from: managerOwner,
-			});
-			await newerManager.setMigratingManager(managerOwner, { from: managerOwner });
+			await newerManager.connect(creator).setMigratingManager(manager.address);
+			await manager.connect(creator).migrateMarkets(newerManager.address, true, [markets[0].address]);
+			await newerManager.connect(creator).setMigratingManager(managerOwner);
 			await assert.revert(
-				newerManager.receiveMarkets(true, [markets[0].address], { from: managerOwner }),
+				newerManager.connect(owner).receiveMarkets(true, [markets[0].address]),
 				'Market already known.'
 			);
 		});
 
 		it('Markets can only be received from the migrating manager.', async () => {
-			onlyGivenAddressCanInvoke({
-				fnc: manager.receiveMarkets,
-				args: [true, [markets[1].address]],
-				accounts,
-				address: managerOwner,
-				skipPassCheck: true,
-				reason: 'Only permitted for migrating manager.',
-			});
+			await assert.revert(
+				manager.connect(minterSigner).receiveMarkets(true, [markets[1].address]),
+				'Only permitted for migrating manager.'
+			);
 		});
 	});
 
 	describe('Whitelisted addresses', () => {
 		it('Only owner can set whitelisted addresses', async () => {
-			await onlyGivenAddressCanInvoke({
-				fnc: manager.setWhitelistedAddresses,
-				args: [[dummy, exerciser, secondCreator]],
-				address: managerOwner,
-				accounts,
-				skipPassCheck: true,
-				reason: 'Only the contract owner may perform this action',
-			});
+			await assert.revert(
+				manager.connect(minterSigner).setWhitelistedAddresses([dummy, exerciser, secondCreator]),
+				'Only the contract owner may perform this action'
+			);
 		});
 
 		it('Cannot enable whitelisted feature if whitelist addresses is empty', async () => {
 			await assert.revert(
-				manager.setWhitelistedAddresses([], {
-					from: managerOwner,
-				}),
+				manager.connect(creator).setWhitelistedAddresses([]),
 				'Whitelisted addresses cannot be empty'
 			);
 
@@ -636,14 +602,19 @@ contract('BinaryOptionMarketManager', accounts => {
 		it('Only whitelisted address can create markets', async () => {
 			const now = await currentTime();
 
-			await manager.setWhitelistedAddresses([dummy, exerciser, secondCreator], {
-				from: managerOwner,
-			});
+			await manager.connect(creator).setWhitelistedAddresses([dummy, exerciser, secondCreator]);
 
 			await assert.revert(
-				manager.createMarket(sAUDKey, toUnit(1), now + 100, toUnit(5), false, ZERO_ADDRESS, {
-					from: minter,
-				}),
+				manager
+					.connect(minterSigner)
+					.createMarket(
+						sAUDKey,
+						toUnit(1).toString(),
+						now + 100,
+						toUnit(5).toString(),
+						false,
+						ZERO_ADDRESS
+					),
 				'Only whitelisted addresses can create markets'
 			);
 		});
@@ -651,14 +622,19 @@ contract('BinaryOptionMarketManager', accounts => {
 		it('Can remove whitelisted address', async () => {
 			const now = await currentTime();
 
-			await manager.removeWhitelistedAddress(dummy, {
-				from: managerOwner,
-			});
+			await manager.connect(creator).removeWhitelistedAddress(dummy);
 
 			await assert.revert(
-				manager.createMarket(sAUDKey, toUnit(1), now + 100, toUnit(5), false, ZERO_ADDRESS, {
-					from: dummy,
-				}),
+				manager
+					.connect(dummySigner)
+					.createMarket(
+						sAUDKey,
+						toUnit(1).toString(),
+						now + 100,
+						toUnit(5).toString(),
+						false,
+						ZERO_ADDRESS
+					),
 				'Only whitelisted addresses can create markets'
 			);
 		});
@@ -666,40 +642,38 @@ contract('BinaryOptionMarketManager', accounts => {
 		it('Can add whitelisted address', async () => {
 			const now = await currentTime();
 
-			await manager.addWhitelistedAddress(initialCreator, {
-				from: managerOwner,
-			});
+			await manager.connect(creator).addWhitelistedAddress(initialCreator);
 
-			const tx = await manager.createMarket(
-				sAUDKey,
-				toUnit(1),
-				now + 100,
-				toUnit(5),
-				false,
-				ZERO_ADDRESS,
-				{
-					from: initialCreator,
-				}
-			);
-			assert.equal(tx.logs.length, 2);
+			const tx = await manager
+				.connect(creator)
+				.createMarket(
+					sAUDKey,
+					toUnit(1).toString(),
+					now + 100,
+					toUnit(5).toString(),
+					false,
+					ZERO_ADDRESS
+				);
+			let receipt = await tx.wait();
+			assert.equal(receipt.events.length, 10);
 		});
 
 		it('Anyone can create market if whitelisted addresses feature is disabled', async () => {
 			const now = await currentTime();
-			await manager.disableWhitelistedAddresses({ from: managerOwner });
+			await manager.connect(creator).disableWhitelistedAddresses();
 
-			const tx = await manager.createMarket(
-				sAUDKey,
-				toUnit(1),
-				now + 100,
-				toUnit(5),
-				false,
-				ZERO_ADDRESS,
-				{
-					from: minter,
-				}
-			);
-			assert.equal(tx.logs.length, 2);
+			const tx = await manager
+				.connect(minterSigner)
+				.createMarket(
+					sAUDKey,
+					toUnit(1).toString(),
+					now + 100,
+					toUnit(5).toString(),
+					false,
+					ZERO_ADDRESS
+				);
+			let receipt = await tx.wait();
+			assert.equal(receipt.events.length, 10);
 		});
 	});
 });

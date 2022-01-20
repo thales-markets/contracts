@@ -66,7 +66,7 @@ async function executeStakingAndEscrowMigration() {
 		if (migratedStakerOrEscrower.totalStaked == 0) {
 			await thales.transfer(
 				migratedStakerOrEscrower.wallet,
-				Big(migratedStakerOrEscrower.totalEscrowed)
+				w3utils.toWei(migratedStakerOrEscrower.totalEscrowed / 1e18 + '')
 			);
 		}
 		//else put to staked and send $10 ETH if the staker has none

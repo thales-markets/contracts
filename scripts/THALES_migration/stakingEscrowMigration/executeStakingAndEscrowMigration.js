@@ -39,21 +39,20 @@ async function executeStakingAndEscrowMigration() {
 		network = 'optimistic';
 	}
 
-	console.log("Network is " + network);
-
+	console.log('Network is ' + network);
 
 	// attach contracts
 	const STAKING_THALES = getTargetAddress('StakingThales', network);
 	const StakingThales = await ethers.getContractFactory('StakingThales');
 
 	let stakingThales = await StakingThales.attach(STAKING_THALES);
-	const Thales = await ethers.getContractFactory('OpThales_L2');
+	const Thales = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');
 	const THALES = getTargetAddress('OpThales_L2', network);
-  console.log("THALES is " + THALES);
+	console.log('THALES is ' + THALES);
 	let thales = await Thales.attach(THALES);
 
 	//do approval
-	let tx = await thales.approve(STAKING_THALES, w3utils.toWei(5000000));
+	let tx = await thales.approve(STAKING_THALES, w3utils.toWei('5000000'));
 	await tx.wait().then(e => {
 		txLog(tx, 'Thales.sol: Approve tokens');
 	});
@@ -61,7 +60,7 @@ async function executeStakingAndEscrowMigration() {
 	// get stakers from StakingThales from last period
 
 	i = 0;
-	for (let migratedStakerOrEscrower in migrationInput) {
+	for (let migratedStakerOrEscrower of migrationInput) {
 		//send directly if not a staker
 		console.log('Processing migratedStakerOrEscrower ' + migratedStakerOrEscrower);
 		if (migratedStakerOrEscrower.totalStaked == 0) {
@@ -72,10 +71,15 @@ async function executeStakingAndEscrowMigration() {
 		}
 		//else put to staked and send $10 ETH if the staker has none
 		else {
-			let escrowed = Big(migratedStakerOrEscrower.totalEscrowed);
-			let staked = Big(migratedStakerOrEscrower.totalStaked);
+			let escrowed = Big(migratedStakerOrEscrower.totalEscrowed / 1e18);
+			console.log('Escrowed is ' + escrowed);
+			let staked = Big(migratedStakerOrEscrower.totalStaked / 1e18);
 			let totalAmount = escrowed.add(staked);
-			let tx = await stakingThales.stakeOnBehalf(totalAmount, migratedStakerOrEscrower.wallet);
+			console.log('totalAmount is ' + totalAmount);
+			let tx = await stakingThales.stakeOnBehalf(
+				w3utils.toWei(totalAmount.toString()),
+				migratedStakerOrEscrower.wallet
+			);
 			await tx.wait().then(e => {
 				txLog(tx, 'stakingThales: stakeOnBehalf ' + i);
 			});

@@ -28,14 +28,7 @@ async function main() {
 	}
 	let durationPeriod, unstakeDurationPeriod;
 	if (network == 'homestead') {
-		console.log('Setting duration to WEEK');
 		network = 'mainnet';
-		durationPeriod = WEEK;
-		unstakeDurationPeriod = WEEK;
-	} else {
-		console.log('Setting duration to MINUTE');
-		durationPeriod = MINUTE;
-		unstakeDurationPeriod = MINUTE;
 	}
 
 	const owner = new ethers.Wallet(user_key1, ethers.provider);
@@ -43,23 +36,23 @@ async function main() {
 	console.log('Owner is:' + owner.address);
 	console.log('Network name:' + network);
 	
-	const StakingImplementation = getTargetAddress('ProxyStakingThalesImplementation', network);
-	const EscrowImplementation = getTargetAddress('ProxyEscrowThalesImplementation', network);
-	const ProxyStaking = getTargetAddress('ProxyStakingThales', network);
-	const ProxyEscrow = getTargetAddress('ProxyEscrowThales', network);
+	const StakingImplementation = getTargetAddress('StakingThalesImplementation', network);
+	const EscrowImplementation = getTargetAddress('EscrowThalesImplementation', network);
+	const ProxyStaking = getTargetAddress('StakingThales', network);
+	const ProxyEscrow = getTargetAddress('EscrowThales', network);
 	
 	console.log('Implementation Escrow: ', EscrowImplementation);
 	console.log('Implementation Staking: ', StakingImplementation);
 	console.log('Escrow proxy:', ProxyEscrow);
 	console.log('Staking proxy:', ProxyStaking);
 
-	try {
-		await hre.run('verify:verify', {
-			address: EscrowImplementation,
-		});
-	} catch (e) {
-		console.log(e);
-	}
+	// try {
+	// 	await hre.run('verify:verify', {
+	// 		address: EscrowImplementation,
+	// 	});
+	// } catch (e) {
+	// 	console.log(e);
+	// }
 	try {
 		await hre.run('verify:verify', {
 			address: StakingImplementation,

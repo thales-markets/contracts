@@ -16,15 +16,23 @@ const fs = require('fs');
 const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
 
 const user_key1 = process.env.PRIVATE_KEY;
-const ISSUER_ADDR = '0x42d9ac3ebebb9479f24360847350b4F7EADECE50';
 
 async function main() {
 	let accounts = await ethers.getSigners();
 	// let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	let IssuerAddress;
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimistic';
+		network = 'optimistic';
+		
+	}
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
+	}
+	if (networkObj.chainId == 42) {
+		network = 'kovan';
 	}
 	let durationPeriod, unstakeDurationPeriod;
 	if (network == 'homestead') {
@@ -38,10 +46,12 @@ async function main() {
 		unstakeDurationPeriod = MINUTE;
 	}
 
+	SNXIssuerAddress = getTargetAddress('SNXIssuer', network);
 	const owner = new ethers.Wallet(user_key1, ethers.provider);
 
 	console.log('Owner is:' + owner.address);
 	console.log('Network name:' + network);
+	console.log('SNXIssuer address: ' + SNXIssuerAddress);
 
 	let thalesAddress, ProxyERC20sUSD_address;
 
@@ -76,7 +86,7 @@ async function main() {
 		ProxyERC20sUSD_address,
 		durationPeriod,
 		unstakeDurationPeriod,
-		ISSUER_ADDR
+		SNXIssuerAddress
 	]);
 	let tx = await ProxyStaking_deployed.deployed();
 
@@ -95,10 +105,28 @@ async function main() {
 	console.log('Implementation Escrow: ', EscrowImplementation);
 	console.log('Implementation Staking: ', StakingImplementation);
 
-	setTargetAddress('ProxyStakingThales', network, ProxyStaking_deployed.address);
-	setTargetAddress('ProxyEscrowThales', network, ProxyEscrow_deployed.address);
-	setTargetAddress('ProxyStakingThalesImplementation', network, EscrowImplementation);
-	setTargetAddress('ProxyEscrowThalesImplementation', network, StakingImplementation);
+	setTargetAddress('StakingThales', network, ProxyStaking_deployed.address);
+	setTargetAddress('EscrowThales', network, ProxyEscrow_deployed.address);
+	setTargetAddress('StakingThalesImplementation', network, StakingImplementation);
+	setTargetAddress('EscrowThalesImplementation', network, EscrowImplementation);
+	
+
+	let ThalesAMMAddress =  getTargetAddress('ThalesAMM', network);
+	let ThalesRoyaleAddress =  getTargetAddress('ThalesRoyaleDeployed', network);
+	let PriceFeedAddress =  getTargetAddress('PriceFeed', network);
+
+	tx = await ProxyStaking_deployed.setThalesAMM(ThalesAMMAddress, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
+	});
+	tx = await ProxyStaking_deployed.setThalesRoyale(ThalesRoyaleAddress, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setThalesRoyale ', ThalesRoyaleAddress);
+	});
+	tx = await ProxyStaking_deployed.setPriceFeed(PriceFeedAddress, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setPriceFeed ',ThalesRoyaleAddress);
+	});
 
 	try {
 		await hre.run('verify:verify', {

@@ -59,8 +59,8 @@ async function main() {
 	// const ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
 	console.log('ProxyERC20sUSD address: ', ProxyERC20sUSD_address);
 	// const ProxyEscrowThalesAddress = getTargetAddress('ProxyEscrowThales', network);
-	const ProxyStaking = getTargetAddress('ProxyStakingThales', network);
-	const ProxyEscrow = getTargetAddress('ProxyEscrowThales', network);
+	const ProxyStaking = getTargetAddress('StakingThales', network);
+	const ProxyEscrow = getTargetAddress('EscrowThales', network);
 
 	const NewEscrow = await ethers.getContractFactory('EscrowThales');
 	console.log('Escrow upgraded');
@@ -72,11 +72,11 @@ async function main() {
 
 	const StakingImplementation = await getImplementationAddress(ethers.provider, ProxyStaking);
     console.log('Implementation Staking: ', StakingImplementation);
-	setTargetAddress('ProxyStakingThalesImplementation', network, StakingImplementation);
+	setTargetAddress('StakingThalesImplementation', network, StakingImplementation);
 	
     const EscrowImplementation = await getImplementationAddress(ethers.provider, ProxyEscrow);
     console.log('Implementation Escrow: ', EscrowImplementation);
-	setTargetAddress('ProxyEscrowThalesImplementation', network, EscrowImplementation);
+	setTargetAddress('EscrowThalesImplementation', network, EscrowImplementation);
 
 	try {
 		await hre.run('verify:verify', {

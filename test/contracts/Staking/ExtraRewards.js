@@ -307,6 +307,32 @@ contract('StakingThales', accounts => {
 			assert.equal(fromWei(answer.toString(), "ether").toString(), result.toString());
 			// answer = await StakingThalesDeployed.connect(secondSigner).getRewardsAvailable(secondSigner.address);
 		});
+
+		it('Only SNX extra reward, c-ratio higher than issuance ratio', async () => {
+			let answer;
+			let baseReward;
+			let result;
+			let cRatio = 605;
+			let debt = 7241;
+			let issuanceRatio = 600;
+			newRate = 4.9930;
+			answer = await StakingThalesDeployed.connect(firstSigner).getRewardsAvailable(firstSigner.address);
+			baseReward = fromWei(answer.toString(), "ether");
+			assert.equal(baseReward.toString(), rewardPerUser[0].toString());
+			// console.log("Base reward:", parseInt(baseReward.toString()));
+			await StakingThalesDeployed.connect(owner).setExtraRewards(true);
+			await SNXRewardsDeployed.setCRatio(firstSigner.address, toWei(cRatio.toString(), "ether"));
+			await SNXRewardsDeployed.setDebtBalance(firstSigner.address, toWei(debt.toString(), "ether"));
+			await SNXRewardsDeployed.setIssuanceRatio(toWei(issuanceRatio.toString(), "ether"));
+			let staked = Math.floor((cRatio*cRatio*debt)/(issuanceRatio*newRate*100))
+			result = staked >= baseReward ? (115*parseInt(baseReward.toString())) / 100 : Math.floor((100 + (staked*15)/parseInt(baseReward.toString())) * parseInt(baseReward.toString()) / 100);
+			answer = await StakingThalesDeployed.connect(firstSigner).getRewardsAvailable(firstSigner.address);
+			console.log("Claimable rewards (first user): ", fromWei(answer.toString(), "ether"));			
+			// result = Math.floor((100 + (staked*15)/parseInt(baseReward.toString())) * parseInt(baseReward.toString()) / 100);
+			console.log("Extra reward:", result);
+			assert.equal(fromWei(answer.toString(), "ether").toString(), result.toString());
+			// answer = await StakingThalesDeployed.connect(secondSigner).getRewardsAvailable(secondSigner.address);
+		});
 		// it('Only SNX extra reward, debtratio equal or higher than staked', async () => {
 		// 	let answer;
 		// 	let baseReward;

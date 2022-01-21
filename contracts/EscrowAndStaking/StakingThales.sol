@@ -206,6 +206,43 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function getSNXStaked(address account) external view returns (uint) {
         return _getSNXStakedForAccount(account);
     }
+    
+    function getBaseReward(address account) public view returns (uint) {
+        return _stakedBalances[account]
+                .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
+                .mul(currentPeriodRewards)
+                .div(_totalStakedAmount.add(_totalEscrowedAmount));
+    }
+    
+    function getAMMVolume(address account) external view returns (uint) {
+        return _getTotalAMMVolume(account);
+    }
+    
+    function getSNXBonus(address account) public view returns (uint) {
+        uint baseReward = getBaseReward(account);
+        uint stakedSNX = _getSNXStakedForAccount(account);
+        // SNX staked more than base reward
+        return stakedSNX >= baseReward
+            ? 15
+            : stakedSNX.mul(15).div(baseReward);
+    }
+    
+    function getAMMBonus(address account) public view returns (uint) {
+        uint baseReward = getBaseReward(account);
+        return _getTotalAMMVolume(account) >= baseReward.mul(10)
+            ? 12
+            : _getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(12).div(baseReward.mul(10));
+    }
+    
+    function getThalesRoyaleBonus(address account) public view returns (uint) {
+        return (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account))
+            ? 3
+            : 0;
+    }
+    
+    function getTotalBonus(address account) external view returns (uint) {
+        return getSNXBonus(account).add(getAMMBonus(account)).add(getThalesRoyaleBonus(account));
+    }
 
     /* ========== PUBLIC ========== */
 

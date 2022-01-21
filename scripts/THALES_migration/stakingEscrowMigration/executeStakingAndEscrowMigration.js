@@ -67,11 +67,12 @@ async function executeStakingAndEscrowMigration() {
 		}
 		//send directly if not a staker
 		console.log('Processing migratedStakerOrEscrower ' + migratedStakerOrEscrower);
-		if (migratedStakerOrEscrower.totalStaked == 0) {
-			await thales.transfer(
-				migratedStakerOrEscrower.wallet,
-				w3utils.toWei(migratedStakerOrEscrower.totalEscrowed / 1e18 + '')
-			);
+		if (migratedStakerOrEscrower.totalStaked == 0 || migratedStakerOrEscrower.unstaking) {
+			let escrowed = Big(migratedStakerOrEscrower.totalEscrowed / 1e18);
+			console.log('Escrowed is ' + escrowed);
+			let unstakingAmount = Big(migratedStakerOrEscrower.unstakingAmount / 1e18);
+			let totalAmount = escrowed.add(unstakingAmount);
+			await thales.transfer(migratedStakerOrEscrower.wallet, w3utils.toWei(totalAmount.toString()));
 		}
 		//else put to staked and send $10 ETH if the staker has none
 		else {

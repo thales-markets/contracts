@@ -30,6 +30,10 @@ async function main() {
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
+	if(networkObj.chainId == 10) {
+		network = 'optimistic'		
+	}
+
 
 	const owner = new ethers.Wallet(user_key1, ethers.provider);
 

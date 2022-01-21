@@ -16,18 +16,25 @@ const fs = require('fs');
 const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
 
 const user_key1 = process.env.PRIVATE_KEY;
-const ISSUER_ADDR = '0x42d9ac3ebebb9479f24360847350b4F7EADECE50';
 
 async function main() {
 	let accounts = await ethers.getSigners();
 	// let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	if(networkObj.chainId == 10) {
+		network = 'optimistic'		
+	}
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 	}
 	let durationPeriod, unstakeDurationPeriod;
-	if (network == 'homestead') {
+	if (network == 'optimistic' ) {
+		console.log('Setting duration to WEEK');
+		durationPeriod = WEEK;
+		unstakeDurationPeriod = WEEK;
+	}
+	if (network == 'homestead' ) {
 		console.log('Setting duration to WEEK');
 		network = 'mainnet';
 		durationPeriod = WEEK;
@@ -45,11 +52,16 @@ async function main() {
 
 	let thalesAddress, ProxyERC20sUSD_address;
 
+	if (networkObj.chainId == 10) {
+		thalesAddress = getTargetAddress('OpThales_L2', network);
+		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
+	} 
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 		thalesAddress = getTargetAddress('OpThales_L2', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
-	} else {
+	} 
+	else {
 		thalesAddress = getTargetAddress('Thales', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
 	}

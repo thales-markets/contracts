@@ -105,7 +105,7 @@ async function checkForMultisigs() {
 		walletObject.totalStaked = numberExponentToLarge(stakedBalanceOfBN.toString());
 		walletObject.isContract = isContract;
 		walletObject.unstaking = unstaking;
-		walletObject.unstakingAmount = unstakingAmount;
+		walletObject.unstakingAmount = numberExponentToLarge(unstakingAmount.toString());
 		walletsforMigrationMap.set(stakerAddress, walletObject);
 	}
 

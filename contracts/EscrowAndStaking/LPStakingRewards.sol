@@ -8,7 +8,7 @@ import "../utils/proxy/ProxyReentrancyGuard.sol";
 import "../utils/proxy/ProxyOwned.sol";
 import "../utils/proxy/ProxyPausable.sol";
 
-contract StakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
+contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 

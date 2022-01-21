@@ -52,7 +52,7 @@ async function main() {
 	// const thalesAddress = getTargetAddress('OpThales_L2', network);
 	console.log('Thales address: ', thalesAddress);
 
-	const ProxyStaking = await ethers.getContractFactory('StakingRewards');
+	const ProxyStaking = await ethers.getContractFactory('LPStakingRewards');
 	const gUNIPoolAddress = getTargetAddress('GUniPoolAddress', network);
 
 	let ProxyStaking_deployed = await upgrades.deployProxy(ProxyStaking, [
@@ -72,8 +72,8 @@ async function main() {
 
 	console.log('Implementation Staking: ', StakingImplementation);
 
-	setTargetAddress('StakingRewards', network, ProxyStaking_deployed.address);
-	setTargetAddress('StakingRewardsImplementation', network, StakingImplementation);
+	setTargetAddress('LPStakingRewards', network, ProxyStaking_deployed.address);
+	setTargetAddress('LPStakingRewardsImplementation', network, StakingImplementation);
 
 	// TODO: call notifyReward after transfering the reward to the contract
 

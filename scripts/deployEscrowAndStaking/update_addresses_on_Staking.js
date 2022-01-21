@@ -61,7 +61,7 @@ async function main() {
     console.log("StakingThales attached on: ", StakingThales.address);
 
 	let ThalesAMMAddress =  getTargetAddress('ThalesAMM', network);
-	let ThalesRoyaleAddress =  getTargetAddress('ThalesRoyaleDeployed', network);
+	let ThalesRoyaleAddress =  getTargetAddress('ThalesRoyale', network);
 	let PriceFeedAddress =  getTargetAddress('PriceFeed', network);
 
 	tx = await StakingThales.setThalesAMM(ThalesAMMAddress, {from:owner.address});

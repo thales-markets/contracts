@@ -87,7 +87,7 @@ contract('ThalesRoyale', accounts => {
                 DAY,
                 toUnit(2500),
                 WEEK * 4,
-                true
+                false
             ]
         );
 
@@ -117,6 +117,10 @@ contract('ThalesRoyale', accounts => {
 
 		it('Signing up cant be called twice', async () => {
 			await expect(royale.signUp({ from: first })).to.be.revertedWith('Initialize first season');
+		});
+
+		it('Can not start first season if not owner', async () => {
+			await expect(royale.startNewSeason({ from: first })).to.be.revertedWith('Only owner can start season before pause between two seasons');
 		});
 
 		it('Signing up cant be called twice', async () => {
@@ -1508,6 +1512,11 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(canStartNewSeason, false);
 
 		await fastForward(WEEK * 1 + 1);
+
+		canStartNewSeason = await royale.canStartNewSeason();
+		assert.equal(canStartNewSeason, false);
+
+		await royale.setNextSeasonStartsAutomatically(true, {from: owner});
 
 		canStartNewSeason = await royale.canStartNewSeason();
 		assert.equal(canStartNewSeason, true);

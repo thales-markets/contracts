@@ -38,7 +38,9 @@ contract('StakingThales', accounts => {
 		SNXRewardsDeployed,
 		OngoingAirdropDeployed,
         ProxyEscrowDeployed,
-        ProxyStakingDeployed;
+		ProxyStakingDeployed,
+		ThalesStakingRewardsPoolDeployed;
+	let ThalesStakingRewardsPool;
 
     let initializeStalkingData,
         initializeEscrowData;
@@ -151,7 +153,16 @@ contract('StakingThales', accounts => {
             from: initialCreator,
         });
 
-	
+		ThalesStakingRewardsPool = artifacts.require('ThalesStakingRewardsPool');
+		ThalesStakingRewardsPoolDeployed = await ThalesStakingRewardsPool.new({from:owner});
+		await ThalesStakingRewardsPoolDeployed.initialize(
+				owner, 
+				ProxyStakingDeployed.address,
+				ThalesDeployed.address,
+				EscrowThalesDeployed.address);
+		await StakingThalesDeployed.setThalesStakingRewardsPool(ThalesStakingRewardsPoolDeployed.address, { from: owner });
+		await EscrowThalesDeployed.setThalesStakingRewardsPool(ThalesStakingRewardsPoolDeployed.address, { from: owner });
+		
 
 		await StakingThalesDeployed.setDistributeFeesEnabled(true, { from: owner });
 		await StakingThalesDeployed.setClaimEnabled(true, { from: owner });
@@ -223,7 +234,7 @@ contract('StakingThales', accounts => {
 
 			await ThalesDeployed.transfer(first, 1500, { from: owner });
 			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
-			await ThalesDeployed.transfer(StakingThalesDeployed.address, 5500000, {
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, 5500000, {
 				from: owner,
 			});
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, 5555, {

@@ -13,6 +13,7 @@ import "../interfaces/IStakingThales.sol";
 import "../interfaces/ISNXRewards.sol";
 import "../interfaces/IThalesRoyale.sol";
 import "../interfaces/IPriceFeed.sol";
+import "../interfaces/IThalesStakingRewardsPool.sol";
 
 contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     /* ========== LIBRARIES ========== */
@@ -28,6 +29,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     ISNXRewards public SNXRewards;
     IThalesRoyale public thalesRoyale;
     IPriceFeed public priceFeed;
+    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
 
     uint public periodsOfStaking;
     uint public lastPeriodTimeStamp;
@@ -71,6 +73,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private stakerAMMVolume;
 
     bool public extraRewardsActive;
+    uint public maxSNXRewardsPercentage;
+    uint public maxAMMVolumeRewardsPercentage;
+    uint public AMMVolumeRewardsMultiplier;
+    uint public maxThalesRoyaleRewardsPercentage;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -127,7 +133,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function getContractRewardFunds() external view returns (uint) {
-        return stakingToken.balanceOf(address(this));
+        return stakingToken.balanceOf(address(ThalesStakingRewardsPool));
     }
 
     function getContractFeeFunds() external view returns (uint) {
@@ -174,6 +180,22 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         extraRewardsActive = _extraRewardsActive;
         emit ExtraRewardsChanged(_extraRewardsActive);
     }
+    function setMaxSNXRewardsPercentage(uint _maxSNXRewardsPercentage) public onlyOwner {
+        maxSNXRewardsPercentage = _maxSNXRewardsPercentage;
+        emit MaxSNXRewardsPercentageChanged(_maxSNXRewardsPercentage);
+    }
+    function setMaxAMMVolumeRewardsPercentage(uint _maxAMMVolumeRewardsPercentage) public onlyOwner {
+        maxAMMVolumeRewardsPercentage = _maxAMMVolumeRewardsPercentage;
+        emit MaxAMMVolumeRewardsPercentageChanged(_maxAMMVolumeRewardsPercentage);
+    }
+    function setAMMVolumeRewardsMultiplier(uint _AMMVolumeRewardsMultiplier) public onlyOwner {
+        AMMVolumeRewardsMultiplier = _AMMVolumeRewardsMultiplier;
+        emit AMMVolumeRewardsMultiplierChanged(_AMMVolumeRewardsMultiplier);
+    }
+    function setMaxThalesRoyaleRewardsPercentage(uint _maxThalesRoyaleRewardsPercentage) public onlyOwner {
+        maxThalesRoyaleRewardsPercentage = _maxThalesRoyaleRewardsPercentage;
+        emit MaxThalesRoyaleRewardsPercentageChanged(_maxThalesRoyaleRewardsPercentage);
+    }
 
     function setThalesRoyale(address _royale) public onlyOwner {
         require(_royale != address(0), "Invalid address");
@@ -191,6 +213,12 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(_priceFeed != address(0), "Invalid address");
         priceFeed = IPriceFeed(_priceFeed);
         emit PriceFeedAddressChanged(_priceFeed);
+    }
+    
+    function setThalesStakingRewardsPool(address _thalesStakingRewardsPool) public onlyOwner {
+        require(_thalesStakingRewardsPool != address(0), "Invalid address");
+        ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);
+        emit ThalesStakingRewardsPoolChanged(_thalesStakingRewardsPool);
     }
 
     // Set EscrowThales contract address
@@ -223,20 +251,20 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint stakedSNX = _getSNXStakedForAccount(account);
         // SNX staked more than base reward
         return stakedSNX >= baseReward
-            ? 15
-            : stakedSNX.mul(15).div(baseReward);
+            ? maxSNXRewardsPercentage
+            : stakedSNX.mul(maxSNXRewardsPercentage).div(baseReward);
     }
     
     function getAMMBonus(address account) public view returns (uint) {
         uint baseReward = getBaseReward(account);
-        return _getTotalAMMVolume(account) >= baseReward.mul(10)
-            ? 12
-            : _getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(12).div(baseReward.mul(10));
+        return _getTotalAMMVolume(account) >= baseReward.mul(AMMVolumeRewardsMultiplier)
+            ? maxAMMVolumeRewardsPercentage
+            : _getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(maxAMMVolumeRewardsPercentage).div(baseReward.mul(AMMVolumeRewardsMultiplier));
     }
     
     function getThalesRoyaleBonus(address account) public view returns (uint) {
         return (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account))
-            ? 3
+            ? maxThalesRoyaleRewardsPercentage
             : 0;
     }
     
@@ -450,7 +478,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint availableRewardsToClaim = _calculateAvailableRewardsToClaim(account);
         if (availableRewardsToClaim > 0) {
             // Transfer THALES to Escrow contract
-            iEscrowThales.addToEscrow(account, availableRewardsToClaim);
+            ThalesStakingRewardsPool.addToEscrow(account, availableRewardsToClaim);
             // Record the total claimed rewards
             stakerLifetimeRewardsClaimed[account] = stakerLifetimeRewardsClaimed[account].add(availableRewardsToClaim);
             _totalRewardsClaimed = _totalRewardsClaimed.add(availableRewardsToClaim);
@@ -497,15 +525,15 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
         // SNX staked more than base reward
         extraReward = stakedSNX >= baseReward
-            ? extraReward = extraReward.add(15)
-            : extraReward.add(stakedSNX.mul(15).div(baseReward));
+            ? extraReward = extraReward.add(maxSNXRewardsPercentage)
+            : extraReward.add(stakedSNX.mul(maxSNXRewardsPercentage).div(baseReward));
         // AMM Volume 10x Thales base reward
-        extraReward = _getTotalAMMVolume(account) >= baseReward.mul(10)
-            ? extraReward.add(12)
-            : extraReward.add(_getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(12).div(baseReward.mul(10)));
+        extraReward = _getTotalAMMVolume(account) >= baseReward.mul(AMMVolumeRewardsMultiplier)
+            ? extraReward.add(maxAMMVolumeRewardsPercentage)
+            : extraReward.add(_getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(maxAMMVolumeRewardsPercentage).div(baseReward.mul(AMMVolumeRewardsMultiplier)));
         // ThalesRoyale participation
         extraReward = (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account))
-            ? extraReward.add(3)
+            ? extraReward.add(maxThalesRoyaleRewardsPercentage)
             : extraReward;
 
         return baseReward.mul(extraReward).div(HUNDRED);
@@ -560,4 +588,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event AMMVolumeUpdated(address account, uint amount);
     event ExtraRewardsChanged(bool extrarewardsactive);
     event PriceFeedAddressChanged(address pricefeed);
+    event MaxSNXRewardsPercentageChanged(uint maxSnxRewardsPercentage);
+    event AMMVolumeRewardsMultiplierChanged(uint ammVolumeRewardsMultiplier);
+    event MaxAMMVolumeRewardsPercentageChanged(uint maxAmmVolumeRewardsPercentage);
+    event MaxThalesRoyaleRewardsPercentageChanged(uint maxThalesRewardsPercentage);
+    event ThalesStakingRewardsPoolChanged(address thalesStakingRewardsPool);
+
 }

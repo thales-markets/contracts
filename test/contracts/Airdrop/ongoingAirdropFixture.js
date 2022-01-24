@@ -61,6 +61,8 @@ const deploymentFixture = async () => {
 	let ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: proxyOwner.address });
 	let EscrowThales = artifacts.require('EscrowThales');
 	let StakingThales = artifacts.require('StakingThales');
+	let SNXRewards = artifacts.require('SNXRewards');
+	let SNXRewardsDeployed = await SNXRewards.new();
 	let EscrowImplementation = await EscrowThales.new({from:admin.address});
 	let StakingImplementation = await StakingThales.new({from:admin.address});
 	let StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
@@ -80,7 +82,7 @@ const deploymentFixture = async () => {
 
 	initializeStalkingData = encodeCall(
 		'initialize',
-		['address', 'address', 'address', 'address', 'uint256', 'uint256'],
+		['address', 'address', 'address', 'address', 'uint256', 'uint256', 'address'],
 		[
 			admin.address,
 			escrowThales.address,
@@ -88,6 +90,7 @@ const deploymentFixture = async () => {
 			thales.address,
 			604800,
 			604800,
+			SNXRewardsDeployed.address
 		]
 	);
 

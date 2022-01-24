@@ -742,7 +742,19 @@ contract('ThalesRoyale', accounts => {
 
 			//#1
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound();
+
+			const tx_close_1 = await royale.closeRound();
+
+			// check if event is emited
+			assert.eventEqual(tx_close_1.logs[0], 'RoundClosed', {
+				season: season_1,
+				round: 1,
+				result: 2,
+				strikePrice: 1000,
+				finalPrice: 1100,
+				numberOfEliminatedPlayers: 0,
+				numberOfWinningPlayers: 4
+			});
 
 			//#2
 			await royale.takeAPosition(2, { from: first });
@@ -776,20 +788,46 @@ contract('ThalesRoyale', accounts => {
 			await fastForward(HOUR * 72 + 1);
 			await royale.closeRound();
 
+
+			await MockPriceFeedDeployed.setPricetoReturn(1200);
+
 			//#6
 			await royale.takeAPosition(2, { from: first });
 			await royale.takeAPosition(2, { from: second });
 			await royale.takeAPosition(2, { from: third });
 			await royale.takeAPosition(1, { from: fourth });
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound();
+
+			const tx_close_6 = await royale.closeRound();
+
+			assert.eventEqual(tx_close_6.logs[0], 'RoundClosed', {
+				season: season_1,
+				round: 6,
+				result: 2,
+				strikePrice: 1100,
+				finalPrice: 1200,
+				numberOfEliminatedPlayers: 1,
+				numberOfWinningPlayers: 3
+			});
+
+			await MockPriceFeedDeployed.setPricetoReturn(1300);
 
 			//#7
 			await royale.takeAPosition(2, { from: first });
 			await royale.takeAPosition(2, { from: second });
 			await royale.takeAPosition(2, { from: third });
 			await fastForward(HOUR * 72 + 1);
-			await royale.closeRound();
+			const tx_close_7 = await royale.closeRound();
+
+			assert.eventEqual(tx_close_7.logs[0], 'RoundClosed', {
+				season: season_1,
+				round: 7,
+				result: 2,
+				strikePrice: 1200,
+				finalPrice: 1300,
+				numberOfEliminatedPlayers: 0,
+				numberOfWinningPlayers: 3
+			});
 
 			let isPlayerFirstAlive = await royale.isPlayerAlive(first);
 

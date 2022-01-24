@@ -244,6 +244,30 @@
         "internalType": "uint256",
         "name": "result",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "strikePrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "finalPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "numberOfEliminatedPlayers",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "numberOfWinningPlayers",
+        "type": "uint256"
       }
     ],
     "name": "RoundClosed",

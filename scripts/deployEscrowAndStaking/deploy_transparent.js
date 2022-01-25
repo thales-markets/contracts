@@ -54,7 +54,11 @@ async function main() {
 	console.log('SNXIssuer address: ' + SNXIssuerAddress);
 
 	let thalesAddress, ProxyERC20sUSD_address;
-
+	
+	if (networkObj.chainId == 10) {
+		thalesAddress = getTargetAddress('OpThales_L2', network);
+		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
+	} 
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 		thalesAddress = getTargetAddress('OpThales_L2', network);
@@ -63,12 +67,8 @@ async function main() {
 		thalesAddress = getTargetAddress('Thales', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
 	}
-	// const thalesAddress = getTargetAddress('OpThales_L2', network);
 	console.log('Thales address: ', thalesAddress);
-
-	// const ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
 	console.log('ProxyERC20sUSD address: ', ProxyERC20sUSD_address);
-	// const ProxyEscrowThalesAddress = getTargetAddress('ProxyEscrowThales', network);
 
 	const ProxyEscrow = await ethers.getContractFactory('EscrowThales');
 	const ProxyStaking = await ethers.getContractFactory('StakingThales');

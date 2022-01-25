@@ -187,9 +187,10 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
         // getting price
         uint currentPriceFromOracle = priceFeed.rateForCurrency(oracleKey);
+        uint stikePrice = roundTargetPrice;
 
         finalPricePerRoundPerSeason[season][currentSeasonRound] = currentPriceFromOracle;
-        roundResultPerSeason[season][currentSeasonRound] = currentPriceFromOracle >= roundTargetPrice ? UP : DOWN;
+        roundResultPerSeason[season][currentSeasonRound] = currentPriceFromOracle >= stikePrice ? UP : DOWN;
         roundTargetPrice = currentPriceFromOracle;
 
         uint winningPositionsPerRound = roundResultPerSeason[season][currentSeasonRound] == UP
@@ -229,12 +230,14 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
             royaleSeasonEndTime[season] = block.timestamp;
             // first close previous round then royale
-            emit RoundClosed(season, currentSeasonRound, roundResultPerSeason[season][currentSeasonRound]);
+            emit RoundClosed(season, currentSeasonRound, roundResultPerSeason[season][currentSeasonRound], stikePrice, 
+                            finalPricePerRoundPerSeason[season][currentSeasonRound], eliminatedPerRoundPerSeason[season][currentSeasonRound], numberOfWinners);
             emit RoyaleFinished(season, numberOfWinners, rewardPerWinnerPerSeason[season]);
         } else {
             roundInASeasonStartTime[season] = block.timestamp;
             roundInSeasonEndTime[season] = roundInASeasonStartTime[season] + roundLength;
-            emit RoundClosed(season, currentSeasonRound, roundResultPerSeason[season][currentSeasonRound]);
+            emit RoundClosed(season, currentSeasonRound, roundResultPerSeason[season][currentSeasonRound], stikePrice, 
+                            finalPricePerRoundPerSeason[season][currentSeasonRound], eliminatedPerRoundPerSeason[season][currentSeasonRound], winningPositionsPerRound);
         }
     }
 
@@ -434,7 +437,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     /* ========== EVENTS ========== */
 
     event SignedUp(address user, uint season);
-    event RoundClosed(uint season, uint round, uint result);
+    event RoundClosed(uint season, uint round, uint result, uint strikePrice, uint finalPrice, uint numberOfEliminatedPlayers, uint numberOfWinningPlayers);
     event TookAPosition(address user, uint season, uint round, uint position);
     event RoyaleStarted(uint season, uint totalPlayers, uint totalReward);
     event RoyaleFinished(uint season, uint numberOfWinners, uint rewardPerWinner);

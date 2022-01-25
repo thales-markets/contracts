@@ -42,8 +42,10 @@ async function main() {
 	
 	const StakingImplementation = getTargetAddress('StakingThalesImplementation', network);
 	const EscrowImplementation = getTargetAddress('EscrowThalesImplementation', network);
+	const ThalesStakingRewardsImplementation = getTargetAddress('ThalesStakingRewardsPoolImplementation', network);
 	const ProxyStaking = getTargetAddress('StakingThales', network);
 	const ProxyEscrow = getTargetAddress('EscrowThales', network);
+	const ThalesStakingRewardsPool = getTargetAddress('ThalesStakingRewardsPool', network);
 	
 	console.log('Implementation Escrow: ', EscrowImplementation);
 	console.log('Implementation Staking: ', StakingImplementation);

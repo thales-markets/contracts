@@ -19,7 +19,6 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
     IERC20 public vestingToken;
     IStakingThales public iStakingThales;
     address public airdropContract;
-    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
 
     uint public constant NUM_PERIODS = 10;
     uint public totalEscrowedRewards;
@@ -39,6 +38,7 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
     mapping(address => uint) public lastPeriodAddedReward;
 
     bool private testMode;
+    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
 
     /* ========== CONSTRUCTOR ========== */
 

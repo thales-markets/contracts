@@ -39,10 +39,13 @@ async function main() {
 		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
 		return 0;
 	}
-	
-			
-	const ProxyThalesExchangerImplementation = getTargetAddress('ProxyThalesExchangerImplementation', network);
+
+
+	const ProxyThalesExchanger_deployed = getTargetAddress('ProxyThalesExchanger', network);
+	const ProxyThalesExchangerImplementation = await getImplementationAddress(ethers.provider, ProxyThalesExchanger_deployed);
+
 	console.log("Implementation ProxyThalesExchanger: ", ProxyThalesExchangerImplementation);
+	setTargetAddress('ProxyThalesExchangerImplementation', network, ProxyThalesExchangerImplementation);
 
 	try {
 		await hre.run('verify:verify', {

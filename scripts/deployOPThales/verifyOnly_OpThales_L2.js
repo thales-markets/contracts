@@ -52,8 +52,8 @@ async function main() {
 			constructorArguments: [
 				L2_BRIDGE_ADDRESS,
 				OP_Thales_L1_Address,
-				'Opt Thales L2',
-				"OPTHALES_L2"
+				'Optimistic Thales Token',
+				"THALES"
 			],
 		});
 	} catch (e) {

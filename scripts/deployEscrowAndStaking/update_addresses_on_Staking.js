@@ -57,6 +57,10 @@ async function main() {
 	const maxAMMPercentage = "12";
 	const maxRoyalePercentage = "3";
 	const AMMMultiplier = "10";
+	const SNXMultiplier = "1";
+	const fixedReward = toWei("70000", "ether")
+	const extraReward = toWei("21000", "ether")
+
 	const ThalesStakingRewardsPoolAddress = getTargetAddress('ThalesStakingRewardsPool', network);
 
 	const ProxyStaking = await ethers.getContractFactory('StakingThales');
@@ -99,6 +103,11 @@ async function main() {
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setAMMVolumeRewardsMultiplier ',AMMMultiplier);
 	});
+
+	tx = await StakingThales.setSNXVolumeRewardsMultiplier(SNXMultiplier, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setSNXVolumeRewardsMultiplier ',SNXMultiplier);
+	});
 	
 	tx = await EscrowThales.setThalesStakingRewardsPool(ThalesStakingRewardsPoolAddress, {from:owner.address});
 	await tx.wait().then(e => {
@@ -113,6 +122,26 @@ async function main() {
 	tx = await StakingThales.setThalesStakingRewardsPool(ThalesStakingRewardsPoolAddress, {from:owner.address});
 	await tx.wait().then(e => {
 		console.log('Staking Thales: ThalesStakingRewardsPoolAddress ',ThalesStakingRewardsPoolAddress);
+	});
+	
+	tx = await StakingThales.setClaimEnabled(true, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setClaimEnabled ',true);
+	});
+	
+	tx = await StakingThales.setFixedPeriodReward(fixedReward, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setFixedPeriodReward ',fixedReward);
+	});
+	
+	tx = await StakingThales.setPeriodExtraReward(extraReward, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setFixedPeriodReward ',extraReward);
+	});
+
+	tx = await EscrowThales.setStakingThalesContract(StakingThales.address, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Escrow Thales: setStakingThalesContract ', StakingThales.address );
 	});
 	
 	// tx = await StakingThales.startStakingPeriod({from:owner.address});

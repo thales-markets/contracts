@@ -22,19 +22,19 @@ async function main() {
 	// let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	if(networkObj.chainId == 10) {
-		network = 'optimistic'		
+	if (networkObj.chainId == 10) {
+		network = 'optimistic';
 	}
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 	}
 	let durationPeriod, unstakeDurationPeriod;
-	if (network == 'optimistic' ) {
+	if (network == 'optimistic') {
 		console.log('Setting duration to WEEK');
 		durationPeriod = WEEK;
 		unstakeDurationPeriod = WEEK;
 	}
-	if (network == 'homestead' ) {
+	if (network == 'homestead') {
 		console.log('Setting duration to WEEK');
 		network = 'mainnet';
 		durationPeriod = WEEK;
@@ -55,13 +55,12 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		thalesAddress = getTargetAddress('OpThales_L2', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
-	} 
+	}
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 		thalesAddress = getTargetAddress('OpThales_L2', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
-	} 
-	else {
+	} else {
 		thalesAddress = getTargetAddress('Thales', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
 	}
@@ -78,16 +77,16 @@ async function main() {
 	console.log('Escrow upgraded');
 	const NewStaking = await ethers.getContractFactory('StakingThales');
 	console.log('Staking upgraded');
-	
+
 	await upgrades.upgradeProxy(ProxyStaking, NewStaking);
 	await upgrades.upgradeProxy(ProxyEscrow, NewEscrow);
 
 	const StakingImplementation = await getImplementationAddress(ethers.provider, ProxyStaking);
-    console.log('Implementation Staking: ', StakingImplementation);
+	console.log('Implementation Staking: ', StakingImplementation);
 	setTargetAddress('StakingThalesImplementation', network, StakingImplementation);
-	
-    const EscrowImplementation = await getImplementationAddress(ethers.provider, ProxyEscrow);
-    console.log('Implementation Escrow: ', EscrowImplementation);
+
+	const EscrowImplementation = await getImplementationAddress(ethers.provider, ProxyEscrow);
+	console.log('Implementation Escrow: ', EscrowImplementation);
 	setTargetAddress('EscrowThalesImplementation', network, EscrowImplementation);
 
 	try {
@@ -104,7 +103,6 @@ async function main() {
 	} catch (e) {
 		console.log(e);
 	}
-
 }
 
 main()

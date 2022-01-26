@@ -42,7 +42,13 @@ async function main() {
 
 	setTargetAddress('ThalesAMMImplementation', network, ThalesAMMImplementation);
 
-	let ThalesAMM_deployed = ThalesAMM.attach(thalesAmmAddress);
+	// let ThalesAMM_deployed = ThalesAMM.attach(thalesAmmAddress);
+	//
+	// const stakingThales = getTargetAddress('StakingThales', network);
+	// let tx = await ThalesAMM_deployed.setStakingThales(stakingThales);
+	// await tx.wait().then(e => {
+	// 	console.log('ThalesAMM: setStakingThales()');
+	// });
 
 	try {
 		await hre.run('verify:verify', {

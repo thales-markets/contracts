@@ -53,12 +53,23 @@ async function main() {
 	console.log('Network name:' + network);
 	console.log('SNXIssuer address: ' + SNXIssuerAddress);
 
+	const maxSNXPercentage = "15";
+	const maxAMMPercentage = "12";
+	const maxRoyalePercentage = "3";
+	const AMMMultiplier = "10";
+	const ThalesStakingRewardsPoolAddress = getTargetAddress('ThalesStakingRewardsPool', network);
 
 	const ProxyStaking = await ethers.getContractFactory('StakingThales');
 	let StakingThalesAddress =  getTargetAddress('StakingThales', network);
+	
+	const ProxyEscrow = await ethers.getContractFactory('EscrowThales');
+	let EscrowThalesAddress =  getTargetAddress('EscrowThales', network);
 
 	const StakingThales = await ProxyStaking.attach(StakingThalesAddress);
     console.log("StakingThales attached on: ", StakingThales.address);
+	
+	const EscrowThales = await ProxyEscrow.attach(EscrowThalesAddress);
+    console.log("EscrowThales attached on: ", EscrowThales.address);
 
 	let ThalesAMMAddress =  getTargetAddress('ThalesAMM', network);
 	let ThalesRoyaleAddress =  getTargetAddress('ThalesRoyale', network);
@@ -76,6 +87,40 @@ async function main() {
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setPriceFeed ',ThalesRoyaleAddress);
 	});
+	tx = await StakingThales.setMaxSNXRewardsPercentage(maxSNXPercentage, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setMaxSNXRewardsPercentage ',maxSNXPercentage);
+	});
+	tx = await StakingThales.setMaxAMMVolumeRewardsPercentage(maxAMMPercentage, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setMaxAMMVolumeRewardsPercentage ',maxAMMPercentage);
+	});
+	tx = await StakingThales.setAMMVolumeRewardsMultiplier(AMMMultiplier, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setAMMVolumeRewardsMultiplier ',AMMMultiplier);
+	});
+	
+	tx = await EscrowThales.setThalesStakingRewardsPool(ThalesStakingRewardsPoolAddress, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Escrow Thales: ThalesStakingRewardsPoolAddress ',ThalesStakingRewardsPoolAddress);
+	});
+	
+	tx = await StakingThales.setMaxThalesRoyaleRewardsPercentage(maxRoyalePercentage, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setMaxThalesRoyaleRewardsPercentage ',maxRoyalePercentage);
+	});
+	
+	tx = await StakingThales.setThalesStakingRewardsPool(ThalesStakingRewardsPoolAddress, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: ThalesStakingRewardsPoolAddress ',ThalesStakingRewardsPoolAddress);
+	});
+	
+	// tx = await StakingThales.startStakingPeriod({from:owner.address});
+	// await tx.wait().then(e => {
+	// 	console.log('Staking Thales: startStakingPeriod ');
+	// });
+	
+	
 
 }
 

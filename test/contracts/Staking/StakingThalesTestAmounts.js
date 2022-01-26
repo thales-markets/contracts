@@ -215,7 +215,7 @@ contract('StakingThales', accounts => {
 					from: initialCreator,
 				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.bnEqual(answer, toUnit(100000));
+				assert.bnEqual(answer, toUnit(70000));
 				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
@@ -305,7 +305,7 @@ contract('StakingThales', accounts => {
 					from: initialCreator,
 				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.bnEqual(answer, toUnit(100000));
+				assert.bnEqual(answer, toUnit(70000));
 				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
@@ -413,7 +413,7 @@ contract('StakingThales', accounts => {
 				await sUSDSynth.issue(initialCreator, sUSD);
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 				let answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.bnEqual(answer, toUnit(100000));
+				assert.bnEqual(answer, toUnit(70000));
 				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
@@ -557,7 +557,7 @@ contract('StakingThales', accounts => {
 					await sUSDSynth.issue(initialCreator, sUSD);
 					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 					let answer = await StakingThalesDeployed.fixedPeriodReward.call();
-					assert.bnEqual(answer, toUnit(100000));
+					assert.bnEqual(answer, toUnit(70000));
 					await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 					answer = await StakingThalesDeployed.fixedPeriodReward.call();
 					assert.bnEqual(answer, fixedReward);

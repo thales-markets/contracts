@@ -75,6 +75,7 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     uint public maxAMMVolumeRewardsPercentage;
     uint public AMMVolumeRewardsMultiplier;
     uint public maxThalesRoyaleRewardsPercentage;
+    
     IThalesStakingRewardsPool public ThalesStakingRewardsPool;
     uint public _contractVersion;
 

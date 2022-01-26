@@ -1069,63 +1069,63 @@ contract('StakingThales', accounts => {
 		});
 	});
 
-	describe('Upgrade Implementation:', () => {
+	// describe('Upgrade Implementation:', () => {
 		
-		it('reverts the call of new function at old implementation', async function() {
-			try{
-				await expect(StakingThalesDeployed.getVersion()).to.be.reverted;
+	// 	it('reverts the call of new function at old implementation', async function() {
+	// 		try{
+	// 			await expect(StakingThalesDeployed.getVersion()).to.be.reverted;
 
-			}
-			catch(error) {
-				// console.log("Error function does not exist");
-			}
+	// 		}
+	// 		catch(error) {
+	// 			// console.log("Error function does not exist");
+	// 		}
 		
-		});
-		beforeEach(async () => {
+	// 	});
+	// 	beforeEach(async () => {
 			
-			let EscrowThalesV2 = artifacts.require('ProxyEscrowThales_V2');
-			let StakingThalesV2 = artifacts.require('ProxyStakingThales_V2');
+	// 		let EscrowThalesV2 = artifacts.require('ProxyEscrowThales_V2');
+	// 		let StakingThalesV2 = artifacts.require('ProxyStakingThales_V2');
 			
 			
 			
-			EscrowImplementationV2 = await EscrowThalesV2.new({from:owner});
-			StakingImplementationV2 = await StakingThalesV2.new({from:owner});
+	// 		EscrowImplementationV2 = await EscrowThalesV2.new({from:owner});
+	// 		StakingImplementationV2 = await StakingThalesV2.new({from:owner});
 			
-			EscrowThalesDeployedV2 = await EscrowThalesV2.at(ProxyEscrowDeployed.address);
-			StakingThalesDeployedV2 = await StakingThalesV2.at(ProxyStakingDeployed.address);
+	// 		EscrowThalesDeployedV2 = await EscrowThalesV2.at(ProxyEscrowDeployed.address);
+	// 		StakingThalesDeployedV2 = await StakingThalesV2.at(ProxyStakingDeployed.address);
 	
 			
 	
-			await ProxyStakingDeployed.upgradeTo(StakingImplementationV2.address,{
-				from: initialCreator,
-			});
+	// 		await ProxyStakingDeployed.upgradeTo(StakingImplementationV2.address,{
+	// 			from: initialCreator,
+	// 		});
 	
-			await ProxyEscrowDeployed.upgradeTo(EscrowImplementationV2.address, {
-				from: initialCreator,
-			});
+	// 		await ProxyEscrowDeployed.upgradeTo(EscrowImplementationV2.address, {
+	// 			from: initialCreator,
+	// 		});
 
-		});
+	// 	});
 
-		it('calls new function of new implementation', async function() {
-			let tx = await StakingThalesDeployedV2.getVersion();
-			assert.equal(tx.toString(), '0');
-			tx = await EscrowThalesDeployedV2.getVersion();
-			assert.equal(tx.toString(), '0');
-		});
-		it('set new value in new function of new implementation', async function() {
-			let tx = await StakingThalesDeployedV2.setVersion(1, {from:owner});
-			tx = await StakingThalesDeployedV2.getVersion();
-			assert.equal(tx.toString(), '1');
-			tx = await EscrowThalesDeployedV2.setVersion(10, {from:owner});
-			tx = await EscrowThalesDeployedV2.getVersion();
-			assert.equal(tx.toString(), '10');
-		});
+	// 	it('calls new function of new implementation', async function() {
+	// 		let tx = await StakingThalesDeployedV2.getVersion();
+	// 		assert.equal(tx.toString(), '0');
+	// 		tx = await EscrowThalesDeployedV2.getVersion();
+	// 		assert.equal(tx.toString(), '0');
+	// 	});
+	// 	it('set new value in new function of new implementation', async function() {
+	// 		let tx = await StakingThalesDeployedV2.setVersion(1, {from:owner});
+	// 		tx = await StakingThalesDeployedV2.getVersion();
+	// 		assert.equal(tx.toString(), '1');
+	// 		tx = await EscrowThalesDeployedV2.setVersion(10, {from:owner});
+	// 		tx = await EscrowThalesDeployedV2.getVersion();
+	// 		assert.equal(tx.toString(), '10');
+	// 	});
 		
-		it('set new value in new function of new implementation different owner', async function() {
-			await expect(StakingThalesDeployedV2.setVersion(1, {from:initialCreator})).to.be.reverted;
-			await expect(EscrowThalesDeployedV2.setVersion(10, {from:initialCreator})).to.be.reverted;
+	// 	it('set new value in new function of new implementation different owner', async function() {
+	// 		await expect(StakingThalesDeployedV2.setVersion(1, {from:initialCreator})).to.be.reverted;
+	// 		await expect(EscrowThalesDeployedV2.setVersion(10, {from:initialCreator})).to.be.reverted;
 			
-		});
+	// 	});
 	
-	});
+	// });
 });

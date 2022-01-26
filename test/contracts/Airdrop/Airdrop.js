@@ -39,13 +39,6 @@ describe('Contract: Airdrop', async () => {
 				);
 			});
 
-		it('self destruct before time', async () => {
-			await assert.revert(
-				airdrop._selfDestruct(acc1.address),
-				'Contract can only be selfdestruct after a year'
-			);
-		});
-
 		it('self destruct', async () => {
 			fastForward(YEAR);
 			await airdrop._selfDestruct(acc1.address);

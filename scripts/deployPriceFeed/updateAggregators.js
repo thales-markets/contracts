@@ -15,7 +15,7 @@ async function main() {
 		network = 'mainnet';
 	}
 
-    if (networkObj.chainId == 69) {
+	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 	}
@@ -27,22 +27,19 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-    const PriceFeed = await ethers.getContractFactory('PriceFeed');
+	const PriceFeed = await ethers.getContractFactory('PriceFeed');
 	const priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:', priceFeedAddress);
 
-    const priceFeed = await PriceFeed.attach(
-		priceFeedAddress
-	);
+	const priceFeed = await PriceFeed.attach(priceFeedAddress);
 
-    const aggregators = require(`./aggregators/${network}.json`);
+	const aggregators = require(`./aggregators/${network}.json`);
 	for (let [key, aggregator] of Object.entries(aggregators)) {
 		let tx = await priceFeed.addAggregator(toBytes32(key), aggregator);
 		await tx.wait().then(e => {
 			console.log('PriceFeed update: addAggregator for', key);
 		});
 	}
-
 }
 
 main()

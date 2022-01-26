@@ -29,7 +29,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     ISNXRewards public SNXRewards;
     IThalesRoyale public thalesRoyale;
     IPriceFeed public priceFeed;
-    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
 
     uint public periodsOfStaking;
     uint public lastPeriodTimeStamp;
@@ -73,6 +72,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private stakerAMMVolume;
 
     bool public extraRewardsActive;
+    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
     uint public maxSNXRewardsPercentage;
     uint public maxAMMVolumeRewardsPercentage;
     uint public AMMVolumeRewardsMultiplier;

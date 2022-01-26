@@ -21,15 +21,20 @@ After the rewards are calculated on 2nd of February
    `npx hardhat run --network mainnet scripts/l1_l2_exchanger/deployExchanger.js`
 9. Exchange the needed amount of THALES to OpTHALES and bridge it to multisig on L2 `4. exchangeThalesToL2OpThales`
 10. Deploy Staking and Escrow on L2  
-    npx hardhat run --network optimistic scripts/deployEscrowAndStaking/deploy_transparent.js
-11. Fund the deployer address with the needed amount of OpTHALES on L2
-12. Execute migration of staking on L2
+    `npx hardhat run --network optimistic scripts/deployEscrowAndStaking/deploy_transparent.js`
+11. Deploy ThalesStakingRewardsPool on L2 
+    `npx hardhat run --network optimistic scripts/deployEscrowAndStaking/deploy_StakingRewards.js`
+12. Update Staking and Escrow parameteres with 
+    `npx hardhat run --network optimistic scripts/deployEscrowAndStaking/update_addresses_on_Staking.js`
+13. Fund the deployer address with the needed amount of OpTHALES on L2
+14. Execute migration of staking on L2
     `npx hardhat run --network mainnet scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigrationData.js`
-13. Execute migration of airdrop to l2  
+15. Execute migration of airdrop to l2  
     a. `npx hardhat run --network mainnet scripts/THALES_migration/airdropMigration/executeAirdropMigration.js`  
-14. Execute migration of ongoing airdrop  
+16. Execute migration of ongoing airdrop  
     a. `npx hardhat run --network mainnet scripts/THALES_migration/ongoingAirdropMigration/deployOngoingAirdropMigration.js`  
     b. set the latest root from L1 ongoing rewards
     c. copy the latest root file and use it in the dapp
-15. Airdrop and Ongoing Airdrop stay paused on L1 and can only be destroyed after 1 year
-16. TBD staking rewards for G-UNI pool
+17. Airdrop and Ongoing Airdrop stay paused on L1 and can only be destroyed after 1 year
+18. TBD staking rewards for G-UNI pool
+19. Fund the ThalesStakingRewardsPool with rewards on L2

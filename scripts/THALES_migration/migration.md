@@ -35,6 +35,6 @@ After the rewards are calculated on 2nd of February
     a. `npx hardhat run --network mainnet scripts/THALES_migration/ongoingAirdropMigration/deployOngoingAirdropMigration.js`  
     b. set the latest root from L1 ongoing rewards
     c. copy the latest root file and use it in the dapp
-17. Airdrop and Ongoing Airdrop stay paused on L1 and can only be destroyed after 1 year
+17. Airdrop stays paused on L1 and can only be destroyed after 1 year. Ongoing airdrop can be destroyed
 18. TBD staking rewards for G-UNI pool
 19. Fund the ThalesStakingRewardsPool with rewards on L2

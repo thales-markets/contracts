@@ -28,7 +28,6 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     ISNXRewards public SNXRewards;
     IThalesRoyale public thalesRoyale;
     IPriceFeed public priceFeed;
-    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
 
     uint public periodsOfStaking;
     uint public lastPeriodTimeStamp;
@@ -76,6 +75,7 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     uint public maxAMMVolumeRewardsPercentage;
     uint public AMMVolumeRewardsMultiplier;
     uint public maxThalesRoyaleRewardsPercentage;
+    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
     uint public _contractVersion;
 
     /* ========== CONSTRUCTOR ========== */

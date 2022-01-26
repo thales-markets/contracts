@@ -60,7 +60,6 @@ async function deploy_ongoing_airdrop() {
 	const escrowThales = await EscrowThales.attach(EscrowAddress);
 	console.log('EscrowThales attached at', escrowThales.address);
 	// update deployments.json file
-	// setTargetAddress('EscrowThales', network, escrowThales.address);
 
 	// set OngoingAirdrop address
 	let tx = await escrowThales.setAirdropContract(ongoingAirdrop.address, {from:owner.address});

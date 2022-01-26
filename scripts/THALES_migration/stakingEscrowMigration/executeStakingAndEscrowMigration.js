@@ -76,6 +76,17 @@ async function executeStakingAndEscrowMigration() {
 		}
 		//send directly if not a staker
 		console.log('Processing migratedStakerOrEscrower ' + migratedStakerOrEscrower.wallet);
+		if (migratedStakerOrEscrower.unstaking == 0) {
+			console.log('Sending unstaking THALES directly to  ' + migratedStakerOrEscrower.wallet);
+			let tx = await thales.transfer(
+				migratedStakerOrEscrower.wallet,
+				migratedStakerOrEscrower.unstakingAmount + ''
+			);
+			tx.wait().then(e => {
+				txLog(tx, 'thales: transfer ' + migratedStakerOrEscrower.wallet);
+			});
+		}
+
 		if (migratedStakerOrEscrower.totalStaked == 0) {
 			console.log('Sending THALES directly to  ' + migratedStakerOrEscrower.wallet);
 			let tx = await thales.transfer(

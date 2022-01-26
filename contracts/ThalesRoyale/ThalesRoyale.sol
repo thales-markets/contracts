@@ -267,8 +267,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     function canSeasonBeAutomaticallyStartedAfterSomePeriod() public view returns (bool) {
-        return nextSeasonStartsAutomatically && 
-        (block.timestamp > seasonCreationTime[season] + pauseBetweenSeasonsTime);
+        return nextSeasonStartsAutomatically && (block.timestamp > seasonCreationTime[season] + pauseBetweenSeasonsTime);
     }
 
     function canStartNewSeason() public view returns (bool) {
@@ -430,7 +429,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     modifier onlyWinners(uint _season) {
         require(seasonFinished[_season], "Royale must be finished!");
-        require(isPlayerAliveInASpecificSeason(msg.sender, _season) == true, "Player is not alive");
+        require(isPlayerAliveInASpecificSeason(msg.sender, _season), "Player is not alive");
         _;
     }
 

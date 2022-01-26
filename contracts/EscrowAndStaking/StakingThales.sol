@@ -79,8 +79,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     uint public maxThalesRoyaleRewardsPercentage;
     uint public SNXVolumeRewardsMultiplier;
 
-    // uint constant HUNDRED = 1e18;
-    uint constant ONE = 1e16;
+    uint constant ONE = 1e18;
+    uint constant ONE_PERCENT = 1e16;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -259,52 +259,71 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint stakedSNX = _getSNXStakedForAccount(account);
         // SNX staked more than base reward
         return stakedSNX >= baseReward.mul(SNXVolumeRewardsMultiplier)
-            ? maxSNXRewardsPercentage
-            : stakedSNX.mul(maxSNXRewardsPercentage.mul(ONE)).div(baseReward.mul(SNXVolumeRewardsMultiplier.mul(HUNDRED)));
+            ? maxSNXRewardsPercentage.mul(ONE_PERCENT)
+            : stakedSNX.mul(maxSNXRewardsPercentage).mul(ONE_PERCENT).div(baseReward.mul(SNXVolumeRewardsMultiplier));
     }
     function getSNXBonus(address account) public view returns (uint) {
         uint baseReward = getBaseReward(account);
         uint SNXBonusPercentage = getSNXBonusPercentage(account);
 
-        return baseReward.mul(SNXBonusPercentage).mul(ONE).div(HUNDRED);
+        return baseReward.mul(SNXBonusPercentage).div(ONE);
     }
     
     function getAMMBonusPercentage(address account) public view returns (uint) {
         uint baseReward = getBaseReward(account);
         return _getTotalAMMVolume(account) >= baseReward.mul(AMMVolumeRewardsMultiplier)
-            ? maxAMMVolumeRewardsPercentage
-            : _getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(maxAMMVolumeRewardsPercentage.mul(ONE)).div(baseReward.mul(AMMVolumeRewardsMultiplier.mul(HUNDRED)));
+            ? maxAMMVolumeRewardsPercentage.mul(ONE_PERCENT)
+            : _getTotalAMMVolume(account).mul(ONE_PERCENT).div(AMM_EXTRA_REWARD_PERIODS).mul(maxAMMVolumeRewardsPercentage).div(baseReward.mul(AMMVolumeRewardsMultiplier));
     }
     function getAMMBonus(address account) public view returns (uint) {
         uint baseReward = getBaseReward(account);
         uint AMMPercentage = getAMMBonusPercentage(account);
-        return baseReward.mul(AMMPercentage).mul(ONE).div(HUNDRED);
+        return baseReward.mul(AMMPercentage).div(ONE);
     }
     
     function getThalesRoyaleBonusPercentage(address account) public view returns (uint) {
         return (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account))
-            ? maxThalesRoyaleRewardsPercentage
+            ? maxThalesRoyaleRewardsPercentage.mul(ONE_PERCENT)
             : 0;
     }
     function getThalesRoyaleBonus(address account) public view returns (uint) {
         uint baseReward = getBaseReward(account);
         uint RoyalePercentage = getThalesRoyaleBonusPercentage(account);
-        return baseReward.mul(RoyalePercentage).mul(ONE).div(HUNDRED);
+        return baseReward.mul(RoyalePercentage).div(ONE);
     }
     
     function getTotalBonusPercentage(address account) public view returns (uint) {
-        return getSNXBonus(account).add(getAMMBonus(account)).add(getThalesRoyaleBonus(account));
+        uint snxPercentage = getSNXBonusPercentage(account);
+        uint ammPercentage = getAMMBonusPercentage(account);
+        uint royalePercentage = getThalesRoyaleBonusPercentage(account);
+        return snxPercentage.add(ammPercentage).add(royalePercentage);
     }
-    function getTotalBonus(address account) external view returns (uint) {
+    function getTotalBonus(address account) public view returns (uint) {
         uint baseReward = getBaseReward(account);
-        uint totalBonus = getTotalBonusPercentage(account).add(100);
-        return baseReward.mul(totalBonus).mul(ONE).div(HUNDRED);
+        uint totalBonus = getTotalBonusPercentage(account);
+        return baseReward.mul(totalBonus).div(ONE);
     }
     
     function canClosePeriod() external view returns (bool) {
         return (startTimeStamp > 0 && (block.timestamp >= lastPeriodTimeStamp.add(durationPeriod)));
     }
 
+    function getSNXTargetRatio() public view returns (uint) {
+        uint thousand = 1000*100*1e18;
+        return thousand.div(SNXRewards.issuanceRatio());
+    }
+    
+    function getCRatio(address account) public view returns (uint) {
+        uint hund = 100*100*1e18;
+        (uint cRatio, ) = SNXRewards.collateralisationRatioAndAnyRatesInvalid(account);
+        return hund.div(cRatio);
+    }
+    function getSNXRateForCurrency() public view returns (uint) {
+        return priceFeed.rateForCurrency("SNX");
+    }
+    function getSNXDebt(address account) public view returns (uint) {
+        return SNXRewards.debtBalanceOf(account, "sUSD");
+    }
     /* ========== PUBLIC ========== */
 
     function startStakingPeriod() external onlyOwner {
@@ -532,8 +551,13 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
                 .mul(currentPeriodRewards)
                 .div(_totalStakedAmount.add(_totalEscrowedAmount));
-        uint totalReward = _calculateExtraReward(account, baseReward);
-        return totalReward;
+        // uint totalReward = _calculateExtraReward(account, baseReward);
+        if (!extraRewardsActive) {
+            return baseReward;
+        }
+        else {
+            baseReward.add(getTotalBonus(account));
+        }
     }
 
     function _calculateAvailableFeesToClaim(address account) internal view returns (uint) {
@@ -548,40 +572,41 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 .div(_totalStakedAmount.add(_totalEscrowedAmount));
     }
 
-    function _calculateExtraReward(address account, uint baseReward) internal view returns (uint) {
-        if (!extraRewardsActive) {
-            return baseReward;
-        }
-        // uint hundred = 1e18;
-        // uint one = 1e16;
-        uint extraReward = 1e18;
-        // uint stakedSNX = _getSNXStakedForAccount(account);
+    // function _calculateExtraReward(address account, uint baseReward) internal view returns (uint) {
+    //     if (!extraRewardsActive) {
+    //         return baseReward;
+    //     }
+    //     // uint ONE = 1e18;
+    //     // uint one = 1e16;
+    //     uint extraRewardPercentage = getTotalBonusPercentage(account);
+    //     // uint stakedSNX = _getSNXStakedForAccount(account);
 
-        // // SNX staked more than base reward
-        // extraReward = stakedSNX >= baseReward
-        //     ? extraReward = extraReward.add(maxSNXRewardsPercentage.mul(one))
-        //     : extraReward.add(stakedSNX.mul(maxSNXRewardsPercentage.mul(one)).div(baseReward));
-        // // AMM Volume 10x Thales base reward
-        // extraReward = _getTotalAMMVolume(account) >= baseReward.mul(AMMVolumeRewardsMultiplier)
-        //     ? extraReward.add(maxAMMVolumeRewardsPercentage.mul(one))
-        //     : extraReward.add(_getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(maxAMMVolumeRewardsPercentage).div(baseReward.mul(AMMVolumeRewardsMultiplier)));
-        // // ThalesRoyale participation
-        // extraReward = (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account))
-        //     ? extraReward.add(maxThalesRoyaleRewardsPercentage.mul(one))
-        //     : extraReward;
+    //     // // SNX staked more than base reward
+    //     // extraReward = stakedSNX >= baseReward
+    //     //     ? extraReward = extraReward.add(maxSNXRewardsPercentage.mul(one))
+    //     //     : extraReward.add(stakedSNX.mul(maxSNXRewardsPercentage.mul(one)).div(baseReward));
+    //     // // AMM Volume 10x Thales base reward
+    //     // extraReward = _getTotalAMMVolume(account) >= baseReward.mul(AMMVolumeRewardsMultiplier)
+    //     //     ? extraReward.add(maxAMMVolumeRewardsPercentage.mul(one))
+    //     //     : extraReward.add(_getTotalAMMVolume(account).div(AMM_EXTRA_REWARD_PERIODS).mul(maxAMMVolumeRewardsPercentage).div(baseReward.mul(AMMVolumeRewardsMultiplier)));
+    //     // // ThalesRoyale participation
+    //     // extraReward = (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account))
+    //     //     ? extraReward.add(maxThalesRoyaleRewardsPercentage.mul(one))
+    //     //     : extraReward;
 
-        return baseReward.mul(extraReward).div(1e18);
-    }
+    //     return baseReward.mul(extraRewardPercentage).div(ONE);
+    // }
+
 
     function _getSNXStakedForAccount(address account) internal view returns (uint) {
-        (uint cRatio, ) = SNXRewards.collateralisationRatioAndAnyRatesInvalid(account);
-        uint issuanceRatio = SNXRewards.issuanceRatio();
+        uint cRatio = getCRatio(account);
+        uint targetRatio = getSNXTargetRatio();
         uint snxPrice = priceFeed.rateForCurrency("SNX");
         uint debt = SNXRewards.debtBalanceOf(account, "sUSD");
-        if (cRatio < issuanceRatio) {
-            return (cRatio.mul(cRatio).mul(debt)).div(issuanceRatio.mul(snxPrice).mul(HUNDRED));
+        if (cRatio < targetRatio) {
+            return (cRatio.mul(cRatio).mul(debt).mul(1e14)).div(targetRatio.mul(snxPrice));
         } else {
-            return (cRatio.mul(debt)).div(snxPrice.mul(HUNDRED));
+            return (cRatio.mul(debt).mul(1e14)).div(snxPrice);
         }
     }
 

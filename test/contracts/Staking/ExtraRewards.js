@@ -83,7 +83,7 @@ contract('StakingThales', accounts => {
 	let PriceFeedInstance;
 	let aggregatorSNX;
 	let timestamp;
-	let newRate = 4.9930;
+	let newRate = 4.7970;
 
 	before(async () => {
 		({
@@ -238,10 +238,10 @@ contract('StakingThales', accounts => {
 		let rewardPerUser; 
 		
 		beforeEach(async () => {	
-			let stake = [100, 100];
+			let stake = [1, 99];
 			let users = [firstSigner, secondSigner];
 			let weeks = 11;
-			let deposit = 200;
+			let deposit = 1;
 			let answer;
 			stakeUsed = stake[0];
 			rewardPerUser = [(stake[0]/(stake[0]+stake[1]))*deposit, (stake[1]/(stake[0]+stake[1]))*deposit];
@@ -267,29 +267,82 @@ contract('StakingThales', accounts => {
 			// await StakingThalesDeployed.connect(owner).setExtraRewards(true);
 
 		});
-		it('Only SNX extra reward, -> c-ratio 0', async () => {
+		it('get SNX bonus; cRatio = 0, debt = 7241', async () => {
 			let answer;
 			let baseReward;
 			let result;
-			let cRatio = 0;
-			let debt = 7241;
-			let issuanceRatio = 600;
-			answer = await StakingThalesDeployed.connect(firstSigner).getRewardsAvailable(firstSigner.address);
-			baseReward = fromWei(answer.toString(), "ether");
-			assert.equal(baseReward.toString(), rewardPerUser[0].toString());
+			let cRatio = "218420216987802884";
+			let debt = "7235152509672315095375";
+			let issuanceRatio = "1666666666666666666";
+			let targetRatio = (1000*100*1e18)/1666666666666666660;
+			let finalCratio = ((100*100*1e18)/cRatio)
+			let SNXrate = "4797000000000000000";
 			
 			await StakingThalesDeployed.connect(owner).setExtraRewards(true);
-			await SNXRewardsDeployed.setCRatio(firstSigner.address, toWei(cRatio.toString(), "ether"));
-			await SNXRewardsDeployed.setDebtBalance(firstSigner.address, toWei(debt.toString(), "ether"));
-			await SNXRewardsDeployed.setIssuanceRatio(toWei(issuanceRatio.toString(), "ether"));
+			
+			await SNXRewardsDeployed.setCRatio(firstSigner.address, cRatio.toString());
+			await SNXRewardsDeployed.setDebtBalance(firstSigner.address, debt.toString());
+			await SNXRewardsDeployed.setIssuanceRatio(issuanceRatio.toString());
+
+			answer = await StakingThalesDeployed.connect(firstSigner).getBaseReward(firstSigner.address);
+			console.log("Base reward:", fromWei(answer.toString(), "ether").toString());
+			answer = await StakingThalesDeployed.getSNXBonusPercentage(firstSigner.address);
+			console.log("SNX percentage:", answer.toString());
+
+			answer = await StakingThalesDeployed.getSNXBonus(firstSigner.address);
+			console.log("SNX bonus rewards:", fromWei(answer.toString(), "ether").toString());
+			
+			answer = await StakingThalesDeployed.getSNXTargetRatio();
+			console.log("Target ratio:", answer.toString());
+			console.log("Calculted Target ratio:", targetRatio.toString());
+			answer = await StakingThalesDeployed.getSNXRateForCurrency();
+			console.log("SNX rate:", answer.toString());
+			console.log("Calculated SNX rate:", SNXrate);
+			answer = await StakingThalesDeployed.getCRatio(firstSigner.address);
+			console.log("CRatio :", answer.toString());
+			console.log("calcuclated CRatio :", finalCratio.toString());
+			answer = await StakingThalesDeployed.getSNXDebt(firstSigner.address);
+			console.log("SNX debt:", answer.toString());
+			console.log("calculated SNX debt:", debt);
 
 			answer = await StakingThalesDeployed.getSNXStaked(firstSigner.address);
-			console.log("SNX staked:", answer.toString())
-			answer = await StakingThalesDeployed.connect(firstSigner).getRewardsAvailable(firstSigner.address);
-			console.log("SNX reward:", answer.toString())
+			console.log("\nSNX staked:", fromWei(answer.toString(), "ether").toString());
 			
-			assert.equal(fromWei(answer.toString(), "ether").toString(), baseReward.toString());
+			result = (finalCratio*finalCratio*debt)/(targetRatio*SNXrate*10000);
+			console.log("Calculated:", result.toString());
+			
+			answer = await StakingThalesDeployed.getTotalBonus(firstSigner.address);
+			console.log("\nTotal Bonus:", fromWei(answer.toString(), "ether").toString());
+			
+			answer = await StakingThalesDeployed.getTotalBonusPercentage(firstSigner.address);
+			console.log("\nTotal Bonus Percentage:", fromWei(answer.toString(), "ether").toString());
+
+			
+			// assert.equal(fromWei(answer.toString(), "ether").toString(), baseReward.toString());
 		});
+		// it('Only SNX extra reward, -> c-ratio 0', async () => {
+		// 	let answer;
+		// 	let baseReward;
+		// 	let result;
+		// 	let cRatio = 0;
+		// 	let debt = 7241;
+		// 	let issuanceRatio = 600;
+		// 	answer = await StakingThalesDeployed.connect(firstSigner).getRewardsAvailable(firstSigner.address);
+		// 	baseReward = fromWei(answer.toString(), "ether");
+		// 	assert.equal(baseReward.toString(), rewardPerUser[0].toString());
+			
+		// 	await StakingThalesDeployed.connect(owner).setExtraRewards(true);
+		// 	await SNXRewardsDeployed.setCRatio(firstSigner.address, toWei(cRatio.toString(), "ether"));
+		// 	await SNXRewardsDeployed.setDebtBalance(firstSigner.address, toWei(debt.toString(), "ether"));
+		// 	await SNXRewardsDeployed.setIssuanceRatio(toWei(issuanceRatio.toString(), "ether"));
+
+		// 	answer = await StakingThalesDeployed.getSNXStaked(firstSigner.address);
+		// 	console.log("SNX staked:", answer.toString())
+		// 	answer = await StakingThalesDeployed.connect(firstSigner).getRewardsAvailable(firstSigner.address);
+		// 	console.log("SNX reward:", answer.toString())
+			
+		// 	assert.equal(fromWei(answer.toString(), "ether").toString(), baseReward.toString());
+		// });
 		// it('Only SNX extra reward, c-ratio lower than issuance ratio', async () => {
 		// 	let answer;
 		// 	let baseReward;

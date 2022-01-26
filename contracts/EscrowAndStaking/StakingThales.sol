@@ -556,7 +556,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             return baseReward;
         }
         else {
-            baseReward.add(getTotalBonus(account));
+            return baseReward.add(getTotalBonus(account));
         }
     }
 

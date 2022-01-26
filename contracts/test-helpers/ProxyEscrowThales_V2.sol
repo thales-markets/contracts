@@ -20,7 +20,6 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
     IStakingThales public iStakingThales;
     address public airdropContract;
 
-    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
     uint public constant NUM_PERIODS = 10;
     uint public totalEscrowedRewards;
     uint public totalEscrowBalanceNotIncludedInStaking;
@@ -40,6 +39,7 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
 
     bool private testMode;
 
+    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
     uint private _contractVersion;
 
     /* ========== CONSTRUCTOR ========== */

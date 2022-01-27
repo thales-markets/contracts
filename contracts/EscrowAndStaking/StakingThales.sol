@@ -84,6 +84,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     uint public SNXVolumeRewardsMultiplier;
 
+    mapping(address => uint) private _lastStakingPeriod;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -251,6 +253,13 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function getBaseReward(address account) public view returns (uint) {
+        if (
+            (_lastStakingPeriod[account] == periodsOfStaking) ||
+            (_stakedBalances[account] == 0) ||
+            (_lastRewardsClaimedPeriod[account] == periodsOfStaking)
+        ) {
+            return 0;
+        }
         return
             _stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
@@ -264,10 +273,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     function getSNXBonusPercentage(address account) public view returns (uint) {
         uint baseReward = getBaseReward(account);
-        uint stakedSNX = _getSNXStakedForAccount(account);
         if (baseReward == 0) {
             return 0;
         }
+        uint stakedSNX = _getSNXStakedForAccount(account);
         // SNX staked more than base reward
         return
             stakedSNX >= baseReward.mul(SNXVolumeRewardsMultiplier)
@@ -410,9 +419,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(unstaking[msg.sender] == false, "Cannot stake, the staker is paused from staking due to unstaking");
         // Check if there are not claimable rewards from last period.
         // Claim them, and add new stake
-        if ((_lastRewardsClaimedPeriod[msg.sender] < periodsOfStaking) && claimEnabled && _stakedBalances[msg.sender] > 0) {
+
+        if (_calculateAvailableRewardsToClaim(msg.sender) > 0) {
             _claimReward(msg.sender);
         }
+        _lastStakingPeriod[msg.sender] = periodsOfStaking;
 
         // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
         if (_stakedBalances[msg.sender] == 0) {
@@ -440,7 +451,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(unstaking[staker] == false, "Cannot stake, the staker is paused from staking due to unstaking");
         // Check if there are not claimable rewards from last period.
         // Claim them, and add new stake
-        if ((_lastRewardsClaimedPeriod[staker] < periodsOfStaking) && claimEnabled && _stakedBalances[staker] > 0) {
+        if (_calculateAvailableRewardsToClaim(staker) > 0) {
             _claimReward(staker);
         }
 
@@ -465,8 +476,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(_stakedBalances[msg.sender] >= amount, "Account doesnt have that much staked");
         require(unstaking[msg.sender] == false, "Account has already triggered unstake cooldown");
 
-        if ((_lastRewardsClaimedPeriod[msg.sender] < periodsOfStaking) && claimEnabled) {
-            claimReward();
+        if (_calculateAvailableRewardsToClaim(msg.sender) > 0) {
+            _claimReward(msg.sender);
         }
         lastUnstakeTime[msg.sender] = block.timestamp;
         unstaking[msg.sender] = true;
@@ -496,6 +507,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                     iEscrowThales.totalAccountEscrowedAmount(msg.sender)
                 );
             }
+        }
+
+        if (_calculateAvailableRewardsToClaim(msg.sender) > 0) {
+            _claimReward(msg.sender);
         }
 
         unstaking[msg.sender] = false;
@@ -579,11 +594,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function _calculateAvailableRewardsToClaim(address account) internal view returns (uint) {
-        if ((_stakedBalances[account] == 0) || (_lastRewardsClaimedPeriod[account] == periodsOfStaking)) {
+        uint baseReward = getBaseReward(account);
+        if (baseReward == 0) {
             return 0;
         }
-
-        uint baseReward = getBaseReward(account);
         if (!extraRewardsActive) {
             return baseReward;
         } else {
@@ -592,7 +606,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function _calculateAvailableFeesToClaim(address account) internal view returns (uint) {
-        if ((_stakedBalances[account] == 0) || (_lastRewardsClaimedPeriod[account] == periodsOfStaking)) {
+        uint baseReward = getBaseReward(account);
+        if (baseReward == 0) {
             return 0;
         }
 

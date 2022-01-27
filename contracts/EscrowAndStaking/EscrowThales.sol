@@ -85,6 +85,10 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
             "Add to escrow can only be called from staking or ongoing airdrop contracts"
         );
 
+        if (msg.sender == airdropContract) {
+            require(iStakingThales.getRewardsAvailable(account) == 0, "You have to claim your staking rewards first!");
+        }
+
         totalAccountEscrowedAmount[account] = totalAccountEscrowedAmount[account].add(amount);
 
         lastPeriodAddedReward[account] = currentVestingPeriod;
@@ -161,7 +165,7 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         airdropContract = AirdropContract;
         emit AirdropContractChanged(AirdropContract);
     }
-    
+
     function setThalesStakingRewardsPool(address _thalesStakingRewardsPool) public onlyOwner {
         require(_thalesStakingRewardsPool != address(0), "Invalid address");
         ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);

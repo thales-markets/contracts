@@ -10,6 +10,7 @@ import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
+import "../interfaces/IThalesStakingRewardsPool.sol";
 
 contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     using SafeMath for uint;
@@ -37,6 +38,7 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
     mapping(address => uint) public lastPeriodAddedReward;
 
     bool private testMode;
+    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -79,7 +81,7 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         require(account != address(0), "Invalid address");
         require(amount > 0, "Amount is 0");
         require(
-            msg.sender == address(iStakingThales) || msg.sender == airdropContract,
+            msg.sender == address(ThalesStakingRewardsPool) || msg.sender == airdropContract,
             "Add to escrow can only be called from staking or ongoing airdrop contracts"
         );
 
@@ -159,6 +161,12 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         airdropContract = AirdropContract;
         emit AirdropContractChanged(AirdropContract);
     }
+    
+    function setThalesStakingRewardsPool(address _thalesStakingRewardsPool) public onlyOwner {
+        require(_thalesStakingRewardsPool != address(0), "Invalid address");
+        ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);
+        emit ThalesStakingRewardsPoolChanged(_thalesStakingRewardsPool);
+    }
 
     /*  Selfdestruct operation potentially harmful for proxy contracts
      */
@@ -185,4 +193,5 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
     event Vested(address account, uint amount);
     event StakingThalesContractChanged(address newAddress);
     event AirdropContractChanged(address newAddress);
+    event ThalesStakingRewardsPoolChanged(address thalesStakingRewardsPool);
 }

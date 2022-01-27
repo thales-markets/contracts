@@ -1,6 +1,6 @@
 pragma solidity >=0.5.16 <0.8.4;
 
-import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 
 import "../utils/proxy/ProxyReentrancyGuard.sol";
@@ -10,6 +10,7 @@ import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
+import "../interfaces/IThalesStakingRewardsPool.sol";
 
 contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     using SafeMath for uint;
@@ -38,6 +39,7 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
 
     bool private testMode;
 
+    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
     uint private _contractVersion;
 
     /* ========== CONSTRUCTOR ========== */

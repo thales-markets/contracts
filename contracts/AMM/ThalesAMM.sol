@@ -12,6 +12,7 @@ import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
 import "../interfaces/IBinaryOptionMarketManager.sol";
 import "../interfaces/IBinaryOption.sol";
+import "../interfaces/IStakingThales.sol";
 import "./DeciMath.sol";
 
 contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
@@ -48,6 +49,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     address public safeBox;
     uint public safeBoxImpact;
+
+    IStakingThales public stakingThales;
 
     function initialize(
         address _owner,
@@ -284,6 +287,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         IBinaryOption target = position == Position.Long ? long : short;
         IERC20(address(target)).transfer(msg.sender, amount);
 
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(msg.sender, sUSDPaid);
+        }
         _updateSpentOnOnMarketOnBuy(market, position, amount, sUSDPaid);
 
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
@@ -321,6 +327,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         sUSD.transfer(msg.sender, pricePaid);
 
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(msg.sender, pricePaid);
+        }
         _updateSpentOnMarketOnSell(market, position, amount, pricePaid, sUSDFromBurning);
 
         emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), address(target));
@@ -380,6 +389,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     function setSUSD(IERC20 _sUSD) public onlyOwner {
         sUSD = _sUSD;
         emit SetSUSD(address(sUSD));
+    }
+
+    function setStakingThales(IStakingThales _stakingThales) public onlyOwner {
+        stakingThales = _stakingThales;
+        emit SetStakingThales(address(_stakingThales));
     }
 
     function setBinaryOptionsMarketManager(address _manager) public onlyOwner {
@@ -556,4 +570,5 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     event SetSafeBoxImpact(uint _safeBoxImpact);
     event SetSafeBox(address _safeBox);
     event SetMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity);
+    event SetStakingThales(address _stakingThales);
 }

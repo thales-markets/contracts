@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 
 // Inheritance
 import "../interfaces/IPriceFeed.sol";
 import "../utils/proxy/ProxyOwned.sol";
 // Libraries
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 // Internal references
@@ -14,7 +14,6 @@ import "@chainlink/contracts-0.0.10/src/v0.5/interfaces/AggregatorV2V3Interface.
 
 contract PriceFeed is IPriceFeed, Initializable, ProxyOwned {
     using SafeMath for uint;
-    using SafeDecimalMath for uint;
 
     // Decentralized oracle networks that feed into pricing aggregators
     mapping(bytes32 => AggregatorV2V3Interface) public aggregators;

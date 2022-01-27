@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
@@ -10,8 +10,8 @@ import "./BinaryOptionMarket.sol";
 import "./BinaryOptionMarketFactory.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
-import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
-import "synthetix-2.50.4-ovm/contracts/MinimalProxyFactory.sol";
+import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
+import "../utils/MinimalProxyFactory.sol";
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 contract BinaryOptionMarketFactory is Initializable, ProxyOwned, MinimalProxyFactory {

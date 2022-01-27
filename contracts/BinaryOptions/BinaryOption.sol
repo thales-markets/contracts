@@ -1,11 +1,11 @@
-pragma solidity 0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 
 // Inheritance
-import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
+import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IBinaryOption.sol";
 
 // Libraries
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 
 // Internal references
 import "./BinaryOptionMarket.sol";
@@ -14,7 +14,6 @@ contract BinaryOption is IERC20, IBinaryOption {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
-    using SafeDecimalMath for uint;
 
     /* ========== STATE VARIABLES ========== */
 

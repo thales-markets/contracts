@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 
 // Contracts
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "../utils/Owned.sol";
 
 // Inheritance
 import "../interfaces/IPriceFeed.sol";
 
 // Libraries
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 
 // Internal references
 // AggregatorInterface from Chainlink represents a decentralized pricing network for a single currency key
@@ -16,7 +16,6 @@ import "@chainlink/contracts-0.0.10/src/v0.5/interfaces/AggregatorV2V3Interface.
 
 contract MockPriceFeed is Owned, IPriceFeed {
     using SafeMath for uint;
-    using SafeDecimalMath for uint;
 
     // Decentralized oracle networks that feed into pricing aggregators
     mapping(bytes32 => AggregatorV2V3Interface) public aggregators;
@@ -85,7 +84,6 @@ contract MockPriceFeed is Owned, IPriceFeed {
             if (array[i] == entry) {
                 delete array[i];
                 array[i] = array[array.length - 1];
-                array.length--;
                 return true;
             }
         }

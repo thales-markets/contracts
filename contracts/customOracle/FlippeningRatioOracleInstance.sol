@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 
 import "../interfaces/IOracleInstance.sol";
 import "./FlippeningRatioOracle.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "../utils/Owned.sol";
 
 contract FlippeningRatioOracleInstance is IOracleInstance, Owned {
     FlippeningRatioOracle public flippeningRatio;

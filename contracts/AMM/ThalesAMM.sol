@@ -1,8 +1,7 @@
-pragma solidity ^0.5.16;
-
-import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
+pragma solidity >=0.5.16 <0.8.0;
+import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 import "../utils/proxy/ProxyReentrancyGuard.sol";
@@ -17,7 +16,6 @@ import "./DeciMath.sol";
 
 contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
     using SafeMath for uint;
-    using SafeDecimalMath for uint;
 
     DeciMath public deciMath;
 

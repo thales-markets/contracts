@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
@@ -7,18 +7,17 @@ import "../interfaces/IBinaryOptionMarket.sol";
 import "../interfaces/IOracleInstance.sol";
 
 // Libraries
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 
 // Internal references
 import "./BinaryOptionMarketManager.sol";
 import "./BinaryOption.sol";
-import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
+import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
 
 contract BinaryOptionMarket is OwnedWithInit, IBinaryOptionMarket {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
-    using SafeDecimalMath for uint;
 
     /* ========== TYPES ========== */
 

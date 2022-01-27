@@ -1,13 +1,11 @@
 pragma solidity >=0.5.16 <0.8.4;
 
-contract OwnedWithInit {
+contract Owned {
     address public owner;
     address public nominatedOwner;
 
-    constructor() public {}
-
-    function initOwner(address _owner) internal {
-        require(owner == address(0), "Init can only be called when owner is 0");
+    constructor(address _owner) public {
+        require(_owner != address(0), "Owner address cannot be 0");
         owner = _owner;
         emit OwnerChanged(address(0), _owner);
     }

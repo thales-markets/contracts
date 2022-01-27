@@ -1,9 +1,8 @@
-pragma solidity ^0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 
 import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
 import "./SportFeed.sol";
 import "../interfaces/IOracleInstance.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
 import "solidity-util/lib/Integers.sol";
 
 contract SportFeedOracleInstance is IOracleInstance, Owned {

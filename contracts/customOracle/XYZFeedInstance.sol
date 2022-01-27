@@ -1,8 +1,8 @@
-pragma solidity ^0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 
 import "../interfaces/IOracleInstance.sol";
 import "./IMerkleDistributor.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "../utils/Owned.sol";
 
 contract XYZFeedInstance is IOracleInstance, Owned {
     IMerkleDistributor public iMerkleDistributor;

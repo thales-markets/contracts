@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 
 import "@chainlink/contracts/src/v0.5/interfaces/AggregatorV2V3Interface.sol";
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "../utils/Owned.sol";
 
 contract FlippeningRatioOracle is Owned {
     using SafeMath for uint;
-    using SafeDecimalMath for uint;
 
     AggregatorV2V3Interface internal firstMarketcap;
     AggregatorV2V3Interface internal secondMarketcap;

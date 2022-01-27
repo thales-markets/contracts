@@ -1,7 +1,6 @@
-pragma solidity ^0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 
 import "../utils/proxy/ProxyReentrancyGuard.sol";
@@ -14,7 +13,6 @@ import "../interfaces/IStakingThales.sol";
 
 contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     using SafeMath for uint;
-    using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;
 
     IERC20 public vestingToken;

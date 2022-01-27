@@ -1,4 +1,4 @@
-pragma solidity 0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
@@ -7,8 +7,8 @@ import "../utils/proxy/ProxyOwned.sol";
 import "../utils/proxy/ProxyPausable.sol";
 
 // Libraries
-import "synthetix-2.50.4-ovm/contracts/AddressSetLib.sol";
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "../utils/libraries/AddressSetLib.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
 
 // Internal references
 import "./BinaryOptionMarketFactory.sol";
@@ -16,7 +16,7 @@ import "./BinaryOptionMarket.sol";
 import "./BinaryOption.sol";
 import "../interfaces/IBinaryOptionMarket.sol";
 import "../interfaces/IPriceFeed.sol";
-import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
+import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 contract BinaryOptionMarketManager is Initializable, ProxyOwned, ProxyPausable, IBinaryOptionMarketManager {

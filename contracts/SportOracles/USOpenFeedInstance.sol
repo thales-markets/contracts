@@ -1,9 +1,9 @@
-pragma solidity ^0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 
 import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
 import "./USOpenFeed.sol";
 import "../interfaces/IOracleInstance.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "../utils/Owned.sol";
 
 contract USOpenFeedInstance is IOracleInstance, Owned {
     using Chainlink for Chainlink.Request;

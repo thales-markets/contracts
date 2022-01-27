@@ -1,11 +1,9 @@
-pragma solidity ^0.5.16;
+pragma solidity >=0.5.16 <0.8.4;
 
-import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
+import "../utils/Pausable.sol";
 import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
 import "../interfaces/IPriceFeed.sol";
 
 contract ThalesRoyalePrivateRoom is Owned, Pausable {
@@ -13,7 +11,6 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
-    using SafeDecimalMath for uint;
     using SafeERC20 for IERC20;
 
     /* ========== ROOM TYPES ========== */

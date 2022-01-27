@@ -34,9 +34,11 @@ async function main() {
 	}
 	const ProxyStaking = getTargetAddress('StakingThales', network);
 	const NewStaking = await ethers.getContractFactory('StakingThales');
-	console.log('Staking upgraded');
 
 	await upgrades.upgradeProxy(ProxyStaking, NewStaking);
+	await delay(5000);
+
+	console.log('Staking upgraded');
 
 	const StakingImplementation = await getImplementationAddress(ethers.provider, ProxyStaking);
 	console.log('Implementation Staking: ', StakingImplementation);

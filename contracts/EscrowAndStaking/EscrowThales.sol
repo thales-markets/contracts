@@ -87,12 +87,19 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
 
         totalAccountEscrowedAmount[account] = totalAccountEscrowedAmount[account].add(amount);
 
-        lastPeriodAddedReward[account] = currentVestingPeriod;
-
-        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
-        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(
-            NUM_PERIODS
-        );
+        if (lastPeriodAddedReward[account] == currentVestingPeriod) {
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = vestingEntries[account][
+                currentVestingPeriod.mod(NUM_PERIODS)
+            ]
+                .amount
+                .add(amount);
+        } else {
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(
+                NUM_PERIODS
+            );
+            lastPeriodAddedReward[account] = currentVestingPeriod;
+        }
 
         totalEscrowedRewards = totalEscrowedRewards.add(amount);
         //Transfering THALES from StakingThales to EscrowThales
@@ -161,19 +168,12 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         airdropContract = AirdropContract;
         emit AirdropContractChanged(AirdropContract);
     }
-    
+
     function setThalesStakingRewardsPool(address _thalesStakingRewardsPool) public onlyOwner {
         require(_thalesStakingRewardsPool != address(0), "Invalid address");
         ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);
         emit ThalesStakingRewardsPoolChanged(_thalesStakingRewardsPool);
     }
-
-    /*  Selfdestruct operation potentially harmful for proxy contracts
-     */
-    // function selfDestruct(address payable account) external onlyOwner {
-    //     vestingToken.safeTransfer(account, vestingToken.balanceOf(address(this)));
-    //     selfdestruct(account);
-    // }
 
     /* ========== INTERNAL FUNCTIONS ========== */
 

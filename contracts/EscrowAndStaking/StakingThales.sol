@@ -561,14 +561,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit AMMVolumeUpdated(account, amount);
     }
 
-    /*  Selfdestruct operation potentially harmful for proxy contracts
-     */
-    // function selfDestruct(address payable account) external onlyOwner {
-    //     stakingToken.safeTransfer(account, stakingToken.balanceOf(address(this)));
-    //     feeToken.safeTransfer(account, feeToken.balanceOf(address(this)));
-    //     selfdestruct(account);
-    // }
-
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _claimReward(address account) internal notPaused {

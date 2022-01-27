@@ -175,13 +175,6 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         emit ThalesStakingRewardsPoolChanged(_thalesStakingRewardsPool);
     }
 
-    /*  Selfdestruct operation potentially harmful for proxy contracts
-     */
-    // function selfDestruct(address payable account) external onlyOwner {
-    //     vestingToken.safeTransfer(account, vestingToken.balanceOf(address(this)));
-    //     selfdestruct(account);
-    // }
-
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _getVestingNotAvailable(address account) internal view returns (uint) {

@@ -343,6 +343,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function getCRatio(address account) public view returns (uint) {
+        uint debt = SNXRewards.debtBalanceOf(account, "sUSD");
+        if (debt == 0) {
+            return 0;
+        }
         uint hund = 100 * 100 * 1e18;
         (uint cRatio, ) = SNXRewards.collateralisationRatioAndAnyRatesInvalid(account);
         return hund.div(cRatio);

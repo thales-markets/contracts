@@ -53,7 +53,7 @@ async function main() {
 	console.log('Thales address: ', thalesAddress);
 
 	const ProxyStaking = await ethers.getContractFactory('LPStakingRewards');
-	const gUNIPoolAddress = getTargetAddress('GUniPoolAddress', network);
+	const gUNIPoolAddress = getTargetAddress('GUniLPToken', network);
 
 	let ProxyStaking_deployed = await upgrades.deployProxy(ProxyStaking, [
 		owner.address,

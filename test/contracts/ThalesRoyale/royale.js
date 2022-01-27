@@ -1521,7 +1521,15 @@ contract('ThalesRoyale', accounts => {
 		canStartNewSeason = await royale.canStartNewSeason();
 		assert.equal(canStartNewSeason, true);
 
+		await expect(royale.putFunds(toUnit(100), season_1, { from: owner })).to.be.revertedWith(
+			'Season is finished'
+		);
+
 		const tx1 = await royale.startNewSeason({ from: owner });
+
+		await expect(royale.putFunds(toUnit(100), season_1, { from: owner })).to.be.revertedWith(
+			'Cant put funds in a past'
+		);
 
 		// check if new season is started event called
 		assert.eventEqual(tx1.logs[0], 'NewSeasonStarted', {

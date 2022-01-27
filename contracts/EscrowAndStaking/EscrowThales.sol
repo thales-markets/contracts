@@ -87,12 +87,19 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
 
         totalAccountEscrowedAmount[account] = totalAccountEscrowedAmount[account].add(amount);
 
-        lastPeriodAddedReward[account] = currentVestingPeriod;
-
-        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
-        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(
-            NUM_PERIODS
-        );
+        if (lastPeriodAddedReward[account] == currentVestingPeriod) {
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = vestingEntries[account][
+                currentVestingPeriod.mod(NUM_PERIODS)
+            ]
+                .amount
+                .add(amount);
+        } else {
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(
+                NUM_PERIODS
+            );
+            lastPeriodAddedReward[account] = currentVestingPeriod;
+        }
 
         totalEscrowedRewards = totalEscrowedRewards.add(amount);
         //Transfering THALES from StakingThales to EscrowThales

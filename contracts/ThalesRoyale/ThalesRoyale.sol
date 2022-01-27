@@ -368,6 +368,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     function putFunds(uint _amount, uint _season) external {
         require(_amount > 0, "Amount must be more then zero");
         require(_season >= season, "Cant put funds in a past");
+        require(!seasonFinished[_season], "Season is finished");
         require(rewardToken.allowance(msg.sender, address(this)) >= _amount, "No allowance.");
 
         _putFunds(msg.sender, _amount, _season);

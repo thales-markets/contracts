@@ -86,6 +86,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     mapping(address => uint) private _lastStakingPeriod;
 
+    uint public totalStakedLastPeriodEnd;
+    uint public totalEscrowedLastPeriodEnd;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -256,7 +259,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         if (
             (_lastStakingPeriod[account] == periodsOfStaking) ||
             (_stakedBalances[account] == 0) ||
-            (_lastRewardsClaimedPeriod[account] == periodsOfStaking)
+            (_lastRewardsClaimedPeriod[account] == periodsOfStaking) ||
+            (totalStakedLastPeriodEnd == 0)
         ) {
             return 0;
         }
@@ -264,7 +268,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             _stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
                 .mul(currentPeriodRewards)
-                .div(_totalStakedAmount.add(_totalEscrowedAmount));
+                .div(totalStakedLastPeriodEnd.add(totalEscrowedLastPeriodEnd));
     }
 
     function getAMMVolume(address account) external view returns (uint) {
@@ -405,6 +409,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         _totalUnclaimedRewards = _totalUnclaimedRewards.add(currentPeriodRewards.add(periodExtraReward));
 
         currentPeriodFees = feeToken.balanceOf(address(this));
+
+        totalStakedLastPeriodEnd = _totalStakedAmount;
+        totalEscrowedLastPeriodEnd = _totalEscrowedAmount;
 
         emit ClosedPeriod(periodsOfStaking, lastPeriodTimeStamp);
     }
@@ -615,7 +622,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             _stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
                 .mul(currentPeriodFees)
-                .div(_totalStakedAmount.add(_totalEscrowedAmount));
+                .div(totalStakedLastPeriodEnd.add(totalEscrowedLastPeriodEnd));
     }
 
     function _getSNXStakedForAccount(address account) internal view returns (uint) {

@@ -38,6 +38,7 @@ async function main() {
 	console.log('Escrow upgraded');
 
 	await upgrades.upgradeProxy(ProxyEscrow, NewEscrow);
+	await delay(5000);
 
 	const EscrowImplementation = await getImplementationAddress(ethers.provider, ProxyEscrow);
 	console.log('Implementation Escrow: ', EscrowImplementation);

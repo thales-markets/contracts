@@ -633,7 +633,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         if (cRatio < targetRatio) {
             return (cRatio.mul(cRatio).mul(debt).mul(1e14)).div(targetRatio.mul(snxPrice));
         } else {
-            return (cRatio.mul(debt).mul(1e14)).div(snxPrice);
+            return (targetRatio.mul(debt).mul(1e14)).div(snxPrice);
         }
     }
 

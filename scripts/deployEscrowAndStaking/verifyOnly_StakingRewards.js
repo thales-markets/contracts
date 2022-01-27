@@ -73,25 +73,17 @@ async function main() {
 	const ThalesStakingRewardsPool = await ethers.getContractFactory('ThalesStakingRewardsPool');
 	const StakingAddress = getTargetAddress('StakingThales', network);
 	const EscrowAddress = getTargetAddress('EscrowThales', network);
+	const ThalesStakingRewardsPoolDeployed = getTargetAddress('ThalesStakingRewardsPool', network);
 
-	let ThalesStakingRewardsPoolDeployed = await upgrades.deployProxy(ThalesStakingRewardsPool, [
-		owner.address,
-		StakingAddress,
-		thalesAddress,
-		EscrowAddress,
-	]);
-	await ThalesStakingRewardsPoolDeployed.deployed();
-
-	console.log('ThalesStakingRewardsPool proxy:', ThalesStakingRewardsPoolDeployed.address);
+	console.log('ThalesStakingRewardsPool proxy:', ThalesStakingRewardsPoolDeployed);
 
 	const ThalesStakingRewardsPoolImplementation = await getImplementationAddress(
 		ethers.provider,
-		ThalesStakingRewardsPoolDeployed.address
+		ThalesStakingRewardsPoolDeployed
 	);
 
 	console.log('Implementation ThalesStakingRewardsPool: ', ThalesStakingRewardsPoolImplementation);
 
-	setTargetAddress('ThalesStakingRewardsPool', network, ThalesStakingRewardsPoolDeployed.address);
 	setTargetAddress(
 		'ThalesStakingRewardsPoolImplementation',
 		network,
@@ -108,7 +100,7 @@ async function main() {
 
 	try {
 		await hre.run('verify:verify', {
-			address: ThalesStakingRewardsPoolDeployed.address,
+			address: ThalesStakingRewardsPoolDeployed,
 		});
 	} catch (e) {
 		console.log(e);

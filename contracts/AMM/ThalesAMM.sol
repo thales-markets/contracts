@@ -52,7 +52,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     address public safeBox;
     uint public safeBoxImpact;
 
-    IStakingThales stakingThales;
+    IStakingThales public stakingThales;
 
     function initialize(
         address _owner,
@@ -289,8 +289,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         IBinaryOption target = position == Position.Long ? long : short;
         IERC20(address(target)).transfer(msg.sender, amount);
 
-        if(address(stakingThales) != address(0)){
-            stakingThales.updateVolume(msg.sender, amount);
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(msg.sender, sUSDPaid);
         }
         _updateSpentOnOnMarketOnBuy(market, position, amount, sUSDPaid);
 
@@ -329,8 +329,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         sUSD.transfer(msg.sender, pricePaid);
 
-        if(address(stakingThales) != address(0)){
-            stakingThales.updateVolume(msg.sender, amount);
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(msg.sender, pricePaid);
         }
         _updateSpentOnMarketOnSell(market, position, amount, pricePaid, sUSDFromBurning);
 

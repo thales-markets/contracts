@@ -94,12 +94,18 @@ async function checkForMultisigs() {
 				console.log('Staker ' + stakerAddress + ' is a contract');
 			}
 		}
+
+		let unstaking = await stakingThales.unstaking(stakerAddress);
+		let unstakingAmount = await stakingThales.unstakingAmount(stakerAddress);
+
 		let walletObject = {};
 		if (walletsforMigrationMap.has(stakerAddress)) {
 			walletObject = walletsforMigrationMap.get(stakerAddress);
 		}
 		walletObject.totalStaked = numberExponentToLarge(stakedBalanceOfBN.toString());
 		walletObject.isContract = isContract;
+		walletObject.unstaking = unstaking;
+		walletObject.unstakingAmount = numberExponentToLarge(unstakingAmount.toString());
 		walletsforMigrationMap.set(stakerAddress, walletObject);
 	}
 

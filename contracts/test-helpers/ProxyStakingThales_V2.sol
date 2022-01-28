@@ -13,7 +13,7 @@ import "../interfaces/IStakingThales.sol";
 import "../interfaces/ISNXRewards.sol";
 import "../interfaces/IThalesRoyale.sol";
 import "../interfaces/IPriceFeed.sol";
-
+import "../interfaces/IThalesStakingRewardsPool.sol";
 contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     /* ========== LIBRARIES ========== */
 
@@ -71,6 +71,12 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private stakerAMMVolume;
 
     bool public extraRewardsActive;
+    uint public maxSNXRewardsPercentage;
+    uint public maxAMMVolumeRewardsPercentage;
+    uint public AMMVolumeRewardsMultiplier;
+    uint public maxThalesRoyaleRewardsPercentage;
+    
+    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
     uint public _contractVersion;
 
     /* ========== CONSTRUCTOR ========== */

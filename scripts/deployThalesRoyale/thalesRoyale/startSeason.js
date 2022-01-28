@@ -1,6 +1,7 @@
 const { ethers } = require('hardhat');
 const { getTargetAddress} = require('../../helpers');
 const w3utils = require('web3-utils');
+const snx = require('synthetix-2.50.4-ovm');
 
 async function main() {
     
@@ -8,7 +9,7 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let SafeboxAddress;
+	let ProxyERC20sUSDaddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -31,41 +32,29 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-    /* ========== PROPERTIES ========== */
-
-	const safeBoxPercentage = 5; // CHANGE for percntage
-
-    /* ========== SAFE BOX FOR ROYALE ========== */
+    /* ========== START ROYALE SEASON ========== */
 
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const thalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
 	console.log('Found ThalesRoyale at:', thalesRoyaleAddress);
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 69) {
-		SafeboxAddress = getTargetAddress('SafaBox', network);
-	} else {
-		const Safebox = snx.getTarget({ network, contract: 'SafaBox' });
-		SafeboxAddress = Safebox.address;
-	}
-
     const royale = await ThalesRoyale.attach(
 		thalesRoyaleAddress
 	);
 
-	// setSafeBoxPercentage
-	let tx = await royale.setSafeBoxPercentage(safeBoxPercentage);
+	// start season funds
+	let tx = await royale.startNewSeason({from: owner.address});
 	
 	await tx.wait().then(e => {
-		console.log('Safe box percentage: ', safeBoxPercentage);
+		console.log('New season started');
 	});
 
-	// setSafeBox
-	tx = await royale.setSafeBox(SafeboxAddress);
-	
-	await tx.wait().then(e => {
-		console.log('Safe box address: ', SafeboxAddress);
-	});
+}
 
+function delay(time) {
+	return new Promise(function (resolve) {
+		setTimeout(resolve, time);
+	});
 }
 
 main()

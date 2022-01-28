@@ -42,9 +42,9 @@ async function main() {
 	console.log('Found ThalesRoyale at:', thalesRoyaleAddress);
 
 	if (networkObj.chainId == 10 || networkObj.chainId == 69) {
-		SafeboxAddress = getTargetAddress('SafaBox', network);
+		SafeboxAddress = getTargetAddress('SafeBox', network);
 	} else {
-		const Safebox = snx.getTarget({ network, contract: 'SafaBox' });
+		const Safebox = snx.getTarget({ network, contract: 'SafeBox' });
 		SafeboxAddress = Safebox.address;
 	}
 

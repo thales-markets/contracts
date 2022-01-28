@@ -448,7 +448,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit Staked(msg.sender, amount);
     }
 
-    function stakeOnBehalf(uint amount, address staker) external nonReentrant notPaused onlyOwner {
+    function stakeOnBehalf(uint amount, address staker) external nonReentrant onlyOwner {
         require(startTimeStamp > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
         require(
@@ -478,7 +478,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit StakedOnBehalf(msg.sender, staker, amount);
     }
 
-    function startUnstake(uint amount) external {
+    function startUnstake(uint amount) external notPaused {
         require(amount > 0, "Cannot unstake 0");
         require(_stakedBalances[msg.sender] >= amount, "Account doesnt have that much staked");
         require(unstaking[msg.sender] == false, "Account has already triggered unstake cooldown");
@@ -504,7 +504,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit UnstakeCooldown(msg.sender, lastUnstakeTime[msg.sender].add(unstakeDurationPeriod), amount);
     }
 
-    function cancelUnstake() external {
+    function cancelUnstake() external notPaused {
         require(unstaking[msg.sender] == true, "Account is not unstaking");
 
         // on revert full unstake remove his escrowed balance from totalEscrowBalanceNotIncludedInStaking
@@ -528,7 +528,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit CancelUnstake(msg.sender);
     }
 
-    function unstake() external {
+    function unstake() external notPaused {
         require(unstaking[msg.sender] == true, "Account has not triggered unstake cooldown");
         require(
             lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),

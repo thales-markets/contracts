@@ -51,6 +51,8 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         vestingToken = IERC20(_vestingToken);
     }
 
+    /* ========== VIEWS ========== */
+
     function getStakerPeriod(address account, uint index) external view returns (uint) {
         require(account != address(0), "Invalid account address");
         return vestingEntries[account][index].vesting_period;
@@ -76,6 +78,8 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         require(account != address(0), "Invalid address");
         return totalAccountEscrowedAmount[account].sub(_getVestingNotAvailable(account));
     }
+
+    /* ========== PUBLIC ========== */
 
     function addToEscrow(address account, uint amount) external {
         require(account != address(0), "Invalid address");

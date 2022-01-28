@@ -41,14 +41,18 @@ async function main() {
 	console.log('Owner is:' + owner.address);
 	console.log('Network name:' + network);
 
-	let thalesAddress, ProxyERC20sUSD_address;
+	let thalesAddress;
 
-	if (networkObj.chainId == 69) {
+	if (networkObj.chainId == 10) {
+		thalesAddress = getTargetAddress('OpThales_L2', network);
+	} else if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 		thalesAddress = getTargetAddress('OpThales_L2', network);
 	} else {
 		thalesAddress = getTargetAddress('Thales', network);
 	}
+
+
 	// const thalesAddress = getTargetAddress('OpThales_L2', network);
 	console.log('Thales address: ', thalesAddress);
 
@@ -57,8 +61,8 @@ async function main() {
 
 	let ProxyStaking_deployed = await upgrades.deployProxy(ProxyStaking, [
 		owner.address,
-		thalesAddress,
-		gUNIPoolAddress,
+		'0x1a5dbe5a5e9e9139e68f34e68f1d0336f2573e43',
+		'0x7fad8444688c4babb792e960359ea467fd28d030',
 		WEEK * 4,
 	]);
 	let tx = await ProxyStaking_deployed.deployed();

@@ -66,10 +66,7 @@ contract Airdrop is Owned, Pausable {
 
     function _selfDestruct(address payable beneficiary) external onlyOwner {
         //only callable a year after end time
-        require(block.timestamp > (startTime + 365 days), "Contract can only be selfdestruct after a year");
-
         token.transfer(beneficiary, token.balanceOf(address(this)));
-
         selfdestruct(beneficiary);
     }
 

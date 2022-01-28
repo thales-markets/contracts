@@ -1314,6 +1314,16 @@
       "address": "0x09F9FBA4C2A2f51182e90888df6B954C68288200",
       "txHash": "0x0aa52c94fd2053d7f33a40d27459a6d9a5d16e9dd5e640ab32869754c43cf712",
       "kind": "transparent"
+    },
+    {
+      "address": "0xBfb2692Ae8c4399FD27977b9e14E8E69e31711d6",
+      "txHash": "0x97486415a3338499021fca33048b66c0a214d011f193f3bc093ca5a67c731475",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xfaDAa3E704acB3f82DC769C34518d4f306C55FAf",
+      "txHash": "0x62cd1b8418ade5f694736d9e3a01dfa5ec642c5208baf637d81594367eb51599",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -1503,13 +1513,13 @@
           {
             "contract": "EscrowThales",
             "label": "vestingToken",
-            "type": "t_contract(IERC20)27870",
+            "type": "t_contract(IERC20)28227",
             "src": "contracts/EscrowAndStaking/EscrowThales.sol:18"
           },
           {
             "contract": "EscrowThales",
             "label": "iStakingThales",
-            "type": "t_contract(IStakingThales)22938",
+            "type": "t_contract(IStakingThales)23285",
             "src": "contracts/EscrowAndStaking/EscrowThales.sol:19"
           },
           {
@@ -1568,10 +1578,10 @@
           }
         ],
         "types": {
-          "t_contract(IERC20)27870": {
+          "t_contract(IERC20)28227": {
             "label": "contract IERC20"
           },
-          "t_contract(IStakingThales)22938": {
+          "t_contract(IStakingThales)23285": {
             "label": "contract IStakingThales"
           },
           "t_address": {

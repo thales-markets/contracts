@@ -41,7 +41,9 @@ contract('StakingThales', accounts => {
 		SNXRewardsDeployed,
 		OngoingAirdropDeployed,
         ProxyEscrowDeployed,
-        ProxyStakingDeployed;
+		ProxyStakingDeployed,
+		ThalesStakingRewardsPoolDeployed;
+	let ThalesStakingRewardsPool;
 
     let initializeStalkingData,
         initializeEscrowData;
@@ -155,6 +157,17 @@ contract('StakingThales', accounts => {
             from: initialCreator,
         });
 
+		ThalesStakingRewardsPool = artifacts.require('ThalesStakingRewardsPool');
+		ThalesStakingRewardsPoolDeployed = await ThalesStakingRewardsPool.new({from:owner});
+		await ThalesStakingRewardsPoolDeployed.initialize(
+				owner, 
+				ProxyStakingDeployed.address,
+				ThalesDeployed.address,
+				EscrowThalesDeployed.address);
+		await StakingThalesDeployed.setThalesStakingRewardsPool(ThalesStakingRewardsPoolDeployed.address, { from: owner });
+		await EscrowThalesDeployed.setThalesStakingRewardsPool(ThalesStakingRewardsPoolDeployed.address, { from: owner });
+		
+
 		
 		await StakingThalesDeployed.setDistributeFeesEnabled(true, { from: owner });
 		await StakingThalesDeployed.setClaimEnabled(true, { from: owner });
@@ -190,7 +203,7 @@ contract('StakingThales', accounts => {
 
 				// Set amounts in account and StakingThales
 				await ThalesDeployed.transfer(
-					StakingThalesDeployed.address,
+					ThalesStakingRewardsPoolDeployed.address,
 					fixedReward.mul(weeksOfStakingToTest),
 					{
 						from: owner,
@@ -202,7 +215,7 @@ contract('StakingThales', accounts => {
 					from: initialCreator,
 				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.bnEqual(answer, toUnit(100000));
+				assert.bnEqual(answer, toUnit(70000));
 				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
@@ -230,7 +243,7 @@ contract('StakingThales', accounts => {
 				assert.bnEqual(answer, userStake);
 
 				answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
-				assert.bnEqual(answer, userStake.add(fixedReward.mul(weeksOfStakingToTest)));
+				assert.bnEqual(answer, fixedReward.mul(weeksOfStakingToTest));
 
 				answer = await StakingThalesDeployed.periodsOfStaking.call();
 				assert.bnEqual(answer, period);
@@ -280,7 +293,7 @@ contract('StakingThales', accounts => {
 
 				// Set amounts in account and StakingThales
 				await ThalesDeployed.transfer(
-					StakingThalesDeployed.address,
+					ThalesStakingRewardsPoolDeployed.address,
 					fixedReward.mul(weeksOfStakingToTest),
 					{
 						from: owner,
@@ -292,7 +305,7 @@ contract('StakingThales', accounts => {
 					from: initialCreator,
 				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.bnEqual(answer, toUnit(100000));
+				assert.bnEqual(answer, toUnit(70000));
 				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
@@ -320,7 +333,7 @@ contract('StakingThales', accounts => {
 				assert.bnEqual(answer, userStake);
 
 				answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
-				assert.bnEqual(answer, userStake.add(fixedReward.mul(weeksOfStakingToTest)));
+				assert.bnEqual(answer,fixedReward.mul(weeksOfStakingToTest));
 
 				answer = await StakingThalesDeployed.periodsOfStaking.call();
 				assert.bnEqual(answer, period);
@@ -391,7 +404,7 @@ contract('StakingThales', accounts => {
 				let period = 0;
 
 				await ThalesDeployed.transfer(
-					StakingThalesDeployed.address,
+					ThalesStakingRewardsPoolDeployed.address,
 					fixedReward.mul(weeksOfStakingToTest),
 					{
 						from: owner,
@@ -400,7 +413,7 @@ contract('StakingThales', accounts => {
 				await sUSDSynth.issue(initialCreator, sUSD);
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 				let answer = await StakingThalesDeployed.fixedPeriodReward.call();
-				assert.bnEqual(answer, toUnit(100000));
+				assert.bnEqual(answer, toUnit(70000));
 				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
@@ -438,7 +451,7 @@ contract('StakingThales', accounts => {
 				answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 				let sum_rewards = toBN(0);
 				sum_rewards = fixedReward.mul(weeksOfStakingToTest);
-				sum_rewards = sum_rewards.add(totalStaked);
+				// sum_rewards = sum_rewards.add(totalStaked);
 				assert.bnEqual(answer, sum_rewards);
 
 				answer = await StakingThalesDeployed.periodsOfStaking.call();
@@ -535,7 +548,7 @@ contract('StakingThales', accounts => {
 					console.log('Please put at least 10 weeks of staking for testing');
 				} else {
 					await ThalesDeployed.transfer(
-						StakingThalesDeployed.address,
+						ThalesStakingRewardsPoolDeployed.address,
 						fixedReward.mul(weeksOfStakingToTest),
 						{
 							from: owner,
@@ -544,7 +557,7 @@ contract('StakingThales', accounts => {
 					await sUSDSynth.issue(initialCreator, sUSD);
 					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 					let answer = await StakingThalesDeployed.fixedPeriodReward.call();
-					assert.bnEqual(answer, toUnit(100000));
+					assert.bnEqual(answer, toUnit(70000));
 					await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
 					answer = await StakingThalesDeployed.fixedPeriodReward.call();
 					assert.bnEqual(answer, fixedReward);
@@ -583,7 +596,7 @@ contract('StakingThales', accounts => {
 					answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 					let sum_rewards = toBN(0);
 					sum_rewards = fixedReward.mul(weeksOfStakingToTest);
-					sum_rewards = sum_rewards.add(totalStaked);
+					// sum_rewards = sum_rewards.add(totalStaked);
 					assert.bnEqual(answer, sum_rewards);
 
 					answer = await StakingThalesDeployed.periodsOfStaking.call();

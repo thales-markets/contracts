@@ -33,7 +33,7 @@ async function main() {
 
     /* ========== PROPERTIES ========== */
 
-	const safeBoxPercentage = 5; // CHANGE for percntage
+	const safeBoxPercentage = 0; // CHANGE for percntage
 
     /* ========== SAFE BOX FOR ROYALE ========== */
 
@@ -41,12 +41,8 @@ async function main() {
 	const thalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
 	console.log('Found ThalesRoyale at:', thalesRoyaleAddress);
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 69) {
-		SafeboxAddress = getTargetAddress('SafeBox', network);
-	} else {
-		const Safebox = snx.getTarget({ network, contract: 'SafeBox' });
-		SafeboxAddress = Safebox.address;
-	}
+	SafeboxAddress = getTargetAddress('SafeBox', network);
+	console.log('Found SafeBox at:', SafeboxAddress);
 
     const royale = await ThalesRoyale.attach(
 		thalesRoyaleAddress

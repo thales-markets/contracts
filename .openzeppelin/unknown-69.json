@@ -5907,7 +5907,7 @@
           {
             "contract": "ThalesRoyale",
             "label": "rewardToken",
-            "type": "t_contract(IERC20Upgradeable)950",
+            "type": "t_contract(IERC20Upgradeable)390",
             "src": "contracts/ThalesRoyale/ThalesRoyale.sol:32"
           },
           {
@@ -5919,7 +5919,7 @@
           {
             "contract": "ThalesRoyale",
             "label": "priceFeed",
-            "type": "t_contract(IPriceFeed)4657",
+            "type": "t_contract(IPriceFeed)3188",
             "src": "contracts/ThalesRoyale/ThalesRoyale.sol:34"
           },
           {
@@ -6122,13 +6122,13 @@
           }
         ],
         "types": {
-          "t_contract(IERC20Upgradeable)950": {
+          "t_contract(IERC20Upgradeable)390": {
             "label": "contract IERC20Upgradeable"
           },
           "t_bytes32": {
             "label": "bytes32"
           },
-          "t_contract(IPriceFeed)4657": {
+          "t_contract(IPriceFeed)3188": {
             "label": "contract IPriceFeed"
           },
           "t_address": {

@@ -83,22 +83,27 @@ async function main() {
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
 	});
-	// tx = await StakingThales.setThalesRoyale(ThalesRoyaleAddress, {from:owner.address});
-	// await tx.wait().then(e => {
-	// 	console.log('Staking Thales: setThalesRoyale ', ThalesRoyaleAddress);
-	// });
+	
+	tx = await StakingThales.setThalesRoyale(ThalesRoyaleAddress, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setThalesRoyale ', ThalesRoyaleAddress);
+	});
+	
 	tx = await StakingThales.setPriceFeed(PriceFeedAddress, {from:owner.address});
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setPriceFeed ',PriceFeedAddress);
 	});
+	
 	tx = await StakingThales.setMaxSNXRewardsPercentage(maxSNXPercentage, {from:owner.address});
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setMaxSNXRewardsPercentage ',maxSNXPercentage);
 	});
+	
 	tx = await StakingThales.setMaxAMMVolumeRewardsPercentage(maxAMMPercentage, {from:owner.address});
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setMaxAMMVolumeRewardsPercentage ',maxAMMPercentage);
 	});
+	
 	tx = await StakingThales.setAMMVolumeRewardsMultiplier(AMMMultiplier, {from:owner.address});
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setAMMVolumeRewardsMultiplier ',AMMMultiplier);

@@ -20,7 +20,7 @@ const Escrow_THALES = getTargetAddress('EscrowThales', 'mainnet');
 const EscrowThalesABI = require('../../abi/EscrowThales.json');
 const escrowThalesContract = new web3.eth.Contract(EscrowThalesABI, Escrow_THALES);
 
-async function checkForMultisigs() {
+async function prepareStakingEscrowMigration() {
 	const StakingThales = await ethers.getContractFactory('StakingThales');
 	let stakingThales = await StakingThales.attach(STAKING_THALES);
 
@@ -127,7 +127,7 @@ async function checkForMultisigs() {
 	await csv.toDisk('scripts/THALES_migration/stakingEscrowMigration/migrationSnapshot.csv');
 }
 
-checkForMultisigs()
+prepareStakingEscrowMigration()
 	.then(() => process.exit(0))
 	.catch(error => {
 		console.error(error);

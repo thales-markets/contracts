@@ -32,18 +32,19 @@ After the rewards are calculated on 2nd of February
     `npx hardhat run --network optimistic scripts/deployEscrowAndStaking/deploy_StakingRewards.js`
 12. Update Staking and Escrow parameteres with // already done
     `npx hardhat run --network optimistic scripts/deployEscrowAndStaking/update_addresses_on_Staking.js`
-13. Execute migration of staking on L2
-    a. Start staking then pause staking and escrow contracts.
-    b. set owner to deployer temporarily
-    c. fund deployer
-    d. remove those that opted out from the input file and send L1 THALES to them directly (store them in another file optedOutAccounts.json)
-    e. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigration.js`
-    f. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigrationSendETH.js`
-    g. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigrationSendETHSendEscrow.js`
-    h. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigrationSendETHUnstaking.js`
-    i. run sanity check scripts
-    j. sanity check  
-    k. return owner to pdao
+13. Execute migration of staking on L2  
+    a. Start staking then pause staking and escrow contracts.  
+    b. set owner to deployer temporarily  
+    c. fund deployer  
+    d. remove those that opted out from the input file and send L1 THALES to them directly (store them in another file optedOutAccounts.json)    
+    e. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigration.js`  
+    f. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigrationSendETH.js`  
+    g. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigrationSendETHSendEscrow.js`  
+    h. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigrationSendETHUnstaking.js`  
+    i. run sanity check scripts  
+    j. sanity check    
+    k. return owner to pdao  
+    
 14. Execute migration of airdrop to l2
     a. `npx hardhat run --network optimistic scripts/THALES_migration/airdropMigration/executeAirdropMigration.js`  
     b. pause airdrop

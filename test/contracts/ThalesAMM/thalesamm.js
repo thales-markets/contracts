@@ -23,14 +23,14 @@ const {
 	convertToDecimals,
 } = require('../../utils/helpers');
 
-let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
-let BinaryOptionMarket,
+let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
+let PositionalMarket,
 	priceFeed,
 	oracle,
 	sUSDSynth,
-	binaryOptionMarketMastercopy,
-	binaryOptionMastercopy;
-let market, long, short, BinaryOption, Synth;
+	PositionalMarketMastercopy,
+	PositionMastercopy;
+let market, long, short, position, Synth;
 
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
@@ -88,11 +88,11 @@ contract('ThalesAMM', accounts => {
 		);
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find((event) => event['event'] && event['event'] === 'MarketCreated');
-		return BinaryOptionMarket.at(marketEvent.args.market);
+		return PositionalMarket.at(marketEvent.args.market);
 	};
 
 	before(async () => {
-		BinaryOptionMarket = artifacts.require('BinaryOptionMarket');
+		PositionalMarket = artifacts.require('PositionalMarket');
 	});
 
 	before(async () => {
@@ -100,15 +100,15 @@ contract('ThalesAMM', accounts => {
 	});
 
 	before(async () => {
-		BinaryOption = artifacts.require('BinaryOption');
+		position = artifacts.require('Position');
 	});
 
 	before(async () => {
 		({
-			BinaryOptionMarketManager: manager,
-			BinaryOptionMarketFactory: factory,
-			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
-			BinaryOptionMastercopy: binaryOptionMastercopy,
+			PositionalMarketManager: manager,
+			PositionalMarketFactory: factory,
+			PositionalMarketMastercopy: PositionalMarketMastercopy,
+			PositionMastercopy: PositionMastercopy,
 			AddressResolver: addressResolver,
 			PriceFeed: priceFeed,
 			SynthsUSD: sUSDSynth,
@@ -118,19 +118,19 @@ contract('ThalesAMM', accounts => {
 			contracts: [
 				'FeePool',
 				'PriceFeed',
-				'BinaryOptionMarketMastercopy',
-				'BinaryOptionMastercopy',
-				'BinaryOptionMarketFactory',
+				'PositionalMarketMastercopy',
+				'PositionMastercopy',
+				'PositionalMarketFactory',
 			],
 		}));
 
 		[creatorSigner, ownerSigner] = await ethers.getSigners();
 
-		await manager.connect(creatorSigner).setBinaryOptionsMarketFactory(factory.address);
+		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
-		await factory.connect(ownerSigner).setBinaryOptionMarketManager(manager.address);
-		await factory.connect(ownerSigner).setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address);
-		await factory.connect(ownerSigner).setBinaryOptionMastercopy(binaryOptionMastercopy.address);
+		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
+		await factory.connect(ownerSigner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
+		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 		aggregator_sETH = await MockAggregator.new({ from: managerOwner });
@@ -204,7 +204,7 @@ contract('ThalesAMM', accounts => {
 			toUnit(0.05),
 			hour * 2
 		);
-		await thalesAMM.setBinaryOptionsMarketManager(manager.address, { from: owner });
+		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
 		await thalesAMM.setSafeBoxImpact(toUnit(0.01), { from: owner });
 		await thalesAMM.setSafeBox(safeBox, { from: owner });
@@ -232,8 +232,8 @@ contract('ThalesAMM', accounts => {
 			console.log('priceUp decimal is:' + priceUp / 1e18);
 
 			let options = await newMarket.options();
-			long = await BinaryOption.at(options.long);
-			short = await BinaryOption.at(options.short);
+			long = await position.at(options.long);
+			short = await position.at(options.short);
 			await long.approve(thalesAMM.address, toUnit(1205), { from: minter });
 
 			await newMarket.mint(toUnit(1205), {
@@ -292,8 +292,8 @@ contract('ThalesAMM', accounts => {
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
 			let options = await newMarket.options();
-			long = await BinaryOption.at(options.long);
-			short = await BinaryOption.at(options.short);
+			long = await position.at(options.long);
+			short = await position.at(options.short);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			await newMarket.mint(toUnit(5800), {
@@ -454,8 +454,8 @@ contract('ThalesAMM', accounts => {
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
 			let options = await newMarket.options();
-			long = await BinaryOption.at(options.long);
-			short = await BinaryOption.at(options.short);
+			long = await position.at(options.long);
+			short = await position.at(options.short);
 
 			let ammLongBalance = await long.balanceOf(thalesAMM.address);
 			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);
@@ -569,8 +569,8 @@ contract('ThalesAMM', accounts => {
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
 			let options = await newMarket.options();
-			long = await BinaryOption.at(options.long);
-			short = await BinaryOption.at(options.short);
+			long = await position.at(options.long);
+			short = await position.at(options.short);
 
 			let ammLongBalance = await long.balanceOf(thalesAMM.address);
 			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);
@@ -689,8 +689,8 @@ contract('ThalesAMM', accounts => {
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
 			let options = await newMarket.options();
-			long = await BinaryOption.at(options.long);
-			short = await BinaryOption.at(options.short);
+			long = await position.at(options.long);
+			short = await position.at(options.short);
 
 			let ammLongBalance = await long.balanceOf(thalesAMM.address);
 			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);
@@ -961,8 +961,8 @@ contract('ThalesAMM', accounts => {
 			console.log('phase ' + phase);
 
 			let options = await newMarket.options();
-			long = await BinaryOption.at(options.long);
-			short = await BinaryOption.at(options.short);
+			long = await position.at(options.long);
+			short = await position.at(options.short);
 			await long.approve(thalesAMM.address, toUnit(100), { from: minter });
 			await short.approve(thalesAMM.address, toUnit(100), { from: minter });
 
@@ -1223,8 +1223,8 @@ contract('ThalesAMM', accounts => {
 			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
 
 			let options = await newMarket.options();
-			long = await BinaryOption.at(options.long);
-			short = await BinaryOption.at(options.short);
+			long = await position.at(options.long);
+			short = await position.at(options.short);
 
 			let ammLongBalance = await long.balanceOf(thalesAMM.address);
 			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);
@@ -1298,8 +1298,8 @@ contract('ThalesAMM', accounts => {
 			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
 			let options = await newMarket.options();
-			long = await BinaryOption.at(options.long);
-			short = await BinaryOption.at(options.short);
+			long = await position.at(options.long);
+			short = await position.at(options.short);
 
 			let ammShortBalance = await short.balanceOf(thalesAMM.address);
 			console.log('amm short pre buy decimal is:' + ammShortBalance / 1e18);
@@ -1356,8 +1356,8 @@ contract('ThalesAMM', accounts => {
 			);
 
 			let options = await newMarket.options();
-			long = await BinaryOption.at(options.long);
-			short = await BinaryOption.at(options.short);
+			long = await position.at(options.long);
+			short = await position.at(options.short);
 
 			let ammLongBalance = await long.balanceOf(thalesAMM.address);
 			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);

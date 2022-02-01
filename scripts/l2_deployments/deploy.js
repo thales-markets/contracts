@@ -115,37 +115,37 @@ async function main() {
 
 
 	// We get the contract to deploy
-	// 1. Deployment BinaryOption Mastercopy
-	const BinaryOptionMastercopy = await ethers.getContractFactory('BinaryOptionMastercopy');
-	const binaryOptionMastercopyDeployed = await BinaryOptionMastercopy.deploy();
-	await binaryOptionMastercopyDeployed.deployed();
+	// 1. Deployment Position Mastercopy
+	const PositionMastercopy = await ethers.getContractFactory('PositionMastercopy');
+	const PositionMastercopyDeployed = await PositionMastercopy.deploy();
+	await PositionMastercopyDeployed.deployed();
 
-	setTargetAddress('BinaryOptionMastercopy', network, binaryOptionMastercopyDeployed.address);
+	setTargetAddress('PositionMastercopy', network, PositionMastercopyDeployed.address);
 
-	console.log('BinaryOptionMastercopy deployed to:', binaryOptionMastercopyDeployed.address);
+	console.log('PositionMastercopy deployed to:', PositionMastercopyDeployed.address);
 	
-	// 2. Deployment BinaryOption Market Mastercopy
-	const BinaryOptionMarketMastercopy = await ethers.getContractFactory(
-		'BinaryOptionMarketMastercopy'
+	// 2. Deployment Position Market Mastercopy
+	const PositionalMarketMastercopy = await ethers.getContractFactory(
+		'PositionalMarketMastercopy'
 	);
-	const binaryOptionMarketMastercopyDeployed = await BinaryOptionMarketMastercopy.deploy();
-	await binaryOptionMarketMastercopyDeployed.deployed();
+	const PositionalMarketMastercopyDeployed = await PositionalMarketMastercopy.deploy();
+	await PositionalMarketMastercopyDeployed.deployed();
 	
-	setTargetAddress('BinaryOptionMarketMastercopy', network, binaryOptionMarketMastercopyDeployed.address);
+	setTargetAddress('PositionalMarketMastercopy', network, PositionalMarketMastercopyDeployed.address);
 	console.log(
-			'binaryOptionMarketMastercopy deployed to:',
-			binaryOptionMarketMastercopyDeployed.address
+			'PositionalMarketMastercopy deployed to:',
+			PositionalMarketMastercopyDeployed.address
 			);
 
-	// 3. Deployment BinaryOption Market Factory
-	const BinaryOptionMarketFactory = await ethers.getContractFactory('BinaryOptionMarketFactory');
-	const binaryOptionMarketFactoryDeployed = await BinaryOptionMarketFactory.deploy(owner.address);
-	await binaryOptionMarketFactoryDeployed.deployed();
+	// 3. Deployment Position Market Factory
+	const PositionalMarketFactory = await ethers.getContractFactory('PositionalMarketFactory');
+	const PositionalMarketFactoryDeployed = await PositionalMarketFactory.deploy(owner.address);
+	await PositionalMarketFactoryDeployed.deployed();
 	
-	setTargetAddress('BinaryOptionMarketFactory', network, binaryOptionMarketFactoryDeployed.address);
-	console.log('BinaryOptionMarketFactory deployed to:', binaryOptionMarketFactoryDeployed.address);
+	setTargetAddress('PositionalMarketFactory', network, PositionalMarketFactoryDeployed.address);
+	console.log('PositionalMarketFactory deployed to:', PositionalMarketFactoryDeployed.address);
 
-	// 4. Deployment BinaryOption Market Manager
+	// 4. Deployment Position Market Manager
 	const day = 24 * 60 * 60;
 	const maxOraclePriceAge = 120 * 60; // Price updates are accepted from up to two hours before maturity to allow for delayed chainlink heartbeats.
 	const expiryDuration = 26 * 7 * day; // Six months to exercise options before the market is destructible.
@@ -158,10 +158,10 @@ async function main() {
 	// const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
 	// const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
 
-	// const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
+	// const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
 	
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
-	const binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.deploy(
+	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
+	const PositionalMarketManagerDeployed = await PositionalMarketManager.deploy(
 		owner.address,
 		proxysUSD.address,
 		priceFeedAddress,
@@ -169,43 +169,43 @@ async function main() {
 		maxTimeToMaturity,
 		creatorCapitalRequirement
 	);
-	await binaryOptionMarketManagerDeployed.deployed();
+	await PositionalMarketManagerDeployed.deployed();
 
 	
 
 
-	setTargetAddress('BinaryOptionMarketManager', network, binaryOptionMarketManagerDeployed.address);
-	console.log('BinaryOptionMarketManager deployed to:', binaryOptionMarketManagerDeployed.address);
+	setTargetAddress('PositionalMarketManager', network, PositionalMarketManagerDeployed.address);
+	console.log('PositionalMarketManager deployed to:', PositionalMarketManagerDeployed.address);
 
 	
 	
 	
-	console.log('Done setting BinaryOption Market Manager');
-	const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
-	const binaryOptionMarketData = await BinaryOptionMarketData.deploy();
-	await binaryOptionMarketData.deployed();
+	console.log('Done setting Position Market Manager');
+	const PositionalMarketData = await ethers.getContractFactory('PositionalMarketData');
+	const positionalMarketData = await PositionalMarketData.deploy();
+	await positionalMarketData.deployed();
 
-	setTargetAddress('BinaryOptionMarketData', network, binaryOptionMarketData.address);
-	console.log('binaryOptionMarketData deployed to:', binaryOptionMarketData.address);
+	setTargetAddress('PositionalMarketData', network, positionalMarketData.address);
+	console.log('PositionalMarketData deployed to:', positionalMarketData.address);
 
-	await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketManager(
-		binaryOptionMarketManagerDeployed.address
+	await PositionalMarketFactoryDeployed.setPositionalMarketManager(
+		PositionalMarketManagerDeployed.address
 	);
-	await binaryOptionMarketFactoryDeployed.setBinaryOptionMarketMastercopy(
-		binaryOptionMarketMastercopyDeployed.address
+	await PositionalMarketFactoryDeployed.setPositionalMarketMastercopy(
+		PositionalMarketMastercopyDeployed.address
 	);
-	await binaryOptionMarketFactoryDeployed.setBinaryOptionMastercopy(
-		binaryOptionMastercopyDeployed.address
-	);
-
-	await binaryOptionMarketManagerDeployed.setBinaryOptionsMarketFactory(
-		binaryOptionMarketFactoryDeployed.address
+	await PositionalMarketFactoryDeployed.setPositionMastercopy(
+		PositionMastercopyDeployed.address
 	);
 
-	// tx = await binaryOptionMarketManagerDeployed.setZeroExAddress(ZeroExAddress);
+	await PositionalMarketManagerDeployed.setPositionalMarketFactory(
+		PositionalMarketFactoryDeployed.address
+	);
+
+	// tx = await PositionalMarketManagerDeployed.setZeroExAddress(ZeroExAddress);
 
 	// await tx.wait().then(e => {
-	// 	console.log('BinaryOptionMarketFactory: setZeroExAddress');
+	// 	console.log('PositionalMarketFactory: setZeroExAddress');
 	// });
 
 	// const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
@@ -226,30 +226,30 @@ async function main() {
 	console.log('Done with all deployments');
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMarketFactoryDeployed.address,
+		address: PositionalMarketFactoryDeployed.address,
 		constructorArguments: [owner.address],
 	});
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMastercopyDeployed.address,
+		address: PositionMastercopyDeployed.address,
 		constructorArguments: [],
-		contract: 'contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
+		contract: 'contracts/Positions/PositionMastercopy.sol:PositionMastercopy',
 	});
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMarketMastercopyDeployed.address,
+		address: PositionalMarketMastercopyDeployed.address,
 		constructorArguments: [],
 		contract:
-			'contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
+			'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
 	});
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMarketData.address,
+		address: positionalMarketData.address,
 		constructorArguments: [],
 	});
 
 	await hre.run('verify:verify', {
-		address: binaryOptionMarketManagerDeployed.address,
+		address: PositionalMarketManagerDeployed.address,
 		constructorArguments: [
 			owner.address,
 			proxysUSD.address,

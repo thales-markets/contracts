@@ -27,46 +27,46 @@
 			"txn": "",
 			"network": "kovan"
 		},
-		"BinaryOptionMastercopy": {
-			"name": "BinaryOptionMastercopy",
+		"PositionMastercopy": {
+			"name": "PositionMastercopy",
 			"address": "0x012122615a48d1a0c5B15E147BAA54FfE89B9FC8",
-			"source": "BinaryOptionMastercopy",
+			"source": "PositionMastercopy",
 			"link": "https://kovan-optimistic.etherscan.io/address/0x012122615a48d1a0c5B15E147BAA54FfE89B9FC8",
 			"timestamp": "2021-10-21T15:50:52.0Z",
 			"txn": "",
 			"network": "kovan"
 		},
-		"BinaryOptionMarketMastercopy": {
-			"name": "BinaryOptionMarketMastercopy",
+		"PositionalMarketMastercopy": {
+			"name": "PositionalMarketMastercopy",
 			"address": "0xf0a7D192AB5273b07C9cf5B4Fb11C96a20A64B73",
-			"source": "BinaryOptionMarketMastercopy",
+			"source": "PositionalMarketMastercopy",
 			"link": "https://kovan-optimistic.etherscan.io/address/0xf0a7D192AB5273b07C9cf5B4Fb11C96a20A64B73",
 			"timestamp": "2021-10-21T15:50:52.1Z",
 			"txn": "",
 			"network": "kovan"
 		},
-		"BinaryOptionMarketFactory": {
-			"name": "BinaryOptionMarketFactory",
+		"PositionalMarketFactory": {
+			"name": "PositionalMarketFactory",
 			"address": "0x767A50044E301B32313Da82510E10a045a142791",
-			"source": "BinaryOptionMarketFactory",
+			"source": "PositionalMarketFactory",
 			"link": "https://kovan-optimistic.etherscan.io/address/0x767A50044E301B32313Da82510E10a045a142791",
 			"timestamp": "2021-10-21T15:50:52.2Z",
 			"txn": "",
 			"network": "kovan"
 		},
-		"BinaryOptionMarketManager": {
-			"name": "BinaryOptionMarketManager",
+		"PositionalMarketManager": {
+			"name": "PositionalMarketManager",
 			"address": "0xBa466C7c414285fAC1e89ED64fB40f97A3B15a1E",
-			"source": "BinaryOptionMarketManager",
+			"source": "PositionalMarketManager",
 			"link": "https://kovan-optimistic.etherscan.io/address/0xBa466C7c414285fAC1e89ED64fB40f97A3B15a1E",
 			"timestamp": "2021-10-21T15:50:52.3Z",
 			"txn": "",
 			"network": "kovan"
 		},
-		"BinaryOptionMarketData": {
-			"name": "BinaryOptionMarketData",
+		"PositionalMarketData": {
+			"name": "PositionalMarketData",
 			"address": "0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9",
-			"source": "BinaryOptionMarketData",
+			"source": "PositionalMarketData",
 			"link": "https://kovan-optimistic.etherscan.io/address/0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9",
 			"timestamp": "2021-10-21T15:50:52.4Z",
 			"txn": "",

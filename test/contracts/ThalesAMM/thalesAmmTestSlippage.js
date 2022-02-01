@@ -23,14 +23,14 @@
 // 	convertToDecimals,
 // } = require('../../utils/helpers');
 //
-// let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
-// let BinaryOptionMarket,
+// let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
+// let PositionalMarket,
 // 	priceFeed,
 // 	oracle,
 // 	sUSDSynth,
-// 	binaryOptionMarketMastercopy,
-// 	binaryOptionMastercopy;
-// let market, long, short, BinaryOption, Synth;
+// 	PositionalMarketMastercopy,
+// 	PositionMastercopy;
+// let market, long, short, Position, Synth;
 //
 // let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 //
@@ -88,11 +88,11 @@
 // 				from: creator,
 // 			}
 // 		);
-// 		return BinaryOptionMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);
+// 		return PositionalMarket.at(getEventByName({ tx, name: 'MarketCreated' }).args.market);
 // 	};
 //
 // 	before(async () => {
-// 		BinaryOptionMarket = artifacts.require('BinaryOptionMarket');
+// 		PositionalMarket = artifacts.require('PositionalMarket');
 // 	});
 //
 // 	before(async () => {
@@ -100,15 +100,15 @@
 // 	});
 //
 // 	before(async () => {
-// 		BinaryOption = artifacts.require('BinaryOption');
+// 		Position = artifacts.require('Position');
 // 	});
 //
 // 	before(async () => {
 // 		({
-// 			BinaryOptionMarketManager: manager,
-// 			BinaryOptionMarketFactory: factory,
-// 			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
-// 			BinaryOptionMastercopy: binaryOptionMastercopy,
+// 			PositionalMarketManager: manager,
+// 			PositionalMarketFactory: factory,
+// 			PositionalMarketMastercopy: PositionalMarketMastercopy,
+// 			PositionMastercopy: PositionMastercopy,
 // 			AddressResolver: addressResolver,
 // 			PriceFeed: priceFeed,
 // 			SynthsUSD: sUSDSynth,
@@ -118,19 +118,19 @@
 // 			contracts: [
 // 				'FeePool',
 // 				'PriceFeed',
-// 				'BinaryOptionMarketMastercopy',
-// 				'BinaryOptionMastercopy',
-// 				'BinaryOptionMarketFactory',
+// 				'PositionalMarketMastercopy',
+// 				'PositionMastercopy',
+// 				'PositionalMarketFactory',
 // 			],
 // 		}));
 //
-// 		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
+// 		manager.setPositionalMarketFactory(factory.address, { from: managerOwner });
 //
-// 		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
-// 		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
+// 		factory.setPositionalMarketManager(manager.address, { from: managerOwner });
+// 		factory.setPositionalMarketMastercopy(PositionalMarketMastercopy.address, {
 // 			from: managerOwner,
 // 		});
-// 		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
+// 		factory.setPositionMastercopy(PositionMastercopy.address, { from: managerOwner });
 //
 // 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 // 		aggregator_sETH = await MockAggregator.new({ from: managerOwner });
@@ -204,7 +204,7 @@
 // 			toUnit(0.12),
 // 			hour * 24
 // 		);
-// 		await thalesAMM.setBinaryOptionsMarketManager(manager.address, { from: owner });
+// 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
 // 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(80), { from: owner });
 // 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 // 	});

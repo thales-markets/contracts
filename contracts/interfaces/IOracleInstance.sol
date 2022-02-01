@@ -1,6 +1,6 @@
 pragma solidity >=0.5.16 <0.8.4;
 
-import "../interfaces/IBinaryOptionMarket.sol";
+import "../interfaces/IPositionalMarket.sol";
 
 interface IOracleInstance {
     /* ========== VIEWS / VARIABLES ========== */

@@ -35,11 +35,11 @@ All markets are resolved via decentralized chainlink feeds.
 
 ### Contracts
 
-BinaryOption  
-BinaryOptionMarket  
-BinaryOptionMarketManager  
-BinaryOptionMarketFactory      
-BinaryOptionMarketData  
+Position  
+PositionalMarket  
+PositionalMarketManager  
+PositionalMarketFactory      
+PositionalMarketData  
 ### Testing
 
 [![CircleCI](https://circleci.com/gh/Synthetixio/synthetix.svg?style=svg)](https://circleci.com/gh/Synthetixio/synthetix)

@@ -214,8 +214,8 @@ const setupContract = async ({
 		FeePoolEternalStorage: [owner, tryGetAddressOf('FeePool')],
 		DelegateApprovals: [owner, tryGetAddressOf('EternalStorageDelegateApprovals')],
 		Liquidations: [owner, tryGetAddressOf('AddressResolver')],
-		BinaryOptionMarketFactory: [owner],
-		BinaryOptionMarketManager: [
+		PositionalMarketFactory: [owner],
+		PositionalMarketManager: [
 			owner,
 			tryGetAddressOf('SynthsUSD'),
 			tryGetAddressOf('PriceFeed'),
@@ -223,9 +223,9 @@ const setupContract = async ({
 			365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
 			toWei('2'), // Capital requirement
 		],
-		BinaryOptionMarketData: [],
-		BinaryOptionMarketMastercopy: [],
-		BinaryOptionMastercopy: [],
+		PositionalMarketData: [],
+		PositionalMarketMastercopy: [],
+		PositionMastercopy: [],
 		CollateralManager: [
 			tryGetAddressOf('CollateralManagerState'),
 			owner,
@@ -236,7 +236,7 @@ const setupContract = async ({
 		],
 	};
 
-	const proxyContracts = ['PriceFeed', 'BinaryOptionMarketFactory', 'BinaryOptionMarketManager'];
+	const proxyContracts = ['PriceFeed', 'PositionalMarketFactory', 'PositionalMarketManager'];
 
 	let instance;
 	try {
@@ -587,19 +587,19 @@ const setupAllContracts = async ({
 			deps: ['TokenState', 'ProxyERC20', 'SystemStatus', 'AddressResolver'],
 		}, // a generic synth
 		{
-			contract: 'BinaryOptionMarketFactory',
+			contract: 'PositionalMarketFactory',
 			deps: ['SynthsUSD', 'PriceFeed'],
 		},
 		{
-			contract: 'BinaryOptionMarketMastercopy',
-			deps: ['BinaryOptionMarketManager'],
+			contract: 'PositionalMarketMastercopy',
+			deps: ['PositionalMarketManager'],
 		},
 		{
-			contract: 'BinaryOptionMastercopy',
-			deps: ['SynthsUSD', 'BinaryOptionMarketMastercopy'],
+			contract: 'PositionMastercopy',
+			deps: ['SynthsUSD', 'PositionalMarketMastercopy'],
 		},
 		{
-			contract: 'BinaryOptionMarketManager',
+			contract: 'PositionalMarketManager',
 			deps: [
 				'SystemStatus',
 				'SynthsUSD',
@@ -607,12 +607,12 @@ const setupAllContracts = async ({
 				'PriceFeed',
 				'FeePool',
 				'Synthetix',
-				'BinaryOptionMarketFactory',
+				'PositionalMarketFactory',
 			],
 		},
 		{
-			contract: 'BinaryOptionMarketData',
-			deps: ['BinaryOptionMarketManager', 'BinaryOptionMarket', 'BinaryOption'],
+			contract: 'PositionalMarketData',
+			deps: ['PositionalMarketManager', 'PositionalMarket', 'Position'],
 		},
 	];
 

@@ -64,11 +64,11 @@ contract('StakingThales', accounts => {
 	const WEEK = 604800;
 	const YEAR = 31556926;
 
-	let BinaryOptionMarket = artifacts.require('BinaryOptionMarket');
+	let PositionalMarket = artifacts.require('PositionalMarket');
 	let Synth = artifacts.require('Synth');
-	let BinaryOption = artifacts.require('BinaryOption');
+	let Position = artifacts.require('Position');
 	let manager, factory, addressResolver;
-	let sUSDSynth, binaryOptionMarketMastercopy, binaryOptionMastercopy;
+	let sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 
 	const [SNX, JPY, XTZ, BNB, sUSD, EUR, LINK, fastGasPrice] = [
 		'SNX',
@@ -87,10 +87,10 @@ contract('StakingThales', accounts => {
 
 	before(async () => {
 		({
-			BinaryOptionMarketManager: manager,
-			BinaryOptionMarketFactory: factory,
-			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
-			BinaryOptionMastercopy: binaryOptionMastercopy,
+			PositionalMarketManager: manager,
+			PositionalMarketFactory: factory,
+			PositionalMarketMastercopy: PositionalMarketMastercopy,
+			PositionMastercopy: PositionMastercopy,
 			AddressResolver: addressResolver,
 			SynthsUSD: sUSDSynth,
 			PriceFeed: PriceFeedInstance,
@@ -99,9 +99,9 @@ contract('StakingThales', accounts => {
 			synths: ['sUSD'],
 			contracts: [
 				'FeePool',
-				'BinaryOptionMarketMastercopy',
-				'BinaryOptionMastercopy',
-				'BinaryOptionMarketFactory',
+				'PositionalMarketMastercopy',
+				'PositionMastercopy',
+				'PositionalMarketFactory',
 			],
 		}));
 
@@ -112,13 +112,13 @@ contract('StakingThales', accounts => {
 		aggregatorSNX = await MockAggregator.new({from: owner.address});
 		await aggregatorSNX.setDecimals('8');
 
-		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
+		manager.setPositionalMarketFactory(factory.address, { from: managerOwner });
 
-		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
-		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
+		factory.setPositionalMarketManager(manager.address, { from: managerOwner });
+		factory.setPositionalMarketMastercopy(PositionalMarketMastercopy.address, {
 			from: managerOwner,
 		});
-		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
+		factory.setPositionMastercopy(PositionMastercopy.address, { from: managerOwner });
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),

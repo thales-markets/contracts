@@ -9,9 +9,9 @@ import "../utils/proxy/ProxyOwned.sol";
 import "../utils/proxy/ProxyPausable.sol";
 
 import "../interfaces/IPriceFeed.sol";
-import "../interfaces/IBinaryOptionMarket.sol";
-import "../interfaces/IBinaryOptionMarketManager.sol";
-import "../interfaces/IBinaryOption.sol";
+import "../interfaces/IPositionalMarket.sol";
+import "../interfaces/IPositionalMarketManager.sol";
+import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "./DeciMath.sol";
 
@@ -131,7 +131,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             }
             uint sell_max_price = basePrice.mul(ONE.sub(max_spread.sub(safeBoxImpact))).div(ONE);
             require(sell_max_price > 0, "div by zero sell_max_price");
-            (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+            (IPosition long, IPosition short) = IPositionalMarket(market).options();
             uint balanceOfTheOtherSide =
                 position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
 
@@ -171,7 +171,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     function price(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
             // add price calculation
-            IBinaryOptionMarket marketContract = IBinaryOptionMarket(market);
+            IPositionalMarket marketContract = IPositionalMarket(market);
             (uint maturity, uint destructino) = marketContract.times();
 
             uint timeLeftToMaturity = maturity - block.timestamp;
@@ -225,8 +225,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function isMarketInAMMTrading(address market) public view returns (bool) {
-        if (IBinaryOptionMarketManager(manager).isActiveMarket(market)) {
-            IBinaryOptionMarket marketContract = IBinaryOptionMarket(market);
+        if (IPositionalMarketManager(manager).isActiveMarket(market)) {
+            IPositionalMarket marketContract = IPositionalMarket(market);
             (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
             //check if asset is supported
             if (impliedVolatilityPerAsset[key] == 0) {
@@ -244,10 +244,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     function canExerciseMaturedMarket(address market) public view returns (bool) {
         if (
-            IBinaryOptionMarketManager(manager).isKnownMarket(market) &&
-            (IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Maturity)
+            IPositionalMarketManager(manager).isKnownMarket(market) &&
+            (IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity)
         ) {
-            (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+            (IPosition long, IPosition short) = IPositionalMarket(market).options();
             if ((long.balanceOf(address(this)) > 0) || (short.balanceOf(address(this)) > 0)) {
                 return true;
             }
@@ -279,12 +279,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint toMint = _getMintableAmount(market, position, amount);
         if (toMint > 0) {
             require(sUSD.balanceOf(address(this)) >= toMint, "Not enough sUSD in contract.");
-            IBinaryOptionMarket(market).mint(toMint);
+            IPositionalMarket(market).mint(toMint);
             spentOnMarket[market] = spentOnMarket[market].add(toMint);
         }
 
-        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-        IBinaryOption target = position == Position.Long ? long : short;
+        (IPosition long, IPosition short) = IPositionalMarket(market).options();
+        IPosition target = position == Position.Long ? long : short;
         IERC20(address(target)).transfer(msg.sender, amount);
 
         if (address(stakingThales) != address(0)) {
@@ -310,17 +310,17 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint pricePaid = sellToAmmQuote(market, position, amount);
         require(expectedPayout.mul(ONE).div(pricePaid) <= (ONE.add(additionalSlippage)), "Slippage too high");
 
-        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
-        IBinaryOption target = position == Position.Long ? long : short;
+        (IPosition long, IPosition short) = IPositionalMarket(market).options();
+        IPosition target = position == Position.Long ? long : short;
 
         require(target.balanceOf(msg.sender) >= amount, "You dont have enough options.");
         require(IERC20(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
 
         //transfer options first to have max burn available
         IERC20(address(target)).transferFrom(msg.sender, address(this), amount);
-        uint sUSDFromBurning = IBinaryOptionMarket(market).getMaximumBurnable(address(this));
+        uint sUSDFromBurning = IPositionalMarket(market).getMaximumBurnable(address(this));
         if (sUSDFromBurning > 0) {
-            IBinaryOptionMarket(market).burnOptionsMaximum();
+            IPositionalMarket(market).burnOptionsMaximum();
         }
 
         require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
@@ -337,12 +337,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     function exerciseMaturedMarket(address market) external {
         require(
-            IBinaryOptionMarket(market).phase() == IBinaryOptionMarket.Phase.Maturity,
+            IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity,
             "Market is not in Maturity phase"
         );
-        require(IBinaryOptionMarketManager(manager).isKnownMarket(market), "Unknown market");
+        require(IPositionalMarketManager(manager).isKnownMarket(market), "Unknown market");
         require(canExerciseMaturedMarket(market), "No options to exercise");
-        IBinaryOptionMarket(market).exerciseOptions();
+        IPositionalMarket(market).exerciseOptions();
     }
 
     // setters
@@ -396,13 +396,13 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         emit SetStakingThales(address(_stakingThales));
     }
 
-    function setBinaryOptionsMarketManager(address _manager) public onlyOwner {
+    function setPositionalMarketManager(address _manager) public onlyOwner {
         if (address(_manager) != address(0)) {
             sUSD.approve(address(_manager), 0);
         }
         manager = _manager;
         sUSD.approve(manager, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
-        emit SetBinaryOptionsMarketManager(_manager);
+        emit SetPositionalMarketManager(_manager);
     }
 
     // Internal
@@ -502,13 +502,13 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint) {
-        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+        (IPosition long, IPosition short) = IPositionalMarket(market).options();
         uint balance = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
         return balance;
     }
 
     function _balanceOfPositionsOnMarket(address market, Position position) internal view returns (uint, uint) {
-        (IBinaryOption long, IBinaryOption short) = IBinaryOptionMarket(market).options();
+        (IPosition long, IPosition short) = IPositionalMarket(market).options();
         uint balance = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
         uint balanceOtherSide = position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
         return (balance, balanceOtherSide);
@@ -560,7 +560,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address asset
     );
 
-    event SetBinaryOptionsMarketManager(address _manager);
+    event SetPositionalMarketManager(address _manager);
     event SetSUSD(address sUSD);
     event SetPriceFeed(address _priceFeed);
     event SetCapPerMarket(uint _capPerMarket);

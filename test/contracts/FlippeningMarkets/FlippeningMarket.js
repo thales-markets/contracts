@@ -25,9 +25,9 @@ const {
 	decodedEventEqual,
 } = require('../../utils/helpers');
 
-let BinaryOptionMarketFactory, factory, BinaryOptionMarketManager, manager, addressResolver;
-let BinaryOptionMarket, sUSDSynth, binaryOptionMarketMastercopy, binaryOptionMastercopy;
-let market, long, short, BinaryOption, Synth;
+let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
+let PositionalMarket, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
+let market, long, short, Position, Synth;
 let customMarket;
 let customOracle;
 
@@ -44,7 +44,7 @@ async function transactionEvent(tx, eventName) {
 	return receipt.events.find(event => event['event'] && event['event'] === eventName);
 }
 
-contract('BinaryOption', accounts => {
+contract('Position', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
 	let creator, owner;
 
@@ -72,7 +72,7 @@ contract('BinaryOption', accounts => {
 	};
 
 	before(async () => {
-		BinaryOptionMarket = artifacts.require('BinaryOptionMarket');
+		PositionalMarket = artifacts.require('PositionalMarket');
 	});
 
 	before(async () => {
@@ -80,15 +80,15 @@ contract('BinaryOption', accounts => {
 	});
 
 	before(async () => {
-		BinaryOption = artifacts.require('BinaryOption');
+		Position = artifacts.require('Position');
 	});
 
 	before(async () => {
 		({
-			BinaryOptionMarketManager: manager,
-			BinaryOptionMarketFactory: factory,
-			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
-			BinaryOptionMastercopy: binaryOptionMastercopy,
+			PositionalMarketManager: manager,
+			PositionalMarketFactory: factory,
+			PositionalMarketMastercopy: PositionalMarketMastercopy,
+			PositionMastercopy: PositionMastercopy,
 			AddressResolver: addressResolver,
 			SynthsUSD: sUSDSynth,
 		} = await setupAllContracts({
@@ -96,19 +96,19 @@ contract('BinaryOption', accounts => {
 			synths: ['sUSD'],
 			contracts: [
 				'FeePool',
-				'BinaryOptionMarketMastercopy',
-				'BinaryOptionMastercopy',
-				'BinaryOptionMarketFactory',
+				'PositionalMarketMastercopy',
+				'PositionMastercopy',
+				'PositionalMarketFactory',
 			],
 		}));
 
 		[creator, owner] = await ethers.getSigners();
 
-		await manager.connect(creator).setBinaryOptionsMarketFactory(factory.address);
+		await manager.connect(creator).setPositionalMarketFactory(factory.address);
 
-		await factory.connect(owner).setBinaryOptionMarketManager(manager.address);
-		await factory.connect(owner).setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address);
-		await factory.connect(owner).setBinaryOptionMastercopy(binaryOptionMastercopy.address);
+		await factory.connect(owner).setPositionalMarketManager(manager.address);
+		await factory.connect(owner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
+		await factory.connect(owner).setPositionMastercopy(PositionMastercopy.address);
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
@@ -160,12 +160,12 @@ contract('BinaryOption', accounts => {
 
 			const event = await transactionEvent(result, 'MarketCreated');
 
-			customMarket = await BinaryOptionMarket.at(
+			customMarket = await PositionalMarket.at(
 				event.args.market
 			);
 			const options = await customMarket.options();
-			long = await BinaryOption.at(options.long);
-			short = await BinaryOption.at(options.short);
+			long = await Position.at(options.long);
+			short = await Position.at(options.short);
 			let longAddress = long.address;
 			let shortAddress = short.address;
 

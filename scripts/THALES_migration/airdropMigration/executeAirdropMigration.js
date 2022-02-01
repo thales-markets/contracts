@@ -45,7 +45,7 @@ async function deploy_airdrop() {
 	for (let aidropMigratee of airdropMigration) {
 		let address = aidropMigratee.address;
 		address = address.toLowerCase();
-		if (duplicateCheckerSet.has(address)||aidropMigratee.isContract) {
+		if (duplicateCheckerSet.has(address) || aidropMigratee.isContract) {
 			// dont airdrop same address more than once
 			continue;
 		} else {
@@ -75,7 +75,7 @@ async function deploy_airdrop() {
 		userBalanceAndHashes[ubh].proof = merkleTree.getHexProof(userBalanceAndHashes[ubh].hash);
 	}
 	fs.writeFileSync(
-		`scripts/THALES_migration/airdropMigration/airdrop-hashes-l2.json`,
+		`scripts/THALES_migration/airdropMigration/airdrop-hashes-L2.json`,
 		JSON.stringify(userBalanceAndHashes),
 		function(err) {
 			if (err) return console.log(err);

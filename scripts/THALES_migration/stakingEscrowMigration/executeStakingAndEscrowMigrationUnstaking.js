@@ -13,7 +13,7 @@ const {
 } = require('../../helpers.js');
 
 const migrationInput = require('./migrationSnapshot.json');
-const processedWallets = require('./processedWallets.json');
+const processedWallets = require('./processedWalletsUnstaking.json');
 
 const fs = require('fs');
 
@@ -28,6 +28,7 @@ async function executeStakingAndEscrowMigration() {
 	let i = 0;
 	let totalBalance = Big(0);
 
+	let ethToSend = ethers.utils.parseUnits('0.0039');
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
@@ -35,6 +36,7 @@ async function executeStakingAndEscrowMigration() {
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
+		ethToSend = ethers.utils.parseUnits('0.000039');
 	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimistic';
@@ -52,14 +54,6 @@ async function executeStakingAndEscrowMigration() {
 	const THALES = getTargetAddress('OpThales_L2', network);
 	console.log('THALES is ' + THALES);
 	let thales = await Thales.attach(THALES);
-
-	//do approval
-	let tx = await thales.approve(STAKING_THALES, w3utils.toWei('5000000'));
-	await tx.wait().then(e => {
-		txLog(tx, 'Thales.sol: Approve tokens');
-	});
-
-	// get stakers from StakingThales from last period
 
 	i = 0;
 	for (let migratedStakerOrEscrower of migrationInput) {
@@ -79,38 +73,16 @@ async function executeStakingAndEscrowMigration() {
 					successfullyProcessed = true;
 					continue;
 				}
-				//send directly if not a staker
+				//send directly if unstaking
 				console.log('Processing migratedStakerOrEscrower ' + migratedStakerOrEscrower.wallet);
-
-				if (migratedStakerOrEscrower.totalStaked != '0') {
-					let stakedBalanceOfBN = await stakingThales.stakedBalanceOf(
-						migratedStakerOrEscrower.wallet
-					);
-					let stakedBalanceOf = stakedBalanceOfBN / 1e18;
-					if (stakedBalanceOf > 0) {
-						console.log(
-							'Skipping ' + migratedStakerOrEscrower.wallet + ' as it already has staked balance!'
-						);
-						successfullyProcessed = true;
-						continue;
-					}
-
-					let escrowed;
-					if (migratedStakerOrEscrower.totalEscrowed === undefined) {
-						escrowed = BigNumber.from(0);
-					} else {
-						escrowed = BigNumber.from(migratedStakerOrEscrower.totalEscrowed);
-					}
-					console.log('Escrowed is ' + escrowed);
-					let staked = BigNumber.from(migratedStakerOrEscrower.totalStaked);
-					let totalAmount = escrowed.add(staked);
-					console.log('totalAmount is ' + totalAmount.toString());
-					let tx = await stakingThales.stakeOnBehalf(
-						totalAmount.toString(),
-						migratedStakerOrEscrower.wallet
+				if (migratedStakerOrEscrower.unstaking) {
+					console.log('Sending unstaking THALES directly to  ' + migratedStakerOrEscrower.wallet);
+					let tx = await thales.transfer(
+						migratedStakerOrEscrower.wallet,
+						migratedStakerOrEscrower.unstakingAmount + ''
 					);
 					await tx.wait().then(e => {
-						txLog(tx, 'stakingThales: stakeOnBehalf ' + i);
+						txLog(tx, 'thales: transfer ' + migratedStakerOrEscrower.wallet);
 					});
 					await delay(2000);
 				}
@@ -120,10 +92,11 @@ async function executeStakingAndEscrowMigration() {
 				await delay(5000);
 			}
 		}
+
 		if (!processedWallets.includes(migratedStakerOrEscrower.wallet)) {
 			processedWallets.push(migratedStakerOrEscrower.wallet);
 			fs.writeFileSync(
-				'scripts/THALES_migration/stakingEscrowMigration/processedWallets.json',
+				'scripts/THALES_migration/stakingEscrowMigration/processedWalletsUnstaking.json',
 				JSON.stringify(processedWallets),
 				function(err) {
 					if (err) return console.log(err);

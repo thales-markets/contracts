@@ -42,8 +42,8 @@ After the rewards are calculated on 2nd of February
     g. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigrationSendETHSendEscrow.js`  
     h. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/executeStakingAndEscrowMigrationSendETHUnstaking.js`  
     i. run sanity check scripts  
-    i1. `npx hardhat run --network optimisticKovan scripts/THALES_migration/stakingEscrowMigration/sanityCheckStakingAndEscrowMigration.js`  
-    i2. `npx hardhat run --network optimisticKovan scripts/THALES_migration/stakingEscrowMigration/sanityCheckDirectSendingTHALES.js`      
+    i1. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/sanityCheckStakingAndEscrowMigration.js`  
+    i2. `npx hardhat run --network optimistic scripts/THALES_migration/stakingEscrowMigration/sanityCheckDirectSendingTHALES.js`      
     j. sanity check      
     k. return owner to pdao  
     

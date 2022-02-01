@@ -359,6 +359,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         uint _season
     ) internal {
         rewardPerSeason[_season] = rewardPerSeason[_season] + _amount;
+        unclaimedRewardPerSeason[_season] = unclaimedRewardPerSeason[_season] + _amount;
         rewardToken.safeTransferFrom(_from, address(this), _amount);
         emit PutFunds(_from, _season, _amount);
     }

@@ -51,6 +51,8 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         vestingToken = IERC20(_vestingToken);
     }
 
+    /* ========== VIEWS ========== */
+
     function getStakerPeriod(address account, uint index) external view returns (uint) {
         require(account != address(0), "Invalid account address");
         return vestingEntries[account][index].vesting_period;
@@ -77,6 +79,8 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         return totalAccountEscrowedAmount[account].sub(_getVestingNotAvailable(account));
     }
 
+    /* ========== PUBLIC ========== */
+
     function addToEscrow(address account, uint amount) external {
         require(account != address(0), "Invalid address");
         require(amount > 0, "Amount is 0");
@@ -87,12 +91,19 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
 
         totalAccountEscrowedAmount[account] = totalAccountEscrowedAmount[account].add(amount);
 
-        lastPeriodAddedReward[account] = currentVestingPeriod;
-
-        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
-        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(
-            NUM_PERIODS
-        );
+        if (lastPeriodAddedReward[account] == currentVestingPeriod) {
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = vestingEntries[account][
+                currentVestingPeriod.mod(NUM_PERIODS)
+            ]
+                .amount
+                .add(amount);
+        } else {
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(
+                NUM_PERIODS
+            );
+            lastPeriodAddedReward[account] = currentVestingPeriod;
+        }
 
         totalEscrowedRewards = totalEscrowedRewards.add(amount);
         //Transfering THALES from StakingThales to EscrowThales
@@ -161,19 +172,12 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         airdropContract = AirdropContract;
         emit AirdropContractChanged(AirdropContract);
     }
-    
+
     function setThalesStakingRewardsPool(address _thalesStakingRewardsPool) public onlyOwner {
         require(_thalesStakingRewardsPool != address(0), "Invalid address");
         ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);
         emit ThalesStakingRewardsPoolChanged(_thalesStakingRewardsPool);
     }
-
-    /*  Selfdestruct operation potentially harmful for proxy contracts
-     */
-    // function selfDestruct(address payable account) external onlyOwner {
-    //     vestingToken.safeTransfer(account, vestingToken.balanceOf(address(this)));
-    //     selfdestruct(account);
-    // }
 
     /* ========== INTERNAL FUNCTIONS ========== */
 

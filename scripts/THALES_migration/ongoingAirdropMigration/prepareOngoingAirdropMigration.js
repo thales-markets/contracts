@@ -11,7 +11,7 @@ const {
 } = require('../../helpers.js');
 
 const fs = require('fs');
-let lastAirdropHashes = require('../../../scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-17.json');
+let lastAirdropHashes = require('../../../scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-19.json');
 
 const ONGOING_AIRDROP = getTargetAddress('OngoingAirdrop', 'mainnet');
 const OngoingAirdropABI = require('../../abi/OngoingAirdrop.json');
@@ -67,6 +67,14 @@ async function prepareOngoingAirdropMigration() {
 	fs.writeFileSync(
 		'scripts/THALES_migration/ongoingAirdropMigration/contractsFromOngoingAirdropMigration.json',
 		JSON.stringify(contractsInOngoingRewards),
+		function(err) {
+			if (err) return console.log(err);
+		}
+	);
+
+	fs.writeFileSync(
+		'scripts/THALES_migration/ongoingAirdropMigration/root.json',
+		JSON.stringify(root),
 		function(err) {
 			if (err) return console.log(err);
 		}

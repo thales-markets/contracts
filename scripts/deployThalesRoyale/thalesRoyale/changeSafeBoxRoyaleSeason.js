@@ -8,6 +8,7 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+	let SafeboxAddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -32,14 +33,16 @@ async function main() {
 
     /* ========== PROPERTIES ========== */
 
-	const safeBoxPercentage = 5; // CHANGE for percntage
-	const safeBox = owner.address // CHANGE for address
+	const safeBoxPercentage = 0; // CHANGE for percntage
 
     /* ========== SAFE BOX FOR ROYALE ========== */
 
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const thalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
 	console.log('Found ThalesRoyale at:', thalesRoyaleAddress);
+
+	SafeboxAddress = getTargetAddress('SafeBox', network);
+	console.log('Found SafeBox at:', SafeboxAddress);
 
     const royale = await ThalesRoyale.attach(
 		thalesRoyaleAddress
@@ -53,10 +56,10 @@ async function main() {
 	});
 
 	// setSafeBox
-	tx = await royale.setSafeBox(safeBox);
+	tx = await royale.setSafeBox(SafeboxAddress);
 	
 	await tx.wait().then(e => {
-		console.log('Safe box address: ', safeBox);
+		console.log('Safe box address: ', SafeboxAddress);
 	});
 
 }

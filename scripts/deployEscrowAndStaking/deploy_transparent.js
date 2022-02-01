@@ -26,7 +26,6 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimistic';
 		network = 'optimistic';
-		
 	}
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
@@ -54,12 +53,11 @@ async function main() {
 	console.log('SNXIssuer address: ' + SNXIssuerAddress);
 
 	let thalesAddress, ProxyERC20sUSD_address;
-	
+
 	if (networkObj.chainId == 10) {
 		thalesAddress = getTargetAddress('OpThales_L2', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
-	} 
-	if (networkObj.chainId == 69) {
+	} else if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 		thalesAddress = getTargetAddress('OpThales_L2', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
@@ -86,7 +84,7 @@ async function main() {
 		ProxyERC20sUSD_address,
 		durationPeriod,
 		unstakeDurationPeriod,
-		SNXIssuerAddress
+		SNXIssuerAddress,
 	]);
 	let tx = await ProxyStaking_deployed.deployed();
 
@@ -109,23 +107,22 @@ async function main() {
 	setTargetAddress('EscrowThales', network, ProxyEscrow_deployed.address);
 	setTargetAddress('StakingThalesImplementation', network, StakingImplementation);
 	setTargetAddress('EscrowThalesImplementation', network, EscrowImplementation);
-	
 
-	let ThalesAMMAddress =  getTargetAddress('ThalesAMM', network);
-	let ThalesRoyaleAddress =  getTargetAddress('ThalesRoyaleDeployed', network);
-	let PriceFeedAddress =  getTargetAddress('PriceFeed', network);
+	let ThalesAMMAddress = getTargetAddress('ThalesAMM', network);
+	// let ThalesRoyaleAddress =  getTargetAddress('ThalesRoyaleDeployed', network);
+	let PriceFeedAddress = getTargetAddress('PriceFeed', network);
 
-	tx = await ProxyStaking_deployed.setThalesAMM(ThalesAMMAddress, {from:owner.address});
+	tx = await ProxyStaking_deployed.setThalesAMM(ThalesAMMAddress, { from: owner.address });
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
 	});
-	tx = await ProxyStaking_deployed.setThalesRoyale(ThalesRoyaleAddress, {from:owner.address});
+	// tx = await ProxyStaking_deployed.setThalesRoyale(ThalesRoyaleAddress, {from:owner.address});
+	// await tx.wait().then(e => {
+	// 	console.log('Staking Thales: setThalesRoyale ', ThalesRoyaleAddress);
+	// });
+	tx = await ProxyStaking_deployed.setPriceFeed(PriceFeedAddress, { from: owner.address });
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setThalesRoyale ', ThalesRoyaleAddress);
-	});
-	tx = await ProxyStaking_deployed.setPriceFeed(PriceFeedAddress, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setPriceFeed ',ThalesRoyaleAddress);
+		console.log('Staking Thales: setPriceFeed ', PriceFeedAddress);
 	});
 
 	try {

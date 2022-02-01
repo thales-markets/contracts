@@ -194,8 +194,7 @@ async function main() {
 
 	if (network == 'ropsten') {
 		await hre.run('verify:verify', {
-			address: PositionalMarketFactoryDeployed.address,
-			constructorArguments: [owner.address],
+			address: PositionalMarketFactoryDeployed,
 		});
 
 		await hre.run('verify:verify', {
@@ -225,7 +224,7 @@ async function main() {
 	});
 
 	await hre.run('verify:verify', {
-		address: PositionalMarketFactoryImplementation.address,
+		address: PositionalMarketFactoryImplementation,
 	});
 
 	await hre.run('verify:verify', {
@@ -238,7 +237,7 @@ async function main() {
 	});
 
 	await hre.run('verify:verify', {
-		address: PositionalMarketManagerImplementation.address,
+		address: PositionalMarketManagerImplementation,
 	});
 
 	await hre.run('verify:verify', {

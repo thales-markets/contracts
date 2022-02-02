@@ -1,6 +1,6 @@
 After the rewards are calculated on 2nd of February
 
-1. Pause Staking, OngoingAirdrop and Escrow and Airdrop
+1. Pause Staking, OngoingAirdrop and Escrow and Airdrop // done
    a. Staking https://etherscan.io/address/0x883D651429B0829BC045A94F288f3b514021B8C1
    b. OngoingAirdrop https://etherscan.io/address/0xDAaB884D083FE5c38b4679ae194c52f176Bd8783
    c. Escrow https://etherscan.io/address/0x8d3703d4dED77473E632dEf20002DAdC86bf4AAD

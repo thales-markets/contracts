@@ -1874,14 +1874,6 @@
 		"wallet": "0xf1b98463d6574c998f03e6edf6d7b4e5f917f915"
 	},
 	{
-		"totalEscrowed": "413502133352223772708",
-		"isContract": false,
-		"totalStaked": "1887393938198611244500",
-		"unstaking": false,
-		"unstakingAmount": "0",
-		"wallet": "0x1b90b46f9bd6bdcf0addc4d0601dfad832fdb1bd"
-	},
-	{
 		"totalEscrowed": "26359668184357609266741",
 		"isContract": false,
 		"totalStaked": "18529255429363933490454",
@@ -2172,14 +2164,6 @@
 		"unstaking": false,
 		"unstakingAmount": "0",
 		"wallet": "0x7476d1e9659a49b92c3f65f0a6de00a18fc3d6fa"
-	},
-	{
-		"totalEscrowed": "580956838891871120000",
-		"isContract": false,
-		"totalStaked": "12694295033787522218628",
-		"unstaking": false,
-		"unstakingAmount": "0",
-		"wallet": "0xcba9f4a67a51fea7023e09030e75523ad6f41533"
 	},
 	{
 		"totalEscrowed": "219580204106826796217",
@@ -4702,13 +4686,6 @@
 		"wallet": "0xf60595b5bb6fa8135c0feef89543521ff38ba83e"
 	},
 	{
-		"totalStaked": "3029573657860878591745",
-		"isContract": false,
-		"unstaking": false,
-		"unstakingAmount": "0",
-		"wallet": "0x1fb99c83110726b40ba6bace5044580675d22f04"
-	},
-	{
 		"totalStaked": "137000000000000000000",
 		"isContract": false,
 		"unstaking": false,
@@ -5213,13 +5190,6 @@
 		"wallet": "0x2b194c26f0ed2db25abbe17a89cbcb328ccf3d55"
 	},
 	{
-		"totalStaked": "1000000000000000000000",
-		"isContract": false,
-		"unstaking": false,
-		"unstakingAmount": "0",
-		"wallet": "0x5262fea7908d38384e1db36d87082d6aaa432c2c"
-	},
-	{
 		"totalStaked": "137000000000000000000",
 		"isContract": false,
 		"unstaking": false,
@@ -5386,13 +5356,6 @@
 		"unstaking": false,
 		"unstakingAmount": "0",
 		"wallet": "0xb6c9e6a2415ab8d26335498beac8eebed4bb2259"
-	},
-	{
-		"totalStaked": "0",
-		"isContract": false,
-		"unstaking": false,
-		"unstakingAmount": "0",
-		"wallet": "0xe7148bf1cce5c6b6fd8431d8cd2e3e63b37e25b3"
 	},
 	{
 		"totalStaked": "137000000000000000000",

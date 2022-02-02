@@ -28,7 +28,7 @@ async function executeStakingAndEscrowMigration() {
 	let i = 0;
 	let totalBalance = Big(0);
 
-	let ethToSend = ethers.utils.parseUnits('0.0039');
+	let ethToSend = ethers.utils.parseUnits('0.004');
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
@@ -36,7 +36,7 @@ async function executeStakingAndEscrowMigration() {
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
-		ethToSend = ethers.utils.parseUnits('0.000039');
+		ethToSend = ethers.utils.parseUnits('0.00004');
 	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimistic';

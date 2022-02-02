@@ -47,7 +47,7 @@ After the rewards are calculated on 2nd of February
     j. sanity check      
     k. return owner to pdao  
     
-14. Execute migration of airdrop to l2
+14. Execute migration of airdrop to l2 // done all but the last (fund)
     a. `npx hardhat run --network optimistic scripts/THALES_migration/airdropMigration/executeAirdropMigration.js`  
     b. pause airdrop
     c. migrate owner to protocol DAO  

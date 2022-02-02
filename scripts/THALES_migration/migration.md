@@ -4,7 +4,7 @@ After the rewards are calculated on 2nd of February
    a. Staking https://etherscan.io/address/0x883D651429B0829BC045A94F288f3b514021B8C1
    b. OngoingAirdrop https://etherscan.io/address/0xDAaB884D083FE5c38b4679ae194c52f176Bd8783
    c. Escrow https://etherscan.io/address/0x8d3703d4dED77473E632dEf20002DAdC86bf4AAD
-   d. Airdrop https://etherscan.io/address/0x0f33af99f3C124189B8dA7C7BE6Dc08C77a9ddc7
+   d. Airdrop https://etherscan.io/address/0x0f33af99f3C124189B8dA7C7BE6Dc08C77a9ddc7 paused
 
 2. Take a snapshot of staking and escrow  
    `npx hardhat run --network mainnet scripts/THALES_migration/stakingEscrowMigration/prepareStakingAndEscrowMigrationData.js`

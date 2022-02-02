@@ -105,7 +105,8 @@
 		"ThalesRoyale": "0x3198ab211CdF3E4d13a698E1Fb819507BcA2e579",
 		"ThalesRoyaleImplementation": "0xf238b93E4593cdC181bC56BCc776F9D8c346cbC4",
 		"LPStakingRewards": "0x38f1487bd60142ae3633C082934455f06B613c6e",
-		"LPStakingRewardsImplementation": "0x63A6344E7dC0032900C261437838B0AA9E869C90"
+		"LPStakingRewardsImplementation": "0x63A6344E7dC0032900C261437838B0AA9E869C90",
+		"OptimisticAirdrop": "0x42B6e9b5Bb96a02E02e651d3104Fc3546E1313F2"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

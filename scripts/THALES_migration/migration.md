@@ -54,7 +54,7 @@ After the rewards are calculated on 2nd of February
     d. copy the hashes file to the dapp  
     e. fund airdrop
 15. Execute migration of ongoing airdrop  
-    a. `npx hardhat run --network optimistic scripts/THALES_migration/ongoingAirdropMigration/deployOngoingAirdropMigration.js`  
+    a. `npx hardhat run --network optimistic scripts/THALES_migration/ongoingAirdropMigration/deployOngoingAirdrop.js`  
     b. set the latest root from L1 ongoing rewards
     c. copy the latest root file and use it in the dapp
     d. pause ongoing airdrop  

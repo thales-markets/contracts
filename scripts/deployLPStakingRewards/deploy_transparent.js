@@ -52,7 +52,6 @@ async function main() {
 		thalesAddress = getTargetAddress('Thales', network);
 	}
 
-
 	// const thalesAddress = getTargetAddress('OpThales_L2', network);
 	console.log('Thales address: ', thalesAddress);
 
@@ -61,9 +60,9 @@ async function main() {
 
 	let ProxyStaking_deployed = await upgrades.deployProxy(ProxyStaking, [
 		owner.address,
-		'0x1a5dbe5a5e9e9139e68f34e68f1d0336f2573e43',
-		'0x7fad8444688c4babb792e960359ea467fd28d030',
-		WEEK * 4,
+		thalesAddress,
+		gUNIPoolAddress,
+		WEEK * 10,
 	]);
 	let tx = await ProxyStaking_deployed.deployed();
 

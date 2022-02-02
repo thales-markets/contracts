@@ -35,10 +35,10 @@ async function main() {
 	const ProxyEscrow = getTargetAddress('EscrowThales', network);
 
 	const NewEscrow = await ethers.getContractFactory('EscrowThales');
-	console.log('Escrow upgraded');
 
 	await upgrades.upgradeProxy(ProxyEscrow, NewEscrow);
 	await delay(5000);
+	console.log('Escrow upgraded');
 
 	const EscrowImplementation = await getImplementationAddress(ethers.provider, ProxyEscrow);
 	console.log('Implementation Escrow: ', EscrowImplementation);

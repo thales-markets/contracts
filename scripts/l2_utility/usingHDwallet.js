@@ -5,6 +5,7 @@ const {LedgerSigner} = require("@ethersproject/hardware-wallets");
 async function main() {
 	
 	// IMPORTANT -------------------------------------------------->
+	// Works on windows (if all drivers are installed)
 	// IN LINUX 
 	// Use command:  wget -q -O - https://raw.githubusercontent.com/LedgerHQ/udev-rules/master/add_udev_rules.sh | sudo bash
 	// to add the device 

@@ -472,6 +472,32 @@ contract('Proxy Exhanger L1 <=> L2', async accounts => {
 					assert.equal(answer.toString(), toUnit(100).toString());
 				});
 			});
+			
+			describe('exchange to different receiver on L2', function() {
+				beforeEach(async () => {
+					await OpThalesToken.transfer(ProxyExchanger.address, toUnit(100), { from: owner });
+					await OpThalesTokenL2.mint(StandardBridgeL1.address, toUnit(100), {
+						from: dummyContractAddress,
+					});
+					// let balance = await OpThalesTokenL2.balanceOf(StandardBridgeL1.address);
+					// console.log("Owner balance:", balance.toString());
+					// await OpThalesTokenL2.transfer(StandardBridgeL1.address, toUnit(100), {from:owner});
+				});
+
+				it('allowance not granted for User, funds not exchanged', async function() {
+					await expect(
+						ProxyExchanger.exchangeThalesToL2OpThales(toUnit(100), { from: userOne })
+					).to.be.revertedWith('No allowance');
+				});
+				it('exchange completed to L2, funds received by different receiver', async function() {
+					await ThalesToken.approve(ProxyExchanger.address, toUnit(100), { from: userOne });
+					answer = await ProxyExchanger.exchangeThalesToL2OpThalesDifferentReceiver(userTwo, toUnit(100), { from: userOne });
+					answer = await ThalesToken.balanceOf(userOne);
+					assert.equal(answer.toString(), '0');
+					answer = await OpThalesTokenL2.balanceOf(userTwo);
+					assert.equal(answer.toString(), toUnit(100).toString());
+				});
+			});
 		});
 
 		describe('exchange OpThales to Thales', function() {
@@ -510,6 +536,26 @@ contract('Proxy Exhanger L1 <=> L2', async accounts => {
 					answer = await OpThalesToken.balanceOf(userOne);
 					assert.equal(answer.toString(), '0');
 					answer = await ThalesToken.balanceOf(userOne);
+					assert.equal(answer.toString(), toUnit(100).toString());
+				});
+			});
+			
+			describe('exchange to different receiver', function() {
+				beforeEach(async () => {
+					await ThalesToken.transfer(ProxyExchanger.address, toUnit(100), { from: owner });
+				});
+
+				it('allowance not granted for User, funds not exchanged', async function() {
+					await expect(
+						ProxyExchanger.exchangeOpThalesToThales(toUnit(100), { from: userOne })
+					).to.be.revertedWith('No allowance');
+				});
+				it('exchange complete, funds received by different receiver', async function() {
+					await OpThalesToken.approve(ProxyExchanger.address, toUnit(100), { from: userOne });
+					answer = await ProxyExchanger.exchangeOpThalesToThalesDifferentReceiver( userTwo, toUnit(100), { from: userOne });
+					answer = await OpThalesToken.balanceOf(userOne);
+					assert.equal(answer.toString(), '0');
+					answer = await ThalesToken.balanceOf(userTwo);
 					assert.equal(answer.toString(), toUnit(100).toString());
 				});
 			});

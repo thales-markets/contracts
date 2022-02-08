@@ -18,11 +18,15 @@ Note: for each season you need to change propery inside script (propery season)
 
 `npx hardhat run --network XXXXX scripts/deployThalesRoyale/thalesRoyale/putFundsInRoyaleSeason.js`
 
-3. Start Royale season at Monday 1PM UTC [git version](https://github.com/thales-markets/contracts/blob/main/scripts/deployThalesRoyale/thalesRoyale/startSeason.js)
+3. Set Royale owner to pDAO
+
+4. Start Royale season at Monday 4PM UTC [git version](https://github.com/thales-markets/contracts/blob/main/scripts/deployThalesRoyale/thalesRoyale/startSeason.js)
 
 `npx hardhat run --network XXXXX scripts/deployThalesRoyale/thalesRoyale/startSeason.js`
 
-4. Set Royale owner to pDAO
+5. Change setNextSeasonStartsAutomatically
+
+`setNextSeasonStartsAutomatically=true`
 
 ## Additional scripts
 

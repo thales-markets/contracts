@@ -21,12 +21,12 @@
             "components": [
               {
                 "internalType": "uint256",
-                "name": "long",
+                "name": "up",
                 "type": "uint256"
               },
               {
                 "internalType": "uint256",
-                "name": "short",
+                "name": "down",
                 "type": "uint256"
               }
             ],
@@ -117,12 +117,12 @@
             "components": [
               {
                 "internalType": "uint256",
-                "name": "long",
+                "name": "up",
                 "type": "uint256"
               },
               {
                 "internalType": "uint256",
-                "name": "short",
+                "name": "down",
                 "type": "uint256"
               }
             ],
@@ -162,12 +162,12 @@
             "components": [
               {
                 "internalType": "contract Position",
-                "name": "long",
+                "name": "up",
                 "type": "address"
               },
               {
                 "internalType": "contract Position",
-                "name": "short",
+                "name": "down",
                 "type": "address"
               }
             ],

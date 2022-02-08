@@ -30,7 +30,7 @@ let PositionalMarket,
 	sUSDSynth,
 	PositionalMarketMastercopy,
 	PositionMastercopy;
-let market, long, short, position, Synth;
+let market, up, down, position, Synth;
 
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
@@ -73,8 +73,8 @@ contract('ThalesAMM', accounts => {
 	let totalDeposited;
 
 	const Side = {
-		Long: toBN(0),
-		Short: toBN(1),
+		Up: toBN(0),
+		Down: toBN(1),
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {

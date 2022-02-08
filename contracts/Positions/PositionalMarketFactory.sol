@@ -51,8 +51,8 @@ contract PositionalMarketFactory is Initializable, ProxyOwned, MinimalProxyFacto
             PositionalMarket(
                 _cloneAsMinimalProxy(positionalMarketMastercopy, "Could not create a Positional Market")
             );
-        Position long = Position(_cloneAsMinimalProxy(positionMastercopy, "Could not create a Position"));
-        Position short = Position(_cloneAsMinimalProxy(positionMastercopy, "Could not create a Position"));
+        Position up = Position(_cloneAsMinimalProxy(positionMastercopy, "Could not create a Position"));
+        Position down = Position(_cloneAsMinimalProxy(positionMastercopy, "Could not create a Position"));
         pom.initialize(
             PositionalMarket.PositionalMarketParameters(
                 positionalMarketManager,
@@ -65,8 +65,8 @@ contract PositionalMarketFactory is Initializable, ProxyOwned, MinimalProxyFacto
                 _parameters.initialMint,
                 _parameters.customMarket,
                 _parameters.customOracle,
-                address(long),
-                address(short),
+                address(up),
+                address(down),
                 limitOrderProvider,
                 thalesAMM
             )

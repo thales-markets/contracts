@@ -260,7 +260,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         totalDeposited = totalDeposited.add(initialMint);
         sUSD.transferFrom(msg.sender, address(market), initialMint);
 
-        (Position long, Position short) = market.options();
+        (Position up, Position down) = market.options();
 
         emit MarketCreated(
             address(market),
@@ -269,8 +269,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
             strikePrice,
             maturity,
             expiry,
-            address(long),
-            address(short),
+            address(up),
+            address(down),
             customMarket,
             customOracle
         );
@@ -408,8 +408,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         uint strikePrice,
         uint maturityDate,
         uint expiryDate,
-        address long,
-        address short,
+        address up,
+        address down,
         bool customMarket,
         address customOracle
     );

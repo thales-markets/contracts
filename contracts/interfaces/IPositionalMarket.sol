@@ -8,11 +8,11 @@ interface IPositionalMarket {
     /* ========== TYPES ========== */
 
     enum Phase {Trading, Maturity, Expiry}
-    enum Side {Long, Short}
+    enum Side {Up, Down}
 
     /* ========== VIEWS / VARIABLES ========== */
 
-    function options() external view returns (IPosition long, IPosition short);
+    function options() external view returns (IPosition up, IPosition down);
 
     function times() external view returns (uint maturity, uint destructino);
 
@@ -43,9 +43,9 @@ interface IPositionalMarket {
 
     function result() external view returns (Side);
 
-    function balancesOf(address account) external view returns (uint long, uint short);
+    function balancesOf(address account) external view returns (uint up, uint down);
 
-    function totalSupplies() external view returns (uint long, uint short);
+    function totalSupplies() external view returns (uint up, uint down);
 
     function getMaximumBurnable(address account) external view returns (uint amount);
 

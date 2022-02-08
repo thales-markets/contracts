@@ -39,11 +39,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     uint public minimalTimeLeftToMaturity;
 
     struct MarketSkew {
-        uint longs;
-        uint shorts;
+        uint ups;
+        uint downs;
     }
 
-    enum Position {Long, Short}
+    enum Position {Up, Down}
 
     mapping(address => uint) public spentOnMarket;
 
@@ -131,9 +131,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             }
             uint sell_max_price = basePrice.mul(ONE.sub(max_spread.sub(safeBoxImpact))).div(ONE);
             require(sell_max_price > 0, "div by zero sell_max_price");
-            (IPosition long, IPosition short) = IPositionalMarket(market).options();
+            (IPosition up, IPosition down) = IPositionalMarket(market).options();
             uint balanceOfTheOtherSide =
-                position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
+                position == Position.Up ? down.balanceOf(address(this)) : up.balanceOf(address(this));
 
             // can burn straight away balanceOfTheOtherSide
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
@@ -180,7 +180,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
             (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
 
-            if (position == Position.Long) {
+            if (position == Position.Up) {
                 return
                     calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
                         1e2
@@ -247,8 +247,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             IPositionalMarketManager(manager).isKnownMarket(market) &&
             (IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity)
         ) {
-            (IPosition long, IPosition short) = IPositionalMarket(market).options();
-            if ((long.balanceOf(address(this)) > 0) || (short.balanceOf(address(this)) > 0)) {
+            (IPosition up, IPosition down) = IPositionalMarket(market).options();
+            if ((up.balanceOf(address(this)) > 0) || (down.balanceOf(address(this)) > 0)) {
                 return true;
             }
         }
@@ -283,8 +283,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             spentOnMarket[market] = spentOnMarket[market].add(toMint);
         }
 
-        (IPosition long, IPosition short) = IPositionalMarket(market).options();
-        IPosition target = position == Position.Long ? long : short;
+        (IPosition up, IPosition down) = IPositionalMarket(market).options();
+        IPosition target = position == Position.Up ? up : down;
         IERC20(address(target)).transfer(msg.sender, amount);
 
         if (address(stakingThales) != address(0)) {
@@ -310,8 +310,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint pricePaid = sellToAmmQuote(market, position, amount);
         require(expectedPayout.mul(ONE).div(pricePaid) <= (ONE.add(additionalSlippage)), "Slippage too high");
 
-        (IPosition long, IPosition short) = IPositionalMarket(market).options();
-        IPosition target = position == Position.Long ? long : short;
+        (IPosition up, IPosition down) = IPositionalMarket(market).options();
+        IPosition target = position == Position.Up ? up : down;
 
         require(target.balanceOf(msg.sender) >= amount, "You dont have enough options.");
         require(IERC20(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
@@ -502,15 +502,15 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint) {
-        (IPosition long, IPosition short) = IPositionalMarket(market).options();
-        uint balance = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
+        (IPosition up, IPosition down) = IPositionalMarket(market).options();
+        uint balance = position == Position.Up ? up.balanceOf(address(this)) : down.balanceOf(address(this));
         return balance;
     }
 
     function _balanceOfPositionsOnMarket(address market, Position position) internal view returns (uint, uint) {
-        (IPosition long, IPosition short) = IPositionalMarket(market).options();
-        uint balance = position == Position.Long ? long.balanceOf(address(this)) : short.balanceOf(address(this));
-        uint balanceOtherSide = position == Position.Long ? short.balanceOf(address(this)) : long.balanceOf(address(this));
+        (IPosition up, IPosition down) = IPositionalMarket(market).options();
+        uint balance = position == Position.Up ? up.balanceOf(address(this)) : down.balanceOf(address(this));
+        uint balanceOtherSide = position == Position.Up ? down.balanceOf(address(this)) : up.balanceOf(address(this));
         return (balance, balanceOtherSide);
     }
 

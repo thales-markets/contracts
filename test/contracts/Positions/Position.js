@@ -30,7 +30,7 @@ let PositionalMarket,
 	sUSDSynth,
 	positionalMarketMastercopy,
 	PositionMastercopy;
-let market, long, short, Position, Synth;
+let market, up, down, Position, Synth;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -65,11 +65,11 @@ contract('Position', accounts => {
 
 	let timeToMaturity = 200;
 	let totalDepositedAfterFees;
-	let longOption, shortOption;
+	let upOption, downOption;
 
 	const Side = {
-		Long: toBN(0),
-		Short: toBN(1),
+		Up: toBN(0),
+		Down: toBN(1),
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
@@ -156,15 +156,15 @@ contract('Position', accounts => {
 			await fastForward(100);
 
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
 
-			console.log('long', options.long);
+			console.log('up', options.up);
 
-			await long.transfer(minter, toUnit(1), { from: initialCreator });
+			await up.transfer(minter, toUnit(1), { from: initialCreator });
 
 			await assertAllBnEqual(
-				[long.balanceOf(minter), long.balanceOf(initialCreator)],
+				[up.balanceOf(minter), up.balanceOf(initialCreator)],
 				[toUnit(1), toUnit(1)]
 			);
 		});
@@ -172,15 +172,15 @@ contract('Position', accounts => {
 
 	describe('Basic Parameters', () => {
 		it('Static parameters are set properly', async () => {
-			assert.equal(await long.name(), 'Position Up');
-			assert.equal(await long.symbol(), 'UP');
-			assert.bnEqual(await long.decimals(), toBN(18));
-			assert.equal(await long.market(), market.address);
+			assert.equal(await up.name(), 'Position Up');
+			assert.equal(await up.symbol(), 'UP');
+			assert.bnEqual(await up.decimals(), toBN(18));
+			assert.equal(await up.market(), market.address);
 		});
 
 		it('Only expected functions are mutative', async () => {
 			ensureOnlyExpectedMutativeFunctions({
-				abi: long.abi,
+				abi: up.abi,
 				expected: [
 					'initialize',
 					'mint',
@@ -200,18 +200,18 @@ contract('Position', accounts => {
 			await market.mint(toUnit(1), { from: minter });
 			let fees = await market.fees();
 			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
-			let longBalanceAfterMinting = multiplyDecimalRound(_feeMultiplier, toUnit(1));
-			assert.bnEqual(await long.balanceOf(minter), longBalanceAfterMinting.add(toUnit(1)));
+			let upBalanceAfterMinting = multiplyDecimalRound(_feeMultiplier, toUnit(1));
+			assert.bnEqual(await up.balanceOf(minter), upBalanceAfterMinting.add(toUnit(1)));
 
-			assert.bnEqual(await long.totalSupply(), longBalanceAfterMinting.add(toUnit(2)));
+			assert.bnEqual(await up.totalSupply(), upBalanceAfterMinting.add(toUnit(2)));
 		});
 
 		it('Zero mints are idempotent.', async () => {
 			await market.mint(toUnit(0), { from: minter });
 			let fees = await market.fees();
 			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
-			let longBalanceAfterMinting = multiplyDecimalRound(_feeMultiplier, toUnit(1));
-			assert.bnEqual(await long.balanceOf(minter), longBalanceAfterMinting.add(toUnit(1)), {
+			let upBalanceAfterMinting = multiplyDecimalRound(_feeMultiplier, toUnit(1));
+			assert.bnEqual(await up.balanceOf(minter), upBalanceAfterMinting.add(toUnit(1)), {
 				from: minter,
 			});
 		});
@@ -222,7 +222,7 @@ contract('Position', accounts => {
 
 		it('Mint cannot be done other than from the market.', async () => {
 			await onlyGivenAddressCanInvoke({
-				fnc: long.mint,
+				fnc: up.mint,
 				args: [minter, toUnit(1)],
 				accounts,
 				skipPassCheck: true,
@@ -234,7 +234,7 @@ contract('Position', accounts => {
 	describe('Transfer events', () => {
 		it('Transfers properly emit events', async () => {
 			// Transfer partial quantity.
-			const tx = await short.transfer(minter, toUnit(1), { from: initialCreator });
+			const tx = await down.transfer(minter, toUnit(1), { from: initialCreator });
 
 			assert.eventEqual(tx.logs[0], 'Transfer', {
 				from: initialCreator,
@@ -245,18 +245,18 @@ contract('Position', accounts => {
 
 		it('Cannot transfer on insufficient balance', async () => {
 			await assert.revert(
-				long.transfer(initialCreator, toUnit(1), { from: exersizer }),
+				up.transfer(initialCreator, toUnit(1), { from: exersizer }),
 				'Insufficient balance'
 			);
 		});
 
 		it('Approvals properly update allowance values', async () => {
-			await long.approve(minter, toUnit(10), { from: exersizer });
-			assert.bnEqual(await long.allowance(exersizer, minter), toUnit(10));
+			await up.approve(minter, toUnit(10), { from: exersizer });
+			assert.bnEqual(await up.allowance(exersizer, minter), toUnit(10));
 		});
 
 		it('Approvals properly emit events', async () => {
-			const tx = await long.approve(minter, toUnit(10), { from: exersizer });
+			const tx = await up.approve(minter, toUnit(10), { from: exersizer });
 
 			assert.eventEqual(tx.logs[0], 'Approval', {
 				owner: exersizer,
@@ -271,13 +271,13 @@ contract('Position', accounts => {
 			await fastForward(100);
 
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
 
-			await short.approve(minter, toUnit(10), { from: exersizer });
-			await short.transfer(exersizer, toUnit(1), { from: initialCreator });
+			await down.approve(minter, toUnit(10), { from: exersizer });
+			await down.transfer(exersizer, toUnit(1), { from: initialCreator });
 
-			const tx = await short.transferFrom(exersizer, minter, toUnit(1), { from: minter });
+			const tx = await down.transferFrom(exersizer, minter, toUnit(1), { from: minter });
 
 			assert.eventEqual(tx.logs[0], 'Transfer', {
 				from: exersizer,
@@ -286,37 +286,37 @@ contract('Position', accounts => {
 			});
 
 			await assertAllBnEqual(
-				[short.balanceOf(exersizer), short.balanceOf(minter), short.totalSupply()],
+				[down.balanceOf(exersizer), down.balanceOf(minter), down.totalSupply()],
 				[toUnit(0), toUnit(1), toUnit(2)]
 			);
 
 			await assert.revert(
-				short.transferFrom(exersizer, minter, toUnit(1), { from: minter }),
+				down.transferFrom(exersizer, minter, toUnit(1), { from: minter }),
 				'Insufficient balance'
 			);
 
 			await assert.revert(
-				short.transferFrom(minter, exersizer, toUnit(1), { from: exersizer }),
+				down.transferFrom(minter, exersizer, toUnit(1), { from: exersizer }),
 				'Insufficient allowance'
 			);
 		});
 
 		it('Transfers and approvals cannot go to invalid addresses.', async () => {
-			await assert.revert(long.transfer(ZERO_ADDRESS, toBN(0)), 'Invalid address');
+			await assert.revert(up.transfer(ZERO_ADDRESS, toBN(0)), 'Invalid address');
 			await assert.revert(
-				long.transferFrom(ZERO_ADDRESS, ZERO_ADDRESS, toBN(0)),
+				up.transferFrom(ZERO_ADDRESS, ZERO_ADDRESS, toBN(0)),
 				'Invalid address'
 			);
-			await assert.revert(long.approve(ZERO_ADDRESS, toBN(100)));
+			await assert.revert(up.approve(ZERO_ADDRESS, toBN(100)));
 		});
 	});
 
 	describe('Exercising Options', () => {
 		it('Exercising options updates balances properly', async () => {
-			const totalSupply = await short.totalSupply();
+			const totalSupply = await down.totalSupply();
 			await fastForward(200);
 			await market.exerciseOptions({ from: minter });
-			await assertAllBnEqual([short.balanceOf(minter), short.totalSupply()], [toBN(0), toUnit(1)]);
+			await assertAllBnEqual([down.balanceOf(minter), down.totalSupply()], [toBN(0), toUnit(1)]);
 		});
 	});
 
@@ -326,10 +326,10 @@ contract('Position', accounts => {
 			let value_1 = toUnit(1);
 			let value_2 = toUnit(2);
 	
-			const totalSupplyShort = await short.totalSupply(); // 1
-			const totalSupplyLong = await long.totalSupply(); // 2
-			assert.bnEqual(totalSupplyShort, value_1);
-			assert.bnEqual(totalSupplyLong, value_2);
+			const totalSupplyDown = await down.totalSupply(); // 1
+			const totalSupplyUp = await up.totalSupply(); // 2
+			assert.bnEqual(totalSupplyDown, value_1);
+			assert.bnEqual(totalSupplyUp, value_2);
 	
 			await fastForward(200);
 	
@@ -339,15 +339,15 @@ contract('Position', accounts => {
 			);
 		});
 
-		it('Exercising options with provided amount  which exides MAX sLONG', async () => {
+		it('Exercising options with provided amount  which exides MAX sUP', async () => {
 	
 			let value_1 = toUnit(1);
 			let value_2 = toUnit(2);
 	
-			const totalSupplyShort = await short.totalSupply(); // 1
-			const totalSupplyLong = await long.totalSupply(); // 2
-			assert.bnEqual(totalSupplyShort, value_1);
-			assert.bnEqual(totalSupplyLong, value_2);
+			const totalSupplyDown = await down.totalSupply(); // 1
+			const totalSupplyUp = await up.totalSupply(); // 2
+			assert.bnEqual(totalSupplyDown, value_1);
+			assert.bnEqual(totalSupplyUp, value_2);
 	
 			await fastForward(200);
 	
@@ -363,10 +363,10 @@ contract('Position', accounts => {
 			let value_1 = toUnit(1);
 			let value_2 = toUnit(2);
 	
-			const totalSupplyShort = await short.totalSupply(); // 1
-			const totalSupplyLong = await long.totalSupply(); // 2
-			assert.bnEqual(totalSupplyShort, value_1);
-			assert.bnEqual(totalSupplyLong, value_2);
+			const totalSupplyDown = await down.totalSupply(); // 1
+			const totalSupplyUp = await up.totalSupply(); // 2
+			assert.bnEqual(totalSupplyDown, value_1);
+			assert.bnEqual(totalSupplyUp, value_2);
 				
 			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value_1); // 1
@@ -375,19 +375,19 @@ contract('Position', accounts => {
 	
 			const tx = await market.burnOptions(minimum, { from: initialCreator });
 	
-			await assertAllBnEqual([short.balanceOf(initialCreator), long.balanceOf(initialCreator)], [toBN(0), value_1]);
+			await assertAllBnEqual([down.balanceOf(initialCreator), up.balanceOf(initialCreator)], [toBN(0), value_1]);
 	
 		});
 	
-		it('Exercising options with provided amount which exides MAX sSHORT', async () => {
+		it('Exercising options with provided amount which exides MAX sDOWN', async () => {
 
 			let value_0 = toUnit(0);
 			let value_1 = toUnit(1);
 
-			const totalSupplyShort = await short.totalSupply(); // 1
-			const totalSupplyLong = await long.totalSupply(); // 2
-			assert.bnEqual(totalSupplyShort, value_0);
-			assert.bnEqual(totalSupplyLong, value_1);
+			const totalSupplyDown = await down.totalSupply(); // 1
+			const totalSupplyUp = await up.totalSupply(); // 2
+			assert.bnEqual(totalSupplyDown, value_0);
+			assert.bnEqual(totalSupplyUp, value_1);
 
 			await fastForward(200);
 
@@ -402,7 +402,7 @@ contract('Position', accounts => {
 	describe('Destruction', () => {
 		it('Position can only be destroyed by its parent market', async () => {
 			await onlyGivenAddressCanInvoke({
-				fnc: long.expire,
+				fnc: up.expire,
 				args: [exersizer],
 				accounts,
 				skipPassCheck: true,

@@ -12,12 +12,12 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "long",
+        "name": "up",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "short",
+        "name": "down",
         "type": "uint256"
       }
     ],
@@ -172,12 +172,12 @@
     "outputs": [
       {
         "internalType": "contract IPosition",
-        "name": "long",
+        "name": "up",
         "type": "address"
       },
       {
         "internalType": "contract IPosition",
-        "name": "short",
+        "name": "down",
         "type": "address"
       }
     ],
@@ -317,12 +317,12 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "long",
+        "name": "up",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "short",
+        "name": "down",
         "type": "uint256"
       }
     ],

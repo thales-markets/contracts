@@ -30,7 +30,7 @@ let PositionalMarket,
 	sUSDSynth,
 	PositionalMarketMastercopy,
 	PositionMastercopy;
-let market, long, short, position, Synth;
+let market, up, down, position, Synth;
 
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
@@ -73,8 +73,8 @@ contract('ThalesAMM', accounts => {
 	let totalDeposited;
 
 	const Side = {
-		Long: toBN(0),
-		Short: toBN(1),
+		Up: toBN(0),
+		Down: toBN(1),
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
@@ -232,9 +232,9 @@ contract('ThalesAMM', accounts => {
 			console.log('priceUp decimal is:' + priceUp / 1e18);
 
 			let options = await newMarket.options();
-			long = await position.at(options.long);
-			short = await position.at(options.short);
-			await long.approve(thalesAMM.address, toUnit(1205), { from: minter });
+			up = await position.at(options.up);
+			down = await position.at(options.down);
+			await up.approve(thalesAMM.address, toUnit(1205), { from: minter });
 
 			await newMarket.mint(toUnit(1205), {
 				from: minter,
@@ -292,19 +292,19 @@ contract('ThalesAMM', accounts => {
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
 			let options = await newMarket.options();
-			long = await position.at(options.long);
-			short = await position.at(options.short);
+			up = await position.at(options.up);
+			down = await position.at(options.down);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			await newMarket.mint(toUnit(5800), {
 				from: minter,
 			});
 
-			let ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('ammLongBalance  pre sell decimal is:' + ammLongBalance / 1e18);
+			let ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('ammUpBalance  pre sell decimal is:' + ammUpBalance / 1e18);
 
-			let ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance  pre sell decimal is:' + ammShortBalance / 1e18);
+			let ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance  pre sell decimal is:' + ammDownBalance / 1e18);
 
 			let ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
 			console.log('ammSusdBalance pre buy decimal is:' + ammSusdBalance / 1e18);
@@ -312,7 +312,7 @@ contract('ThalesAMM', accounts => {
 			availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
 			console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
 
-			await long.approve(thalesAMM.address, toUnit(5000), { from: minter });
+			await up.approve(thalesAMM.address, toUnit(5000), { from: minter });
 			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.UP,
@@ -454,14 +454,14 @@ contract('ThalesAMM', accounts => {
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
 			let options = await newMarket.options();
-			long = await position.at(options.long);
-			short = await position.at(options.short);
+			up = await position.at(options.up);
+			down = await position.at(options.down);
 
-			let ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);
+			let ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance pre buy decimal is:' + ammUpBalance / 1e18);
 
-			let ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance pre buy  decimal is:' + ammShortBalance / 1e18);
+			let ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
@@ -479,11 +479,11 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance post buy decimal is:' + ammLongBalance / 1e18);
+			ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance post buy decimal is:' + ammUpBalance / 1e18);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance post buy  decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance post buy  decimal is:' + ammDownBalance / 1e18);
 
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket post buy decimal is:' + spentOnMarket / 1e18);
@@ -498,7 +498,7 @@ contract('ThalesAMM', accounts => {
 			);
 			console.log('sellPriceImpactPostBuy post buy decimal is:' + sellPriceImpactPostBuy / 1e18);
 
-			await long.approve(thalesAMM.address, toUnit(1205), { from: minter });
+			await up.approve(thalesAMM.address, toUnit(1205), { from: minter });
 			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.UP,
@@ -514,11 +514,11 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance post sell decimal is:' + ammLongBalance / 1e18);
+			ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance post sell decimal is:' + ammUpBalance / 1e18);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance post sell  decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance post sell  decimal is:' + ammDownBalance / 1e18);
 
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket post sell decimal is:' + spentOnMarket / 1e18);
@@ -569,14 +569,14 @@ contract('ThalesAMM', accounts => {
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
 			let options = await newMarket.options();
-			long = await position.at(options.long);
-			short = await position.at(options.short);
+			up = await position.at(options.up);
+			down = await position.at(options.down);
 
-			let ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);
+			let ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('ammUpBalance pre buy decimal is:' + ammUpBalance / 1e18);
 
-			let ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance pre buy  decimal is:' + ammShortBalance / 1e18);
+			let ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
 
 			await newMarket.mint(toUnit(6000), {
 				from: minter,
@@ -590,7 +590,7 @@ contract('ThalesAMM', accounts => {
 			console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e18);
 
 			let additionalSlippage = toUnit(0.01);
-			await long.approve(thalesAMM.address, toUnit(availableToSellToAMM / 1e18), { from: minter });
+			await up.approve(thalesAMM.address, toUnit(availableToSellToAMM / 1e18), { from: minter });
 			await thalesAMM.sellToAMM(
 				newMarket.address,
 				Position.UP,
@@ -600,11 +600,11 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance post buy decimal is:' + ammLongBalance / 1e18);
+			ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('ammUpBalance post buy decimal is:' + ammUpBalance / 1e18);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance post buy  decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance post buy  decimal is:' + ammDownBalance / 1e18);
 
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket post buy decimal is:' + spentOnMarket / 1e18);
@@ -634,11 +634,11 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance post sell decimal is:' + ammLongBalance / 1e18);
+			ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('ammUpBalance post sell decimal is:' + ammUpBalance / 1e18);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance post sell  decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance post sell  decimal is:' + ammDownBalance / 1e18);
 
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket post sell decimal is:' + spentOnMarket / 1e18);
@@ -689,14 +689,14 @@ contract('ThalesAMM', accounts => {
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
 			let options = await newMarket.options();
-			long = await position.at(options.long);
-			short = await position.at(options.short);
+			up = await position.at(options.up);
+			down = await position.at(options.down);
 
-			let ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);
+			let ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('ammUpBalance pre buy decimal is:' + ammUpBalance / 1e18);
 
-			let ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance pre buy  decimal is:' + ammShortBalance / 1e18);
+			let ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let newbuyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
@@ -717,11 +717,11 @@ contract('ThalesAMM', accounts => {
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket post buy decimal is:' + spentOnMarket / 1e18);
 
-			ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance post buy decimal is:' + ammLongBalance / 1e18);
+			ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('ammUpBalance post buy decimal is:' + ammUpBalance / 1e18);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance post buy  decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance post buy  decimal is:' + ammDownBalance / 1e18);
 
 			availableToBuyFromAMMUP = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
@@ -754,11 +754,11 @@ contract('ThalesAMM', accounts => {
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket post buy 1000 shorts decimal is:' + spentOnMarket / 1e18);
 
-			ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance post buy 1000 shorts  decimal is:' + ammLongBalance / 1e18);
+			ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance post buy 1000 shorts  decimal is:' + ammUpBalance / 1e18);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance post buy 1000 shorts  decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance post buy 1000 shorts  decimal is:' + ammDownBalance / 1e18);
 
 			availableToBuyFromAMMUP = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
@@ -794,11 +794,11 @@ contract('ThalesAMM', accounts => {
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket post buy all UP decimal is:' + spentOnMarket / 1e18);
 
-			ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance post buy all UP decimal is:' + ammLongBalance / 1e18);
+			ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance post buy all UP decimal is:' + ammUpBalance / 1e18);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance post buy all UP decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance post buy all UP decimal is:' + ammDownBalance / 1e18);
 
 			availableToBuyFromAMMUP = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
@@ -842,11 +842,11 @@ contract('ThalesAMM', accounts => {
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket post buy ALL shorts decimal is:' + spentOnMarket / 1e18);
 
-			ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance post buy ALL shorts  decimal is:' + ammLongBalance / 1e18);
+			ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance post buy ALL shorts  decimal is:' + ammUpBalance / 1e18);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance post buy ALL shorts  decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance post buy ALL shorts  decimal is:' + ammDownBalance / 1e18);
 
 			availableToBuyFromAMMUP = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
@@ -961,10 +961,10 @@ contract('ThalesAMM', accounts => {
 			console.log('phase ' + phase);
 
 			let options = await newMarket.options();
-			long = await position.at(options.long);
-			short = await position.at(options.short);
-			await long.approve(thalesAMM.address, toUnit(100), { from: minter });
-			await short.approve(thalesAMM.address, toUnit(100), { from: minter });
+			up = await position.at(options.up);
+			down = await position.at(options.down);
+			await up.approve(thalesAMM.address, toUnit(100), { from: minter });
+			await down.approve(thalesAMM.address, toUnit(100), { from: minter });
 
 			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
@@ -997,11 +997,11 @@ contract('ThalesAMM', accounts => {
 			let isKnownMarket = await manager.isKnownMarket(newMarket.address);
 			console.log('isKnownMarket ' + isKnownMarket);
 
-			let ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance pre Exercise decimal is:' + ammLongBalance / 1e18);
+			let ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance pre Exercise decimal is:' + ammUpBalance / 1e18);
 
-			let ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance pre Exercise  decimal is:' + ammShortBalance / 1e18);
+			let ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance pre Exercise  decimal is:' + ammDownBalance / 1e18);
 
 			let sUSDBalance = await sUSDSynth.balanceOf(thalesAMM.address);
 			console.log('sUSDBalance post Exercise  decimal is:' + sUSDBalance / 1e18);
@@ -1011,11 +1011,11 @@ contract('ThalesAMM', accounts => {
 
 			await thalesAMM.exerciseMaturedMarket(newMarket.address);
 
-			ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance post Exercise decimal is:' + ammLongBalance / 1e18);
+			ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance post Exercise decimal is:' + ammUpBalance / 1e18);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance post Exercise  decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance post Exercise  decimal is:' + ammDownBalance / 1e18);
 
 			sUSDBalance = await sUSDSynth.balanceOf(thalesAMM.address);
 			console.log('sUSDBalance post Exercise  decimal is:' + sUSDBalance / 1e18);
@@ -1223,25 +1223,25 @@ contract('ThalesAMM', accounts => {
 			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
 
 			let options = await newMarket.options();
-			long = await position.at(options.long);
-			short = await position.at(options.short);
+			up = await position.at(options.up);
+			down = await position.at(options.down);
 
-			let ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);
+			let ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance pre buy decimal is:' + ammUpBalance / 1e18);
 
-			let ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance pre buy  decimal is:' + ammShortBalance / 1e18);
+			let ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
 
 			await newMarket.mint(toUnit(6000), {
 				from: minter,
 			});
 
-			long.transfer(thalesAMM.address, toUnit(100), { from: minter });
-			ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);
+			up.transfer(thalesAMM.address, toUnit(100), { from: minter });
+			ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance pre buy decimal is:' + ammUpBalance / 1e18);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance pre buy  decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
 
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
 			console.log('priceUp decimal is:' + priceUp / 1e18);
@@ -1298,11 +1298,11 @@ contract('ThalesAMM', accounts => {
 			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
 			let options = await newMarket.options();
-			long = await position.at(options.long);
-			short = await position.at(options.short);
+			up = await position.at(options.up);
+			down = await position.at(options.down);
 
-			let ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('amm short pre buy decimal is:' + ammShortBalance / 1e18);
+			let ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);
@@ -1315,8 +1315,8 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('amm short pre buy decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 
 			additionalSlippage = toUnit(0.01);
 			await expect(
@@ -1340,8 +1340,8 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('amm short pre buy decimal is:' + ammShortBalance / 1e18);
+			ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 		});
 
 		it('additional slippage test on buy', async () => {
@@ -1356,14 +1356,14 @@ contract('ThalesAMM', accounts => {
 			);
 
 			let options = await newMarket.options();
-			long = await position.at(options.long);
-			short = await position.at(options.short);
+			up = await position.at(options.up);
+			down = await position.at(options.down);
 
-			let ammLongBalance = await long.balanceOf(thalesAMM.address);
-			console.log('amm LongBalance pre buy decimal is:' + ammLongBalance / 1e18);
+			let ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm UpBalance pre buy decimal is:' + ammUpBalance / 1e18);
 
-			let ammShortBalance = await short.balanceOf(thalesAMM.address);
-			console.log('ammShortBalance pre buy  decimal is:' + ammShortBalance / 1e18);
+			let ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
 
 			await newMarket.mint(toUnit(6000), {
 				from: minter,
@@ -1376,7 +1376,7 @@ contract('ThalesAMM', accounts => {
 			);
 			console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e18);
 
-			await long.approve(thalesAMM.address, toUnit(1000), {
+			await up.approve(thalesAMM.address, toUnit(1000), {
 				from: minter,
 			});
 			let additionalSlippage = toUnit(0.01);

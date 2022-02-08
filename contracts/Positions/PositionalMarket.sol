@@ -22,8 +22,8 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ========== TYPES ========== */
 
     struct Options {
-        Position long;
-        Position short;
+        Position up;
+        Position down;
     }
 
     struct Times {
@@ -50,8 +50,8 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         uint deposit; // sUSD deposit
         bool customMarket;
         address iOracleInstanceAddress;
-        address long;
-        address short;
+        address up;
+        address down;
         address limitOrderProvider;
         address thalesAMM;
     }
@@ -103,12 +103,12 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         initialMint = _parameters.deposit;
 
         // Instantiate the options themselves
-        options.long = Position(_parameters.long);
-        options.short = Position(_parameters.short);
-        // abi.encodePacked("sLONG: ", _oracleKey)
-        // consider naming the option: sLongBTC>50@2021.12.31
-        options.long.initialize("Position Up", "UP", _parameters.limitOrderProvider, _parameters.thalesAMM);
-        options.short.initialize("Position Down", "DOWN", _parameters.limitOrderProvider, _parameters.thalesAMM);
+        options.up = Position(_parameters.up);
+        options.down = Position(_parameters.down);
+        // abi.encodePacked("sUP: ", _oracleKey)
+        // consider naming the option: sUpBTC>50@2021.12.31
+        options.up.initialize("Position Up", "UP", _parameters.limitOrderProvider, _parameters.thalesAMM);
+        options.down.initialize("Position Down", "DOWN", _parameters.limitOrderProvider, _parameters.thalesAMM);
         _mint(creator, initialMint);
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
@@ -173,7 +173,7 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
 
     function _result() internal view returns (Side) {
         if (customMarket) {
-            return iOracleInstance.getOutcome() ? Side.Long : Side.Short;
+            return iOracleInstance.getOutcome() ? Side.Up : Side.Down;
         } else {
             uint price;
             if (resolved) {
@@ -182,7 +182,7 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
                 price = _oraclePrice();
             }
 
-            return oracleDetails.strikePrice <= price ? Side.Long : Side.Short;
+            return oracleDetails.strikePrice <= price ? Side.Up : Side.Down;
         }
     }
 
@@ -192,16 +192,16 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
 
     /* ---------- Option Balances and Mints ---------- */
 
-    function _balancesOf(address account) internal view returns (uint long, uint short) {
-        return (options.long.balanceOf(account), options.short.balanceOf(account));
+    function _balancesOf(address account) internal view returns (uint up, uint down) {
+        return (options.up.balanceOf(account), options.down.balanceOf(account));
     }
 
-    function balancesOf(address account) external view returns (uint long, uint short) {
+    function balancesOf(address account) external view returns (uint up, uint down) {
         return _balancesOf(account);
     }
 
-    function totalSupplies() external view returns (uint long, uint short) {
-        return (options.long.totalSupply(), options.short.totalSupply());
+    function totalSupplies() external view returns (uint up, uint down) {
+        return (options.up.totalSupply(), options.down.totalSupply());
     }
 
     function getMaximumBurnable(address account) external view returns (uint amount) {
@@ -209,8 +209,8 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
     }
 
     function _getMaximumBurnable(address account) internal view returns (uint amount) {
-        (uint longBalance, uint shortBalance) = _balancesOf(account);
-        return (longBalance > shortBalance) ? shortBalance : longBalance;
+        (uint upBalance, uint downBalance) = _balancesOf(account);
+        return (upBalance > downBalance) ? downBalance : upBalance;
     }
 
     /* ---------- Utilities ---------- */
@@ -251,11 +251,11 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
     }
 
     function _mint(address minter, uint amount) internal {
-        options.long.mint(minter, amount);
-        options.short.mint(minter, amount);
+        options.up.mint(minter, amount);
+        options.down.mint(minter, amount);
 
-        emit Mint(Side.Long, minter, amount);
-        emit Mint(Side.Short, minter, amount);
+        emit Mint(Side.Up, minter, amount);
+        emit Mint(Side.Down, minter, amount);
     }
 
     function burnOptionsMaximum() external {
@@ -273,9 +273,9 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         // decrease deposit
         _decrementDeposited(amount);
 
-        // decrease long and short options
-        options.long.exerciseWithAmount(account, amount);
-        options.short.exerciseWithAmount(account, amount);
+        // decrease up and down options
+        options.up.exerciseWithAmount(account, amount);
+        options.down.exerciseWithAmount(account, amount);
 
         // transfer balance
         sUSD.transfer(account, amount);
@@ -325,19 +325,19 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         }
 
         // If the account holds no options, revert.
-        (uint longBalance, uint shortBalance) = _balancesOf(msg.sender);
-        require(longBalance != 0 || shortBalance != 0, "Nothing to exercise");
+        (uint upBalance, uint downBalance) = _balancesOf(msg.sender);
+        require(upBalance != 0 || downBalance != 0, "Nothing to exercise");
 
         // Each option only needs to be exercised if the account holds any of it.
-        if (longBalance != 0) {
-            options.long.exercise(msg.sender);
+        if (upBalance != 0) {
+            options.up.exercise(msg.sender);
         }
-        if (shortBalance != 0) {
-            options.short.exercise(msg.sender);
+        if (downBalance != 0) {
+            options.down.exercise(msg.sender);
         }
 
         // Only pay out the side that won.
-        uint payout = (_result() == Side.Long) ? longBalance : shortBalance;
+        uint payout = (_result() == Side.Up) ? upBalance : downBalance;
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);
@@ -362,8 +362,8 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         }
 
         // Destroy the option tokens before destroying the market itself.
-        options.long.expire(beneficiary);
-        options.short.expire(beneficiary);
+        options.up.expire(beneficiary);
+        options.down.expire(beneficiary);
         selfdestruct(beneficiary);
     }
 

@@ -31,7 +31,7 @@ let PositionalMarket,
 	sUSDSynth,
 	positionalMarketMastercopy,
 	PositionMastercopy;
-let market, long, short, Position, Synth;
+let market, up, down, Position, Synth;
 
 let aggregator_sAUD, aggregator_iAUD, aggregator_sUSD, aggregator_nonRate;
 
@@ -102,8 +102,8 @@ contract('Position', accounts => {
 	let totalDeposited;
 
 	const Side = {
-		Long: toBN(0),
-		Short: toBN(1),
+		Up: toBN(0),
+		Down: toBN(1),
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
@@ -304,10 +304,10 @@ contract('Position', accounts => {
 			const marketCreatedEvent = await transactionEvent(result, 'MarketCreated');
 			let createdMarket = await PositionalMarket.at(marketCreatedEvent.args.market);
 			const options = await createdMarket.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
-			let longAddress = long.address;
-			let shortAddress = short.address;
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
+			let upAddress = up.address;
+			let downAddress = down.address;
 
 			assert.eventEqual(marketCreatedEvent, 'MarketCreated', {
 				creator: initialCreator,
@@ -315,19 +315,19 @@ contract('Position', accounts => {
 				strikePrice: initialStrikePrice,
 				maturityDate: toBN(now + timeToMaturity),
 				expiryDate: toBN(now + timeToMaturity).add(expiryDuration),
-				long: longAddress,
-				short: shortAddress,
+				up: upAddress,
+				down: downAddress,
 			});
 
 			const receipt = await result.wait();
 			const decodedLogs = PositionalMarket.decodeLogs(receipt.events);
 			assert.eventEqual(decodedLogs[1], 'Mint', {
-				side: Side.Long,
+				side: Side.Up,
 				account: initialCreator,
 				value: toUnit(2),
 			});
 			assert.eventEqual(decodedLogs[2], 'Mint', {
-				side: Side.Short,
+				side: Side.Down,
 				account: initialCreator,
 				value: toUnit(2),
 			});
@@ -614,12 +614,12 @@ contract('Position', accounts => {
 
 		it('Held by owner', async () => {
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
-			assert.bnEqual(await long.balanceOf(initialCreator), toUnit(2));
-			assert.bnEqual(await short.balanceOf(initialCreator), toUnit(2));
-			assert.bnEqual(await long.totalSupply(), toUnit(2));
-			assert.bnEqual(await short.totalSupply(), toUnit(2));
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
+			assert.bnEqual(await up.balanceOf(initialCreator), toUnit(2));
+			assert.bnEqual(await down.balanceOf(initialCreator), toUnit(2));
+			assert.bnEqual(await up.totalSupply(), toUnit(2));
+			assert.bnEqual(await down.totalSupply(), toUnit(2));
 		});
 
 		it('Mint more and check balance', async () => {
@@ -627,26 +627,26 @@ contract('Position', accounts => {
 			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
 
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
 
 			let value = toUnit(3);
 			totalDeposited = value;
-			assert.bnEqual(await long.balanceOf(initialCreator), value);
-			assert.bnEqual(await short.balanceOf(initialCreator), value);
+			assert.bnEqual(await up.balanceOf(initialCreator), value);
+			assert.bnEqual(await down.balanceOf(initialCreator), value);
 
 			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
-			assert.bnEqual(totalSupplies.long, value);
-			assert.bnEqual(totalSupplies.short, value);
+			assert.bnEqual(totalSupplies.up, value);
+			assert.bnEqual(totalSupplies.down, value);
 		});
 
 		it('Position instances cannot transfer if the system is suspended or paused', async () => {
 			await manager.connect(creator).setPaused(true);
 			await assert.revert(
-				long.transfer(market.address, toUnit(1), { from: initialCreator }),
+				up.transfer(market.address, toUnit(1), { from: initialCreator }),
 				'This action cannot be performed while the contract is paused'
 			);
 			await manager.connect(creator).setPaused(false);
@@ -686,10 +686,10 @@ contract('Position', accounts => {
 			let now = await currentTime();
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePriceValue / 2, 8), now); // initialStrikePrice.div(two)
 
-			assert.bnEqual(await market.result(), Side.Short);
+			assert.bnEqual(await market.result(), Side.Down);
 			now = await currentTime();
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePriceValue * 2, 8), now);
-			assert.bnEqual(await market.result(), Side.Long);
+			assert.bnEqual(await market.result(), Side.Up);
 
 			await fastForward(timeToMaturity + 10);
 			now = await currentTime();
@@ -701,14 +701,14 @@ contract('Position', accounts => {
 			now = await currentTime();
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePriceValue / 2, 8), now);
 
-			assert.bnEqual(await market.result(), Side.Long);
+			assert.bnEqual(await market.result(), Side.Up);
 			now = await currentTime();
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePriceValue * 2, 8), now);
 
-			assert.bnEqual(await market.result(), Side.Long);
+			assert.bnEqual(await market.result(), Side.Up);
 		});
 
-		it('Result resolves correctly long.', async () => {
+		it('Result resolves correctly up.', async () => {
 			let now = await currentTime();
 			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
 			now = await currentTime();
@@ -718,25 +718,25 @@ contract('Position', accounts => {
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(initialStrikePriceValue + 1, 8), now);
 
 			const tx = await manager.resolveMarket(market.address);
-			assert.bnEqual(await market.result(), Side.Long);
+			assert.bnEqual(await market.result(), Side.Up);
 			assert.isTrue(await market.resolved());
 			assert.bnEqual((await market.oracleDetails()).finalPrice, price);
 
 			const receipt = await tx.wait();
 			const log = PositionalMarket.decodeLogs(receipt.events)[0];
 			assert.eventEqual(log, 'MarketResolved', {
-				result: Side.Long,
+				result: Side.Up,
 				oraclePrice: price,
 				deposited: totalDeposited,
 				poolFees: 0,
 				creatorFees: 0,
 			});
 			assert.equal(log.event, 'MarketResolved');
-			assert.bnEqual(log.args.result, Side.Long);
+			assert.bnEqual(log.args.result, Side.Up);
 			assert.bnEqual(log.args.oraclePrice, price);
 		});
 
-		it('Result resolves correctly short.', async () => {
+		it('Result resolves correctly down.', async () => {
 			let now = await currentTime();
 			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
 			await fastForward(timeToMaturity + 1);
@@ -747,17 +747,17 @@ contract('Position', accounts => {
 
 			const tx = await manager.resolveMarket(market.address);
 			assert.isTrue(await market.resolved());
-			assert.bnEqual(await market.result(), Side.Short);
+			assert.bnEqual(await market.result(), Side.Down);
 			assert.bnEqual((await market.oracleDetails()).finalPrice, price);
 
 			const receipt = await tx.wait();
 			const log = PositionalMarket.decodeLogs(receipt.events)[0];
 			assert.equal(log.event, 'MarketResolved');
-			assert.bnEqual(log.args.result, Side.Short);
+			assert.bnEqual(log.args.result, Side.Down);
 			assert.bnEqual(log.args.oraclePrice, price);
 		});
 
-		it('A result equal to the strike price resolves long.', async () => {
+		it('A result equal to the strike price resolves up.', async () => {
 			let now = await currentTime();
 			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
 			await fastForward(timeToMaturity + 1);
@@ -766,7 +766,7 @@ contract('Position', accounts => {
 
 			await manager.connect(creator).resolveMarket(market.address);
 			assert.isTrue(await market.resolved());
-			assert.bnEqual(await market.result(), Side.Long);
+			assert.bnEqual(await market.result(), Side.Up);
 			assert.bnEqual((await market.oracleDetails()).finalPrice, initialStrikePrice);
 		});
 
@@ -813,7 +813,7 @@ contract('Position', accounts => {
 			assert.equal(tx1.logs.length, 0);
 			assert.equal(tx1.receipt.rawLogs, 0);
 
-			assert.bnEqual(await long.balanceOf(dummy), 0);
+			assert.bnEqual(await up.balanceOf(dummy), 0);
 		});
 
 		it('Burn options maximum', async () => {
@@ -821,21 +821,21 @@ contract('Position', accounts => {
 			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
 
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
 
 			// before burn
 			let value = toUnit(3);
 			totalDeposited = value;
-			assert.bnEqual(await long.balanceOf(initialCreator), value);
-			assert.bnEqual(await short.balanceOf(initialCreator), value);
+			assert.bnEqual(await up.balanceOf(initialCreator), value);
+			assert.bnEqual(await down.balanceOf(initialCreator), value);
 
 			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
-			assert.bnEqual(totalSupplies.long, value);
-			assert.bnEqual(totalSupplies.short, value);
+			assert.bnEqual(totalSupplies.up, value);
+			assert.bnEqual(totalSupplies.down, value);
 
 			// burn all
 			const tx = await market.burnOptionsMaximum({ from: initialCreator });
@@ -843,8 +843,8 @@ contract('Position', accounts => {
 			// after burn
 			let valueZero = toUnit(0);
 			totalDeposited = value;
-			assert.bnEqual(await long.balanceOf(initialCreator), valueZero);
-			assert.bnEqual(await short.balanceOf(initialCreator), valueZero);
+			assert.bnEqual(await up.balanceOf(initialCreator), valueZero);
+			assert.bnEqual(await down.balanceOf(initialCreator), valueZero);
 
 			let minimum_after = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum_after, valueZero);
@@ -860,21 +860,21 @@ contract('Position', accounts => {
 			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
 
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
 
 			// before burn
 			let value = toUnit(3);
 			totalDeposited = value;
-			assert.bnEqual(await long.balanceOf(initialCreator), value);
-			assert.bnEqual(await short.balanceOf(initialCreator), value);
+			assert.bnEqual(await up.balanceOf(initialCreator), value);
+			assert.bnEqual(await down.balanceOf(initialCreator), value);
 
 			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
-			assert.bnEqual(totalSupplies.long, value);
-			assert.bnEqual(totalSupplies.short, value);
+			assert.bnEqual(totalSupplies.up, value);
+			assert.bnEqual(totalSupplies.down, value);
 
 			// burn only one
 			const tx = await market.burnOptions(toUnit(1), { from: initialCreator });
@@ -882,8 +882,8 @@ contract('Position', accounts => {
 			// after burn
 			let valueTwo = toUnit(2);
 			totalDeposited = valueTwo;
-			assert.bnEqual(await long.balanceOf(initialCreator), valueTwo);
-			assert.bnEqual(await short.balanceOf(initialCreator), valueTwo);
+			assert.bnEqual(await up.balanceOf(initialCreator), valueTwo);
+			assert.bnEqual(await down.balanceOf(initialCreator), valueTwo);
 
 			let minimum_after = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum_after, valueTwo);
@@ -899,21 +899,21 @@ contract('Position', accounts => {
 			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
 
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
 
 			// before burn
 			let value = toUnit(3);
 			totalDeposited = value;
-			assert.bnEqual(await long.balanceOf(initialCreator), value);
-			assert.bnEqual(await short.balanceOf(initialCreator), value);
+			assert.bnEqual(await up.balanceOf(initialCreator), value);
+			assert.bnEqual(await down.balanceOf(initialCreator), value);
 
 			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
-			assert.bnEqual(totalSupplies.long, value);
-			assert.bnEqual(totalSupplies.short, value);
+			assert.bnEqual(totalSupplies.up, value);
+			assert.bnEqual(totalSupplies.down, value);
 
 			// burn 5 but has 3
 			await assert.revert(
@@ -927,21 +927,21 @@ contract('Position', accounts => {
 			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
 
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
 
 			// before burn
 			let value = toUnit(3);
 			totalDeposited = value;
-			assert.bnEqual(await long.balanceOf(initialCreator), value);
-			assert.bnEqual(await short.balanceOf(initialCreator), value);
+			assert.bnEqual(await up.balanceOf(initialCreator), value);
+			assert.bnEqual(await down.balanceOf(initialCreator), value);
 
 			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value);
 
 			const totalSupplies = await market.totalSupplies();
-			assert.bnEqual(totalSupplies.long, value);
-			assert.bnEqual(totalSupplies.short, value);
+			assert.bnEqual(totalSupplies.up, value);
+			assert.bnEqual(totalSupplies.down, value);
 
 			// burn 5 but has 3
 			await assert.revert(
@@ -1026,8 +1026,8 @@ contract('Position', accounts => {
 			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
 
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
 
 			let susdBalance = toUnit(10);
 			await sUSDSynth.issue(exersicer, susdBalance);
@@ -1042,9 +1042,9 @@ contract('Position', accounts => {
 
 			let fees = await market.fees();
 			let _feeMultiplier = toUnit(1).sub(fees[0].add(fees[1]));
-			let longBalanceAfterMinting = multiplyDecimalRound(_feeMultiplier, toUnit(10));
+			let upBalanceAfterMinting = multiplyDecimalRound(_feeMultiplier, toUnit(10));
 
-			assert.bnEqual(await long.balanceOf(exersicer), longBalanceAfterMinting);
+			assert.bnEqual(await up.balanceOf(exersicer), upBalanceAfterMinting);
 
 			await fastForward(timeToMaturity + 100);
 
@@ -1054,28 +1054,28 @@ contract('Position', accounts => {
 			await aggregator_sAUD.setLatestAnswer(price, await currentTime());
 			await manager.resolveMarket(market.address);
 
-			assert.bnEqual(await long.balanceOf(exersicer), longBalanceAfterMinting);
+			assert.bnEqual(await up.balanceOf(exersicer), upBalanceAfterMinting);
 
 			const tx1 = await market.exerciseOptions({ from: exersicer });
 
 			// options no longer in the wallet
-			assert.bnEqual(await long.balanceOf(exersicer), toBN(0));
+			assert.bnEqual(await up.balanceOf(exersicer), toBN(0));
 
 			let logs = Position.decodeLogs(tx1.receipt.rawLogs);
 			assert.equal(logs.length, 5);
-			assert.equal(logs[0].address, long.address);
+			assert.equal(logs[0].address, up.address);
 			assert.equal(logs[0].event, 'Transfer');
 			assert.equal(logs[0].args.from, exersicer);
 			assert.equal(logs[0].args.to, '0x' + '0'.repeat(40));
-			assert.bnClose(logs[0].args.value, longBalanceAfterMinting, 1);
-			assert.equal(logs[1].address, long.address);
+			assert.bnClose(logs[0].args.value, upBalanceAfterMinting, 1);
+			assert.equal(logs[1].address, up.address);
 			assert.equal(logs[1].event, 'Burned');
 			assert.equal(logs[1].args.account, exersicer);
-			assert.bnClose(logs[1].args.value, longBalanceAfterMinting, 1);
+			assert.bnClose(logs[1].args.value, upBalanceAfterMinting, 1);
 			assert.equal(tx1.logs.length, 1);
 			assert.equal(tx1.logs[0].event, 'OptionsExercised');
 			assert.equal(tx1.logs[0].args.account, exersicer);
-			assert.bnClose(tx1.logs[0].args.value, longBalanceAfterMinting, 1);
+			assert.bnClose(tx1.logs[0].args.value, upBalanceAfterMinting, 1);
 		});
 
 		it('Exercising options resolves an unresolved market.', async () => {
@@ -1132,10 +1132,10 @@ contract('Position', accounts => {
 
 			await market.mint(toUnit(2), { from: exersicer });
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
 
-			await long.transfer(dummy, toUnit(1), { from: exersicer });
+			await up.transfer(dummy, toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			now = await currentTime();
 			const price = (await market.oracleDetails()).strikePrice;
@@ -1146,19 +1146,19 @@ contract('Position', accounts => {
 			let tx = await market.exerciseOptions({ from: dummy });
 			let logs = await getDecodedLogs({
 				hash: tx.receipt.transactionHash,
-				contracts: [market, long],
+				contracts: [market, up],
 			});
 
 			assert.equal(logs.length, 4);
 			decodedEventEqual({
 				event: 'Transfer',
-				emittedFrom: long.address,
+				emittedFrom: up.address,
 				args: [dummy, ZERO_ADDRESS, toUnit(1)],
 				log: logs[0],
 			});
 			decodedEventEqual({
 				event: 'Burned',
-				emittedFrom: long.address,
+				emittedFrom: up.address,
 				args: [dummy, toUnit(1)],
 				log: logs[1],
 			});
@@ -1172,12 +1172,12 @@ contract('Position', accounts => {
 			await createMarketAndMintMore(sAUDKey, initialStrikePrice, now, creator, timeToMaturity);
 
 			const options = await market.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
 
 			const marketAddress = market.address;
-			const longAddress = long.address;
-			const shortAddress = short.address;
+			const upAddress = up.address;
+			const downAddress = down.address;
 
 			await fastForward(expiryDuration.add(toBN(timeToMaturity + 10)));
 			await aggregator_sAUD.setLatestAnswer(initialStrikePriceValue, await currentTime());
@@ -1186,8 +1186,8 @@ contract('Position', accounts => {
 			await manager.connect(creator).expireMarkets([market.address]);
 
 			assert.equal(await web3.eth.getCode(marketAddress), '0x');
-			assert.equal(await web3.eth.getCode(longAddress), '0x');
-			assert.equal(await web3.eth.getCode(shortAddress), '0x');
+			assert.equal(await web3.eth.getCode(upAddress), '0x');
+			assert.equal(await web3.eth.getCode(downAddress), '0x');
 		});
 
 		it('Unresolved markets cannot be expired', async () => {

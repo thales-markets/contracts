@@ -8,8 +8,8 @@ import "./PositionalMarketManager.sol";
 
 contract PositionalMarketData {
     struct OptionValues {
-        uint long;
-        uint short;
+        uint up;
+        uint down;
     }
 
     struct Deposits {
@@ -49,7 +49,7 @@ contract PositionalMarketData {
     }
 
     function getMarketParameters(PositionalMarket market) external view returns (MarketParameters memory) {
-        (Position long, Position short) = market.options();
+        (Position up, Position down) = market.options();
         (uint maturityDate, uint expiryDate) = market.times();
         (bytes32 key, uint strikePrice, uint finalPrice, bool customMarket, address iOracleInstanceAddress) = market
             .oracleDetails();
@@ -57,7 +57,7 @@ contract PositionalMarketData {
 
         MarketParameters memory data = MarketParameters(
             market.creator(),
-            PositionalMarket.Options(long, short),
+            PositionalMarket.Options(up, down),
             PositionalMarket.Times(maturityDate, expiryDate),
             PositionalMarket.OracleDetails(key, strikePrice, finalPrice, customMarket, iOracleInstanceAddress),
             PositionalMarketManager.Fees(poolFee, creatorFee)
@@ -68,7 +68,7 @@ contract PositionalMarketData {
 
     function getMarketData(PositionalMarket market) external view returns (MarketData memory) {
         (uint price, uint updatedAt) = market.oraclePriceAndTimestamp();
-        (uint longSupply, uint shortSupply) = market.totalSupplies();
+        (uint upSupply, uint downSupply) = market.totalSupplies();
 
         return
             MarketData(
@@ -77,13 +77,13 @@ contract PositionalMarketData {
                 Resolution(market.resolved(), market.canResolve()),
                 market.phase(),
                 market.result(),
-                OptionValues(longSupply, shortSupply)
+                OptionValues(upSupply, downSupply)
             );
     }
 
     function getAccountMarketData(PositionalMarket market, address account) external view returns (AccountData memory) {
-        (uint longBalance, uint shortBalance) = market.balancesOf(account);
+        (uint upBalance, uint downBalance) = market.balancesOf(account);
 
-        return AccountData(OptionValues(longBalance, shortBalance));
+        return AccountData(OptionValues(upBalance, downBalance));
     }
 }

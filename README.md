@@ -10,7 +10,7 @@ Thales is a decentralized Binary Options platform.
 
 It offers the possibility to create markets to speculate on asset prices on a certain date.
 
-Users can then proceed to trade long and short options on those markets via 0x orderbooks.
+Users can then proceed to trade up and down options on those markets via 0x orderbooks.
 
 All markets are resolved via decentralized chainlink feeds.
 

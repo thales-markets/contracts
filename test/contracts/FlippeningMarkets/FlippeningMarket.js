@@ -27,7 +27,7 @@ const {
 
 let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
 let PositionalMarket, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
-let market, long, short, Position, Synth;
+let market, up, down, Position, Synth;
 let customMarket;
 let customOracle;
 
@@ -67,8 +67,8 @@ contract('Position', accounts => {
 	let totalDepositedAfterFees;
 
 	const Side = {
-		Long: toBN(0),
-		Short: toBN(1),
+		Up: toBN(0),
+		Down: toBN(1),
 	};
 
 	before(async () => {
@@ -164,10 +164,10 @@ contract('Position', accounts => {
 				event.args.market
 			);
 			const options = await customMarket.options();
-			long = await Position.at(options.long);
-			short = await Position.at(options.short);
-			let longAddress = long.address;
-			let shortAddress = short.address;
+			up = await Position.at(options.up);
+			down = await Position.at(options.down);
+			let upAddress = up.address;
+			let downAddress = down.address;
 
 			assert.eventEqual(event, 'MarketCreated', {
 				creator: initialCreator,
@@ -175,15 +175,15 @@ contract('Position', accounts => {
 				strikePrice: 0,
 				maturityDate: toBN(now + timeToMaturity),
 				expiryDate: toBN(now + timeToMaturity).add(expiryDuration),
-				long: longAddress,
-				short: shortAddress,
+				up: upAddress,
+				down: downAddress,
 				customMarket: true,
 				customOracle: customOracle.address,
 			});
 		});
 
 		it('Current side', async () => {
-			assert.bnEqual(await customMarket.result(), Side.Long);
+			assert.bnEqual(await customMarket.result(), Side.Up);
 		});
 
 		it('Can resolve a custom market', async () => {
@@ -211,14 +211,14 @@ contract('Position', accounts => {
 			await manager.resolveMarket(customMarket.address);
 
 			assert.isTrue(await customMarket.resolved());
-			assert.bnEqual(await customMarket.result(), Side.Long);
+			assert.bnEqual(await customMarket.result(), Side.Up);
 		});
 
 		it('Exercising options on custom market', async () => {
-			assert.bnEqual(await long.balanceOf(initialCreator), toBN('2000000000000000000'));
+			assert.bnEqual(await up.balanceOf(initialCreator), toBN('2000000000000000000'));
 			const tx1 = await customMarket.exerciseOptions({ from: initialCreator });
 			// options no longer in the wallet
-			assert.bnEqual(await long.balanceOf(initialCreator), toBN(0));
+			assert.bnEqual(await up.balanceOf(initialCreator), toBN(0));
 		});
 	});
 });

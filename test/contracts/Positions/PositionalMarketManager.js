@@ -32,7 +32,7 @@ let PositionalMarket,
 	sUSDSynth,
 	PositionalMarketMastercopy,
 	PositionMastercopy;
-let market, long, short, Position, Synth;
+let market, up, down, Position, Synth;
 let aggregator_sAUD;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -89,8 +89,8 @@ contract('PositionalMarketManager', accounts => {
 	let timeToMaturity = 200;
 
 	const Side = {
-		Long: toBN(0),
-		Short: toBN(1),
+		Up: toBN(0),
+		Down: toBN(1),
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {

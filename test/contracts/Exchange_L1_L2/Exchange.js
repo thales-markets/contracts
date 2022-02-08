@@ -540,25 +540,6 @@ contract('Proxy Exhanger L1 <=> L2', async accounts => {
 				});
 			});
 			
-			describe('exchange to different receiver', function() {
-				beforeEach(async () => {
-					await ThalesToken.transfer(ProxyExchanger.address, toUnit(100), { from: owner });
-				});
-
-				it('allowance not granted for User, funds not exchanged', async function() {
-					await expect(
-						ProxyExchanger.exchangeOpThalesToThales(toUnit(100), { from: userOne })
-					).to.be.revertedWith('No allowance');
-				});
-				it('exchange complete, funds received by different receiver', async function() {
-					await OpThalesToken.approve(ProxyExchanger.address, toUnit(100), { from: userOne });
-					answer = await ProxyExchanger.exchangeOpThalesToThalesDifferentReceiver( userTwo, toUnit(100), { from: userOne });
-					answer = await OpThalesToken.balanceOf(userOne);
-					assert.equal(answer.toString(), '0');
-					answer = await ThalesToken.balanceOf(userTwo);
-					assert.equal(answer.toString(), toUnit(100).toString());
-				});
-			});
 		});
 	});
 });

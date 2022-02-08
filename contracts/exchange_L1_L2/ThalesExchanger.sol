@@ -92,15 +92,6 @@ contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyRe
         emit ExchangedThalesForOpThales(msg.sender, amount);
     }
     
-    function exchangeThalesToOpThalesDifferentReceiver(address receiver_account, uint amount) external nonReentrant notPaused {
-        require(enabledThalesToOpThales, "Exchanging disabled");
-        require(OpThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger OpThales funds");
-        require(ThalesToken.allowance(msg.sender, address(this)) >= amount, "No allowance");
-        require(receiver_account != address(0), "Invalid address");
-        _exchangeToAddress(msg.sender, receiver_account, amount, THALES_TO_OPTHALES);
-        emit ExchangedThalesForOpThalesDifferentReceiver(msg.sender, receiver_account, amount);
-    }
-
     function exchangeOpThalesToThales(uint amount) external nonReentrant notPaused {
         require(enabledOpThalesToThales, "Exchanging disabled");
         require(ThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger Thales funds");
@@ -109,15 +100,6 @@ contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyRe
         emit ExchangedOpThalesForThales(msg.sender, amount);
     }
     
-    function exchangeOpThalesToThalesDifferentReceiver(address receiver_account, uint amount) external nonReentrant notPaused {
-        require(enabledOpThalesToThales, "Exchanging disabled");
-        require(ThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger Thales funds");
-        require(OpThalesToken.allowance(msg.sender, address(this)) >= amount, "No allowance");
-        require(receiver_account != address(0), "Invalid address");
-        _exchangeToAddress(msg.sender, receiver_account, amount, OPTHALES_TO_THALES);
-        emit ExchangedOpThalesForThalesDifferentReceiver(msg.sender, receiver_account, amount);
-    }
-
     function exchangeThalesToL2OpThales(uint amount) external nonReentrant notPaused {
         require(enabledThalesToOpThales, "Exchanging disabled");
         require(OpThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger OpThales funds");
@@ -152,21 +134,7 @@ contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyRe
         }
     }
     
-    function _exchangeToAddress(
-        address _sender,
-        address _receiver,
-        uint _amount,
-        uint _thalesToOpThales
-    ) internal notPaused {
-        if (_thalesToOpThales == THALES_TO_OPTHALES) {
-            ThalesToken.transferFrom(_sender, address(this), _amount);
-            OpThalesToken.transfer(_receiver, _amount);
-        } else {
-            OpThalesToken.transferFrom(_sender, address(this), _amount);
-            ThalesToken.transfer(_receiver, _amount);
-        }
-    }
-
+    
     event ExchangedThalesForOpThales(address sender, uint amount);
     event ExchangedThalesForL2OpThales(address sender, uint amount);
     event ExchangedOpThalesForThales(address sender, uint amount);
@@ -176,8 +144,6 @@ contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyRe
     event L2tokenAdressSet(address _l2TokenAddress);
     event SetEnabledThalesToOpThales(bool _enable);
     event SetEnabledOpThalesToThales(bool _enable);
-    event ExchangedThalesForOpThalesDifferentReceiver(address sender, address receiver, uint amount);
-    event ExchangedOpThalesForThalesDifferentReceiver(address sender, address receiver, uint amount);
     event ExchangedThalesForL2OpThalesDifferentReceiver(address sender, address receiver, uint amount);
     
 }

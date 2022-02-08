@@ -2,9 +2,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-4.4.1/access/Ownable.sol";
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract ExoticPositionalMarket is Ownable {
+contract ExoticPositionalMarket is Initializable, Ownable {
     using SafeMath for uint;
 
     struct Position {
@@ -27,111 +27,111 @@ contract ExoticPositionalMarket is Ownable {
 
 
     function initializeWithTwoParameters(
-        bytes32 marketQuestion, 
-        bytes32 phrase1,
-        bytes32 phrase2,
-        uint endOfPositioning,
-        uint marketMaturityDate,
-        uint fixedTicketPrice,
-        uint withdrawalFeePercentage,
-        uint defaultPosition,
-        uint tag
+        bytes32 _marketQuestion, 
+        bytes32 _phrase1,
+        bytes32 _phrase2,
+        uint _endOfPositioning,
+        uint _marketMaturityDate,
+        uint _fixedTicketPrice,
+        uint _withdrawalFeePercentage,
+        uint _defaultPosition,
+        uint _tag
     ) external initializer {
         _initializeWithTwoParameters(
-            marketQuestion, 
-            phrase1,
-            phrase2,
-            endOfPositioning,
-            marketMaturityDate,
-            fixedTicketPrice,
-            withdrawalFeePercentage,
-            tag
+            _marketQuestion, 
+            _phrase1,
+            _phrase2,
+            _endOfPositioning,
+            _marketMaturityDate,
+            _fixedTicketPrice,
+            _withdrawalFeePercentage,
+            _tag
         );
-        chooseDefaultPosition(defaultPosition, msg.sender);
+        chooseDefaultPosition(_defaultPosition, msg.sender);
     }
 
     function initializeWithThreeParameters(
-        bytes32 marketQuestion, 
-        bytes32 phrase1,
-        bytes32 phrase2,
-        bytes32 phrase3,
-        uint endOfPositioning,
-        uint marketMaturityDate,
-        uint fixedTicketPrice,
-        uint withdrawalFeePercentage,
-        uint defaultPosition,
-        uint tag
+        bytes32 _marketQuestion, 
+        bytes32 _phrase1,
+        bytes32 _phrase2,
+        bytes32 _phrase3,
+        uint _endOfPositioning,
+        uint _marketMaturityDate,
+        uint _fixedTicketPrice,
+        uint _withdrawalFeePercentage,
+        uint _defaultPosition,
+        uint _tag
     ) external initializer {
         _initializeWithTwoParameters(
-            marketQuestion, 
-            phrase1,
-            phrase2,
-            endOfPositioning,
-            marketMaturityDate,
-            fixedTicketPrice,
-            withdrawalFeePercentage,
-            tag
+            _marketQuestion, 
+            _phrase1,
+            _phrase2,
+            _endOfPositioning,
+            _marketMaturityDate,
+            _fixedTicketPrice,
+            _withdrawalFeePercentage,
+            _tag
         );
         _addPosition(_phrase3);
-        chooseDefaultPosition(defaultPosition, msg.sender);
+        chooseDefaultPosition(_defaultPosition, msg.sender);
     }
 
     function initializeWithFourParameters(
-        bytes32 marketQuestion, 
-        bytes32 phrase1,
-        bytes32 phrase2,
-        bytes32 phrase3,
-        bytes32 phrase4,
-        uint endOfPositioning,
-        uint marketMaturityDate,
-        uint fixedTicketPrice,
-        uint withdrawalFeePercentage,
-        uint defaultPosition,
-        uint tag
+        bytes32 _marketQuestion, 
+        bytes32 _phrase1,
+        bytes32 _phrase2,
+        bytes32 _phrase3,
+        bytes32 _phrase4,
+        uint _endOfPositioning,
+        uint _marketMaturityDate,
+        uint _fixedTicketPrice,
+        uint _withdrawalFeePercentage,
+        uint _defaultPosition,
+        uint _tag
     ) external initializer {
         _initializeWithTwoParameters(
-            marketQuestion, 
-            phrase1,
-            phrase2,
-            endOfPositioning,
-            marketMaturityDate,
-            fixedTicketPrice,
-            withdrawalFeePercentage,
-            tag
+            _marketQuestion, 
+            _phrase1,
+            _phrase2,
+            _endOfPositioning,
+            _marketMaturityDate,
+            _fixedTicketPrice,
+            _withdrawalFeePercentage,
+            _tag
         );
         _addPosition(_phrase3);
         _addPosition(_phrase4);
-        chooseDefaultPosition(defaultPosition, msg.sender);
+        chooseDefaultPosition(_defaultPosition, msg.sender);
     }
 
     function initializeWithFiveParameters(
-        bytes32 marketQuestion, 
-        bytes32 phrase1,
-        bytes32 phrase2,
-        bytes32 phrase3,
-        bytes32 phrase4,
-        bytes32 phrase5,
-        uint endOfPositioning,
-        uint marketMaturityDate,
-        uint fixedTicketPrice,
-        uint withdrawalFeePercentage,
-        uint defaultPosition,
-        uint tag
+        bytes32 _marketQuestion, 
+        bytes32 _phrase1,
+        bytes32 _phrase2,
+        bytes32 _phrase3,
+        bytes32 _phrase4,
+        bytes32 _phrase5,
+        uint _endOfPositioning,
+        uint _marketMaturityDate,
+        uint _fixedTicketPrice,
+        uint _withdrawalFeePercentage,
+        uint _defaultPosition,
+        uint _tag
     ) external initializer {
         _initializeWithTwoParameters(
-            marketQuestion, 
-            phrase1,
-            phrase2,
-            endOfPositioning,
-            marketMaturityDate,
-            fixedTicketPrice,
-            withdrawalFeePercentage,
-            tag
+            _marketQuestion, 
+            _phrase1,
+            _phrase2,
+            _endOfPositioning,
+            _marketMaturityDate,
+            _fixedTicketPrice,
+            _withdrawalFeePercentage,
+            _tag
         );
         _addPosition(_phrase3);
         _addPosition(_phrase4);
         _addPosition(_phrase5);
-        chooseDefaultPosition(defaultPosition, msg.sender);
+        chooseDefaultPosition(_defaultPosition, msg.sender);
     }
 
     
@@ -146,8 +146,8 @@ contract ExoticPositionalMarket is Ownable {
         uint _withdrawalFeePercentage,
         uint _tag
     ) internal {
-        require(_endOfPositioning >= now.add(1 hours), "Posiitioning period too low. Minimum 1 hour");
-        require(_marketMaturityDate >= now.add(2 hours), "Posiitioning period too low. Minimum 1 hour");
+        require(_endOfPositioning >= block.timestamp.add(1 hours), "Posiitioning period too low. Minimum 1 hour");
+        require(_marketMaturityDate >= block.timestamp.add(2 hours), "Posiitioning period too low. Minimum 1 hour");
         // Ticket Type can be determined based on ticket price
         ticketType = _fixedTicketPrice > 0 ? TicketType.FIXED_TICKET_PRICE : TicketType.FLEXIBLE_BID;
         fixedTicketPrice = _fixedTicketPrice;
@@ -166,8 +166,7 @@ contract ExoticPositionalMarket is Ownable {
     }
 
     function _addPosition(bytes32 _position) internal {
-        Position newPosition = new Position(_position, positions.length);
-        positions.push(newPosition);
+        positions.push(Position(_position, positions.length));
     }
  
 }

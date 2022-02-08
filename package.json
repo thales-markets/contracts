@@ -70,11 +70,13 @@
 		"yaml-validator": "^3.0.0"
 	},
 	"dependencies": {
+		"@anders-t/ethers-ledger": "^1.0.4",
 		"@chainlink/contracts": "^0.2.0",
 		"@chainlink/contracts-0.0.10": "npm:@chainlink/contracts@0.0.10",
 		"@eth-optimism/contracts": "^0.4.14",
 		"@eth-optimism/message-relayer": "^0.2.4",
 		"@eth-optimism/watcher": "0.0.1-alpha.8",
+		"@ethersproject/hardware-wallets": "^5.5.0",
 		"@openzeppelin/contracts-4.4.1": "npm:@openzeppelin/contracts@^4.4.1",
 		"@openzeppelin/contracts-upgradeable": "^4.4.1",
 		"@openzeppelin/test-helpers": "^0.5.11",

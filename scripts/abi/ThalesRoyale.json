@@ -1416,11 +1416,6 @@
         "internalType": "address",
         "name": "player",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_season",
-        "type": "uint256"
       }
     ],
     "name": "signUpOnBehalf",

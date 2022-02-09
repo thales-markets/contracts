@@ -44,4 +44,4 @@ Note: In script you can change percentage and also address for safebox
 
 `npx hardhat run --network XXXXX scripts/deployThalesRoyale/thalesRoyale/signUpOnBehalf.js`
 
-Note: In script you can change season and players which you need to sign up
+Note: In script you can change players which you need to sign up. SEASON must be started first.

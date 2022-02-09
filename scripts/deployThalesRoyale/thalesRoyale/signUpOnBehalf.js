@@ -35,7 +35,6 @@ async function main() {
 
 	/* ========== PROPERTIES ========== */
 
-	const season = 2;
 	const buyIn = w3utils.toWei('1230'); // CHANGE for amount 30 * 41
 
 	players = [
@@ -114,9 +113,9 @@ async function main() {
 
 	//sign in on behalf
 	for (let i = 0; i < players.length;) {
-		console.log('Sign up ' + players[i], ', season is ' + season, ', which is ' + i);
+		console.log('Sign up ' + players[i], ', which is ' + i);
 		try {
-			await royale.signUpOnBehalf(players[i], season, { from: owner.address });
+			await royale.signUpOnBehalf(players[i], { from: owner.address });
 			console.log('Signed up!');
 			i++;
 		}catch(e){

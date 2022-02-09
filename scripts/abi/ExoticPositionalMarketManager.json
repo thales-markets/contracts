@@ -3,63 +3,202 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinimumMarketMaturityDurationChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinimumPositionDurationChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
-        "name": "previousOwner",
+        "name": "oldOwner",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
       }
     ],
-    "name": "OwnershipTransferred",
+    "name": "OwnerChanged",
     "type": "event"
   },
   {
+    "anonymous": false,
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "position",
-        "type": "uint256"
-      },
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerNominated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
       {
+        "indexed": false,
         "internalType": "address",
         "name": "account",
         "type": "address"
       }
     ],
-    "name": "chooseDefaultPosition",
+    "name": "Paused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "endOfPositioning",
-    "outputs": [
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_marketQuestion",
+        "type": "bytes32"
+      },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_endOfPositioning",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_marketMaturityDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_fixedTicketPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_withdrawalFeePercentage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tag",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_phrase1",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_phrase2",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_phrase3",
+        "type": "bytes32"
       }
     ],
-    "stateMutability": "view",
+    "name": "createExoticMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "fixedTicketPrice",
-    "outputs": [
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_marketQuestion",
+        "type": "bytes32"
+      },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_endOfPositioning",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_marketMaturityDate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_fixedTicketPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_withdrawalFeePercentage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_tag",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_phrase1",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_phrase2",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_phrase3",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_phrase4",
+        "type": "bytes32"
       }
     ],
-    "stateMutability": "view",
+    "name": "createExoticMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -120,118 +259,7 @@
         "type": "bytes32"
       }
     ],
-    "name": "initializeWithFiveParameters",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_marketQuestion",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_endOfPositioning",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_marketMaturityDate",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_fixedTicketPrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_withdrawalFeePercentage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_tag",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase1",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase2",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase3",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase4",
-        "type": "bytes32"
-      }
-    ],
-    "name": "initializeWithFourParameters",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_marketQuestion",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_endOfPositioning",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_marketMaturityDate",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_fixedTicketPrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_withdrawalFeePercentage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_tag",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase1",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase2",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase3",
-        "type": "bytes32"
-      }
-    ],
-    "name": "initializeWithThreeParameters",
+    "name": "createExoticMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -279,14 +307,44 @@
         "type": "bytes32"
       }
     ],
-    "name": "initializeWithTwoParameters",
+    "name": "createExoticMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "marketMaturityDate",
+    "name": "initNonReentrant",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minimumPositioningDuration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minimumMarketMaturityDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minimumMarketMaturityDuration",
     "outputs": [
       {
         "internalType": "uint256",
@@ -299,12 +357,38 @@
   },
   {
     "inputs": [],
-    "name": "marketQuestion",
+    "name": "minimumPositioningDuration",
     "outputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "uint256",
         "name": "",
-        "type": "bytes32"
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "nominateNewOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nominatedOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -324,78 +408,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "positions",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "phrase",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "position",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
-    "name": "renounceOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "tag",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "ticketType",
-    "outputs": [
-      {
-        "internalType": "enum ExoticPositionalMarket.TicketType",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
-      }
-    ],
-    "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "withdrawalAllowed",
+    "name": "paused",
     "outputs": [
       {
         "internalType": "bool",
@@ -407,16 +421,55 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "withdrawalFeePercentage",
-    "outputs": [
+    "inputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_duration",
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "name": "setMinimumMarketMaturityDuration",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_duration",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinimumPositioningDuration",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

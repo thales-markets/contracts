@@ -39,3 +39,9 @@ Note: for each season you need to change propery inside script (propery season)
 `npx hardhat run --network XXXXX scripts/deployThalesRoyale/thalesRoyale/changeSafeBoxRoyaleSeason.js`
 
 Note: In script you can change percentage and also address for safebox
+
+3. Script for sign up players on behalf of owner [git version](https://github.com/thales-markets/contracts/blob/main/scripts/deployThalesRoyale/thalesRoyale/signUpOnBehalf.js)
+
+`npx hardhat run --network XXXXX scripts/deployThalesRoyale/thalesRoyale/signUpOnBehalf.js`
+
+Note: In script you can change season and players which you need to sign up

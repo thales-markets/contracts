@@ -263,7 +263,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
         emit SignedUpInARoom(msg.sender, _roomNumber);
     }
 
-    function startRoyaleInRoom(uint _roomNumber) external onlyRoomParticipantes(_roomNumber) {
+    function startRoyaleInRoom(uint _roomNumber) external onlyRoomParticipants(_roomNumber) {
         require(roomPublished[_roomNumber], "Room deleted or not published yet");
         require(
             block.timestamp > (roomCreationTime[_roomNumber] + roomSignUpPeriod[_roomNumber]),
@@ -283,7 +283,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
         emit RoyaleStartedForRoom(_roomNumber, numberOfPlayersInRoom[_roomNumber], rewardPerRoom[_roomNumber]);
     }
 
-    function takeAPositionInRoom(uint _roomNumber, uint _position) external onlyRoomParticipantes(_roomNumber) {
+    function takeAPositionInRoom(uint _roomNumber, uint _position) external onlyRoomParticipants(_roomNumber) {
         require(_position == DOWN || _position == UP, "Position can only be 1 or 2");
         require(roomStarted[_roomNumber], "Competition not started yet");
         require(!roomFinished[_roomNumber], "Competition finished");
@@ -303,9 +303,9 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
 
         // this block is when sender change positions in a round - first reduce
         if (positionInARoundPerRoom[_roomNumber][msg.sender][currentRoundInRoom[_roomNumber]] == DOWN) {
-            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][DOWN]--;
+            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][DOWN] = positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][DOWN].sub(1);
         } else if (positionInARoundPerRoom[_roomNumber][msg.sender][currentRoundInRoom[_roomNumber]] == UP) {
-            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][UP]--;
+            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][UP] = positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][UP].sub(1);
         }
 
         // set new value
@@ -321,7 +321,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
         emit TookAPosition(msg.sender, _roomNumber, currentRoundInRoom[_roomNumber], _position);
     }
 
-    function closeRoundInARoom(uint _roomNumber) external onlyRoomParticipantes(_roomNumber) {
+    function closeRoundInARoom(uint _roomNumber) external onlyRoomParticipants(_roomNumber) {
         require(roomStarted[_roomNumber], "Competition not started yet");
         require(!roomFinished[_roomNumber], "Competition finished");
         require(
@@ -719,7 +719,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
         _;
     }
 
-    modifier onlyRoomParticipantes(uint _roomNumber) {
+    modifier onlyRoomParticipants(uint _roomNumber) {
         require(playerSignedUpPerRoom[_roomNumber][msg.sender] != 0, "You are not room participant");
         _;
     }

@@ -118,10 +118,16 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     function signUpOnBehalf(address player, uint _season) external onlyOwner {
         require(_season > 1, "First season passed");
         require(playerSignedUpPerSeason[_season][player] == 0, "Player already signed up");
+        // check owner buy in
+        require(rewardToken.balanceOf(msg.sender) >= buyInAmount, "No enough sUSD for buy in");
+        require(rewardToken.allowance(msg.sender, address(this)) >= buyInAmount, "No allowance.");
 
         playerSignedUpPerSeason[_season][player] = block.timestamp;
         playersPerSeason[_season].push(player);
         signedUpPlayersCount[_season]++;
+
+        // buy in from owner!
+        _buyIn(msg.sender, buyInAmount, _season);
 
         emit SignedUp(player, _season);
     }
@@ -309,7 +315,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
             _putPosition(_player, season, 1, _position);
         }
 
-        _buyIn(_player, buyInAmount);
+        _buyIn(_player, buyInAmount, season);
 
         emit SignedUp(msg.sender, season);
     }
@@ -335,7 +341,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         rewardPerWinnerPerSeason[season] = rewardPerSeason[season].div(numberOfWinners);
     }
 
-    function _buyIn(address _sender, uint _amount) internal {
+    function _buyIn(address _sender, uint _amount, uint _season) internal {
         (uint amountBuyIn, uint amountSafeBox) = _calculateSafeBoxOnAmount(_amount);
 
         if (amountSafeBox > 0) {
@@ -343,7 +349,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         }
 
         rewardToken.safeTransferFrom(_sender, address(this), amountBuyIn);
-        rewardPerSeason[season] += amountBuyIn;
+        rewardPerSeason[_season] += amountBuyIn;
     }
 
     function _calculateSafeBoxOnAmount(uint _amount) internal view returns (uint, uint) {
@@ -393,6 +399,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(_season >= season, "Cant put funds in a past");
         require(!seasonFinished[_season], "Season is finished");
         require(rewardToken.allowance(msg.sender, address(this)) >= _amount, "No allowance.");
+        require(rewardToken.balanceOf(msg.sender) >= _amount, "No enough sUSD for buy in");
 
         _putFunds(msg.sender, _amount, _season);
     }

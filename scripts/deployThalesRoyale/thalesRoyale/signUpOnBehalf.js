@@ -10,6 +10,7 @@ async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	let players = [];
+	let ProxyERC20sUSDaddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -35,6 +36,7 @@ async function main() {
 	/* ========== PROPERTIES ========== */
 
 	const season = 2;
+	const buyIn = w3utils.toWei('1230'); // CHANGE for amount 30 * 41
 
 	players = [
 		'0x00ae7fe77ab7c4e77f894c76c167dc310766c57a',
@@ -90,8 +92,25 @@ async function main() {
 		thalesRoyaleAddress
 	);
 
-	console.log('Starting!')
+	ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSDaddress);
+
+	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
+	let contract = new ethers.Contract(ProxyERC20sUSDaddress, abi, owner);	
+
 	console.log('No. players: ' + players.length)
+
+	console.log('amount for approve: ' + buyIn);
+
+	await contract.approve(royale.address, buyIn, {
+		from: owner.address,
+	});
+	delay(5000); // need some time to  finish approval
+
+	console.log('Done approving');
+
+	// sign in
+	console.log('Starting sign up!')
 
 	//sign in on behalf
 	for (let i = 0; i < players.length;) {
@@ -105,6 +124,14 @@ async function main() {
 		}
 	}
 
+	console.log('Ended sign up!')
+
+}
+
+function delay(time) {
+	return new Promise(function (resolve) {
+		setTimeout(resolve, time);
+	});
 }
 
 main()

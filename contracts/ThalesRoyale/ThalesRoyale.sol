@@ -106,8 +106,9 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     /* ========== GAME ========== */
 
-    function signUp() external {
+    function signUp(uint position) external {
         require(season > 0, "Initialize first season");
+        require(position == DOWN || position == UP, "Position can only be 1 or 2");
         require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
         require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");
         require(rewardToken.balanceOf(msg.sender) >= buyInAmount, "No enough sUSD for buy in");
@@ -117,9 +118,25 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         playersPerSeason[season].push(msg.sender);
         signedUpPlayersCount[season]++;
 
+        _putPosition(msg.sender, season, 1, position);
+
         _buyIn(msg.sender, buyInAmount);
 
-        emit SignedUp(msg.sender, season);
+        emit SignedUp(msg.sender, season, position);
+    }
+
+    function signUpOnBehalf(address player, uint _season, uint position) external onlyOwner {
+        require(_season > 1, "First season passed");
+        require(position == DOWN || position == UP, "Position can only be 1 or 2");
+        require(playerSignedUpPerSeason[_season][player] == 0, "Player already signed up");
+
+        playerSignedUpPerSeason[_season][player] = block.timestamp;
+        playersPerSeason[_season].push(player);
+        signedUpPlayersCount[_season]++;
+
+        _putPosition(player, _season, 1, position);
+
+        emit SignedUp(player, _season, position);
     }
 
     function startRoyaleInASeason() external {
@@ -164,17 +181,8 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
             positionsPerRoundPerSeason[season][roundInASeason[season]][UP]--;
         }
 
-        // set new value
-        positionInARoundPerSeason[season][msg.sender][roundInASeason[season]] = position;
+        _putPosition(msg.sender, season, roundInASeason[season], position);
 
-        // add number of positions
-        if (position == UP) {
-            positionsPerRoundPerSeason[season][roundInASeason[season]][position]++;
-        } else {
-            positionsPerRoundPerSeason[season][roundInASeason[season]][position]++;
-        }
-
-        emit TookAPosition(msg.sender, season, roundInASeason[season], position);
     }
 
     function closeRound() external {
@@ -305,6 +313,21 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     /* ========== INTERNALS ========== */
+
+    function _putPosition(address _player, uint _season, uint _round, uint _position) internal {
+       // set value
+        positionInARoundPerSeason[_season][_player][_round] = _position;
+
+        // add number of positions
+        if (_position == UP) {
+            positionsPerRoundPerSeason[_season][_round][_position]++;
+        } else {
+            positionsPerRoundPerSeason[_season][_round][_position]++;
+        }
+      
+        emit TookAPosition(_player, _season, _round, _position);
+
+    }
 
     function _populateReward(uint numberOfWinners) internal {
         require(seasonFinished[season], "Royale must be finished");
@@ -437,7 +460,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     /* ========== EVENTS ========== */
 
-    event SignedUp(address user, uint season);
+    event SignedUp(address user, uint season, uint position);
     event RoundClosed(uint season, uint round, uint result, uint strikePrice, uint finalPrice, uint numberOfEliminatedPlayers, uint numberOfWinningPlayers);
     event TookAPosition(address user, uint season, uint round, uint position);
     event RoyaleStarted(uint season, uint totalPlayers, uint totalReward);

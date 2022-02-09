@@ -120,7 +120,6 @@
 		"BinaryOptionMarketManager": "0x6382660BF24f5e7BeC43a7D47591F823488FDB8D",
 		"BinaryOptionMarketData": "0xdBDAB336Cd97DB0F361DbD8C47EB4731674B62d7",
 		"PriceFeed": "0x3c22C1bBC552A43b101b003dF5230322EA09CeD0",
-		"ThalesRoyale": "0x1Bd47601C17cEfFbd2e0D72c9Df1B6C9f9300303",
 		"ThalesRoyalePrivateRoom": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
 		"OpThales_L2": "0xf584ff99f97b5abb1872af1aa7924fedf3e1b53d",
 		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
@@ -132,12 +131,13 @@
 		"EscrowThales": "0xcCD32f7EB77574bb6929e2dA9CE6c608E45BA54F",
 		"StakingThalesImplementation": "0x05A40877497F1C978c59B11659d8f81313A6A846",
 		"EscrowThalesImplementation": "0xc861b87796B22639B1FBFEf93d134cC9d8d0729E",
-		"ThalesRoyaleImplementation": "0x183c41165DBA8E26cA57d4F5F31E32ed933E2717",
 		"SafeBox": "0x8314125c8b68af2afd0d151eb4a551e88128a2ae",
 		"SNXIssuer": "0x42d9ac3ebebb9479f24360847350b4F7EADECE50",
 		"OngoingAirdrop": "0xcA8d82a30fd9dfec102eCdfb59A13e9a86C2Ee6F",
 		"ThalesStakingRewardsPool": "0xBfb2692Ae8c4399FD27977b9e14E8E69e31711d6",
-		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a"
+		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a",
+		"ThalesRoyale": "0x7Fbcf7CB3B16978c2c850fc743b270918e44B988",
+		"ThalesRoyaleImplementation": "0x6E517F7c5237eAc2d5DCcD8AcCc24BFDBa76d6B7"
 	},
 	"localhost": {
 		"Airdrop": "",

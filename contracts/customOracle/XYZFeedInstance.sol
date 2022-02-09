@@ -1,4 +1,5 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 import "../interfaces/IOracleInstance.sol";
 import "./IMerkleDistributor.sol";
@@ -13,7 +14,7 @@ contract XYZFeedInstance is IOracleInstance, Owned {
     uint256 public targetCount;
 
     bool public outcome;
-    bool public resolvable = true;
+    bool public override resolvable = true;
 
     bool private forcedOutcome;
 
@@ -24,7 +25,7 @@ contract XYZFeedInstance is IOracleInstance, Owned {
         string memory _targetName,
         string memory _targetOutcome,
         string memory _eventName
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         iMerkleDistributor = IMerkleDistributor(_iMerkleDistributor);
         targetCount = _targetCount;
         targetName = _targetName;
@@ -32,7 +33,7 @@ contract XYZFeedInstance is IOracleInstance, Owned {
         eventName = _eventName;
     }
 
-    function getOutcome() external view returns (bool) {
+    function getOutcome() external view override returns (bool) {
         if (forcedOutcome) {
             return outcome;
         } else {

@@ -1,14 +1,15 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "./EthBurnedFeed.sol";
 import "../interfaces/IOracleInstance.sol";
 import "../utils/Owned.sol";
-import "solidity-util/lib/Integers.sol";
+import "../utils/libraries/Int.sol";
 
 contract EthBurnedOracleInstance is IOracleInstance, Owned {
     using Chainlink for Chainlink.Request;
-    using Integers for uint;
+    using Int for uint;
 
     address public ethBurnedFeed;
     string public targetName;
@@ -26,14 +27,14 @@ contract EthBurnedOracleInstance is IOracleInstance, Owned {
         string memory _targetName,
         uint256 _targetOutcome,
         string memory _eventName
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         ethBurnedFeed = _ethBurnedFeed;
         targetName = _targetName;
         targetOutcome = _targetOutcome;
         eventName = _eventName;
     }
 
-    function getOutcome() external view returns (bool) {
+    function getOutcome() external view override returns (bool) {
         if (forcedOutcome) {
             return outcome;
         } else {
@@ -59,7 +60,7 @@ contract EthBurnedOracleInstance is IOracleInstance, Owned {
         _resolvable = _resolvableToSet;
     }
 
-    function resolvable() external view returns (bool) {
+    function resolvable() external view override returns (bool) {
         EthBurnedFeed ethBurnedFeedOracle = EthBurnedFeed(ethBurnedFeed);
         return (block.timestamp - ethBurnedFeedOracle.lastOracleUpdate()) < 2 hours;
     }

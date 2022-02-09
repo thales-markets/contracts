@@ -1,9 +1,11 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 import "../utils/Pausable.sol";
-import "openzeppelin-solidity-2.3.0/contracts/ownership/Ownable.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
+import "@openzeppelin/contracts-4.4.1/access/Ownable.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "../interfaces/IPriceFeed.sol";
 
 contract ThalesRoyalePrivateRoom is Owned, Pausable {
@@ -84,7 +86,7 @@ contract ThalesRoyalePrivateRoom is Owned, Pausable {
         address _owner,
         IPriceFeed _priceFeed,
         address _rewardToken
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         priceFeed = _priceFeed;
         rewardToken = IERC20(_rewardToken);
     }

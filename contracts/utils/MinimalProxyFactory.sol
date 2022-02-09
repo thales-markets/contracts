@@ -1,4 +1,5 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 contract MinimalProxyFactory {
     function _cloneAsMinimalProxy(address _base, string memory _revertMsg) internal returns (address clone) {

@@ -1,12 +1,13 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
-import "../utils/proxy/ProxyReentrancyGuard.sol";
-import "../utils/proxy/ProxyOwned.sol";
-import "../utils/proxy/ProxyPausable.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../interfaces/IThalesExchanger.sol";
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {iOVM_L1ERC20Bridge} from "@eth-optimism/contracts/iOVM/bridge/tokens/iOVM_L1ERC20Bridge.sol";
 
@@ -44,12 +45,12 @@ contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyRe
         enabledOpThalesToThales = true;
     }
 
-    function setThalesAddress(address thalesAddress) external onlyOwner {
+    function setThalesAddress(address thalesAddress) external override onlyOwner {
         ThalesToken = IERC20(thalesAddress);
         emit ThalesAdressSet(thalesAddress);
     }
 
-    function setOpThalesAddress(address opThalesAddress) external onlyOwner {
+    function setOpThalesAddress(address opThalesAddress) external override onlyOwner {
         OpThalesToken = IERC20(opThalesAddress);
         emit OpThalesAdressSet(opThalesAddress);
     }
@@ -84,7 +85,7 @@ contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyRe
         OpThalesToken.approve(address(L1Bridge), MAX_APPROVAL);
     }
 
-    function exchangeThalesToOpThales(uint amount) external nonReentrant notPaused {
+    function exchangeThalesToOpThales(uint amount) external override nonReentrant notPaused {
         require(enabledThalesToOpThales, "Exchanging disabled");
         require(OpThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger OpThales funds");
         require(ThalesToken.allowance(msg.sender, address(this)) >= amount, "No allowance");
@@ -92,7 +93,7 @@ contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyRe
         emit ExchangedThalesForOpThales(msg.sender, amount);
     }
 
-    function exchangeOpThalesToThales(uint amount) external nonReentrant notPaused {
+    function exchangeOpThalesToThales(uint amount) external override nonReentrant notPaused {
         require(enabledOpThalesToThales, "Exchanging disabled");
         require(ThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger Thales funds");
         require(OpThalesToken.allowance(msg.sender, address(this)) >= amount, "No allowance");

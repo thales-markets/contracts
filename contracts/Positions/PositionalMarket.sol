@@ -1,4 +1,5 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
@@ -7,12 +8,12 @@ import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IOracleInstance.sol";
 
 // Libraries
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 
 // Internal references
 import "./PositionalMarketManager.sol";
 import "./Position.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 
 contract PositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ========== LIBRARIES ========== */
@@ -59,9 +60,9 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ========== STATE VARIABLES ========== */
 
     Options public options;
-    Times public times;
+    Times public override times;
     OracleDetails public oracleDetails;
-    PositionalMarketManager.Fees public fees;
+    PositionalMarketManager.Fees public override fees;
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
 
@@ -70,10 +71,10 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
 
     // `deposited` tracks the sum of all deposits.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
-    uint public deposited;
+    uint public override deposited;
     uint public initialMint;
-    address public creator;
-    bool public resolved;
+    address public override creator;
+    bool public override resolved;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -135,7 +136,7 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         return resolved && (times.expiry < block.timestamp || deposited == 0);
     }
 
-    function phase() external view returns (Phase) {
+    function phase() external view override returns (Phase) {
         if (!_matured()) {
             return Phase.Trading;
         }
@@ -155,15 +156,15 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
     }
 
-    function oraclePriceAndTimestamp() external view returns (uint price, uint updatedAt) {
+    function oraclePriceAndTimestamp() external view override returns (uint price, uint updatedAt) {
         return _oraclePriceAndTimestamp();
     }
 
-    function oraclePrice() external view returns (uint price) {
+    function oraclePrice() external view override returns (uint price) {
         return _oraclePrice();
     }
 
-    function canResolve() public view returns (bool) {
+    function canResolve() public view override returns (bool) {
         if (customMarket) {
             return !resolved && _matured() && iOracleInstance.resolvable();
         } else {
@@ -186,26 +187,46 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         }
     }
 
-    function result() external view returns (Side) {
+    function result() external view override returns (Side) {
         return _result();
     }
 
     /* ---------- Option Balances and Mints ---------- */
 
     function _balancesOf(address account) internal view returns (uint up, uint down) {
-        return (options.up.balanceOf(account), options.down.balanceOf(account));
+        return (options.up.getBalanceOf(account), options.down.getBalanceOf(account));
     }
 
-    function balancesOf(address account) external view returns (uint up, uint down) {
+    function balancesOf(address account) external view override returns (uint up, uint down) {
         return _balancesOf(account);
     }
 
-    function totalSupplies() external view returns (uint up, uint down) {
+    function totalSupplies() external view override returns (uint up, uint down) {
         return (options.up.totalSupply(), options.down.totalSupply());
     }
 
-    function getMaximumBurnable(address account) external view returns (uint amount) {
+    function getMaximumBurnable(address account) external view override returns (uint amount) {
         return _getMaximumBurnable(account);
+    }
+
+    function getOptions() external view override returns (IPosition up, IPosition down) {
+        up = options.up;
+        down = options.down;
+    }
+
+    function getOracleDetails()
+        external
+        view
+        override
+        returns (
+            bytes32 key,
+            uint strikePrice,
+            uint finalPrice
+        )
+    {
+        key = oracleDetails.key;
+        strikePrice = oracleDetails.strikePrice;
+        finalPrice = oracleDetails.finalPrice;
     }
 
     function _getMaximumBurnable(address account) internal view returns (uint amount) {
@@ -239,7 +260,7 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
 
     /* ---------- Minting ---------- */
 
-    function mint(uint value) external duringMinting {
+    function mint(uint value) external override duringMinting {
         if (value == 0) {
             return;
         }
@@ -258,11 +279,11 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         emit Mint(Side.Down, minter, amount);
     }
 
-    function burnOptionsMaximum() external {
+    function burnOptionsMaximum() external override {
         _burnOptions(msg.sender, _getMaximumBurnable(msg.sender));
     }
 
-    function burnOptions(uint amount) external {
+    function burnOptions(uint amount) external override {
         _burnOptions(msg.sender, amount);
     }
 
@@ -317,7 +338,7 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
 
     /* ---------- Claiming and Exercising Options ---------- */
 
-    function exerciseOptions() external afterMaturity returns (uint) {
+    function exerciseOptions() external override afterMaturity returns (uint) {
         // The market must be resolved if it has not been.
         // the first one to exercise pays the gas fees. Might be worth splitting it up.
         if (!resolved) {

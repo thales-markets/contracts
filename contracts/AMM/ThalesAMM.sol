@@ -1,12 +1,12 @@
-pragma solidity >=0.5.16 <0.8.0;
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-import "../utils/proxy/ProxyReentrancyGuard.sol";
-import "../utils/proxy/ProxyOwned.sol";
-import "../utils/proxy/ProxyPausable.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IPositionalMarket.sol";
@@ -131,9 +131,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             }
             uint sell_max_price = basePrice.mul(ONE.sub(max_spread.sub(safeBoxImpact))).div(ONE);
             require(sell_max_price > 0, "div by zero sell_max_price");
-            (IPosition up, IPosition down) = IPositionalMarket(market).options();
+            (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
             uint balanceOfTheOtherSide =
-                position == Position.Up ? down.balanceOf(address(this)) : up.balanceOf(address(this));
+                position == Position.Up ? down.getBalanceOf(address(this)) : up.getBalanceOf(address(this));
 
             // can burn straight away balanceOfTheOtherSide
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
@@ -178,7 +178,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             uint timeLeftToMaturityInDays = timeLeftToMaturity.mul(ONE).div(86400);
             uint oraclePrice = marketContract.oraclePrice();
 
-            (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
+            (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.getOracleDetails();
 
             if (position == Position.Up) {
                 return
@@ -227,7 +227,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     function isMarketInAMMTrading(address market) public view returns (bool) {
         if (IPositionalMarketManager(manager).isActiveMarket(market)) {
             IPositionalMarket marketContract = IPositionalMarket(market);
-            (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.oracleDetails();
+            (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.getOracleDetails();
             //check if asset is supported
             if (impliedVolatilityPerAsset[key] == 0) {
                 return false;
@@ -247,8 +247,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             IPositionalMarketManager(manager).isKnownMarket(market) &&
             (IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity)
         ) {
-            (IPosition up, IPosition down) = IPositionalMarket(market).options();
-            if ((up.balanceOf(address(this)) > 0) || (down.balanceOf(address(this)) > 0)) {
+            (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+            if ((up.getBalanceOf(address(this)) > 0) || (down.getBalanceOf(address(this)) > 0)) {
                 return true;
             }
         }
@@ -283,7 +283,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             spentOnMarket[market] = spentOnMarket[market].add(toMint);
         }
 
-        (IPosition up, IPosition down) = IPositionalMarket(market).options();
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
         IPosition target = position == Position.Up ? up : down;
         IERC20(address(target)).transfer(msg.sender, amount);
 
@@ -310,10 +310,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint pricePaid = sellToAmmQuote(market, position, amount);
         require(expectedPayout.mul(ONE).div(pricePaid) <= (ONE.add(additionalSlippage)), "Slippage too high");
 
-        (IPosition up, IPosition down) = IPositionalMarket(market).options();
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
         IPosition target = position == Position.Up ? up : down;
 
-        require(target.balanceOf(msg.sender) >= amount, "You dont have enough options.");
+        require(target.getBalanceOf(msg.sender) >= amount, "You dont have enough options.");
         require(IERC20(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
 
         //transfer options first to have max burn available
@@ -502,15 +502,15 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint) {
-        (IPosition up, IPosition down) = IPositionalMarket(market).options();
-        uint balance = position == Position.Up ? up.balanceOf(address(this)) : down.balanceOf(address(this));
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        uint balance = position == Position.Up ? up.getBalanceOf(address(this)) : down.getBalanceOf(address(this));
         return balance;
     }
 
     function _balanceOfPositionsOnMarket(address market, Position position) internal view returns (uint, uint) {
-        (IPosition up, IPosition down) = IPositionalMarket(market).options();
-        uint balance = position == Position.Up ? up.balanceOf(address(this)) : down.balanceOf(address(this));
-        uint balanceOtherSide = position == Position.Up ? down.balanceOf(address(this)) : up.balanceOf(address(this));
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        uint balance = position == Position.Up ? up.getBalanceOf(address(this)) : down.getBalanceOf(address(this));
+        uint balanceOtherSide = position == Position.Up ? down.getBalanceOf(address(this)) : up.getBalanceOf(address(this));
         return (balance, balanceOtherSide);
     }
 

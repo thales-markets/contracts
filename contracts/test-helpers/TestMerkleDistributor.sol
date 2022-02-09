@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.16 <0.8.4;
+pragma solidity ^0.8.0;
 import "../customOracle/IMerkleDistributor.sol";
 
 // Allows anyone to claim a token if they exist in a merkle root.

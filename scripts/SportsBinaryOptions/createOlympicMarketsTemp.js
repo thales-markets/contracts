@@ -51,7 +51,7 @@ async function main() {
 
 	console.log('found manager at:' + manager.address);
 
-	let IntegersContract = await ethers.getContractFactory('Integers');
+	let IntegersContract = await ethers.getContractFactory('Int');
 	const integersDeployed = await IntegersContract.attach(
 		'0x6c0dFEeb57e126d2a66a71A44678Ab51b8a5B1B5'
 	);

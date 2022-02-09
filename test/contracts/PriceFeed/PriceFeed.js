@@ -107,12 +107,6 @@ contract('Price Feed', async accounts => {
 			});
 		});
 
-		describe('when a user queries the first entry in currencyKeys', () => {
-			it('then it is empty', async () => {
-				await assert.invalidOpcode(instance.currencyKeys(0));
-			});
-		});
-
 		describe('when the owner attempts to add an invalid address for JPY ', () => {
 			it('then zero address is invalid', async () => {
 				await assert.revert(
@@ -136,7 +130,6 @@ contract('Price Feed', async accounts => {
 
 			it('then the list of currencyKeys lists it', async () => {
 				assert.equal('JPY', bytesToString(await instance.currencyKeys(0)));
-				await assert.invalidOpcode(instance.currencyKeys(1));
 			});
 
 			it('and the AggregatorAdded event is emitted', async () => {
@@ -175,7 +168,6 @@ contract('Price Feed', async accounts => {
 				it('then the list of currencyKeys lists it also', async () => {
 					assert.equal('JPY', bytesToString(await instance.currencyKeys(0)));
 					assert.equal('XTZ', bytesToString(await instance.currencyKeys(1)));
-					await assert.invalidOpcode(instance.currencyKeys(2));
 				});
 
 				it('and the AggregatorAdded event is emitted', async () => {
@@ -252,7 +244,6 @@ contract('Price Feed', async accounts => {
 
 			it('then the list of currencyKeys lists it', async () => {
 				assert.equal('LYRA', bytesToString(await instance.currencyKeys(3)));
-				await assert.invalidOpcode(instance.currencyKeys(4));
 			});
 
 			it('and the PoolAdded event is emitted', async () => {

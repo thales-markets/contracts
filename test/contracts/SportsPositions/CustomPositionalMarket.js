@@ -151,7 +151,7 @@ contract('Position', accounts => {
 
 			let SportFeedOracleInstanceContract = artifacts.require('SportFeedOracleInstance');
 
-			await SportFeedOracleInstanceContract.link(await artifacts.require('Integers').new());
+			await SportFeedOracleInstanceContract.link(await artifacts.require('Int').new());
 
 			customOracle = await SportFeedOracleInstanceContract.new(
 				managerOwner,
@@ -180,6 +180,7 @@ contract('Position', accounts => {
 			const options = await customMarket.options();
 			up = await Position.at(options.up);
 			down = await Position.at(options.down);
+
 			let upAddress = up.address;
 			let downAddress = down.address;
 

@@ -1,12 +1,13 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 
-import "../utils/proxy/ProxyReentrancyGuard.sol";
-import "../utils/proxy/ProxyOwned.sol";
-import "../utils/proxy/ProxyPausable.sol";
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
@@ -34,8 +35,8 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
     uint public durationPeriod;
     uint public unstakeDurationPeriod;
     uint public startTimeStamp;
-    uint public currentPeriodRewards;
-    uint public currentPeriodFees;
+    uint public override currentPeriodRewards;
+    uint public override currentPeriodFees;
     bool public distributeFeesEnabled;
     uint public fixedPeriodReward;
     uint public periodExtraReward;
@@ -105,39 +106,39 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
 
     /* ========== VIEWS ========== */
 
-    function totalStakedAmount() external view returns (uint) {
+    function totalStakedAmount() external view override returns (uint) {
         return _totalStakedAmount;
     }
 
-    function stakedBalanceOf(address account) external view returns (uint) {
+    function stakedBalanceOf(address account) external view override returns (uint) {
         return _stakedBalances[account];
     }
 
-    function getLastPeriodOfClaimedRewards(address account) external view returns (uint) {
+    function getLastPeriodOfClaimedRewards(address account) external view override returns (uint) {
         return _lastRewardsClaimedPeriod[account];
     }
 
-    function getRewardsAvailable(address account) external view returns (uint) {
+    function getRewardsAvailable(address account) external view override returns (uint) {
         return _calculateAvailableRewardsToClaim(account);
     }
 
-    function getRewardFeesAvailable(address account) external view returns (uint) {
+    function getRewardFeesAvailable(address account) external view override returns (uint) {
         return _calculateAvailableFeesToClaim(account);
     }
 
-    function getAlreadyClaimedRewards(address account) external view returns (uint) {
+    function getAlreadyClaimedRewards(address account) external view override returns (uint) {
         return stakerLifetimeRewardsClaimed[account];
     }
 
-    function getAlreadyClaimedFees(address account) external view returns (uint) {
+    function getAlreadyClaimedFees(address account) external view override returns (uint) {
         return stakerFeesClaimed[account];
     }
 
-    function getContractRewardFunds() external view returns (uint) {
+    function getContractRewardFunds() external view override returns (uint) {
         return stakingToken.balanceOf(address(this));
     }
 
-    function getContractFeeFunds() external view returns (uint) {
+    function getContractFeeFunds() external view override returns (uint) {
         return feeToken.balanceOf(address(this));
     }
 
@@ -355,7 +356,7 @@ contract ProxyStakingThales_V2 is IStakingThales, Initializable, ProxyOwned, Pro
         _claimReward(msg.sender);
     }
 
-    function updateVolume(address account, uint amount) external {
+    function updateVolume(address account, uint amount) external override {
         require(msg.sender == address(thalesAMM), "Invalid address");
         require(msg.sender != address(0), "Invalid address");
         if (_stakedBalances[account] > 0) {

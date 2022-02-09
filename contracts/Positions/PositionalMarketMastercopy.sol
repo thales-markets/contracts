@@ -1,11 +1,12 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
 import "./PositionalMarket.sol";
 
 contract PositionalMarketMastercopy is PositionalMarket {
-    constructor() public OwnedWithInit() {
+    constructor() OwnedWithInit() {
         // Freeze mastercopy on deployment so it can never be initialized with real arguments
         initialized = true;
     }

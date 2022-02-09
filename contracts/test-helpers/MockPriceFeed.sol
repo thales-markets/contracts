@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.16 <0.8.4;
+pragma solidity ^0.8.0;
 
 // Contracts
 import "../utils/Owned.sol";
@@ -8,7 +8,7 @@ import "../utils/Owned.sol";
 import "../interfaces/IPriceFeed.sol";
 
 // Libraries
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 
 // Internal references
 // AggregatorInterface from Chainlink represents a decentralized pricing network for a single currency key
@@ -28,10 +28,10 @@ contract MockPriceFeed is Owned, IPriceFeed {
     uint public timestampToReturn;
 
     // ========== CONSTRUCTOR ==========
-    constructor(address _owner) public Owned(_owner) {}
+    constructor(address _owner) Owned(_owner) {}
 
     /* ========== MUTATIVE FUNCTIONS ========== */
-    function addAggregator(bytes32 currencyKey, address aggregatorAddress) external onlyOwner {
+    function addAggregator(bytes32 currencyKey, address aggregatorAddress) external override onlyOwner {
         AggregatorV2V3Interface aggregator = AggregatorV2V3Interface(aggregatorAddress);
         // require(aggregator.latestRound() >= 0, "Given Aggregator is invalid");
         uint8 decimals = 18;
@@ -44,7 +44,7 @@ contract MockPriceFeed is Owned, IPriceFeed {
         emit AggregatorAdded(currencyKey, address(aggregator));
     }
 
-    function removeAggregator(bytes32 currencyKey) external onlyOwner {
+    function removeAggregator(bytes32 currencyKey) external override onlyOwner {
         address aggregator = address(aggregators[currencyKey]);
         require(aggregator != address(0), "No aggregator exists for key");
         delete aggregators[currencyKey];
@@ -57,7 +57,7 @@ contract MockPriceFeed is Owned, IPriceFeed {
         }
     }
 
-    function getRates() external view returns (uint[] memory rates) {
+    function getRates() external view override returns (uint[] memory rates) {
         uint count = 0;
         rates = new uint[](aggregatorKeys.length);
         for (uint i = 0; i < aggregatorKeys.length; i++) {
@@ -66,15 +66,15 @@ contract MockPriceFeed is Owned, IPriceFeed {
         }
     }
 
-    function getCurrencies() external view returns (bytes32[] memory) {
+    function getCurrencies() external view override returns (bytes32[] memory) {
         return aggregatorKeys;
     }
 
-    function rateForCurrency(bytes32 currencyKey) external view returns (uint) {
+    function rateForCurrency(bytes32 currencyKey) external view override returns (uint) {
         return _getRateAndUpdatedTime(currencyKey).rate;
     }
 
-    function rateAndUpdatedTime(bytes32 currencyKey) external view returns (uint rate, uint time) {
+    function rateAndUpdatedTime(bytes32 currencyKey) external view override returns (uint rate, uint time) {
         RateAndUpdatedTime memory rateAndTime = _getRateAndUpdatedTime(currencyKey);
         return (rateAndTime.rate, rateAndTime.time);
     }

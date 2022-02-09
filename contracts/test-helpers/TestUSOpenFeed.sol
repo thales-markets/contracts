@@ -1,6 +1,7 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "../utils/Owned.sol";
 
 contract TestUSOpenFeed is ChainlinkClient, Owned {
@@ -20,7 +21,7 @@ contract TestUSOpenFeed is ChainlinkClient, Owned {
         bytes32 _jobId,
         uint256 _fee,
         string memory _season
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         //remove for the test
         oracle = _oracle;
         jobId = _jobId;

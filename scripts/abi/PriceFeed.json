@@ -408,9 +408,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint32",
+        "internalType": "int24",
         "name": "_twapInterval",
-        "type": "uint32"
+        "type": "int24"
       }
     ],
     "name": "setTwapInterval",
@@ -443,9 +443,9 @@
     "name": "twapInterval",
     "outputs": [
       {
-        "internalType": "uint32",
+        "internalType": "int24",
         "name": "",
-        "type": "uint32"
+        "type": "int24"
       }
     ],
     "stateMutability": "view",

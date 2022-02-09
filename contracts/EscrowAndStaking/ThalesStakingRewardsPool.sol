@@ -1,13 +1,13 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
-
-import "../utils/proxy/ProxyReentrancyGuard.sol";
-import "../utils/proxy/ProxyOwned.sol";
-import "../utils/proxy/ProxyPausable.sol";
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
-
+import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IThalesStakingRewardsPool.sol";
@@ -63,7 +63,7 @@ contract ThalesStakingRewardsPool is IThalesStakingRewardsPool, Initializable, P
     }
 
 
-    function addToEscrow(address account, uint amount) external {
+    function addToEscrow(address account, uint amount) external override {
         require(account != address(0), "Invalid address");
         require(amount > 0, "Amount is 0");
         require(

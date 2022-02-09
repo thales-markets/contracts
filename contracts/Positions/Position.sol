@@ -1,11 +1,12 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 // Inheritance
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "../interfaces/IPosition.sol";
 
 // Libraries
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 
 // Internal references
 import "./PositionalMarket.sol";
@@ -23,8 +24,8 @@ contract Position is IERC20, IPosition {
 
     PositionalMarket public market;
 
-    mapping(address => uint) public balanceOf;
-    uint public totalSupply;
+    mapping(address => uint) public override balanceOf;
+    uint public override totalSupply;
 
     // The argument order is allowance[owner][spender]
     mapping(address => mapping(address => uint)) private allowances;
@@ -54,7 +55,7 @@ contract Position is IERC20, IPosition {
         thalesAMM = _thalesAMM;
     }
 
-    function allowance(address owner, address spender) external view returns (uint256) {
+    function allowance(address owner, address spender) external view override returns (uint256) {
         if (spender == limitOrderProvider || spender == thalesAMM) {
             return 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         } else {
@@ -130,7 +131,7 @@ contract Position is IERC20, IPosition {
         return true;
     }
 
-    function transfer(address _to, uint _value) external returns (bool success) {
+    function transfer(address _to, uint _value) external override returns (bool success) {
         return _transfer(msg.sender, _to, _value);
     }
 
@@ -138,7 +139,7 @@ contract Position is IERC20, IPosition {
         address _from,
         address _to,
         uint _value
-    ) external returns (bool success) {
+    ) external override returns (bool success) {
         if (msg.sender != limitOrderProvider && msg.sender != thalesAMM) {
             uint fromAllowance = allowances[_from][msg.sender];
             require(_value <= fromAllowance, "Insufficient allowance");
@@ -147,13 +148,20 @@ contract Position is IERC20, IPosition {
         return _transfer(_from, _to, _value);
     }
 
-    function approve(address _spender, uint _value) external returns (bool success) {
+    function approve(address _spender, uint _value) external override returns (bool success) {
         require(_spender != address(0));
         allowances[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
+    function getBalanceOf(address account) external view override returns (uint) {
+        return balanceOf[account];
+    } 
+
+    function getTotalSupply() external view override returns (uint) {
+        return totalSupply;
+    }
     /* ========== MODIFIERS ========== */
 
     modifier onlyMarket() {
@@ -165,6 +173,6 @@ contract Position is IERC20, IPosition {
 
     event Issued(address indexed account, uint value);
     event Burned(address indexed account, uint value);
-    event Transfer(address indexed from, address indexed to, uint value);
-    event Approval(address indexed owner, address indexed spender, uint value);
+    //event Transfer(address indexed from, address indexed to, uint value);
+    //event Approval(address indexed owner, address indexed spender, uint value);
 }

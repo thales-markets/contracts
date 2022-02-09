@@ -1,14 +1,15 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
 import "../interfaces/IPositionalMarketManager.sol";
-import "../utils/proxy/ProxyOwned.sol";
-import "../utils/proxy/ProxyPausable.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
 // Libraries
 import "../utils/libraries/AddressSetLib.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 
 // Internal references
 import "./PositionalMarketFactory.sol";
@@ -16,8 +17,8 @@ import "./PositionalMarket.sol";
 import "./Position.sol";
 import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IPriceFeed.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IPositionalMarketManager {
     /* ========== LIBRARIES ========== */
@@ -39,16 +40,16 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
     /* ========== STATE VARIABLES ========== */
 
-    Durations public durations;
-    uint public capitalRequirement;
+    Durations public override durations;
+    uint public override capitalRequirement;
 
-    bool public marketCreationEnabled;
+    bool public override marketCreationEnabled;
     bool public customMarketCreationEnabled;
 
     bool public onlyWhitelistedAddressesCanCreateMarkets;
     mapping(address => bool) public whitelistedAddresses;
 
-    uint public totalDeposited;
+    uint public override totalDeposited;
 
     AddressSetLib.AddressSet internal _activeMarkets;
     AddressSetLib.AddressSet internal _maturedMarkets;
@@ -76,7 +77,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
         // Temporarily change the owner so that the setters don't revert.
         owner = msg.sender;
-        
+
         marketCreationEnabled = true;
         customMarketCreationEnabled = false;
         onlyWhitelistedAddressesCanCreateMarkets = false;
@@ -120,27 +121,27 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
     /* ---------- Market Information ---------- */
 
-    function isKnownMarket(address candidate) public view returns (bool) {
+    function isKnownMarket(address candidate) public view override returns (bool) {
         return _activeMarkets.contains(candidate) || _maturedMarkets.contains(candidate);
     }
 
-    function isActiveMarket(address candidate) public view returns (bool) {
+    function isActiveMarket(address candidate) public view override returns (bool) {
         return _activeMarkets.contains(candidate);
     }
 
-    function numActiveMarkets() external view returns (uint) {
+    function numActiveMarkets() external view override returns (uint) {
         return _activeMarkets.elements.length;
     }
 
-    function activeMarkets(uint index, uint pageSize) external view returns (address[] memory) {
+    function activeMarkets(uint index, uint pageSize) external view override returns (address[] memory) {
         return _activeMarkets.getPage(index, pageSize);
     }
 
-    function numMaturedMarkets() external view returns (uint) {
+    function numMaturedMarkets() external view override returns (uint) {
         return _maturedMarkets.elements.length;
     }
 
-    function maturedMarkets(uint index, uint pageSize) external view returns (address[] memory) {
+    function maturedMarkets(uint index, uint pageSize) external view override returns (address[] memory) {
         return _maturedMarkets.getPage(index, pageSize);
     }
 
@@ -211,6 +212,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         address customOracle
     )
         external
+        override
         notPaused
         returns (
             IPositionalMarket // no support for returning PositionalMarket polymorphically given the interface
@@ -260,7 +262,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         totalDeposited = totalDeposited.add(initialMint);
         sUSD.transferFrom(msg.sender, address(market), initialMint);
 
-        (Position up, Position down) = market.options();
+        (IPosition up, IPosition down) = market.getOptions();
 
         emit MarketCreated(
             address(market),
@@ -281,7 +283,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         address sender,
         address receiver,
         uint amount
-    ) external {
+    ) external override {
         //only to be called by markets themselves
         require(isKnownMarket(address(msg.sender)), "Market unknown.");
         bool success = sUSD.transferFrom(sender, receiver, amount);
@@ -290,21 +292,21 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
     }
 
-    function resolveMarket(address market) external {
+    function resolveMarket(address market) external override {
         require(_activeMarkets.contains(market), "Not an active market");
         PositionalMarket(market).resolve();
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
     }
 
-    function expireMarkets(address[] calldata markets) external notPaused onlyOwner {
+    function expireMarkets(address[] calldata markets) external override notPaused onlyOwner {
         for (uint i = 0; i < markets.length; i++) {
             address market = markets[i];
 
             require(isKnownMarket(address(market)), "Market unknown.");
 
             // The market itself handles decrementing the total deposits.
-            PositionalMarket(market).expire(msg.sender);
+            PositionalMarket(market).expire(payable(msg.sender));
 
             // Note that we required that the market is known, which guarantees
             // its index is defined and that the list of markets is not empty.

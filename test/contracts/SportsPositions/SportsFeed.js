@@ -59,7 +59,7 @@ contract('SportFeed', accounts => {
 			);
 			let SportFeedOracleInstanceContract = artifacts.require('SportFeedOracleInstance');
 
-			await SportFeedOracleInstanceContract.link(await artifacts.require('Integers').new());
+			await SportFeedOracleInstanceContract.link(await artifacts.require('Int').new());
 
 			let customOracle = await SportFeedOracleInstanceContract.new(
 				owner,

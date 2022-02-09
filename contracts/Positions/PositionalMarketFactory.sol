@@ -1,8 +1,9 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 // Inheritance
-import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
 // Internal references
 import "./Position.sol";
@@ -10,9 +11,9 @@ import "./PositionalMarket.sol";
 import "./PositionalMarketFactory.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IPositionalMarket.sol";
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "../utils/MinimalProxyFactory.sol";
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract PositionalMarketFactory is Initializable, ProxyOwned, MinimalProxyFactory {
     /* ========== STATE VARIABLES ========== */

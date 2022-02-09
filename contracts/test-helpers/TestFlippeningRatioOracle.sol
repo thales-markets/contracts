@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.16 <0.8.4;
+pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.5/interfaces/AggregatorV2V3Interface.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "../utils/Owned.sol";
 
 contract TestFlippeningRatioOracle is Owned {
@@ -15,7 +15,7 @@ contract TestFlippeningRatioOracle is Owned {
         address _owner,
         address _first,
         address _second
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         firstMarketcap = AggregatorV2V3Interface(_first);
         secondMarketcap = AggregatorV2V3Interface(_second);
     }

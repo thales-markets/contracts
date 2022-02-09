@@ -1,13 +1,14 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "./SportFeed.sol";
 import "../interfaces/IOracleInstance.sol";
-import "solidity-util/lib/Integers.sol";
+import "../utils/libraries/Int.sol";
 
 contract SportFeedOracleInstance is IOracleInstance, Owned {
     using Chainlink for Chainlink.Request;
-    using Integers for uint;
+    using Int for uint;
 
     address public sportFeed;
     string public targetName;
@@ -15,7 +16,7 @@ contract SportFeedOracleInstance is IOracleInstance, Owned {
     string public eventName;
 
     bool public outcome;
-    bool public resolvable;
+    bool public override resolvable;
 
     bool private forcedOutcome;
 
@@ -25,19 +26,19 @@ contract SportFeedOracleInstance is IOracleInstance, Owned {
         string memory _targetName,
         string memory _targetOutcome,
         string memory _eventName
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         sportFeed = _sportFeed;
         targetName = _targetName;
         targetOutcome = _targetOutcome;
         eventName = _eventName;
     }
 
-    function getOutcome() external view returns (bool) {
+    function getOutcome() external view override returns (bool) {
         if (forcedOutcome) {
             return outcome;
         } else {
             SportFeed sportFeedOracle = SportFeed(sportFeed);
-            return sportFeedOracle.isCompetitorAtPlace(targetName, Integers.parseInt(targetOutcome));
+            return sportFeedOracle.isCompetitorAtPlace(targetName, Int.parseInt(targetOutcome));
         }
     }
 

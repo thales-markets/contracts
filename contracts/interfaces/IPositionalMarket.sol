@@ -1,4 +1,5 @@
-pragma solidity >=0.5.16 <0.8.4;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 import "../interfaces/IPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
@@ -12,11 +13,11 @@ interface IPositionalMarket {
 
     /* ========== VIEWS / VARIABLES ========== */
 
-    function options() external view returns (IPosition up, IPosition down);
+    function getOptions() external view returns (IPosition up, IPosition down);
 
     function times() external view returns (uint maturity, uint destructino);
 
-    function oracleDetails()
+    function getOracleDetails()
         external
         view
         returns (

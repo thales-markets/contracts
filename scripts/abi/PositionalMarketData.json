@@ -1,6 +1,5 @@
 [
   {
-    "constant": true,
     "inputs": [
       {
         "internalType": "contract PositionalMarket",
@@ -40,12 +39,10 @@
         "type": "tuple"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
       {
         "internalType": "contract PositionalMarket",
@@ -136,12 +133,10 @@
         "type": "tuple"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [
       {
         "internalType": "contract PositionalMarket",
@@ -247,7 +242,6 @@
         "type": "tuple"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   }

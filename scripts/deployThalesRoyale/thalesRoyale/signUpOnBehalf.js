@@ -94,14 +94,15 @@ async function main() {
 	console.log('No. players: ' + players.length)
 
 	//sign in on behalf
-	for (let i = 0; i < players.length; i++) {
-
-		// Return a random integer n such that min <= n < max
-		let randomPosition = crypto.randomInt(1, 3);
-
-		console.log('Sign up ' + players[i], ', season is ' + season, ', position is ' + randomPosition, ', which is ' + i);
-		await royale.signUpOnBehalf(players[i], season, randomPosition, { from: owner.address });
-		console.log('Signed up!');
+	for (let i = 0; i < players.length;) {
+		console.log('Sign up ' + players[i], ', season is ' + season, ', which is ' + i);
+		try {
+			await royale.signUpOnBehalf(players[i], season, { from: owner.address });
+			console.log('Signed up!');
+			i++;
+		}catch(e){
+			console.log('Retry');
+		}
 	}
 
 }

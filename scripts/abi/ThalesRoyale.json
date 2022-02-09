@@ -337,12 +337,6 @@
         "internalType": "uint256",
         "name": "season",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "position",
-        "type": "uint256"
       }
     ],
     "name": "SignedUp",
@@ -1410,13 +1404,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "position",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "name": "signUp",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1432,11 +1420,6 @@
       {
         "internalType": "uint256",
         "name": "_season",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "position",
         "type": "uint256"
       }
     ],
@@ -1456,6 +1439,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
+      }
+    ],
+    "name": "signUpWithPosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

@@ -11,7 +11,7 @@ const {
 } = require('../../helpers.js');
 
 const fs = require('fs');
-let lastAirdropHashes = require('../../../scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-19.json');
+let lastAirdropHashes = require('../../../scripts/deployOngoingRewards/ongoing-airdrop-hashes-period-20.json');
 
 const ONGOING_AIRDROP = getTargetAddress('OngoingAirdrop', 'mainnet');
 const OngoingAirdropABI = require('../../abi/OngoingAirdrop.json');

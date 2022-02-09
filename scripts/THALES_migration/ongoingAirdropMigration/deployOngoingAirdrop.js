@@ -50,13 +50,13 @@ async function deploy_ongoing_airdrop() {
 	// update deployments.json file
 
 	// set OngoingAirdrop address
-	let tx = await escrowThales.setAirdropContract(ongoingAirdrop.address, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('EscrowThales: setAirdropContract');
-	});
+	// let tx = await escrowThales.setAirdropContract(ongoingAirdrop.address, { from: owner.address });
+	// await tx.wait().then(e => {
+	// 	console.log('EscrowThales: setAirdropContract');
+	// });
 
 	// set EscrowThales address
-	await ongoingAirdrop.setEscrow(escrowThales.address, { from: owner.address });
+	let tx = await ongoingAirdrop.setEscrow(escrowThales.address, { from: owner.address });
 	await tx.wait().then(e => {
 		console.log('OngoingAirdrop: setEscrow');
 	});

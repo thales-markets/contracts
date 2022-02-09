@@ -15,7 +15,7 @@ let l1Airdropees = require('../../../scripts/airdrop/originalAirdrop/finalSnapsh
 const AIRDROP = getTargetAddress('Airdrop', 'mainnet');
 const AirdropABI = require('../../abi/Airdrop.json');
 const AIRDROP_CONTRACT = new web3.eth.Contract(AirdropABI, AIRDROP);
-async function checkForMultisigs() {
+async function prepareAirdropMigration() {
 	const AirdropContract = await ethers.getContractFactory('Airdrop');
 	let airdropContract = await AirdropContract.attach(AIRDROP);
 
@@ -56,7 +56,7 @@ async function checkForMultisigs() {
 	);
 }
 
-checkForMultisigs()
+prepareAirdropMigration()
 	.then(() => process.exit(0))
 	.catch(error => {
 		console.error(error);

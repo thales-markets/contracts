@@ -66,7 +66,6 @@ contract Airdrop is Owned, Pausable {
     }
 
     function _selfDestruct(address payable beneficiary) external onlyOwner {
-        //only callable a year after end time
         token.transfer(beneficiary, token.balanceOf(address(this)));
         selfdestruct(beneficiary);
     }

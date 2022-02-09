@@ -116,7 +116,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     function signUpOnBehalf(address player) external onlyOwner {
-        require(season > 1, "First season passed");
         require(playerSignedUpPerSeason[season][player] == 0, "Player already signed up");
         require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
         // check owner buy in

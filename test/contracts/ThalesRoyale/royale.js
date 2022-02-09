@@ -1956,10 +1956,6 @@ contract('ThalesRoyale', accounts => {
 	it('Sign up on behalf', async () => {
 		await royale.startNewSeason({ from: owner });
 
-		await expect(royale.signUpOnBehalf(first, { from: owner })).to.be.revertedWith(
-			'First season passed'
-		);
-
 		await expect(royale.signUpOnBehalf(first, { from: second })).to.be.revertedWith(
 			'Only the contract owner may perform this action'
 		);

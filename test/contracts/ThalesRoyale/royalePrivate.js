@@ -62,7 +62,7 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 	const buyIn101 = toUnit(101); 
 	const buyIn200 = toUnit(200); 
 	const buyIn201 = toUnit(200); 
-	const thalesQty = toUnit(5000); 
+	const thalesQty = toUnit(5000);
 
 	const empty = [];
 
@@ -2194,6 +2194,107 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 
 			rewardPerRoom = await royale.rewardPerRoom(roomNumberCounter);
 			assert.bnEqual(rewardPerRoom, buyIn99);
+
+			buyInPerPlayerRerRoom = await royale.buyInPerPlayerRerRoom(roomNumberCounter);
+			assert.bnEqual(buyInPerPlayerRerRoom, buyIn99);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'BuyInAmountChanged', {
+				_roomNumber: roomNumberCounter,
+				_buyInAmount: buyIn99
+			});
+
+			await royale.signUpForRoom( roomNumberCounter, { from: second });
+
+			await fastForward(HOUR * 72 + 1);
+
+			await royale.startRoyaleInRoom( roomNumberCounter, { from: second })
+			
+			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn100, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
+
+			// #1
+			await royale.takeAPositionInRoom(roomNumberCounter,1, { from: first });
+			await royale.takeAPositionInRoom(roomNumberCounter,2, { from: second });
+
+			await MockPriceFeedDeployed.setPricetoReturn(1300);
+
+			await fastForward(HOUR * 72 + 1);
+			await royale.closeRoundInARoom(roomNumberCounter, { from: second });
+
+			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn100, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
+
+		});
+
+		it('Try to set buy in, and buy in amount checking, with safebox', async () => {
+			
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR, { from: first });
+			
+			let roomNumberCounter = await royale.roomNumberCounter();
+			assert.equal(roomNumberCounter, 1);
+
+			// check if only owner can change
+			await expect(royale.setSafeBoxPercentage(20, { from: first })).to.be.revertedWith(
+				'Only the contract owner may perform this action'
+			);
+
+			// check if can be higher then 100
+			await expect(royale.setSafeBoxPercentage(101, { from: owner })).to.be.revertedWith(
+				'Must be in between 0 and 100 %'
+			);
+
+			// check if only owner can change
+			await expect(royale.setSafeBox(owner, { from: first })).to.be.revertedWith(
+				'Only the contract owner may perform this action'
+			);
+
+			// setting impact to 20 %
+			await royale.setSafeBoxPercentage(20, { from: owner });
+			await royale.setSafeBox(owner, { from: owner });
+
+			await expect(royale.setBuyInAmount(roomNumberCounter, buyInZero, { from: second })).to.be.revertedWith('You are not owner of room.');
+			await expect(royale.setBuyInAmount(roomNumberCounter, buyInZero, { from: first })).to.be.revertedWith('Buy in must be greather then minimum');
+			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn100, { from: first })).to.be.revertedWith('Same amount');
+
+			await royale.signUpForRoom( roomNumberCounter, { from: second });
+
+			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn99, { from: first })).to.be.revertedWith('Player already sign up for room, no change allowed');
+
+			await royale.createOpenRoom(SNX, GameType.LIMITED_NUMBER_OF_ROUNDS, buyIn100, 3, 1 * HOUR, 3, 1 * HOUR, 2 * HOUR,{ from: first });
+			
+			roomNumberCounter = await royale.roomNumberCounter();
+			assert.equal(roomNumberCounter, 2);
+
+			let rewardPerRoom = await royale.rewardPerRoom(roomNumberCounter);
+			assert.bnEqual(rewardPerRoom, toUnit(80)); // 100 - 20%
+
+			await expect(royale.setBuyInAmount(roomNumberCounter, buyIn201, { from: first })).to.be.revertedWith('No allowance.');
+			
+			await ThalesDeployed.approve(royale.address, toUnit(1), { from: first });
+
+			const tx_2 = await royale.setBuyInAmount(roomNumberCounter, buyIn101, { from: first });
+
+			rewardPerRoom = await royale.rewardPerRoom(roomNumberCounter);
+			assert.bnEqual(rewardPerRoom, toUnit(80.8)); // 101 - 20%
+
+			let buyInPerPlayerRerRoom = await royale.buyInPerPlayerRerRoom(roomNumberCounter);
+			assert.bnEqual(buyInPerPlayerRerRoom, buyIn101);
+
+			// check if event is emited
+			assert.eventEqual(tx_2.logs[0], 'BuyIn', {
+				_user: first,
+				_amount: toUnit(1),
+				_roomNumber: roomNumberCounter
+			});
+
+			assert.eventEqual(tx_2.logs[1], 'BuyInAmountChanged', {
+				_roomNumber: roomNumberCounter,
+				_buyInAmount: toUnit(101)
+			});
+
+			const tx = await royale.setBuyInAmount(roomNumberCounter, buyIn99, { from: first });
+
+			rewardPerRoom = await royale.rewardPerRoom(roomNumberCounter);
+			assert.bnEqual(rewardPerRoom, toUnit(79.2)); // 99 - 20%
 
 			buyInPerPlayerRerRoom = await royale.buyInPerPlayerRerRoom(roomNumberCounter);
 			assert.bnEqual(buyInPerPlayerRerRoom, buyIn99);

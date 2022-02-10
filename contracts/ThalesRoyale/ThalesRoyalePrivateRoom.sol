@@ -87,6 +87,9 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
     IERC20Upgradeable public rewardToken;
     IPriceFeed public priceFeed;
 
+    address public safeBox;
+    uint public safeBoxPercentage;
+
     uint public roomNumberCounter;
 
     uint public minTimeSignUp;
@@ -451,10 +454,29 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
         uint _roomNumber,
         uint _amount
     ) internal {
-        rewardToken.safeTransferFrom(_sender, address(this), _amount);
-        rewardPerRoom[_roomNumber] += _amount;
+
+        (uint amountBuyIn, uint amountSafeBox) = _calculateSafeBoxOnAmount(_amount);
+
+        if (amountSafeBox > 0) {
+            rewardToken.safeTransferFrom(_sender, safeBox, amountSafeBox);
+        }
+
+        rewardToken.safeTransferFrom(_sender, address(this), amountBuyIn);
+        rewardPerRoom[_roomNumber] += amountBuyIn;
 
         emit BuyIn(_sender, _amount, _roomNumber);
+    }
+
+    function _calculateSafeBoxOnAmount(uint _amount) internal view returns (uint, uint) {
+        uint amountSafeBox = 0;
+
+        if (safeBoxPercentage > 0) {
+            amountSafeBox = _amount.div(100).mul(safeBoxPercentage);
+        }
+
+        uint amountBuyIn = _amount.sub(amountSafeBox);
+
+        return (amountBuyIn, amountSafeBox);
     }
 
     function _isPlayerAliveInASpecificRoomReverseOrder(address player, uint _roomNumber) internal view returns (bool) {
@@ -540,10 +562,11 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
             buyInPerPlayerRerRoom[_roomNumber] = _buyInAmount;
             // or decreased
         } else {
-            uint difference = buyInPerPlayerRerRoom[_roomNumber].sub(_buyInAmount);
-            rewardPerRoom[_roomNumber] = rewardPerRoom[_roomNumber].sub(difference);
+            (uint amountBuyIn,) = _calculateSafeBoxOnAmount(_buyInAmount);
+            uint differenceInReward = rewardPerRoom[_roomNumber].sub(amountBuyIn);
             buyInPerPlayerRerRoom[_roomNumber] = _buyInAmount;
-            rewardToken.safeTransfer(msg.sender, difference);
+            rewardPerRoom[_roomNumber] = amountBuyIn;
+            rewardToken.safeTransfer(msg.sender, differenceInReward);
         }
 
         emit BuyInAmountChanged(_roomNumber, _buyInAmount);
@@ -705,6 +728,17 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
         emit NewMinBuyIn(_minBuyIn);
     }
 
+    function setSafeBoxPercentage(uint _safeBoxPercentage) public onlyOwner {
+        require(_safeBoxPercentage >= 0 && _safeBoxPercentage <= 100, "Must be in between 0 and 100 %");
+        safeBoxPercentage = _safeBoxPercentage;
+        emit NewSafeBoxPercentage(_safeBoxPercentage);
+    }
+
+    function setSafeBox(address _safeBox) public onlyOwner {
+        safeBox = _safeBox;
+        emit NewSafeBox(_safeBox);
+    }
+
     function pullFunds(address payable _account) external onlyOwner {
         rewardToken.safeTransfer(_account, rewardToken.balanceOf(address(this)));
         emit PullFunds(_account, rewardToken.balanceOf(address(this)));
@@ -760,4 +794,6 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
     event NewMaxPlayersInClosedRoom(uint _maxPlayersInClosedRoom);
     event NewMinBuyIn(uint _minBuyIn);
     event PullFunds(address _account, uint _amount);
+    event NewSafeBoxPercentage(uint _safeBoxPercentage);
+    event NewSafeBox(address _safeBox);
 }

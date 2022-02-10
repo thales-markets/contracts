@@ -173,6 +173,4 @@ contract Position is IERC20, IPosition {
 
     event Issued(address indexed account, uint value);
     event Burned(address indexed account, uint value);
-    //event Transfer(address indexed from, address indexed to, uint value);
-    //event Approval(address indexed owner, address indexed spender, uint value);
 }

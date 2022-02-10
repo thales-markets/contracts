@@ -1,6 +1,4 @@
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
 
 // Inheritance
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";

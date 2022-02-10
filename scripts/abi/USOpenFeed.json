@@ -113,6 +113,21 @@
   },
   {
     "constant": true,
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0x3dfb10bd",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x3dfb10bd",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [],
     "name": "fee",
     "outputs": [

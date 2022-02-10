@@ -244,6 +244,66 @@
   },
   {
     "constant": true,
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0x01e48220",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x01e48220",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0x6924cc6d",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x6924cc6d",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0x93d62e3c",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x93d62e3c",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0xa4b18da6",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0xa4b18da6",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [],
     "name": "enabledOpThalesToThales",
     "outputs": [

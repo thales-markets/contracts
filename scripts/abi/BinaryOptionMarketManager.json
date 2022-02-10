@@ -396,6 +396,21 @@
   },
   {
     "constant": true,
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0x5ed5ae4d",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x5ed5ae4d",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [],
     "name": "capitalRequirement",
     "outputs": [

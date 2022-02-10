@@ -1,5 +1,18 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0xa148e657",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0xa148e657",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "initNonReentrant",
     "outputs": [],

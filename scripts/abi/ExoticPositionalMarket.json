@@ -77,6 +77,32 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0x2e449499",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x2e449499",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0x902da21e",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x902da21e",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "canPlacePosition",
     "outputs": [
@@ -173,19 +199,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getAllPositions",
-    "outputs": [
-      {
-        "internalType": "bytes32[]",
-        "name": "",
-        "type": "bytes32[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -196,9 +209,9 @@
     "name": "getPositionPhrase",
     "outputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -234,9 +247,9 @@
     "name": "getTicketHolderPositionPhrase",
     "outputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -245,9 +258,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_marketQuestion",
-        "type": "bytes32"
+        "type": "string"
       },
       {
         "internalType": "uint256",
@@ -270,9 +283,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint256[]",
         "name": "_tag",
-        "type": "uint256"
+        "type": "uint256[]"
       },
       {
         "internalType": "address",
@@ -280,150 +293,19 @@
         "type": "address"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase1",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase2",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase3",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase4",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase5",
-        "type": "bytes32"
-      }
-    ],
-    "name": "initializeWithFiveParameters",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_marketQuestion",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_endOfPositioning",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_marketMaturity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_fixedTicketPrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_withdrawalFeePercentage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_tag",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_paymentToken",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase1",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase2",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase3",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase4",
-        "type": "bytes32"
-      }
-    ],
-    "name": "initializeWithFourParameters",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_marketQuestion",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_endOfPositioning",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_marketMaturity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_fixedTicketPrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_withdrawalFeePercentage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_tag",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_paymentToken",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase1",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase2",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase3",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "name": "initializeWithThreeParameters",
@@ -434,9 +316,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_marketQuestion",
-        "type": "bytes32"
+        "type": "string"
       },
       {
         "internalType": "uint256",
@@ -459,9 +341,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint256[]",
         "name": "_tag",
-        "type": "uint256"
+        "type": "uint256[]"
       },
       {
         "internalType": "address",
@@ -469,14 +351,14 @@
         "type": "address"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase1",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase2",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "name": "initializeWithTwoParameters",
@@ -515,9 +397,9 @@
     "name": "marketQuestion",
     "outputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -625,9 +507,9 @@
     "name": "positionPhrase",
     "outputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "stateMutability": "view",

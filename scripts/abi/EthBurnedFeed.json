@@ -118,6 +118,21 @@
   },
   {
     "constant": true,
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0xc55a2b79",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0xc55a2b79",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [],
     "name": "endpoint",
     "outputs": [

@@ -52,6 +52,32 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0x902da21e",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x902da21e",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0xa1ed316c",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0xa1ed316c",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "lastPauseTime",
     "outputs": [

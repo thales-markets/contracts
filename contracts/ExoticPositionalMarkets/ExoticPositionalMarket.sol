@@ -29,10 +29,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     bool public outcomeUpdated;
 
     // from init
-    bytes32 public marketQuestion;
+    string public marketQuestion;
     // Position[] public positions;
     uint public positionCount;
-    mapping(uint => bytes32) public positionPhrase;
+    mapping(uint => string) public positionPhrase;
     uint public endOfPositioning;
     uint public marketMaturity;
     TicketType public ticketType;
@@ -49,15 +49,15 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
 
 
     function initializeWithTwoParameters(
-        bytes32 _marketQuestion, 
+        string memory _marketQuestion, 
         uint _endOfPositioning,
         uint _marketMaturity,
         uint _fixedTicketPrice,
         uint _withdrawalFeePercentage,
-        uint _tag,
+        uint[] memory _tag,
         address _paymentToken,
-        bytes32 _phrase1,
-        bytes32 _phrase2
+        string memory _phrase1,
+        string memory _phrase2
     ) external initializer {
         setOwner(msg.sender);
         _initializeWithTwoParameters(
@@ -74,16 +74,16 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     }
 
     function initializeWithThreeParameters(
-        bytes32 _marketQuestion, 
+        string memory _marketQuestion, 
         uint _endOfPositioning,
         uint _marketMaturity,
         uint _fixedTicketPrice,
         uint _withdrawalFeePercentage,
-        uint _tag,
+        uint[] memory _tag,
         address _paymentToken,
-        bytes32 _phrase1,
-        bytes32 _phrase2,
-        bytes32 _phrase3
+        string memory _phrase1,
+        string memory _phrase2,
+        string memory _phrase3
     ) external initializer {
         setOwner(msg.sender);
         _initializeWithTwoParameters(
@@ -98,66 +98,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
             _phrase2
         );
         _addPosition(_phrase3);
-    }
-
-    function initializeWithFourParameters(
-        bytes32 _marketQuestion, 
-        uint _endOfPositioning,
-        uint _marketMaturity,
-        uint _fixedTicketPrice,
-        uint _withdrawalFeePercentage,
-        uint _tag,
-        address _paymentToken,
-        bytes32 _phrase1,
-        bytes32 _phrase2,
-        bytes32 _phrase3,
-        bytes32 _phrase4
-    ) external initializer {
-        setOwner(msg.sender);
-        _initializeWithTwoParameters(
-            _marketQuestion, 
-            _endOfPositioning,
-            _marketMaturity,
-            _fixedTicketPrice,
-            _withdrawalFeePercentage,
-            _tag,
-            _paymentToken,
-            _phrase1,
-            _phrase2
-        );
-        _addPosition(_phrase3);
-        _addPosition(_phrase4);
-    }
-
-    function initializeWithFiveParameters(
-        bytes32 _marketQuestion, 
-        uint _endOfPositioning,
-        uint _marketMaturity,
-        uint _fixedTicketPrice,
-        uint _withdrawalFeePercentage,
-        uint _tag,
-        address _paymentToken,
-        bytes32 _phrase1,
-        bytes32 _phrase2,
-        bytes32 _phrase3,
-        bytes32 _phrase4,
-        bytes32 _phrase5
-    ) external initializer {
-        setOwner(msg.sender);
-        _initializeWithTwoParameters(
-            _marketQuestion, 
-            _endOfPositioning,
-            _marketMaturity,
-            _fixedTicketPrice,
-            _withdrawalFeePercentage,
-            _tag,
-            _paymentToken,
-            _phrase1,
-            _phrase2
-        );
-        _addPosition(_phrase3);
-        _addPosition(_phrase4);
-        _addPosition(_phrase5);
     }
 
     // market resolved only through the Manager
@@ -219,38 +159,38 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         return block.timestamp <= creationTime.add(endOfPositioning) && creationTime > 0;
     }
     
-    function getPositionPhrase(uint index) public view returns (bytes32) {
-        return (index <= positionCount && index > 0) ? positionPhrase[index] : bytes32(0);
+    function getPositionPhrase(uint index) public view returns (string memory) {
+        return (index <= positionCount && index > 0) ? positionPhrase[index] : string("");
     }
 
-    function getAllPositions() public view returns (bytes32[] memory) {
-        bytes32[] memory positionPhrases_ = new bytes32[](positionCount);
-        for(uint i=1; i <= positionCount; i++) {
-            positionPhrases_[i] = positionPhrase[i];
-        }
-        return positionPhrases_;
-    }
+    // function getAllPositions() public view returns (bytes32[] memory) {
+    //     bytes32[] memory positionPhrases_ = new bytes32[](positionCount);
+    //     for(uint i=1; i <= positionCount; i++) {
+    //         positionPhrases_[i] = positionPhrase[i];
+    //     }
+    //     return positionPhrases_;
+    // }
 
     function getTicketHolderPosition(address _account) public view returns (uint) {
         return ticketHolder[_account];
     }
-    function getTicketHolderPositionPhrase(address _account) public view returns (bytes32) {
-        return (ticketHolder[_account] > 0) ? positionPhrase[ticketHolder[_account]] : bytes32(0);
+    function getTicketHolderPositionPhrase(address _account) public view returns (string memory) {
+        return (ticketHolder[_account] > 0) ? positionPhrase[ticketHolder[_account]] : string("");
     }
 
     
     // INTERNAL FUNCTIONS
 
     function _initializeWithTwoParameters(
-        bytes32 _marketQuestion, 
+        string memory _marketQuestion, 
         uint _endOfPositioning,
         uint _marketMaturity,
         uint _fixedTicketPrice,
         uint _withdrawalFeePercentage,
-        uint _tag,
+        uint[] memory _tag,
         address _paymentToken,
-        bytes32 _phrase1,
-        bytes32 _phrase2
+        string memory _phrase1,
+        string memory _phrase2
     ) internal {
         creationTime = block.timestamp;
         marketQuestion = _marketQuestion;
@@ -264,14 +204,14 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         withdrawalAllowed = _withdrawalFeePercentage < HUNDRED ? true : false;
         withdrawalFeePercentage = _withdrawalFeePercentage;
         // The tag is just a number for now
-        tag = _tag;
+        // tag = _tag;
         _addPosition(_phrase1);
         _addPosition(_phrase2);
     }
 
 
-    function _addPosition(bytes32 _position) internal {
-        require(_position != "" || _position != " ", "Invalid phrase. Please assign non-zero position");
+    function _addPosition(string memory _position) internal {
+        // require(_position != "" || _position != " ", "Invalid phrase. Please assign non-zero position");
         positionCount = positionCount.add(1);
         positionPhrase[positionCount] = _position;
     }

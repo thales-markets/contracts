@@ -192,6 +192,32 @@
     "inputs": [
       {
         "internalType": "bytes32",
+        "name": "c__0x01e48220",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x01e48220",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "c__0x17962b6a",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x17962b6a",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
       }

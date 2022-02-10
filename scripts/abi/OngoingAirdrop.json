@@ -185,6 +185,21 @@
     "constant": true,
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "c__0x4cccfaf5",
+        "type": "bytes32"
+      }
+    ],
+    "name": "c_0x4cccfaf5",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "index",
         "type": "uint256"

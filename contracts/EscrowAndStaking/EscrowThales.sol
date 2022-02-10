@@ -10,6 +10,7 @@ import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
+import "../interfaces/IThalesStakingRewardsPool.sol";
 
 contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     using SafeMath for uint;
@@ -37,6 +38,7 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
     mapping(address => uint) public lastPeriodAddedReward;
 
     bool private testMode;
+    IThalesStakingRewardsPool public ThalesStakingRewardsPool;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -48,6 +50,8 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         initNonReentrant();
         vestingToken = IERC20(_vestingToken);
     }
+
+    /* ========== VIEWS ========== */
 
     function getStakerPeriod(address account, uint index) external view returns (uint) {
         require(account != address(0), "Invalid account address");
@@ -75,22 +79,31 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         return totalAccountEscrowedAmount[account].sub(_getVestingNotAvailable(account));
     }
 
-    function addToEscrow(address account, uint amount) external {
+    /* ========== PUBLIC ========== */
+
+    function addToEscrow(address account, uint amount) external notPaused {
         require(account != address(0), "Invalid address");
         require(amount > 0, "Amount is 0");
         require(
-            msg.sender == address(iStakingThales) || msg.sender == airdropContract,
+            msg.sender == address(ThalesStakingRewardsPool) || msg.sender == airdropContract,
             "Add to escrow can only be called from staking or ongoing airdrop contracts"
         );
 
         totalAccountEscrowedAmount[account] = totalAccountEscrowedAmount[account].add(amount);
 
-        lastPeriodAddedReward[account] = currentVestingPeriod;
-
-        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
+        if (lastPeriodAddedReward[account] == currentVestingPeriod) {
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = vestingEntries[account][
+                currentVestingPeriod.mod(NUM_PERIODS)
+            ]
+                .amount
+                .add(amount);
+        } else {
+            vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
+        }
         vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(
             NUM_PERIODS
         );
+        lastPeriodAddedReward[account] = currentVestingPeriod;
 
         totalEscrowedRewards = totalEscrowedRewards.add(amount);
         //Transfering THALES from StakingThales to EscrowThales
@@ -160,12 +173,17 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         emit AirdropContractChanged(AirdropContract);
     }
 
-    /*  Selfdestruct operation potentially harmful for proxy contracts
-     */
-    // function selfDestruct(address payable account) external onlyOwner {
-    //     vestingToken.safeTransfer(account, vestingToken.balanceOf(address(this)));
-    //     selfdestruct(account);
-    // }
+    function setThalesStakingRewardsPool(address _thalesStakingRewardsPool) public onlyOwner {
+        require(_thalesStakingRewardsPool != address(0), "Invalid address");
+        ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);
+        emit ThalesStakingRewardsPoolChanged(_thalesStakingRewardsPool);
+    }
+
+    function fixEscrowEntry(address account) external onlyOwner {
+        vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(
+            NUM_PERIODS
+        );
+    }
 
     /* ========== INTERNAL FUNCTIONS ========== */
 
@@ -185,4 +203,5 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
     event Vested(address account, uint amount);
     event StakingThalesContractChanged(address newAddress);
     event AirdropContractChanged(address newAddress);
+    event ThalesStakingRewardsPoolChanged(address thalesStakingRewardsPool);
 }

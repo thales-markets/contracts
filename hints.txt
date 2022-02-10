@@ -32,3 +32,4 @@ npx hardhat run --network optimisticKovan scripts/l2_deployments/createMarket.js
 
 optimistic:
 npx hardhat run --network optimistic scripts/deployAMM/deployAMM.js
+npx hardhat run --network optimistic scripts/deployPriceFeed/updateAggregators.js

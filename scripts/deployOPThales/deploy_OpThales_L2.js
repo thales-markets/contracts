@@ -50,8 +50,8 @@ async function main() {
 	const OP_Thales_L2_deployed = await OP_Thales_L2_connected.deploy(
 		L2_BRIDGE_ADDRESS,
 		OP_Thales_L1_Address,
-		'Opt Thales L2',
-		"OPTHALES_L2"
+		'Optimistic Thales Token',
+		"THALES"
 		);
 		
 	tx = await OP_Thales_L2_deployed.deployed();
@@ -65,9 +65,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function (resolve) {
-		setTimeout(resolve, time);
-	});
-}

@@ -51,7 +51,6 @@ async function main() {
 	console.log('DeciMath deployed to:', deciMath.address);
 	setTargetAddress('DeciMath', network, deciMath.address);
 
-
 	const hour = 60 * 60;
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
 	let ThalesAMM_deployed = await upgrades.deployProxy(ThalesAMM, [
@@ -62,7 +61,7 @@ async function main() {
 		deciMath.address,
 		w3utils.toWei('0.01'),
 		w3utils.toWei('0.05'),
-		hour*2
+		hour * 2,
 	]);
 	await ThalesAMM_deployed.deployed();
 
@@ -150,6 +149,24 @@ async function main() {
 	tx = await deciMath.setLUT3_4();
 	await tx.wait().then(e => {
 		console.log('deciMath: setLUT3_4');
+	});
+
+	const stakingThales = getTargetAddress('StakingThales', network);
+	tx = await ThalesAMM_deployed.setStakingThales(stakingThales);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setStakingThales()');
+	});
+
+	const safeBox = getTargetAddress('SafeBox', network);
+	tx = await ThalesAMM_deployed.setSafeBox(safeBox);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setSafeBox()');
+	});
+
+	const safeBoxImpact = w3utils.toWei('0.01');
+	tx = await ThalesAMM_deployed.setSafeBoxImpact(safeBoxImpact);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setSafeBoxImpact()');
 	});
 
 	await hre.run('verify:verify', {

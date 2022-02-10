@@ -212,6 +212,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
+      },
+      {
         "internalType": "bytes32",
         "name": "_phrase1",
         "type": "bytes32"
@@ -275,6 +280,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
+      },
+      {
         "internalType": "bytes32",
         "name": "_phrase1",
         "type": "bytes32"
@@ -333,6 +343,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
+      },
+      {
         "internalType": "bytes32",
         "name": "_phrase1",
         "type": "bytes32"
@@ -384,6 +399,11 @@
         "internalType": "uint256",
         "name": "_tag",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
       },
       {
         "internalType": "bytes32",
@@ -506,6 +526,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "paymentToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -587,6 +620,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "ticketHolder",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "ticketType",
     "outputs": [
@@ -594,6 +646,38 @@
         "internalType": "enum ExoticPositionalMarket.TicketType",
         "name": "",
         "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "ticketsPerPosition",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalTicketHolders",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

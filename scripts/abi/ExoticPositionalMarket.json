@@ -4,6 +4,31 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_creationTime",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "positionCount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "phrase",
+        "type": "bytes32"
+      }
+    ],
+    "name": "MarketCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bool",
         "name": "_disputed",
         "type": "bool"
@@ -81,7 +106,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "position",
+        "name": "_position",
         "type": "uint256"
       },
       {
@@ -168,7 +193,45 @@
         "type": "uint256"
       }
     ],
-    "name": "getPosition",
+    "name": "getPositionPhrase",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      }
+    ],
+    "name": "getTicketHolderPosition",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      }
+    ],
+    "name": "getTicketHolderPositionPhrase",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -530,9 +593,22 @@
     "name": "paymentToken",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "positionCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -546,22 +622,12 @@
         "type": "uint256"
       }
     ],
-    "name": "positions",
+    "name": "positionPhrase",
     "outputs": [
       {
         "internalType": "bytes32",
-        "name": "phrase",
+        "name": "",
         "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "position",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -610,7 +676,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "position",
+        "name": "_position",
         "type": "uint256"
       }
     ],

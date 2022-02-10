@@ -175,7 +175,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     }
 
     // to be used within the Manager
-    function chooseDefaultPosition(uint position, address account) external onlyOwner{
+    function chooseDefaultPosition(uint _position, address account) external onlyOwner{
         require(_position > 0, "Position can not be zero. Non-zero position expected");
         require(_position <= positionCount, "Position exceeds number of positions");
         require(block.timestamp <= creationTime.add(endOfPositioning), "Positioning time finished");
@@ -220,7 +220,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     }
     
     function getPositionPhrase(uint index) public view returns (bytes32) {
-        return (index <= positionCount && index > 0) ? positionPhrase[index] : "";
+        return (index <= positionCount && index > 0) ? positionPhrase[index] : bytes32(0);
     }
 
     function getAllPositions() public view returns (bytes32[] memory) {
@@ -234,8 +234,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     function getTicketHolderPosition(address _account) public view returns (uint) {
         return ticketHolder[_account];
     }
-    function getTicketHolderPositionPhrase(address _account) public view returns (uint) {
-       return (ticketHolder[_account] > 0) ? positionPhrase[ticketHolder[_account]] : "";
+    function getTicketHolderPositionPhrase(address _account) public view returns (bytes32) {
+        return (ticketHolder[_account] > 0) ? positionPhrase[ticketHolder[_account]] : bytes32(0);
     }
 
     
@@ -277,5 +277,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     }
  
     event MarketDisputed(bool _disputed);
+    event MarketCreated(uint _creationTime, uint positionCount, bytes32 phrase);
 
 }

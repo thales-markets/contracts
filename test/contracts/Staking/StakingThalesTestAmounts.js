@@ -39,6 +39,7 @@ contract('StakingThales', accounts => {
 		StakingThalesDeployed,
 		EscrowThalesDeployed,
 		SNXRewardsDeployed,
+		AddressResolverDeployed,
 		OngoingAirdropDeployed,
         ProxyEscrowDeployed,
 		ProxyStakingDeployed,
@@ -110,6 +111,9 @@ contract('StakingThales', accounts => {
         let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 		let SNXRewards = artifacts.require('SNXRewards');
 		SNXRewardsDeployed = await SNXRewards.new();
+		let AddressResolver = artifacts.require('AddressResolverHelper');
+		AddressResolverDeployed = await AddressResolver.new();
+		await AddressResolverDeployed.setSNXRewardsAddress(SNXRewardsDeployed.address);
 		ThalesDeployed = await Thales.new({ from: owner });
 		ThalesFeeDeployed = await Thales.new({ from: owner });
 		OngoingAirdropDeployed = await OngoingAirdrop.new(
@@ -171,6 +175,8 @@ contract('StakingThales', accounts => {
 		
 		await StakingThalesDeployed.setDistributeFeesEnabled(true, { from: owner });
 		await StakingThalesDeployed.setClaimEnabled(true, { from: owner });
+		await StakingThalesDeployed.setAddressResolver(AddressResolverDeployed.address, { from: owner });
+
 		
 
 		// await StakingThalesDeployed.setDistributeFeesEnabled(true, { from: owner });

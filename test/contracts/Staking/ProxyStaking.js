@@ -40,6 +40,7 @@ contract('StakingThales', accounts => {
 		EscrowThalesDeployed,
 		OngoingAirdropDeployed,
 		SNXRewardsDeployed,
+		AddressResolverDeployed,
 		ProxyEscrowDeployed,
 		ProxyStakingDeployed;
 
@@ -113,6 +114,9 @@ contract('StakingThales', accounts => {
 		ThalesDeployed = await Thales.new({ from: owner.address });
 		ThalesFeeDeployed = await Thales.new({ from: owner.address });
 		SNXRewardsDeployed = await SNXRewards.new();
+		let AddressResolver = artifacts.require('AddressResolverHelper');
+		AddressResolverDeployed = await AddressResolver.new();
+		await AddressResolverDeployed.setSNXRewardsAddress(SNXRewardsDeployed.address);
 		OngoingAirdropDeployed = await OngoingAirdrop.new(
 			owner.address,
 			ThalesDeployed.address,
@@ -138,6 +142,7 @@ contract('StakingThales', accounts => {
 		await StakingThalesDeployed.connect(owner).setDistributeFeesEnabled(true);
 		await StakingThalesDeployed.connect(owner).setClaimEnabled(true);
 		await StakingThalesDeployed.connect(owner).setFixedPeriodReward(100000);
+		await StakingThalesDeployed.connect(owner).setAddressResolver(AddressResolverDeployed.address);
 	});
 
 	describe('EscrowThales basic check', () => {

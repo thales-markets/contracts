@@ -41,6 +41,7 @@ contract('StakingThales', accounts => {
 		EscrowThalesDeployed,
 		OngoingAirdropDeployed,
 		SNXRewardsDeployed,
+		AddressResolverDeployed,
 		ThalesRoyaleDeployed,
         ProxyEscrowDeployed,
         ProxyStakingDeployed;
@@ -140,12 +141,15 @@ contract('StakingThales', accounts => {
         let StakingThales = await ethers.getContractFactory('StakingThales');
         let OngoingAirdrop = artifacts.require('OngoingAirdrop');
         let SNXRewards = artifacts.require('SNXRewards');
+        let AddressResolver = artifacts.require('AddressResolverHelper');
         let ThalesRoyale = artifacts.require('TestThalesRoyale');
         
         let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
         ThalesDeployed = await Thales.new({ from: owner.address });
         ThalesFeeDeployed = await Thales.new({ from: owner.address });
 		SNXRewardsDeployed = await SNXRewards.new();
+		AddressResolverDeployed = await AddressResolver.new();
+		await AddressResolverDeployed.setSNXRewardsAddress(SNXRewardsDeployed.address);
 		ThalesRoyaleDeployed = await ThalesRoyale.new();
         OngoingAirdropDeployed = await OngoingAirdrop.new(
             owner.address,
@@ -187,6 +191,7 @@ contract('StakingThales', accounts => {
 		await StakingThalesDeployed.connect(owner).setClaimEnabled(true);
 		await StakingThalesDeployed.connect(owner).setFixedPeriodReward(toWei("70000", "ether"));
 		await StakingThalesDeployed.connect(owner).setPeriodExtraReward(toWei("21000", "ether"));
+		await StakingThalesDeployed.connect(owner).setAddressResolver(AddressResolverDeployed.address);
 	});
 
 	

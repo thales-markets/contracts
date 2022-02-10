@@ -14,6 +14,7 @@ import "../interfaces/ISNXRewards.sol";
 import "../interfaces/IThalesRoyale.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IThalesStakingRewardsPool.sol";
+import "../interfaces/IAddressResolver.sol";
 
 contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentrancyGuard, ProxyPausable {
     /* ========== LIBRARIES ========== */
@@ -88,6 +89,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     uint public totalStakedLastPeriodEnd;
     uint public totalEscrowedLastPeriodEnd;
+
+    IAddressResolver public addressResolver;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -251,6 +254,21 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit EscrowChanged(_escrowThalesContract);
     }
 
+    function setAddressResolver(address _addressResolver) public onlyOwner {
+        require(_addressResolver != address(0), "Invalid address");
+        addressResolver = IAddressResolver(_addressResolver);
+        emit AddressResolverChanged(_addressResolver);
+    }
+
+    function getSNXRewardsAddress() public view returns (address){
+        if(address(addressResolver) == address(0)) {
+            return address(0);
+        }
+        else {
+            return addressResolver.getAddress("Issuer");
+        }
+    }
+
     function getSNXStaked(address account) external view returns (uint) {
         return _getSNXStakedForAccount(account);
     }
@@ -352,16 +370,16 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     function getSNXTargetRatio() public view returns (uint) {
         uint hund = 100 * 100 * 1e18;
-        return hund.div(SNXRewards.issuanceRatio());
+        return hund.div(ISNXRewards(getSNXRewardsAddress()).issuanceRatio());
     }
 
     function getCRatio(address account) public view returns (uint) {
-        uint debt = SNXRewards.debtBalanceOf(account, "sUSD");
+        uint debt = ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
         if (debt == 0) {
             return 0;
         }
         uint hund = 100 * 100 * 1e18;
-        (uint cRatio, ) = SNXRewards.collateralisationRatioAndAnyRatesInvalid(account);
+        (uint cRatio, ) = ISNXRewards(getSNXRewardsAddress()).collateralisationRatioAndAnyRatesInvalid(account);
         return hund.div(cRatio);
     }
 
@@ -370,7 +388,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function getSNXDebt(address account) public view returns (uint) {
-        return SNXRewards.debtBalanceOf(account, "sUSD");
+        return ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
     }
 
     /* ========== PUBLIC ========== */
@@ -621,7 +639,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         uint cRatio = getCRatio(account);
         uint targetRatio = getSNXTargetRatio();
         uint snxPrice = priceFeed.rateForCurrency("SNX");
-        uint debt = SNXRewards.debtBalanceOf(account, "sUSD");
+        uint debt = ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
         if (cRatio < targetRatio) {
             return (cRatio.mul(cRatio).mul(debt).mul(1e14)).div(targetRatio.mul(snxPrice));
         } else {
@@ -672,4 +690,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event MaxThalesRoyaleRewardsPercentageChanged(uint maxThalesRewardsPercentage);
     event ThalesStakingRewardsPoolChanged(address thalesStakingRewardsPool);
     event SNXVolumeRewardsMultiplierChanged(uint ammVolumeRewardsMultiplier);
+    event AddressResolverChanged(address addressResolver);
+
 }

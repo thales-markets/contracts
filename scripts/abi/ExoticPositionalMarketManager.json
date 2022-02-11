@@ -125,68 +125,10 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "_marketQuestion",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_endOfPositioning",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_marketMaturity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_fixedTicketPrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_withdrawalFeePercentage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_tag",
-        "type": "uint256[]"
-      },
-      {
         "internalType": "address",
-        "name": "_paymentToken",
+        "name": "_creatorAddress",
         "type": "address"
       },
-      {
-        "internalType": "string",
-        "name": "_phrase1",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase2",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase3",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase4",
-        "type": "string"
-      }
-    ],
-    "name": "createExoticMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
       {
         "internalType": "string",
         "name": "_marketQuestion",
@@ -241,73 +183,10 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "_marketQuestion",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_endOfPositioning",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_marketMaturity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_fixedTicketPrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_withdrawalFeePercentage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_tag",
-        "type": "uint256[]"
-      },
-      {
         "internalType": "address",
-        "name": "_paymentToken",
+        "name": "_creatorAddress",
         "type": "address"
       },
-      {
-        "internalType": "string",
-        "name": "_phrase1",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase2",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase3",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase4",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase5",
-        "type": "string"
-      }
-    ],
-    "name": "createExoticMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
       {
         "internalType": "string",
         "name": "_marketQuestion",

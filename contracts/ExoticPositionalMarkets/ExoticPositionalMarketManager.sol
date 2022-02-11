@@ -43,6 +43,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     // Create Exotic market with 2 phrase options
     function createExoticMarket(
+        address _creatorAddress,
         string memory _marketQuestion, 
         uint _endOfPositioning,
         uint _marketMaturity,
@@ -58,6 +59,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     // Create Exotic market with 3 phrase options
     function createExoticMarketThree(
+        address _creatorAddress,
         string memory _marketQuestion, 
         uint _endOfPositioning,
         uint _marketMaturity,
@@ -74,6 +76,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         );
 
         exoticMarket.initializeWithThreeParameters(
+            _creatorAddress,
             _marketQuestion, 
             _endOfPositioning, 
             _marketMaturity, 
@@ -88,40 +91,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit MarketCreated(address(exoticMarket), _marketQuestion);
     }
 
-    // Create Exotic market with 4 phrase options
-    function createExoticMarket(
-        string memory _marketQuestion, 
-        uint _endOfPositioning,
-        uint _marketMaturity,
-        uint _fixedTicketPrice,
-        uint _withdrawalFeePercentage,
-        uint[] memory _tag,
-        address _paymentToken,
-        string memory _phrase1,
-        string memory _phrase2,
-        string memory _phrase3,
-        string memory _phrase4
-    ) external checkMarketRequirements(_endOfPositioning, _marketMaturity) {
-
-    }
-
-    // Create Exotic market with 5 phrase options
-    function createExoticMarket(
-        string memory _marketQuestion, 
-        uint _endOfPositioning,
-        uint _marketMaturity,
-        uint _fixedTicketPrice,
-        uint _withdrawalFeePercentage,
-        uint[] memory _tag,
-        address _paymentToken,
-        string memory _phrase1,
-        string memory _phrase2,
-        string memory _phrase3,
-        string memory _phrase4,
-        string memory _phrase5
-    ) external checkMarketRequirements(_endOfPositioning, _marketMaturity) {
-
-    }
 
     function setExoticMarketMastercopy(address _exoticMastercopy) external onlyOwner {
         require(_exoticMastercopy != address(0), "Exotic market invalid");

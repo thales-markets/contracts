@@ -44,17 +44,28 @@ contract('ThalesRoyale', accounts => {
 	let royale;  
 	let initializeRoyaleData;
     let ThalesRoyaleImplementation;
+	let ThalesRoyaleVoucher;
+	let ThalesRoyaleVoucherDeployed;
+	let voucher;		
 
 	beforeEach(async () => {
 
 		const thalesQty_0 = toUnit(0);
 		const thalesQty = toUnit(10000);
 		const thalesQty_2500 = toUnit(2500);
+		const uri = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/0';
 
 		let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 
 		let Thales = artifacts.require('Thales');
 		ThalesDeployed = await Thales.new({ from: owner });
+
+		let ThalesRoyaleVoucher = artifacts.require('ThalesRoyaleVoucher');
+
+		ThalesRoyaleVoucherDeployed = await ThalesRoyaleVoucher.new(
+			ThalesDeployed.address,
+			thalesQty_2500
+		, { from: owner });
 
 		priceFeedAddress = owner;
 
@@ -72,22 +83,31 @@ contract('ThalesRoyale', accounts => {
 		ThalesRoyaleImplementation = await ThalesRoyale.new({from:owner});
 		royale = await ThalesRoyale.at(ThalesRoyaleDeployed.address);
 
+		ThalesRoyaleVoucher = artifacts.require('ThalesRoyaleVoucher');
+
+		voucher = await ThalesRoyaleVoucher.new(
+			ThalesDeployed.address,
+			thalesQty_2500,
+			uri
+			,{ from: owner }
+		);
+
 		initializeRoyaleData = encodeCall(
             'initialize',
-            ['address', 'bytes32', 'address', 'address', 'uint',
-            'uint', 'uint', 'uint', 'uint', 'uint', 'bool'],
+            ['address', 'bytes32', 'address', 'address', 'address', 'uint',
+            'uint', 'uint', 'uint', 'uint', 'uint'],
             [
                 owner,
                 toBytes32('SNX'),
                 priceFeedAddress,
                 ThalesDeployed.address,
+                voucher.address,
                 7,
                 DAY * 3,
                 HOUR * 8,
                 DAY,
                 toUnit(2500),
-                WEEK * 4,
-                false
+                WEEK * 4
             ]
         );
 
@@ -110,6 +130,15 @@ contract('ThalesRoyale', accounts => {
 
 		await ThalesDeployed.transfer(fourth, thalesQty, { from: owner });
 		await ThalesDeployed.approve(royale.address, thalesQty_2500, { from: fourth });
+
+		await ThalesDeployed.transfer(voucher.address, thalesQty, { from: owner });
+		await ThalesDeployed.approve(voucher.address, thalesQty, { from: owner });
+
+		await ThalesDeployed.transfer(first, thalesQty_2500, { from: owner });
+		await ThalesDeployed.approve(voucher.address, thalesQty_2500, { from: first });
+
+		await ThalesDeployed.transfer(second, thalesQty_2500, { from: owner });
+		await ThalesDeployed.approve(voucher.address, thalesQty_2500, { from: second });
 
 	});
 
@@ -1952,41 +1981,64 @@ contract('ThalesRoyale', accounts => {
 
 	});
 
+	it('Sign up with vouchers check values', async () => {
 
-	it('Sign up on behalf', async () => {
+		// adding vauchers to users
+		const id_1 = 1;
+		const id_2 = 2;
+
+		await voucher.setThalesRoyaleAddress(royale.address, {from: owner})
+
+		await voucher.mint(first, {from: first});
+
+		assert.bnEqual(1, await voucher.balanceOf(first));
+		assert.equal(first, await voucher.ownerOf(id_1));
+
+		await ThalesDeployed.transfer(second, toUnit(2500), { from: owner });
+		await ThalesDeployed.approve(voucher.address, toUnit(2500), { from: second });
+
+		await voucher.mint(second, {from: second});
+
+		assert.bnEqual(1, await voucher.balanceOf(second));
+		assert.equal(second, await voucher.ownerOf(id_2));
+
+		// play royale
 		await royale.startNewSeason({ from: owner });
 
-		await expect(royale.signUpOnBehalf(first, { from: second })).to.be.revertedWith(
-			'Only the contract owner may perform this action'
+		// check rewards
+		let reward = await royale.rewardPerSeason(season_1);
+		assert.bnEqual(reward, toUnit(0));
+
+		assert.bnEqual(0, await royale.signedUpPlayersCount(season_1));
+
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1,1));
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1,2));
+
+		assert.bnEqual(0, await royale.signedUpPlayersCount(season_1));
+
+		await expect(royale.signUpWithVoucher(1, { from: first })).to.be.revertedWith(
+			'Must be owner or approver'
+		);
+		await expect(royale.signUpWithVoucherWithPosition(2, 2, { from: second })).to.be.revertedWith(
+			'Must be owner or approver'
 		);
 
-		await royale.signUpWithPosition(1, { from: first });
+		await voucher.approve(royale.address, id_1, {from: first});
+		await voucher.approve(royale.address, id_2, {from: second});
 
-		await fastForward(HOUR * 72 + 1);
-		await royale.startRoyaleInASeason();
+		await royale.signUpWithVoucher(1, { from: first });
+		await royale.signUpWithVoucherWithPosition(2, 2, { from: second });
 
-		await fastForward(HOUR * 72 + 1);
-		await royale.closeRound();
+		assert.bnEqual(2, await royale.signedUpPlayersCount(season_1));
 
-		assert.equal(1, await royale.signedUpPlayersCount(season_1));
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1,1));
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 1,2));
 
-		await fastForward(WEEK * 4 + 1);
-		await royale.startNewSeason({ from: owner });
+		reward = await royale.rewardPerSeason(season_1);
+		assert.bnEqual(reward, toUnit(5000));
 
-		assert.equal(0, await royale.positionsPerRoundPerSeason(season_2, 1,1));
-		assert.equal(0, await royale.positionsPerRoundPerSeason(season_2, 1,2));
-		
-		// check rewards
-		let reward = await royale.rewardPerSeason(season_2);
-		assert.bnEqual(reward, toUnit(0));
-		
-		await royale.signUpOnBehalf(first, { from: owner });
-		await royale.signUpOnBehalf(second, { from: owner });
-
-		assert.equal(2, await royale.signedUpPlayersCount(season_2));
-		
-		// check rewards
-		let reward_after = await royale.rewardPerSeason(season_2);
-		assert.bnEqual(reward_after, toUnit(5000));
+		await expect(voucher.burn(id_1, { from: first })).to.be.revertedWith('Not existing voucher');
+		await expect(voucher.burn(id_2, { from: second })).to.be.revertedWith('Not existing voucher');
 	});
+
 });

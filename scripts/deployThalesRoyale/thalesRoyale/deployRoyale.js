@@ -12,6 +12,7 @@ async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	let rewardTokenAddress;
+    let royaleVoucherAddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -48,6 +49,9 @@ async function main() {
 
 	console.log('Found ProxyERC20sUSD at:' + rewardTokenAddress);
 
+	royaleVoucherAddress = getTargetAddress('ThalesRoyaleVoucher', network);
+	console.log('Found ThalesRoyaleVoucher at:' + royaleVoucherAddress);
+
 	const min = 60;
 	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
@@ -55,13 +59,13 @@ async function main() {
 
 	const asset = toBytes32('ETH');
 
-	const signUpPeriod = day * 3;
-	const roundChoosingLength = hour * 8;
-	const roundLength = day;
-	const pauseBetweenSeasonsTime = week * 2;
+	const signUpPeriod = min * 10;
+	const roundChoosingLength = min * 5;
+	const roundLength = min * 10;
+	const pauseBetweenSeasonsTime = hour * 1;
 
 	const rounds = 6;
-	const buyIn = w3utils.toWei('30');
+	const buyIn = w3utils.toWei('1');
 
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const royale = await upgrades.deployProxy(ThalesRoyale, 
@@ -70,13 +74,13 @@ async function main() {
         asset, 					//2
         priceFeedAddress,		//3
         rewardTokenAddress,		//4
-        rounds,					//5
-        signUpPeriod,			//6
-        roundChoosingLength,	//7
-        roundLength,			//8
-        buyIn,					//9
-        pauseBetweenSeasonsTime,//10
-        false					//11
+		royaleVoucherAddress,	//5
+        rounds,					//6
+        signUpPeriod,			//7
+        roundChoosingLength,	//8
+        roundLength,			//9
+        buyIn,					//10
+        pauseBetweenSeasonsTime//11
         ]
     );
 	await royale.deployed();

@@ -3,21 +3,6 @@
     "constant": true,
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "c__0x8b3d851a",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0x8b3d851a",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
         "internalType": "contract BinaryOptionMarket",
         "name": "market",
         "type": "address"

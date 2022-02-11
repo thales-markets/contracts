@@ -126,11 +126,15 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         require(_position > 0, "Position can not be zero. Non-zero position expected");
         require(_position <= positionCount, "Position exceeds number of positions");
         require(canPlacePosition(), "Positioning time finished");
-        require(paymentToken.allowance(msg.sender, address(this)) >=  fixedTicketPrice, "No allowance. Please approve ticket price allowance");
         if(ticketType == TicketType.FIXED_TICKET_PRICE) {
-            // _resolveFixedPrice(_outcomePosition);
-            paymentToken.transferFrom(msg.sender, address(this), fixedTicketPrice);
-            totalTicketHolders = totalTicketHolders.add(1);
+            if(getTicketHolderPosition(msg.sender) == 0) {
+                require(paymentToken.allowance(msg.sender, address(this)) >=  fixedTicketPrice, "No allowance. Please approve ticket price allowance");
+                paymentToken.transferFrom(msg.sender, address(this), fixedTicketPrice);
+                totalTicketHolders = totalTicketHolders.add(1);
+            }
+            else {
+                ticketsPerPosition[getTicketHolderPosition(msg.sender)] = ticketsPerPosition[getTicketHolderPosition(msg.sender)].sub(1);
+            }
             ticketsPerPosition[_position] = ticketsPerPosition[_position].add(1);
             ticketHolder[msg.sender] = _position;
         }
@@ -194,8 +198,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     ) internal {
         creationTime = block.timestamp;
         marketQuestion = _marketQuestion;
-        endOfPositioning = _endOfPositioning;
-        marketMaturity = _marketMaturity;
+        endOfPositioning = block.timestamp.add(_endOfPositioning);
+        marketMaturity = block.timestamp.add(_marketMaturity);
         paymentToken = IERC20(_paymentToken);
         // Ticket Type can be determined based on ticket price
         ticketType = _fixedTicketPrice > 0 ? TicketType.FIXED_TICKET_PRICE : TicketType.FLEXIBLE_BID;

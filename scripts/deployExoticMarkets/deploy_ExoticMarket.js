@@ -1,10 +1,6 @@
 const path = require('path');
 const { ethers } = require('hardhat');
 
-const user_key = process.env.PRIVATE_KEY;
-
-
-const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
 
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
@@ -35,33 +31,33 @@ async function main() {
 	
 
 	
-	const ExoiticMarket = await ethers.getContractFactory('ExoticPositionalMarket');
-	const ExoiticMarketDeployed = await ExoiticMarket.deploy();
-    await ExoiticMarketDeployed.deployed();
-	console.log("ExoiticMarket Deployed on", ExoiticMarketDeployed.address);
-	setTargetAddress('ExoiticMarket', network, ExoiticMarketDeployed.address);
+	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalMarket');
+	const ExoticMarketDeployed = await ExoticMarket.deploy();
+    await ExoticMarketDeployed.deployed();
+	console.log("ExoticMarket Deployed on", ExoticMarketDeployed.address);
+	setTargetAddress('ExoticMarketMasterCopy', network, ExoticMarketDeployed.address);
 
     try {
 		await hre.run('verify:verify', {
-			address: ExoiticMarketDeployed.address,
+			address: ExoticMarketDeployed.address,
 		});
 	} catch (e) {
 		console.log(e);
 	}
 
-    await delay(5000);
+    // await delay(5000);
 
-    await ExoiticMarketDeployed.initializeWithTwoParameters(
-        "Who will win the el clasico which will be played on 2022-02-22?",
-        "2000",
-        "50000",
-        "300",
-        "5",
-        "[0,1]",
-        "Real Madrid",
-        "FC Barcelona",
-        "It will be a draw"
-    );
+    // await ExoticMarketDeployed.initializeWithTwoParameters(
+    //     "Who will win the el clasico which will be played on 2022-02-22?",
+    //     "2000",
+    //     "50000",
+    //     "300",
+    //     "5",
+    //     "[0,1]",
+    //     "Real Madrid",
+    //     "FC Barcelona",
+    //     "It will be a draw"
+    // );
 
 }
 

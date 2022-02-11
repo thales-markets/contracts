@@ -157,21 +157,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "c__0xdb01db77",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0xdb01db77",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [],
     "name": "claim",

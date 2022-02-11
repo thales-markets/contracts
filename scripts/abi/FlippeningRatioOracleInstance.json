@@ -73,21 +73,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "c__0xfe9b20fd",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0xfe9b20fd",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [],
     "name": "clearOutcome",

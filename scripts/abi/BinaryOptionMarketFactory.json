@@ -218,21 +218,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "c__0xcbd27aa0",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0xcbd27aa0",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {

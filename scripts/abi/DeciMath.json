@@ -3,21 +3,6 @@
     "constant": true,
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "c__0xfcd55a4b",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0xfcd55a4b",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "num",
         "type": "uint256"

@@ -1,10 +1,8 @@
 const path = require('path');
 const { ethers } = require('hardhat');
 
-const user_key = process.env.PRIVATE_KEY;
 
 
-const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
 
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
@@ -34,25 +32,33 @@ async function main() {
 	}
 	
 
+	ExoticMarketAddress = getTargetAddress('ExoticMarketMasterCopy', network);
 	
-	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalMarket');
-	const ExoticMarketAddress = getTargetAddress('ExoticMarket', network);
-	console.log("ExoticMarket Deployed on", ExoticMarketAddress);
-    const ExoticMarketDeployed = await ExoticMarket.attach(ExoticMarketAddress);
+	const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
+	const ExoticMarketManagerAddress = getTargetAddress('ExoticMarketManager', network);
+    let ExoticMarketManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
+	console.log("ExoticMarketManager on", ExoticMarketManagerDeployed.address);
     
+    // console.log(ExoticMarketManager);
 
-    await ExoticMarketDeployed.initializeWithThreeParameters(
+    // let tx = await ExoticMarketManagerDeployed.createExoticMarket();
+    // console.log(tx)
+    let tx = await ExoticMarketManagerDeployed.createExoticMarketThree(
         "Who will win the el clasico which will be played on 2022-02-22?",
-        "2000",
-        "50000",
+        "0",
+        "0",
         "300",
         "5",
         [0,1],
         ExoticMarketAddress,
         "Real Madrid",
         "FC Barcelona",
-        "It will be a draw"
-    );
+        "It will be a draw",
+        {gasLimit: 5000000});
+    
+    await tx.wait().then(e => {
+        console.log("Market created")
+    });
 
 }
 

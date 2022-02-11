@@ -64,21 +64,6 @@
   },
   {
     "constant": true,
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "c__0xd3f57455",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0xd3f57455",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [],
     "name": "getRatio",
     "outputs": [

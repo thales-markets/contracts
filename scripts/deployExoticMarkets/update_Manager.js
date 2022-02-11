@@ -1,10 +1,7 @@
 const path = require('path');
-const { ethers } = require('hardhat');
+const { ethers, upgrades } = require('hardhat');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
-const user_key = process.env.PRIVATE_KEY;
-
-
-const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
 
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
@@ -33,26 +30,32 @@ async function main() {
 		network = 'optimistic';
 	}
 	
+    const ExoticMarketMastercopyAddress = getTargetAddress("ExoticMarketMasterCopy", network);
+    const ExoticMarketManagerAddress = getTargetAddress("ExoticMarketManager", network);
+    const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
+    
+    await upgrades.upgradeProxy(ExoticMarketManagerAddress, ExoticMarketManager);
+    await delay(5000);
+
+    console.log('ExoticMarketManager upgraded');
+
+  	const ExoticMarketManagerImplementation = await getImplementationAddress(
+		ethers.provider,
+		ExoticMarketManagerAddress
+	);
+
+	console.log('Implementation ExoticMarketManager: ', ExoticMarketManagerImplementation);
+	setTargetAddress('ExoticMarketManagerImplementation', network, ExoticMarketManagerImplementation);
 
 	
-	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalMarket');
-	const ExoticMarketAddress = getTargetAddress('ExoticMarket', network);
-	console.log("ExoticMarket Deployed on", ExoticMarketAddress);
-    const ExoticMarketDeployed = await ExoticMarket.attach(ExoticMarketAddress);
-    
+    try {
+		await hre.run('verify:verify', {
+			address: ExoticMarketManagerImplementation,
+		});
+	} catch (e) {
+		console.log(e);
+	}
 
-    await ExoticMarketDeployed.initializeWithThreeParameters(
-        "Who will win the el clasico which will be played on 2022-02-22?",
-        "2000",
-        "50000",
-        "300",
-        "5",
-        [0,1],
-        ExoticMarketAddress,
-        "Real Madrid",
-        "FC Barcelona",
-        "It will be a draw"
-    );
 
 }
 

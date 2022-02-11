@@ -4,6 +4,38 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_exoticMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "ExoticMarketMastercopyChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "marketAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "marketQuestion",
+        "type": "string"
+      }
+    ],
+    "name": "MarketCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "duration",
         "type": "uint256"
@@ -93,48 +125,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "c__0x84ad2c98",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0x84ad2c98",
-    "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "c__0x902da21e",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0x902da21e",
-    "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "c__0xa148e657",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0xa148e657",
-    "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_marketQuestion",
-        "type": "bytes32"
+        "type": "string"
       },
       {
         "internalType": "uint256",
@@ -143,7 +136,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_marketMaturityDate",
+        "name": "_marketMaturity",
         "type": "uint256"
       },
       {
@@ -157,24 +150,34 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint256[]",
         "name": "_tag",
-        "type": "uint256"
+        "type": "uint256[]"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
         "name": "_phrase1",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase2",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase3",
-        "type": "bytes32"
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_phrase4",
+        "type": "string"
       }
     ],
     "name": "createExoticMarket",
@@ -185,9 +188,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_marketQuestion",
-        "type": "bytes32"
+        "type": "string"
       },
       {
         "internalType": "uint256",
@@ -196,7 +199,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_marketMaturityDate",
+        "name": "_marketMaturity",
         "type": "uint256"
       },
       {
@@ -210,29 +213,24 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint256[]",
         "name": "_tag",
-        "type": "uint256"
+        "type": "uint256[]"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
         "name": "_phrase1",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase2",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase3",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "_phrase4",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "name": "createExoticMarket",
@@ -243,9 +241,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_marketQuestion",
-        "type": "bytes32"
+        "type": "string"
       },
       {
         "internalType": "uint256",
@@ -254,7 +252,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_marketMaturityDate",
+        "name": "_marketMaturity",
         "type": "uint256"
       },
       {
@@ -268,34 +266,39 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint256[]",
         "name": "_tag",
-        "type": "uint256"
+        "type": "uint256[]"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
         "name": "_phrase1",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase2",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase3",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase4",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase5",
-        "type": "bytes32"
+        "type": "string"
       }
     ],
     "name": "createExoticMarket",
@@ -306,9 +309,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_marketQuestion",
-        "type": "bytes32"
+        "type": "string"
       },
       {
         "internalType": "uint256",
@@ -317,7 +320,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_marketMaturityDate",
+        "name": "_marketMaturity",
         "type": "uint256"
       },
       {
@@ -331,24 +334,47 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint256[]",
         "name": "_tag",
-        "type": "uint256"
+        "type": "uint256[]"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
         "name": "_phrase1",
-        "type": "bytes32"
+        "type": "string"
       },
       {
-        "internalType": "bytes32",
+        "internalType": "string",
         "name": "_phrase2",
-        "type": "bytes32"
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_phrase3",
+        "type": "string"
       }
     ],
-    "name": "createExoticMarket",
+    "name": "createExoticMarketThree",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "exoticMarketMastercopy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -374,6 +400,11 @@
         "internalType": "uint256",
         "name": "_minimumMarketMaturityDuration",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_exoticMarketMastercopy",
+        "type": "address"
       }
     ],
     "name": "initialize",
@@ -457,6 +488,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_exoticMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "setExoticMarketMastercopy",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

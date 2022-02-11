@@ -41,36 +41,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "c__0x01e48220",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0x01e48220",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "c__0x33fcfefd",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0x33fcfefd",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {

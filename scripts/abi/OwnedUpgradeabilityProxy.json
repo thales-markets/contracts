@@ -60,48 +60,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "c__0x92c6a3a8",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0x92c6a3a8",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "c__0xdf913125",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0xdf913125",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "c__0x52c02bab",
-        "type": "bytes32"
-      }
-    ],
-    "name": "c_0x52c02bab",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {

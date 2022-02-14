@@ -116,7 +116,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
 
     // market resolved only through the Manager
     function resolveMarket(uint _outcomePosition) external onlyOwner{
-        require(canResolveMarket(), "Market can not be resolved. It is disputed/not matured/resolved");
+        require(canMarketBeResolved(), "Market can not be resolved. It is disputed/not matured/resolved");
         require(_outcomePosition < positionCount, "Outcome position exeeds the position");
         if(ticketType == TicketType.FIXED_TICKET_PRICE) {
             // _resolveFixedPrice(_outcomePosition);
@@ -141,7 +141,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     function takeAPosition(uint _position) external {
         require(_position > 0, "Position can not be zero. Non-zero position expected");
         require(_position <= positionCount, "Position exceeds number of positions");
-        require(canPlacePosition(), "Positioning time finished");
+        require(canUsersPlacePosition(), "Positioning time finished");
         if(ticketType == TicketType.FIXED_TICKET_PRICE) {
             if(getTicketHolderPosition(msg.sender) == 0) {
                 require(paymentToken.allowance(msg.sender, address(this)) >=  fixedTicketPrice, "No allowance. Please approve ticket price allowance");
@@ -199,10 +199,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         return creationTime > 0;
     }
 
-    function canResolveMarket() public view returns (bool) {
+    function canMarketBeResolved() public view returns (bool) {
         return block.timestamp >= creationTime.add(marketMaturity) && creationTime > 0 && (!disputed) && !resolved;
     }
-    function canPlacePosition() public view returns (bool) {
+    function canUsersPlacePosition() public view returns (bool) {
         return block.timestamp <= creationTime.add(endOfPositioning) && creationTime > 0 && !resolved;
     }
     

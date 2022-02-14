@@ -116,7 +116,7 @@
   },
   {
     "inputs": [],
-    "name": "canPlacePosition",
+    "name": "canMarketBeResolved",
     "outputs": [
       {
         "internalType": "bool",
@@ -129,7 +129,7 @@
   },
   {
     "inputs": [],
-    "name": "canResolveMarket",
+    "name": "canUsersPlacePosition",
     "outputs": [
       {
         "internalType": "bool",

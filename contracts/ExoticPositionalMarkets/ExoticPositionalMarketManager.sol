@@ -25,6 +25,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     address public exoticMarketMastercopy;
 
+    mapping (uint => address) public activeMarkets;
+    uint public numOfActiveMarkets;
+
+    mapping(address => address) public marketOwner;
+
     function initialize(
         address _owner,
         uint _minimumPositioningDuration,
@@ -59,7 +64,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     // Create Exotic market with 3 phrase options
     function createExoticMarketThree(
-        address _creatorAddress,
         string memory _marketQuestion, 
         uint _endOfPositioning,
         uint _marketMaturity,
@@ -76,7 +80,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         );
 
         exoticMarket.initializeWithThreeParameters(
-            _creatorAddress,
+            msg.sender,
             _marketQuestion, 
             _endOfPositioning, 
             _marketMaturity, 
@@ -88,9 +92,38 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             _phrase2, 
             _phrase3);
 
-        emit MarketCreated(address(exoticMarket), _marketQuestion);
+        activeMarkets[numOfActiveMarkets] = address(exoticMarket);
+        numOfActiveMarkets = numOfActiveMarkets.add(1);
+        marketOwner[address(exoticMarket)] = msg.sender;
+        emit MarketCreated(address(exoticMarket), _marketQuestion, msg.sender);
     }
 
+    function resolveMarket(address _marketAddress, uint _outcomePosition) external {
+        require(isActiveMarket(_marketAddress), "Market is not active");
+        require(marketOwner[_marketAddress] == msg.sender, "Invalid market owner. Market owner mismatch");
+        
+        ExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition);
+        removeActiveMarket(_marketAddress);
+        emit MarketResolved(_marketAddress);
+    }
+
+    function getMarketAddress(uint _index) external view returns(address){
+        return activeMarkets[_index];
+    }
+
+    function getMarketIndex(address _marketAddress) public view returns(uint) {
+        for(uint i=0; i<numOfActiveMarkets; i++) {
+            if(activeMarkets[i] == _marketAddress) {
+                return i;
+            }
+        }
+        return numOfActiveMarkets;
+    }
+
+    function isActiveMarket(address _marketAddress) public view returns(bool) {
+        return getMarketIndex(_marketAddress) < numOfActiveMarkets;
+
+    }
 
     function setExoticMarketMastercopy(address _exoticMastercopy) external onlyOwner {
         require(_exoticMastercopy != address(0), "Exotic market invalid");
@@ -107,6 +140,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit MinimumMarketMaturityDurationChanged(_duration);
     }
 
+    function removeActiveMarket(address _marketAddress) internal {
+        activeMarkets[getMarketIndex(_marketAddress)] = activeMarkets[numOfActiveMarkets.sub(1)];
+        numOfActiveMarkets = numOfActiveMarkets.sub(1);
+        activeMarkets[numOfActiveMarkets] = address(0);
+    }
+
     modifier checkMarketRequirements(uint _endOfPositioning, uint _marketMaturity) {
         require(exoticMarketMastercopy != address(0), "No ExoticMarket mastercopy present. Please update the mastercopy");
         // require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "Posiitioning period too low. Increase the endOfPositioning");
@@ -116,6 +155,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     event MinimumPositionDurationChanged(uint duration);
     event MinimumMarketMaturityDurationChanged(uint duration);
-    event MarketCreated(address marketAddress, string marketQuestion);
     event ExoticMarketMastercopyChanged(address _exoticMastercopy);
+    event MarketCreated(address marketAddress, string marketQuestion, address marketOwner);
+    event MarketResolved(address marketAddress);
 }

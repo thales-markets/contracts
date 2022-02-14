@@ -34,26 +34,20 @@ async function main() {
 	}
 	
 
-	
 	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalMarket');
-	const ExoticMarketAddress = getTargetAddress('ExoticMarket', network);
-	console.log("ExoticMarket Deployed on", ExoticMarketAddress);
-    const ExoticMarketDeployed = await ExoticMarket.attach(ExoticMarketAddress);
+	const ExoticMarketDeployed = await ExoticMarket.deploy();
+    await ExoticMarketDeployed.deployed();
+	console.log("ExoticMarketMarket Deployed on", ExoticMarketDeployed.address);
+	setTargetAddress('ExoticMarketMasterCopy', network, ExoticMarketDeployed.address);
+	
+	const ExoticMarketManagerAddress = getTargetAddress("ExoticMarketManager", network);
+    const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
+    const ExoticMarketManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
     
-
-    await ExoticMarketDeployed.initializeWithThreeParameters(
-        "Who will win the el clasico which will be played on 2022-02-22?",
-        "10",
-        "50",
-        "300",
-        "5",
-        [0,1],
-        ExoticMarketAddress,
-        "Real Madrid",
-        "FC Barcelona",
-        "It will be a draw"
-    );
-
+	
+    await ExoticMarketManagerDeployed.setExoticMarketMastercopy(ExoticMarketDeployed.address);
+	console.log("ExoticMarket Mastercopy updated");
+	
 }
 
 main()

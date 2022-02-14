@@ -4,7 +4,6 @@ const w3utils = require('web3-utils');
 var crypto = require('crypto');
 
 async function main() {
-
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
@@ -78,8 +77,8 @@ async function main() {
 		'0xda0691163e9beae3745f6584c5ab5fef3d1276eb',
 		'0xdbd0b8b6851ea7bea7b443f4d1bbdf0f2c524789',
 		'0xe1f02f7e90ea5f21d0ac6f12c659c3484c143b03',
-		'0xea04a9fe2cef51b504e7da8cf1b859454ae27030'
-	]
+		'0xea04a9fe2cef51b504e7da8cf1b859454ae27030',
+	];
 
 	/* ========== SIGN IN ROYALE ========== */
 
@@ -87,48 +86,50 @@ async function main() {
 	const thalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
 	console.log('Found ThalesRoyale at:', thalesRoyaleAddress);
 
-	const royale = await ThalesRoyale.attach(
-		thalesRoyaleAddress
-	);
+	const royale = await ThalesRoyale.attach(thalesRoyaleAddress);
 
 	ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSDaddress);
 
 	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
-	let contract = new ethers.Contract(ProxyERC20sUSDaddress, abi, owner);	
+	let contract = new ethers.Contract(ProxyERC20sUSDaddress, abi, owner);
 
-	console.log('No. players: ' + players.length)
+	console.log('No. players: ' + players.length);
 
 	console.log('amount for approve: ' + buyIn);
 
-	await contract.approve(royale.address, buyIn, {
+	let tx = await contract.approve(royale.address, buyIn, {
 		from: owner.address,
 	});
-	delay(5000); // need some time to  finish approval
+	await tx.wait().then(e => {
+		txLog(tx, 'Approve tokens');
+	});
 
 	console.log('Done approving');
 
 	// sign in
-	console.log('Starting sign up!')
+	console.log('Starting sign up!');
 
 	//sign in on behalf
-	for (let i = 0; i < players.length;) {
+	for (let i = 0; i < players.length; ) {
 		console.log('Sign up ' + players[i], ', which is ' + i);
 		try {
-			await royale.signUpOnBehalf(players[i], { from: owner.address });
+			let tx = await royale.signUpOnBehalf(players[i], { from: owner.address });
+			await tx.wait().then(e => {
+				console.log('royale: signUpOnBehalf ', players[i]);
+			});
 			console.log('Signed up!');
 			i++;
-		}catch(e){
+		} catch (e) {
 			console.log('Retry');
 		}
 	}
 
-	console.log('Ended sign up!')
-
+	console.log('Ended sign up!');
 }
 
 function delay(time) {
-	return new Promise(function (resolve) {
+	return new Promise(function(resolve) {
 		setTimeout(resolve, time);
 	});
 }

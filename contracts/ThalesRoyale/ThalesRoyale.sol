@@ -106,20 +106,30 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     /* ========== GAME ========== */
 
-    function signUp() external {
-        require(season > 0, "Initialize first season");
+    function signUp() external playerCanSignUp {
+        _signUpPlayer(msg.sender, 0);
+    }
+
+    function signUpWithPosition(uint position) external playerCanSignUp {
+        require(position == DOWN || position == UP, "Position can only be 1 or 2");
+        _signUpPlayer(msg.sender, position);
+    }
+
+    function signUpOnBehalf(address player) external onlyOwner {
+        require(playerSignedUpPerSeason[season][player] == 0, "Player already signed up");
         require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
-        require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");
+        // check owner buy in
         require(rewardToken.balanceOf(msg.sender) >= buyInAmount, "No enough sUSD for buy in");
         require(rewardToken.allowance(msg.sender, address(this)) >= buyInAmount, "No allowance.");
 
-        playerSignedUpPerSeason[season][msg.sender] = block.timestamp;
-        playersPerSeason[season].push(msg.sender);
+        playerSignedUpPerSeason[season][player] = block.timestamp;
+        playersPerSeason[season].push(player);
         signedUpPlayersCount[season]++;
 
+        // buy in from owner!
         _buyIn(msg.sender, buyInAmount);
 
-        emit SignedUp(msg.sender, season);
+        emit SignedUp(player, season);
     }
 
     function startRoyaleInASeason() external {
@@ -164,17 +174,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
             positionsPerRoundPerSeason[season][roundInASeason[season]][UP]--;
         }
 
-        // set new value
-        positionInARoundPerSeason[season][msg.sender][roundInASeason[season]] = position;
-
-        // add number of positions
-        if (position == UP) {
-            positionsPerRoundPerSeason[season][roundInASeason[season]][position]++;
-        } else {
-            positionsPerRoundPerSeason[season][roundInASeason[season]][position]++;
-        }
-
-        emit TookAPosition(msg.sender, season, roundInASeason[season], position);
+        _putPosition(msg.sender, season, roundInASeason[season], position);
     }
 
     function closeRound() external {
@@ -306,6 +306,34 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     /* ========== INTERNALS ========== */
 
+    function _signUpPlayer(address _player, uint _position) internal {
+        playerSignedUpPerSeason[season][_player] = block.timestamp;
+        playersPerSeason[season].push(_player);
+        signedUpPlayersCount[season]++;
+
+        if (_position != 0) {
+            _putPosition(_player, season, 1, _position);
+        }
+
+        _buyIn(_player, buyInAmount);
+
+        emit SignedUp(msg.sender, season);
+    }
+
+    function _putPosition(address _player, uint _season, uint _round, uint _position) internal {
+       // set value
+        positionInARoundPerSeason[_season][_player][_round] = _position;
+
+        // add number of positions
+        if (_position == UP) {
+            positionsPerRoundPerSeason[_season][_round][_position]++;
+        } else {
+            positionsPerRoundPerSeason[_season][_round][_position]++;
+        }
+
+        emit TookAPosition(_player, _season, _round, _position);
+    }
+
     function _populateReward(uint numberOfWinners) internal {
         require(seasonFinished[season], "Royale must be finished");
         require(numberOfWinners > 0, "There is no alive players left in Royale");
@@ -371,6 +399,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(_season >= season, "Cant put funds in a past");
         require(!seasonFinished[_season], "Season is finished");
         require(rewardToken.allowance(msg.sender, address(this)) >= _amount, "No allowance.");
+        require(rewardToken.balanceOf(msg.sender) >= _amount, "No enough sUSD for buy in");
 
         _putFunds(msg.sender, _amount, _season);
     }
@@ -422,6 +451,15 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     /* ========== MODIFIERS ========== */
+
+    modifier playerCanSignUp() {
+        require(season > 0, "Initialize first season");
+        require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
+        require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");
+        require(rewardToken.balanceOf(msg.sender) >= buyInAmount, "No enough sUSD for buy in");
+        require(rewardToken.allowance(msg.sender, address(this)) >= buyInAmount, "No allowance.");
+        _;
+    }
 
     modifier seasonCanStart() {
         require(msg.sender == owner || canSeasonBeAutomaticallyStartedAfterSomePeriod(), "Only owner can start season before pause between two seasons");

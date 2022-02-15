@@ -44,7 +44,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     uint public fixedTicketPrice;
     bool public withdrawalAllowed;
     uint public withdrawalFeePercentage;
-    uint public tag;
+    uint[] public tag;
     IERC20 public paymentToken;
     address public creatorAddress;
     
@@ -58,7 +58,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     
 
 
-    function initializeWithTwoParameters(
+   function initialize(
         address _creatorAddress,
         string memory _marketQuestion, 
         uint _endOfPositioning,
@@ -67,38 +67,11 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         uint _withdrawalFeePercentage,
         uint[] memory _tag,
         address _paymentToken,
-        string memory _phrase1,
-        string memory _phrase2
+        string[] memory _phrases
     ) external initializer {
         setOwner(msg.sender);
-        _initializeWithTwoParameters(
-            _creatorAddress,
-            _marketQuestion, 
-            _endOfPositioning,
-            _marketMaturity,
-            _fixedTicketPrice,
-            _withdrawalFeePercentage,
-            _tag,
-            _paymentToken,
-            _phrase1,
-            _phrase2
-        );
-    }
+        require(_phrases.length >= 2 && _phrases.length <= 5, "Invalid number of provided positions");
 
-    function initializeWithThreeParameters(
-        address _creatorAddress,
-        string memory _marketQuestion, 
-        uint _endOfPositioning,
-        uint _marketMaturity,
-        uint _fixedTicketPrice,
-        uint _withdrawalFeePercentage,
-        uint[] memory _tag,
-        address _paymentToken,
-        string memory _phrase1,
-        string memory _phrase2,
-        string memory _phrase3
-    ) external initializer {
-        setOwner(msg.sender);
         _initializeWithTwoParameters(
             _creatorAddress,
             _marketQuestion, 
@@ -108,10 +81,14 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
             _withdrawalFeePercentage,
             _tag,
             _paymentToken,
-            _phrase1,
-            _phrase2
+            _phrases[0],
+            _phrases[1]
         );
-        _addPosition(_phrase3);
+        if(_phrases.length > 2) {
+            for(uint i=2; i<_phrases.length; i++) {
+                _addPosition(_phrases[i]);
+            }
+        }
     }
 
     // market resolved only through the Manager
@@ -256,6 +233,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         }
     }
     
+    function getTagCount() public view returns (uint) {
+        return tag.length;
+    }
+    
     function getAdditionalCreatorAmount() internal view returns (uint) {
         return getTotalPlacedAmount().mul(creatorPercentage).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
     }
@@ -296,7 +277,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         withdrawalAllowed = _withdrawalFeePercentage < HUNDRED ? true : false;
         withdrawalFeePercentage = _withdrawalFeePercentage;
         // The tag is just a number for now
-        // tag = _tag;
+        tag = _tag;
         _addPosition(_phrase1);
         _addPosition(_phrase2);
     }

@@ -289,6 +289,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getTagCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -427,80 +440,12 @@
         "type": "address"
       },
       {
-        "internalType": "string",
-        "name": "_phrase1",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase2",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase3",
-        "type": "string"
+        "internalType": "string[]",
+        "name": "_phrases",
+        "type": "string[]"
       }
     ],
-    "name": "initializeWithThreeParameters",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_creatorAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "_marketQuestion",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_endOfPositioning",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_marketMaturity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_fixedTicketPrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_withdrawalFeePercentage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_tag",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "address",
-        "name": "_paymentToken",
-        "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase1",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_phrase2",
-        "type": "string"
-      }
-    ],
-    "name": "initializeWithTwoParameters",
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -694,7 +639,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "tag",
     "outputs": [
       {

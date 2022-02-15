@@ -35,9 +35,7 @@ let marketQuestion,
 	withdrawalFeePercentage,
 	tag,
 	paymentToken,
-    phrase1,
-    phrase2,
-    phrase3,
+    phrases = [],
 	deployedMarket
 
 contract('Exotic Positional market', async accounts => {
@@ -59,10 +57,9 @@ contract('Exotic Positional market', async accounts => {
 		await Thales.transfer(userTwo, toUnit("1000"), {from: owner});
 	});
 
-	describe('initialized', function() {
-		it('has not been initialized', async function() {
-			answer = await ExoticPositionalMarket.tag();
-			assert.equal(answer, "0");
+	describe('initial deploy', function() {
+		it('deployed', async function() {
+			assert.notEqual(ExoticPositionalMarket.address, ZERO_ADDRESS);
 		});
 	});
 	
@@ -73,13 +70,12 @@ contract('Exotic Positional market', async accounts => {
 			marketMaturity = "200";
 			fixedTicketPrice = "10";
 			withdrawalFeePercentage = "5";
-			tag = ["1","2","3"];
+			tag = [1,2,3];
 			paymentToken = Thales.address;
-			phrase1 = "Real Madrid";
-			phrase2 = "FC Barcelona";
-			phrase3 = "It will be a draw";
+			phrases = ["Real Madrid", "FC Barcelona", "It will be a draw"];
+			
 
-			answer = await ExoticPositionalMarketManager.createExoticMarketThree(
+			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				endOfPositioning,
 				marketMaturity,
@@ -87,9 +83,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalFeePercentage,
 				tag,
 				paymentToken,
-				phrase1,
-				phrase2,
-				phrase3,
+				phrases,
 				{from: owner}
 			);
 			
@@ -123,6 +117,15 @@ contract('Exotic Positional market', async accounts => {
 			assert.equal(answer, false);
 		});
 		
+		it('tags match', async function() {
+			answer = await deployedMarket.getTagCount();
+			assert.equal(answer.toString(), tag.length.toString());
+			for(let i=0; i<tag.length; i++) {
+				answer = await deployedMarket.tag(i.toString());
+				assert.equal(answer.toString(), tag[i].toString());
+			}
+		});
+		
 		it('userOne takes position', async function() {
 			answer = await Thales.increaseAllowance(deployedMarket.address, toUnit("100"), {from: userOne});
 			answer = await deployedMarket.takeAPosition("1", {from: userOne});
@@ -134,7 +137,7 @@ contract('Exotic Positional market', async accounts => {
 			
 			answer = await deployedMarket.getTicketHolderPositionPhrase(userOne);
 			console.log("Position phrase: ", answer.toString());
-			assert.equal(answer.toString(), phrase1);
+			assert.equal(answer.toString(), phrases[0]);
 
 		});
 	});

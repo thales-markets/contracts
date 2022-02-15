@@ -45,25 +45,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
 
 
-
-    // Create Exotic market with 2 phrase options
-    function createExoticMarket(
-        address _creatorAddress,
-        string memory _marketQuestion, 
-        uint _endOfPositioning,
-        uint _marketMaturity,
-        uint _fixedTicketPrice,
-        uint _withdrawalFeePercentage,
-        uint[] memory _tag,
-        address _paymentToken,
-        string memory _phrase1,
-        string memory _phrase2
-    ) external checkMarketRequirements(_endOfPositioning, _marketMaturity) {
-        
-    }   
-
     // Create Exotic market with 3 phrase options
-    function createExoticMarketThree(
+    function createExoticMarket(
         string memory _marketQuestion, 
         uint _endOfPositioning,
         uint _marketMaturity,
@@ -71,15 +54,13 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         uint _withdrawalFeePercentage,
         uint[] memory _tag,
         address _paymentToken,
-        string memory _phrase1,
-        string memory _phrase2,
-        string memory _phrase3
+        string[] memory _phrases
     ) external checkMarketRequirements(_endOfPositioning, _marketMaturity) {
         ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(
             Clones.clone(exoticMarketMastercopy)
         );
 
-        exoticMarket.initializeWithThreeParameters(
+        exoticMarket.initialize(
             msg.sender,
             _marketQuestion, 
             _endOfPositioning, 
@@ -88,9 +69,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             _withdrawalFeePercentage, 
             _tag, 
             _paymentToken, 
-            _phrase1, 
-            _phrase2, 
-            _phrase3);
+            _phrases 
+            );
 
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);

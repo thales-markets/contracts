@@ -65,7 +65,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         address _creatorAddress,
         string memory _marketQuestion,
         uint _endOfPositioning,
-        uint _marketMaturity,
         uint _fixedTicketPrice,
         uint _withdrawalFeePercentage,
         uint[] memory _tag,
@@ -81,7 +80,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
             _creatorAddress,
             _marketQuestion,
             _endOfPositioning,
-            _marketMaturity,
             _fixedTicketPrice,
             _withdrawalFeePercentage,
             _tag,
@@ -191,7 +189,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     }
 
     function canMarketBeResolved() public view returns (bool) {
-        return block.timestamp >= creationTime.add(marketMaturity) && creationTime > 0 && (!disputed) && !resolved;
+        return block.timestamp >= creationTime.add(endOfPositioning) && creationTime > 0 && (!disputed) && !resolved;
     }
 
     function canMarketBeFinished() public view returns (bool) {
@@ -280,7 +278,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         address _creatorAddress,
         string memory _marketQuestion,
         uint _endOfPositioning,
-        uint _marketMaturity,
         uint _fixedTicketPrice,
         uint _withdrawalFeePercentage,
         uint[] memory _tag,
@@ -292,7 +289,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         creationTime = block.timestamp;
         marketQuestion = _marketQuestion;
         endOfPositioning = _endOfPositioning;
-        marketMaturity = _marketMaturity;
         paymentToken = IERC20(_paymentToken);
         // Ticket Type can be determined based on ticket price
         ticketType = _fixedTicketPrice > 0 ? TicketType.FIXED_TICKET_PRICE : TicketType.FLEXIBLE_BID;

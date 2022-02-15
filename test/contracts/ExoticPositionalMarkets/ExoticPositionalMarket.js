@@ -32,7 +32,6 @@ let minimumMarketMaturityDuration = 0;
 
 let marketQuestion,
 	endOfPositioning,
-	marketMaturity,
 	fixedTicketPrice,
 	withdrawalFeePercentage,
 	tag,
@@ -51,7 +50,6 @@ contract('Exotic Positional market', async accounts => {
 		await ExoticPositionalMarketManager.initialize(
 			manager,
 			minimumPositioningDuration,
-			minimumMarketMaturityDuration,
 			ExoticPositionalMarket.address,
 			{from: manager}
 		);
@@ -70,7 +68,6 @@ contract('Exotic Positional market', async accounts => {
 		beforeEach(async () => {
 			marketQuestion = "Who will win the el clasico which will be played on 2022-02-22?";
 			endOfPositioning = "100";
-			marketMaturity = "200";
 			fixedTicketPrice = "10";
 			withdrawalFeePercentage = "5";
 			tag = [1,2,3];
@@ -81,7 +78,6 @@ contract('Exotic Positional market', async accounts => {
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				endOfPositioning,
-				marketMaturity,
 				fixedTicketPrice,
 				withdrawalFeePercentage,
 				tag,
@@ -104,8 +100,6 @@ contract('Exotic Positional market', async accounts => {
 			assert.equal(answer, true);
 			answer = await deployedMarket.endOfPositioning();
 			assert.equal(answer.toString(),endOfPositioning);
-			answer = await deployedMarket.marketMaturity();
-			assert.equal(answer.toString(), marketMaturity);
 		});
 		
 		it('can position', async function() {

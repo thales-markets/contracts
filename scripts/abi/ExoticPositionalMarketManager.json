@@ -187,11 +187,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_marketMaturity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_fixedTicketPrice",
         "type": "uint256"
       },
@@ -292,11 +287,6 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "_minimumMarketMaturityDuration",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
         "name": "_exoticMarketMastercopy",
         "type": "address"
@@ -340,19 +330,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "minimumMarketMaturityDuration",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -476,19 +453,6 @@
       }
     ],
     "name": "setExoticMarketMastercopy",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_duration",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMinimumMarketMaturityDuration",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

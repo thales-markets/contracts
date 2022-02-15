@@ -469,11 +469,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_marketMaturity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_fixedTicketPrice",
         "type": "uint256"
       },

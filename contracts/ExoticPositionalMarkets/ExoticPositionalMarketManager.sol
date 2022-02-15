@@ -21,7 +21,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     using SafeMathUpgradeable for uint;
 
     uint public minimumPositioningDuration;
-    uint public minimumMarketMaturityDuration;
 
     address public exoticMarketMastercopy;
     address public oracleCouncilAddress;
@@ -34,13 +33,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     function initialize(
         address _owner,
         uint _minimumPositioningDuration,
-        uint _minimumMarketMaturityDuration,
         address _exoticMarketMastercopy
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
         minimumPositioningDuration = _minimumPositioningDuration;
-        minimumMarketMaturityDuration = _minimumMarketMaturityDuration;
         exoticMarketMastercopy = _exoticMarketMastercopy;
     }
 
@@ -50,13 +47,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     function createExoticMarket(
         string memory _marketQuestion, 
         uint _endOfPositioning,
-        uint _marketMaturity,
         uint _fixedTicketPrice,
         uint _withdrawalFeePercentage,
         uint[] memory _tag,
         address _paymentToken,
         string[] memory _phrases
-     ) external checkMarketRequirements(_endOfPositioning, _marketMaturity) {
+     ) external checkMarketRequirements(_endOfPositioning) {
         ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(
             Clones.clone(exoticMarketMastercopy)
         );
@@ -65,7 +61,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             msg.sender,
             _marketQuestion, 
             _endOfPositioning, 
-            _marketMaturity, 
             _fixedTicketPrice, 
             _withdrawalFeePercentage, 
             _tag, 
@@ -117,12 +112,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         minimumPositioningDuration = _duration;
         emit MinimumPositionDurationChanged(_duration);
     }
-    
-    function setMinimumMarketMaturityDuration(uint _duration) external onlyOwner {
-        minimumMarketMaturityDuration = _duration;
-        emit MinimumMarketMaturityDurationChanged(_duration);
-    }
-    
+  
     function setOracleCouncilAddress(address _councilAddress) external onlyOwner {
         require(_councilAddress != address(0), "Invalid address");
         oracleCouncilAddress = _councilAddress;
@@ -135,7 +125,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         activeMarkets[numOfActiveMarkets] = address(0);
     }
 
-    modifier checkMarketRequirements(uint _endOfPositioning, uint _marketMaturity) {
+    modifier checkMarketRequirements(uint _endOfPositioning) {
         require(exoticMarketMastercopy != address(0), "No ExoticMarket mastercopy present. Please update the mastercopy");
         // require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "Posiitioning period too low. Increase the endOfPositioning");
         // require(_marketMaturity >= block.timestamp.add(minimumMarketMaturityDuration), "Market Maturity period too low. Increase the maturityDuration");

@@ -24,6 +24,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint public minimumMarketMaturityDuration;
 
     address public exoticMarketMastercopy;
+    address public oracleCouncilAddress;
 
     mapping (uint => address) public activeMarkets;
     uint public numOfActiveMarkets;
@@ -55,7 +56,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         uint[] memory _tag,
         address _paymentToken,
         string[] memory _phrases
-    ) external checkMarketRequirements(_endOfPositioning, _marketMaturity) {
+     ) external checkMarketRequirements(_endOfPositioning, _marketMaturity) {
         ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(
             Clones.clone(exoticMarketMastercopy)
         );
@@ -69,7 +70,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             _withdrawalFeePercentage, 
             _tag, 
             _paymentToken, 
-            _phrases 
+            _phrases,
+            oracleCouncilAddress
             );
 
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
@@ -115,9 +117,16 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         minimumPositioningDuration = _duration;
         emit MinimumPositionDurationChanged(_duration);
     }
+    
     function setMinimumMarketMaturityDuration(uint _duration) external onlyOwner {
         minimumMarketMaturityDuration = _duration;
         emit MinimumMarketMaturityDurationChanged(_duration);
+    }
+    
+    function setOracleCouncilAddress(address _councilAddress) external onlyOwner {
+        require(_councilAddress != address(0), "Invalid address");
+        oracleCouncilAddress = _councilAddress;
+        emit NewOracleCouncilAddress(_councilAddress);
     }
 
     function removeActiveMarket(address _marketAddress) internal {
@@ -138,4 +147,5 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event ExoticMarketMastercopyChanged(address _exoticMastercopy);
     event MarketCreated(address marketAddress, string marketQuestion, address marketOwner);
     event MarketResolved(address marketAddress);
+    event NewOracleCouncilAddress(address oracleCouncilAddress);
 }

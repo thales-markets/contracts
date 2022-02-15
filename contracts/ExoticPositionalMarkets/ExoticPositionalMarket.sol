@@ -21,13 +21,15 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     //     uint amount;
     // }
 
-    enum TicketType{ FIXED_TICKET_PRICE, FLEXIBLE_BID }
-    uint constant HUNDRED = 100;
+    enum TicketType {FIXED_TICKET_PRICE, FLEXIBLE_BID}
 
-    uint constant ONE_PERCENT = 1e16;
-    uint constant HUNDRED_PERCENT = 1e18;
-    uint constant safeBoxPercentage = 1;
-    uint constant creatorPercentage = 1;
+    uint private constant HUNDRED = 100;
+    uint private constant ONE_PERCENT = 1e16;
+    uint private constant HUNDRED_PERCENT = 1e18;
+    uint private constant FIXED_BOND_AMOUNT = 100 * 1e18;
+    uint public constant safeBoxPercentage = 1;
+    uint public constant creatorPercentage = 1;
+    uint public constant resolverPercentage = 1;
 
     uint public creationTime;
     bool public disputed;
@@ -47,34 +49,37 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     uint[] public tag;
     IERC20 public paymentToken;
     address public creatorAddress;
-    
+    address public councilAddress;
+    address public resolverAddress;
+
     //stats
     uint public totalTicketHolders;
     mapping(uint => uint) public ticketsPerPosition;
     mapping(address => uint) public ticketHolder;
     bool public resolved;
+    bool public finalized;
     uint public winningPosition;
-    uint public claimableTickets;
-    
+    uint public claimableTicketsCount;
 
-
-   function initialize(
+    function initialize(
         address _creatorAddress,
-        string memory _marketQuestion, 
+        string memory _marketQuestion,
         uint _endOfPositioning,
         uint _marketMaturity,
         uint _fixedTicketPrice,
         uint _withdrawalFeePercentage,
         uint[] memory _tag,
         address _paymentToken,
-        string[] memory _phrases
+        string[] memory _phrases,
+        address _councilAddress
     ) external initializer {
-        setOwner(msg.sender);
         require(_phrases.length >= 2 && _phrases.length <= 5, "Invalid number of provided positions");
+        setOwner(msg.sender);
+        setOracleCouncilAddress(_councilAddress);
 
         _initializeWithTwoParameters(
             _creatorAddress,
-            _marketQuestion, 
+            _marketQuestion,
             _endOfPositioning,
             _marketMaturity,
             _fixedTicketPrice,
@@ -84,81 +89,85 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
             _phrases[0],
             _phrases[1]
         );
-        if(_phrases.length > 2) {
-            for(uint i=2; i<_phrases.length; i++) {
+        if (_phrases.length > 2) {
+            for (uint i = 2; i < _phrases.length; i++) {
                 _addPosition(_phrases[i]);
             }
         }
+    }
+
+    function setOracleCouncilAddress(address _councilAddress) public onlyOwner {
+        require(_councilAddress != address(0), "Invalid council address");
+        councilAddress = _councilAddress;
     }
 
     // market resolved only through the Manager
     function resolveMarket(uint _outcomePosition) external onlyOwner{
         require(canMarketBeResolved(), "Market can not be resolved. It is disputed/not matured/resolved");
         require(_outcomePosition < positionCount, "Outcome position exeeds the position");
-        if(ticketType == TicketType.FIXED_TICKET_PRICE) {
-            // _resolveFixedPrice(_outcomePosition);
-            winningPosition = _outcomePosition;
-            claimableTickets = ticketsPerPosition[_outcomePosition];
-            resolved = true;
+        if (msg.sender != creatorAddress) {
+            require(
+                paymentToken.allowance(msg.sender, address(this)) >= FIXED_BOND_AMOUNT,
+                "No allowance. Please adjust the allowance for fixed bond"
+            );
+            paymentToken.transferFrom(msg.sender, address(this), FIXED_BOND_AMOUNT);
         }
-        else{
+        if (ticketType == TicketType.FIXED_TICKET_PRICE) {
+            winningPosition = _outcomePosition;
+            claimableTicketsCount = ticketsPerPosition[_outcomePosition];
+            resolved = true;
+            resolverAddress = msg.sender;
+            emit MarketResolved(_outcomePosition, msg.sender);
+        } else {
             // _resolveFlexibleBid(_outcomePosition);
         }
-
     }
-
-    // to be used within the Manager
-    function chooseDefaultPosition(uint _position, address account) external onlyOwner{
-        require(_position > 0, "Position can not be zero. Non-zero position expected");
-        require(_position <= positionCount, "Position exceeds number of positions");
-        require(block.timestamp <= creationTime.add(endOfPositioning), "Positioning time finished");
-    }
-
 
     function takeAPosition(uint _position) external {
         require(_position > 0, "Position can not be zero. Non-zero position expected");
         require(_position <= positionCount, "Position exceeds number of positions");
-        require(canUsersPlacePosition(), "Positioning time finished");
-        if(ticketType == TicketType.FIXED_TICKET_PRICE) {
-            if(getTicketHolderPosition(msg.sender) == 0) {
-                require(paymentToken.allowance(msg.sender, address(this)) >=  fixedTicketPrice, "No allowance. Please approve ticket price allowance");
+        require(canUsersPlacePosition(), "Not able to position. Positioning time finished or market resolved");
+        if (ticketType == TicketType.FIXED_TICKET_PRICE) {
+            if (getTicketHolderPosition(msg.sender) == 0) {
+                require(
+                    paymentToken.allowance(msg.sender, address(this)) >= fixedTicketPrice,
+                    "No allowance. Please approve ticket price allowance"
+                );
                 paymentToken.transferFrom(msg.sender, address(this), fixedTicketPrice);
                 totalTicketHolders = totalTicketHolders.add(1);
-            }
-            else {
-                ticketsPerPosition[getTicketHolderPosition(msg.sender)] = ticketsPerPosition[getTicketHolderPosition(msg.sender)].sub(1);
+            } else {
+                ticketsPerPosition[getTicketHolderPosition(msg.sender)] = ticketsPerPosition[
+                    getTicketHolderPosition(msg.sender)
+                ]
+                    .sub(1);
             }
             ticketsPerPosition[_position] = ticketsPerPosition[_position].add(1);
             ticketHolder[msg.sender] = _position;
-        }
-        else{
+        } else {
             // _resolveFlexibleBid(_outcomePosition);
         }
     }
-    
+
     function claimWinningTicket() external {
-        require(resolved, "Market not resolved");
-        if(ticketType == TicketType.FIXED_TICKET_PRICE) {
+        require(finalized, "Market not finalized");
+        if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             uint amount = getTicketHolderClaimableAmount(msg.sender);
-            if(amount > 0) {
-                claimableTickets = claimableTickets.sub(1);
+            if (amount > 0) {
+                claimableTicketsCount = claimableTicketsCount.sub(1);
                 paymentToken.transfer(msg.sender, amount);
                 emit WinningTicketClaimed(msg.sender, amount);
             }
-            
-        }
-        else{
+        } else {
             // _resolveFlexibleBid(_outcomePosition);
         }
     }
-    
+
     function claimToSafeBox(address _safeBox) external onlyOwner {
         require(resolved, "Market not resolved");
-        if(ticketType == TicketType.FIXED_TICKET_PRICE) {
-           paymentToken.transfer(_safeBox, getSafeBoxAmount());
-           emit TransferredToSafeBox(_safeBox, getSafeBoxAmount());
-        }
-        else{
+        if (ticketType == TicketType.FIXED_TICKET_PRICE) {
+            paymentToken.transfer(_safeBox, getSafeBoxAmount());
+            emit TransferredToSafeBox(_safeBox, getSafeBoxAmount());
+        } else {
             // _resolveFlexibleBid(_outcomePosition);
         }
     }
@@ -171,18 +180,24 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         disputed = true;
         emit MarketDisputed(true);
     }
+
     // VIEWS
     function isMarketCreated() public view returns (bool) {
         return creationTime > 0;
     }
 
-    function canMarketBeResolved() public view returns (bool) {
-        return block.timestamp >= creationTime.add(marketMaturity) && creationTime > 0 && (!disputed) && !resolved;
-    }
     function canUsersPlacePosition() public view returns (bool) {
         return block.timestamp <= creationTime.add(endOfPositioning) && creationTime > 0 && !resolved;
     }
-    
+
+    function canMarketBeResolved() public view returns (bool) {
+        return block.timestamp >= creationTime.add(marketMaturity) && creationTime > 0 && (!disputed) && !resolved;
+    }
+
+    function canMarketBeFinished() public view returns (bool) {
+        return resolved && (!disputed);
+    }
+
     function getPositionPhrase(uint index) public view returns (string memory) {
         return (index <= positionCount && index > 0) ? positionPhrase[index] : string("");
     }
@@ -190,71 +205,80 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     function getTicketHolderPosition(address _account) public view returns (uint) {
         return ticketHolder[_account];
     }
+
     function getTicketHolderPositionPhrase(address _account) public view returns (string memory) {
         return (ticketHolder[_account] > 0) ? positionPhrase[ticketHolder[_account]] : string("");
     }
-    
-    function getTicketHolderClaimableAmount(address _account) public view returns (uint) {
-        uint amount = 0;
-        amount = ticketHolder[_account] == winningPosition ? getWinningAmountPerTicket() : 0;
-        if(_account == creatorAddress) {
-            amount = amount.add(getAdditionalCreatorAmount());
-        }
-        return amount;
-    }
-    
+
     function getWinningAmountPerTicket() public view returns (uint) {
-        if(totalTicketHolders == 0) {
+        if (totalTicketHolders == 0) {
             return 0;
         }
-        else {
+        if ((finalized || resolved) && winningPosition == 0) {
+            return fixedTicketPrice;
+        } else {
             return getTotalClaimableAmount().div(ticketsPerPosition[winningPosition]);
         }
     }
 
-    function applyDeduction(uint value) internal pure returns (uint) {
-        return (value).mul(HUNDRED.sub(safeBoxPercentage.add(creatorPercentage))).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
+    function getTicketHolderClaimableAmount(address _account) public view returns (uint) {
+        uint amount = 0;
+        amount = (ticketHolder[_account] > 0 && (ticketHolder[_account] == winningPosition || winningPosition == 0))
+            ? getWinningAmountPerTicket()
+            : 0;
+        if (_account == creatorAddress) {
+            amount = amount.add(getAdditionalCreatorAmount());
+        }
+        if (_account == resolverAddress) {
+            amount = amount.add(getAdditionalResolverAmount());
+        }
+        return amount;
     }
-    
+
     function getAlreadyClaimedTickets() public view returns (uint) {
-        return resolved ? ticketsPerPosition[winningPosition].sub(claimableTickets) : 0;
+        return finalized ? ticketsPerPosition[winningPosition].sub(claimableTicketsCount) : 0;
     }
 
     function getTotalPlacedAmount() public view returns (uint) {
         return fixedTicketPrice.mul(totalTicketHolders);
     }
 
+    function applyDeduction(uint value) internal pure returns (uint) {
+        return
+            (value).mul(HUNDRED.sub(safeBoxPercentage.add(creatorPercentage).add(resolverPercentage))).mul(ONE_PERCENT).div(
+                HUNDRED_PERCENT
+            );
+    }
+
     function getTotalClaimableAmount() public view returns (uint) {
-        if(totalTicketHolders == 0) {
+        if (totalTicketHolders == 0) {
             return 0;
-        }
-        else {
+        } else {
             return applyDeduction(getTotalPlacedAmount());
         }
     }
-    
+
     function getTagCount() public view returns (uint) {
         return tag.length;
     }
-    
+
     function getAdditionalCreatorAmount() internal view returns (uint) {
         return getTotalPlacedAmount().mul(creatorPercentage).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
     }
-    
+
+    function getAdditionalResolverAmount() internal view returns (uint) {
+        return getTotalPlacedAmount().mul(resolverPercentage).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
+    }
+
     function getSafeBoxAmount() internal view returns (uint) {
         return getTotalPlacedAmount().sub(getAdditionalCreatorAmount()).sub(getTotalClaimableAmount());
     }
-    
-    
-    
 
-
-    
     // INTERNAL FUNCTIONS
 
     function _initializeWithTwoParameters(
         address _creatorAddress,
-        string memory _marketQuestion, 
+        string memory _marketQuestion,
         uint _endOfPositioning,
         uint _marketMaturity,
         uint _fixedTicketPrice,
@@ -267,8 +291,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         creatorAddress = _creatorAddress;
         creationTime = block.timestamp;
         marketQuestion = _marketQuestion;
-        endOfPositioning = block.timestamp.add(_endOfPositioning);
-        marketMaturity = block.timestamp.add(_marketMaturity);
+        endOfPositioning = _endOfPositioning;
+        marketMaturity = _marketMaturity;
         paymentToken = IERC20(_paymentToken);
         // Ticket Type can be determined based on ticket price
         ticketType = _fixedTicketPrice > 0 ? TicketType.FIXED_TICKET_PRICE : TicketType.FLEXIBLE_BID;
@@ -282,16 +306,15 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         _addPosition(_phrase2);
     }
 
-
     function _addPosition(string memory _position) internal {
         // require(_position != "" || _position != " ", "Invalid phrase. Please assign non-zero position");
         positionCount = positionCount.add(1);
         positionPhrase[positionCount] = _position;
     }
- 
-    event MarketDisputed(bool _disputed);
-    event MarketCreated(uint _creationTime, uint positionCount, bytes32 phrase);
+
+    event MarketDisputed(bool disputed);
+    event MarketCreated(uint creationTime, uint positionCount, bytes32 phrase);
+    event MarketResolved(uint winningPosition, address resolverAddress);
     event WinningTicketClaimed(address account, uint amount);
     event TransferredToSafeBox(address account, uint amount);
-
 }

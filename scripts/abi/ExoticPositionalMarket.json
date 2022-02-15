@@ -5,7 +5,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_creationTime",
+        "name": "creationTime",
         "type": "uint256"
       },
       {
@@ -30,11 +30,30 @@
       {
         "indexed": false,
         "internalType": "bool",
-        "name": "_disputed",
+        "name": "disputed",
         "type": "bool"
       }
     ],
     "name": "MarketDisputed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "winningPosition",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "resolverAddress",
+        "type": "address"
+      }
+    ],
+    "name": "MarketResolved",
     "type": "event"
   },
   {
@@ -116,6 +135,19 @@
   },
   {
     "inputs": [],
+    "name": "canMarketBeFinished",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "canMarketBeResolved",
     "outputs": [
       {
@@ -143,24 +175,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_position",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "chooseDefaultPosition",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_safeBox",
         "type": "address"
@@ -180,12 +194,25 @@
   },
   {
     "inputs": [],
-    "name": "claimableTickets",
+    "name": "claimableTicketsCount",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "councilAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -219,6 +246,19 @@
   },
   {
     "inputs": [],
+    "name": "creatorPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "disputed",
     "outputs": [
       {
@@ -238,6 +278,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "finalized",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -443,6 +496,11 @@
         "internalType": "string[]",
         "name": "_phrases",
         "type": "string[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_councilAddress",
+        "type": "address"
       }
     ],
     "name": "initialize",
@@ -623,6 +681,58 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "resolverAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "resolverPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "safeBoxPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_councilAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setOracleCouncilAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

@@ -20,9 +20,11 @@ const MAX_NUMBER = '115792089237316195423570985008687907853269984665640564039457
 
 const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalMarket');
 const ExoticPositionalMarketManagerContract = artifacts.require('ExoticPositionalMarketManager');
+const ThalesOracleCouncilContract = artifacts.require('ThalesOracleCouncil');
 const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 let ExoticPositionalMarket;
 let ExoticPositionalMarketManager;
+let ThalesOracleCouncil;
 let Thales;
 let answer;
 let minimumPositioningDuration = 0;
@@ -44,6 +46,7 @@ contract('Exotic Positional market', async accounts => {
 	beforeEach(async () => {
 		ExoticPositionalMarket = await ExoticPositionalMarketContract.new();
 		ExoticPositionalMarketManager = await ExoticPositionalMarketManagerContract.new();
+		ThalesOracleCouncil = await ThalesOracleCouncilContract.new();
 		Thales = await ThalesContract.new({from:owner});
 		await ExoticPositionalMarketManager.initialize(
 			manager,
@@ -52,7 +55,7 @@ contract('Exotic Positional market', async accounts => {
 			ExoticPositionalMarket.address,
 			{from: manager}
 		);
-
+		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
 		await Thales.transfer(userOne, toUnit("1000"), {from: owner});
 		await Thales.transfer(userTwo, toUnit("1000"), {from: owner});
 	});
@@ -99,12 +102,10 @@ contract('Exotic Positional market', async accounts => {
 			answer = await ExoticPositionalMarketManager.isActiveMarket(deployedMarket.address);
 			console.log("Market address: ", deployedMarket.address);
 			assert.equal(answer, true);
-			answer = await deployedMarket.creationTime();
-			let creationTime = parseInt(answer.toString());
 			answer = await deployedMarket.endOfPositioning();
-			assert.equal(answer.toString(),creationTime + parseInt(endOfPositioning));
+			assert.equal(answer.toString(),endOfPositioning);
 			answer = await deployedMarket.marketMaturity();
-			assert.equal(answer.toString(), creationTime + parseInt(marketMaturity));
+			assert.equal(answer.toString(), marketMaturity);
 		});
 		
 		it('can position', async function() {

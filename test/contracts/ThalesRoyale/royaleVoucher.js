@@ -33,7 +33,7 @@ contract('ThalesRoyaleVoucher', accounts => {
 	let thales;
 	let ThalesRoyaleVoucher;
 	let ThalesRoyaleVoucherDeployed;
-	let voucher;		
+	let voucher;
 	const price = toUnit(30);
 	const priceUnder = toUnit(20);
 	const priceUpper = toUnit(200);
@@ -66,7 +66,7 @@ contract('ThalesRoyaleVoucher', accounts => {
 	describe('Thales royale voucher', () => {
 		it('Init checking', async () => {
 			assert.bnEqual(toUnit(30), await voucher.price());
-			assert.bnEqual("ThalesRoyaleVoucher", await voucher.name());
+			assert.bnEqual("Thales Royale Voucher", await voucher.name());
 			assert.bnEqual("TRV", await voucher.symbol());
 
 		});
@@ -86,6 +86,8 @@ contract('ThalesRoyaleVoucher', accounts => {
 
 			assert.equal(second, await voucher.ownerOf(id));
 
+			assert.bnEqual(price, await voucher.pricePaidForVoucher(id));
+
 		});
 
 		it('Burning voucher', async () => {
@@ -97,6 +99,7 @@ contract('ThalesRoyaleVoucher', accounts => {
 
 			assert.bnEqual(1, await voucher.balanceOf(first));
 			assert.equal(first, await voucher.ownerOf(id_1));
+			assert.bnEqual(price, await voucher.pricePaidForVoucher(id_1));
 
 			await voucher.safeTransferFrom(first, second, id_1);
 
@@ -110,14 +113,15 @@ contract('ThalesRoyaleVoucher', accounts => {
 
 			await ThalesDeployed.transfer(voucher.address, price, { from: owner });
 			await ThalesDeployed.approve(voucher.address, price, { from: owner });
-	
+
 			await ThalesDeployed.transfer(first, price, { from: owner });
 			await ThalesDeployed.approve(voucher.address, price, { from: first });
-	
+
 			await voucher.mint(second);
 
 			assert.bnEqual(1, await voucher.balanceOf(second));
 			assert.equal(second, await voucher.ownerOf(id_2));
+			assert.bnEqual(price, await voucher.pricePaidForVoucher(id_2));
 
 			await expect(voucher.burn(id_2, { from: first })).to.be.revertedWith('Must be owner or approver');
 			await voucher.approve(first, id_2, { from: second });

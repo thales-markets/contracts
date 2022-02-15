@@ -118,11 +118,11 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         _signUpPlayer(msg.sender, position);
     }
 
-    function signUpWithVoucher(uint256 voucherId) external playerCanSignUpWithVoucher(voucherId) {
+    function signUpWithVoucher(uint voucherId) external playerCanSignUpWithVoucher(voucherId) {
         _signUpPlayerWithVoucher(msg.sender, 0, voucherId);
     }
 
-    function signUpWithVoucherWithPosition(uint256 voucherId, uint position) external playerCanSignUpWithVoucher(voucherId) {
+    function signUpWithVoucherWithPosition(uint voucherId, uint position) external playerCanSignUpWithVoucher(voucherId) {
         require(position == DOWN || position == UP, "Position can only be 1 or 2");
         _signUpPlayerWithVoucher(msg.sender, position, voucherId);
     }
@@ -312,7 +312,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
         _buyIn(_player, buyInAmount);
 
-        emit SignedUp(msg.sender, season);
+        emit SignedUp(_player, season);
     }
 
     function _signUpPlayerWithVoucher(address _player, uint _position, uint _voucherId) internal {
@@ -324,9 +324,9 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
             _putPosition(_player, season, 1, _position);
         }
         
-        _buyInWithVoucher(_player, _voucherId);
+        _buyInWithVoucher(_voucherId);
 
-        emit SignedUp(msg.sender, season);
+        emit SignedUp(_player, season);
     }
 
     function _putPosition(address _player, uint _season, uint _round, uint _position) internal {
@@ -361,7 +361,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         rewardPerSeason[season] += amountBuyIn;
     }
 
-    function _buyInWithVoucher(address _sender, uint256 _voucherId) internal {
+    function _buyInWithVoucher(uint _voucherId) internal {
         
         // burning voucher
         royaleVoucher.burnWithTransfer(_voucherId);
@@ -479,7 +479,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         _;
     }
 
-    modifier playerCanSignUpWithVoucher(uint256 vocherId) {
+    modifier playerCanSignUpWithVoucher(uint vocherId) {
         require(season > 0, "Initialize first season");
         require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
         require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");

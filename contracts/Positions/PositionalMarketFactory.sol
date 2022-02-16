@@ -10,10 +10,10 @@ import "./PositionalMarketFactory.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IPositionalMarket.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
-import "../utils/MinimalProxyFactory.sol";
+import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract PositionalMarketFactory is Initializable, ProxyOwned, MinimalProxyFactory {
+contract PositionalMarketFactory is Initializable, ProxyOwned {
     /* ========== STATE VARIABLES ========== */
     address public positionalMarketManager;
 
@@ -48,10 +48,10 @@ contract PositionalMarketFactory is Initializable, ProxyOwned, MinimalProxyFacto
 
         PositionalMarket pom =
             PositionalMarket(
-                _cloneAsMinimalProxy(positionalMarketMastercopy, "Could not create a Positional Market")
+                Clones.clone(positionalMarketMastercopy)
             );
-        Position up = Position(_cloneAsMinimalProxy(positionMastercopy, "Could not create a Position"));
-        Position down = Position(_cloneAsMinimalProxy(positionMastercopy, "Could not create a Position"));
+        Position up = Position(Clones.clone(positionMastercopy));
+        Position down = Position(Clones.clone(positionMastercopy));
         pom.initialize(
             PositionalMarket.PositionalMarketParameters(
                 positionalMarketManager,

@@ -1,5 +1,6 @@
 [
   {
+    "constant": false,
     "inputs": [
       {
         "internalType": "uint256",
@@ -9,10 +10,12 @@
     ],
     "name": "exchangeOpThalesToThales",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": false,
     "inputs": [
       {
         "internalType": "uint256",
@@ -22,10 +25,12 @@
     ],
     "name": "exchangeThalesToOpThales",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": false,
     "inputs": [
       {
         "internalType": "address",
@@ -35,10 +40,12 @@
     ],
     "name": "setOpThalesAddress",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": false,
     "inputs": [
       {
         "internalType": "address",
@@ -48,6 +55,7 @@
     ],
     "name": "setThalesAddress",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   }

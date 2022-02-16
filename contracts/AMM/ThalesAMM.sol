@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+pragma solidity ^0.5.16;
 
-import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "synthetix-2.50.4-ovm/contracts/interfaces/IERC20.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
+import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+
+import "../utils/proxy/ProxyReentrancyGuard.sol";
+import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/ProxyPausable.sol";
 
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IPositionalMarket.sol";

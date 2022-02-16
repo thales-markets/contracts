@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.5.16;
 
 // Clone of syntetix contract without constructor
 contract ProxyOwned {

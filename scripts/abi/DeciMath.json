@@ -1,5 +1,6 @@
 [
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -25,10 +26,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -44,10 +47,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -63,10 +68,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -82,10 +89,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -101,10 +110,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -120,10 +131,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -144,10 +157,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -168,10 +183,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -192,10 +209,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -216,10 +235,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -235,10 +256,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -254,10 +277,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -273,10 +298,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -297,10 +324,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -321,10 +350,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -345,10 +376,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -364,10 +397,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -388,10 +423,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -412,10 +449,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -436,52 +475,66 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "pure",
     "type": "function"
   },
   {
+    "constant": false,
     "inputs": [],
     "name": "setLUT1",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": false,
     "inputs": [],
     "name": "setLUT2",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": false,
     "inputs": [],
     "name": "setLUT3_1",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": false,
     "inputs": [],
     "name": "setLUT3_2",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": false,
     "inputs": [],
     "name": "setLUT3_3",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": false,
     "inputs": [],
     "name": "setLUT3_4",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -497,10 +550,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -516,10 +571,12 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [
       {
         "internalType": "uint256",
@@ -540,6 +597,7 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   }

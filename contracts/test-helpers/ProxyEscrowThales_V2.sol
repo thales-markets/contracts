@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.5.16;
 
-import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
+import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 
-import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../utils/proxy/ProxyReentrancyGuard.sol";
+import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/ProxyPausable.sol";
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 import "../interfaces/IEscrowThales.sol";
 import "../interfaces/IStakingThales.sol";
@@ -22,9 +22,9 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
     address public airdropContract;
 
     uint public constant NUM_PERIODS = 10;
-    uint public override totalEscrowedRewards;
-    uint public override totalEscrowBalanceNotIncludedInStaking;
-    uint public override currentVestingPeriod;
+    uint public totalEscrowedRewards;
+    uint public totalEscrowBalanceNotIncludedInStaking;
+    uint public currentVestingPeriod;
 
     uint private _totalVested;
 
@@ -34,7 +34,7 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
     }
 
     mapping(address => VestingEntry[NUM_PERIODS]) public vestingEntries;
-    mapping(address => uint) public override totalAccountEscrowedAmount;
+    mapping(address => uint) public totalAccountEscrowedAmount;
 
     mapping(address => uint) public lastPeriodAddedReward;
 
@@ -54,17 +54,17 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
         vestingToken = IERC20(_vestingToken);
     }
 
-    function getStakerPeriod(address account, uint index) external view override returns (uint) {
+    function getStakerPeriod(address account, uint index) external view returns (uint) {
         require(account != address(0), "Invalid account address");
         return vestingEntries[account][index].vesting_period;
     }
 
-    function getStakerAmounts(address account, uint index) external view override returns (uint) {
+    function getStakerAmounts(address account, uint index) external view returns (uint) {
         require(account != address(0), "Invalid account address");
         return vestingEntries[account][index].amount;
     }
 
-    function getStakedEscrowedBalanceForRewards(address account) external view override returns (uint) {
+    function getStakedEscrowedBalanceForRewards(address account) external view returns (uint) {
         if (lastPeriodAddedReward[account] == currentVestingPeriod) {
             return
                 totalAccountEscrowedAmount[account].sub(
@@ -83,13 +83,13 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
         _contractVersion = version;
     }
 
-    function claimable(address account) external view override returns (uint) {
+    function claimable(address account) external view returns (uint) {
         require(account != address(0), "Invalid address");
         return totalAccountEscrowedAmount[account].sub(_getVestingNotAvailable(account));
     }
     
 
-    function addToEscrow(address account, uint amount) external override {
+    function addToEscrow(address account, uint amount) external {
         require(account != address(0), "Invalid address");
         require(amount > 0, "Amount is 0");
         require(
@@ -118,7 +118,7 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
         emit AddedToEscrow(account, amount);
     }
 
-    function vest(uint amount) external override nonReentrant notPaused returns (bool) {
+    function vest(uint amount) external nonReentrant notPaused returns (bool) {
         require(amount > 0, "Claimed amount is 0");
         require(currentVestingPeriod > NUM_PERIODS, "Vesting rewards still not available");
 
@@ -140,17 +140,17 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
         return true;
     }
 
-    function addTotalEscrowBalanceNotIncludedInStaking(uint amount) external override {
+    function addTotalEscrowBalanceNotIncludedInStaking(uint amount) external {
         require(msg.sender == address(iStakingThales), "Can only be called from staking contract");
         totalEscrowBalanceNotIncludedInStaking = totalEscrowBalanceNotIncludedInStaking.add(amount);
     }
 
-    function subtractTotalEscrowBalanceNotIncludedInStaking(uint amount) external override {
+    function subtractTotalEscrowBalanceNotIncludedInStaking(uint amount) external {
         require(msg.sender == address(iStakingThales), "Can only be called from staking contract");
         totalEscrowBalanceNotIncludedInStaking = totalEscrowBalanceNotIncludedInStaking.sub(amount);
     }
 
-    function updateCurrentPeriod() external override returns (bool) {
+    function updateCurrentPeriod() external returns (bool) {
         if (!testMode) {
             require(msg.sender == address(iStakingThales), "Can only be called from staking contract");
         }

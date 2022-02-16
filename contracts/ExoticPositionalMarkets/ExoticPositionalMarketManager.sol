@@ -28,7 +28,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     mapping (uint => address) public activeMarkets;
     uint public numOfActiveMarkets;
 
-    mapping(address => address) public marketOwner;
 
     function initialize(
         address _owner,
@@ -71,15 +70,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
-        marketOwner[address(exoticMarket)] = msg.sender;
         emit MarketCreated(address(exoticMarket), _marketQuestion, msg.sender);
     }
 
     function resolveMarket(address _marketAddress, uint _outcomePosition) external {
         require(isActiveMarket(_marketAddress), "Market is not active");
-        require(marketOwner[_marketAddress] == msg.sender, "Invalid market owner. Market owner mismatch");
+        // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
         
-        ExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition);
+        ExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, msg.sender);
         removeActiveMarket(_marketAddress);
         emit MarketResolved(_marketAddress);
     }

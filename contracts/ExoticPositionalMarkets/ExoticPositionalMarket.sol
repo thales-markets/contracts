@@ -100,22 +100,22 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     }
 
     // market resolved only through the Manager
-    function resolveMarket(uint _outcomePosition) external onlyOwner{
+    function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner{
         require(canMarketBeResolved(), "Market can not be resolved. It is disputed/not matured/resolved");
         require(_outcomePosition < positionCount, "Outcome position exeeds the position");
-        if (msg.sender != creatorAddress) {
+        if (_resolverAddress != creatorAddress) {
             require(
-                paymentToken.allowance(msg.sender, address(this)) >= FIXED_BOND_AMOUNT,
+                paymentToken.allowance(_resolverAddress, address(this)) >= FIXED_BOND_AMOUNT,
                 "No allowance. Please adjust the allowance for fixed bond"
             );
-            paymentToken.transferFrom(msg.sender, address(this), FIXED_BOND_AMOUNT);
+            paymentToken.transferFrom(_resolverAddress, address(this), FIXED_BOND_AMOUNT);
         }
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             winningPosition = _outcomePosition;
             claimableTicketsCount = ticketsPerPosition[_outcomePosition];
             resolved = true;
-            resolverAddress = msg.sender;
-            emit MarketResolved(_outcomePosition, msg.sender);
+            resolverAddress = _resolverAddress;
+            emit MarketResolved(_outcomePosition, _resolverAddress);
         } else {
             // _resolveFlexibleBid(_outcomePosition);
         }
@@ -185,11 +185,11 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     }
 
     function canUsersPlacePosition() public view returns (bool) {
-        return block.timestamp <= creationTime.add(endOfPositioning) && creationTime > 0 && !resolved;
+        return block.timestamp <= endOfPositioning && creationTime > 0 && !resolved;
     }
 
     function canMarketBeResolved() public view returns (bool) {
-        return block.timestamp >= creationTime.add(endOfPositioning) && creationTime > 0 && (!disputed) && !resolved;
+        return block.timestamp >= endOfPositioning && creationTime > 0 && (!disputed) && !resolved;
     }
 
     function canMarketBeFinished() public view returns (bool) {

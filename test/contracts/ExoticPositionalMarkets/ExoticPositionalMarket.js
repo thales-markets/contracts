@@ -4,7 +4,7 @@ const { artifacts, contract, web3 } = require('hardhat');
 
 const { assert } = require('../../utils/common');
 
-const { currentTime, toUnit, bytesToString } = require('../../utils')();
+const { currentTime, toUnit, fastForward, bytesToString } = require('../../utils')();
 
 const {
 	onlyGivenAddressCanInvoke,
@@ -14,6 +14,11 @@ const {
 } = require('../../utils/helpers');
 
 const { expect } = require('chai');
+
+const SECOND = 1000;
+const DAY = 86400;
+const WEEK = 604800;
+const YEAR = 31556926;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const MAX_NUMBER = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
@@ -37,7 +42,8 @@ let marketQuestion,
 	tag,
 	paymentToken,
     phrases = [],
-	deployedMarket
+	deployedMarket,
+	outcomePosition
 
 contract('Exotic Positional market', async accounts => {
 	const [manager, owner, userOne, userTwo, dummyContractAddress] = accounts;
@@ -66,13 +72,15 @@ contract('Exotic Positional market', async accounts => {
 	
 	describe('create Exotic market', function() {
 		beforeEach(async () => {
+			const timestamp = await currentTime();
 			marketQuestion = "Who will win the el clasico which will be played on 2022-02-22?";
-			endOfPositioning = "100";
+			endOfPositioning = (timestamp+DAY).toString();
 			fixedTicketPrice = "10";
 			withdrawalFeePercentage = "5";
 			tag = [1,2,3];
 			paymentToken = Thales.address;
 			phrases = ["Real Madrid", "FC Barcelona", "It will be a draw"];
+			outcomePosition = "1";
 			
 
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
@@ -102,14 +110,24 @@ contract('Exotic Positional market', async accounts => {
 			assert.equal(answer.toString(),endOfPositioning);
 		});
 		
+		it('manager owner', async function() {
+			answer = await ExoticPositionalMarketManager.owner();
+			assert.equal(answer.toString(),manager);
+		});
+		
+		it('manager is the market owner', async function() {
+			answer = await deployedMarket.owner();
+			assert.equal(answer.toString(),ExoticPositionalMarketManager.address);
+		});
+		
+		it('creator address match', async function() {
+			answer = await deployedMarket.creatorAddress();
+			assert.equal(answer.toString(),owner);
+		});
+		
 		it('can position', async function() {
 			answer = await deployedMarket.canUsersPlacePosition();
 			assert.equal(answer, true);
-		});
-		
-		it('can not resolve', async function() {
-			answer = await deployedMarket.canMarketBeResolved();
-			assert.equal(answer, false);
 		});
 		
 		it('tags match', async function() {
@@ -121,19 +139,66 @@ contract('Exotic Positional market', async accounts => {
 			}
 		});
 		
-		it('userOne takes position', async function() {
-			answer = await Thales.increaseAllowance(deployedMarket.address, toUnit("100"), {from: userOne});
-			answer = await deployedMarket.takeAPosition("1", {from: userOne});
-			answer = await deployedMarket.totalTicketHolders();
-			assert.equal(answer, "1");
-			
-			answer = await deployedMarket.getTicketHolderPosition(userOne);
-			assert.equal(answer.toString(), "1");
-			
-			answer = await deployedMarket.getTicketHolderPositionPhrase(userOne);
-			console.log("Position phrase: ", answer.toString());
-			assert.equal(answer.toString(), phrases[0]);
+		it('can not resolve', async function() {
+			answer = await deployedMarket.canMarketBeResolved();
+			assert.equal(answer, false);
+		});
+		
+		it('can resolve', async function() {
+			await fastForward(DAY+SECOND); 
+			answer = await deployedMarket.canMarketBeResolved();
+			assert.equal(answer, true);
+		});
+		describe('position and resolve', function() {
+			beforeEach(async () => {
+				answer = await Thales.increaseAllowance(deployedMarket.address, toUnit("100"), {from: userOne});
+			});
 
+			describe('userOne takes position', async function() {
+				beforeEach(async () => {
+					answer = await deployedMarket.takeAPosition(outcomePosition, {from: userOne});
+				});
+				it('1 ticket holder', async function() {
+					answer = await deployedMarket.totalTicketHolders();
+					assert.equal(answer, outcomePosition);
+				});
+				it('ticket holder position match', async function() {
+					answer = await deployedMarket.getTicketHolderPosition(userOne);
+					assert.equal(answer.toString(), outcomePosition);
+				});
+				it('ticket holder position phrase match', async function() {
+					answer = await deployedMarket.getTicketHolderPositionPhrase(userOne);
+					// console.log("Position phrase: ", answer.toString());
+					assert.equal(answer.toString(), phrases[0]);
+				});
+				
+				describe('resolve with ticket holder result', async function() {
+					beforeEach(async () => {
+						await fastForward(DAY+SECOND);
+					});
+									
+					it('winning position is 0, not resolved', async function() {
+						answer = await deployedMarket.winningPosition();
+						assert.equal(answer, "0");
+					});
+					
+					it('market resolved', async function() {
+						answer = await ExoticPositionalMarketManager.resolveMarket(deployedMarket.address, "1", {from:owner});
+						answer = await deployedMarket.resolved();
+						assert.equal(answer, true);
+					});
+					
+					it('winning position match outcome position', async function() {
+						answer = await ExoticPositionalMarketManager.resolveMarket(deployedMarket.address, outcomePosition, {from:owner});
+						answer = await deployedMarket.winningPosition();
+						assert.equal(answer.toString(), outcomePosition);
+					});
+
+				});
+							
+				
+				
+			});
 		});
 	});
 

@@ -32,6 +32,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     uint public constant resolverPercentage = 1;
 
     uint public creationTime;
+    uint public resolvedTime;
+    uint public finalizedTime;
     bool public disputed;
     bool public outcomeUpdated;
 
@@ -99,28 +101,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         councilAddress = _councilAddress;
     }
 
-    // market resolved only through the Manager
-    function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner{
-        require(canMarketBeResolved(), "Market can not be resolved. It is disputed/not matured/resolved");
-        require(_outcomePosition < positionCount, "Outcome position exeeds the position");
-        if (_resolverAddress != creatorAddress) {
-            require(
-                paymentToken.allowance(_resolverAddress, address(this)) >= FIXED_BOND_AMOUNT,
-                "No allowance. Please adjust the allowance for fixed bond"
-            );
-            paymentToken.transferFrom(_resolverAddress, address(this), FIXED_BOND_AMOUNT);
-        }
-        if (ticketType == TicketType.FIXED_TICKET_PRICE) {
-            winningPosition = _outcomePosition;
-            claimableTicketsCount = ticketsPerPosition[_outcomePosition];
-            resolved = true;
-            resolverAddress = _resolverAddress;
-            emit MarketResolved(_outcomePosition, _resolverAddress);
-        } else {
-            // _resolveFlexibleBid(_outcomePosition);
-        }
-    }
-
     function takeAPosition(uint _position) external {
         require(_position > 0, "Position can not be zero. Non-zero position expected");
         require(_position <= positionCount, "Position exceeds number of positions");
@@ -141,6 +121,46 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
             }
             ticketsPerPosition[_position] = ticketsPerPosition[_position].add(1);
             ticketHolder[msg.sender] = _position;
+        } else {
+            // _resolveFlexibleBid(_outcomePosition);
+        }
+    }
+
+    // market resolved only through the Manager
+    function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner {
+        require(canMarketBeResolved(), "Market can not be resolved. It is disputed/not matured/resolved");
+        require(_outcomePosition < positionCount, "Outcome position exeeds the position");
+        if (_resolverAddress != creatorAddress) {
+            require(
+                paymentToken.allowance(_resolverAddress, address(this)) >= FIXED_BOND_AMOUNT,
+                "No allowance. Please adjust the allowance for fixed bond"
+            );
+            paymentToken.transferFrom(_resolverAddress, address(this), FIXED_BOND_AMOUNT);
+        }
+        if (ticketType == TicketType.FIXED_TICKET_PRICE) {
+            winningPosition = _outcomePosition;
+            claimableTicketsCount = ticketsPerPosition[_outcomePosition];
+            resolved = true;
+            resolvedTime = block.timestamp;
+            resolverAddress = _resolverAddress;
+            emit MarketResolved(_outcomePosition, _resolverAddress);
+        } else {
+            // _resolveFlexibleBid(_outcomePosition);
+        }
+    }
+    
+    // market resolved only through the Manager
+    function finalize(uint _outcomePosition) external onlyOwner {
+        require(canMarketBeFinalized(), "Market can not be finalized. It is disputed/not resolved");
+        require(_outcomePosition < positionCount, "Outcome position exeeds the position");
+        if (ticketType == TicketType.FIXED_TICKET_PRICE) {
+            if(_outcomePosition != winningPosition) {
+                winningPosition = _outcomePosition;
+                claimableTicketsCount = ticketsPerPosition[_outcomePosition];
+            }
+            finalized = true;
+            finalizedTime = block.timestamp;
+            emit MarketFinalized(_outcomePosition);
         } else {
             // _resolveFlexibleBid(_outcomePosition);
         }
@@ -192,7 +212,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
         return block.timestamp >= endOfPositioning && creationTime > 0 && (!disputed) && !resolved;
     }
 
-    function canMarketBeFinished() public view returns (bool) {
+    function canMarketBeFinalized() public view returns (bool) {
         return resolved && (!disputed);
     }
 
@@ -311,6 +331,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned {
     event MarketDisputed(bool disputed);
     event MarketCreated(uint creationTime, uint positionCount, bytes32 phrase);
     event MarketResolved(uint winningPosition, address resolverAddress);
+    event MarketFinalized(uint winningPosition);
     event WinningTicketClaimed(address account, uint amount);
     event TransferredToSafeBox(address account, uint amount);
 }

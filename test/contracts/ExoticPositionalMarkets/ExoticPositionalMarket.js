@@ -193,6 +193,22 @@ contract('Exotic Positional market', async accounts => {
 						answer = await deployedMarket.winningPosition();
 						assert.equal(answer.toString(), outcomePosition);
 					});
+					
+					describe('market finalization', async function() {
+						beforeEach(async () => {
+							answer = await ExoticPositionalMarketManager.resolveMarket(deployedMarket.address, outcomePosition, {from:owner});
+						});
+						it('market can be finalized', async function() {
+							answer = await deployedMarket.canMarketBeFinalized();
+							assert.equal(answer, true);
+						});
+						it('market finalized', async function() {
+							answer = await ExoticPositionalMarketManager.finalizeMarket(deployedMarket.address, outcomePosition, {from:owner});
+							answer = await deployedMarket.finalized();
+							assert.equal(answer, true);
+						});
+						
+					});
 
 				});
 							

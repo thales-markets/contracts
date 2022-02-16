@@ -78,8 +78,17 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
         
         ExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, msg.sender);
-        removeActiveMarket(_marketAddress);
+        // removeActiveMarket(_marketAddress);
         emit MarketResolved(_marketAddress);
+    }
+    
+    function finalizeMarket(address _marketAddress, uint _outcomePosition) external {
+        require(isActiveMarket(_marketAddress), "Market is not active");
+        // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
+        
+        ExoticPositionalMarket(_marketAddress).finalize(_outcomePosition);
+        removeActiveMarket(_marketAddress);
+        emit MarketFinalized(_marketAddress);
     }
 
     function getMarketAddress(uint _index) external view returns(address){
@@ -135,5 +144,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event ExoticMarketMastercopyChanged(address _exoticMastercopy);
     event MarketCreated(address marketAddress, string marketQuestion, address marketOwner);
     event MarketResolved(address marketAddress);
+    event MarketFinalized(address marketAddress);
     event NewOracleCouncilAddress(address oracleCouncilAddress);
 }

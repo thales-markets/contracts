@@ -1,3 +1,5 @@
+// DEPRECATED!! DON'T USE!!!
+
 const { ethers } = require('hardhat');
 
 const w3utils = require('web3-utils');
@@ -42,7 +44,16 @@ async function main() {
 	const ThalesRoyalePrivateRoomDeployed = await ThalesRoyalePrivateRoom.deploy(
 		owner.address,
 		priceFeedAddress,
-		priceFeedAddress
+		priceFeedAddress,
+		15 * min, 				// minTimeSignUp
+		30 * min,				// minRoundTime
+		15 * min,				// minChooseTime
+		15 * min,				// offsetBeteweenChooseAndEndRound
+		24 * hour,				// minClaimTime
+		10,						// maxPlayersInClosedRoom
+		1,						// minBuyIn
+		[BTC, ETH, SNX, LINK],	// allowedAssets
+		2						// _minNumberOfRounds
 	);
 	await ThalesRoyalePrivateRoomDeployed.deployed();
 	// update deployments.json file
@@ -55,7 +66,16 @@ async function main() {
 		constructorArguments: [
 			owner.address,
 			priceFeedAddress,
-			priceFeedAddress
+			priceFeedAddress,
+			15 * min, 				// minTimeSignUp
+			30 * min,				// minRoundTime
+			15 * min,				// minChooseTime
+			15 * min,				// offsetBeteweenChooseAndEndRound
+			24 * hour,				// minClaimTime
+			10,						// maxPlayersInClosedRoom
+			1,						// minBuyIn
+			[BTC, ETH, SNX, LINK],	// allowedAssets
+			2						// minNumberOfRounds
 		],
 	});
 }

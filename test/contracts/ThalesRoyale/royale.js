@@ -59,14 +59,7 @@ contract('ThalesRoyale', accounts => {
 
 		let Thales = artifacts.require('Thales');
 		ThalesDeployed = await Thales.new({ from: owner });
-
-		let ThalesRoyaleVoucher = artifacts.require('ThalesRoyaleVoucher');
-
-		ThalesRoyaleVoucherDeployed = await ThalesRoyaleVoucher.new(
-			ThalesDeployed.address,
-			thalesQty_2500
-			, { from: owner });
-
+		
 		priceFeedAddress = owner;
 
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
@@ -88,20 +81,20 @@ contract('ThalesRoyale', accounts => {
 		voucher = await ThalesRoyaleVoucher.new(
 			ThalesDeployed.address,
 			thalesQty_2500,
-			uri
-			, { from: owner }
+			uri,
+			ThalesRoyaleDeployed.address, 
+			{ from: owner }
 		);
 
 		initializeRoyaleData = encodeCall(
 			'initialize',
-			['address', 'bytes32', 'address', 'address', 'address', 'uint',
+			['address', 'bytes32', 'address', 'address', 'uint',
 				'uint', 'uint', 'uint', 'uint', 'uint'],
 			[
 				owner,
 				toBytes32('SNX'),
 				priceFeedAddress,
 				ThalesDeployed.address,
-				voucher.address,
 				7,
 				DAY * 3,
 				HOUR * 8,
@@ -115,6 +108,7 @@ contract('ThalesRoyale', accounts => {
 			from: owner,
 		});
 
+		await royale.setRoyaleVoucherAddress(voucher.address, {from:owner});
 
 		await ThalesDeployed.transfer(royale.address, thalesQty, { from: owner });
 		await ThalesDeployed.approve(royale.address, thalesQty, { from: owner });
@@ -2016,15 +2010,12 @@ contract('ThalesRoyale', accounts => {
 
 		assert.bnEqual(0, await royale.signedUpPlayersCount(season_1));
 
-		await expect(royale.signUpWithVoucher(1, { from: first })).to.be.revertedWith(
-			'Must be owner or approver'
+		await expect(royale.signUpWithVoucher(1, { from: second })).to.be.revertedWith(
+			'Owner of the token not valid'
 		);
-		await expect(royale.signUpWithVoucherWithPosition(2, 2, { from: second })).to.be.revertedWith(
-			'Must be owner or approver'
+		await expect(royale.signUpWithVoucherWithPosition(2, 2, { from: first })).to.be.revertedWith(
+			'Owner of the token not valid'
 		);
-
-		await voucher.approve(royale.address, id_1, { from: first });
-		await voucher.approve(royale.address, id_2, { from: second });
 
 		await royale.signUpWithVoucher(1, { from: first });
 		await royale.signUpWithVoucherWithPosition(2, 2, { from: second });

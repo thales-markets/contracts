@@ -15,6 +15,11 @@
         "internalType": "string",
         "name": "_initURI",
         "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_thalesRoyaleAddress",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",

@@ -135,6 +135,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_royaleVoucher",
+        "type": "address"
+      }
+    ],
+    "name": "NewThalesRoyaleVoucher",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -617,11 +630,6 @@
       {
         "internalType": "address",
         "name": "_rewardToken",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_royaleVoucher",
         "type": "address"
       },
       {
@@ -1373,6 +1381,19 @@
       }
     ],
     "name": "setRoundLength",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_royaleVoucher",
+        "type": "address"
+      }
+    ],
+    "name": "setRoyaleVoucherAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

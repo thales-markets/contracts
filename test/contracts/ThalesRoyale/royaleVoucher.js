@@ -49,7 +49,8 @@ contract('ThalesRoyaleVoucher', accounts => {
 		voucher = await ThalesRoyaleVoucher.new(
 			ThalesDeployed.address,
 			price,
-			uri
+			uri,
+			ThalesDeployed.address
 		);
 
 		await ThalesDeployed.transfer(voucher.address, price, { from: owner });

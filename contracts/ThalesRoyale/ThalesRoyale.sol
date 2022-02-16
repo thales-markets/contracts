@@ -84,7 +84,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         bytes32 _oracleKey,
         IPriceFeed _priceFeed,
         address _rewardToken,
-        address _royaleVoucher,
         uint _rounds,
         uint _signUpPeriod,
         uint _roundChoosingLength,
@@ -98,7 +97,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         oracleKey = _oracleKey;
         priceFeed = _priceFeed;
         rewardToken = IERC20Upgradeable(_rewardToken);
-        royaleVoucher = IThalesRoyaleVoucher(_royaleVoucher);
         rounds = _rounds;
         signUpPeriod = _signUpPeriod;
         roundChoosingLength = _roundChoosingLength;
@@ -468,6 +466,11 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         emit NewSafeBox(_safeBox);
     }
 
+    function setRoyaleVoucherAddress(address _royaleVoucher) public onlyOwner {
+        royaleVoucher = IThalesRoyaleVoucher(_royaleVoucher);
+        emit NewThalesRoyaleVoucher(_royaleVoucher);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier playerCanSignUp() {
@@ -484,6 +487,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
         require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");
         require(royaleVoucher.ownerOf(vocherId) == msg.sender, "Owner of the token not valid");
+        require(rewardToken.balanceOf(address(royaleVoucher)) >= buyInAmount, "No enough sUSD on voucher contract");
         _;
     }
 
@@ -518,4 +522,5 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     event PutFunds(address from, uint season, uint amount);
     event NewSafeBoxPercentage(uint _safeBoxPercentage);
     event NewSafeBox(address _safeBox);
+    event NewThalesRoyaleVoucher(address _royaleVoucher);
 }

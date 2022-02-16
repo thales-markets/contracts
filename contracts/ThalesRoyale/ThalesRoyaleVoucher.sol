@@ -34,11 +34,13 @@ contract ThalesRoyaleVoucher is ERC721URIStorage, Ownable {
     constructor(
         address _sUSD,
         uint _price,
-        string memory _initURI
+        string memory _initURI,
+        address _thalesRoyaleAddress
     ) ERC721(_name, _symbol) {
         sUSD = IERC20(_sUSD);
         price = _price;
         tokenURI = _initURI;
+        thalesRoyaleAddress = _thalesRoyaleAddress;
     }
 
     /* ========== TRV ========== */
@@ -67,8 +69,9 @@ contract ThalesRoyaleVoucher is ERC721URIStorage, Ownable {
         super._burn(tokenId);
     }
 
-    function burnWithTransfer(uint tokenId) external canBeBurned(tokenId) {
+    function burnWithTransfer(uint tokenId) external {
         require(sUSD.balanceOf(address(this)) >= pricePerVoucher[tokenId], "No enough sUSD");
+        require(msg.sender == thalesRoyaleAddress, "Sender must be from thales royale contract");
         sUSD.safeTransfer(thalesRoyaleAddress, pricePerVoucher[tokenId]);
         super._burn(tokenId);
     }

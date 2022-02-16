@@ -11,6 +11,7 @@ npx hardhat test test/contracts/SportsBinaryOptions/SportsFeed.js --optimizer
 npx hardhat test test/contracts/SportsBinaryOptions/CustomBinaryOptionMarket.js --optimizer
 npx hardhat test test/contracts/RetroDistribution/VestingEscrowStressTest.js --optimizer --gas
 npx hardhat test test/contracts/ThalesRoyale/royale.js
+npx hardhat test test/contracts/ThalesRoyale/royalePrivate.js
 npx hardhat test test/contracts/ThalesAMM/thalesamm.js
 
 
@@ -23,6 +24,8 @@ npx hardhat run --network kovan scripts/SportsBinaryOptions/createUSOpenMarkets.
 optimistic kovan:
 npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyale/deployRoyale.js 
 npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyale/upgradeRoyale.js
+npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyalePrivateRooms/deployRoyalePrivateRooms.js 
+npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyalePrivateRooms/upgradeRoyalePrivateRooms.js
 npx hardhat run --network optimisticKovan scripts/deployAMM/deployAMM.js
 npx hardhat run --network optimisticKovan scripts/deployAMM/upgradeAMM.js
 npx hardhat run --network optimisticKovan scripts/l2_deployments/createMarket.js

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <=0.7.6;
+pragma solidity ^0.8.0;
 
 // Inheritance
-import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/libraries/UniswapMath.sol";
 
 // Libraries
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 
 // Internal references
 // AggregatorInterface from Chainlink represents a decentralized pricing network for a single currency key
@@ -29,7 +29,7 @@ contract PriceFeed is Initializable, ProxyOwned {
     bytes32[] public currencyKeys;
     mapping(bytes32 => IUniswapV3Pool) public pools;
 
-    uint32 public twapInterval;
+    int24 public twapInterval;
 
     struct RateAndUpdatedTime {
         uint216 rate;
@@ -127,7 +127,7 @@ contract PriceFeed is Initializable, ProxyOwned {
         return false;
     }
 
-    function setTwapInterval(uint32 _twapInterval) external onlyOwner {
+    function setTwapInterval(int24 _twapInterval) external onlyOwner {
         twapInterval = _twapInterval;
     }
 
@@ -145,7 +145,7 @@ contract PriceFeed is Initializable, ProxyOwned {
         IUniswapV3Pool pool = pools[currencyKey];
         require(address(aggregator) != address(0) || address(pool) != address(0), "No aggregator or pool exists for key");
 
-        if (aggregator != AggregatorV2V3Interface(0)) {
+        if (aggregator != AggregatorV2V3Interface(address(0))) {
             // this view from the aggregator is the most gas efficient but it can throw when there's no data,
             // so let's call it low-level to suppress any reverts
             bytes memory payload = abi.encodeWithSignature("latestRoundData()");
@@ -175,13 +175,13 @@ contract PriceFeed is Initializable, ProxyOwned {
             (sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         } else {
             uint32[] memory secondsAgos = new uint32[](2);
-            secondsAgos[0] = twapInterval; // from (before)
+            secondsAgos[0] = uint32(uint24(twapInterval)); // from (before)
             secondsAgos[1] = 0; // to (now)
 
             (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(secondsAgos);
 
             // tick(imprecise as it's an integer) to price
-            sqrtPriceX96 = UniswapMath.getSqrtRatioAtTick(int24((tickCumulatives[1] - tickCumulatives[0]) / twapInterval));
+            sqrtPriceX96 = UniswapMath.getSqrtRatioAtTick(int24((tickCumulatives[1] - tickCumulatives[0])) / twapInterval);
         }
     }
 

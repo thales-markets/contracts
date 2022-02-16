@@ -1,10 +1,11 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 contract OwnedWithInit {
     address public owner;
     address public nominatedOwner;
 
-    constructor() public {}
+    constructor() {}
 
     function initOwner(address _owner) internal {
         require(owner == address(0), "Init can only be called when owner is 0");

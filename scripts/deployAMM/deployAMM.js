@@ -77,15 +77,15 @@ async function main() {
 	setTargetAddress('ThalesAMM', network, ThalesAMM_deployed.address);
 	setTargetAddress('ThalesAMMImplementation', network, ThalesAMMImplementation);
 
-	let managerAddress = getTargetAddress('BinaryOptionMarketManager', network);
+	let managerAddress = getTargetAddress('PositionalMarketManager', network);
 
-	const BinaryOptionMarketFactory = await ethers.getContractFactory('BinaryOptionMarketFactory');
-	let factoryAddress = getTargetAddress('BinaryOptionMarketFactory', network);
-	const BinaryOptionMarketFactoryInstance = await BinaryOptionMarketFactory.attach(factoryAddress);
+	const PositionalMarketFactory = await ethers.getContractFactory('PositionalMarketFactory');
+	let factoryAddress = getTargetAddress('PositionalMarketFactory', network);
+	const PositionalMarketFactoryInstance = await PositionalMarketFactory.attach(factoryAddress);
 
-	let tx = await ThalesAMM_deployed.setBinaryOptionsMarketManager(managerAddress);
+	let tx = await ThalesAMM_deployed.setPositionalMarketManager(managerAddress);
 	await tx.wait().then(e => {
-		console.log('ThalesAMM: setBinaryOptionsMarketManager');
+		console.log('ThalesAMM: setPositionalMarketManager');
 	});
 
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
@@ -120,9 +120,9 @@ async function main() {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(SNX, 120)');
 	});
 
-	tx = await BinaryOptionMarketFactoryInstance.setThalesAMM(ThalesAMM_deployed.address);
+	tx = await PositionalMarketFactoryInstance.setThalesAMM(ThalesAMM_deployed.address);
 	await tx.wait().then(e => {
-		console.log('BinaryOptionMarketFactoryInstance: setThalesAMM');
+		console.log('PositionalMarketFactoryInstance: setThalesAMM');
 	});
 
 	//setLookupTables

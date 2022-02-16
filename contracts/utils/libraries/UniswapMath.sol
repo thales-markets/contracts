@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <0.8.0;
+pragma solidity ^0.8.0;
 
 /// @title Math library for computing sqrt prices from ticks and vice versa; Contains 512-bit math functions
 /// @notice Facilitates multiplication and division that can have overflow of an intermediate value without any loss of precision;
@@ -76,7 +76,7 @@ library UniswapMath {
         // Factor powers of two out of denominator
         // Compute largest power of two divisor of denominator.
         // Always >= 1.
-        uint256 twos = -denominator & denominator;
+        uint256 twos = denominator & (~denominator + 1);
         // Divide denominator by power of two
         assembly {
             denominator := div(denominator, twos)
@@ -127,7 +127,7 @@ library UniswapMath {
     /// at the given tick
     function getSqrtRatioAtTick(int24 tick) internal pure returns (uint160 sqrtPriceX96) {
         uint256 absTick = tick < 0 ? uint256(-int256(tick)) : uint256(int256(tick));
-        require(absTick <= uint256(MAX_TICK), 'T');
+        require(absTick <= uint256(int256(MAX_TICK)), 'T');
 
         uint256 ratio = absTick & 0x1 != 0 ? 0xfffcb933bd6fad37aa2d162d1a594001 : 0x100000000000000000000000000000000;
         if (absTick & 0x2 != 0) ratio = (ratio * 0xfff97272373d413259a46990580e213a) >> 128;

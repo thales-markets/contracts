@@ -1,12 +1,10 @@
 [
   {
     "inputs": [],
-    "payable": false,
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
   {
-    "constant": true,
     "inputs": [
       {
         "internalType": "address",
@@ -22,12 +20,10 @@
         "type": "bool"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [],
     "name": "participatedInLastRoyale",
     "outputs": [
@@ -37,12 +33,10 @@
         "type": "bool"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
       {
         "internalType": "bool",
@@ -52,7 +46,6 @@
     ],
     "name": "setParticipatedInLastRoyale",
     "outputs": [],
-    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   }

@@ -98,19 +98,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_manager",
-        "type": "address"
-      }
-    ],
-    "name": "SetBinaryOptionsMarketManager",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "_capPerMarket",
         "type": "uint256"
@@ -175,6 +162,19 @@
       }
     ],
     "name": "SetMinimalTimeLeftToMaturity",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "SetPositionalMarketManager",
     "type": "event"
   },
   {
@@ -989,21 +989,6 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_manager",
-        "type": "address"
-      }
-    ],
-    "name": "setBinaryOptionsMarketManager",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_capPerMarket",
         "type": "uint256"
@@ -1105,6 +1090,21 @@
       }
     ],
     "name": "setPaused",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "setPositionalMarketManager",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

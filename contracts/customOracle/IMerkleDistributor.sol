@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.0;
 
 // Allows anyone to claim a token if they exist in a merkle root.
 interface IMerkleDistributor {

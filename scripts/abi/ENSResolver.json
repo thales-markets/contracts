@@ -1,6 +1,5 @@
 [
   {
-    "constant": true,
     "inputs": [
       {
         "internalType": "bytes32",
@@ -16,7 +15,6 @@
         "type": "address"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   }

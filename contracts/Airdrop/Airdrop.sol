@@ -1,9 +1,10 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
-import "openzeppelin-solidity-2.3.0/contracts/cryptography/MerkleProof.sol";
-import "synthetix-2.50.4-ovm/contracts/Pausable.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
+import "../utils/Owned.sol";
+import "@openzeppelin/contracts-4.4.1/utils/cryptography/MerkleProof.sol";
+import "../utils/Pausable.sol";
 
 /**
  * Contract which implements a merkle airdrop for a given token
@@ -22,7 +23,7 @@ contract Airdrop is Owned, Pausable {
         address _owner,
         IERC20 _token,
         bytes32 _root
-    ) public Owned(_owner) Pausable() {
+    ) Owned(_owner) Pausable() {
         token = _token;
         root = _root;
         startTime = block.timestamp;

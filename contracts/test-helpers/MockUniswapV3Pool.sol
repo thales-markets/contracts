@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <=0.7.6;
+pragma solidity ^0.8.0;
 import "./interfaces/IUniswapPool.sol";
 import "./libraries/Tick.sol";
 import "./libraries/Oracle.sol";

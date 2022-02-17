@@ -29,14 +29,8 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
 
     /* ========== ROOM TYPES ========== */
 
-    enum GameType {
-        LAST_MAN_STANDING,
-        LIMITED_NUMBER_OF_ROUNDS
-    }
-    enum RoomType {
-        OPEN,
-        CLOSED
-    }
+    enum GameType {LAST_MAN_STANDING, LIMITED_NUMBER_OF_ROUNDS}
+    enum RoomType {OPEN, CLOSED}
 
     /* ========== ROOM VARIABLES ========== */
 
@@ -306,9 +300,15 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
 
         // this block is when sender change positions in a round - first reduce
         if (positionInARoundPerRoom[_roomNumber][msg.sender][currentRoundInRoom[_roomNumber]] == DOWN) {
-            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][DOWN] = positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][DOWN].sub(1);
+            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][DOWN] = positionsPerRoundPerRoom[
+                _roomNumber
+            ][currentRoundInRoom[_roomNumber]][DOWN]
+                .sub(1);
         } else if (positionInARoundPerRoom[_roomNumber][msg.sender][currentRoundInRoom[_roomNumber]] == UP) {
-            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][UP] = positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][UP].sub(1);
+            positionsPerRoundPerRoom[_roomNumber][currentRoundInRoom[_roomNumber]][UP] = positionsPerRoundPerRoom[
+                _roomNumber
+            ][currentRoundInRoom[_roomNumber]][UP]
+                .sub(1);
         }
 
         // set new value
@@ -344,12 +344,14 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
             : DOWN;
         roundTargetPriceInRoom[_roomNumber] = currentPriceFromOracle;
 
-        uint winningPositionsPerRound = roundResultPerRoom[_roomNumber][currentRound] == UP
-            ? positionsPerRoundPerRoom[_roomNumber][currentRound][UP]
-            : positionsPerRoundPerRoom[_roomNumber][currentRound][DOWN];
-        uint losingPositions = roundResultPerRoom[_roomNumber][currentRound] == DOWN
-            ? positionsPerRoundPerRoom[_roomNumber][currentRound][UP]
-            : positionsPerRoundPerRoom[_roomNumber][currentRound][DOWN];
+        uint winningPositionsPerRound =
+            roundResultPerRoom[_roomNumber][currentRound] == UP
+                ? positionsPerRoundPerRoom[_roomNumber][currentRound][UP]
+                : positionsPerRoundPerRoom[_roomNumber][currentRound][DOWN];
+        uint losingPositions =
+            roundResultPerRoom[_roomNumber][currentRound] == DOWN
+                ? positionsPerRoundPerRoom[_roomNumber][currentRound][UP]
+                : positionsPerRoundPerRoom[_roomNumber][currentRound][DOWN];
 
         if (nextRound <= numberOfRoundsInRoom[_roomNumber] || gameTypeInRoom[_roomNumber] == GameType.LAST_MAN_STANDING) {
             // setting total players for next round (round + 1) to be result of position in a previous round
@@ -454,7 +456,6 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
         uint _roomNumber,
         uint _amount
     ) internal {
-
         (uint amountBuyIn, uint amountSafeBox) = _calculateSafeBoxOnAmount(_amount);
 
         if (amountSafeBox > 0) {
@@ -562,7 +563,7 @@ contract ThalesRoyalePrivateRoom is Initializable, ProxyOwned, PausableUpgradeab
             buyInPerPlayerRerRoom[_roomNumber] = _buyInAmount;
             // or decreased
         } else {
-            (uint amountBuyIn,) = _calculateSafeBoxOnAmount(_buyInAmount);
+            (uint amountBuyIn, ) = _calculateSafeBoxOnAmount(_buyInAmount);
             uint differenceInReward = rewardPerRoom[_roomNumber].sub(amountBuyIn);
             buyInPerPlayerRerRoom[_roomNumber] = _buyInAmount;
             rewardPerRoom[_roomNumber] = amountBuyIn;

@@ -58,17 +58,17 @@ contract('StakingThales', accounts => {
 	const WEEK = 604800;
 	const YEAR = 31556926;
 
-	let BinaryOptionMarket = artifacts.require('BinaryOptionMarket');
+	let PositionalMarket = artifacts.require('PositionalMarket');
 	let Synth = artifacts.require('Synth');
-	let BinaryOption = artifacts.require('BinaryOption');
+	let Position = artifacts.require('Position');
 	let manager, factory, addressResolver;
-	let sUSDSynth, binaryOptionMarketMastercopy, binaryOptionMastercopy;
+	let sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 	before(async () => {
 		({
-			BinaryOptionMarketManager: manager,
-			BinaryOptionMarketFactory: factory,
-			BinaryOptionMarketMastercopy: binaryOptionMarketMastercopy,
-			BinaryOptionMastercopy: binaryOptionMastercopy,
+			PositionalMarketManager: manager,
+			PositionalMarketFactory: factory,
+			PositionalMarketMastercopy: PositionalMarketMastercopy,
+			PositionMastercopy: PositionMastercopy,
 			AddressResolver: addressResolver,
 			SynthsUSD: sUSDSynth,
 		} = await setupAllContracts({
@@ -76,19 +76,19 @@ contract('StakingThales', accounts => {
 			synths: ['sUSD'],
 			contracts: [
 				'FeePool',
-				'BinaryOptionMarketMastercopy',
-				'BinaryOptionMastercopy',
-				'BinaryOptionMarketFactory',
+				'PositionalMarketMastercopy',
+				'PositionMastercopy',
+				'PositionalMarketFactory',
 			],
 		}));
 
-		manager.setBinaryOptionsMarketFactory(factory.address, { from: managerOwner });
+		const [creatorSigner, ownerSigner] = await ethers.getSigners();
 
-		factory.setBinaryOptionMarketManager(manager.address, { from: managerOwner });
-		factory.setBinaryOptionMarketMastercopy(binaryOptionMarketMastercopy.address, {
-			from: managerOwner,
-		});
-		factory.setBinaryOptionMastercopy(binaryOptionMastercopy.address, { from: managerOwner });
+		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
+
+		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
+		await factory.connect(ownerSigner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
+		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),

@@ -1,7 +1,8 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "../utils/Owned.sol";
 
 contract EthBurnedFeed is ChainlinkClient, Owned {
     using Chainlink for Chainlink.Request;
@@ -22,7 +23,7 @@ contract EthBurnedFeed is ChainlinkClient, Owned {
         uint256 _fee,
         string memory _endpoint,
         bool _testMode
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         if (!_testMode) {
             //remove for the test
             setPublicChainlinkToken();

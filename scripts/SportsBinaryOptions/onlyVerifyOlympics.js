@@ -22,10 +22,10 @@ async function main() {
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 
 	// We get the contract to deploy
-	const BinaryOptionMastercopy = await ethers.getContractFactory('BinaryOptionMastercopy');
+	const PositionMastercopy = await ethers.getContractFactory('PositionMastercopy');
 
-	const BinaryOptionMarketMastercopy = await ethers.getContractFactory(
-		'BinaryOptionMarketMastercopy',
+	const PositionalMarketMastercopy = await ethers.getContractFactory(
+		'PositionalMarketMastercopy',
 		{
 			libraries: {
 				SafeDecimalMath: safeDecimalMath.address,
@@ -33,7 +33,7 @@ async function main() {
 		}
 	);
 
-	const BinaryOptionMarketFactory = await ethers.getContractFactory('BinaryOptionMarketFactory');
+	const PositionalMarketFactory = await ethers.getContractFactory('PositionalMarketFactory');
 
 	const day = 24 * 60 * 60;
 	const maxOraclePriceAge = 120 * 60; // Price updates are accepted from up to two hours before maturity to allow for delayed chainlink heartbeats.
@@ -47,13 +47,13 @@ async function main() {
 	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
 	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
 
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', {
+	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager', {
 		libraries: {
 			SafeDecimalMath: safeDecimalMath.address,
 		},
 	});
 
-	const BinaryOptionMarketData = await ethers.getContractFactory('BinaryOptionMarketData');
+	const PositionalMarketData = await ethers.getContractFactory('PositionalMarketData');
 
 	await hre.run('verify:verify', {
 		address: '0x3e4e650f61c7a747a4badcff5c3b3e2baf37aec3',
@@ -77,13 +77,13 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: '0x782a8aa798ee31c4c248bc2a209c96d625de04f6',
 		constructorArguments: [],
-		contract: 'contracts/BinaryOptionMastercopy.sol:BinaryOptionMastercopy',
+		contract: 'contracts/PositionMastercopy.sol:PositionMastercopy',
 	});
 
 	await hre.run('verify:verify', {
 		address: '0xf73e5353ea2e50976afe763ce6a483f4124347f3',
 		constructorArguments: [],
-		contract: 'contracts/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy',
+		contract: 'contracts/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
 	});
 
 	await hre.run('verify:verify', {

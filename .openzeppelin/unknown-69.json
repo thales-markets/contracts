@@ -9326,6 +9326,9 @@
     "8cba73ae1e338a2af671c45fd5ccc862d5932f94946e6c006a0af985a5e4864c": {
       "address": "0x8f1115465D7cfb689F48Be3a87B00bD1B90e8E0b",
       "txHash": "0x0f30d4732bede21dabbc2154354f8dca9d0f73af2572156454997977851f7008",
+    "a44c89a3ac1e66195fd1e178c00242921bc5e034d24d68a671b8f166bea66a13": {
+      "address": "0x32b5558A8e4D16b86BbCdD29b9B370fE8ED185E4",
+      "txHash": "0xf1589d3c42d96d6e57fef40cbac26f669d5cbfeb4a3e30f255b398677966453f",
       "layout": {
         "storage": [
           {

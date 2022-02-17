@@ -42,16 +42,16 @@ async function main() {
 	const safeDecimalMath = snx.getTarget({ network, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', {
+	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager', {
 		libraries: {
 			SafeDecimalMath: safeDecimalMath.address,
 		},
 	});
-	let manager = await BinaryOptionMarketManager.attach(managerAddress);
+	let manager = await PositionalMarketManager.attach(managerAddress);
 
 	console.log('found manager at:' + manager.address);
 
-	let IntegersContract = await ethers.getContractFactory('Integers');
+	let IntegersContract = await ethers.getContractFactory('Int');
 	const integersDeployed = await IntegersContract.attach(
 		'0x6c0dFEeb57e126d2a66a71A44678Ab51b8a5B1B5'
 	);

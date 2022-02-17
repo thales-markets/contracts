@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.5.16;
 
 // Inheritance
@@ -26,7 +27,7 @@ contract ProxyPausable is ProxyOwned {
 
         // If applicable, set the last pause time.
         if (paused) {
-            lastPauseTime = now;
+            lastPauseTime = block.timestamp;
         }
 
         // Let everyone know that our pause state has changed.

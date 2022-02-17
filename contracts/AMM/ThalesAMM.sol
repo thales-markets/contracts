@@ -83,7 +83,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
                 return 0;
             }
             uint balance = _balanceOfPositionOnMarket(market, position);
-            uint buy_max_price = basePrice.mul(ONE.add(max_spread).sub(safeBoxImpact)).div(ONE);
+            uint buy_max_price = basePrice.mul(ONE.add(max_spread.div(2))).div(ONE);
             // ignore extremes
             if (buy_max_price >= ONE.sub(ONE_PERCENT) || buy_max_price <= ONE_PERCENT) {
                 return 0;
@@ -106,11 +106,28 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         Position position,
         uint amount
     ) public view returns (uint) {
-        if (amount > availableToBuyFromAMM(market, position)) {
+        if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
             return 0;
         }
         uint basePrice = price(market, position);
-        return amount.mul(basePrice.mul(ONE.add(_buyPriceImpact(market, position, amount))).div(ONE)).div(ONE);
+        uint currentImpact = _buyPriceImpact(market, position, ONE_PERCENT);
+        uint newImpact = _buyPriceImpact(market, position, amount);
+        uint midImpact = currentImpact.add(newImpact).div(2);
+        return amount.mul(basePrice.mul(ONE.add(midImpact)).div(ONE)).div(ONE);
+    }
+
+    function midImpact(
+        address market,
+        Position position,
+        uint amount
+    ) public view returns (uint) {
+        if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
+            return 0;
+        }
+        uint currentImpact = _buyPriceImpact(market, position, ONE_PERCENT);
+        uint newImpact = _buyPriceImpact(market, position, amount);
+        uint midImpact = currentImpact.add(newImpact).div(2);
+        return midImpact;
     }
 
     function buyPriceImpact(
@@ -118,7 +135,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         Position position,
         uint amount
     ) public view returns (uint) {
-        if (amount > availableToBuyFromAMM(market, position)) {
+        if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
             return 0;
         }
         return _buyPriceImpact(market, position, amount);
@@ -338,10 +355,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function exerciseMaturedMarket(address market) external {
-        require(
-            IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity,
-            "Market is not in Maturity phase"
-        );
+        require(IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity, "Market is not in Maturity phase");
         require(IPositionalMarketManager(manager).isKnownMarket(market), "Unknown market");
         require(canExerciseMaturedMarket(market), "No options to exercise");
         IPositionalMarket(market).exerciseOptions();

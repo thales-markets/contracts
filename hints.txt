@@ -13,6 +13,7 @@ npx hardhat test test/contracts/RetroDistribution/VestingEscrowStressTest.js --o
 npx hardhat test test/contracts/ThalesRoyale/royale.js
 npx hardhat test test/contracts/ThalesRoyale/royalePrivate.js
 npx hardhat test test/contracts/ThalesAMM/thalesamm.js
+npx hardhat test test/contracts/ThalesAMM/thalesammImprovements.js
 
 
 npx hardhat coverage

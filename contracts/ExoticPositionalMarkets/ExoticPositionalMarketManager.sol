@@ -78,19 +78,24 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
         
         ExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, msg.sender);
-        // removeActiveMarket(_marketAddress);
+        removeActiveMarket(_marketAddress);
         emit MarketResolved(_marketAddress);
     }
-    
-    function finalizeMarket(address _marketAddress, uint _outcomePosition) external {
-        require(isActiveMarket(_marketAddress), "Market is not active");
-        // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
-        
-        ExoticPositionalMarket(_marketAddress).finalize(_outcomePosition);
-        removeActiveMarket(_marketAddress);
-        emit MarketFinalized(_marketAddress);
-    }
 
+    function disputeMarket(address _marketAddress) external {
+        // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
+        require(msg.sender == oracleCouncilAddress, "Invalid call. Use OracleCouncil to dispute a market");
+        require(!ExoticPositionalMarket(_marketAddress).disputed(), "Market already disputed");
+        if(isActiveMarket(_marketAddress)) {
+            ExoticPositionalMarket(_marketAddress).openDispute();
+        }
+        else {
+            require(!ExoticPositionalMarket(_marketAddress).canHoldersClaim(), "Can not dispute! Market already claimable");
+            ExoticPositionalMarket(_marketAddress).openDispute();
+        }
+        
+    }
+    
     function getMarketAddress(uint _index) external view returns(address){
         return activeMarkets[_index];
     }
@@ -144,6 +149,5 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event ExoticMarketMastercopyChanged(address _exoticMastercopy);
     event MarketCreated(address marketAddress, string marketQuestion, address marketOwner);
     event MarketResolved(address marketAddress);
-    event MarketFinalized(address marketAddress);
     event NewOracleCouncilAddress(address oracleCouncilAddress);
 }

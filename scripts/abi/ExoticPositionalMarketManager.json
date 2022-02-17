@@ -47,19 +47,6 @@
         "type": "address"
       }
     ],
-    "name": "MarketFinalized",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "marketAddress",
-        "type": "address"
-      }
-    ],
     "name": "MarketResolved",
     "type": "event"
   },
@@ -230,6 +217,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      }
+    ],
+    "name": "disputeMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "exoticMarketMastercopy",
     "outputs": [
@@ -240,24 +240,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_marketAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_outcomePosition",
-        "type": "uint256"
-      }
-    ],
-    "name": "finalizeMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

@@ -5,6 +5,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "timeoutPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "ClaimTimeoutPeriodChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "creationTime",
         "type": "uint256"
       },
@@ -45,19 +58,6 @@
         "internalType": "uint256",
         "name": "winningPosition",
         "type": "uint256"
-      }
-    ],
-    "name": "MarketFinalized",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "winningPosition",
-        "type": "uint256"
       },
       {
         "indexed": false,
@@ -67,6 +67,31 @@
       }
     ],
     "name": "MarketResolved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "fixedTicketAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewPositionTaken",
     "type": "event"
   },
   {
@@ -99,6 +124,38 @@
       }
     ],
     "name": "OwnerNominated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isPaused",
+        "type": "bool"
+      }
+    ],
+    "name": "PauseChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "TicketWithdrawn",
     "type": "event"
   },
   {
@@ -141,6 +198,19 @@
   },
   {
     "inputs": [],
+    "name": "acceptAndSetResultTimePeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -148,7 +218,7 @@
   },
   {
     "inputs": [],
-    "name": "canMarketBeFinalized",
+    "name": "canHoldersClaim",
     "outputs": [
       {
         "internalType": "bool",
@@ -174,12 +244,51 @@
   },
   {
     "inputs": [],
+    "name": "canMarketBeResolvedByPDAO",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "canUsersPlacePosition",
     "outputs": [
       {
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claimTimeoutDefaultPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claimTimeoutPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -216,6 +325,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_position",
+        "type": "uint256"
+      }
+    ],
+    "name": "closeDispute",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -272,6 +394,19 @@
   },
   {
     "inputs": [],
+    "name": "disputeTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "disputed",
     "outputs": [
       {
@@ -285,33 +420,7 @@
   },
   {
     "inputs": [],
-    "name": "endOfPositioning",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_outcomePosition",
-        "type": "uint256"
-      }
-    ],
-    "name": "finalize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "finalized",
+    "name": "disputedInPositioningPhase",
     "outputs": [
       {
         "internalType": "bool",
@@ -324,7 +433,7 @@
   },
   {
     "inputs": [],
-    "name": "finalizedTime",
+    "name": "endOfPositioning",
     "outputs": [
       {
         "internalType": "uint256",
@@ -557,6 +666,19 @@
   },
   {
     "inputs": [],
+    "name": "lastPauseTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "marketMaturity",
     "outputs": [
       {
@@ -608,13 +730,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_disputeCode",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "name": "openDispute",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -641,6 +757,32 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pDAOResolveTimePeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -763,6 +905,19 @@
   },
   {
     "inputs": [],
+    "name": "resultSetTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "safeBoxPercentage",
     "outputs": [
       {
@@ -772,6 +927,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_timeoutPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "setClaimTimeoutPeriod",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -796,6 +964,19 @@
       }
     ],
     "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_paused",
+        "type": "bool"
+      }
+    ],
+    "name": "setPaused",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -920,6 +1101,13 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

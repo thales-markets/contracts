@@ -126,23 +126,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         _signUpPlayerWithPass(msg.sender, position, passId);
     }
 
-    function signUpOnBehalf(address player) external onlyOwner {
-        require(playerSignedUpPerSeason[season][player] == 0, "Player already signed up");
-        require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
-        // check owner buy in
-        require(rewardToken.balanceOf(msg.sender) >= buyInAmount, "No enough sUSD for buy in");
-        require(rewardToken.allowance(msg.sender, address(this)) >= buyInAmount, "No allowance.");
-
-        playerSignedUpPerSeason[season][player] = block.timestamp;
-        playersPerSeason[season].push(player);
-        signedUpPlayersCount[season]++;
-
-        // buy in from owner!
-        _buyIn(msg.sender, buyInAmount);
-
-        emit SignedUp(player, season);
-    }
-
     function startRoyaleInASeason() external {
         require(block.timestamp > (seasonCreationTime[season] + signUpPeriod), "Can't start until signup period expires");
         require(signedUpPlayersCount[season] > 0, "Can not start, no players in a season");

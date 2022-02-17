@@ -1,5 +1,6 @@
 [
   {
+    "constant": true,
     "inputs": [],
     "name": "getAddress",
     "outputs": [
@@ -9,6 +10,7 @@
         "type": "address"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   }

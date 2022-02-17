@@ -1976,43 +1976,6 @@ contract('ThalesRoyale', accounts => {
 
 	});
 
-	it('Sign up on behalf', async () => {
-		await royale.startNewSeason({ from: owner });
-
-		await expect(royale.signUpOnBehalf(first, { from: second })).to.be.revertedWith(
-			'Only the contract owner may perform this action'
-		);
-
-		await royale.signUpWithPosition(1, { from: first });
-
-		await fastForward(HOUR * 72 + 1);
-		await royale.startRoyaleInASeason();
-
-		await fastForward(HOUR * 72 + 1);
-		await royale.closeRound();
-
-		assert.equal(1, await royale.signedUpPlayersCount(season_1));
-
-		await fastForward(WEEK * 4 + 1);
-		await royale.startNewSeason({ from: owner });
-
-		assert.equal(0, await royale.positionsPerRoundPerSeason(season_2, 1,1));
-		assert.equal(0, await royale.positionsPerRoundPerSeason(season_2, 1,2));
-		
-		// check rewards
-		let reward = await royale.rewardPerSeason(season_2);
-		assert.bnEqual(reward, toUnit(0));
-		
-		await royale.signUpOnBehalf(first, { from: owner });
-		await royale.signUpOnBehalf(second, { from: owner });
-
-		assert.equal(2, await royale.signedUpPlayersCount(season_2));
-		
-		// check rewards
-		let reward_after = await royale.rewardPerSeason(season_2);
-		assert.bnEqual(reward_after, toUnit(5000));
-	});
-
 	it('Sign up with vouchers check values', async () => {
 
 		// adding vauchers to users

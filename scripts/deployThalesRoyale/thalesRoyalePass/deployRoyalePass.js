@@ -41,20 +41,20 @@ async function main() {
 	const price = w3utils.toWei('30');
 	const uri = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/0';
 
-	const ThalesRoyaleVoucher = await ethers.getContractFactory('ThalesRoyaleVoucher');
-	const ThalesRoyaleVoucherDeployed = await ThalesRoyaleVoucher.deploy(
+	const ThalesRoyalePass = await ethers.getContractFactory('ThalesRoyalePass');
+	const ThalesRoyalePassDeployed = await ThalesRoyalePass.deploy(
 		sUSDAddress,
 		price,
 		uri,
 		royaleAddress
 	);
-	await ThalesRoyaleVoucherDeployed.deployed();
-	setTargetAddress('ThalesRoyaleVoucher', network, ThalesRoyaleVoucherDeployed.address);
+	await ThalesRoyalePassDeployed.deployed();
+	setTargetAddress('ThalesRoyalePass', network, ThalesRoyalePassDeployed.address);
 
-	console.log('ThalesRoyaleVoucher deployed to:', ThalesRoyaleVoucherDeployed.address);
+	console.log('ThalesRoyalePass deployed to:', ThalesRoyalePassDeployed.address);
 
 	await hre.run('verify:verify', {
-		address: ThalesRoyaleVoucherDeployed.address,
+		address: ThalesRoyalePassDeployed.address,
 		constructorArguments: [sUSDAddress, price, uri, royaleAddress],
 	});
 }

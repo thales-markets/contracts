@@ -135,11 +135,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_royaleVoucher",
+        "name": "_royalePass",
         "type": "address"
       }
     ],
-    "name": "NewThalesRoyaleVoucher",
+    "name": "NewThalesRoyalePass",
     "type": "event"
   },
   {
@@ -661,6 +661,11 @@
         "internalType": "uint256",
         "name": "_pauseBetweenSeasonsTime",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_nextSeasonStartsAutomatically",
+        "type": "bool"
       }
     ],
     "name": "initialize",
@@ -1167,6 +1172,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "royalePass",
+    "outputs": [
+      {
+        "internalType": "contract IThalesRoyalePass",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1180,19 +1198,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "royaleVoucher",
-    "outputs": [
-      {
-        "internalType": "contract IThalesRoyaleVoucher",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1389,11 +1394,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_royaleVoucher",
+        "name": "_royalePass",
         "type": "address"
       }
     ],
-    "name": "setRoyaleVoucherAddress",
+    "name": "setRoyalePassAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1445,6 +1450,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "signUpOnBehalf",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "signUpPeriod",
     "outputs": [
@@ -1461,11 +1479,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "position",
+        "name": "passId",
         "type": "uint256"
       }
     ],
-    "name": "signUpWithPosition",
+    "name": "signUpWithPass",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1474,20 +1492,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "voucherId",
-        "type": "uint256"
-      }
-    ],
-    "name": "signUpWithVoucher",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "voucherId",
+        "name": "passId",
         "type": "uint256"
       },
       {
@@ -1496,7 +1501,20 @@
         "type": "uint256"
       }
     ],
-    "name": "signUpWithVoucherWithPosition",
+    "name": "signUpWithPassWithPosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
+      }
+    ],
+    "name": "signUpWithPosition",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

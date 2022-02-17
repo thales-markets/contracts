@@ -85,7 +85,7 @@
         "type": "uint256"
       }
     ],
-    "name": "NewPriceForVoucher",
+    "name": "NewPriceForPass",
     "type": "event"
   },
   {
@@ -137,6 +137,19 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_state",
+        "type": "bool"
+      }
+    ],
+    "name": "ThalesRoyalePassPaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "from",
@@ -156,19 +169,6 @@
       }
     ],
     "name": "Transfer",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "_state",
-        "type": "bool"
-      }
-    ],
-    "name": "VoucherPaused",
     "type": "event"
   },
   {
@@ -401,7 +401,7 @@
         "type": "uint256"
       }
     ],
-    "name": "pricePaidForVoucher",
+    "name": "pricePaidForPass",
     "outputs": [
       {
         "internalType": "uint256",
@@ -420,7 +420,7 @@
         "type": "uint256"
       }
     ],
-    "name": "pricePerVoucher",
+    "name": "pricePerPass",
     "outputs": [
       {
         "internalType": "uint256",
@@ -541,7 +541,7 @@
         "type": "uint256"
       }
     ],
-    "name": "setPriceForVoucher",
+    "name": "setPriceForPass",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

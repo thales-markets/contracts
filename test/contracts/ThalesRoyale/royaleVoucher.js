@@ -27,12 +27,12 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
-contract('ThalesRoyaleVoucher', accounts => {
+contract('ThalesRoyalePass', accounts => {
 	const [first, owner, second, third, fourth] = accounts;
 	let ThalesDeployed;
 	let thales;
-	let ThalesRoyaleVoucher;
-	let ThalesRoyaleVoucherDeployed;
+	let ThalesRoyalePass;
+	let ThalesRoyalePassDeployed;
 	let voucher;
 	const price = toUnit(30);
 	const priceUnder = toUnit(20);
@@ -44,9 +44,9 @@ contract('ThalesRoyaleVoucher', accounts => {
 		let Thales = artifacts.require('Thales');
 		ThalesDeployed = await Thales.new({ from: owner });
 
-		ThalesRoyaleVoucher = artifacts.require('ThalesRoyaleVoucher');
+		ThalesRoyalePass = artifacts.require('ThalesRoyalePass');
 
-		voucher = await ThalesRoyaleVoucher.new(
+		voucher = await ThalesRoyalePass.new(
 			ThalesDeployed.address,
 			price,
 			uri,
@@ -67,8 +67,8 @@ contract('ThalesRoyaleVoucher', accounts => {
 	describe('Thales royale voucher', () => {
 		it('Init checking', async () => {
 			assert.bnEqual(toUnit(30), await voucher.price());
-			assert.bnEqual("Thales Royale Voucher", await voucher.name());
-			assert.bnEqual("TRV", await voucher.symbol());
+			assert.bnEqual("Thales Royale Pass", await voucher.name());
+			assert.bnEqual("TRP", await voucher.symbol());
 
 		});
 
@@ -87,7 +87,7 @@ contract('ThalesRoyaleVoucher', accounts => {
 
 			assert.equal(second, await voucher.ownerOf(id));
 
-			assert.bnEqual(price, await voucher.pricePaidForVoucher(id));
+			assert.bnEqual(price, await voucher.pricePaidForPass(id));
 
 		});
 
@@ -100,17 +100,17 @@ contract('ThalesRoyaleVoucher', accounts => {
 
 			assert.bnEqual(1, await voucher.balanceOf(first));
 			assert.equal(first, await voucher.ownerOf(id_1));
-			assert.bnEqual(price, await voucher.pricePaidForVoucher(id_1));
+			assert.bnEqual(price, await voucher.pricePaidForPass(id_1));
 
 			await voucher.safeTransferFrom(first, second, id_1);
 
 			assert.equal(second, await voucher.ownerOf(id_1));
 
 			await expect(voucher.burn(id_1, { from: first })).to.be.revertedWith('Must be owner or approver');
-			await expect(voucher.burn(id_2, { from: first })).to.be.revertedWith('Not existing voucher');
+			await expect(voucher.burn(id_2, { from: first })).to.be.revertedWith('Not existing pass');
 
 			await voucher.burn(id_1, { from: second });
-			await expect(voucher.burn(id_1, { from: second })).to.be.revertedWith('Not existing voucher');
+			await expect(voucher.burn(id_1, { from: second })).to.be.revertedWith('Not existing pass');
 
 			await ThalesDeployed.transfer(voucher.address, price, { from: owner });
 			await ThalesDeployed.approve(voucher.address, price, { from: owner });
@@ -122,13 +122,13 @@ contract('ThalesRoyaleVoucher', accounts => {
 
 			assert.bnEqual(1, await voucher.balanceOf(second));
 			assert.equal(second, await voucher.ownerOf(id_2));
-			assert.bnEqual(price, await voucher.pricePaidForVoucher(id_2));
+			assert.bnEqual(price, await voucher.pricePaidForPass(id_2));
 
 			await expect(voucher.burn(id_2, { from: first })).to.be.revertedWith('Must be owner or approver');
 			await voucher.approve(first, id_2, { from: second });
 
 			await voucher.burn(id_2, { from: first });
-			await expect(voucher.burn(id_2, { from: second })).to.be.revertedWith('Not existing voucher');
+			await expect(voucher.burn(id_2, { from: second })).to.be.revertedWith('Not existing pass');
 
 
 		});

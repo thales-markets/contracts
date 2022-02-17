@@ -44,8 +44,8 @@ contract('ThalesRoyale', accounts => {
 	let royale;
 	let initializeRoyaleData;
 	let ThalesRoyaleImplementation;
-	let ThalesRoyaleVoucher;
-	let ThalesRoyaleVoucherDeployed;
+	let ThalesRoyalePass;
+	let ThalesRoyalePassDeployed;
 	let voucher;
 
 	beforeEach(async () => {
@@ -76,9 +76,9 @@ contract('ThalesRoyale', accounts => {
 		ThalesRoyaleImplementation = await ThalesRoyale.new({ from: owner });
 		royale = await ThalesRoyale.at(ThalesRoyaleDeployed.address);
 
-		ThalesRoyaleVoucher = artifacts.require('ThalesRoyaleVoucher');
+		ThalesRoyalePass = artifacts.require('ThalesRoyalePass');
 
-		voucher = await ThalesRoyaleVoucher.new(
+		voucher = await ThalesRoyalePass.new(
 			ThalesDeployed.address,
 			thalesQty_2500,
 			uri,
@@ -89,7 +89,7 @@ contract('ThalesRoyale', accounts => {
 		initializeRoyaleData = encodeCall(
 			'initialize',
 			['address', 'bytes32', 'address', 'address', 'uint',
-				'uint', 'uint', 'uint', 'uint', 'uint'],
+				'uint', 'uint', 'uint', 'uint', 'uint', 'bool'],
 			[
 				owner,
 				toBytes32('SNX'),
@@ -100,7 +100,8 @@ contract('ThalesRoyale', accounts => {
 				HOUR * 8,
 				DAY,
 				toUnit(2500),
-				WEEK * 4
+				WEEK * 4,
+				false
 			]
 		);
 
@@ -108,7 +109,7 @@ contract('ThalesRoyale', accounts => {
 			from: owner,
 		});
 
-		await royale.setRoyaleVoucherAddress(voucher.address, {from:owner});
+		await royale.setRoyalePassAddress(voucher.address, {from:owner});
 
 		await ThalesDeployed.transfer(royale.address, thalesQty, { from: owner });
 		await ThalesDeployed.approve(royale.address, thalesQty, { from: owner });
@@ -1975,6 +1976,43 @@ contract('ThalesRoyale', accounts => {
 
 	});
 
+	it('Sign up on behalf', async () => {
+		await royale.startNewSeason({ from: owner });
+
+		await expect(royale.signUpOnBehalf(first, { from: second })).to.be.revertedWith(
+			'Only the contract owner may perform this action'
+		);
+
+		await royale.signUpWithPosition(1, { from: first });
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.startRoyaleInASeason();
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.closeRound();
+
+		assert.equal(1, await royale.signedUpPlayersCount(season_1));
+
+		await fastForward(WEEK * 4 + 1);
+		await royale.startNewSeason({ from: owner });
+
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_2, 1,1));
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_2, 1,2));
+		
+		// check rewards
+		let reward = await royale.rewardPerSeason(season_2);
+		assert.bnEqual(reward, toUnit(0));
+		
+		await royale.signUpOnBehalf(first, { from: owner });
+		await royale.signUpOnBehalf(second, { from: owner });
+
+		assert.equal(2, await royale.signedUpPlayersCount(season_2));
+		
+		// check rewards
+		let reward_after = await royale.rewardPerSeason(season_2);
+		assert.bnEqual(reward_after, toUnit(5000));
+	});
+
 	it('Sign up with vouchers check values', async () => {
 
 		// adding vauchers to users
@@ -2010,15 +2048,15 @@ contract('ThalesRoyale', accounts => {
 
 		assert.bnEqual(0, await royale.signedUpPlayersCount(season_1));
 
-		await expect(royale.signUpWithVoucher(1, { from: second })).to.be.revertedWith(
+		await expect(royale.signUpWithPass(1, { from: second })).to.be.revertedWith(
 			'Owner of the token not valid'
 		);
-		await expect(royale.signUpWithVoucherWithPosition(2, 2, { from: first })).to.be.revertedWith(
+		await expect(royale.signUpWithPassWithPosition(2, 2, { from: first })).to.be.revertedWith(
 			'Owner of the token not valid'
 		);
 
-		await royale.signUpWithVoucher(1, { from: first });
-		await royale.signUpWithVoucherWithPosition(2, 2, { from: second });
+		await royale.signUpWithPass(1, { from: first });
+		await royale.signUpWithPassWithPosition(2, 2, { from: second });
 
 		assert.bnEqual(2, await royale.signedUpPlayersCount(season_1));
 
@@ -2028,8 +2066,8 @@ contract('ThalesRoyale', accounts => {
 		reward = await royale.rewardPerSeason(season_1);
 		assert.bnEqual(reward, toUnit(5000));
 
-		await expect(voucher.burn(id_1, { from: first })).to.be.revertedWith('Not existing voucher');
-		await expect(voucher.burn(id_2, { from: second })).to.be.revertedWith('Not existing voucher');
+		await expect(voucher.burn(id_1, { from: first })).to.be.revertedWith('Not existing pass');
+		await expect(voucher.burn(id_2, { from: second })).to.be.revertedWith('Not existing pass');
 	});
 
 });

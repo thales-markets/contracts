@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-4.4.1/token/ERC721/extensions/ERC721URIStorage.s
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
-contract ThalesRoyaleVoucher is ERC721URIStorage, Ownable {
+contract ThalesRoyalePass is ERC721URIStorage, Ownable {
     /* ========== LIBRARIES ========== */
 
     using Counters for Counters.Counter;
@@ -18,8 +18,8 @@ contract ThalesRoyaleVoucher is ERC721URIStorage, Ownable {
 
     Counters.Counter private _tokenIds;
 
-    string public _name = "Thales Royale Voucher";
-    string public _symbol = "TRV";
+    string public _name = "Thales Royale Pass";
+    string public _symbol = "TRP";
     bool public paused = false;
     string public tokenURI;
 
@@ -27,7 +27,7 @@ contract ThalesRoyaleVoucher is ERC721URIStorage, Ownable {
 
     IERC20 public sUSD;
     uint public price;
-    mapping(uint => uint) public pricePerVoucher;
+    mapping(uint => uint) public pricePerPass;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -54,10 +54,10 @@ contract ThalesRoyaleVoucher is ERC721URIStorage, Ownable {
         _tokenIds.increment();
 
         uint newItemId = _tokenIds.current();
-        pricePerVoucher[newItemId] = price;
+        pricePerPass[newItemId] = price;
 
-        // pay for voucher
-        _payForVoucher(msg.sender, price);
+        // pay for pass
+        _payForPass(msg.sender, price);
 
         _mint(recipient, newItemId);
         _setTokenURI(newItemId, tokenURI);
@@ -70,29 +70,29 @@ contract ThalesRoyaleVoucher is ERC721URIStorage, Ownable {
     }
 
     function burnWithTransfer(uint tokenId) external {
-        require(sUSD.balanceOf(address(this)) >= pricePerVoucher[tokenId], "No enough sUSD");
-        require(msg.sender == thalesRoyaleAddress, "Sender must be from thales royale contract");
-        sUSD.safeTransfer(thalesRoyaleAddress, pricePerVoucher[tokenId]);
+        require(sUSD.balanceOf(address(this)) >= pricePerPass[tokenId], "No enough sUSD");
+        require(msg.sender == thalesRoyaleAddress, "Sender must be thales royale contract");
+        sUSD.safeTransfer(thalesRoyaleAddress, pricePerPass[tokenId]);
         super._burn(tokenId);
     }
 
     /* ========== VIEW ========== */
 
-    function pricePaidForVoucher(uint tokenId) public view returns (uint) {
-        return pricePerVoucher[tokenId];
+    function pricePaidForPass(uint tokenId) public view returns (uint) {
+        return pricePerPass[tokenId];
     }
 
     /* ========== INTERNALS ========== */
 
-    function _payForVoucher(address _sender, uint _amount) internal {
+    function _payForPass(address _sender, uint _amount) internal {
         sUSD.safeTransferFrom(_sender, address(this), _amount);
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    function setPriceForVoucher(uint _price) public onlyOwner {
+    function setPriceForPass(uint _price) public onlyOwner {
         price = _price;
-        emit NewPriceForVoucher(_price);
+        emit NewPriceForPass(_price);
     }
 
     function setTokenUri(string memory _tokenURI) public onlyOwner {
@@ -102,7 +102,7 @@ contract ThalesRoyaleVoucher is ERC721URIStorage, Ownable {
 
     function setPause(bool _state) public onlyOwner {
         paused = _state;
-        emit VoucherPaused(_state);
+        emit ThalesRoyalePassPaused(_state);
     }
 
     function setThalesRoyaleAddress(address _thalesRoyaleAddress) public onlyOwner {
@@ -113,15 +113,15 @@ contract ThalesRoyaleVoucher is ERC721URIStorage, Ownable {
     /* ========== MODIFIERS ========== */
 
     modifier canBeBurned(uint tokenId) {
-        require(_exists(tokenId), "Not existing voucher");
+        require(_exists(tokenId), "Not existing pass");
         require(_isApprovedOrOwner(msg.sender, tokenId), "Must be owner or approver");
         _;
     }
 
     /* ========== EVENTS ========== */
 
-    event NewPriceForVoucher(uint _price);
+    event NewPriceForPass(uint _price);
     event NewTokenUri(string _tokenURI);
     event NewThalesRoyaleAddress(address _thalesRoyaleAddress);
-    event VoucherPaused(bool _state);
+    event ThalesRoyalePassPaused(bool _state);
 }

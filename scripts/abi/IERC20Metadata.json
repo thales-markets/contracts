@@ -1,5 +1,55 @@
 [
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Approval",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Transfer",
+    "type": "event"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -16,7 +66,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "remaining",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -32,7 +82,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "value",
+        "name": "amount",
         "type": "uint256"
       }
     ],
@@ -40,7 +90,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "success",
+        "name": "",
         "type": "bool"
       }
     ],
@@ -51,7 +101,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "owner",
+        "name": "account",
         "type": "address"
       }
     ],
@@ -59,7 +109,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "balance",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -72,53 +122,11 @@
     "outputs": [
       {
         "internalType": "uint8",
-        "name": "decimalPlaces",
+        "name": "",
         "type": "uint8"
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "spender",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "addedValue",
-        "type": "uint256"
-      }
-    ],
-    "name": "decreaseApproval",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "success",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "spender",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "subtractedValue",
-        "type": "uint256"
-      }
-    ],
-    "name": "increaseApproval",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -127,7 +135,7 @@
     "outputs": [
       {
         "internalType": "string",
-        "name": "tokenName",
+        "name": "",
         "type": "string"
       }
     ],
@@ -140,7 +148,7 @@
     "outputs": [
       {
         "internalType": "string",
-        "name": "tokenSymbol",
+        "name": "",
         "type": "string"
       }
     ],
@@ -153,7 +161,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "totalTokensIssued",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -164,12 +172,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "to",
+        "name": "recipient",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "value",
+        "name": "amount",
         "type": "uint256"
       }
     ],
@@ -177,7 +185,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "success",
+        "name": "",
         "type": "bool"
       }
     ],
@@ -188,46 +196,17 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "data",
-        "type": "bytes"
-      }
-    ],
-    "name": "transferAndCall",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "success",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "from",
+        "name": "sender",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "to",
+        "name": "recipient",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "value",
+        "name": "amount",
         "type": "uint256"
       }
     ],
@@ -235,7 +214,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "success",
+        "name": "",
         "type": "bool"
       }
     ],

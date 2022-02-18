@@ -33,11 +33,10 @@ async function main() {
 	console.log('Found ThalesRoyale at:', thalesRoyaleAddress);
 
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
-	await upgrades.upgradeProxy(thalesRoyaleAddress, ThalesRoyale);
+	const implementation = await upgrades.prepareUpgrade(thalesRoyaleAddress, ThalesRoyale);
 
 	console.log('ThalesRoyale upgraded');
 
-	const implementation = await getImplementationAddress(ethers.provider, thalesRoyaleAddress);
 	console.log('ThalesRoyaleImplementation: ', implementation);
     setTargetAddress('ThalesRoyaleImplementation', network, implementation);
 

@@ -200,7 +200,7 @@ contract('ThalesAMM', accounts => {
 			toUnit(1000),
 			deciMath.address,
 			toUnit(0.02),
-			toUnit(0.20),
+			toUnit(0.2),
 			hour * 2
 		);
 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
@@ -221,188 +221,99 @@ contract('ThalesAMM', accounts => {
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(10000),
+				toUnit(12000),
 				now + day * 10,
 				toUnit(10),
 				creatorSigner
 			);
+
+			let additionalSlippage = toUnit(0.01);
+
+			let options = await newMarket.options();
+			up = await position.at(options.up);
+			down = await position.at(options.down);
+			await up.approve(thalesAMM.address, toUnit(10000000000), { from: minter });
+			await down.approve(thalesAMM.address, toUnit(10000000000), { from: minter });
+
+			await newMarket.mint(toUnit(20000), {
+				from: minter,
+			});
 
 			let spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
 			console.log('priceUp decimal is:' + priceUp / 1e18);
 
-			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+			console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
 
-			let buyPriceImpactMin = await thalesAMM.buyPriceImpact(
+			let sellPriceImpact = await thalesAMM.sellPriceImpact(
 				newMarket.address,
 				Position.UP,
-				toUnit(1)
+				toUnit(availableToSellToAMM / 1e18)
 			);
-			console.log('buyPriceImpactMin decimal is:' + buyPriceImpactMin / 1e18);
+			console.log('sellPriceImpact decimal is:' + sellPriceImpact / 1e18);
 
-			let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18)
+				toUnit(availableToSellToAMM / 1e18)
 			);
-
-			console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
-
-			let buyPriceImpactMid = await thalesAMM.buyPriceImpact(
+			console.log('sellToAmmQuote is ' + sellToAmmQuote / 1e18);
+			await thalesAMM.sellToAMM(
 				newMarket.address,
 				Position.UP,
-				toUnit(availableToBuyFromAMM / 2 / 1e18)
-			);
-			console.log('buyPriceImpactMid decimal is:' + buyPriceImpactMid / 1e18);
-
-			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
-			let additionalSlippage = toUnit(0.01);
-			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
-			await thalesAMM.buyFromAMM(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18 - 1),
-				buyFromAmmQuote,
+				toUnit(availableToSellToAMM / 1e18),
+				sellToAmmQuote,
 				additionalSlippage,
 				{ from: minter }
 			);
 
-			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.UP);
-			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+			availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
+			console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
+
+			sellPriceImpact = await thalesAMM.sellPriceImpact(newMarket.address, Position.UP, toUnit(1));
+			console.log('sellPriceImpact decimal is:' + sellPriceImpact / 1e18);
 
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
-			buyPriceImpactMin = await thalesAMM.buyPriceImpact(newMarket.address, Position.UP, toUnit(1));
-			console.log('buyPriceImpactMin decimal is:' + buyPriceImpactMin / 1e18);
+			availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.DOWN);
+			console.log('availableToSellToAMM down decimal is:' + availableToSellToAMM / 1e18);
 
-			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
+			sellPriceImpact = await thalesAMM.sellPriceImpact(
 				newMarket.address,
 				Position.DOWN,
-				toUnit(1)
+				toUnit(availableToSellToAMM / 1e18)
 			);
-			console.log('buyPriceImpactMin down decimal is:' + buyPriceImpactMin / 1e18);
-			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-				newMarket.address,
-				Position.DOWN
-			);
-			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMM / 1e18);
+			console.log('sellPriceImpact down decimal is:' + sellPriceImpact / 1e18);
 
-			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
+			sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.DOWN,
-				toUnit(1000)
+				toUnit(availableToSellToAMM / 1e18)
 			);
-			console.log('buyPriceImpactMin down thousand decimal is:' + buyPriceImpactMin / 1e18);
-
-			buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+			console.log('sellToAmmQuote is ' + sellToAmmQuote / 1e18);
+			await thalesAMM.sellToAMM(
 				newMarket.address,
 				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log(
-				'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
-			);
-
-			let balancePosition = await thalesAMM.balancePosition(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18)
-			);
-			console.log(
-				'balancePosition down availableToBuyFromAMM decimal is:' + balancePosition / 1e18
-			);
-
-			buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
-			await thalesAMM.buyFromAMM(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1),
-				buyFromAmmQuote,
+				toUnit(availableToSellToAMM / 1e18),
+				sellToAmmQuote,
 				additionalSlippage,
 				{ from: minter }
 			);
 
-			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
-			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
-
-			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-				newMarket.address,
-				Position.DOWN
-			);
-			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMM / 1e18);
-
-			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(1)
-			);
-			console.log('buyPriceImpactMin down decimal is:' + buyPriceImpactMin / 1e18);
-
-			buyPriceImpactMax = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log(
-				'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
-			);
-
-			buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
-			await thalesAMM.buyFromAMM(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1),
-				buyFromAmmQuote,
-				additionalSlippage,
-				{ from: minter }
-			);
+			sellPriceImpact = await thalesAMM.sellPriceImpact(newMarket.address, Position.UP, toUnit(1));
+			console.log('sellPriceImpact decimal is:' + sellPriceImpact / 1e18);
 
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
-			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-				newMarket.address,
-				Position.DOWN
-			);
-			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMM / 1e18);
-
-			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(1)
-			);
-			console.log('buyPriceImpactMin down decimal is:' + buyPriceImpactMin / 1e18);
-
-			buyPriceImpactMax = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log(
-				'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
-			);
-
+			availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.DOWN);
+			console.log('availableToSellToAMM down decimal is:' + availableToSellToAMM / 1e18);
 		});
 	});
 });

@@ -286,6 +286,65 @@ contract('ThalesAMM', accounts => {
 		});
 
 	});
+
+	it('additional slippage test on sell', async () => {
+		let now = await currentTime();
+		let newMarket = await createMarket(
+			manager,
+			sETHKey,
+			toUnit(10000),
+			now + day * 10,
+			toUnit(10),
+			creatorSigner
+		);
+
+		let options = await newMarket.options();
+		up = await position.at(options.up);
+		down = await position.at(options.down);
+
+		let ammUpBalance = await up.balanceOf(thalesAMM.address);
+		console.log('amm UpBalance pre buy decimal is:' + ammUpBalance / 1e18);
+
+		let ammDownBalance = await down.balanceOf(thalesAMM.address);
+		console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
+
+		await newMarket.mint(toUnit(6000), {
+			from: minter,
+		});
+
+		let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
+			newMarket.address,
+			Position.UP,
+			toUnit(10)
+		);
+		console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e18);
+
+		await up.approve(thalesAMM.address, toUnit(1000), {
+			from: minter,
+		});
+		let additionalSlippage = toUnit(0.01);
+		await expect(
+			thalesAMM.sellToAMM(
+				newMarket.address,
+				Position.UP,
+				toUnit(10),
+				toUnit((sellToAmmQuote / 1e18) * 1.5),
+				additionalSlippage,
+				{ from: minter }
+			)
+		).to.be.revertedWith('Slippage too high');
+
+		additionalSlippage = toUnit(0.2);
+		await thalesAMM.sellToAMM(
+			newMarket.address,
+			Position.UP,
+			toUnit(10),
+			toUnit((sellToAmmQuote / 1e18) * 1.1),
+			additionalSlippage,
+			{ from: minter }
+		);
+	});
+
 });
 
 function calculateOdds(price, strike, days, volatility) {

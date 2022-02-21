@@ -21,8 +21,9 @@ async function main() {
 
 	if (networkObj.chainId == 10) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+		network = 'optimistic';
 	} else if (networkObj.chainId == 69) {
-		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });

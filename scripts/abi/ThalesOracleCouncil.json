@@ -200,24 +200,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_disputeIndex",
-        "type": "uint256"
-      }
-    ],
-    "name": "closeDispute",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"

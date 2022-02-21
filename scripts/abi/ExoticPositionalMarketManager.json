@@ -81,6 +81,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "fixedBond",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewFixedBondAmount",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oracleCouncilAddress",
         "type": "address"
@@ -256,6 +269,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "fixedBondAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -283,6 +309,25 @@
       }
     ],
     "name": "getActiveMarketIndex",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "getMarketBondAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -457,6 +502,29 @@
         "internalType": "address",
         "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_recepient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "sendBondAmountTo",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
       }
     ],
     "name": "setBackstopTimeout",
@@ -473,6 +541,19 @@
       }
     ],
     "name": "setExoticMarketMastercopy",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_fixedBond",
+        "type": "uint256"
+      }
+    ],
+    "name": "setFixedBondAmount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

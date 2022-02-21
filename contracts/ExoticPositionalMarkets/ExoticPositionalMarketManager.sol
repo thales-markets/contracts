@@ -23,6 +23,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint private constant backstopTimeoutDefault = 4 hours;
     uint private constant fixedBondAmountDefault = 100*1e18;
 
+    uint public fixedBondAmount;
     uint public backstopTimeout;
     uint public minimumPositioningDuration;
 
@@ -93,7 +94,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function sendBondAmountTo(address _market, address _recepient, uint _amount) external onlyOracleCouncil {
         require(_amount > 0, "Invalid amount");
-        require(ExoticPositionalMarket(_market).bondAmount());
+        // require(ExoticPositionalMarket(_market).bondAmount());
     }
     
     function disputeMarket(address _marketAddress) external onlyOracleCouncil {
@@ -111,7 +112,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function getMarketBondAmount(address _market) public view returns (uint) {
-        return ExoticPositionalMarket(_market).bondAmount();
+        return fixedBondAmount;
     }
     
     function getActiveMarketAddress(uint _index) external view returns(address){

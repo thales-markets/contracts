@@ -200,7 +200,7 @@ contract('ThalesAMM', accounts => {
 			toUnit(1000),
 			deciMath.address,
 			toUnit(0.02),
-			toUnit(0.20),
+			toUnit(0.2),
 			hour * 2
 		);
 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
@@ -260,6 +260,27 @@ contract('ThalesAMM', accounts => {
 			);
 			console.log('buyPriceImpactMid decimal is:' + buyPriceImpactMid / 1e18);
 
+			let impactPrice = await thalesAMM.impactPrice(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 1e18 - 1)
+			);
+			console.log('impactPrice decimal is:' + impactPrice / 1e18);
+
+			let impactPriceIncrease = await thalesAMM.impactPriceIncrease(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 1e18 - 1)
+			);
+			console.log('impactPriceIncrease decimal is:' + impactPriceIncrease / 1e18);
+
+			let tempPrice = await thalesAMM.tempPrice(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 1e18 - 1)
+			);
+			console.log('tempPrice decimal is:' + tempPrice / 1e18);
+
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);
 			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
@@ -276,6 +297,9 @@ contract('ThalesAMM', accounts => {
 				additionalSlippage,
 				{ from: minter }
 			);
+
+			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
+			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
 
 			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.UP);
 			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
@@ -338,6 +362,9 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
+			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
+			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
@@ -378,6 +405,9 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
+			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
+			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
 			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
@@ -402,7 +432,6 @@ contract('ThalesAMM', accounts => {
 			console.log(
 				'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
 			);
-
 		});
 	});
 });

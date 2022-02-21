@@ -221,7 +221,7 @@ contract('ThalesAMM', accounts => {
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
+				toUnit(10000),
 				now + day * 10,
 				toUnit(10),
 				creatorSigner
@@ -272,6 +272,9 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
+			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
+			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+
 			availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
 			console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
 
@@ -314,6 +317,9 @@ contract('ThalesAMM', accounts => {
 
 			availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.DOWN);
 			console.log('availableToSellToAMM down decimal is:' + availableToSellToAMM / 1e18);
+
+			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
+			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
 		});
 	});
 });

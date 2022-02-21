@@ -96,7 +96,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             }
             uint availableUntilCapSUSD = capPerMarket.add(additionalBufferFromSelling).sub(spentOnMarket[market]);
 
-            return balance.add(availableUntilCapSUSD.div(divider_price).mul(ONE));
+            return balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
         } else {
             return 0;
         }
@@ -112,8 +112,50 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
         uint basePrice = price(market, position);
         uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount)).div(ONE);
+        // add 2% to the price increase to avoid edge cases on the extremes
+        impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
         uint tempAmount = amount.mul(basePrice.add(impactPriceIncrease)).div(ONE);
         return tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
+    }
+
+    function impactPrice(
+        address market,
+        Position position,
+        uint amount
+    ) public view returns (uint) {
+        if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
+            return 0;
+        }
+        uint basePrice = price(market, position);
+        uint impactPrice = _buyPriceImpact(market, position, amount);
+        return impactPrice;
+    }
+
+    function impactPriceIncrease(
+        address market,
+        Position position,
+        uint amount
+    ) public view returns (uint) {
+        if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
+            return 0;
+        }
+        uint basePrice = price(market, position);
+        uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount)).div(ONE);
+        return impactPriceIncrease;
+    }
+
+    function tempPrice(
+        address market,
+        Position position,
+        uint amount
+    ) public view returns (uint) {
+        if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
+            return 0;
+        }
+        uint basePrice = price(market, position);
+        uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount)).div(ONE);
+        uint tempPrice = basePrice.add(impactPriceIncrease);
+        return tempPrice;
     }
 
     function buyPriceImpact(
@@ -158,14 +200,13 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint amount
     ) public view returns (uint) {
         if (amount > availableToSellToAMM(market, position)) {
-            return 0;
+            return 10;
         }
         uint basePrice = price(market, position);
 
-        return
-            amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount)).sub(safeBoxImpact)).div(ONE)).div(
-                ONE
-            );
+        uint tempAmount = amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
+
+        return tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
     }
 
     function sellPriceImpact(
@@ -419,13 +460,18 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address market,
         Position position,
         uint amount,
-        uint pricePaid,
+        uint sUSDPaid,
         uint sUSDFromBurning
     ) internal {
-        uint safeBoxShare = price(market, position).mul(amount).div(ONE).mul(safeBoxImpact).div(ONE);
-        sUSD.transfer(safeBox, safeBoxShare);
+        uint safeBoxShare = sUSDPaid.mul(ONE).div(ONE.sub(safeBoxImpact)).sub(sUSDPaid);
 
-        spentOnMarket[market] = spentOnMarket[market].add(pricePaid.add(safeBoxShare));
+        if (safeBoxImpact > 0) {
+            sUSD.transfer(safeBox, safeBoxShare);
+        } else {
+            safeBoxShare = 0;
+        }
+
+        spentOnMarket[market] = spentOnMarket[market].add(sUSDPaid.add(safeBoxShare));
         if (spentOnMarket[market] <= sUSDFromBurning) {
             spentOnMarket[market] = 0;
         } else {
@@ -439,8 +485,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint amount,
         uint sUSDPaid
     ) internal {
-        uint safeBoxShare = price(market, position).mul(amount).div(ONE).mul(safeBoxImpact).div(ONE);
-        sUSD.transfer(safeBox, safeBoxShare);
+        uint safeBoxShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(safeBoxImpact)));
+        if (safeBoxImpact > 0) {
+            sUSD.transfer(safeBox, safeBoxShare);
+        } else {
+            safeBoxShare = 0;
+        }
 
         if (spentOnMarket[market] <= sUSDPaid.sub(safeBoxShare)) {
             spentOnMarket[market] = 0;

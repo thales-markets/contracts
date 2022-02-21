@@ -93,7 +93,7 @@ contract('Exotic Positional market', async accounts => {
 				{ from: owner }
 			);
 
-			answer = await ExoticPositionalMarketManager.getMarketAddress('0');
+			answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 		});
 		it('new market', async function() {

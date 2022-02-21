@@ -10,18 +10,6 @@ import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable {
     using SafeMath for uint;
 
-    // struct Position {
-    //     bytes32 phrase;
-    //     uint position;
-    //     uint amount;
-    // }
-
-    // struct User {
-    //     address account;
-    //     uint position;
-    //     uint amount;
-    // }
-
     enum TicketType {FIXED_TICKET_PRICE, FLEXIBLE_BID}
     uint private safeBoxAmount;
     uint private constant HUNDRED = 100;
@@ -29,7 +17,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable {
     uint private constant HUNDRED_PERCENT = 1e18;
     uint private constant FIXED_BOND_AMOUNT = 100 * 1e18;
     uint public constant claimTimeoutDefaultPeriod = 1 days;
-    uint public constant acceptAndSetResultTimePeriod = 4 hours;
     uint public constant pDAOResolveTimePeriod = 2 days;
     uint public constant safeBoxPercentage = 1;
     uint public constant creatorPercentage = 1;
@@ -45,16 +32,16 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable {
 
     // from init
     string public marketQuestion;
-    // Position[] public positions;
-    uint public positionCount;
+    TicketType public ticketType;
     mapping(uint => string) public positionPhrase;
+    uint public positionCount;
     uint public endOfPositioning;
     uint public marketMaturity;
-    TicketType public ticketType;
     uint public fixedTicketPrice;
-    bool public withdrawalAllowed;
-    uint public withdrawalFeePercentage;
     uint[] public tag;
+    uint public backstopTimeout;
+    uint public withdrawalFeePercentage;
+    bool public withdrawalAllowed;
     IERC20 public paymentToken;
     address public creatorAddress;
     address public councilAddress;
@@ -77,12 +64,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable {
         uint _withdrawalFeePercentage,
         uint[] memory _tag,
         address _paymentToken,
-        string[] memory _phrases,
-        address _councilAddress
+        string[] memory _phrases
     ) external initializer {
         require(_phrases.length >= 2 && _phrases.length <= 5, "Invalid number of provided positions");
         setOwner(msg.sender);
-        setOracleCouncilAddress(_councilAddress);
         _initializeWithTwoParameters(
             _creatorAddress,
             _marketQuestion,
@@ -99,12 +84,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable {
                 _addPosition(_phrases[i]);
             }
         }
-        claimTimeoutPeriod = claimTimeoutDefaultPeriod;
-    }
-
-    function setOracleCouncilAddress(address _councilAddress) public onlyOwner {
-        require(_councilAddress != address(0), "Invalid council address");
-        councilAddress = _councilAddress;
     }
 
     function takeAPosition(uint _position) external notPaused {
@@ -199,7 +178,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable {
         require(isMarketCreated(), "Market not created");
         require(!disputed, "Market already disputed");
         disputed = true;
-        disputedInPositioningPhase = !canUsersPlacePosition();
+        disputedInPositioningPhase = canUsersPlacePosition();
         disputeTime = block.timestamp;
         emit MarketDisputed(true);
     }
@@ -214,12 +193,15 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function setClaimTimeoutPeriod(uint _timeoutPeriod) external {
-        claimTimeoutPeriod = _timeoutPeriod;
-        emit ClaimTimeoutPeriodChanged(_timeoutPeriod);
+    // SETTERS ///////////////////////////////////////////////////////
+
+    function setBackstopTimeout(uint _timeoutPeriod) external onlyOwner {
+        backstopTimeout = _timeoutPeriod;
+        emit BackstopTimeoutPeriodChanged(_timeoutPeriod);
     }
 
-    // VIEWS
+    // VIEWS /////////////////////////////////////////////////////////
+
     function isMarketCreated() public view returns (bool) {
         return creationTime > 0;
     }
@@ -238,8 +220,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable {
 
     function canHoldersClaim() public view returns (bool) {
         return
-            (block.timestamp >= endOfPositioning.add(claimTimeoutPeriod) ||
-                (resultSetTime > 0 && block.timestamp > resultSetTime.add(acceptAndSetResultTimePeriod))) &&
+            (resolvedTime > 0 && block.timestamp > resolvedTime.add(backstopTimeout)) &&
             resolved &&
             (!disputed);
     }
@@ -360,7 +341,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable {
     event MarketResolved(uint winningPosition, address resolverAddress);
     event WinningTicketClaimed(address account, uint amount);
     event TransferredToSafeBox(address account, uint amount);
-    event ClaimTimeoutPeriodChanged(uint timeoutPeriod);
+    event BackstopTimeoutPeriodChanged(uint timeoutPeriod);
     event NewPositionTaken(address account, uint position, uint fixedTicketAmount);
     event TicketWithdrawn(address account, uint amount);
 }

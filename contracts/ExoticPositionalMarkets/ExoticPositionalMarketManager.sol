@@ -20,6 +20,10 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
 
+    uint private constant backstopTimeoutDefault = 4 hours;
+    uint private constant fixedBondAmountDefault = 100*1e18;
+
+    uint public backstopTimeout;
     uint public minimumPositioningDuration;
 
     address public exoticMarketMastercopy;
@@ -38,6 +42,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         initNonReentrant();
         minimumPositioningDuration = _minimumPositioningDuration;
         exoticMarketMastercopy = _exoticMarketMastercopy;
+        backstopTimeout = backstopTimeoutDefault;
     }
 
 
@@ -51,7 +56,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         uint[] memory _tag,
         address _paymentToken,
         string[] memory _phrases
-     ) external checkMarketRequirements(_endOfPositioning) {
+     ) external checkMarketRequirements(_endOfPositioning) nonReentrant {
+        require(IERC20(_paymentToken).allowance(msg.sender, address(this)) >= fixedBondAmount,
+                    "No allowance. Please approve ticket price allowance"
+                );
         ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(
             Clones.clone(exoticMarketMastercopy)
         );
@@ -64,12 +72,13 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             _withdrawalFeePercentage, 
             _tag, 
             _paymentToken, 
-            _phrases,
-            oracleCouncilAddress
+            _phrases
             );
 
+        
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
+        IERC20(_paymentToken).transferFrom(msg.sender, address(exoticMarket), fixedBondAmount);
         emit MarketCreated(address(exoticMarket), _marketQuestion, msg.sender);
     }
 
@@ -82,7 +91,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit MarketResolved(_marketAddress);
     }
 
-    function disputeMarket(address _marketAddress) external {
+    function sendBondAmountTo(address _market, address _recepient, uint _amount) external onlyOracleCouncil {
+        require(_amount > 0, "Invalid amount");
+        require(ExoticPositionalMarket(_market).bondAmount());
+    }
+    
+    function disputeMarket(address _marketAddress) external onlyOracleCouncil {
         // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
         require(msg.sender == oracleCouncilAddress, "Invalid call. Use OracleCouncil to dispute a market");
         require(!ExoticPositionalMarket(_marketAddress).disputed(), "Market already disputed");
@@ -95,12 +109,16 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         }
         
     }
+
+    function getMarketBondAmount(address _market) public view returns (uint) {
+        return ExoticPositionalMarket(_market).bondAmount();
+    }
     
-    function getMarketAddress(uint _index) external view returns(address){
+    function getActiveMarketAddress(uint _index) external view returns(address){
         return activeMarkets[_index];
     }
 
-    function getMarketIndex(address _marketAddress) public view returns(uint) {
+    function getActiveMarketIndex(address _marketAddress) public view returns(uint) {
         for(uint i=0; i<numOfActiveMarkets; i++) {
             if(activeMarkets[i] == _marketAddress) {
                 return i;
@@ -110,8 +128,18 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function isActiveMarket(address _marketAddress) public view returns(bool) {
-        return getMarketIndex(_marketAddress) < numOfActiveMarkets;
+        return getActiveMarketIndex(_marketAddress) < numOfActiveMarkets;
 
+    }
+
+    function setFixedBondAmount(uint _fixedBond) external {
+        require(_fixedBond > 0, "Invalid bond amount");
+        fixedBondAmount = _fixedBond;
+        emit NewFixedBondAmount(_fixedBond);
+    }
+    
+    function setBackstopTimeout(address _market) external {
+        ExoticPositionalMarket(_market).setBackstopTimeout(backstopTimeout);
     }
 
     function setExoticMarketMastercopy(address _exoticMastercopy) external onlyOwner {
@@ -132,7 +160,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function removeActiveMarket(address _marketAddress) internal {
-        activeMarkets[getMarketIndex(_marketAddress)] = activeMarkets[numOfActiveMarkets.sub(1)];
+        activeMarkets[getActiveMarketIndex(_marketAddress)] = activeMarkets[numOfActiveMarkets.sub(1)];
         numOfActiveMarkets = numOfActiveMarkets.sub(1);
         activeMarkets[numOfActiveMarkets] = address(0);
     }
@@ -143,6 +171,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         // require(_marketMaturity >= block.timestamp.add(minimumMarketMaturityDuration), "Market Maturity period too low. Increase the maturityDuration");
         _;
     }
+    
+    modifier onlyOracleCouncil() {
+        require(msg.sender == oracleCouncilAddress, "No ExoticMarket mastercopy present. Please update the mastercopy");
+        _;
+    }
 
     event MinimumPositionDurationChanged(uint duration);
     event MinimumMarketMaturityDurationChanged(uint duration);
@@ -150,4 +183,5 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event MarketCreated(address marketAddress, string marketQuestion, address marketOwner);
     event MarketResolved(address marketAddress);
     event NewOracleCouncilAddress(address oracleCouncilAddress);
+    event NewFixedBondAmount(uint fixedBond);
 }

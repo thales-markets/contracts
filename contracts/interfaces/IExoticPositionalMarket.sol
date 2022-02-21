@@ -7,5 +7,5 @@ interface IExoticPositionalMarket {
     function canMarketBeResolved() external view returns (bool);
     function canHoldersClaim() external view returns (bool);
     function winningPosition() external view returns (uint);
-
+    function disputed() external view returns (bool);
 }

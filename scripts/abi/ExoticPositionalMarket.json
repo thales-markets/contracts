@@ -9,7 +9,7 @@
         "type": "uint256"
       }
     ],
-    "name": "ClaimTimeoutPeriodChanged",
+    "name": "BackstopTimeoutPeriodChanged",
     "type": "event"
   },
   {
@@ -198,7 +198,14 @@
   },
   {
     "inputs": [],
-    "name": "acceptAndSetResultTimePeriod",
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "backstopTimeout",
     "outputs": [
       {
         "internalType": "uint256",
@@ -207,13 +214,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "acceptOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -639,11 +639,6 @@
         "internalType": "string[]",
         "name": "_phrases",
         "type": "string[]"
-      },
-      {
-        "internalType": "address",
-        "name": "_councilAddress",
-        "type": "address"
       }
     ],
     "name": "initialize",
@@ -937,20 +932,7 @@
         "type": "uint256"
       }
     ],
-    "name": "setClaimTimeoutPeriod",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_councilAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setOracleCouncilAddress",
+    "name": "setBackstopTimeout",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

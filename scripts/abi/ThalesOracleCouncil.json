@@ -49,6 +49,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "marketManager",
+        "type": "address"
+      }
+    ],
+    "name": "NewMarketManager",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "councilMember",
         "type": "address"
       },
@@ -287,6 +300,11 @@
         "internalType": "uint256",
         "name": "disputeTimestamp",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "disputeInPositioningPhase",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -399,6 +417,11 @@
             "internalType": "uint256",
             "name": "disputeTimestamp",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "disputeInPositioningPhase",
+            "type": "bool"
           }
         ],
         "internalType": "struct ThalesOracleCouncil.Dispute",
@@ -590,6 +613,11 @@
         "internalType": "address",
         "name": "_paymentToken",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_marketManager",
+        "type": "address"
       }
     ],
     "name": "initialize",
@@ -649,6 +677,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketManager",
+    "outputs": [
+      {
+        "internalType": "contract IExoticPositionalMarketManager",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -765,6 +806,19 @@
       }
     ],
     "name": "removeOracleCouncilMember",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_marketManager",
+        "type": "address"
+      }
+    ],
+    "name": "setMarketManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

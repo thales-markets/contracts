@@ -241,6 +241,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      }
+    ],
+    "name": "closeDispute",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_marketQuestion",
         "type": "string"
@@ -285,25 +298,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_market",
+        "name": "_marketAddress",
         "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "_bond",
-        "type": "uint256"
-      }
-    ],
-    "name": "decreaseBond",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
-        "name": "_marketAddress",
+        "name": "_disputor",
         "type": "address"
       }
     ],
@@ -393,24 +393,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_bond",
-        "type": "uint256"
-      }
-    ],
-    "name": "increaseBondAmount",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -615,7 +597,7 @@
         "type": "uint256"
       }
     ],
-    "name": "sendBondAmountTo",
+    "name": "sendMarketBondAmountTo",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

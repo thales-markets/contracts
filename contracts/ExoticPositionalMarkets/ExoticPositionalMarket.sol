@@ -226,7 +226,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         paymentToken.transferFrom(_sender, address(this), _amount);
     }
     
-    function transferBondToMarket(address _sender, uint _amount) external notPaused nonReentrant {
+    function transferBondToMarket(address _sender, uint _amount) external notPaused {
         totalBondAmount = totalBondAmount.add(_amount);
         transferToMarket(_sender, _amount);
     }

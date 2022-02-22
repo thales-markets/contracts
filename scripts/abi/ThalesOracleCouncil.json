@@ -11,6 +11,31 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "disputeIndex",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "decidedOption",
+        "type": "uint256"
+      }
+    ],
+    "name": "DisputeClosed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "disputeFinalCode",
         "type": "uint256"
       }

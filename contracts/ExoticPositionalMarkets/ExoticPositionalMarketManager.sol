@@ -29,6 +29,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     address public exoticMarketMastercopy;
     address public oracleCouncilAddress;
+    address public safeBoxAddress;
 
     mapping (uint => address) public activeMarkets;
     uint public numOfActiveMarkets;
@@ -91,10 +92,31 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         removeActiveMarket(_marketAddress);
         emit MarketResolved(_marketAddress);
     }
+    
+    function cancelMarket(address _marketAddress) external onlyOracleCouncilAndOwner {
+        require(isActiveMarket(_marketAddress), "Market is not active");
+        // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
+        
+        ExoticPositionalMarket(_marketAddress).cancelMarket();
+        removeActiveMarket(_marketAddress);
+        emit MarketCanceled(_marketAddress);
+    }
 
-    function sendBondAmountTo(address _market, address _recepient, uint _amount) external onlyOracleCouncil {
+    function getMarketBondAmount(address _market) external view returns(uint){
+        return ExoticPositionalMarket(_market).totalBondAmount();
+    }
+
+    function increaseBondAmount(address _market, uint _bond) external onlyOracleCouncilAndOwner {
+        ExoticPositionalMarket(_market).increaseBondAmount(_bond);
+    }
+    
+    function decreaseBond(address _market, uint _bond) external onlyOracleCouncilAndOwner {
+        ExoticPositionalMarket(_market).decreaseBondAmount(_bond);
+    }
+
+    function sendBondAmountTo(address _market, address _recepient, uint _amount) external onlyOracleCouncilAndOwner {
         require(_amount > 0, "Invalid amount");
-        // require(ExoticPositionalMarket(_market).bondAmount());
+        ExoticPositionalMarket(_market).transferFromBondAmountToRecepient(_recepient, _amount);
     }
     
     function disputeMarket(address _marketAddress) external onlyOracleCouncil {
@@ -109,10 +131,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             ExoticPositionalMarket(_marketAddress).openDispute();
         }
         
-    }
-
-    function getMarketBondAmount(address _market) public view returns (uint) {
-        return fixedBondAmount;
     }
     
     function getActiveMarketAddress(uint _index) external view returns(address){
@@ -174,7 +192,15 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
     
     modifier onlyOracleCouncil() {
-        require(msg.sender == oracleCouncilAddress, "No ExoticMarket mastercopy present. Please update the mastercopy");
+        require(msg.sender == oracleCouncilAddress, "Not OracleCouncil address");
+        require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
+        _;
+    }
+    modifier onlyOracleCouncilAndOwner() {
+        require(msg.sender == oracleCouncilAddress || msg.sender == owner, "Not OracleCouncil Address or Owner address");
+        if(msg.sender != owner) {
+            require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
+        }
         _;
     }
 
@@ -183,6 +209,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event ExoticMarketMastercopyChanged(address _exoticMastercopy);
     event MarketCreated(address marketAddress, string marketQuestion, address marketOwner);
     event MarketResolved(address marketAddress);
+    event MarketCanceled(address marketAddress);
     event NewOracleCouncilAddress(address oracleCouncilAddress);
     event NewFixedBondAmount(uint fixedBond);
 }

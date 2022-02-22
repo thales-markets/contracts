@@ -221,7 +221,7 @@ contract('Exotic Positional market', async accounts => {
 							assert.equal(answer, true);
 						});
 
-						describe('withdrawing reward funds (3% total fees)', async function() {
+						describe('claiming reward funds (3% total fees)', async function() {
 							beforeEach(async () => {
 								await fastForward(DAY + SECOND);
 							});

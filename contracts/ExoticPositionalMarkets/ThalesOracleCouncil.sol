@@ -22,6 +22,8 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     uint private constant ACCEPT_RESET = 5;
     uint private constant REFUSE_MATURE = 6;
 
+    uint private constant TEN_SUSD = 10*1e18;
+
     mapping(uint => address) public councilMemberAddress;
     mapping(address => uint) public councilMemberIndex;
     uint public councilMemberCount;
@@ -170,22 +172,36 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
                 // 4 hours backstop
                 marketManager.setBackstopTimeout(_market);
                 // send disputor BOND to SafeBox
-                marketManager.getMarketBondAmount(_market);
-
-                // marketManager.sendBondAmountTo(_market, _address, _amount);
+                // marketManager.getMarketBondAmount(_market);
+                marketManager.sendBondAmountTo(_market, marketManager.safeBoxAddress(), marketManager.fixedBondAmount());
+                marketLastClosedDispute[_market] = _disputeIndex;
+                emit DisputeClosed(_market, _disputeIndex, _decidedOption);
             }
             else if (_decidedOption == ACCEPT_SLASH) {
-                // close market(cancel market)
                 // 4 hours
                 marketManager.setBackstopTimeout(_market);
+                // close market(cancel market)
+                marketManager.cancelMarket(_market);
                 // send bond to disputor and safeBox
+                marketManager.sendBondAmountTo(_market, marketManager.safeBoxAddress(), TEN_SUSD);
+                marketManager.sendBondAmountTo(_market, dispute[_market][_disputeIndex].disputorAddress , marketManager.fixedBondAmount().mul(2).sub(TEN_SUSD));
+
+                marketLastClosedDispute[_market] = _disputeIndex;
+                emit DisputeClosed(_market, _disputeIndex, _decidedOption);
             }
             else if (_decidedOption == ACCEPT_NO_SLASH) {
-                // close market(cancel market)
                 // 4 hours
                 marketManager.setBackstopTimeout(_market);
+                // close market(cancel market)
+                marketManager.cancelMarket(_market);
                 // send bond to disputor and safeBox
+                marketManager.sendBondAmountTo(_market, marketManager.safeBoxAddress(), TEN_SUSD);
+                marketManager.sendBondAmountTo(_market, IExoticPositionalMarket(_market).creatorAddress(), marketManager.fixedBondAmount());
+                marketManager.sendBondAmountTo(_market, dispute[_market][_disputeIndex].disputorAddress , marketManager.fixedBondAmount());
+                // marketManager.sendRewardToDisputor(_market, dispute[_market][_disputeIndex].disputorAddress);
 
+                marketLastClosedDispute[_market] = _disputeIndex;
+                emit DisputeClosed(_market, _disputeIndex, _decidedOption);
             }
             else if (_decidedOption == ACCEPT_RESULT)  {
                 // close market
@@ -225,4 +241,5 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     event NewDispute(address market, string disputeString, address disputorAccount);
     event VotedAddedForDispute(address market, uint disputeIndex, uint disputeCodeVote);
     event MarketClosedForDisputes(address market, uint disputeFinalCode);
+    event DisputeClosed(address market, uint disputeIndex, uint decidedOption);
 }

@@ -120,6 +120,19 @@
         "internalType": "address",
         "name": "_marketAddress",
         "type": "address"
+      }
+    ],
+    "name": "resetMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
       },
       {
         "internalType": "uint256",

@@ -90,6 +90,12 @@
   },
   {
     "anonymous": false,
+    "inputs": [],
+    "name": "MarketReset",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
     "inputs": [
       {
         "indexed": false,
@@ -904,6 +910,13 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "resetMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

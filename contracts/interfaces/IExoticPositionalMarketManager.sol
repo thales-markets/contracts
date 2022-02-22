@@ -10,9 +10,12 @@ interface IExoticPositionalMarketManager {
     function safeBoxAddress() external view returns(address);
 
 
-    function disputeMarket(address _marketAddress) external;
+    function disputeMarket(address _marketAddress, address disputor) external;
     function resolveMarket(address _marketAddress, uint _outcomePosition) external;
+    function resetMarket(address _marketAddress) external;
     function cancelMarket(address _market) external ;
+    function closeDispute(address _market) external ;
     function setBackstopTimeout(address _market) external; 
-    function sendBondAmountTo(address _market, address _recepient, uint _amount) external;
+    function sendMarketBondAmountTo(address _market, address _recepient, uint _amount) external;
+
 }   

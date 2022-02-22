@@ -26,8 +26,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
 
     uint public creationTime;
     uint public resolvedTime;
-    uint public disputeTime;
-    uint public resultSetTime;
+    uint public lastDisputeTime;
     uint public claimTimeoutPeriod;
     bool public disputed;
     bool public outcomeUpdated;
@@ -58,7 +57,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     uint public winningPosition;
     uint public claimableTicketsCount;
 
-    uint public totalBondAmount; 
+    uint public totalBondAmount;
 
     function initialize(
         address _creatorAddress,
@@ -143,10 +142,26 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
             resolverAddress = _resolverAddress;
             emit MarketResolved(_outcomePosition, _resolverAddress);
         } else {
-            // _resolveFlexibleBid(_outcomePosition);
+            // Flexible bid
         }
     }
-    
+
+    function resetMarket() external onlyOwner {
+        require(resolved, "Market is not resolved");
+
+        if (ticketType == TicketType.FIXED_TICKET_PRICE) {
+            if (winningPosition == CANCELED) {
+                ticketsPerPosition[winningPosition] = 0;
+            }
+            claimableTicketsCount = 0;
+            resolved = false;
+            resolvedTime = 0;
+            emit MarketReset();
+        } else {
+            // Flexible bid
+        }
+    }
+
     function cancelMarket() external onlyOwner {
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             winningPosition = CANCELED;
@@ -170,17 +185,18 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
                 emit WinningTicketClaimed(msg.sender, amount);
             }
         } else {
-            // _resolveFlexibleBid(_outcomePosition);
+            // Flexible bid;
         }
     }
 
     function claimToSafeBox(address _safeBox) external onlyOwner {
         require(resolved, "Market not resolved");
+        require(paymentToken.balanceOf(_safeBox) > 0, "Balance is zero");
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             paymentToken.transfer(_safeBox, getSafeBoxAmount());
             emit TransferredToSafeBox(_safeBox, getSafeBoxAmount());
         } else {
-            // _resolveFlexibleBid(_outcomePosition);
+            // Flexible bid
         }
     }
 
@@ -189,52 +205,45 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         require(!disputed, "Market already disputed");
         disputed = true;
         disputedInPositioningPhase = canUsersPlacePosition();
-        disputeTime = block.timestamp;
+        lastDisputeTime = block.timestamp;
         emit MarketDisputed(true);
     }
 
-    function closeDispute(uint _position) external onlyOwner {
+    function closeDispute() external onlyOwner {
         require(disputed, "Market not disputed");
         if (disputedInPositioningPhase) {
             disputed = false;
+            disputedInPositioningPhase = false;
         } else {
             disputed = false;
-            resultSetTime = block.timestamp;
         }
     }
 
     function transferToMarket(address _sender, uint _amount) public notPaused nonReentrant {
         require(_sender != address(0), "Invalid sender address");
-        require(
-                paymentToken.allowance(_sender, address(this)) >= _amount,
-                "No allowance. Please adjust the allowance"
-            );
+        require(paymentToken.balanceOf(_sender) >= _amount, "Sender balance low");
+        require(paymentToken.allowance(_sender, address(this)) >= _amount, "No allowance. Please adjust the allowance");
         paymentToken.transferFrom(_sender, address(this), _amount);
     }
     
+    function transferBondToMarket(address _sender, uint _amount) external notPaused nonReentrant {
+        totalBondAmount = totalBondAmount.add(_amount);
+        transferToMarket(_sender, _amount);
+    }
+
     function transferFromBondAmountToRecepient(address _recepient, uint _amount) public onlyOwner {
         require(_amount <= totalBondAmount, "Exceeds the total bond amount");
         require(_recepient != address(0), "Invalid sender address");
+        require(paymentToken.balanceOf(address(this)) >= _amount, "Market balance low");
         totalBondAmount = totalBondAmount.sub(_amount);
         paymentToken.transfer(_recepient, _amount);
     }
-
 
     // SETTERS ///////////////////////////////////////////////////////
 
     function setBackstopTimeout(uint _timeoutPeriod) external onlyOwner {
         backstopTimeout = _timeoutPeriod;
         emit BackstopTimeoutPeriodChanged(_timeoutPeriod);
-    }
-       
-    function increaseBondAmount(uint _bond) external onlyOwner {
-        totalBondAmount = totalBondAmount.add(_bond);
-        emit BondIncreased(_bond, totalBondAmount);
-    }
-    
-    function decreaseBondAmount(uint _bond) external onlyOwner {
-        totalBondAmount = totalBondAmount.sub(_bond);
-        emit BondDecreased(_bond, totalBondAmount);
     }
 
     // VIEWS /////////////////////////////////////////////////////////
@@ -256,10 +265,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     function canHoldersClaim() public view returns (bool) {
-        return
-            (resolvedTime > 0 && block.timestamp > resolvedTime.add(backstopTimeout)) &&
-            resolved &&
-            (!disputed);
+        return (resolvedTime > 0 && block.timestamp > resolvedTime.add(backstopTimeout)) && resolved && (!disputed);
     }
 
     function getPositionPhrase(uint index) public view returns (string memory) {
@@ -291,8 +297,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     function getWinningAmountPerTicket() public view returns (uint) {
         if (totalTicketHolders == 0) {
             return 0;
-        }
-        else {
+        } else {
             return getTotalClaimableAmount().div(ticketsPerPosition[winningPosition]);
         }
     }
@@ -374,6 +379,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     event MarketDisputed(bool disputed);
     event MarketCreated(uint creationTime, uint positionCount, bytes32 phrase);
     event MarketResolved(uint winningPosition, address resolverAddress);
+    event MarketReset();
     event WinningTicketClaimed(address account, uint amount);
     event TransferredToSafeBox(address account, uint amount);
     event BackstopTimeoutPeriodChanged(uint timeoutPeriod);

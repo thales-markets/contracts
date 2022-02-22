@@ -60,6 +60,19 @@
         "type": "address"
       }
     ],
+    "name": "MarketReset",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "marketAddress",
+        "type": "address"
+      }
+    ],
     "name": "MarketResolved",
     "type": "event"
   },
@@ -538,6 +551,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      }
+    ],
+    "name": "resetMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

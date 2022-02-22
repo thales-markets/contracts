@@ -169,6 +169,7 @@ async function main() {
 		console.log('ThalesAMM: setSafeBoxImpact()');
 	});
 
+
 	await hre.run('verify:verify', {
 		address: deciMath.address,
 	});

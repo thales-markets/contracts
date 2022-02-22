@@ -207,6 +207,8 @@ contract('ThalesAMM', accounts => {
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
 		await thalesAMM.setSafeBoxImpact(toUnit(0.01), { from: owner });
 		await thalesAMM.setSafeBox(safeBox, { from: owner });
+		await thalesAMM.setMinSupportedPrice(toUnit(0.05), { from: owner });
+		await thalesAMM.setMaxSupportedPrice(toUnit(0.95), { from: owner });
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 	});
 
@@ -259,27 +261,6 @@ contract('ThalesAMM', accounts => {
 				toUnit(availableToBuyFromAMM / 2 / 1e18)
 			);
 			console.log('buyPriceImpactMid decimal is:' + buyPriceImpactMid / 1e18);
-
-			let impactPrice = await thalesAMM.impactPrice(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log('impactPrice decimal is:' + impactPrice / 1e18);
-
-			let impactPriceIncrease = await thalesAMM.impactPriceIncrease(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log('impactPriceIncrease decimal is:' + impactPriceIncrease / 1e18);
-
-			let tempPrice = await thalesAMM.tempPrice(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log('tempPrice decimal is:' + tempPrice / 1e18);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);

@@ -12,6 +12,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 // interfaces
 import "../interfaces/IPriceFeed.sol";
+import "../interfaces/IThalesRoyalePass.sol";
 
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
@@ -31,6 +32,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     /* ========== STATE VARIABLES ========== */
 
     IERC20Upgradeable public rewardToken;
+    IThalesRoyalePass public royalePass;
     bytes32 public oracleKey;
     IPriceFeed public priceFeed;
 
@@ -116,21 +118,13 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         _signUpPlayer(msg.sender, position);
     }
 
-    function signUpOnBehalf(address player) external onlyOwner {
-        require(playerSignedUpPerSeason[season][player] == 0, "Player already signed up");
-        require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
-        // check owner buy in
-        require(rewardToken.balanceOf(msg.sender) >= buyInAmount, "No enough sUSD for buy in");
-        require(rewardToken.allowance(msg.sender, address(this)) >= buyInAmount, "No allowance.");
+    function signUpWithPass(uint passId) external playerCanSignUpWithPass(passId) {
+        _signUpPlayerWithPass(msg.sender, 0, passId);
+    }
 
-        playerSignedUpPerSeason[season][player] = block.timestamp;
-        playersPerSeason[season].push(player);
-        signedUpPlayersCount[season]++;
-
-        // buy in from owner!
-        _buyIn(msg.sender, buyInAmount);
-
-        emit SignedUp(player, season);
+    function signUpWithPassWithPosition(uint passId, uint position) external playerCanSignUpWithPass(passId) {
+        require(position == DOWN || position == UP, "Position can only be 1 or 2");
+        _signUpPlayerWithPass(msg.sender, position, passId);
     }
 
     function startRoyaleInASeason() external {
@@ -194,9 +188,10 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         roundResultPerSeason[season][currentSeasonRound] = currentPriceFromOracle >= stikePrice ? UP : DOWN;
         roundTargetPrice = currentPriceFromOracle;
 
-        uint winningPositionsPerRound = roundResultPerSeason[season][currentSeasonRound] == UP
-            ? positionsPerRoundPerSeason[season][currentSeasonRound][UP]
-            : positionsPerRoundPerSeason[season][currentSeasonRound][DOWN];
+        uint winningPositionsPerRound =
+            roundResultPerSeason[season][currentSeasonRound] == UP
+                ? positionsPerRoundPerSeason[season][currentSeasonRound][UP]
+                : positionsPerRoundPerSeason[season][currentSeasonRound][DOWN];
 
         if (nextRound <= rounds) {
             // setting total players for next round (round + 1) to be result of position in a previous round
@@ -264,7 +259,10 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     function canStartRoyale() public view returns (bool) {
-        return seasonStarted[season] && !royaleInSeasonStarted[season] && block.timestamp > (seasonCreationTime[season] + signUpPeriod);
+        return
+            seasonStarted[season] &&
+            !royaleInSeasonStarted[season] &&
+            block.timestamp > (seasonCreationTime[season] + signUpPeriod);
     }
 
     function canSeasonBeAutomaticallyStartedAfterSomePeriod() public view returns (bool) {
@@ -318,11 +316,34 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
         _buyIn(_player, buyInAmount);
 
-        emit SignedUp(msg.sender, season);
+        emit SignedUp(_player, season);
     }
 
-    function _putPosition(address _player, uint _season, uint _round, uint _position) internal {
-       // set value
+    function _signUpPlayerWithPass(
+        address _player,
+        uint _position,
+        uint _passId
+    ) internal {
+        playerSignedUpPerSeason[season][_player] = block.timestamp;
+        playersPerSeason[season].push(_player);
+        signedUpPlayersCount[season]++;
+
+        if (_position != 0) {
+            _putPosition(_player, season, 1, _position);
+        }
+
+        _buyInWithPass(_passId);
+
+        emit SignedUp(_player, season);
+    }
+
+    function _putPosition(
+        address _player,
+        uint _season,
+        uint _round,
+        uint _position
+    ) internal {
+        // set value
         positionInARoundPerSeason[_season][_player][_round] = _position;
 
         // add number of positions
@@ -351,6 +372,14 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
         rewardToken.safeTransferFrom(_sender, address(this), amountBuyIn);
         rewardPerSeason[season] += amountBuyIn;
+    }
+
+    function _buyInWithPass(uint _passId) internal {
+        // burning pass
+        royalePass.burnWithTransfer(_passId);
+
+        // increase reward
+        rewardPerSeason[season] += buyInAmount;
     }
 
     function _calculateSafeBoxOnAmount(uint _amount) internal view returns (uint, uint) {
@@ -451,6 +480,11 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         emit NewSafeBox(_safeBox);
     }
 
+    function setRoyalePassAddress(address _royalePass) public onlyOwner {
+        royalePass = IThalesRoyalePass(_royalePass);
+        emit NewThalesRoyalePass(_royalePass);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier playerCanSignUp() {
@@ -459,6 +493,15 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");
         require(rewardToken.balanceOf(msg.sender) >= buyInAmount, "No enough sUSD for buy in");
         require(rewardToken.allowance(msg.sender, address(this)) >= buyInAmount, "No allowance.");
+        _;
+    }
+
+    modifier playerCanSignUpWithPass(uint passId) {
+        require(season > 0, "Initialize first season");
+        require(block.timestamp < (seasonCreationTime[season] + signUpPeriod), "Sign up period has expired");
+        require(playerSignedUpPerSeason[season][msg.sender] == 0, "Player already signed up");
+        require(royalePass.ownerOf(passId) == msg.sender, "Owner of the token not valid");
+        require(rewardToken.balanceOf(address(royalePass)) >= buyInAmount, "No enough sUSD on royale pass contract");
         _;
     }
 
@@ -493,4 +536,5 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     event PutFunds(address from, uint season, uint amount);
     event NewSafeBoxPercentage(uint _safeBoxPercentage);
     event NewSafeBox(address _safeBox);
+    event NewThalesRoyalePass(address _royalePass);
 }

@@ -147,8 +147,9 @@
 		"OngoingAirdrop": "0xcA8d82a30fd9dfec102eCdfb59A13e9a86C2Ee6F",
 		"ThalesStakingRewardsPool": "0xBfb2692Ae8c4399FD27977b9e14E8E69e31711d6",
 		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a",
-		"ThalesRoyale": "0x880Fc984D0b5868733BaDeEd2d7152a10B279045",
-		"ThalesRoyaleImplementation": "0x593906A6F505C528BA584d41666384c4b67FE21B"
+		"ThalesRoyalePass": "0x093ddd486d3c9609b192F5371c41f78cfFe27ABe",
+		"ThalesRoyale": "0xE1757E47417e4bFF5f3F01713A205E1709344D5D",
+		"ThalesRoyaleImplementation": "0x8f1115465D7cfb689F48Be3a87B00bD1B90e8E0b"
 	},
 	"localhost": {
 		"Airdrop": "",

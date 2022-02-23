@@ -59,6 +59,7 @@ async function main() {
 	const roundChoosingLength = hour * 8;
 	const roundLength = day;
 	const pauseBetweenSeasonsTime = week * 2;
+	const seasonStartsAutomatically = false;
 
 	const rounds = 6;
 	const buyIn = w3utils.toWei('30');
@@ -76,7 +77,7 @@ async function main() {
         roundLength,			//8
         buyIn,					//9
         pauseBetweenSeasonsTime,//10
-        false					//11
+		seasonStartsAutomatically//11
         ]
     );
 	await royale.deployed();

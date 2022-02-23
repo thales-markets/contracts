@@ -135,6 +135,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_royalePass",
+        "type": "address"
+      }
+    ],
+    "name": "NewThalesRoyalePass",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -1159,6 +1172,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "royalePass",
+    "outputs": [
+      {
+        "internalType": "contract IThalesRoyalePass",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1368,6 +1394,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_royalePass",
+        "type": "address"
+      }
+    ],
+    "name": "setRoyalePassAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_safeBox",
         "type": "address"
       }
@@ -1411,19 +1450,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      }
-    ],
-    "name": "signUpOnBehalf",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "signUpPeriod",
     "outputs": [
@@ -1434,6 +1460,37 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "passId",
+        "type": "uint256"
+      }
+    ],
+    "name": "signUpWithPass",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "passId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
+      }
+    ],
+    "name": "signUpWithPassWithPosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

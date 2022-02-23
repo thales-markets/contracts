@@ -63,6 +63,10 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
 
     /* ========== VIEWS ========== */
 
+    function canMarketBeDisputed(address _market) public view returns (bool) {
+        return !marketClosedForDisputes[_market] && IExoticPositionalMarket(_market).isMarketCreated();
+    }
+
     function getMarketOpenDisputes(address _market) public view returns (uint) {
         return marketTotalDisputes[_market].sub(marketLastClosedDispute[_market]);
     }
@@ -131,10 +135,10 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             "Low token amount for disputing market"
         );
         require(
-            paymentToken.allowance(msg.sender, address(this)) >= disputePrice,
+            paymentToken.allowance(msg.sender, _market) >= disputePrice,
             "No allowance. Please approve ticket price allowance"
         );
-        marketTotalDisputes[_market] = marketTotalDisputes[_market].add(marketTotalDisputes[_market]);
+        marketTotalDisputes[_market] = marketTotalDisputes[_market].add(1);
         dispute[_market][marketTotalDisputes[_market]].disputorAddress = msg.sender;
         dispute[_market][marketTotalDisputes[_market]].disputeString = _disputeString;
         dispute[_market][marketTotalDisputes[_market]].disputeTimestamp = block.timestamp;
@@ -288,6 +292,12 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             // close market(cancel market)
             marketManager.cancelMarket(_market);
         }
+    }
+
+    function closeMarketForDisputes(address _market) external onlyOwner {
+        require(!marketClosedForDisputes[_market], "Market already closed for disputes");
+        marketClosedForDisputes[_market] = true;
+        emit MarketClosedForDisputes(_market, 0);
     }
 
     function reopenMarketForDisputes(address _market) external onlyOwner {

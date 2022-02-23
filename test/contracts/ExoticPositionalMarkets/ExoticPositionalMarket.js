@@ -46,12 +46,12 @@ let marketQuestion,
 	outcomePosition;
 
 contract('Exotic Positional market', async accounts => {
-	const [manager, owner, userOne, userTwo, dummyContractAddress] = accounts;
+	const [manager, owner, userOne, userTwo, councilOne, councilTwo, councilThree] = accounts;
 	let initializeData;
 	beforeEach(async () => {
 		ExoticPositionalMarket = await ExoticPositionalMarketContract.new();
 		ExoticPositionalMarketManager = await ExoticPositionalMarketManagerContract.new();
-		ThalesOracleCouncil = await ThalesOracleCouncilContract.new();
+		ThalesOracleCouncil = await ThalesOracleCouncilContract.new({from:owner});
 		Thales = await ThalesContract.new({ from: owner });
 		await ExoticPositionalMarketManager.initialize(
 			manager,
@@ -59,6 +59,7 @@ contract('Exotic Positional market', async accounts => {
 			ExoticPositionalMarket.address,
 			{ from: manager }
 		);
+		
 		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
 		await Thales.transfer(userOne, toUnit('1000'), { from: owner });
 		await Thales.transfer(userTwo, toUnit('1000'), { from: owner });
@@ -315,5 +316,99 @@ contract('Exotic Positional market', async accounts => {
 				});
 			});
 		});
+		
+		describe('Oracle Council', function() {
+			beforeEach(async () => {
+				let fixedBondAmount = toUnit(100);
+
+				await ThalesOracleCouncil.initialize(
+					manager,
+					fixedBondAmount,
+					Thales.address,
+					ExoticPositionalMarketManager.address,
+					{ from: manager }
+				);
+			});
+			
+			it('No Oracle Council members', async function() {
+				answer = await ThalesOracleCouncil.councilMemberCount();
+				assert.equal(answer.toString(), "0");
+			});
+			it('Add an Oracle Council member', async function() {
+				answer = await ThalesOracleCouncil.addOracleCouncilMember(userOne, {from:manager});
+				answer = await ThalesOracleCouncil.councilMemberCount();
+				assert.equal(answer.toString(), "1");
+				answer = await ThalesOracleCouncil.councilMemberAddress("1");
+				assert.equal(answer, userOne);
+			});
+			it('Remove an Oracle Council member', async function() {
+				answer = await ThalesOracleCouncil.addOracleCouncilMember(userOne, {from:manager});
+				answer = await ThalesOracleCouncil.removeOracleCouncilMember(userOne, {from:manager});
+				answer = await ThalesOracleCouncil.councilMemberCount();
+				assert.equal(answer.toString(), "0");
+			});
+
+			describe('dispute', function() {
+				beforeEach(async () => {
+					await ThalesOracleCouncil.addOracleCouncilMember(councilOne, {from:manager});
+					await ThalesOracleCouncil.addOracleCouncilMember(councilTwo, {from:manager});
+					await ThalesOracleCouncil.addOracleCouncilMember(councilThree, {from:manager});
+				});
+
+				it('market not disputed', async function() {
+					answer = await deployedMarket.disputed();
+					assert.equal(answer, false);
+				});
+				
+				it('market can be disputed', async function() {
+					answer = await ThalesOracleCouncil.canMarketBeDisputed(deployedMarket.address);
+					assert.equal(answer, true);
+				});
+				
+				it('market closed for disputes', async function() {
+					answer = await ThalesOracleCouncil.closeMarketForDisputes(deployedMarket.address, {from: manager});
+					answer = await ThalesOracleCouncil.canMarketBeDisputed(deployedMarket.address);
+					assert.equal(answer, false);
+				});
+				describe('dispute market', function() {
+					beforeEach(async () => {
+						let fixedBondAmount = toUnit(100);
+						let disputeString = "This is a dispute";
+						answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+							from: userTwo,
+						});
+					});
+					it('open a dispute', async function() {
+						let disputeString = "This is a dispute";
+						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+						answer = await deployedMarket.disputed();
+						assert.equal(answer, true);
+					});
+					it('get total open diputes', async function() {
+						let disputeString = "This is a dispute";
+						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+						answer = await ThalesOracleCouncil.getMarketOpenDisputes(deployedMarket.address);
+						assert.equal(answer.toString(), "1");
+					});
+					it('get total closed diputes', async function() {
+						let disputeString = "This is a dispute";
+						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+						answer = await ThalesOracleCouncil.getMarketClosedDisputes(deployedMarket.address);
+						assert.equal(answer.toString(), "0");
+					});
+					it('match dispute string', async function() {
+						let disputeString = "This is a dispute";
+						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+						let index = await ThalesOracleCouncil.getMarketOpenDisputes(deployedMarket.address);
+						answer = await ThalesOracleCouncil.getDistputeString(deployedMarket.address, index.toString());
+						assert.equal(answer.toString(), disputeString);
+					});
+				});
+	
+			});
+
+		});
+
+		
 	});
 });

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.0;
 
 import "../interfaces/IOracleInstance.sol";
 import "./FlippeningRatioOracle.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "../utils/Owned.sol";
 
 contract FlippeningRatioOracleInstance is IOracleInstance, Owned {
     FlippeningRatioOracle public flippeningRatio;
@@ -12,7 +12,7 @@ contract FlippeningRatioOracleInstance is IOracleInstance, Owned {
     string public eventName;
 
     bool public outcome;
-    bool public resolvable = true;
+    bool public override resolvable = true;
 
     bool private forcedOutcome;
 
@@ -22,14 +22,14 @@ contract FlippeningRatioOracleInstance is IOracleInstance, Owned {
         string memory _targetName,
         uint256 _targetOutcome,
         string memory _eventName
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         flippeningRatio = FlippeningRatioOracle(_flippeningRatio);
         targetName = _targetName;
         targetOutcome = _targetOutcome;
         eventName = _eventName;
     }
 
-    function getOutcome() external view returns (bool) {
+    function getOutcome() external view override returns (bool) {
         if (forcedOutcome) {
             return outcome;
         } else {

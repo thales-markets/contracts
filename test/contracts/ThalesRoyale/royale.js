@@ -115,7 +115,7 @@ contract('ThalesRoyale', accounts => {
 
 	describe('Init', () => {
 
-		it('Signing up cant be called twice', async () => {
+		it('Initialize first season', async () => {
 			await expect(royale.signUp({ from: first })).to.be.revertedWith('Initialize first season');
 		});
 
@@ -1909,4 +1909,84 @@ contract('ThalesRoyale', accounts => {
 
 	});
 
+	it('Sign up with positions check values', async () => {
+		await royale.startNewSeason({ from: owner });
+
+		// check rewards
+		let reward = await royale.rewardPerSeason(season_1);
+		assert.bnEqual(reward, toUnit(0));
+
+		await expect(royale.signUpWithPosition(3, { from: first })).to.be.revertedWith(
+			'Position can only be 1 or 2'
+		);
+		await expect(royale.signUpWithPosition(0, { from: first })).to.be.revertedWith(
+			'Position can only be 1 or 2'
+		);
+
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1,1));
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1,2));
+
+		await royale.signUpWithPosition(1, { from: first });
+		await royale.signUpWithPosition(2, { from: second });
+		await royale.signUpWithPosition(1, { from: third });
+		await royale.signUpWithPosition(2, { from: fourth });
+
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 1,1));
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 1,2));
+
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.startRoyaleInASeason();
+
+		await royale.takeAPosition(2, { from: first });
+		await expect(royale.takeAPosition(2, { from: second })).to.be.revertedWith(
+			'Same position'
+		);
+		await royale.takeAPosition(2, { from: third });
+		await expect(royale.takeAPosition(2, { from: fourth })).to.be.revertedWith(
+			'Same position'
+		);
+
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1,1));
+		assert.equal(4, await royale.positionsPerRoundPerSeason(season_1, 1,2));
+
+	});
+
+
+	it('Sign up on behalf', async () => {
+		await royale.startNewSeason({ from: owner });
+
+		await expect(royale.signUpOnBehalf(first, { from: second })).to.be.revertedWith(
+			'Only the contract owner may perform this action'
+		);
+
+		await royale.signUpWithPosition(1, { from: first });
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.startRoyaleInASeason();
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.closeRound();
+
+		assert.equal(1, await royale.signedUpPlayersCount(season_1));
+
+		await fastForward(WEEK * 4 + 1);
+		await royale.startNewSeason({ from: owner });
+
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_2, 1,1));
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_2, 1,2));
+		
+		// check rewards
+		let reward = await royale.rewardPerSeason(season_2);
+		assert.bnEqual(reward, toUnit(0));
+		
+		await royale.signUpOnBehalf(first, { from: owner });
+		await royale.signUpOnBehalf(second, { from: owner });
+
+		assert.equal(2, await royale.signedUpPlayersCount(season_2));
+		
+		// check rewards
+		let reward_after = await royale.rewardPerSeason(season_2);
+		assert.bnEqual(reward_after, toUnit(5000));
+	});
 });

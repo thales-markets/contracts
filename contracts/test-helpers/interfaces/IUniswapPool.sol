@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <0.8.0;
+pragma solidity ^0.8.0;
 
 /// @title The interface for a Uniswap V3 Pool
 /// @notice A Uniswap pool facilitates swapping and automated market making between any two assets that strictly conform

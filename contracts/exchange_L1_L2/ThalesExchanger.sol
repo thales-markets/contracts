@@ -1,4 +1,5 @@
-pragma solidity 0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.5.16;
 
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
@@ -91,7 +92,7 @@ contract ThalesExchanger is IThalesExchanger, Initializable, ProxyOwned, ProxyRe
         _exchange(msg.sender, amount, THALES_TO_OPTHALES);
         emit ExchangedThalesForOpThales(msg.sender, amount);
     }
-    
+
     function exchangeOpThalesToThales(uint amount) external nonReentrant notPaused {
         require(enabledOpThalesToThales, "Exchanging disabled");
         require(ThalesToken.balanceOf(address(this)) >= amount, "Insufficient Exchanger Thales funds");

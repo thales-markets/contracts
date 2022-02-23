@@ -1,9 +1,10 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "./USOpenFeed.sol";
 import "../interfaces/IOracleInstance.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "../utils/Owned.sol";
 
 contract USOpenFeedInstance is IOracleInstance, Owned {
     using Chainlink for Chainlink.Request;
@@ -16,7 +17,7 @@ contract USOpenFeedInstance is IOracleInstance, Owned {
     uint public competitor;
 
     bool public outcome;
-    bool public resolvable = false;
+    bool public override resolvable = false;
 
     bool private forcedOutcome;
 
@@ -27,7 +28,7 @@ contract USOpenFeedInstance is IOracleInstance, Owned {
         string memory _targetName,
         string memory _targetOutcome,
         string memory _eventName
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         sportFeed = _sportFeed;
         competitor = _competitor;
         targetName = _targetName;
@@ -35,7 +36,7 @@ contract USOpenFeedInstance is IOracleInstance, Owned {
         eventName = _eventName;
     }
 
-    function getOutcome() external view returns (bool) {
+    function getOutcome() external view override returns (bool) {
         if (forcedOutcome) {
             return outcome;
         } else {

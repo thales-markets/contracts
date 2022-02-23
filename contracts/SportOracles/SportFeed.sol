@@ -1,7 +1,8 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.5/ChainlinkClient.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
+import "../utils/Owned.sol";
 
 contract SportFeed is ChainlinkClient, Owned {
     using Chainlink for Chainlink.Request;
@@ -31,7 +32,7 @@ contract SportFeed is ChainlinkClient, Owned {
         string memory _season,
         string memory _event,
         string memory _gender
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         //remove for the test
         setPublicChainlinkToken();
         oracle = _oracle;

@@ -1,14 +1,15 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 import "../interfaces/IThalesRoyale.sol";
 
 contract TestThalesRoyale is IThalesRoyale {
 
     bool public participatedInLastRoyale;
-    constructor() public {}
+    constructor() {}
     /* ========== VIEWS / VARIABLES ========== */
 
-    function hasParticipatedInCurrentOrLastRoyale(address player) external view returns (bool){
+    function hasParticipatedInCurrentOrLastRoyale(address player) external view override returns (bool){
         return participatedInLastRoyale;
     }
 

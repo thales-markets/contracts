@@ -1,16 +1,17 @@
 Script
 npx hardhat run --network ropsten scripts/deploy.js
-npx hardhat run --network kovan scripts/customBinaryOptions/deployETHBurnedAndFlippeningMarkets.js
+npx hardhat run --network kovan scripts/customPositions/deployETHBurnedAndFlippeningMarkets.js
 node scripts/snx-data/ongoing_distribution.js 2021-09-22 2021-09-29
 
 test
 npx hardhat test --optimizer
-npx hardhat test test/contracts/BinaryOptionMarketManager.js --optimizer
-npx hardhat test test/contracts/CustomBinaryOptionMarket.js --optimizer
-npx hardhat test test/contracts/SportsBinaryOptions/SportsFeed.js --optimizer
-npx hardhat test test/contracts/SportsBinaryOptions/CustomBinaryOptionMarket.js --optimizer
+npx hardhat test test/contracts/PositionalMarketManager.js --optimizer
+npx hardhat test test/contracts/CustomPositionalMarket.js --optimizer
+npx hardhat test test/contracts/SportsPositions/SportsFeed.js --optimizer
+npx hardhat test test/contracts/SportsPositions/CustomPositionalMarket.js --optimizer
 npx hardhat test test/contracts/RetroDistribution/VestingEscrowStressTest.js --optimizer --gas
 npx hardhat test test/contracts/ThalesRoyale/royale.js
+npx hardhat test test/contracts/ThalesRoyale/royalePrivate.js
 npx hardhat test test/contracts/ThalesAMM/thalesamm.js
 
 
@@ -18,11 +19,13 @@ npx hardhat coverage
 
 
 sports:
-npx hardhat run --network kovan scripts/SportsBinaryOptions/createUSOpenMarkets.js
+npx hardhat run --network kovan scripts/SportsPositions/createUSOpenMarkets.js
 
 optimistic kovan:
 npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyale/deployRoyale.js 
 npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyale/upgradeRoyale.js
+npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyalePrivateRooms/deployRoyalePrivateRooms.js 
+npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyalePrivateRooms/upgradeRoyalePrivateRooms.js
 npx hardhat run --network optimisticKovan scripts/deployAMM/deployAMM.js
 npx hardhat run --network optimisticKovan scripts/deployAMM/upgradeAMM.js
 npx hardhat run --network optimisticKovan scripts/l2_deployments/createMarket.js

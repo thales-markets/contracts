@@ -268,6 +268,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         return (resolvedTime > 0 && block.timestamp > resolvedTime.add(backstopTimeout)) && resolved && (!disputed);
     }
 
+    function canUserWithdraw(address _account) public view returns (bool) {
+        return withdrawalAllowed && canUsersPlacePosition() && ticketHolder[_account] > 0;
+    }
+
     function getPositionPhrase(uint index) public view returns (string memory) {
         return (index <= positionCount && index > 0) ? positionPhrase[index] : string("");
     }

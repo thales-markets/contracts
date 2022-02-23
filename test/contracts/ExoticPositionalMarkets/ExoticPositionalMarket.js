@@ -148,7 +148,7 @@ contract('Exotic Positional market', async accounts => {
 			answer = await deployedMarket.canMarketBeResolved();
 			assert.equal(answer, true);
 		});
-		describe('position and resolve', function() {
+		describe('position and resolve (no Council decision)', function() {
 			beforeEach(async () => {
 				answer = await Thales.increaseAllowance(deployedMarket.address, toUnit('100'), {
 					from: userOne,
@@ -240,6 +240,78 @@ contract('Exotic Positional market', async accounts => {
 							});
 						});
 					});
+				});
+			});
+		});
+		
+		describe('position and withdraw', function() {
+			beforeEach(async () => {
+				answer = await Thales.increaseAllowance(deployedMarket.address, toUnit('100'), {
+					from: userOne,
+				});
+			});
+
+			describe('userOne takes position', async function() {
+				beforeEach(async () => {
+					answer = await deployedMarket.takeAPosition(outcomePosition, { from: userOne });
+				});
+				it('1 ticket holder', async function() {
+					answer = await deployedMarket.totalTicketHolders();
+					assert.equal(answer, outcomePosition);
+				});
+				it('ticket holder position match', async function() {
+					answer = await deployedMarket.getTicketHolderPosition(userOne);
+					assert.equal(answer.toString(), outcomePosition);
+				});
+				it('ticket holder position phrase match', async function() {
+					answer = await deployedMarket.getTicketHolderPositionPhrase(userOne);
+					// console.log("Position phrase: ", answer.toString());
+					assert.equal(answer.toString(), phrases[0]);
+				});
+
+				describe('withdraw (5%)', async function() {
+					
+					it('get withdrawal allowed', async function() {
+						answer = await deployedMarket.withdrawalAllowed();
+						assert.equal(answer, true);
+					});
+					
+					it('withdrawal fee match', async function() {
+						answer = await deployedMarket.withdrawalFeePercentage();
+						assert.equal(answer.toString(), withdrawalFeePercentage);
+					});
+					
+					it('userOne can withdraw', async function() {
+						answer = await deployedMarket.canUserWithdraw(userOne);
+						assert.equal(answer, true);
+					});
+					
+					it('userTwo can NOT withdraw', async function() {
+						answer = await deployedMarket.canUserWithdraw(userTwo);
+						assert.equal(answer, false);
+					});
+					
+					it('userOne withdraws', async function() {
+						answer = await Thales.balanceOf(userOne);
+						let balance = parseInt(answer.toString());
+						let fixedTicket = parseInt(fixedTicketPrice.toString());
+						balance = balance + (fixedTicket*0.95)
+						answer = await deployedMarket.withdraw({from:userOne});
+						answer = await Thales.balanceOf(userOne);
+						assert.equal(answer.toString(), balance.toString());
+					});
+					
+					it('creator receives withdrawal fee', async function() {
+						answer = await Thales.balanceOf(owner);
+						let balance = parseInt(answer.toString());
+						let fixedTicket = parseInt(fixedTicketPrice.toString());
+						balance = balance + parseFloat((fixedTicket*0.05)/2);
+						answer = await deployedMarket.withdraw({from:userOne});
+						answer = await Thales.balanceOf(owner);
+						assert.equal(parseFloat(answer.toString()), balance);
+					});
+
+					
 				});
 			});
 		});

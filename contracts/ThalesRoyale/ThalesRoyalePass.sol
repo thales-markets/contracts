@@ -67,11 +67,14 @@ contract ThalesRoyalePass is ERC721URIStorage, Ownable {
     function burnWithTransfer(address player, uint tokenId) external {
         require(sUSD.balanceOf(address(this)) >= thalesRoyale.getBuyInAmount(), "Not enough sUSD");
         require(msg.sender == address(thalesRoyale), "Sender must be thales royale contract");
-        require(thalesRoyale.getBuyInAmount() >= pricePerPass[tokenId], "Not enough sUSD allocated in the pass");
+        require(thalesRoyale.getBuyInAmount() <= pricePerPass[tokenId], "Not enough sUSD allocated in the pass");
 
         if (thalesRoyale.getBuyInAmount() < pricePerPass[tokenId]) {
+
+            uint diferenceInPrice = pricePerPass[tokenId].sub(thalesRoyale.getBuyInAmount());
+
             // send diference to player
-            sUSD.safeTransferFrom(address(this), player, pricePerPass[tokenId] - thalesRoyale.getBuyInAmount());
+            sUSD.safeTransfer(player, diferenceInPrice);
 
             // set new price per pass
             pricePerPass[tokenId] = thalesRoyale.getBuyInAmount();
@@ -85,6 +88,7 @@ contract ThalesRoyalePass is ERC721URIStorage, Ownable {
     function topUp(uint tokenId, uint amount) external {
         require(sUSD.balanceOf(msg.sender) >= amount, "No enough sUSD");
         require(sUSD.allowance(msg.sender, address(this)) >= amount, "No allowance.");
+        require(_exists(tokenId), "Not existing pass");
         sUSD.safeTransferFrom(msg.sender, address(this), amount);
         pricePerPass[tokenId] = pricePerPass[tokenId] + amount;
     }

@@ -2017,6 +2017,9 @@ contract('ThalesRoyale', accounts => {
 			'Owner of the token not valid'
 		);
 
+		assert.bnEqual(1, await voucher.balanceOf(first));
+		assert.bnEqual(1, await voucher.balanceOf(second));
+
 		await royale.signUpWithPass(1, { from: first });
 		await royale.signUpWithPassWithPosition(2, 2, { from: second });
 
@@ -2027,6 +2030,9 @@ contract('ThalesRoyale', accounts => {
 
 		reward = await royale.rewardPerSeason(season_1);
 		assert.bnEqual(reward, toUnit(5000));
+
+		assert.bnEqual(0, await voucher.balanceOf(first));
+		assert.bnEqual(0, await voucher.balanceOf(second));
 
 	});
 

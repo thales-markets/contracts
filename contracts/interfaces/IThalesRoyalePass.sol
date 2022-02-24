@@ -6,7 +6,7 @@ interface IThalesRoyalePass is IERC721Upgradeable {
     
     function burn(uint256 tokenId) external;
 
-    function burnWithTransfer(uint256 tokenId) external;
+    function burnWithTransfer(address player, uint256 tokenId) external;
 
     function pricePaidForVoucher(uint tokenId) external view returns (uint);
 }

@@ -38,13 +38,11 @@ async function main() {
 	royaleAddress = getTargetAddress('ThalesRoyale', network);
 	console.log('Found ThalesRoyale at:' + royaleAddress);
 
-	const price = w3utils.toWei('30');
-	const uri = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/0';
+	const uri = 'https://thalesmarket.mypinata.cloud/ipfs/Qmb9jjuW9S4KNouvStjA9GWTX9vxPa5T2dMitumcYbpV1F';
 
 	const ThalesRoyalePass = await ethers.getContractFactory('ThalesRoyalePass');
 	const ThalesRoyalePassDeployed = await ThalesRoyalePass.deploy(
 		sUSDAddress,
-		price,
 		uri,
 		royaleAddress
 	);
@@ -55,7 +53,7 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: ThalesRoyalePassDeployed.address,
-		constructorArguments: [sUSDAddress, price, uri, royaleAddress],
+		constructorArguments: [sUSDAddress, uri, royaleAddress],
 	});
 }
 

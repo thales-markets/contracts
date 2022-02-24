@@ -303,6 +303,10 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         return playersPerSeason[_season];
     }
 
+    function getBuyInAmount() public view returns (uint) {
+        return buyInAmount;
+    }
+
     /* ========== INTERNALS ========== */
 
     function _signUpPlayer(address _player, uint _position) internal {
@@ -332,7 +336,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
             _putPosition(_player, season, 1, _position);
         }
 
-        _buyInWithPass(_passId);
+        _buyInWithPass(_player, _passId);
 
         emit SignedUp(_player, season);
     }
@@ -374,9 +378,9 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         rewardPerSeason[season] += amountBuyIn;
     }
 
-    function _buyInWithPass(uint _passId) internal {
+    function _buyInWithPass(address _player, uint _passId) internal {
         // burning pass
-        royalePass.burnWithTransfer(_passId);
+        royalePass.burnWithTransfer(_player, _passId);
 
         // increase reward
         rewardPerSeason[season] += buyInAmount;

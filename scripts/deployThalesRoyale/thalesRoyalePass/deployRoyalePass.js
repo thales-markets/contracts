@@ -38,7 +38,7 @@ async function main() {
 	royaleAddress = getTargetAddress('ThalesRoyale', network);
 	console.log('Found ThalesRoyale at:' + royaleAddress);
 
-	const uri = 'https://thalesmarket.mypinata.cloud/ipfs/Qmb9jjuW9S4KNouvStjA9GWTX9vxPa5T2dMitumcYbpV1F';
+	const uri = 'https://thalesmarket.mypinata.cloud/ipfs/QmdNh69SLLfhEzfHs9whUrc33kVK5Uwa1FjWa1zretzbeS';
 
 	const ThalesRoyalePass = await ethers.getContractFactory('ThalesRoyalePass');
 	const ThalesRoyalePassDeployed = await ThalesRoyalePass.deploy(

@@ -32,7 +32,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     /* ========== STATE VARIABLES ========== */
 
     IERC20Upgradeable public rewardToken;
-    IThalesRoyalePass public royalePass;
     bytes32 public oracleKey;
     IPriceFeed public priceFeed;
 
@@ -77,6 +76,8 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     mapping(uint => mapping(address => bool)) public rewardCollectedPerSeason;
     mapping(uint => uint) public rewardPerWinnerPerSeason;
     mapping(uint => uint) public unclaimedRewardPerSeason;
+    
+    IThalesRoyalePass public royalePass;
 
     /* ========== CONSTRUCTOR ========== */
 

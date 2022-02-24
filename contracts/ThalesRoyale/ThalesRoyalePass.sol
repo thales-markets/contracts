@@ -7,6 +7,8 @@ import "@openzeppelin/contracts-4.4.1/token/ERC721/extensions/ERC721URIStorage.s
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
+import "../interfaces/IThalesRoyale.sol";
+
 contract ThalesRoyalePass is ERC721URIStorage, Ownable {
     /* ========== LIBRARIES ========== */
 
@@ -23,24 +25,21 @@ contract ThalesRoyalePass is ERC721URIStorage, Ownable {
     bool public paused = false;
     string public tokenURI;
 
-    address public thalesRoyaleAddress;
+    IThalesRoyale public thalesRoyale;
 
     IERC20 public sUSD;
-    uint public price;
     mapping(uint => uint) public pricePerPass;
 
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
         address _sUSD,
-        uint _price,
         string memory _initURI,
         address _thalesRoyaleAddress
     ) ERC721(_name, _symbol) {
         sUSD = IERC20(_sUSD);
-        price = _price;
         tokenURI = _initURI;
-        thalesRoyaleAddress = _thalesRoyaleAddress;
+        thalesRoyale = IThalesRoyale(_thalesRoyaleAddress);
     }
 
     /* ========== TRV ========== */
@@ -48,16 +47,16 @@ contract ThalesRoyalePass is ERC721URIStorage, Ownable {
     function mint(address recipient) external returns (uint) {
         require(!paused);
         // check sUSD
-        require(sUSD.balanceOf(msg.sender) >= price, "No enough sUSD");
-        require(sUSD.allowance(msg.sender, address(this)) >= price, "No allowance");
+        require(sUSD.balanceOf(msg.sender) >= thalesRoyale.getBuyInAmount(), "No enough sUSD");
+        require(sUSD.allowance(msg.sender, address(this)) >= thalesRoyale.getBuyInAmount(), "No allowance");
 
         _tokenIds.increment();
 
         uint newItemId = _tokenIds.current();
-        pricePerPass[newItemId] = price;
+        pricePerPass[newItemId] = thalesRoyale.getBuyInAmount();
 
         // pay for pass
-        _payForPass(msg.sender, price);
+        _payForPass(msg.sender, thalesRoyale.getBuyInAmount());
 
         _mint(recipient, newItemId);
         _setTokenURI(newItemId, tokenURI);
@@ -65,15 +64,33 @@ contract ThalesRoyalePass is ERC721URIStorage, Ownable {
         return newItemId;
     }
 
-    function burn(uint tokenId) external canBeBurned(tokenId) {
+    function burnWithTransfer(address player, uint tokenId) external {
+        require(sUSD.balanceOf(address(this)) >= thalesRoyale.getBuyInAmount(), "Not enough sUSD");
+        require(msg.sender == address(thalesRoyale), "Sender must be thales royale contract");
+        require(thalesRoyale.getBuyInAmount() <= pricePerPass[tokenId], "Not enough sUSD allocated in the pass");
+
+        if (thalesRoyale.getBuyInAmount() < pricePerPass[tokenId]) {
+
+            uint diferenceInPrice = pricePerPass[tokenId].sub(thalesRoyale.getBuyInAmount());
+
+            // send diference to player
+            sUSD.safeTransfer(player, diferenceInPrice);
+
+            // set new price per pass
+            pricePerPass[tokenId] = thalesRoyale.getBuyInAmount();
+        }
+
+        // burn at the end and transfer to royale
+        sUSD.safeTransfer(address(thalesRoyale), thalesRoyale.getBuyInAmount());
         super._burn(tokenId);
     }
 
-    function burnWithTransfer(uint tokenId) external {
-        require(sUSD.balanceOf(address(this)) >= pricePerPass[tokenId], "No enough sUSD");
-        require(msg.sender == thalesRoyaleAddress, "Sender must be thales royale contract");
-        sUSD.safeTransfer(thalesRoyaleAddress, pricePerPass[tokenId]);
-        super._burn(tokenId);
+    function topUp(uint tokenId, uint amount) external {
+        require(sUSD.balanceOf(msg.sender) >= amount, "No enough sUSD");
+        require(sUSD.allowance(msg.sender, address(this)) >= amount, "No allowance.");
+        require(_exists(tokenId), "Not existing pass");
+        sUSD.safeTransferFrom(msg.sender, address(this), amount);
+        pricePerPass[tokenId] = pricePerPass[tokenId] + amount;
     }
 
     /* ========== VIEW ========== */
@@ -90,11 +107,6 @@ contract ThalesRoyalePass is ERC721URIStorage, Ownable {
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    function setPriceForPass(uint _price) public onlyOwner {
-        price = _price;
-        emit NewPriceForPass(_price);
-    }
-
     function setTokenUri(string memory _tokenURI) public onlyOwner {
         tokenURI = _tokenURI;
         emit NewTokenUri(_tokenURI);
@@ -106,21 +118,12 @@ contract ThalesRoyalePass is ERC721URIStorage, Ownable {
     }
 
     function setThalesRoyaleAddress(address _thalesRoyaleAddress) public onlyOwner {
-        thalesRoyaleAddress = _thalesRoyaleAddress;
+        thalesRoyale = IThalesRoyale(_thalesRoyaleAddress);
         emit NewThalesRoyaleAddress(_thalesRoyaleAddress);
-    }
-
-    /* ========== MODIFIERS ========== */
-
-    modifier canBeBurned(uint tokenId) {
-        require(_exists(tokenId), "Not existing pass");
-        require(_isApprovedOrOwner(msg.sender, tokenId), "Must be owner or approver");
-        _;
     }
 
     /* ========== EVENTS ========== */
 
-    event NewPriceForPass(uint _price);
     event NewTokenUri(string _tokenURI);
     event NewThalesRoyaleAddress(address _thalesRoyaleAddress);
     event ThalesRoyalePassPaused(bool _state);

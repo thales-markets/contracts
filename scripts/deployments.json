@@ -112,12 +112,13 @@
 		"ThalesStakingRewardsPool": "0xc44DfC6ffaf195E2535fc13D75a79D9238459782",
 		"ThalesStakingRewardsPoolImplementation": "0x0AbC94987F6b98bFE6fD40F749e445a2857a4Ee3",
 		"ThalesRoyale": "0x3198ab211CdF3E4d13a698E1Fb819507BcA2e579",
-		"ThalesRoyaleImplementation": "0x2f3c6A43F419E15b0Ef5eF04DecCa2576025b303",
+		"ThalesRoyaleImplementation": "0x5cE95b8bD157f14b56871C8D69264d9b72f537e7",
 		"LPStakingRewards": "0x31a20E5b7b1b067705419D57Ab4F72E81cC1F6Bf",
 		"LPStakingRewardsImplementation": "0x63A6344E7dC0032900C261437838B0AA9E869C90",
 		"OptimisticAirdrop": "0x42B6e9b5Bb96a02E02e651d3104Fc3546E1313F2",
 		"OngoingAirdrop": "0x8D47b12ce25E2dc6866e8aAC0DbD823Da09fADd6",
-		"GUniLPToken": "0xac6705bc7f6a35eb194bdb89066049d6f1b0b1b5"
+		"GUniLPToken": "0xac6705bc7f6a35eb194bdb89066049d6f1b0b1b5",
+		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
@@ -147,9 +148,9 @@
 		"OngoingAirdrop": "0xcA8d82a30fd9dfec102eCdfb59A13e9a86C2Ee6F",
 		"ThalesStakingRewardsPool": "0xBfb2692Ae8c4399FD27977b9e14E8E69e31711d6",
 		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a",
-		"ThalesRoyalePass": "0x093ddd486d3c9609b192F5371c41f78cfFe27ABe",
+		"ThalesRoyalePass": "0x288eF27eC4fEaD97F81A6F578152fd00DdFBB448",
 		"ThalesRoyale": "0xE1757E47417e4bFF5f3F01713A205E1709344D5D",
-		"ThalesRoyaleImplementation": "0x8f1115465D7cfb689F48Be3a87B00bD1B90e8E0b"
+		"ThalesRoyaleImplementation": "0x0bd3CECA020919a690C38EEAE61B848224D1C220"
 	},
 	"localhost": {
 		"Airdrop": "",

@@ -6,6 +6,7 @@ import "../interfaces/IThalesRoyale.sol";
 contract TestThalesRoyale is IThalesRoyale {
 
     bool public participatedInLastRoyale;
+    uint public buyInAmount;
     constructor() {}
     /* ========== VIEWS / VARIABLES ========== */
 
@@ -15,6 +16,14 @@ contract TestThalesRoyale is IThalesRoyale {
 
     function setParticipatedInLastRoyale(bool _participated) external {
         participatedInLastRoyale = _participated;
+    }
+
+    function getBuyInAmount() external view override returns (uint){
+        return buyInAmount;
+    }
+
+    function setBuyInAmount(uint _buyIn) external {
+        buyInAmount = _buyIn;
     }
    
 }

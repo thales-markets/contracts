@@ -480,7 +480,7 @@ contract('Exotic Positional market', async accounts => {
 							answer = await ThalesOracleCouncil.getVotesCountForMarketDispute(deployedMarket.address, disputeIndex);
 							assert.equal(answer.toString(), "2");
 						});
-						it('2 votes with codes ' + dispute_code_1 +' and ' + dispute_code_1 + ', market open for disputes', async function() {
+						it('2 votes with codes ' + dispute_code_1 +' and ' + dispute_code_2 + ', market open for disputes', async function() {
 							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
 							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilOne});
 							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_2, "0", {from:councilTwo});

@@ -1,5 +1,5 @@
 const { ethers } = require('hardhat');
-const { getTargetAddress } = require('../../helpers');
+const { getTargetAddress, txLog } = require('../../helpers');
 const w3utils = require('web3-utils');
 var crypto = require('crypto');
 
@@ -37,11 +37,14 @@ async function main() {
 	// CHANGE for amount 30 * 100
 	const approvedsUSD = w3utils.toWei('3000');
 
+	// CHANGE for eth amount to be send
+	let ethToSend = ethers.utils.parseUnits('0.004');
+
 	// CHANGE addresses
 	players = [
 		'0x835d18b633532a15F188f896dea31685761eB672',
 		'0x36688C92700618f1D676698220F1AF44492811FE',
-		'0xe966C59c15566A994391F6226fee5bc0eF70F87A'
+		'0xe966C59c15566A994391F6226fee5bc0eF70F87A',
 	];
 
 	/* ========== MINT ROYALE PASSES ========== */
@@ -71,24 +74,56 @@ async function main() {
 
 	console.log('Done approving');
 
-	// minting
+	// minting and send eth
 	console.log('Start minting!');
 
+	let successfullyMinted = false;
+	let successfullyEthSend = false;
 	for (let i = 0; i < players.length; ) {
-		console.log('Minting for: ' + players[i], ', which is ' + i);
+		console.log('Minting/sending for: ' + players[i], ', which is ' + i);
 		try {
-			let tx = await royalePass.mint(players[i], { from: owner.address });
-			await tx.wait().then(e => {
-				console.log('royale pass minting: ', players[i]);
-			});
-			console.log('Minted!');
+			// mint
+			if (!successfullyMinted) {
+				console.log('Minting...');
+				let tx = await royalePass.mint(players[i], { from: owner.address });
+				await tx.wait().then(e => {
+					txLog(tx, 'Pass minted to ' + players[i]);
+				});
+
+				successfullyMinted = true;
+				console.log('Minted!');
+			}
+
+			// send eth
+			if (!successfullyEthSend) {
+				console.log('ETH sending...');
+				tx = await owner.sendTransaction({
+					to: players[i],
+					value: ethToSend,
+				});
+				await tx.wait().then(e => {
+					txLog(tx, 'send ETH to ' + players[i]);
+				});
+				successfullyEthSend = true;
+				console.log('ETH send!');
+			}
+
+			successfullyMinted = false;
+			successfullyEthSend = false;
 			i++;
 		} catch (e) {
 			console.log('Retry');
+			await delay(5000);
 		}
 	}
 
-	console.log('Ended minting!');
+	console.log('Ended!');
+}
+
+function delay(time) {
+	return new Promise(function(resolve) {
+		setTimeout(resolve, time);
+	});
 }
 
 main()

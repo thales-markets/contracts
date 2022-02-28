@@ -121,16 +121,15 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function disputeMarket(address _marketAddress, address _disputor) external onlyOracleCouncil {
         ExoticPositionalMarket(_marketAddress).transferBondToMarket(_disputor, fixedBondAmount);
-        if(!ExoticPositionalMarket(_marketAddress).disputed() && !ExoticPositionalMarket(_marketAddress).paused()) {
+        if (!ExoticPositionalMarket(_marketAddress).disputed() && !ExoticPositionalMarket(_marketAddress).paused()) {
             ExoticPositionalMarket(_marketAddress).openDispute();
         }
     }
-    
+
     function closeDispute(address _marketAddress) external onlyOracleCouncil {
-        require(!ExoticPositionalMarket(_marketAddress).paused(),"Market paused");
+        require(!ExoticPositionalMarket(_marketAddress).paused(), "Market paused");
         require(ExoticPositionalMarket(_marketAddress).disputed(), "Market not disputed");
         ExoticPositionalMarket(_marketAddress).closeDispute();
-        
     }
 
     function getActiveMarketAddress(uint _index) external view returns (address) {

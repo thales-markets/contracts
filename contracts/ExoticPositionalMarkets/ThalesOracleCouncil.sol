@@ -71,8 +71,36 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         return marketTotalDisputes[_market].sub(marketLastClosedDispute[_market]);
     }
 
+    function getNextOpenDisputeIndex(address _market) public view returns (uint) {
+        if(getMarketOpenDisputes(_market) > 0) {
+            return (marketLastClosedDispute[_market].add(1));
+        }
+        else {
+            return 0;
+        }
+
+    }
+
     function getMarketClosedDisputes(address _market) external view returns (uint) {
         return marketLastClosedDispute[_market];
+    }
+
+    function getNumberOfCouncilMembersForMarketDispute(address _market, uint _index) external view returns(uint) {
+        // zero index does not count
+        return disputeVote[_market][_index].length.sub(1);
+    }
+
+    function getVotesCountForMarketDispute(address _market, uint _index) public view returns(uint) {
+        uint count = 0;
+        // council members index starts from 1
+        for (uint i = 1; i < disputeVote[_market][_index].length; i++) {
+            count += disputeVote[_market][_index][i] > 0 ? 1 : 0;
+        }
+        return count;
+    }
+
+    function getVotesMissingForMarketDispute(address _market, uint _index) external view returns(uint) { 
+        return disputeVote[_market][_index].length.sub(1).sub(getVotesCountForMarketDispute(_market, _index));
     }
 
     function getDistpute(address _market, uint _index) external view returns (Dispute memory) {
@@ -142,7 +170,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         dispute[_market][marketTotalDisputes[_market]].disputorAddress = msg.sender;
         dispute[_market][marketTotalDisputes[_market]].disputeString = _disputeString;
         dispute[_market][marketTotalDisputes[_market]].disputeTimestamp = block.timestamp;
-        disputeVote[_market][marketTotalDisputes[_market]] = new uint[](councilMemberCount);
+        disputeVote[_market][marketTotalDisputes[_market]] = new uint[](councilMemberCount+1);
         if (IExoticPositionalMarket(_market).canUsersPlacePosition()) {
             dispute[_market][marketTotalDisputes[_market]].disputeInPositioningPhase = true;
         }
@@ -177,17 +205,26 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
                 );
             }
         }
+
+        // check if already has voted for another option, and revert the vote
+        if(disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] > 0 && disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] != _disputeCodeVote) {
+            disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] = disputeVotesCount[_market][_disputeIndex][_disputeCodeVote].sub(1);
+        }
+
+        // record the voting option
         disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] = _disputeCodeVote;
         disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] = disputeVotesCount[_market][_disputeIndex][
             _disputeCodeVote
         ]
             .add(1);
+
+        emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote);
+        // check if a vote surpassed the majority treshold 
         uint decidedOption = maxVotesForDisputeOption(_market, _disputeIndex);
         if (decidedOption > (councilMemberCount.div(2))) {
             dispute[_market][marketTotalDisputes[_market]].disputeCode = decidedOption;
             closeDispute(_market, _disputeIndex, decidedOption);
         }
-        emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote);
     }
 
     function closeDispute(

@@ -11,4 +11,5 @@ interface IExoticPositionalMarket {
     function creatorAddress() external view returns (address);
     function resolverAddress() external view returns (address);
     function totalBondAmount() external view returns(uint);
+    function transferBondToMarket(address _sender, uint _amount) external;
 }

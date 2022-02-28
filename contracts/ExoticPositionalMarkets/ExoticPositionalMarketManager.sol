@@ -72,8 +72,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             _paymentToken,
             _phrases
         );
-
-        exoticMarket.transferBondToMarket(msg.sender, fixedBondAmount);
+        IERC20(_paymentToken).transferFrom(msg.sender, address(this), fixedBondAmount);
+        IERC20(_paymentToken).approve(address(exoticMarket), fixedBondAmount);
+        exoticMarket.transferBondToMarket(address(this), fixedBondAmount);
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
         emit MarketCreated(address(exoticMarket), _marketQuestion, msg.sender);
@@ -149,13 +150,19 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         return getActiveMarketIndex(_marketAddress) < numOfActiveMarkets;
     }
 
-    function setFixedBondAmount(uint _fixedBond) external {
+    function setFixedBondAmount(uint _fixedBond) external onlyOwner {
         require(_fixedBond > 0, "Invalid bond amount");
         fixedBondAmount = _fixedBond;
         emit NewFixedBondAmount(_fixedBond);
     }
+    
+    function setSafeBoxAddress(address _safeBoxAddress) external onlyOwner {
+        require(_safeBoxAddress != address(0), "Invalid safeBox address");
+        safeBoxAddress = _safeBoxAddress;
+        emit NewSafeBoxAddress(_safeBoxAddress);
+    }
 
-    function setBackstopTimeout(address _market) external {
+    function setBackstopTimeout(address _market) external onlyOracleCouncilAndOwner {
         ExoticPositionalMarket(_market).setBackstopTimeout(backstopTimeout);
     }
 
@@ -211,4 +218,5 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event MarketReset(address marketAddress);
     event NewOracleCouncilAddress(address oracleCouncilAddress);
     event NewFixedBondAmount(uint fixedBond);
+    event NewSafeBoxAddress(address safeBox);
 }

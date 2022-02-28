@@ -134,6 +134,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "safeBox",
+        "type": "address"
+      }
+    ],
+    "name": "NewSafeBoxAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -676,6 +689,19 @@
       }
     ],
     "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_safeBoxAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setSafeBoxAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

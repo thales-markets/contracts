@@ -220,8 +220,8 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
 
         emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote);
         // check if a vote surpassed the majority treshold 
-        uint decidedOption = maxVotesForDisputeOption(_market, _disputeIndex);
-        if (decidedOption > (councilMemberCount.div(2))) {
+        (uint max, uint decidedOption) = maxVotesForDisputeOption(_market, _disputeIndex);
+        if (max > (councilMemberCount.div(2))) {
             dispute[_market][marketTotalDisputes[_market]].disputeCode = decidedOption;
             closeDispute(_market, _disputeIndex, decidedOption);
         }
@@ -259,7 +259,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             marketManager.sendMarketBondAmountTo(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
-                marketManager.fixedBondAmount().mul(2).sub(TEN_SUSD)
+                (marketManager.fixedBondAmount().mul(2)).sub(TEN_SUSD)
             );
 
             marketLastClosedDispute[_market] = _disputeIndex;
@@ -273,7 +273,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             marketManager.cancelMarket(_market);
             marketClosedForDisputes[_market] = true;
             // send bond to disputor and safeBox
-            marketManager.sendMarketBondAmountTo(_market, marketManager.safeBoxAddress(), TEN_SUSD);
+            // marketManager.sendMarketBondAmountTo(_market, marketManager.safeBoxAddress(), TEN_SUSD);
             marketManager.sendMarketBondAmountTo(
                 _market,
                 IExoticPositionalMarket(_market).creatorAddress(),
@@ -282,7 +282,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             marketManager.sendMarketBondAmountTo(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
-                marketManager.fixedBondAmount()
+                marketManager.fixedBondAmount().sub(TEN_SUSD)
             );
             // marketManager.sendRewardToDisputor(_market, dispute[_market][_disputeIndex].disputorAddress);
 
@@ -343,12 +343,16 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         emit MarketReopenedForDisputes(_market);
     }
 
-    function maxVotesForDisputeOption(address _market, uint _disputeIndex) internal view returns (uint) {
+    function maxVotesForDisputeOption(address _market, uint _disputeIndex) internal view returns (uint, uint) {
         uint max = 0;
+        uint option = 0;
         for (uint i = 1; i < VOTING_OPTIONS; i++) {
-            max = (disputeVotesCount[_market][_disputeIndex][i] > max) ? disputeVotesCount[_market][_disputeIndex][i] : max;
+            if(disputeVotesCount[_market][_disputeIndex][i] > max) {
+                max = disputeVotesCount[_market][_disputeIndex][i];
+                option = i;
+            }
         }
-        return max;
+        return (max, option);
     }
 
     modifier onlyCouncilMembers() {

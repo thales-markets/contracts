@@ -16,7 +16,8 @@ const {
 const { expect } = require('chai');
 const { toBN } = require('web3-utils');
 
-const SECOND = 1000;
+const SECOND = 1;
+const HOUR = 3600;
 const DAY = 86400;
 const WEEK = 604800;
 const YEAR = 31556926;
@@ -48,7 +49,7 @@ let marketQuestion,
 	outcomePosition;
 
 contract('Exotic Positional market', async accounts => {
-	const [manager, owner, userOne, userTwo, councilOne, councilTwo, councilThree, safeBox] = accounts;
+	const [manager, owner, userOne, userTwo, userThree, councilOne, councilTwo, councilThree, safeBox] = accounts;
 	let initializeData;
 	beforeEach(async () => {
 		ExoticPositionalMarket = await ExoticPositionalMarketContract.new();
@@ -68,6 +69,7 @@ contract('Exotic Positional market', async accounts => {
 		await ExoticPositionalMarketManager.setSafeBoxAddress(safeBox, { from: manager });
 		await Thales.transfer(userOne, toUnit('1000'), { from: owner });
 		await Thales.transfer(userTwo, toUnit('1000'), { from: owner });
+		await Thales.transfer(userThree, toUnit('1000'), { from: owner });
 	});
 
 	describe('initial deploy', function() {
@@ -159,7 +161,7 @@ contract('Exotic Positional market', async accounts => {
 		});
 		describe('position and resolve (no Council decision)', function() {
 			beforeEach(async () => {
-				answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+				answer = await Thales.increaseAllowance(deployedMarket.address, fixedTicketPrice, {
 					from: userOne,
 				});
 			});
@@ -495,7 +497,82 @@ contract('Exotic Positional market', async accounts => {
 							assert.equal(answer, true);
 						});
 						
-						
+						describe('disputes in positioning phase', function() {
+							let disputeIndex;
+							beforeEach(async () => {
+								disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
+								answer = await Thales.increaseAllowance(deployedMarket.address, fixedTicketPrice, {
+									from: userOne,
+								});
+								answer = await Thales.increaseAllowance(deployedMarket.address, fixedTicketPrice, {
+									from: userTwo,
+								});
+								answer = await Thales.increaseAllowance(deployedMarket.address, fixedTicketPrice, {
+									from: userThree,
+								});
+							});
+							it('users can take position', async function() {
+								answer = await deployedMarket.canUsersPlacePosition();
+								assert.equal(answer, true);
+							});
+							it('3 ticket purchases with 3 different positions', async function() {
+								answer = await deployedMarket.takeAPosition("1", {from:userOne});
+								answer = await deployedMarket.takeAPosition("2", {from:userTwo});
+								answer = await deployedMarket.takeAPosition("3", {from:userThree});
+								answer = await deployedMarket.totalTicketHolders();
+								assert.equal(answer.toString(), "3");
+							});
+
+							describe('ACCEPT_SLASH (Code 1)', function() {
+								
+								beforeEach(async () => {
+									answer = await deployedMarket.takeAPosition("1", {from:userOne});
+									answer = await deployedMarket.takeAPosition("2", {from:userTwo});
+									answer = await deployedMarket.takeAPosition("3", {from:userThree});
+									answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilOne});
+									answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilTwo});
+								});
+								it('Market closed for disputes', async function() {
+									answer = await ThalesOracleCouncil.marketClosedForDisputes(deployedMarket.address);
+									assert.equal(answer, true);
+								});
+								it('BackstopTimeout set', async function() {
+									answer = await deployedMarket.backstopTimeout();
+									assert.equal(answer.toString(), (4*HOUR).toString());
+								});
+								it('market dispute flag -> false', async function() {
+									answer = await deployedMarket.disputed();
+									assert.equal(answer, false);
+								});
+								it('market cancelled -> resolve: true', async function() {
+									answer = await deployedMarket.resolved();
+									assert.equal(answer, true);
+								});
+								it('market cancelled -> winning position: 0', async function() {
+									answer = await deployedMarket.winningPosition();
+									assert.equal(answer.toString(), "0");
+								});
+								it('market cancelled -> totalTicketHolders: 3', async function() {
+									answer = await deployedMarket.totalTicketHolders();
+									assert.equal(answer.toString(), "3");
+								});
+								it('market cancelled -> users can not claim: backstop timeout', async function() {
+									answer = await deployedMarket.canHoldersClaim();
+									assert.equal(answer, false);
+								});
+								it('market cancelled -> users can claim: backstop passed', async function() {
+									await fastForward(4*HOUR+5);
+									answer = await deployedMarket.canHoldersClaim();
+									assert.equal(answer, true);
+								});
+							
+								
+								
+							});
+														
+							
+							
+						});
 					});
 
 				});

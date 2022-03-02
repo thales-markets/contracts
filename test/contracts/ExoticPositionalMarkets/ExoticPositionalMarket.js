@@ -38,6 +38,7 @@ let minimumPositioningDuration = 0;
 let minimumMarketMaturityDuration = 0;
 
 let marketQuestion,
+	marketSource,
 	endOfPositioning,
 	fixedTicketPrice,
 	withdrawalFeePercentage,
@@ -61,12 +62,14 @@ contract('Exotic Positional market', async accounts => {
 			manager,
 			minimumPositioningDuration,
 			ExoticPositionalMarket.address,
+			Thales.address,
 			{ from: manager }
 		);
 		fixedBondAmount = toUnit(100);
 		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
 		await ExoticPositionalMarketManager.setFixedBondAmount(fixedBondAmount, { from: manager });
 		await ExoticPositionalMarketManager.setSafeBoxAddress(safeBox, { from: manager });
+		await ExoticPositionalMarketManager.setMaximumPositionsAllowed("5", { from: manager });
 		await Thales.transfer(userOne, toUnit('1000'), { from: owner });
 		await Thales.transfer(userTwo, toUnit('1000'), { from: owner });
 		await Thales.transfer(userThree, toUnit('1000'), { from: owner });
@@ -82,6 +85,7 @@ contract('Exotic Positional market', async accounts => {
 		beforeEach(async () => {
 			const timestamp = await currentTime();
 			marketQuestion = 'Who will win the el clasico which will be played on 2022-02-22?';
+			marketSource = 'http://www.realmadrid.com';
 			endOfPositioning = (timestamp + DAY).toString();
 			fixedTicketPrice = toUnit('10');
 			withdrawalFeePercentage = '5';
@@ -95,11 +99,12 @@ contract('Exotic Positional market', async accounts => {
 			});
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
+				marketSource,
 				endOfPositioning,
 				fixedTicketPrice,
 				withdrawalFeePercentage,
 				tag,
-				paymentToken,
+				phrases.length,
 				phrases,
 				{ from: owner }
 			);
@@ -131,7 +136,7 @@ contract('Exotic Positional market', async accounts => {
 		});
 
 		it('creator address match', async function() {
-			answer = await deployedMarket.creatorAddress();
+			answer = await ExoticPositionalMarketManager.creatorAddress(deployedMarket.address);
 			assert.equal(answer.toString(), owner);
 		});
 
@@ -141,10 +146,10 @@ contract('Exotic Positional market', async accounts => {
 		});
 
 		it('tags match', async function() {
-			answer = await deployedMarket.getTagCount();
+			answer = await deployedMarket.getTagsCount();
 			assert.equal(answer.toString(), tag.length.toString());
 			for (let i = 0; i < tag.length; i++) {
-				answer = await deployedMarket.tag(i.toString());
+				answer = await deployedMarket.tags(i.toString());
 				assert.equal(answer.toString(), tag[i].toString());
 			}
 		});

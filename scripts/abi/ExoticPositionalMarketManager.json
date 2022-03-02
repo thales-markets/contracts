@@ -120,12 +120,38 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "maximumPositionsAllowed",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMaximumPositionsAllowed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oracleCouncilAddress",
         "type": "address"
       }
     ],
     "name": "NewOracleCouncilAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "paymentTokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "NewPaymentToken",
     "type": "event"
   },
   {
@@ -272,6 +298,11 @@
         "type": "string"
       },
       {
+        "internalType": "string",
+        "name": "_marketSource",
+        "type": "string"
+      },
+      {
         "internalType": "uint256",
         "name": "_endOfPositioning",
         "type": "uint256"
@@ -288,23 +319,42 @@
       },
       {
         "internalType": "uint256[]",
-        "name": "_tag",
+        "name": "_tags",
         "type": "uint256[]"
       },
       {
-        "internalType": "address",
-        "name": "_paymentToken",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_positionCount",
+        "type": "uint256"
       },
       {
         "internalType": "string[]",
-        "name": "_phrases",
+        "name": "_positionPhrases",
         "type": "string[]"
       }
     ],
     "name": "createExoticMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "creatorAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -431,6 +481,11 @@
         "internalType": "address",
         "name": "_exoticMarketMastercopy",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
       }
     ],
     "name": "initialize",
@@ -452,6 +507,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maximumPositionsAllowed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -549,6 +617,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "paymentToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -577,6 +658,25 @@
     "name": "resolveMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "resolverAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -658,6 +758,19 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_maximumPositionsAllowed",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaximumPositionsAllowed",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_duration",
         "type": "uint256"
       }
@@ -689,6 +802,19 @@
       }
     ],
     "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
+      }
+    ],
+    "name": "setPaymentToken",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

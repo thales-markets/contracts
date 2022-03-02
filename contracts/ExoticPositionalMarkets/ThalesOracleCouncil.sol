@@ -72,25 +72,23 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     }
 
     function getNextOpenDisputeIndex(address _market) public view returns (uint) {
-        if(getMarketOpenDisputes(_market) > 0) {
+        if (getMarketOpenDisputes(_market) > 0) {
             return (marketLastClosedDispute[_market].add(1));
-        }
-        else {
+        } else {
             return 0;
         }
-
     }
 
     function getMarketClosedDisputes(address _market) external view returns (uint) {
         return marketLastClosedDispute[_market];
     }
 
-    function getNumberOfCouncilMembersForMarketDispute(address _market, uint _index) external view returns(uint) {
+    function getNumberOfCouncilMembersForMarketDispute(address _market, uint _index) external view returns (uint) {
         // zero index does not count
         return disputeVote[_market][_index].length.sub(1);
     }
 
-    function getVotesCountForMarketDispute(address _market, uint _index) public view returns(uint) {
+    function getVotesCountForMarketDispute(address _market, uint _index) public view returns (uint) {
         uint count = 0;
         // council members index starts from 1
         for (uint i = 1; i < disputeVote[_market][_index].length; i++) {
@@ -99,7 +97,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         return count;
     }
 
-    function getVotesMissingForMarketDispute(address _market, uint _index) external view returns(uint) { 
+    function getVotesMissingForMarketDispute(address _market, uint _index) external view returns (uint) {
         return disputeVote[_market][_index].length.sub(1).sub(getVotesCountForMarketDispute(_market, _index));
     }
 
@@ -170,7 +168,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         dispute[_market][marketTotalDisputes[_market]].disputorAddress = msg.sender;
         dispute[_market][marketTotalDisputes[_market]].disputeString = _disputeString;
         dispute[_market][marketTotalDisputes[_market]].disputeTimestamp = block.timestamp;
-        disputeVote[_market][marketTotalDisputes[_market]] = new uint[](councilMemberCount+1);
+        disputeVote[_market][marketTotalDisputes[_market]] = new uint[](councilMemberCount + 1);
         if (IExoticPositionalMarket(_market).canUsersPlacePosition()) {
             dispute[_market][marketTotalDisputes[_market]].disputeInPositioningPhase = true;
         }
@@ -207,8 +205,14 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         }
 
         // check if already has voted for another option, and revert the vote
-        if(disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] > 0 && disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] != _disputeCodeVote) {
-            disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] = disputeVotesCount[_market][_disputeIndex][_disputeCodeVote].sub(1);
+        if (
+            disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] > 0 &&
+            disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] != _disputeCodeVote
+        ) {
+            disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] = disputeVotesCount[_market][_disputeIndex][
+                _disputeCodeVote
+            ]
+                .sub(1);
         }
 
         // record the voting option
@@ -219,7 +223,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             .add(1);
 
         emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote);
-        // check if a vote surpassed the majority treshold 
+        // check if a vote surpassed the majority treshold
         (uint max, uint decidedOption) = maxVotesForDisputeOption(_market, _disputeIndex);
         if (max > (councilMemberCount.div(2))) {
             dispute[_market][marketTotalDisputes[_market]].disputeCode = decidedOption;
@@ -323,11 +327,11 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         } else {
             // (CANCEL)
             //4 hours backstop
-            marketManager.setBackstopTimeout(_market);
+            // marketManager.setBackstopTimeout(_market);
             // close market disputes
-            marketClosedForDisputes[_market] = true;
+            // marketClosedForDisputes[_market] = true;
             // close market(cancel market)
-            marketManager.cancelMarket(_market);
+            // marketManager.cancelMarket(_market);
         }
     }
 
@@ -347,7 +351,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         uint max = 0;
         uint option = 0;
         for (uint i = 1; i < VOTING_OPTIONS; i++) {
-            if(disputeVotesCount[_market][_disputeIndex][i] > max) {
+            if (disputeVotesCount[_market][_disputeIndex][i] > max) {
                 max = disputeVotesCount[_market][_disputeIndex][i];
                 option = i;
             }

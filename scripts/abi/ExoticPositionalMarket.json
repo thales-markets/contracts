@@ -432,19 +432,6 @@
   },
   {
     "inputs": [],
-    "name": "creatorAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "creatorPercentage",
     "outputs": [
       {
@@ -542,7 +529,7 @@
   },
   {
     "inputs": [],
-    "name": "getTagCount",
+    "name": "getTagsCount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -659,13 +646,13 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_creatorAddress",
-        "type": "address"
+        "internalType": "string",
+        "name": "_marketQuestion",
+        "type": "string"
       },
       {
         "internalType": "string",
-        "name": "_marketQuestion",
+        "name": "_marketSource",
         "type": "string"
       },
       {
@@ -685,17 +672,17 @@
       },
       {
         "internalType": "uint256[]",
-        "name": "_tag",
+        "name": "_tags",
         "type": "uint256[]"
       },
       {
-        "internalType": "address",
-        "name": "_paymentToken",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_positionCount",
+        "type": "uint256"
       },
       {
         "internalType": "string[]",
-        "name": "_phrases",
+        "name": "_positionPhrases",
         "type": "string[]"
       }
     ],
@@ -745,6 +732,19 @@
   },
   {
     "inputs": [],
+    "name": "marketManager",
+    "outputs": [
+      {
+        "internalType": "contract IExoticPositionalMarketManager",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "marketMaturity",
     "outputs": [
       {
@@ -759,6 +759,19 @@
   {
     "inputs": [],
     "name": "marketQuestion",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketSource",
     "outputs": [
       {
         "internalType": "string",
@@ -849,19 +862,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "paymentToken",
-    "outputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1036,7 +1036,7 @@
         "type": "uint256"
       }
     ],
-    "name": "tag",
+    "name": "tags",
     "outputs": [
       {
         "internalType": "uint256",

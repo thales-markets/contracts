@@ -8,6 +8,10 @@ interface IExoticPositionalMarketManager {
     function getMarketBondAmount(address _market) external view returns (uint);
     function fixedBondAmount() external view returns(uint);
     function safeBoxAddress() external view returns(address);
+    function maximumPositionsAllowed() external view returns(uint);
+    function paymentToken() external view returns(address);
+    function creatorAddress(address _market) external view returns(address);
+    function resolverAddress(address _market) external view returns(address);
 
 
     function disputeMarket(address _marketAddress, address disputor) external;

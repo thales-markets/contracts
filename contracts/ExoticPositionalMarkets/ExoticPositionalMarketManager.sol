@@ -30,50 +30,69 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     address public oracleCouncilAddress;
     address public safeBoxAddress;
 
+    address public paymentToken;
+    uint public maximumPositionsAllowed;
+    mapping(address => address) public creatorAddress;
+    mapping(address => address) public resolverAddress;
+
     mapping(uint => address) public activeMarkets;
     uint public numOfActiveMarkets;
 
     function initialize(
         address _owner,
         uint _minimumPositioningDuration,
-        address _exoticMarketMastercopy
+        address _exoticMarketMastercopy,
+        address _paymentToken
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
         minimumPositioningDuration = _minimumPositioningDuration;
         exoticMarketMastercopy = _exoticMarketMastercopy;
         backstopTimeout = backstopTimeoutDefault;
+        maximumPositionsAllowed = 5;
+        paymentToken = _paymentToken;
     }
 
-    // Create Exotic market with 3 phrase options
+    // Create Exotic market
     function createExoticMarket(
         string memory _marketQuestion,
+        string memory _marketSource,
         uint _endOfPositioning,
         uint _fixedTicketPrice,
         uint _withdrawalFeePercentage,
-        uint[] memory _tag,
-        address _paymentToken,
-        string[] memory _phrases
+        uint[] memory _tags,
+        uint _positionCount,
+        string[] memory _positionPhrases
     ) external checkMarketRequirements(_endOfPositioning) nonReentrant {
-        require(IERC20(_paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
+        require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
         require(
-            IERC20(_paymentToken).allowance(msg.sender, address(this)) >= fixedBondAmount,
+            IERC20(paymentToken).allowance(msg.sender, address(this)) >= fixedBondAmount,
             "No allowance. Please approve ticket price allowance"
         );
+        require(
+            keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")),
+            "Invalid market question (empty string)"
+        );
+        require(
+            keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")),
+            "Invalid market source (empty string)"
+        );
+        require(_positionCount == _positionPhrases.length, "Invalid position count with position phrases");
         ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(Clones.clone(exoticMarketMastercopy));
-
+        
         exoticMarket.initialize(
-            msg.sender,
             _marketQuestion,
+            _marketSource,
             _endOfPositioning,
             _fixedTicketPrice,
             _withdrawalFeePercentage,
-            _tag,
-            _paymentToken,
-            _phrases
+            _tags,
+            _positionCount,
+            _positionPhrases
         );
-        IERC20(_paymentToken).transferFrom(msg.sender, address(this), fixedBondAmount);
-        IERC20(_paymentToken).approve(address(exoticMarket), fixedBondAmount);
+        creatorAddress[address(exoticMarket)] = msg.sender;
+        IERC20(paymentToken).transferFrom(msg.sender, address(this), fixedBondAmount);
+        IERC20(paymentToken).approve(address(exoticMarket), fixedBondAmount);
         exoticMarket.transferBondToMarket(address(this), fixedBondAmount);
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
@@ -82,17 +101,21 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function resolveMarket(address _marketAddress, uint _outcomePosition) external {
         require(isActiveMarket(_marketAddress), "Market is not active");
-        // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
-
+        if(creatorAddress[_marketAddress] != msg.sender) {
+            require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
+            require(
+                IERC20(paymentToken).allowance(msg.sender, address(this)) >= fixedBondAmount,
+                "No allowance. Please approve ticket price allowance"
+            );
+            resolverAddress[_marketAddress] = msg.sender;
+            ExoticPositionalMarket(_marketAddress).transferBondToMarket(msg.sender, fixedBondAmount);
+        }
         ExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, msg.sender);
-        ExoticPositionalMarket(_marketAddress).transferBondToMarket(msg.sender, fixedBondAmount);
-        // removeActiveMarket(_marketAddress);
         emit MarketResolved(_marketAddress);
     }
 
     function cancelMarket(address _marketAddress) external onlyOracleCouncilAndOwner {
         require(isActiveMarket(_marketAddress), "Market is not active");
-        // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
 
         ExoticPositionalMarket(_marketAddress).cancelMarket();
         removeActiveMarket(_marketAddress);
@@ -101,7 +124,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function resetMarket(address _marketAddress) external onlyOracleCouncilAndOwner {
         require(isActiveMarket(_marketAddress), "Market is not active");
-        // require(ExoticPositionalMarket(_marketAddress).creatorAddress() == msg.sender, "Invalid market owner. Market owner mismatch");
 
         ExoticPositionalMarket(_marketAddress).resetMarket();
         emit MarketReset(_marketAddress);
@@ -150,12 +172,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         return getActiveMarketIndex(_marketAddress) < numOfActiveMarkets;
     }
 
+    // SETTERS ///////////////////////////////////////////////////////////////////////////
+
     function setFixedBondAmount(uint _fixedBond) external onlyOwner {
         require(_fixedBond > 0, "Invalid bond amount");
         fixedBondAmount = _fixedBond;
         emit NewFixedBondAmount(_fixedBond);
     }
-    
+
     function setSafeBoxAddress(address _safeBoxAddress) external onlyOwner {
         require(_safeBoxAddress != address(0), "Invalid safeBox address");
         safeBoxAddress = _safeBoxAddress;
@@ -183,6 +207,20 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit NewOracleCouncilAddress(_councilAddress);
     }
 
+    function setMaximumPositionsAllowed(uint _maximumPositionsAllowed) external onlyOwner {
+        require(_maximumPositionsAllowed > 2, "Invalid Maximum positions allowed");
+        maximumPositionsAllowed = _maximumPositionsAllowed;
+        emit NewMaximumPositionsAllowed(_maximumPositionsAllowed);
+    }
+
+    function setPaymentToken(address _paymentToken) external onlyOwner {
+        require(_paymentToken != address(0), "Invalid address");
+        paymentToken = _paymentToken;
+        emit NewPaymentToken(_paymentToken);
+    }
+
+    // INTERNAL FUNCTIONS
+
     function removeActiveMarket(address _marketAddress) internal {
         activeMarkets[getActiveMarketIndex(_marketAddress)] = activeMarkets[numOfActiveMarkets.sub(1)];
         numOfActiveMarkets = numOfActiveMarkets.sub(1);
@@ -192,7 +230,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     modifier checkMarketRequirements(uint _endOfPositioning) {
         require(exoticMarketMastercopy != address(0), "No ExoticMarket mastercopy present. Please update the mastercopy");
         // require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "Posiitioning period too low. Increase the endOfPositioning");
-        // require(_marketMaturity >= block.timestamp.add(minimumMarketMaturityDuration), "Market Maturity period too low. Increase the maturityDuration");
         _;
     }
 
@@ -219,4 +256,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewOracleCouncilAddress(address oracleCouncilAddress);
     event NewFixedBondAmount(uint fixedBond);
     event NewSafeBoxAddress(address safeBox);
+    event NewMaximumPositionsAllowed(uint maximumPositionsAllowed);
+    event NewPaymentToken(address paymentTokenAddress);
 }

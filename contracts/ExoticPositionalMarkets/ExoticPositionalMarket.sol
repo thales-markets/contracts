@@ -5,11 +5,13 @@ import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
-import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
+import "../interfaces/IExoticPositionalMarketManager.sol";
 
 contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeMath for uint;
+    using SafeERC20 for IERC20;
 
     enum TicketType {FIXED_TICKET_PRICE, FLEXIBLE_BID}
     uint private safeBoxAmount;
@@ -33,18 +35,18 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
 
     // from init
     string public marketQuestion;
+    string public marketSource;
     TicketType public ticketType;
     mapping(uint => string) public positionPhrase;
     uint public positionCount;
     uint public endOfPositioning;
     uint public marketMaturity;
     uint public fixedTicketPrice;
-    uint[] public tag;
+    uint[] public tags;
     uint public backstopTimeout;
     uint public withdrawalFeePercentage;
     bool public withdrawalAllowed;
-    IERC20 public paymentToken;
-    address public creatorAddress;
+    IExoticPositionalMarketManager public marketManager;
     address public councilAddress;
     address public resolverAddress;
 
@@ -60,31 +62,34 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     uint public totalBondAmount;
 
     function initialize(
-        address _creatorAddress,
         string memory _marketQuestion,
+        string memory _marketSource,
         uint _endOfPositioning,
         uint _fixedTicketPrice,
         uint _withdrawalFeePercentage,
-        uint[] memory _tag,
-        address _paymentToken,
-        string[] memory _phrases
+        uint[] memory _tags,
+        uint _positionCount,
+        string[] memory _positionPhrases
     ) external initializer {
-        require(_phrases.length >= 2 && _phrases.length <= 5, "Invalid number of provided positions");
+        require(
+            _positionCount >= 2 && _positionCount <= IExoticPositionalMarketManager(msg.sender).maximumPositionsAllowed(),
+            "Invalid number of provided positions"
+        );
         setOwner(msg.sender);
+        marketManager = IExoticPositionalMarketManager(msg.sender);
         _initializeWithTwoParameters(
-            _creatorAddress,
             _marketQuestion,
+            _marketSource,
             _endOfPositioning,
             _fixedTicketPrice,
             _withdrawalFeePercentage,
-            _tag,
-            _paymentToken,
-            _phrases[0],
-            _phrases[1]
+            _tags,
+            _positionPhrases[0],
+            _positionPhrases[1]
         );
-        if (_phrases.length > 2) {
-            for (uint i = 2; i < _phrases.length; i++) {
-                _addPosition(_phrases[i]);
+        if (_positionCount > 2) {
+            for (uint i = 2; i < _positionCount; i++) {
+                _addPosition(_positionPhrases[i]);
             }
         }
     }
@@ -93,6 +98,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         require(_position > 0, "Position can not be zero. Non-zero position expected");
         require(_position <= positionCount, "Position exceeds number of positions");
         require(canUsersPlacePosition(), "Not able to position. Positioning time finished or market resolved");
+        //require(same position)
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             if (ticketHolder[msg.sender] == 0) {
                 transferToMarket(msg.sender, fixedTicketPrice);
@@ -118,8 +124,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
             totalTicketHolders = totalTicketHolders.sub(1);
             ticketsPerPosition[ticketHolder[msg.sender]] = ticketsPerPosition[ticketHolder[msg.sender]].sub(1);
             ticketHolder[msg.sender] = 0;
-            paymentToken.transfer(creatorAddress, withdrawalFee.div(2));
-            paymentToken.transfer(msg.sender, fixedTicketPrice.sub(withdrawalFee));
+            IERC20(marketManager.paymentToken()).safeTransfer(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
+            IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, fixedTicketPrice.sub(withdrawalFee));
             emit TicketWithdrawn(msg.sender, fixedTicketPrice.sub(withdrawalFee));
         } else {
             // _resolveFlexibleBid(_outcomePosition);
@@ -129,11 +135,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     // market resolved only through the Manager
     function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner {
         require(canMarketBeResolved(), "Market can not be resolved. It is disputed/not matured/resolved");
-        require(_outcomePosition < positionCount, "Outcome position exeeds the position");
-        if (_resolverAddress != creatorAddress) {
-            transferToMarket(_resolverAddress, FIXED_BOND_AMOUNT);
-            totalBondAmount = totalBondAmount.add(FIXED_BOND_AMOUNT);
-        }
+        require(_outcomePosition <= positionCount, "Outcome position exeeds the position");
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             winningPosition = _outcomePosition;
             claimableTicketsCount = ticketsPerPosition[_outcomePosition];
@@ -181,7 +183,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
             uint amount = getTicketHolderClaimableAmount(msg.sender);
             if (amount > 0) {
                 claimableTicketsCount = claimableTicketsCount.sub(1);
-                paymentToken.transfer(msg.sender, amount);
+                IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, amount);
                 emit WinningTicketClaimed(msg.sender, amount);
             }
         } else {
@@ -191,9 +193,9 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
 
     function claimToSafeBox(address _safeBox) external onlyOwner {
         require(resolved, "Market not resolved");
-        require(paymentToken.balanceOf(_safeBox) > 0, "Balance is zero");
+        require(IERC20(marketManager.paymentToken()).balanceOf(_safeBox) > 0, "Balance is zero");
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
-            paymentToken.transfer(_safeBox, getSafeBoxAmount());
+            IERC20(marketManager.paymentToken()).transfer(_safeBox, getSafeBoxAmount());
             emit TransferredToSafeBox(_safeBox, getSafeBoxAmount());
         } else {
             // Flexible bid
@@ -221,11 +223,14 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
 
     function transferToMarket(address _sender, uint _amount) public notPaused nonReentrant {
         require(_sender != address(0), "Invalid sender address");
-        require(paymentToken.balanceOf(_sender) >= _amount, "Sender balance low");
-        require(paymentToken.allowance(_sender, address(this)) >= _amount, "No allowance. Please adjust the allowance");
-        paymentToken.transferFrom(_sender, address(this), _amount);
+        require(IERC20(marketManager.paymentToken()).balanceOf(_sender) >= _amount, "Sender balance low");
+        require(
+            IERC20(marketManager.paymentToken()).allowance(_sender, address(this)) >= _amount,
+            "No allowance. Please adjust the allowance"
+        );
+        IERC20(marketManager.paymentToken()).safeTransferFrom(_sender, address(this), _amount);
     }
-    
+
     function transferBondToMarket(address _sender, uint _amount) external notPaused {
         totalBondAmount = totalBondAmount.add(_amount);
         transferToMarket(_sender, _amount);
@@ -234,9 +239,9 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     function transferFromBondAmountToRecepient(address _recepient, uint _amount) public onlyOwner {
         require(_amount <= totalBondAmount, "Exceeds the total bond amount");
         require(_recepient != address(0), "Invalid sender address");
-        require(paymentToken.balanceOf(address(this)) >= _amount, "Market balance low");
+        require(IERC20(marketManager.paymentToken()).balanceOf(address(this)) >= _amount, "Market balance low");
         totalBondAmount = totalBondAmount.sub(_amount);
-        paymentToken.transfer(_recepient, _amount);
+        IERC20(marketManager.paymentToken()).safeTransfer(_recepient, _amount);
     }
 
     // SETTERS ///////////////////////////////////////////////////////
@@ -289,7 +294,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         amount = (ticketHolder[_account] > 0 && (ticketHolder[_account] == winningPosition || winningPosition == CANCELED))
             ? getWinningAmountPerTicket()
             : 0;
-        if (_account == creatorAddress && winningPosition != CANCELED) {
+        if (_account == marketManager.creatorAddress(address(this)) && winningPosition != CANCELED) {
             amount = amount.add(getAdditionalCreatorAmount());
         }
         if (_account == resolverAddress && winningPosition != CANCELED) {
@@ -329,8 +334,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         }
     }
 
-    function getTagCount() public view returns (uint) {
-        return tag.length;
+    function getTagsCount() public view returns (uint) {
+        return tags.length;
     }
 
     function getAdditionalCreatorAmount() internal view returns (uint) {
@@ -348,21 +353,19 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     // INTERNAL FUNCTIONS
 
     function _initializeWithTwoParameters(
-        address _creatorAddress,
         string memory _marketQuestion,
+        string memory _marketSource,
         uint _endOfPositioning,
         uint _fixedTicketPrice,
         uint _withdrawalFeePercentage,
-        uint[] memory _tag,
-        address _paymentToken,
-        string memory _phrase1,
-        string memory _phrase2
+        uint[] memory _tags,
+        string memory _positionPhrase1,
+        string memory _positionPhrase2
     ) internal {
-        creatorAddress = _creatorAddress;
         creationTime = block.timestamp;
         marketQuestion = _marketQuestion;
+        marketSource = _marketSource;
         endOfPositioning = _endOfPositioning;
-        paymentToken = IERC20(_paymentToken);
         // Ticket Type can be determined based on ticket price
         ticketType = _fixedTicketPrice > 0 ? TicketType.FIXED_TICKET_PRICE : TicketType.FLEXIBLE_BID;
         fixedTicketPrice = _fixedTicketPrice;
@@ -370,9 +373,9 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         withdrawalAllowed = _withdrawalFeePercentage < HUNDRED ? true : false;
         withdrawalFeePercentage = _withdrawalFeePercentage;
         // The tag is just a number for now
-        tag = _tag;
-        _addPosition(_phrase1);
-        _addPosition(_phrase2);
+        tags = _tags;
+        _addPosition(_positionPhrase1);
+        _addPosition(_positionPhrase2);
     }
 
     function _addPosition(string memory _position) internal {

@@ -173,6 +173,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "thalesBondsAddress",
+        "type": "address"
+      }
+    ],
+    "name": "NewThalesBonds",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -485,6 +498,11 @@
       {
         "internalType": "address",
         "name": "_paymentToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_thalesBonds",
         "type": "address"
       }
     ],
@@ -830,6 +848,32 @@
     "name": "setSafeBoxAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_thalesBonds",
+        "type": "address"
+      }
+    ],
+    "name": "setThalesBonds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "thalesBonds",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

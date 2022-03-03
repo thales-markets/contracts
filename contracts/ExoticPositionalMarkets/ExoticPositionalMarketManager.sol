@@ -11,6 +11,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 import "./ExoticPositionalMarket.sol";
+import "../interfaces/IThalesBonds.sol";
 
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
@@ -30,6 +31,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     address public oracleCouncilAddress;
     address public safeBoxAddress;
 
+    address public thalesBonds;
     address public paymentToken;
     uint public maximumPositionsAllowed;
     mapping(address => address) public creatorAddress;
@@ -42,7 +44,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         address _owner,
         uint _minimumPositioningDuration,
         address _exoticMarketMastercopy,
-        address _paymentToken
+        address _paymentToken,
+        address _thalesBonds
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -51,6 +54,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         backstopTimeout = backstopTimeoutDefault;
         maximumPositionsAllowed = 5;
         paymentToken = _paymentToken;
+        thalesBonds = _thalesBonds;
     }
 
     // Create Exotic market
@@ -66,7 +70,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     ) external checkMarketRequirements(_endOfPositioning) nonReentrant {
         require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
         require(
-            IERC20(paymentToken).allowance(msg.sender, address(this)) >= fixedBondAmount,
+            IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
             "No allowance. Please approve ticket price allowance"
         );
         require(
@@ -91,9 +95,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             _positionPhrases
         );
         creatorAddress[address(exoticMarket)] = msg.sender;
-        IERC20(paymentToken).transferFrom(msg.sender, address(this), fixedBondAmount);
-        IERC20(paymentToken).approve(address(exoticMarket), fixedBondAmount);
-        exoticMarket.transferBondToMarket(address(this), fixedBondAmount);
+        IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
         emit MarketCreated(address(exoticMarket), _marketQuestion, msg.sender);
@@ -104,11 +106,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         if(creatorAddress[_marketAddress] != msg.sender) {
             require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
             require(
-                IERC20(paymentToken).allowance(msg.sender, address(this)) >= fixedBondAmount,
+                IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
                 "No allowance. Please approve ticket price allowance"
             );
             resolverAddress[_marketAddress] = msg.sender;
-            ExoticPositionalMarket(_marketAddress).transferBondToMarket(msg.sender, fixedBondAmount);
+            IThalesBonds(thalesBonds).sendResolverBondToMarket(_marketAddress, msg.sender, fixedBondAmount);
         }
         ExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, msg.sender);
         emit MarketResolved(_marketAddress);
@@ -143,7 +145,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function disputeMarket(address _marketAddress, address _disputor) external onlyOracleCouncil {
-        ExoticPositionalMarket(_marketAddress).transferBondToMarket(_disputor, fixedBondAmount);
+        IThalesBonds(thalesBonds).sendDisputorBondToMarket(_marketAddress, _disputor, fixedBondAmount);
         if (!ExoticPositionalMarket(_marketAddress).disputed() && !ExoticPositionalMarket(_marketAddress).paused()) {
             ExoticPositionalMarket(_marketAddress).openDispute();
         }
@@ -218,6 +220,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         paymentToken = _paymentToken;
         emit NewPaymentToken(_paymentToken);
     }
+    
+    function setThalesBonds(address _thalesBonds) external onlyOwner {
+        require(_thalesBonds != address(0), "Invalid address");
+        thalesBonds = _thalesBonds;
+        emit NewThalesBonds(_thalesBonds);
+    }
 
     // INTERNAL FUNCTIONS
 
@@ -229,7 +237,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     modifier checkMarketRequirements(uint _endOfPositioning) {
         require(exoticMarketMastercopy != address(0), "No ExoticMarket mastercopy present. Please update the mastercopy");
-        // require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "Posiitioning period too low. Increase the endOfPositioning");
+        require(thalesBonds != address(0), "Invalid Thales bond address");
+        require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "Posiitioning period too low. Increase the endOfPositioning");
         _;
     }
 
@@ -258,4 +267,5 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewSafeBoxAddress(address safeBox);
     event NewMaximumPositionsAllowed(uint maximumPositionsAllowed);
     event NewPaymentToken(address paymentTokenAddress);
+    event NewThalesBonds(address thalesBondsAddress);
 }

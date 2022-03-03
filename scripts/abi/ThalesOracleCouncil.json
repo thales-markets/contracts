@@ -785,6 +785,11 @@
         "internalType": "address",
         "name": "_marketManager",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_thalesBonds",
+        "type": "address"
       }
     ],
     "name": "initialize",
@@ -1014,6 +1019,19 @@
     "name": "setOwner",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "thalesBonds",
+    "outputs": [
+      {
+        "internalType": "contract IThalesBonds",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

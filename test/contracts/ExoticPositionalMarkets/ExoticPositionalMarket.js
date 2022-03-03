@@ -29,10 +29,12 @@ const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalMarket
 const ExoticPositionalMarketManagerContract = artifacts.require('ExoticPositionalMarketManager');
 const ThalesOracleCouncilContract = artifacts.require('ThalesOracleCouncil');
 const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
+const ThalesBondsContract = artifacts.require('ThalesBonds');
 let ExoticPositionalMarket;
 let ExoticPositionalMarketManager;
 let ThalesOracleCouncil;
 let Thales;
+let ThalesBonds;
 let answer;
 let minimumPositioningDuration = 0;
 let minimumMarketMaturityDuration = 0;
@@ -57,16 +59,25 @@ contract('Exotic Positional market', async accounts => {
 		ExoticPositionalMarketManager = await ExoticPositionalMarketManagerContract.new();
 		ThalesOracleCouncil = await ThalesOracleCouncilContract.new({from:owner});
 		Thales = await ThalesContract.new({ from: owner });
-	
+		ThalesBonds = await ThalesBondsContract.new();
+
+		await ThalesBonds.initialize(
+			manager,
+			{ from: manager }
+		);
+
 		await ExoticPositionalMarketManager.initialize(
 			manager,
 			minimumPositioningDuration,
 			ExoticPositionalMarket.address,
 			Thales.address,
+			ThalesBonds.address,
 			{ from: manager }
 		);
 		fixedBondAmount = toUnit(100);
 		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
+		await ThalesBonds.setOracleCouncilAddress(ThalesOracleCouncil.address, { from: manager });
+		await ThalesBonds.setManagerAddress(ExoticPositionalMarketManager.address, { from: manager });
 		await ExoticPositionalMarketManager.setFixedBondAmount(fixedBondAmount, { from: manager });
 		await ExoticPositionalMarketManager.setSafeBoxAddress(safeBox, { from: manager });
 		await ExoticPositionalMarketManager.setMaximumPositionsAllowed("5", { from: manager });
@@ -94,7 +105,7 @@ contract('Exotic Positional market', async accounts => {
 			phrases = ['Real Madrid', 'FC Barcelona', 'It will be a draw'];
 			outcomePosition = '1';
 
-			answer = await Thales.increaseAllowance(ExoticPositionalMarketManager.address, fixedBondAmount, {
+			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 				from: owner,
 			});
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
@@ -152,6 +163,11 @@ contract('Exotic Positional market', async accounts => {
 				answer = await deployedMarket.tags(i.toString());
 				assert.equal(answer.toString(), tag[i].toString());
 			}
+		});
+
+		it('total bond amount', async function() {
+			answer = await ThalesBonds.getTotalBondAmountForMarket(deployedMarket.address);
+			assert.equal(answer.toString(), fixedBondAmount);
 		});
 
 		it('can not resolve', async function() {
@@ -351,6 +367,7 @@ contract('Exotic Positional market', async accounts => {
 					fixedBondAmount,
 					Thales.address,
 					ExoticPositionalMarketManager.address,
+					ThalesBonds.address,
 					{ from: manager }
 				);
 			});
@@ -407,7 +424,7 @@ contract('Exotic Positional market', async accounts => {
 					beforeEach(async () => {
 						let fixedBondAmount = toUnit(100);
 						let disputeString = "This is a dispute";
-						answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+						answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 							from: userTwo,
 						});
 					});
@@ -445,7 +462,7 @@ contract('Exotic Positional market', async accounts => {
 					it('get total bond amount', async function() {
 						let disputeString = "This is a dispute";
 						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
-						answer = await deployedMarket.totalBondAmount();
+						answer = await ThalesBonds.getTotalBondAmountForMarket(deployedMarket.address);
 						let bond = fixedBondAmount*2
 						assert.equal(answer.toString(), bond.toString());
 					});

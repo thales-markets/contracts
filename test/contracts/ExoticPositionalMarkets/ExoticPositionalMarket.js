@@ -52,19 +52,26 @@ let marketQuestion,
 	outcomePosition;
 
 contract('Exotic Positional market', async accounts => {
-	const [manager, owner, userOne, userTwo, userThree, councilOne, councilTwo, councilThree, safeBox] = accounts;
+	const [
+		manager,
+		owner,
+		userOne,
+		userTwo,
+		userThree,
+		councilOne,
+		councilTwo,
+		councilThree,
+		safeBox,
+	] = accounts;
 	let initializeData;
 	beforeEach(async () => {
 		ExoticPositionalMarket = await ExoticPositionalMarketContract.new();
 		ExoticPositionalMarketManager = await ExoticPositionalMarketManagerContract.new();
-		ThalesOracleCouncil = await ThalesOracleCouncilContract.new({from:owner});
+		ThalesOracleCouncil = await ThalesOracleCouncilContract.new({ from: owner });
 		Thales = await ThalesContract.new({ from: owner });
 		ThalesBonds = await ThalesBondsContract.new();
 
-		await ThalesBonds.initialize(
-			manager,
-			{ from: manager }
-		);
+		await ThalesBonds.initialize(manager, { from: manager });
 
 		await ExoticPositionalMarketManager.initialize(
 			manager,
@@ -80,7 +87,7 @@ contract('Exotic Positional market', async accounts => {
 		await ThalesBonds.setManagerAddress(ExoticPositionalMarketManager.address, { from: manager });
 		await ExoticPositionalMarketManager.setFixedBondAmount(fixedBondAmount, { from: manager });
 		await ExoticPositionalMarketManager.setSafeBoxAddress(safeBox, { from: manager });
-		await ExoticPositionalMarketManager.setMaximumPositionsAllowed("5", { from: manager });
+		await ExoticPositionalMarketManager.setMaximumPositionsAllowed('5', { from: manager });
 		await Thales.transfer(userOne, toUnit('1000'), { from: owner });
 		await Thales.transfer(userTwo, toUnit('1000'), { from: owner });
 		await Thales.transfer(userThree, toUnit('1000'), { from: owner });
@@ -284,7 +291,7 @@ contract('Exotic Positional market', async accounts => {
 				});
 			});
 		});
-		
+
 		describe('position and withdraw', function() {
 			beforeEach(async () => {
 				answer = await Thales.increaseAllowance(deployedMarket.address, toUnit('100'), {
@@ -311,57 +318,52 @@ contract('Exotic Positional market', async accounts => {
 				});
 
 				describe('withdraw (5%)', async function() {
-					
 					it('get withdrawal allowed', async function() {
 						answer = await deployedMarket.withdrawalAllowed();
 						assert.equal(answer, true);
 					});
-					
+
 					it('withdrawal fee match', async function() {
 						answer = await deployedMarket.withdrawalFeePercentage();
 						assert.equal(answer.toString(), withdrawalFeePercentage);
 					});
-					
+
 					it('userOne can withdraw', async function() {
 						answer = await deployedMarket.canUserWithdraw(userOne);
 						assert.equal(answer, true);
 					});
-					
+
 					it('userTwo can NOT withdraw', async function() {
 						answer = await deployedMarket.canUserWithdraw(userTwo);
 						assert.equal(answer, false);
 					});
-					
+
 					it('userOne withdraws', async function() {
 						answer = await Thales.balanceOf(userOne);
 						let balance = parseInt(answer.toString());
 						let fixedTicket = parseInt(fixedTicketPrice.toString());
-						balance = balance + (fixedTicket*0.95)
-						answer = await deployedMarket.withdraw({from:userOne});
+						balance = balance + fixedTicket * 0.95;
+						answer = await deployedMarket.withdraw({ from: userOne });
 						answer = await Thales.balanceOf(userOne);
 						assert.equal(answer.toString(), balance.toString());
 					});
-					
+
 					it('creator receives withdrawal fee', async function() {
 						answer = await Thales.balanceOf(owner);
 						let balance = parseInt(answer.toString());
 						let fixedTicket = parseInt(fixedTicketPrice.toString());
-						balance = balance + Math.floor(parseFloat(fixedTicket)*0.025);
+						balance = balance + Math.floor(parseFloat(fixedTicket) * 0.025);
 						console.log(balance.toString());
-						answer = await deployedMarket.withdraw({from:userOne});
+						answer = await deployedMarket.withdraw({ from: userOne });
 						answer = await Thales.balanceOf(owner);
 						assert.isAtLeast(parseFloat(answer.toString()), balance);
 					});
-
-					
 				});
 			});
 		});
-		
-		describe('Oracle Council', function() {
-			
-			beforeEach(async () => {
 
+		describe('Oracle Council', function() {
+			beforeEach(async () => {
 				await ThalesOracleCouncil.initialize(
 					manager,
 					fixedBondAmount,
@@ -371,158 +373,279 @@ contract('Exotic Positional market', async accounts => {
 					{ from: manager }
 				);
 			});
-			
+
 			it('No Oracle Council members', async function() {
 				answer = await ThalesOracleCouncil.councilMemberCount();
-				assert.equal(answer.toString(), "0");
+				assert.equal(answer.toString(), '0');
 			});
 			it('Add an Oracle Council member', async function() {
-				answer = await ThalesOracleCouncil.addOracleCouncilMember(userOne, {from:manager});
+				answer = await ThalesOracleCouncil.addOracleCouncilMember(userOne, { from: manager });
 				answer = await ThalesOracleCouncil.councilMemberCount();
-				assert.equal(answer.toString(), "1");
-				answer = await ThalesOracleCouncil.councilMemberAddress("1");
+				assert.equal(answer.toString(), '1');
+				answer = await ThalesOracleCouncil.councilMemberAddress('1');
 				assert.equal(answer, userOne);
 			});
 			it('Remove an Oracle Council member', async function() {
-				answer = await ThalesOracleCouncil.addOracleCouncilMember(userOne, {from:manager});
-				answer = await ThalesOracleCouncil.removeOracleCouncilMember(userOne, {from:manager});
+				answer = await ThalesOracleCouncil.addOracleCouncilMember(userOne, { from: manager });
+				answer = await ThalesOracleCouncil.removeOracleCouncilMember(userOne, { from: manager });
 				answer = await ThalesOracleCouncil.councilMemberCount();
-				assert.equal(answer.toString(), "0");
+				assert.equal(answer.toString(), '0');
 			});
-			
+
 			it('Get Council members count', async function() {
-				await ThalesOracleCouncil.addOracleCouncilMember(councilOne, {from:manager});
-				await ThalesOracleCouncil.addOracleCouncilMember(councilTwo, {from:manager});
-				await ThalesOracleCouncil.addOracleCouncilMember(councilThree, {from:manager});
+				await ThalesOracleCouncil.addOracleCouncilMember(councilOne, { from: manager });
+				await ThalesOracleCouncil.addOracleCouncilMember(councilTwo, { from: manager });
+				await ThalesOracleCouncil.addOracleCouncilMember(councilThree, { from: manager });
 				answer = await ThalesOracleCouncil.councilMemberCount();
-				assert.equal(answer.toString(), "3");
+				assert.equal(answer.toString(), '3');
 			});
 
 			describe('dispute', function() {
 				beforeEach(async () => {
-					await ThalesOracleCouncil.addOracleCouncilMember(councilOne, {from:manager});
-					await ThalesOracleCouncil.addOracleCouncilMember(councilTwo, {from:manager});
-					await ThalesOracleCouncil.addOracleCouncilMember(councilThree, {from:manager});
+					await ThalesOracleCouncil.addOracleCouncilMember(councilOne, { from: manager });
+					await ThalesOracleCouncil.addOracleCouncilMember(councilTwo, { from: manager });
+					await ThalesOracleCouncil.addOracleCouncilMember(councilThree, { from: manager });
 				});
 
 				it('market not disputed', async function() {
 					answer = await deployedMarket.disputed();
 					assert.equal(answer, false);
 				});
-				
+
 				it('market can be disputed', async function() {
 					answer = await ThalesOracleCouncil.canMarketBeDisputed(deployedMarket.address);
 					assert.equal(answer, true);
 				});
-				
+
 				it('market closed for disputes', async function() {
-					answer = await ThalesOracleCouncil.closeMarketForDisputes(deployedMarket.address, {from: manager});
+					answer = await ThalesOracleCouncil.closeMarketForDisputes(deployedMarket.address, {
+						from: manager,
+					});
 					answer = await ThalesOracleCouncil.canMarketBeDisputed(deployedMarket.address);
 					assert.equal(answer, false);
 				});
 				describe('dispute market', function() {
 					beforeEach(async () => {
 						let fixedBondAmount = toUnit(100);
-						let disputeString = "This is a dispute";
+						let disputeString = 'This is a dispute';
 						answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 							from: userTwo,
 						});
 					});
 					it('open a dispute', async function() {
-						let disputeString = "This is a dispute";
-						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+						let disputeString = 'This is a dispute';
+						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {
+							from: userTwo,
+						});
 						answer = await deployedMarket.disputed();
 						assert.equal(answer, true);
 					});
 					it('get total open diputes', async function() {
-						let disputeString = "This is a dispute";
-						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+						let disputeString = 'This is a dispute';
+						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {
+							from: userTwo,
+						});
 						answer = await ThalesOracleCouncil.getMarketOpenDisputes(deployedMarket.address);
-						assert.equal(answer.toString(), "1");
+						assert.equal(answer.toString(), '1');
 					});
 					it('get next open dipute', async function() {
-						let disputeString = "This is a dispute";
-						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+						let disputeString = 'This is a dispute';
+						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {
+							from: userTwo,
+						});
 						answer = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
-						assert.equal(answer.toString(), "1");
+						assert.equal(answer.toString(), '1');
 					});
 					it('get total closed diputes', async function() {
-						let disputeString = "This is a dispute";
-						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+						let disputeString = 'This is a dispute';
+						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {
+							from: userTwo,
+						});
 						answer = await ThalesOracleCouncil.getMarketClosedDisputes(deployedMarket.address);
-						assert.equal(answer.toString(), "0");
+						assert.equal(answer.toString(), '0');
 					});
 					it('match dispute string', async function() {
-						let disputeString = "This is a dispute";
-						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+						let disputeString = 'This is a dispute';
+						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {
+							from: userTwo,
+						});
 						let index = await ThalesOracleCouncil.getMarketOpenDisputes(deployedMarket.address);
-						answer = await ThalesOracleCouncil.getDistputeString(deployedMarket.address, index.toString());
+						answer = await ThalesOracleCouncil.getDistputeString(
+							deployedMarket.address,
+							index.toString()
+						);
 						assert.equal(answer.toString(), disputeString);
 					});
 					it('get total bond amount', async function() {
-						let disputeString = "This is a dispute";
-						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+						let disputeString = 'This is a dispute';
+						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {
+							from: userTwo,
+						});
 						answer = await ThalesBonds.getTotalBondAmountForMarket(deployedMarket.address);
-						let bond = fixedBondAmount*2
+						let bond = fixedBondAmount * 2;
 						assert.equal(answer.toString(), bond.toString());
 					});
 
 					describe('dispute votting', function() {
-						let disputeString = "This is a dispute";
-						let dispute_code_1 = "1"; // ACCEPT SLASH
-						let dispute_code_2 = "2"; // ACCEPT NO SLASH
+						let disputeString = 'This is a dispute';
+						let dispute_code_1 = '1'; // ACCEPT SLASH
+						let dispute_code_2 = '2'; // ACCEPT NO SLASH
 						beforeEach(async () => {
-							answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {from: userTwo});
+							answer = await ThalesOracleCouncil.openDispute(
+								deployedMarket.address,
+								disputeString,
+								{ from: userTwo }
+							);
 						});
 						it('vote for a dispute', async function() {
-							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
-							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilOne});
-							answer = await ThalesOracleCouncil.getVotesCountForMarketDispute(deployedMarket.address, disputeIndex);
-							assert.equal(answer.toString(), "1");
+							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(
+								deployedMarket.address
+							);
+							answer = await ThalesOracleCouncil.voteForDispute(
+								deployedMarket.address,
+								disputeIndex,
+								dispute_code_1,
+								'0',
+								{ from: councilOne }
+							);
+							answer = await ThalesOracleCouncil.getVotesCountForMarketDispute(
+								deployedMarket.address,
+								disputeIndex
+							);
+							assert.equal(answer.toString(), '1');
 						});
 						it('get number of votes of option ' + dispute_code_1, async function() {
-							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
-							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilOne});
-							answer = await ThalesOracleCouncil.disputeVotesCount(deployedMarket.address, disputeIndex, dispute_code_1);
-							assert.equal(answer.toString(), "1");
+							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(
+								deployedMarket.address
+							);
+							answer = await ThalesOracleCouncil.voteForDispute(
+								deployedMarket.address,
+								disputeIndex,
+								dispute_code_1,
+								'0',
+								{ from: councilOne }
+							);
+							answer = await ThalesOracleCouncil.disputeVotesCount(
+								deployedMarket.address,
+								disputeIndex,
+								dispute_code_1
+							);
+							assert.equal(answer.toString(), '1');
 						});
 						it('get max votes for dispute', async function() {
-							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
-							answer = await ThalesOracleCouncil.getNumberOfCouncilMembersForMarketDispute(deployedMarket.address, disputeIndex);
-							assert.equal(answer.toString(), "3");
+							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(
+								deployedMarket.address
+							);
+							answer = await ThalesOracleCouncil.getNumberOfCouncilMembersForMarketDispute(
+								deployedMarket.address,
+								disputeIndex
+							);
+							assert.equal(answer.toString(), '3');
 						});
 						it('get votes missing for dispute, after 1/3 voting', async function() {
-							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
-							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilOne});
-							answer = await ThalesOracleCouncil.getVotesMissingForMarketDispute(deployedMarket.address, disputeIndex);
-							assert.equal(answer.toString(), "2");
+							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(
+								deployedMarket.address
+							);
+							answer = await ThalesOracleCouncil.voteForDispute(
+								deployedMarket.address,
+								disputeIndex,
+								dispute_code_1,
+								'0',
+								{ from: councilOne }
+							);
+							answer = await ThalesOracleCouncil.getVotesMissingForMarketDispute(
+								deployedMarket.address,
+								disputeIndex
+							);
+							assert.equal(answer.toString(), '2');
 						});
-						it('2 votes with codes ' + dispute_code_1 +' and ' + dispute_code_2, async function() {
-							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
-							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilOne});
-							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_2, "0", {from:councilTwo});
-							answer = await ThalesOracleCouncil.getVotesCountForMarketDispute(deployedMarket.address, disputeIndex);
-							assert.equal(answer.toString(), "2");
+						it('2 votes with codes ' + dispute_code_1 + ' and ' + dispute_code_2, async function() {
+							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(
+								deployedMarket.address
+							);
+							answer = await ThalesOracleCouncil.voteForDispute(
+								deployedMarket.address,
+								disputeIndex,
+								dispute_code_1,
+								'0',
+								{ from: councilOne }
+							);
+							answer = await ThalesOracleCouncil.voteForDispute(
+								deployedMarket.address,
+								disputeIndex,
+								dispute_code_2,
+								'0',
+								{ from: councilTwo }
+							);
+							answer = await ThalesOracleCouncil.getVotesCountForMarketDispute(
+								deployedMarket.address,
+								disputeIndex
+							);
+							assert.equal(answer.toString(), '2');
 						});
-						it('2 votes with codes ' + dispute_code_1 +' and ' + dispute_code_2 + ', market open for disputes', async function() {
-							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
-							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilOne});
-							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_2, "0", {from:councilTwo});
-							answer = await ThalesOracleCouncil.marketClosedForDisputes(deployedMarket.address);
-							assert.equal(answer, false);
-						});
-						it('2 votes with codes ' + dispute_code_1 +' and ' + dispute_code_1 + ', market closed for disputes', async function() {
-							let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
-							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilOne});
-							answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilTwo});
-							answer = await ThalesOracleCouncil.marketClosedForDisputes(deployedMarket.address);
-							assert.equal(answer, true);
-						});
-						
+						it(
+							'2 votes with codes ' +
+								dispute_code_1 +
+								' and ' +
+								dispute_code_2 +
+								', market open for disputes',
+							async function() {
+								let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(
+									deployedMarket.address
+								);
+								answer = await ThalesOracleCouncil.voteForDispute(
+									deployedMarket.address,
+									disputeIndex,
+									dispute_code_1,
+									'0',
+									{ from: councilOne }
+								);
+								answer = await ThalesOracleCouncil.voteForDispute(
+									deployedMarket.address,
+									disputeIndex,
+									dispute_code_2,
+									'0',
+									{ from: councilTwo }
+								);
+								answer = await ThalesOracleCouncil.marketClosedForDisputes(deployedMarket.address);
+								assert.equal(answer, false);
+							}
+						);
+						it(
+							'2 votes with codes ' +
+								dispute_code_1 +
+								' and ' +
+								dispute_code_1 +
+								', market closed for disputes',
+							async function() {
+								let disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(
+									deployedMarket.address
+								);
+								answer = await ThalesOracleCouncil.voteForDispute(
+									deployedMarket.address,
+									disputeIndex,
+									dispute_code_1,
+									'0',
+									{ from: councilOne }
+								);
+								answer = await ThalesOracleCouncil.voteForDispute(
+									deployedMarket.address,
+									disputeIndex,
+									dispute_code_1,
+									'0',
+									{ from: councilTwo }
+								);
+								answer = await ThalesOracleCouncil.marketClosedForDisputes(deployedMarket.address);
+								assert.equal(answer, true);
+							}
+						);
+
 						describe('disputes in positioning phase', function() {
 							let disputeIndex;
 							beforeEach(async () => {
-								disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(deployedMarket.address);
+								disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(
+									deployedMarket.address
+								);
 								answer = await Thales.increaseAllowance(deployedMarket.address, fixedTicketPrice, {
 									from: userOne,
 								});
@@ -538,29 +661,42 @@ contract('Exotic Positional market', async accounts => {
 								assert.equal(answer, true);
 							});
 							it('3 ticket purchases with 3 different positions', async function() {
-								answer = await deployedMarket.takeAPosition("1", {from:userOne});
-								answer = await deployedMarket.takeAPosition("2", {from:userTwo});
-								answer = await deployedMarket.takeAPosition("3", {from:userThree});
+								answer = await deployedMarket.takeAPosition('1', { from: userOne });
+								answer = await deployedMarket.takeAPosition('2', { from: userTwo });
+								answer = await deployedMarket.takeAPosition('3', { from: userThree });
 								answer = await deployedMarket.totalTicketHolders();
-								assert.equal(answer.toString(), "3");
+								assert.equal(answer.toString(), '3');
 							});
 
 							describe('ACCEPT_SLASH (Code 1)', function() {
-								
 								beforeEach(async () => {
-									answer = await deployedMarket.takeAPosition("1", {from:userOne});
-									answer = await deployedMarket.takeAPosition("2", {from:userTwo});
-									answer = await deployedMarket.takeAPosition("3", {from:userThree});
-									answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilOne});
-									answer = await ThalesOracleCouncil.voteForDispute(deployedMarket.address, disputeIndex, dispute_code_1, "0", {from:councilTwo});
+									answer = await deployedMarket.takeAPosition('1', { from: userOne });
+									answer = await deployedMarket.takeAPosition('2', { from: userTwo });
+									answer = await deployedMarket.takeAPosition('3', { from: userThree });
+									answer = await ThalesOracleCouncil.voteForDispute(
+										deployedMarket.address,
+										disputeIndex,
+										dispute_code_1,
+										'0',
+										{ from: councilOne }
+									);
+									answer = await ThalesOracleCouncil.voteForDispute(
+										deployedMarket.address,
+										disputeIndex,
+										dispute_code_1,
+										'0',
+										{ from: councilTwo }
+									);
 								});
 								it('Market closed for disputes', async function() {
-									answer = await ThalesOracleCouncil.marketClosedForDisputes(deployedMarket.address);
+									answer = await ThalesOracleCouncil.marketClosedForDisputes(
+										deployedMarket.address
+									);
 									assert.equal(answer, true);
 								});
 								it('BackstopTimeout set', async function() {
 									answer = await deployedMarket.backstopTimeout();
-									assert.equal(answer.toString(), (4*HOUR).toString());
+									assert.equal(answer.toString(), (4 * HOUR).toString());
 								});
 								it('market dispute flag -> false', async function() {
 									answer = await deployedMarket.disputed();
@@ -572,37 +708,26 @@ contract('Exotic Positional market', async accounts => {
 								});
 								it('market cancelled -> winning position: 0', async function() {
 									answer = await deployedMarket.winningPosition();
-									assert.equal(answer.toString(), "0");
+									assert.equal(answer.toString(), '0');
 								});
 								it('market cancelled -> totalTicketHolders: 3', async function() {
 									answer = await deployedMarket.totalTicketHolders();
-									assert.equal(answer.toString(), "3");
+									assert.equal(answer.toString(), '3');
 								});
 								it('market cancelled -> users can not claim: backstop timeout', async function() {
 									answer = await deployedMarket.canHoldersClaim();
 									assert.equal(answer, false);
 								});
 								it('market cancelled -> users can claim: backstop passed', async function() {
-									await fastForward(4*HOUR+5);
+									await fastForward(4 * HOUR + 5);
 									answer = await deployedMarket.canHoldersClaim();
 									assert.equal(answer, true);
 								});
-							
-								
-								
 							});
-														
-							
-							
 						});
 					});
-
 				});
-	
 			});
-
 		});
-
-		
 	});
 });

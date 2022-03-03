@@ -124,7 +124,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
             totalTicketHolders = totalTicketHolders.sub(1);
             ticketsPerPosition[ticketHolder[msg.sender]] = ticketsPerPosition[ticketHolder[msg.sender]].sub(1);
             ticketHolder[msg.sender] = 0;
-            IERC20(marketManager.paymentToken()).safeTransfer(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
+            IERC20(marketManager.paymentToken()).safeTransfer(
+                marketManager.creatorAddress(address(this)),
+                withdrawalFee.div(2)
+            );
             IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, fixedTicketPrice.sub(withdrawalFee));
             emit TicketWithdrawn(msg.sender, fixedTicketPrice.sub(withdrawalFee));
         } else {

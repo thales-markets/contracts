@@ -11,7 +11,6 @@ import "../interfaces/IExoticPositionalMarket.sol";
 import "../interfaces/IExoticPositionalMarketManager.sol";
 import "../interfaces/IThalesBonds.sol";
 
-
 contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMath for uint;
     uint private constant COUNCIL_MAX_MEMBERS = 5;
@@ -55,7 +54,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         address _owner,
         uint _disputePrice,
         address _paymentToken,
-        address _marketManager, 
+        address _marketManager,
         address _thalesBonds
     ) public initializer {
         setOwner(_owner);

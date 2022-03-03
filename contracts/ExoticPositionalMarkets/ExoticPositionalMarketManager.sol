@@ -77,13 +77,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")),
             "Invalid market question (empty string)"
         );
-        require(
-            keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")),
-            "Invalid market source (empty string)"
-        );
+        require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid market source (empty string)");
         require(_positionCount == _positionPhrases.length, "Invalid position count with position phrases");
         ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(Clones.clone(exoticMarketMastercopy));
-        
+
         exoticMarket.initialize(
             _marketQuestion,
             _marketSource,
@@ -103,7 +100,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function resolveMarket(address _marketAddress, uint _outcomePosition) external {
         require(isActiveMarket(_marketAddress), "Market is not active");
-        if(creatorAddress[_marketAddress] != msg.sender) {
+        if (creatorAddress[_marketAddress] != msg.sender) {
             require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
             require(
                 IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
@@ -220,7 +217,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         paymentToken = _paymentToken;
         emit NewPaymentToken(_paymentToken);
     }
-    
+
     function setThalesBonds(address _thalesBonds) external onlyOwner {
         require(_thalesBonds != address(0), "Invalid address");
         thalesBonds = _thalesBonds;
@@ -238,7 +235,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     modifier checkMarketRequirements(uint _endOfPositioning) {
         require(exoticMarketMastercopy != address(0), "No ExoticMarket mastercopy present. Please update the mastercopy");
         require(thalesBonds != address(0), "Invalid Thales bond address");
-        require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "Posiitioning period too low. Increase the endOfPositioning");
+        require(
+            _endOfPositioning >= block.timestamp.add(minimumPositioningDuration),
+            "Posiitioning period too low. Increase the endOfPositioning"
+        );
         _;
     }
 

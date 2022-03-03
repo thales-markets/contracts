@@ -227,11 +227,9 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             .add(1);
 
         emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote);
-        // check if a vote surpassed the majority treshold
-        (uint max, uint decidedOption) = maxVotesForDisputeOption(_market, _disputeIndex);
-        if (max > (councilMemberCount.div(2))) {
-            dispute[_market][marketTotalDisputes[_market]].disputeCode = decidedOption;
-            closeDispute(_market, _disputeIndex, decidedOption);
+
+        if(disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] > (councilMemberCount.div(2))) {
+            closeDispute(_market, _disputeIndex, _disputeCodeVote);
         }
     }
 
@@ -349,18 +347,6 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         require(marketClosedForDisputes[_market], "Market already open for disputes");
         marketClosedForDisputes[_market] = false;
         emit MarketReopenedForDisputes(_market);
-    }
-
-    function maxVotesForDisputeOption(address _market, uint _disputeIndex) internal view returns (uint, uint) {
-        uint max = 0;
-        uint option = 0;
-        for (uint i = 1; i < VOTING_OPTIONS; i++) {
-            if (disputeVotesCount[_market][_disputeIndex][i] > max) {
-                max = disputeVotesCount[_market][_disputeIndex][i];
-                option = i;
-            }
-        }
-        return (max, option);
     }
 
     modifier onlyCouncilMembers() {

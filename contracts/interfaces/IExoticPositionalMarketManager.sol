@@ -12,6 +12,11 @@ interface IExoticPositionalMarketManager {
     function paymentToken() external view returns(address);
     function creatorAddress(address _market) external view returns(address);
     function resolverAddress(address _market) external view returns(address);
+    function safeBoxPercentage() external view returns(uint);
+    function creatorPercentage() external view returns(uint);
+    function resolverPercentage() external view returns(uint);
+    function withdrawalPercentage() external view returns(uint);
+    function pDAOResolveTimePeriod() external view returns(uint);
 
 
     function disputeMarket(address _marketAddress, address disputor) external;

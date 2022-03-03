@@ -20,11 +20,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     uint private constant HUNDRED_PERCENT = 1e18;
     uint private constant FIXED_BOND_AMOUNT = 100 * 1e18;
     uint private constant CANCELED = 0;
-    uint public constant claimTimeoutDefaultPeriod = 1 days;
-    uint public constant pDAOResolveTimePeriod = 2 days;
-    uint public constant safeBoxPercentage = 1;
-    uint public constant creatorPercentage = 1;
-    uint public constant resolverPercentage = 1;
+
 
     uint public creationTime;
     uint public resolvedTime;
@@ -44,16 +40,15 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     uint public fixedTicketPrice;
     uint[] public tags;
     uint public backstopTimeout;
-    uint public withdrawalFeePercentage;
     bool public withdrawalAllowed;
     IExoticPositionalMarketManager public marketManager;
     address public councilAddress;
     address public resolverAddress;
 
     //stats
-    uint public totalTicketHolders;
+    uint public totalUserPositions;
     mapping(uint => uint) public ticketsPerPosition;
-    mapping(address => uint) public ticketHolder;
+    mapping(address => uint) public userPosition;
     bool public resolved;
     bool public disputedInPositioningPhase;
     uint public winningPosition;
@@ -66,7 +61,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         string memory _marketSource,
         uint _endOfPositioning,
         uint _fixedTicketPrice,
-        uint _withdrawalFeePercentage,
+        bool _withdrawalAllowed,
         uint[] memory _tags,
         uint _positionCount,
         string[] memory _positionPhrases
@@ -82,7 +77,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
             _marketSource,
             _endOfPositioning,
             _fixedTicketPrice,
-            _withdrawalFeePercentage,
+            _withdrawalAllowed,
             _tags,
             _positionPhrases[0],
             _positionPhrases[1]
@@ -100,14 +95,14 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         require(canUsersPlacePosition(), "Not able to position. Positioning time finished or market resolved");
         //require(same position)
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
-            if (ticketHolder[msg.sender] == 0) {
+            if (userPosition[msg.sender] == 0) {
                 transferToMarket(msg.sender, fixedTicketPrice);
-                totalTicketHolders = totalTicketHolders.add(1);
+                totalUserPositions = totalUserPositions.add(1);
             } else {
-                ticketsPerPosition[ticketHolder[msg.sender]] = ticketsPerPosition[ticketHolder[msg.sender]].sub(1);
+                ticketsPerPosition[userPosition[msg.sender]] = ticketsPerPosition[userPosition[msg.sender]].sub(1);
             }
             ticketsPerPosition[_position] = ticketsPerPosition[_position].add(1);
-            ticketHolder[msg.sender] = _position;
+            userPosition[msg.sender] = _position;
             emit NewPositionTaken(msg.sender, _position, fixedTicketPrice);
         } else {
             // _resolveFlexibleBid(_outcomePosition);
@@ -116,14 +111,14 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
 
     function withdraw() external notPaused {
         require(withdrawalAllowed, "Withdrawal not allowed");
-        require(ticketHolder[msg.sender] > 0, "Not a ticket holder");
+        require(userPosition[msg.sender] > 0, "Not a ticket holder");
         require(canUsersPlacePosition(), "Not able to withdraw. Positioning time finished or market resolved");
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
-            uint withdrawalFee = fixedTicketPrice.mul(withdrawalFeePercentage).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
+            uint withdrawalFee = fixedTicketPrice.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
             safeBoxAmount = safeBoxAmount.add(withdrawalFee.div(2));
-            totalTicketHolders = totalTicketHolders.sub(1);
-            ticketsPerPosition[ticketHolder[msg.sender]] = ticketsPerPosition[ticketHolder[msg.sender]].sub(1);
-            ticketHolder[msg.sender] = 0;
+            totalUserPositions = totalUserPositions.sub(1);
+            ticketsPerPosition[userPosition[msg.sender]] = ticketsPerPosition[userPosition[msg.sender]].sub(1);
+            userPosition[msg.sender] = 0;
             IERC20(marketManager.paymentToken()).safeTransfer(
                 marketManager.creatorAddress(address(this)),
                 withdrawalFee.div(2)
@@ -141,7 +136,13 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         require(_outcomePosition <= positionCount, "Outcome position exeeds the position");
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             winningPosition = _outcomePosition;
-            claimableTicketsCount = ticketsPerPosition[_outcomePosition];
+            if(_outcomePosition == CANCELED) {
+                claimableTicketsCount = totalUserPositions;
+                ticketsPerPosition[winningPosition] = totalUserPositions;
+            }
+            else {
+                claimableTicketsCount = ticketsPerPosition[_outcomePosition];
+            }
             resolved = true;
             resolvedTime = block.timestamp;
             resolverAddress = _resolverAddress;
@@ -153,7 +154,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
 
     function resetMarket() external onlyOwner {
         require(resolved, "Market is not resolved");
-
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             if (winningPosition == CANCELED) {
                 ticketsPerPosition[winningPosition] = 0;
@@ -170,8 +170,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     function cancelMarket() external onlyOwner {
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             winningPosition = CANCELED;
-            claimableTicketsCount = totalTicketHolders;
-            ticketsPerPosition[winningPosition] = totalTicketHolders;
+            claimableTicketsCount = totalUserPositions;
+            ticketsPerPosition[winningPosition] = totalUserPositions;
             resolved = true;
             resolvedTime = block.timestamp;
             emit MarketResolved(CANCELED, msg.sender);
@@ -181,9 +181,9 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     function claimWinningTicket() external notPaused {
-        require(canHoldersClaim(), "Market not finalized");
+        require(canUsersClaim(), "Market not finalized");
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
-            uint amount = getTicketHolderClaimableAmount(msg.sender);
+            uint amount = getUserClaimableAmount(msg.sender);
             if (amount > 0) {
                 claimableTicketsCount = claimableTicketsCount.sub(1);
                 IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, amount);
@@ -269,32 +269,48 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     function canMarketBeResolvedByPDAO() public view returns (bool) {
-        return canMarketBeResolved() && block.timestamp >= endOfPositioning.add(pDAOResolveTimePeriod);
+        return canMarketBeResolved() && block.timestamp >= endOfPositioning.add(marketManager.pDAOResolveTimePeriod());
     }
 
-    function canHoldersClaim() public view returns (bool) {
+    function canUsersClaim() public view returns (bool) {
         return (resolvedTime > 0 && block.timestamp > resolvedTime.add(backstopTimeout)) && resolved && (!disputed);
     }
 
     function canUserWithdraw(address _account) public view returns (bool) {
-        return withdrawalAllowed && canUsersPlacePosition() && ticketHolder[_account] > 0;
+        return withdrawalAllowed && canUsersPlacePosition() && userPosition[_account] > 0;
     }
 
     function getPositionPhrase(uint index) public view returns (string memory) {
         return (index <= positionCount && index > 0) ? positionPhrase[index] : string("");
     }
 
-    function getTicketHolderPosition(address _account) public view returns (uint) {
-        return ticketHolder[_account];
+    function getUserPosition(address _account) public view returns (uint) {
+        return userPosition[_account];
     }
 
-    function getTicketHolderPositionPhrase(address _account) public view returns (string memory) {
-        return (ticketHolder[_account] > 0) ? positionPhrase[ticketHolder[_account]] : string("");
+    function getUserPositionPhrase(address _account) public view returns (string memory) {
+        return (userPosition[_account] > 0) ? positionPhrase[userPosition[_account]] : string("");
     }
 
-    function getTicketHolderClaimableAmount(address _account) public view returns (uint) {
+    function getTotalPlacedAmount() public view returns (uint) {
+        return fixedTicketPrice.mul(totalUserPositions);
+    }
+    
+    function getTotalClaimableAmount() public view returns (uint) {
+        if (totalUserPositions == 0) {
+            return 0;
+        } else {
+            return applyDeduction(getTotalPlacedAmount());
+        }
+    }
+    
+    function getTotalFeesAmount() public view returns (uint) {
+        return getTotalPlacedAmount().sub(getTotalClaimableAmount());
+    }
+
+    function getUserClaimableAmount(address _account) public view returns (uint) {
         uint amount = 0;
-        amount = (ticketHolder[_account] > 0 && (ticketHolder[_account] == winningPosition || winningPosition == CANCELED))
+        amount = (userPosition[_account] > 0 && (userPosition[_account] == winningPosition || winningPosition == CANCELED))
             ? getWinningAmountPerTicket()
             : 0;
         if (_account == marketManager.creatorAddress(address(this)) && winningPosition != CANCELED) {
@@ -306,8 +322,16 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         return amount;
     }
 
+    function getPotentialWinningAmountForPosition(uint _position) public view returns (uint) {
+        if (totalUserPositions == 0) {
+            return 0;
+        } else {
+            return getTotalClaimableAmount().div(ticketsPerPosition[_position]);
+        }
+    }
+
     function getWinningAmountPerTicket() public view returns (uint) {
-        if (totalTicketHolders == 0) {
+        if (totalUserPositions == 0) {
             return 0;
         } else {
             return getTotalClaimableAmount().div(ticketsPerPosition[winningPosition]);
@@ -315,42 +339,32 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
     }
 
     function getAlreadyClaimedTickets() public view returns (uint) {
-        return canHoldersClaim() ? ticketsPerPosition[winningPosition].sub(claimableTicketsCount) : 0;
+        return canUsersClaim() ? ticketsPerPosition[winningPosition].sub(claimableTicketsCount) : 0;
     }
 
-    function getTotalPlacedAmount() public view returns (uint) {
-        return fixedTicketPrice.mul(totalTicketHolders);
-    }
 
-    function applyDeduction(uint value) internal pure returns (uint) {
+    function applyDeduction(uint value) internal view returns (uint) {
         return
-            (value).mul(HUNDRED.sub(safeBoxPercentage.add(creatorPercentage).add(resolverPercentage))).mul(ONE_PERCENT).div(
+            (value).mul(HUNDRED.sub(marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(marketManager.resolverPercentage()))).mul(ONE_PERCENT).div(
                 HUNDRED_PERCENT
             );
     }
 
-    function getTotalClaimableAmount() public view returns (uint) {
-        if (totalTicketHolders == 0) {
-            return 0;
-        } else {
-            return applyDeduction(getTotalPlacedAmount());
-        }
-    }
 
     function getTagsCount() public view returns (uint) {
         return tags.length;
     }
 
     function getAdditionalCreatorAmount() internal view returns (uint) {
-        return getTotalPlacedAmount().mul(creatorPercentage).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
+        return getTotalPlacedAmount().mul(marketManager.creatorPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
     }
 
     function getAdditionalResolverAmount() internal view returns (uint) {
-        return getTotalPlacedAmount().mul(resolverPercentage).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
+        return getTotalPlacedAmount().mul(marketManager.resolverPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
     }
 
     function getSafeBoxAmount() internal view returns (uint) {
-        return getTotalPlacedAmount().add(safeBoxAmount).sub(getAdditionalCreatorAmount()).sub(getTotalClaimableAmount());
+        return getTotalFeesAmount().add(safeBoxAmount).sub(getAdditionalCreatorAmount()).sub(getAdditionalResolverAmount());
     }
 
     // INTERNAL FUNCTIONS
@@ -360,7 +374,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         string memory _marketSource,
         uint _endOfPositioning,
         uint _fixedTicketPrice,
-        uint _withdrawalFeePercentage,
+        bool _withdrawalAllowed,
         uint[] memory _tags,
         string memory _positionPhrase1,
         string memory _positionPhrase2
@@ -373,8 +387,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
         ticketType = _fixedTicketPrice > 0 ? TicketType.FIXED_TICKET_PRICE : TicketType.FLEXIBLE_BID;
         fixedTicketPrice = _fixedTicketPrice;
         // Withdrawal allowance determined based on withdrawal percentage, if it is over 100% then it is forbidden
-        withdrawalAllowed = _withdrawalFeePercentage < HUNDRED ? true : false;
-        withdrawalFeePercentage = _withdrawalFeePercentage;
+        withdrawalAllowed = _withdrawalAllowed;
         // The tag is just a number for now
         tags = _tags;
         _addPosition(_positionPhrase1);

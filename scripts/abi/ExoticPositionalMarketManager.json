@@ -4,6 +4,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "creatorPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "CreatorPercentageChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_exoticMastercopy",
         "type": "address"
@@ -230,12 +243,64 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "resolverPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "ResolverPercentageChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "SafeBoxPercentageChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "account",
         "type": "address"
       }
     ],
     "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "withdrawalPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawalPercentageChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "pDAOResolveTimePeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPDAOResolveTimePeriodChanged",
     "type": "event"
   },
   {
@@ -291,6 +356,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "claimTimeoutDefaultPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -326,9 +404,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "_withdrawalFeePercentage",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "_withdrawalAllowed",
+        "type": "bool"
       },
       {
         "internalType": "uint256[]",
@@ -365,6 +443,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "creatorPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -623,6 +714,19 @@
   },
   {
     "inputs": [],
+    "name": "pDAOResolveTimePeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -699,12 +803,38 @@
   },
   {
     "inputs": [],
+    "name": "resolverPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "safeBoxAddress",
     "outputs": [
       {
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "safeBoxPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -742,6 +872,19 @@
       }
     ],
     "name": "setBackstopTimeout",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_creatorPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCreatorPercentage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -827,12 +970,38 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_pDAOResolveTimePeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPDAOResolveTimePeriod",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_paymentToken",
         "type": "address"
       }
     ],
     "name": "setPaymentToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_resolverPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setResolverPercentage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -853,12 +1022,38 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_safeBoxPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setSafeBoxPercentage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_thalesBonds",
         "type": "address"
       }
     ],
     "name": "setThalesBonds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_withdrawalPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setWithdrawalPercentage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -887,6 +1082,19 @@
     "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawalPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

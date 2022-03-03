@@ -43,7 +43,7 @@ let marketQuestion,
 	marketSource,
 	endOfPositioning,
 	fixedTicketPrice,
-	withdrawalFeePercentage,
+	withdrawalAllowed,
 	tag,
 	paymentToken,
 	phrases = [],
@@ -106,7 +106,7 @@ contract('Exotic Positional market', async accounts => {
 			marketSource = 'http://www.realmadrid.com';
 			endOfPositioning = (timestamp + DAY).toString();
 			fixedTicketPrice = toUnit('10');
-			withdrawalFeePercentage = '5';
+			withdrawalAllowed = true;
 			tag = [1, 2, 3];
 			paymentToken = Thales.address;
 			phrases = ['Real Madrid', 'FC Barcelona', 'It will be a draw'];
@@ -120,7 +120,7 @@ contract('Exotic Positional market', async accounts => {
 				marketSource,
 				endOfPositioning,
 				fixedTicketPrice,
-				withdrawalFeePercentage,
+				withdrawalAllowed,
 				tag,
 				phrases.length,
 				phrases,
@@ -199,15 +199,15 @@ contract('Exotic Positional market', async accounts => {
 					answer = await deployedMarket.takeAPosition(outcomePosition, { from: userOne });
 				});
 				it('1 ticket holder', async function() {
-					answer = await deployedMarket.totalTicketHolders();
+					answer = await deployedMarket.totalUserPositions();
 					assert.equal(answer, outcomePosition);
 				});
 				it('ticket holder position match', async function() {
-					answer = await deployedMarket.getTicketHolderPosition(userOne);
+					answer = await deployedMarket.getUserPosition(userOne);
 					assert.equal(answer.toString(), outcomePosition);
 				});
 				it('ticket holder position phrase match', async function() {
-					answer = await deployedMarket.getTicketHolderPositionPhrase(userOne);
+					answer = await deployedMarket.getUserPositionPhrase(userOne);
 					// console.log("Position phrase: ", answer.toString());
 					assert.equal(answer.toString(), phrases[0]);
 				});
@@ -260,12 +260,12 @@ contract('Exotic Positional market', async accounts => {
 							);
 						});
 						it('ticket holders can not claim', async function() {
-							answer = await deployedMarket.canHoldersClaim();
+							answer = await deployedMarket.canUsersClaim();
 							assert.equal(answer, false);
 						});
 						it('ticket holders can claim', async function() {
 							await fastForward(DAY + SECOND);
-							answer = await deployedMarket.canHoldersClaim();
+							answer = await deployedMarket.canUsersClaim();
 							assert.equal(answer, true);
 						});
 
@@ -274,7 +274,7 @@ contract('Exotic Positional market', async accounts => {
 								await fastForward(DAY + SECOND);
 							});
 							it('claimable amount', async function() {
-								answer = await deployedMarket.getTicketHolderClaimableAmount(userOne);
+								answer = await deployedMarket.getUserClaimableAmount(userOne);
 								let result = parseFloat(fixedTicketPrice.toString()) * 0.97;
 								assert.equal(answer.toString(), result.toString());
 							});
@@ -304,15 +304,15 @@ contract('Exotic Positional market', async accounts => {
 					answer = await deployedMarket.takeAPosition(outcomePosition, { from: userOne });
 				});
 				it('1 ticket holder', async function() {
-					answer = await deployedMarket.totalTicketHolders();
+					answer = await deployedMarket.totalUserPositions();
 					assert.equal(answer, outcomePosition);
 				});
 				it('ticket holder position match', async function() {
-					answer = await deployedMarket.getTicketHolderPosition(userOne);
+					answer = await deployedMarket.getUserPosition(userOne);
 					assert.equal(answer.toString(), outcomePosition);
 				});
 				it('ticket holder position phrase match', async function() {
-					answer = await deployedMarket.getTicketHolderPositionPhrase(userOne);
+					answer = await deployedMarket.getUserPositionPhrase(userOne);
 					// console.log("Position phrase: ", answer.toString());
 					assert.equal(answer.toString(), phrases[0]);
 				});
@@ -324,8 +324,8 @@ contract('Exotic Positional market', async accounts => {
 					});
 
 					it('withdrawal fee match', async function() {
-						answer = await deployedMarket.withdrawalFeePercentage();
-						assert.equal(answer.toString(), withdrawalFeePercentage);
+						answer = await ExoticPositionalMarketManager.withdrawalPercentage();
+						assert.equal(answer.toString(), "6");
 					});
 
 					it('userOne can withdraw', async function() {
@@ -342,7 +342,7 @@ contract('Exotic Positional market', async accounts => {
 						answer = await Thales.balanceOf(userOne);
 						let balance = parseInt(answer.toString());
 						let fixedTicket = parseInt(fixedTicketPrice.toString());
-						balance = balance + fixedTicket * 0.95;
+						balance = balance + fixedTicket * 0.94;
 						answer = await deployedMarket.withdraw({ from: userOne });
 						answer = await Thales.balanceOf(userOne);
 						assert.equal(answer.toString(), balance.toString());
@@ -664,7 +664,7 @@ contract('Exotic Positional market', async accounts => {
 								answer = await deployedMarket.takeAPosition('1', { from: userOne });
 								answer = await deployedMarket.takeAPosition('2', { from: userTwo });
 								answer = await deployedMarket.takeAPosition('3', { from: userThree });
-								answer = await deployedMarket.totalTicketHolders();
+								answer = await deployedMarket.totalUserPositions();
 								assert.equal(answer.toString(), '3');
 							});
 
@@ -710,17 +710,17 @@ contract('Exotic Positional market', async accounts => {
 									answer = await deployedMarket.winningPosition();
 									assert.equal(answer.toString(), '0');
 								});
-								it('market cancelled -> totalTicketHolders: 3', async function() {
-									answer = await deployedMarket.totalTicketHolders();
+								it('market cancelled -> totalUserPositions: 3', async function() {
+									answer = await deployedMarket.totalUserPositions();
 									assert.equal(answer.toString(), '3');
 								});
 								it('market cancelled -> users can not claim: backstop timeout', async function() {
-									answer = await deployedMarket.canHoldersClaim();
+									answer = await deployedMarket.canUsersClaim();
 									assert.equal(answer, false);
 								});
 								it('market cancelled -> users can claim: backstop passed', async function() {
 									await fastForward(4 * HOUR + 5);
-									answer = await deployedMarket.canHoldersClaim();
+									answer = await deployedMarket.canUsersClaim();
 									assert.equal(answer, true);
 								});
 							});

@@ -26,6 +26,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint public fixedBondAmount;
     uint public backstopTimeout;
     uint public minimumPositioningDuration;
+    uint public claimTimeoutDefaultPeriod;
+    uint public pDAOResolveTimePeriod;
+    uint public safeBoxPercentage;
+    uint public creatorPercentage;
+    uint public resolverPercentage;
+    uint public withdrawalPercentage;
 
     address public exoticMarketMastercopy;
     address public oracleCouncilAddress;
@@ -55,6 +61,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         maximumPositionsAllowed = 5;
         paymentToken = _paymentToken;
         thalesBonds = _thalesBonds;
+        safeBoxPercentage = 1;
+        creatorPercentage = 1;
+        resolverPercentage = 1;
+        withdrawalPercentage = 6;
+        claimTimeoutDefaultPeriod = 1 days;
+        pDAOResolveTimePeriod = 2 days;
     }
 
     // Create Exotic market
@@ -63,7 +75,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         string memory _marketSource,
         uint _endOfPositioning,
         uint _fixedTicketPrice,
-        uint _withdrawalFeePercentage,
+        bool _withdrawalAllowed,
         uint[] memory _tags,
         uint _positionCount,
         string[] memory _positionPhrases
@@ -86,7 +98,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             _marketSource,
             _endOfPositioning,
             _fixedTicketPrice,
-            _withdrawalFeePercentage,
+            _withdrawalAllowed,
             _tags,
             _positionCount,
             _positionPhrases
@@ -199,6 +211,31 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         minimumPositioningDuration = _duration;
         emit MinimumPositionDurationChanged(_duration);
     }
+    
+    function setSafeBoxPercentage(uint _safeBoxPercentage) external onlyOwner {
+        safeBoxPercentage = _safeBoxPercentage;
+        emit SafeBoxPercentageChanged(_safeBoxPercentage);
+    }
+    
+    function setCreatorPercentage(uint _creatorPercentage) external onlyOwner {
+        creatorPercentage = _creatorPercentage;
+        emit CreatorPercentageChanged(_creatorPercentage);
+    }
+    
+    function setResolverPercentage(uint _resolverPercentage) external onlyOwner {
+        resolverPercentage = _resolverPercentage;
+        emit ResolverPercentageChanged(_resolverPercentage);
+    }
+    
+    function setWithdrawalPercentage(uint _withdrawalPercentage) external onlyOwner {
+        withdrawalPercentage = _withdrawalPercentage;
+        emit WithdrawalPercentageChanged(_withdrawalPercentage);
+    }
+    
+    function setPDAOResolveTimePeriod(uint _pDAOResolveTimePeriod) external onlyOwner {
+        pDAOResolveTimePeriod = _pDAOResolveTimePeriod;
+        emit setPDAOResolveTimePeriodChanged(_pDAOResolveTimePeriod);
+    }
 
     function setOracleCouncilAddress(address _councilAddress) external onlyOwner {
         require(_councilAddress != address(0), "Invalid address");
@@ -268,4 +305,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewMaximumPositionsAllowed(uint maximumPositionsAllowed);
     event NewPaymentToken(address paymentTokenAddress);
     event NewThalesBonds(address thalesBondsAddress);
+    event ResolverPercentageChanged(uint resolverPercentage);
+    event CreatorPercentageChanged(uint creatorPercentage);
+    event SafeBoxPercentageChanged(uint safeBoxPercentage);
+    event WithdrawalPercentageChanged(uint withdrawalPercentage);
+    event setPDAOResolveTimePeriodChanged(uint pDAOResolveTimePeriod);
 }

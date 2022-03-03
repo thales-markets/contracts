@@ -49,6 +49,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     mapping(address => mapping(uint => uint[])) public disputeVote;
     mapping(address => mapping(uint => uint[VOTING_OPTIONS])) public disputeVotesCount;
     mapping(address => mapping(uint => uint)) public disputeWinningPositionChoosen;
+    mapping(address => address) public firstMemberThatChoseWinningPosition;
 
     function initialize(
         address _owner,
@@ -168,6 +169,10 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             paymentToken.allowance(msg.sender, address(thalesBonds)) >= disputePrice,
             "No allowance. Please approve ticket price allowance"
         );
+        require(
+            keccak256(abi.encode(_disputeString)) != keccak256(abi.encode("")),
+            "Invalid market question (empty string)"
+        );
         marketTotalDisputes[_market] = marketTotalDisputes[_market].add(1);
         dispute[_market][marketTotalDisputes[_market]].disputorAddress = msg.sender;
         dispute[_market][marketTotalDisputes[_market]].disputeString = _disputeString;
@@ -200,6 +205,12 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         if (_winningPosition > 0 && _disputeCodeVote == ACCEPT_RESULT) {
             if (disputeWinningPositionChoosen[_market][_disputeIndex] == 0) {
                 disputeWinningPositionChoosen[_market][_disputeIndex] = _winningPosition;
+                firstMemberThatChoseWinningPosition[_market] = msg.sender;
+            } else if (
+                disputeWinningPositionChoosen[_market][_disputeIndex] != 0 &&
+                firstMemberThatChoseWinningPosition[_market] == msg.sender
+            ) {
+                disputeWinningPositionChoosen[_market][_disputeIndex] = _winningPosition;
             } else {
                 require(
                     disputeWinningPositionChoosen[_market][_disputeIndex] == _winningPosition,
@@ -228,7 +239,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
 
         emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote);
 
-        if(disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] > (councilMemberCount.div(2))) {
+        if (disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] > (councilMemberCount.div(2))) {
             closeDispute(_market, _disputeIndex, _disputeCodeVote);
         }
     }

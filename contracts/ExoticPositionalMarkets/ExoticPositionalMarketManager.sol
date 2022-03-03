@@ -211,27 +211,27 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         minimumPositioningDuration = _duration;
         emit MinimumPositionDurationChanged(_duration);
     }
-    
+
     function setSafeBoxPercentage(uint _safeBoxPercentage) external onlyOwner {
         safeBoxPercentage = _safeBoxPercentage;
         emit SafeBoxPercentageChanged(_safeBoxPercentage);
     }
-    
+
     function setCreatorPercentage(uint _creatorPercentage) external onlyOwner {
         creatorPercentage = _creatorPercentage;
         emit CreatorPercentageChanged(_creatorPercentage);
     }
-    
+
     function setResolverPercentage(uint _resolverPercentage) external onlyOwner {
         resolverPercentage = _resolverPercentage;
         emit ResolverPercentageChanged(_resolverPercentage);
     }
-    
+
     function setWithdrawalPercentage(uint _withdrawalPercentage) external onlyOwner {
         withdrawalPercentage = _withdrawalPercentage;
         emit WithdrawalPercentageChanged(_withdrawalPercentage);
     }
-    
+
     function setPDAOResolveTimePeriod(uint _pDAOResolveTimePeriod) external onlyOwner {
         pDAOResolveTimePeriod = _pDAOResolveTimePeriod;
         emit setPDAOResolveTimePeriodChanged(_pDAOResolveTimePeriod);

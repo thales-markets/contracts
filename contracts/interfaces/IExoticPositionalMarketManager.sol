@@ -7,9 +7,9 @@ interface IExoticPositionalMarketManager {
     function isActiveMarket(address _marketAddress) external view returns(bool);
     function getMarketBondAmount(address _market) external view returns (uint);
     function fixedBondAmount() external view returns(uint);
-    function safeBoxAddress() external view returns(address);
     function maximumPositionsAllowed() external view returns(uint);
     function paymentToken() external view returns(address);
+    function safeBoxAddress() external view returns(address);
     function creatorAddress(address _market) external view returns(address);
     function resolverAddress(address _market) external view returns(address);
     function safeBoxPercentage() external view returns(uint);
@@ -17,6 +17,7 @@ interface IExoticPositionalMarketManager {
     function resolverPercentage() external view returns(uint);
     function withdrawalPercentage() external view returns(uint);
     function pDAOResolveTimePeriod() external view returns(uint);
+    function claimTimeoutDefaultPeriod() external view returns(uint);
 
 
     function disputeMarket(address _marketAddress, address disputor) external;

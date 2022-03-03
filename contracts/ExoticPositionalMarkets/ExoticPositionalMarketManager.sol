@@ -118,9 +118,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
                 "No allowance. Please approve ticket price allowance"
             );
-            resolverAddress[_marketAddress] = msg.sender;
             IThalesBonds(thalesBonds).sendResolverBondToMarket(_marketAddress, msg.sender, fixedBondAmount);
         }
+        resolverAddress[_marketAddress] = msg.sender;
         ExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, msg.sender);
         emit MarketResolved(_marketAddress);
     }

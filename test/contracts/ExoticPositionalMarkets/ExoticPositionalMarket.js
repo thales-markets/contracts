@@ -263,6 +263,11 @@ contract('Exotic Positional market', async accounts => {
 							answer = await deployedMarket.canUsersClaim();
 							assert.equal(answer, false);
 						});
+						it('ticket holders can not claim', async function() {
+							await fastForward(DAY - 10*SECOND);
+							answer = await deployedMarket.canUsersClaim();
+							assert.equal(answer, false);
+						});
 						it('ticket holders can claim', async function() {
 							await fastForward(DAY + SECOND);
 							answer = await deployedMarket.canUsersClaim();

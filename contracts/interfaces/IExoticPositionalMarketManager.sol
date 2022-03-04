@@ -18,6 +18,7 @@ interface IExoticPositionalMarketManager {
     function withdrawalPercentage() external view returns(uint);
     function pDAOResolveTimePeriod() external view returns(uint);
     function claimTimeoutDefaultPeriod() external view returns(uint);
+    function maxOracleCouncilMembers() external view returns(uint);
 
 
     function disputeMarket(address _marketAddress, address disputor) external;

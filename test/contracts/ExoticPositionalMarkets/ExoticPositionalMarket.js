@@ -173,7 +173,7 @@ contract('Exotic Positional market', async accounts => {
 		});
 
 		it('total bond amount', async function() {
-			answer = await ThalesBonds.getTotalBondAmountForMarket(deployedMarket.address);
+			answer = await ThalesBonds.getTotalDepositedBondAmountForMarket(deployedMarket.address);
 			assert.equal(answer.toString(), fixedBondAmount);
 		});
 
@@ -494,12 +494,12 @@ contract('Exotic Positional market', async accounts => {
 						);
 						assert.equal(answer.toString(), disputeString);
 					});
-					it('get total bond amount', async function() {
+					it('get total bond claimable amount', async function() {
 						let disputeString = 'This is a dispute';
 						answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {
 							from: userTwo,
 						});
-						answer = await ThalesBonds.getTotalBondAmountForMarket(deployedMarket.address);
+						answer = await ThalesBonds.getClaimableBondAmountForMarket(deployedMarket.address);
 						let bond = fixedBondAmount * 2;
 						assert.equal(answer.toString(), bond.toString());
 					});

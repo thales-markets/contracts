@@ -160,7 +160,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
 
     function addOracleCouncilMember(address _councilMember) external onlyOwner {
         require(_councilMember != address(0), "Invalid address. Add valid address");
-        require(councilMemberCount < COUNCIL_MAX_MEMBERS, "Invalid address. Add valid address");
+        require(councilMemberCount <= marketManager.maxOracleCouncilMembers(), "Number of Oracle Council members exceeded");
         require(!isOracleCouncilMember(_councilMember), "Already Oracle Council member");
         councilMemberCount = councilMemberCount.add(1);
         councilMemberAddress[councilMemberCount] = _councilMember;

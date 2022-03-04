@@ -7,6 +7,25 @@
         "type": "address"
       }
     ],
+    "name": "getClaimableBondAmountForMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
     "name": "getClaimedBondAmountForMarket",
     "outputs": [
       {
@@ -50,7 +69,7 @@
         "type": "address"
       }
     ],
-    "name": "getTotalBondAmountForMarket",
+    "name": "getTotalDepositedBondAmountForMarket",
     "outputs": [
       {
         "internalType": "uint256",

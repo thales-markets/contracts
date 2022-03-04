@@ -32,6 +32,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint public creatorPercentage;
     uint public resolverPercentage;
     uint public withdrawalPercentage;
+    uint public maxOracleCouncilMembers;
 
     address public exoticMarketMastercopy;
     address public oracleCouncilAddress;
@@ -67,6 +68,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         withdrawalPercentage = 6;
         claimTimeoutDefaultPeriod = 1 days;
         pDAOResolveTimePeriod = 2 days;
+        maxOracleCouncilMembers = 5;
     }
 
     // Create Exotic market
@@ -248,6 +250,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         maximumPositionsAllowed = _maximumPositionsAllowed;
         emit NewMaximumPositionsAllowed(_maximumPositionsAllowed);
     }
+    
+    function setMaxOracleCouncilMembers(uint _maxOracleCouncilMembers) external onlyOwner {
+        require(_maxOracleCouncilMembers > 3, "Invalid Maximum Oracle Council members. Number too low");
+        maxOracleCouncilMembers = _maxOracleCouncilMembers;
+        emit NewMaxOracleCouncilMembers(_maxOracleCouncilMembers);
+    }
 
     function setPaymentToken(address _paymentToken) external onlyOwner {
         require(_paymentToken != address(0), "Invalid address");
@@ -310,4 +318,5 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event SafeBoxPercentageChanged(uint safeBoxPercentage);
     event WithdrawalPercentageChanged(uint withdrawalPercentage);
     event setPDAOResolveTimePeriodChanged(uint pDAOResolveTimePeriod);
+    event NewMaxOracleCouncilMembers(uint maxOracleCouncilMembers);
 }

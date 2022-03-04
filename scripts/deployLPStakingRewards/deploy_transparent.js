@@ -67,6 +67,7 @@ async function main() {
 	let tx = await ProxyStaking_deployed.deployed();
 
 	console.log('Staking proxy:', ProxyStaking_deployed.address);
+	await delay(5000);
 
 	const StakingImplementation = await getImplementationAddress(
 		ethers.provider,
@@ -103,3 +104,9 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
+
+function delay(time) {
+	return new Promise(function(resolve) {
+		setTimeout(resolve, time);
+	});
+}

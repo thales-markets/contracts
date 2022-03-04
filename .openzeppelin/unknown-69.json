@@ -1389,6 +1389,11 @@
       "address": "0x6414b4C282FF5D031347970425Bd798a478Db5a1",
       "txHash": "0x030f0e5d097382d56aaf1a36f6dad52e681ffae402e89d3ead65b95c3c95db47",
       "kind": "transparent"
+    },
+    {
+      "address": "0x44d55a58211b2120Dc9f280ae68B99ffcaC03c7C",
+      "txHash": "0xfa374ed1dc640393d327d9040ff73fbf6016f30ee5d5a0aa119d259556c6f114",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -9245,6 +9250,172 @@
           },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "9e44bbc079acbf04c2b5f7ae852bd3380b77583dd3174ee18e59a9bc83ebd02a": {
+      "address": "0x40b8F4852eB5394c1EcABc1bEf09016a868f90FC",
+      "txHash": "0xd2f8b0fa4f7f60ec61039330c0dcf58e0764539dd159cb844bd3ca5458211ea3",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:63"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\ProxyReentrancyGuard.sol:17"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\ProxyPausable.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "rewardsToken",
+            "type": "t_contract(IERC20)16624",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:18"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "stakingToken",
+            "type": "t_contract(IERC20)16624",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:19"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "periodFinish",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:20"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "rewardRate",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:21"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "rewardsDuration",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:22"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "totalRewards",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:23"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "lastUpdateTime",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:24"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "rewardPerTokenStored",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:25"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "userRewardPerTokenPaid",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:27"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "rewards",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:28"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "_totalSupply",
+            "type": "t_uint256",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:30"
+          },
+          {
+            "contract": "LPStakingRewards",
+            "label": "_balances",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\EscrowAndStaking\\LPStakingRewards.sol:31"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20)16624": {
+            "label": "contract IERC20"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"

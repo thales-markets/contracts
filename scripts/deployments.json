@@ -114,7 +114,7 @@
 		"ThalesRoyale": "0x3198ab211CdF3E4d13a698E1Fb819507BcA2e579",
 		"ThalesRoyaleImplementation": "0x5cE95b8bD157f14b56871C8D69264d9b72f537e7",
 		"LPStakingRewards": "0x31a20E5b7b1b067705419D57Ab4F72E81cC1F6Bf",
-		"LPStakingRewardsImplementation": "0x63A6344E7dC0032900C261437838B0AA9E869C90",
+		"LPStakingRewardsImplementation": "0xa143E04a0090Cc55c13a8280D52192A2d008DD6F",
 		"OptimisticAirdrop": "0x42B6e9b5Bb96a02E02e651d3104Fc3546E1313F2",
 		"OngoingAirdrop": "0x8D47b12ce25E2dc6866e8aAC0DbD823Da09fADd6",
 		"GUniLPToken": "0xac6705bc7f6a35eb194bdb89066049d6f1b0b1b5",
@@ -150,7 +150,10 @@
 		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a",
 		"ThalesRoyalePass": "0x288eF27eC4fEaD97F81A6F578152fd00DdFBB448",
 		"ThalesRoyale": "0xE1757E47417e4bFF5f3F01713A205E1709344D5D",
-		"ThalesRoyaleImplementation": "0x0bd3CECA020919a690C38EEAE61B848224D1C220"
+		"ThalesRoyaleImplementation": "0x0bd3CECA020919a690C38EEAE61B848224D1C220",
+		"GUniLPToken": "0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
+		"LPStakingRewards": "0x44d55a58211b2120Dc9f280ae68B99ffcaC03c7C",
+		"LPStakingRewardsImplementation": "0x40b8F4852eB5394c1EcABc1bEf09016a868f90FC"
 	},
 	"localhost": {
 		"Airdrop": "",

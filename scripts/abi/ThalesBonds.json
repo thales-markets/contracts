@@ -215,6 +215,30 @@
         "internalType": "address",
         "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_disputorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "getDisputorBondForMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
       }
     ],
     "name": "getTotalBondAmountForMarket",
@@ -280,7 +304,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "dipsutorsCount",
+        "name": "disputorsCount",
         "type": "uint256"
       }
     ],

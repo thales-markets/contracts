@@ -20,11 +20,12 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
 
     IExoticPositionalMarketManager public marketManager;
     struct MarketBond {
+        uint totalDepositedMarketBond;
         uint totalMarketBond;
         uint creatorBond;
         uint resolverBond;
         uint disputorsTotalBond;
-        uint dipsutorsCount;
+        uint disputorsCount;
         mapping(address => uint) disputorBond;
     }
 
@@ -37,17 +38,20 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         initNonReentrant();
     }
 
-    function getTotalBondAmountForMarket(address _market) external view returns (uint) {
-        return marketBond[_market].totalMarketBond;
+    function getTotalDepositedBondAmountForMarket(address _market) external view returns (uint) {
+        return marketBond[_market].totalDepositedMarketBond;
     }
 
     function getClaimedBondAmountForMarket(address _market) external view returns (uint) {
-        return
-            marketBond[_market]
-                .creatorBond
-                .add(marketBond[_market].resolverBond)
-                .add(marketBond[_market].disputorsTotalBond)
-                .sub(marketBond[_market].totalMarketBond);
+        return marketBond[_market].totalDepositedMarketBond.sub(marketBond[_market].totalMarketBond);
+    }
+
+    function getClaimableBondAmountForMarket(address _market) external view returns (uint) {
+        return marketBond[_market].totalMarketBond;
+    }
+
+    function getDisputorBondForMarket(address _market, address _disputorAddress) external view returns (uint) {
+        return marketBond[_market].disputorBond[_disputorAddress];
     }
 
     // different deposit functions to flag the bond amount : creator
@@ -60,6 +64,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         require(_market != address(0), "Invalid market address");
         marketBond[_market].creatorBond = _amount;
         marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.add(_amount);
+        marketBond[_market].totalDepositedMarketBond = marketBond[_market].totalDepositedMarketBond.add(_amount);
         transferToMarketBond(_creatorAddress, _amount);
         emit CreatorBondSent(_market, _creatorAddress, _amount);
     }
@@ -79,6 +84,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         } else {
             marketBond[_market].resolverBond = _amount;
             marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.add(_amount);
+            marketBond[_market].totalDepositedMarketBond = marketBond[_market].totalDepositedMarketBond.add(_amount);
             transferToMarketBond(_resolverAddress, _amount);
         }
         emit ResolverBondSent(_market, _resolverAddress, _amount);
@@ -95,11 +101,12 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
 
         // if it is first dispute for the disputor, the counter is increased
         if (marketBond[_market].disputorBond[_disputorAddress] == 0) {
-            marketBond[_market].dipsutorsCount = marketBond[_market].dipsutorsCount.add(1);
+            marketBond[_market].disputorsCount = marketBond[_market].disputorsCount.add(1);
         }
         marketBond[_market].disputorBond[_disputorAddress] = marketBond[_market].disputorBond[_disputorAddress].add(_amount);
         marketBond[_market].disputorsTotalBond = marketBond[_market].disputorsTotalBond.add(_amount);
         marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.add(_amount);
+        marketBond[_market].totalDepositedMarketBond = marketBond[_market].totalDepositedMarketBond.add(_amount);
         transferToMarketBond(_disputorAddress, _amount);
         emit DisputorBondSent(_market, _disputorAddress, _amount);
     }
@@ -110,8 +117,23 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         address _account,
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
-        require(_amount <= marketBond[_market].totalMarketBond, "Exceeds market bond");
+        require(_amount <= marketBond[_market].totalMarketBond, "Exceeds total market bond");
         marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.sub(_amount);
+        if (_account == marketManager.creatorAddress(_market)) {
+            require(marketBond[_market].creatorBond >= _amount, "Amount exceeds creator bond");
+            marketBond[_market].creatorBond = marketBond[_market].creatorBond.sub(_amount);
+        }
+        if (_account == marketManager.resolverAddress(_market)) {
+            require(marketBond[_market].resolverBond >= _amount, "Amount exceeds resolver bond");
+            marketBond[_market].creatorBond = marketBond[_market].creatorBond.sub(_amount);
+        }
+
+        if (marketBond[_market].disputorsCount > 0 && marketBond[_market].disputorBond[_account] > 0) {
+            marketBond[_market].disputorBond[_account] = marketBond[_market].disputorBond[_account] >= _amount
+                ? marketBond[_market].disputorBond[_account].sub(_amount)
+                : 0;
+            marketBond[_market].disputorsCount = marketBond[_market].disputorsCount.sub(1);
+        }
         transferBondFromMarket(_account, _amount);
         emit BondTransferredFromMarketBondToUser(_market, _account, _amount);
     }

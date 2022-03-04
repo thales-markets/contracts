@@ -130,6 +130,24 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         return disputeVote[_market][_index];
     }
 
+    function canDisputorClaimbackBondFromUnclosedDispute(
+        address _market,
+        uint _disputeIndex,
+        address _disputorAddress
+    ) public view returns (bool) {
+        if (
+            _disputeIndex <= marketTotalDisputes[_market] &&
+            marketClosedForDisputes[_market] &&
+            dispute[_market][_disputeIndex].disputorAddress == _disputorAddress &&
+            dispute[_market][_disputeIndex].disputeCode == 0 &&
+            marketLastClosedDispute[_market] != _disputeIndex
+        ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     function isOracleCouncilMember(address _councilMember) public view returns (bool) {
         return (councilMemberIndex[_councilMember] > 0);
     }
@@ -346,6 +364,14 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             // close market(cancel market)
             // marketManager.cancelMarket(_market);
         }
+    }
+
+    function claimUnclosedDisputeBonds(address _market, uint _disputeIndex) external whenNotPaused {
+        require(
+            canDisputorClaimbackBondFromUnclosedDispute(_market, _disputeIndex, msg.sender),
+            "Unable to claim bonds. Check if market is closed for disputes, disputor index, and dispute address"
+        );
+        thalesBonds.sendBondFromMarketToUser(_market, msg.sender, thalesBonds.getDisputorBondForMarket(_market, msg.sender));
     }
 
     function closeMarketForDisputes(address _market) external onlyOwner {

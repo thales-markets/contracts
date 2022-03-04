@@ -241,6 +241,35 @@
         "internalType": "address",
         "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_disputeIndex",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_disputorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "canDisputorClaimbackBondFromUnclosedDispute",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
       }
     ],
     "name": "canMarketBeDisputed",
@@ -252,6 +281,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_disputeIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimUnclosedDisputeBonds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

@@ -41,6 +41,7 @@ async function main() {
 	await OracleCouncilDeployed.deployed;
     
     console.log("OracleCouncil Deployed on", OracleCouncilDeployed.address);
+	setTargetAddress('ThalesOracleCouncil', network, OracleCouncilDeployed.address);
 
 	const OracleCouncilImplementation = await getImplementationAddress(
 		ethers.provider,

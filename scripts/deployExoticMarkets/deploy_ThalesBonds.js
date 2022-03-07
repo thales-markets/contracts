@@ -30,36 +30,35 @@ async function main() {
 		network = 'optimistic';
 	}
 	
-    const ExoticMarketMastercopyAddress = getTargetAddress("ExoiticMarketMasterCopy", network);
-    const ThalesAddress = getTargetAddress("OpThales_L2", network);
-    const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
-    let minimumPositioningDuration = 0;
-    let minimumMarketMaturityDuration = 0;
-
-    console.log("Mastercopy at address", ExoticMarketMastercopyAddress);
+    const ThalesBondsContract = await ethers.getContractFactory('ThalesBonds');
+	const ExoticMarketManagerAddress = getTargetAddress("ExoticMarketManager", network);
+	const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
     
-    const ExoticMarketManagerDeployed = await upgrades.deployProxy(ExoticMarketManager, [
-        owner.address,
-		minimumPositioningDuration,
-		ThalesAddress
+    const ThalesBondsDeployed = await upgrades.deployProxy(ThalesBondsContract, [
+        owner.address
 	]);
-	await ExoticMarketManagerDeployed.deployed;
+	await ThalesBondsDeployed.deployed;
     
-    console.log("ExoticMarketManager Deployed on", ExoticMarketManagerDeployed.address);
-    setTargetAddress('ExoticMarketManager', network, ExoticMarketManagerDeployed.address);
+    console.log("ThalesBonds Deployed on", ThalesBondsDeployed.address);
 
-	const ExoticMarketManagerImplementation = await getImplementationAddress(
+	const ThalesBondsImplementation = await getImplementationAddress(
 		ethers.provider,
-		ExoticMarketManagerDeployed.address
+		ThalesBondsDeployed.address
 	);
 
-	console.log('Implementation ExoticMarketManager: ', ExoticMarketManagerImplementation);
-	setTargetAddress('ExoticMarketManagerImplementation', network, ExoticMarketManagerImplementation);
+	console.log('Implementation ThalesBonds: ', ThalesBondsImplementation);
+	setTargetAddress('ThalesBondsImplementation', network, ThalesBondsImplementation);
 	
+	const ExoticMarketManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
+	await ExoticMarketManagerDeployed.setThalesBonds(ThalesBondsDeployed.address);
+	console.log("ThalesBonds address set in ExoticMarketManager");
     
+    await ThalesBondsDeployed.setMarketManager(ExoticMarketManagerDeployed.address);
+	console.log("ExoticMarketManager address set in ThalesBonds");
+
     try {
 		await hre.run('verify:verify', {
-			address: ExoticMarketManagerDeployed.address,
+			address: ThalesBondsDeployed.address,
 		});
 	} catch (e) {
 		console.log(e);
@@ -67,7 +66,7 @@ async function main() {
 
     try {
 		await hre.run('verify:verify', {
-			address: ExoticMarketManagerImplementation,
+			address: ThalesBondsImplementation,
 		});
 	} catch (e) {
 		console.log(e);

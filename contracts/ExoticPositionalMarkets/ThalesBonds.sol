@@ -31,8 +31,6 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
 
     mapping(address => MarketBond) public marketBond;
 
-    address public oracleCouncilAddress;
-
     function initialize(address _owner) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -146,25 +144,24 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         IERC20Upgradeable(marketManager.paymentToken()).safeTransfer(_account, _amount);
     }
 
-    function setOracleCouncilAddress(address _oracleCouncilAddress) external onlyOwner {
-        require(_oracleCouncilAddress != address(0), "Invalid OracleCouncil address");
-        oracleCouncilAddress = _oracleCouncilAddress;
-        emit NewOracleCouncilAddress(_oracleCouncilAddress);
-    }
-
-    function setManagerAddress(address _managerAddress) external onlyOwner {
-        require(oracleCouncilAddress != address(0), "Invalid OracleCouncil address");
+    function setMarketManager(address _managerAddress) external onlyOwner {
+        require(_managerAddress != address(0), "Invalid OracleCouncil address");
         marketManager = IExoticPositionalMarketManager(_managerAddress);
         emit NewManagerAddress(_managerAddress);
     }
 
     modifier onlyOracleCouncilManagerAndOwner() {
         require(
-            msg.sender == oracleCouncilAddress || msg.sender == address(marketManager) || msg.sender == owner,
+            msg.sender == marketManager.oracleCouncilAddress() ||
+                msg.sender == address(marketManager) ||
+                msg.sender == owner,
             "Not OracleCouncil Address, not Manager or Owner address"
         );
-        require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
         require(address(marketManager) != address(0), "Not Manager address. Please update valid Manager address");
+        require(
+            marketManager.oracleCouncilAddress() != address(0),
+            "Not OracleCouncil address. Please update valid Oracle address"
+        );
         _;
     }
 

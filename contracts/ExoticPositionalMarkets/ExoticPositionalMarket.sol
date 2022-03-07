@@ -41,7 +41,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     uint public backstopTimeout;
     bool public withdrawalAllowed;
     IExoticPositionalMarketManager public marketManager;
-    address public councilAddress;
     address public resolverAddress;
 
     //stats

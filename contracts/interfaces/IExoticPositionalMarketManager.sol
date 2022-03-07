@@ -9,9 +9,11 @@ interface IExoticPositionalMarketManager {
     function fixedBondAmount() external view returns(uint);
     function maximumPositionsAllowed() external view returns(uint);
     function paymentToken() external view returns(address);
+    function owner() external view returns(address);
+    function thalesBonds() external view returns(address);
+    function oracleCouncilAddress() external view returns(address);
     function safeBoxAddress() external view returns(address);
     function creatorAddress(address _market) external view returns(address);
-    function owner() external view returns(address);
     function resolverAddress(address _market) external view returns(address);
     function isPauserAddress(address _pauserAddress) external view returns(bool);
     function safeBoxPercentage() external view returns(uint);
@@ -21,6 +23,7 @@ interface IExoticPositionalMarketManager {
     function pDAOResolveTimePeriod() external view returns(uint);
     function claimTimeoutDefaultPeriod() external view returns(uint);
     function maxOracleCouncilMembers() external view returns(uint);
+    function disputePrice() external view returns(uint);
 
 
     function disputeMarket(address _marketAddress, address disputor) external;

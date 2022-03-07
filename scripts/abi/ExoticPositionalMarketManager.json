@@ -17,6 +17,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "disputePrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "DisputePriceChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_exoticMastercopy",
         "type": "address"
@@ -546,6 +559,19 @@
   },
   {
     "inputs": [],
+    "name": "disputePrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "exoticMarketMastercopy",
     "outputs": [
       {
@@ -648,17 +674,7 @@
       },
       {
         "internalType": "address",
-        "name": "_exoticMarketMastercopy",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
         "name": "_paymentToken",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_thalesBonds",
         "type": "address"
       }
     ],
@@ -1046,6 +1062,19 @@
       }
     ],
     "name": "setCreatorPercentage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_disputePrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDisputePrice",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

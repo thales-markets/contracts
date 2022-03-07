@@ -30,36 +30,36 @@ async function main() {
 		network = 'optimistic';
 	}
 	
-    const ExoticMarketMastercopyAddress = getTargetAddress("ExoiticMarketMasterCopy", network);
-    const ThalesAddress = getTargetAddress("OpThales_L2", network);
-    const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
-    let minimumPositioningDuration = 0;
-    let minimumMarketMaturityDuration = 0;
-
-    console.log("Mastercopy at address", ExoticMarketMastercopyAddress);
+    const OracleCouncilContract = await ethers.getContractFactory('ThalesOracleCouncil');
+	const ExoticMarketManagerAddress = getTargetAddress("ExoticMarketManager", network);
+	const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
     
-    const ExoticMarketManagerDeployed = await upgrades.deployProxy(ExoticMarketManager, [
+    const OracleCouncilDeployed = await upgrades.deployProxy(OracleCouncilContract, [
         owner.address,
-		minimumPositioningDuration,
-		ThalesAddress
+		ExoticMarketManagerAddress
 	]);
-	await ExoticMarketManagerDeployed.deployed;
+	await OracleCouncilDeployed.deployed;
     
-    console.log("ExoticMarketManager Deployed on", ExoticMarketManagerDeployed.address);
-    setTargetAddress('ExoticMarketManager', network, ExoticMarketManagerDeployed.address);
+    console.log("OracleCouncil Deployed on", OracleCouncilDeployed.address);
 
-	const ExoticMarketManagerImplementation = await getImplementationAddress(
+	const OracleCouncilImplementation = await getImplementationAddress(
 		ethers.provider,
-		ExoticMarketManagerDeployed.address
+		OracleCouncilDeployed.address
 	);
 
-	console.log('Implementation ExoticMarketManager: ', ExoticMarketManagerImplementation);
-	setTargetAddress('ExoticMarketManagerImplementation', network, ExoticMarketManagerImplementation);
+	console.log('Implementation OracleCouncil: ', OracleCouncilImplementation);
+	setTargetAddress('ThalesOracleCouncilImplementation', network, OracleCouncilImplementation);
 	
-    
+	const ExoticMarketManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
+	await ExoticMarketManagerDeployed.setOracleCouncilAddress(OracleCouncilDeployed.address);
+	console.log("OracleCouncil address set in ExoticMarketManager");
+	
+	await OracleCouncilDeployed.setMarketManager(ExoticMarketManagerDeployed.address);
+	console.log("ExoticMarketManager address set in OracleCouncil");
+
     try {
 		await hre.run('verify:verify', {
-			address: ExoticMarketManagerDeployed.address,
+			address: OracleCouncilDeployed.address,
 		});
 	} catch (e) {
 		console.log(e);
@@ -67,7 +67,7 @@ async function main() {
 
     try {
 		await hre.run('verify:verify', {
-			address: ExoticMarketManagerImplementation,
+			address: OracleCouncilImplementation,
 		});
 	} catch (e) {
 		console.log(e);

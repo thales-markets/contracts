@@ -139,9 +139,11 @@
 		"ThalesStakingRewardsPool": "0xBfb2692Ae8c4399FD27977b9e14E8E69e31711d6",
 		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a",
 		"ExoiticMarket": "0xc85792c44c173F4b6Ee80f82144AcDb2c3bF5aA8",
-		"ExoticMarketMasterCopy": "0xc9D067994D6BB6cba6CcCD6b93885bb944329EA8",
-		"ExoticMarketManager": "0xF9117FdAC5062E52C4DC645d78097EBAbC699eB8",
-		"ExoticMarketManagerImplementation": "0x0a5df41f7ec552330e5C4Ff7f049215DB7615c6b"
+		"ExoticMarketMasterCopy": "0xEcE1030a4d2d43c441Fed14Bda8d8c7Efb08Cbb2",
+		"ExoticMarketManager": "0x4eA42C9bD934e38C646a66512B1bc783BA81D812",
+		"ExoticMarketManagerImplementation": "0x53AB50B5447d03651D53EcC52CEb6458E226403A",
+		"ThalesOracleCouncilImplementation": "0x244995013C6ED088a729EA03ea8fa2f61122e8B5",
+		"ThalesBondsImplementation": "0x287eB9D44EED1D2c3A3Dff50C1ADfcddf24d778C"
 	},
 	"localhost": {
 		"Airdrop": "",

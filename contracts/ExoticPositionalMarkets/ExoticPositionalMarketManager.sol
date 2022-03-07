@@ -41,6 +41,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     address public thalesBonds;
     address public paymentToken;
     uint public maximumPositionsAllowed;
+    uint public disputePrice;
 
     mapping(uint => address) public pauserAddress;
     uint public pausersCount;
@@ -55,18 +56,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     function initialize(
         address _owner,
         uint _minimumPositioningDuration,
-        address _exoticMarketMastercopy,
-        address _paymentToken,
-        address _thalesBonds
+        address _paymentToken
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
         minimumPositioningDuration = _minimumPositioningDuration;
-        exoticMarketMastercopy = _exoticMarketMastercopy;
         backstopTimeout = backstopTimeoutDefault;
         maximumPositionsAllowed = 5;
         paymentToken = _paymentToken;
-        thalesBonds = _thalesBonds;
         safeBoxPercentage = 1;
         creatorPercentage = 1;
         resolverPercentage = 1;
@@ -74,6 +71,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         claimTimeoutDefaultPeriod = 1 days;
         pDAOResolveTimePeriod = 2 days;
         maxOracleCouncilMembers = 5;
+        disputePrice = 10 * 1e18;
     }
 
     // Create Exotic market
@@ -253,6 +251,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit WithdrawalPercentageChanged(_withdrawalPercentage);
     }
 
+    function setDisputePrice(uint _disputePrice) external onlyOwner {
+        disputePrice = _disputePrice;
+        emit DisputePriceChanged(_disputePrice);
+    }
+
     function setPDAOResolveTimePeriod(uint _pDAOResolveTimePeriod) external onlyOwner {
         pDAOResolveTimePeriod = _pDAOResolveTimePeriod;
         emit setPDAOResolveTimePeriodChanged(_pDAOResolveTimePeriod);
@@ -347,6 +350,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event PauserAddressAdded(address pauserAddress);
     event PauserAddressRemoved(address pauserAddress);
     event MarketPaused(address marketAddress);
+    event DisputePriceChanged(uint disputePrice);
 
     modifier onlyOracleCouncil() {
         require(msg.sender == oracleCouncilAddress, "Not OracleCouncil address");

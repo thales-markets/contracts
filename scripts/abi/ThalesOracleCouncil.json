@@ -410,19 +410,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "disputePrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -838,23 +825,8 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "_disputePrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_paymentToken",
-        "type": "address"
-      },
-      {
         "internalType": "address",
         "name": "_marketManager",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_thalesBonds",
         "type": "address"
       }
     ],
@@ -1023,19 +995,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "paymentToken",
-    "outputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -1085,19 +1044,6 @@
     "name": "setOwner",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "thalesBonds",
-    "outputs": [
-      {
-        "internalType": "contract IThalesBonds",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

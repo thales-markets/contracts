@@ -28,10 +28,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     mapping(uint => address) public councilMemberAddress;
     mapping(address => uint) public councilMemberIndex;
     uint public councilMemberCount;
-    IERC20 public paymentToken;
     IExoticPositionalMarketManager public marketManager;
-    IThalesBonds public thalesBonds;
-    uint public disputePrice;
 
     struct Dispute {
         address disputorAddress;
@@ -51,19 +48,10 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     mapping(address => mapping(uint => uint)) public disputeWinningPositionChoosen;
     mapping(address => address) public firstMemberThatChoseWinningPosition;
 
-    function initialize(
-        address _owner,
-        uint _disputePrice,
-        address _paymentToken,
-        address _marketManager,
-        address _thalesBonds
-    ) public initializer {
+    function initialize(address _owner, address _marketManager) public initializer {
         setOwner(_owner);
         initNonReentrant();
-        disputePrice = _disputePrice;
-        paymentToken = IERC20(_paymentToken);
         marketManager = IExoticPositionalMarketManager(_marketManager);
-        thalesBonds = IThalesBonds(_thalesBonds);
     }
 
     /* ========== VIEWS ========== */
@@ -182,11 +170,12 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         require(IExoticPositionalMarket(_market).isMarketCreated(), "Market not created");
         require(!marketClosedForDisputes[_market], "Market is closed for disputes");
         require(
-            paymentToken.balanceOf(msg.sender) >= marketManager.fixedBondAmount(),
+            IERC20(marketManager.paymentToken()).balanceOf(msg.sender) >= marketManager.fixedBondAmount(),
             "Low token amount for disputing market"
         );
         require(
-            paymentToken.allowance(msg.sender, address(thalesBonds)) >= disputePrice,
+            IERC20(marketManager.paymentToken()).allowance(msg.sender, marketManager.thalesBonds()) >=
+                marketManager.disputePrice(),
             "No allowance. Please approve ticket price allowance"
         );
         require(
@@ -273,7 +262,11 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             // set dispute to false
             // send disputor BOND to SafeBox
             // marketManager.getMarketBondAmount(_market);
-            thalesBonds.sendBondFromMarketToUser(_market, marketManager.safeBoxAddress(), marketManager.fixedBondAmount());
+            IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
+                _market,
+                marketManager.safeBoxAddress(),
+                marketManager.fixedBondAmount()
+            );
             marketLastClosedDispute[_market] = _disputeIndex;
             //if it is the last dispute
             if (_decidedOption == REFUSE_MATURE) {
@@ -292,8 +285,12 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             marketManager.cancelMarket(_market);
             marketClosedForDisputes[_market] = true;
             // send bond to disputor and safeBox
-            thalesBonds.sendBondFromMarketToUser(_market, marketManager.safeBoxAddress(), TEN_SUSD);
-            thalesBonds.sendBondFromMarketToUser(
+            IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
+                _market,
+                marketManager.safeBoxAddress(),
+                TEN_SUSD
+            );
+            IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
                 (marketManager.fixedBondAmount().mul(2)).sub(TEN_SUSD)
@@ -310,13 +307,13 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             marketManager.cancelMarket(_market);
             marketClosedForDisputes[_market] = true;
             // send bond to disputor and safeBox
-            // thalesBonds.sendBondFromMarketToUser(_market, marketManager.safeBoxAddress(), TEN_SUSD);
-            thalesBonds.sendBondFromMarketToUser(
+            // IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(_market, marketManager.safeBoxAddress(), TEN_SUSD);
+            IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 IExoticPositionalMarket(_market).creatorAddress(),
                 marketManager.fixedBondAmount()
             );
-            thalesBonds.sendBondFromMarketToUser(
+            IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
                 marketManager.fixedBondAmount().sub(TEN_SUSD)
@@ -333,8 +330,12 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             marketManager.closeDispute(_market);
             // set result
             marketManager.resolveMarket(_market, disputeWinningPositionChoosen[_market][_disputeIndex]);
-            thalesBonds.sendBondFromMarketToUser(_market, marketManager.safeBoxAddress(), marketManager.fixedBondAmount());
-            thalesBonds.sendBondFromMarketToUser(
+            IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
+                _market,
+                marketManager.safeBoxAddress(),
+                marketManager.fixedBondAmount()
+            );
+            IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
                 marketManager.fixedBondAmount()
@@ -348,8 +349,12 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             marketManager.closeDispute(_market);
             // reset result
             marketManager.resetMarket(_market);
-            thalesBonds.sendBondFromMarketToUser(_market, marketManager.safeBoxAddress(), TEN_SUSD);
-            thalesBonds.sendBondFromMarketToUser(
+            IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
+                _market,
+                marketManager.safeBoxAddress(),
+                TEN_SUSD
+            );
+            IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
                 marketManager.fixedBondAmount().mul(2).sub(TEN_SUSD)
@@ -373,7 +378,11 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             canDisputorClaimbackBondFromUnclosedDispute(_market, _disputeIndex, msg.sender),
             "Unable to claim bonds. Check if market is closed for disputes, disputor index, and dispute address"
         );
-        thalesBonds.sendBondFromMarketToUser(_market, msg.sender, thalesBonds.getDisputorBondForMarket(_market, msg.sender));
+        IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
+            _market,
+            msg.sender,
+            IThalesBonds(marketManager.thalesBonds()).getDisputorBondForMarket(_market, msg.sender)
+        );
     }
 
     function closeMarketForDisputes(address _market) external onlyOwner {

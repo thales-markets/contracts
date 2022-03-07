@@ -76,15 +76,14 @@ contract('Exotic Positional market', async accounts => {
 		await ExoticPositionalMarketManager.initialize(
 			manager,
 			minimumPositioningDuration,
-			ExoticPositionalMarket.address,
 			Thales.address,
-			ThalesBonds.address,
 			{ from: manager }
 		);
 		fixedBondAmount = toUnit(100);
+		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
 		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
-		await ThalesBonds.setOracleCouncilAddress(ThalesOracleCouncil.address, { from: manager });
-		await ThalesBonds.setManagerAddress(ExoticPositionalMarketManager.address, { from: manager });
+		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
+		await ThalesBonds.setMarketManager(ExoticPositionalMarketManager.address, { from: manager });
 		await ExoticPositionalMarketManager.setFixedBondAmount(fixedBondAmount, { from: manager });
 		await ExoticPositionalMarketManager.setSafeBoxAddress(safeBox, { from: manager });
 		await ExoticPositionalMarketManager.setMaximumPositionsAllowed('5', { from: manager });
@@ -369,14 +368,9 @@ contract('Exotic Positional market', async accounts => {
 
 		describe('Oracle Council', function() {
 			beforeEach(async () => {
-				await ThalesOracleCouncil.initialize(
-					manager,
-					fixedBondAmount,
-					Thales.address,
-					ExoticPositionalMarketManager.address,
-					ThalesBonds.address,
-					{ from: manager }
-				);
+				await ThalesOracleCouncil.initialize(manager, ExoticPositionalMarketManager.address, {
+					from: manager,
+				});
 			});
 
 			it('No Oracle Council members', async function() {

@@ -376,19 +376,6 @@
   },
   {
     "inputs": [],
-    "name": "oracleCouncilAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -513,20 +500,7 @@
         "type": "address"
       }
     ],
-    "name": "setManagerAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_oracleCouncilAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setOracleCouncilAddress",
+    "name": "setMarketManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

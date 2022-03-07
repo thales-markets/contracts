@@ -40,6 +40,7 @@ async function main() {
 	await ThalesBondsDeployed.deployed;
     
     console.log("ThalesBonds Deployed on", ThalesBondsDeployed.address);
+    setTargetAddress('ThalesBonds', network, ThalesBondsDeployed.address);
 
 	const ThalesBondsImplementation = await getImplementationAddress(
 		ethers.provider,

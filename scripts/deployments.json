@@ -143,6 +143,7 @@
 		"ExoticMarketManager": "0x4eA42C9bD934e38C646a66512B1bc783BA81D812",
 		"ExoticMarketManagerImplementation": "0x53AB50B5447d03651D53EcC52CEb6458E226403A",
 		"ThalesOracleCouncilImplementation": "0x244995013C6ED088a729EA03ea8fa2f61122e8B5",
+		"ThalesBonds": "0xFA58e022acD77EE4f373b508c8265000A4f22994",
 		"ThalesBondsImplementation": "0x287eB9D44EED1D2c3A3Dff50C1ADfcddf24d778C"
 	},
 	"localhost": {

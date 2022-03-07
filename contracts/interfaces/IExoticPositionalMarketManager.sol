@@ -11,7 +11,9 @@ interface IExoticPositionalMarketManager {
     function paymentToken() external view returns(address);
     function safeBoxAddress() external view returns(address);
     function creatorAddress(address _market) external view returns(address);
+    function owner() external view returns(address);
     function resolverAddress(address _market) external view returns(address);
+    function isPauserAddress(address _pauserAddress) external view returns(bool);
     function safeBoxPercentage() external view returns(uint);
     function creatorPercentage() external view returns(uint);
     function resolverPercentage() external view returns(uint);
@@ -28,5 +30,7 @@ interface IExoticPositionalMarketManager {
     function closeDispute(address _market) external ;
     function setBackstopTimeout(address _market) external; 
     function sendMarketBondAmountTo(address _market, address _recepient, uint _amount) external;
+    function addPauserAddress(address _pauserAddress) external;
+    function removePauserAddress(address _pauserAddress) external;
 
 }   

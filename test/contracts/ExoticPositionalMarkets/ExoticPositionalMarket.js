@@ -264,7 +264,7 @@ contract('Exotic Positional market', async accounts => {
 							assert.equal(answer, false);
 						});
 						it('ticket holders can not claim', async function() {
-							await fastForward(DAY - 10*SECOND);
+							await fastForward(DAY - 10 * SECOND);
 							answer = await deployedMarket.canUsersClaim();
 							assert.equal(answer, false);
 						});
@@ -330,7 +330,7 @@ contract('Exotic Positional market', async accounts => {
 
 					it('withdrawal fee match', async function() {
 						answer = await ExoticPositionalMarketManager.withdrawalPercentage();
-						assert.equal(answer.toString(), "6");
+						assert.equal(answer.toString(), '6');
 					});
 
 					it('userOne can withdraw', async function() {
@@ -455,13 +455,17 @@ contract('Exotic Positional market', async accounts => {
 					});
 					it('open 10 diputes', async function() {
 						let disputeString = 'This is a dispute';
-						for(let i=1;i<=10; i++) {
+						for (let i = 1; i <= 10; i++) {
 							answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 								from: userTwo,
 							});
-							answer = await ThalesOracleCouncil.openDispute(deployedMarket.address, disputeString, {
-								from: userTwo,
-							});
+							answer = await ThalesOracleCouncil.openDispute(
+								deployedMarket.address,
+								disputeString,
+								{
+									from: userTwo,
+								}
+							);
 							answer = await ThalesOracleCouncil.getMarketOpenDisputes(deployedMarket.address);
 							assert.equal(answer.toString(), i.toString());
 						}

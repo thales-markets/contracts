@@ -41,6 +41,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     address public thalesBonds;
     address public paymentToken;
     uint public maximumPositionsAllowed;
+
+    mapping(uint => address) public pauserAddress;
+    uint public pausersCount;
+    mapping(address => uint) public pauserIndex;
+
     mapping(address => address) public creatorAddress;
     mapping(address => address) public resolverAddress;
 
@@ -114,6 +119,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function resolveMarket(address _marketAddress, uint _outcomePosition) external {
         require(isActiveMarket(_marketAddress), "Market is not active");
+        if (ExoticPositionalMarket(_marketAddress).paused()) {
+            require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
+        }
         if (creatorAddress[_marketAddress] != msg.sender) {
             require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
             require(
@@ -129,7 +137,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function cancelMarket(address _marketAddress) external onlyOracleCouncilAndOwner {
         require(isActiveMarket(_marketAddress), "Market is not active");
-
+        if (ExoticPositionalMarket(_marketAddress).paused()) {
+            require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
+        }
         ExoticPositionalMarket(_marketAddress).cancelMarket();
         removeActiveMarket(_marketAddress);
         emit MarketCanceled(_marketAddress);
@@ -137,13 +147,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function resetMarket(address _marketAddress) external onlyOracleCouncilAndOwner {
         require(isActiveMarket(_marketAddress), "Market is not active");
-
+        if (ExoticPositionalMarket(_marketAddress).paused()) {
+            require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
+        }
         ExoticPositionalMarket(_marketAddress).resetMarket();
         emit MarketReset(_marketAddress);
-    }
-
-    function getMarketBondAmount(address _market) external view returns (uint) {
-        return ExoticPositionalMarket(_market).totalBondAmount();
     }
 
     function sendMarketBondAmountTo(
@@ -157,15 +165,22 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function disputeMarket(address _marketAddress, address _disputor) external onlyOracleCouncil {
         IThalesBonds(thalesBonds).sendDisputorBondToMarket(_marketAddress, _disputor, fixedBondAmount);
-        if (!ExoticPositionalMarket(_marketAddress).disputed() && !ExoticPositionalMarket(_marketAddress).paused()) {
+        require(!ExoticPositionalMarket(_marketAddress).paused(), "Market is already paused");
+        if (!ExoticPositionalMarket(_marketAddress).disputed()) {
             ExoticPositionalMarket(_marketAddress).openDispute();
         }
     }
 
-    function closeDispute(address _marketAddress) external onlyOracleCouncil {
-        require(!ExoticPositionalMarket(_marketAddress).paused(), "Market paused");
+    function closeDispute(address _marketAddress) external onlyOracleCouncilAndOwner {
+        if (ExoticPositionalMarket(_marketAddress).paused()) {
+            require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
+        }
         require(ExoticPositionalMarket(_marketAddress).disputed(), "Market not disputed");
         ExoticPositionalMarket(_marketAddress).closeDispute();
+    }
+
+    function getMarketBondAmount(address _market) external view returns (uint) {
+        return ExoticPositionalMarket(_market).totalBondAmount();
     }
 
     function getActiveMarketAddress(uint _index) external view returns (address) {
@@ -183,6 +198,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function isActiveMarket(address _marketAddress) public view returns (bool) {
         return getActiveMarketIndex(_marketAddress) < numOfActiveMarkets;
+    }
+
+    function isPauserAddress(address _pauser) external view returns (bool) {
+        return pauserIndex[_pauser] > 0;
     }
 
     // SETTERS ///////////////////////////////////////////////////////////////////////////
@@ -250,7 +269,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         maximumPositionsAllowed = _maximumPositionsAllowed;
         emit NewMaximumPositionsAllowed(_maximumPositionsAllowed);
     }
-    
+
     function setMaxOracleCouncilMembers(uint _maxOracleCouncilMembers) external onlyOwner {
         require(_maxOracleCouncilMembers > 3, "Invalid Maximum Oracle Council members. Number too low");
         maxOracleCouncilMembers = _maxOracleCouncilMembers;
@@ -269,6 +288,25 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit NewThalesBonds(_thalesBonds);
     }
 
+    function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
+        require(_pauserAddress != address(0), "Invalid address");
+        require(pauserIndex[_pauserAddress] == 0, "Address already exists as pauser");
+        pausersCount = pausersCount.add(1);
+        pauserIndex[_pauserAddress] = pausersCount;
+        pauserAddress[pausersCount] = _pauserAddress;
+        emit PauserAddressAdded(_pauserAddress);
+    }
+
+    function removePauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
+        require(_pauserAddress != address(0), "Invalid address");
+        require(pauserIndex[_pauserAddress] != 0, "Invalid pauser address, not exists as pauser");
+        pauserAddress[pauserIndex[_pauserAddress]] = pauserAddress[pausersCount];
+        pauserIndex[pauserAddress[pausersCount]] = pauserIndex[_pauserAddress];
+        pausersCount = pausersCount.sub(1);
+        pauserIndex[_pauserAddress] = 0;
+        emit PauserAddressRemoved(_pauserAddress);
+    }
+
     // INTERNAL FUNCTIONS
 
     function removeActiveMarket(address _marketAddress) internal {
@@ -284,19 +322,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             _endOfPositioning >= block.timestamp.add(minimumPositioningDuration),
             "Posiitioning period too low. Increase the endOfPositioning"
         );
-        _;
-    }
-
-    modifier onlyOracleCouncil() {
-        require(msg.sender == oracleCouncilAddress, "Not OracleCouncil address");
-        require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
-        _;
-    }
-    modifier onlyOracleCouncilAndOwner() {
-        require(msg.sender == oracleCouncilAddress || msg.sender == owner, "Not OracleCouncil Address or Owner address");
-        if (msg.sender != owner) {
-            require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
-        }
         _;
     }
 
@@ -319,4 +344,20 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event WithdrawalPercentageChanged(uint withdrawalPercentage);
     event setPDAOResolveTimePeriodChanged(uint pDAOResolveTimePeriod);
     event NewMaxOracleCouncilMembers(uint maxOracleCouncilMembers);
+    event PauserAddressAdded(address pauserAddress);
+    event PauserAddressRemoved(address pauserAddress);
+    event MarketPaused(address marketAddress);
+
+    modifier onlyOracleCouncil() {
+        require(msg.sender == oracleCouncilAddress, "Not OracleCouncil address");
+        require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
+        _;
+    }
+    modifier onlyOracleCouncilAndOwner() {
+        require(msg.sender == oracleCouncilAddress || msg.sender == owner, "Not OracleCouncil Address or Owner address");
+        if (msg.sender != owner) {
+            require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
+        }
+        _;
+    }
 }

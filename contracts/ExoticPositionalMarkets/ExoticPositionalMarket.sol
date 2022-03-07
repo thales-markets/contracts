@@ -4,12 +4,12 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "./OraclePausable.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../interfaces/IExoticPositionalMarketManager.sol";
 
-contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
+contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, ProxyReentrancyGuard {
     using SafeMath for uint;
     using SafeERC20 for IERC20;
 
@@ -200,6 +200,32 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, ProxyPausable, Pro
                     firstUserClaimed = true;
                 }
                 emit WinningTicketClaimed(msg.sender, amount);
+            }
+        } else {
+            // Flexible bid;
+        }
+    }
+
+    function claimWinningTicketOnBehalf(address _user) external onlyOwner {
+        require(canUsersClaim(), "Market not finalized");
+        if (ticketType == TicketType.FIXED_TICKET_PRICE) {
+            uint amount = getUserClaimableAmount(_user);
+            if (amount > 0) {
+                claimableTicketsCount = claimableTicketsCount.sub(1);
+                IERC20(marketManager.paymentToken()).safeTransfer(_user, amount);
+                if (!firstUserClaimed) {
+                    IERC20(marketManager.paymentToken()).safeTransfer(
+                        marketManager.creatorAddress(address(this)),
+                        getAdditionalCreatorAmount()
+                    );
+                    IERC20(marketManager.paymentToken()).safeTransfer(
+                        marketManager.resolverAddress(address(this)),
+                        getAdditionalResolverAmount()
+                    );
+                    IERC20(marketManager.paymentToken()).safeTransfer(marketManager.safeBoxAddress(), getSafeBoxAmount());
+                    firstUserClaimed = true;
+                }
+                emit WinningTicketClaimed(_user, amount);
             }
         } else {
             // Flexible bid;

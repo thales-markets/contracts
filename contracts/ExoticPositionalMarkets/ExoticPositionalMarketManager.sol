@@ -12,6 +12,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 import "./ExoticPositionalMarket.sol";
 import "../interfaces/IThalesBonds.sol";
+import "../interfaces/IExoticPositionalTags.sol";
 
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
@@ -38,6 +39,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     address public exoticMarketMastercopy;
     address public oracleCouncilAddress;
     address public safeBoxAddress;
+    address public tagsAddress;
 
     address public thalesBonds;
     address public paymentToken;
@@ -100,8 +102,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid market source (empty string)");
         require(_positionCount == _positionPhrases.length, "Invalid position count with position phrases");
         require(bytes(_marketQuestion).length < 110, "Market question exceeds length");
-        ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(Clones.clone(exoticMarketMastercopy));
 
+        for(uint i=0; i<_tags.length; i++) {
+            require(IExoticPositionalTags(tagsAddress).isValidTagNumber(_tags[i]), "Not a valid tag. Tag number does not exists");
+        }
+
+        ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(Clones.clone(exoticMarketMastercopy));
         exoticMarket.initialize(
             _marketQuestion,
             _marketSource,
@@ -294,6 +300,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         thalesBonds = _thalesBonds;
         emit NewThalesBonds(_thalesBonds);
     }
+    
+    function setTagsAddress(address _tagsAddress) external onlyOwner {
+        require(_tagsAddress != address(0), "Invalid address");
+        tagsAddress = _tagsAddress;
+        emit NewTagsAddress(_tagsAddress);
+    }
 
     function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
         require(_pauserAddress != address(0), "Invalid address");
@@ -322,15 +334,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         activeMarkets[numOfActiveMarkets] = address(0);
     }
 
-    modifier checkMarketRequirements(uint _endOfPositioning) {
-        require(exoticMarketMastercopy != address(0), "No ExoticMarket mastercopy present. Please update the mastercopy");
-        require(thalesBonds != address(0), "Invalid Thales bond address");
-        require(
-            _endOfPositioning >= block.timestamp.add(minimumPositioningDuration),
-            "Posiitioning period too low. Increase the endOfPositioning"
-        );
-        _;
-    }
 
     event MinimumPositionDurationChanged(uint duration);
     event MinimumMarketMaturityDurationChanged(uint duration);
@@ -342,6 +345,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewOracleCouncilAddress(address oracleCouncilAddress);
     event NewFixedBondAmount(uint fixedBond);
     event NewSafeBoxAddress(address safeBox);
+    event NewTagsAddress(address tagsAddress);
     event NewMaximumPositionsAllowed(uint maximumPositionsAllowed);
     event NewPaymentToken(address paymentTokenAddress);
     event NewThalesBonds(address thalesBondsAddress);
@@ -355,6 +359,16 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event PauserAddressRemoved(address pauserAddress);
     event MarketPaused(address marketAddress);
     event DisputePriceChanged(uint disputePrice);
+
+    modifier checkMarketRequirements(uint _endOfPositioning) {
+        require(exoticMarketMastercopy != address(0), "No ExoticMarket mastercopy present. Please update the mastercopy");
+        require(thalesBonds != address(0), "Invalid Thales bond address");
+        require(
+            _endOfPositioning >= block.timestamp.add(minimumPositioningDuration),
+            "Posiitioning period too low. Increase the endOfPositioning"
+        );
+        _;
+    }
 
     modifier onlyOracleCouncil() {
         require(msg.sender == oracleCouncilAddress, "Not OracleCouncil address");

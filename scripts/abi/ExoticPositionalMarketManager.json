@@ -225,6 +225,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "tagsAddress",
+        "type": "address"
+      }
+    ],
+    "name": "NewTagsAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "thalesBondsAddress",
         "type": "address"
       }
@@ -1252,6 +1265,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_tagsAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setTagsAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_thalesBonds",
         "type": "address"
       }
@@ -1272,6 +1298,19 @@
     "name": "setWithdrawalPercentage",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "tagsAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

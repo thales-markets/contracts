@@ -60,6 +60,10 @@ contract ExoticPositionalTags is Initializable, ProxyOwned, PausableUpgradeable,
         return tagIndexNumber[_index];
     }
 
+    function getTagByIndex(uint _index) external view returns (string memory, uint) {
+        return (tagLabel[tagIndexNumber[_index]], tagIndexNumber[_index]);
+    }
+
     function getTagsCount() external view returns (uint) {
         return tagsCount;
     }

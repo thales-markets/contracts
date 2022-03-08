@@ -30,8 +30,10 @@ const ExoticPositionalMarketManagerContract = artifacts.require('ExoticPositiona
 const ThalesOracleCouncilContract = artifacts.require('ThalesOracleCouncil');
 const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 const ThalesBondsContract = artifacts.require('ThalesBonds');
+const ExoticPositionalTagsContract = artifacts.require('ExoticPositionalTags');
 let ExoticPositionalMarket;
 let ExoticPositionalMarketManager;
+let ExoticPositionalTags;
 let ThalesOracleCouncil;
 let Thales;
 let ThalesBonds;
@@ -70,7 +72,8 @@ contract('Exotic Positional market', async accounts => {
 		ThalesOracleCouncil = await ThalesOracleCouncilContract.new({ from: owner });
 		Thales = await ThalesContract.new({ from: owner });
 		ThalesBonds = await ThalesBondsContract.new();
-
+		ExoticPositionalTags = await ExoticPositionalTagsContract.new();
+		await ExoticPositionalTags.initialize(manager, {from:manager});
 		await ThalesBonds.initialize(manager, { from: manager });
 
 		await ExoticPositionalMarketManager.initialize(
@@ -83,6 +86,7 @@ contract('Exotic Positional market', async accounts => {
 		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
 		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
 		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
+		await ExoticPositionalMarketManager.setTagsAddress(ExoticPositionalTags.address);
 		await ThalesBonds.setMarketManager(ExoticPositionalMarketManager.address, { from: manager });
 		await ExoticPositionalMarketManager.setFixedBondAmount(fixedBondAmount, { from: manager });
 		await ExoticPositionalMarketManager.setSafeBoxAddress(safeBox, { from: manager });
@@ -90,11 +94,51 @@ contract('Exotic Positional market', async accounts => {
 		await Thales.transfer(userOne, toUnit('1000'), { from: owner });
 		await Thales.transfer(userTwo, toUnit('1000'), { from: owner });
 		await Thales.transfer(userThree, toUnit('1000'), { from: owner });
+
+		await ExoticPositionalTags.addTag("Sport", "1");
+		await ExoticPositionalTags.addTag("Football", "101");
+		await ExoticPositionalTags.addTag("Basketball", "102");
+		await ExoticPositionalTags.addTag("Crypto", "2");
+		await ExoticPositionalTags.addTag("Bitcoin", "201");
+		await ExoticPositionalTags.addTag("Politics", "3");
 	});
 
 	describe('initial deploy', function() {
 		it('deployed', async function() {
 			assert.notEqual(ExoticPositionalMarket.address, ZERO_ADDRESS);
+		});
+	});
+
+	describe('create single market', function() {
+		it('new market', async function() {
+			const timestamp = await currentTime();
+			marketQuestion = 'Who will win the el clasico which will be played on 2022-02-22?';
+			marketSource = 'http://www.realmadrid.com';
+			endOfPositioning = (timestamp + DAY).toString();
+			fixedTicketPrice = toUnit('10');
+			withdrawalAllowed = true;
+			tag = [1, 2, 3];
+			paymentToken = Thales.address;
+			phrases = ['Real Madrid', 'FC Barcelona', 'It will be a draw'];
+			outcomePosition = '1';
+
+			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
+				from: owner,
+			});
+			answer = await ExoticPositionalMarketManager.createExoticMarket(
+				marketQuestion,
+				marketSource,
+				endOfPositioning,
+				fixedTicketPrice,
+				withdrawalAllowed,
+				tag,
+				phrases.length,
+				phrases,
+				{ from: owner }
+			);
+
+			answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 		});
 	});
 

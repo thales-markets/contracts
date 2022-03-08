@@ -33,6 +33,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint public resolverPercentage;
     uint public withdrawalPercentage;
     uint public maxOracleCouncilMembers;
+    uint public maxNumberOfTags;
 
     address public exoticMarketMastercopy;
     address public oracleCouncilAddress;
@@ -72,6 +73,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         pDAOResolveTimePeriod = 2 days;
         maxOracleCouncilMembers = 5;
         disputePrice = 10 * 1e18;
+        maxNumberOfTags = 5;
     }
 
     // Create Exotic market
@@ -90,12 +92,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
             "No allowance. Please approve ticket price allowance"
         );
+        require(_tags.length > 0 && _tags.length < maxNumberOfTags);
         require(
             keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")),
             "Invalid market question (empty string)"
         );
         require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid market source (empty string)");
         require(_positionCount == _positionPhrases.length, "Invalid position count with position phrases");
+        require(bytes(_marketQuestion).length < 110, "Market question exceeds length");
         ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(Clones.clone(exoticMarketMastercopy));
 
         exoticMarket.initialize(

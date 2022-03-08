@@ -69,6 +69,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             _positionCount >= 2 && _positionCount <= IExoticPositionalMarketManager(msg.sender).maximumPositionsAllowed(),
             "Invalid number of provided positions"
         );
+        require(_tags.length > 0);
         setOwner(msg.sender);
         marketManager = IExoticPositionalMarketManager(msg.sender);
         _initializeWithTwoParameters(
@@ -424,6 +425,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     }
 
     function _addPosition(string memory _position) internal {
+        require(keccak256(abi.encode(_position)) != keccak256(abi.encode("")), "Invalid position label (empty string)");
+        require(bytes(_position).length < 50, "Position label exceeds length");
         positionCount = positionCount.add(1);
         positionPhrase[positionCount] = _position;
     }

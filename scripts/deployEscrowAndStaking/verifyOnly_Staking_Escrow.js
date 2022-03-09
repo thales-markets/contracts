@@ -31,7 +31,7 @@ async function main() {
 		network = 'mainnet';
 	}
 	if(networkObj.chainId == 10) {
-		network = 'optimistic'		
+		network = 'optimisticEthereum'		
 	}
 
 

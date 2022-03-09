@@ -47,6 +47,12 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     uint public totalUserPositions;
     mapping(uint => uint) public ticketsPerPosition;
     mapping(address => uint) public userPosition;
+
+    // open bid parameters
+    uint public totalOpenBidAmount;
+    mapping(uint => uint) public totalOpenBidAmountPerPosition;
+    mapping(address => mapping(uint => uint)) public userOpenBidPosition;
+
     bool public resolved;
     bool public disputedInPositioningPhase;
     bool public firstUserClaimed;
@@ -94,7 +100,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         require(_position <= positionCount, "Position exceeds number of positions");
         require(canUsersPlacePosition(), "Not able to position. Positioning time finished or market resolved");
         //require(same position)
-        if (ticketType == TicketType.FIXED_TICKET_PRICE) {
+        require(ticketType == TicketType.FIXED_TICKET_PRICE, "Not a Fixed price market");
             if (userPosition[msg.sender] == 0) {
                 transferToMarket(msg.sender, fixedTicketPrice);
                 totalUserPositions = totalUserPositions.add(1);
@@ -104,9 +110,27 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             ticketsPerPosition[_position] = ticketsPerPosition[_position].add(1);
             userPosition[msg.sender] = _position;
             emit NewPositionTaken(msg.sender, _position, fixedTicketPrice);
-        } else {
-            // _resolveFlexibleBid(_outcomePosition);
+    }
+    
+    function takeOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external notPaused {
+        require(_positions.length > 0, "Invalid positions. Please add at least a single position");
+        require(_positions.length <= positionCount, "Position exceeds number of positions");
+        require(canUsersPlacePosition(), "Not able to position. Positioning time finished or market resolved");
+        require(ticketType == TicketType.FLEXIBLE_BID, "Not an Open Bid market type");
+        uint totalDepositedAmount = 0;
+        for(uint i=0; i<_positions.length; i++) {
+            require(_positions[i] > 0, "Position can not be zero. Non-zero position expected");
+            require(_positions[i] <= positionCount, "Position exceeds number of positions");
+            require(_amounts[i] > 0, "Zero amount for position");
+            // add to the amount of the position
+            totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
+            // add to the total amount
+            totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
+            userOpenBidPosition[msg.sender][_positions[i]] = userOpenBidPosition[msg.sender][_positions[i]].add(_amounts[i]);
+            totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
         }
+        transferToMarket(msg.sender, totalDepositedAmount);
+        emit NewOpenBidsForPositions(msg.sender, _positions, _amounts);   
     }
 
     function withdraw() external notPaused {
@@ -308,7 +332,24 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     }
 
     function canUserWithdraw(address _account) public view returns (bool) {
-        return withdrawalAllowed && canUsersPlacePosition() && userPosition[_account] > 0;
+        if(ticketType == TicketType.FLEXIBLE_BID) {
+            return withdrawalAllowed && canUsersPlacePosition() && getUserOpenBidTotalPlacedAmount(_account) > 0;
+        }
+        else {
+            return withdrawalAllowed && canUsersPlacePosition() && userPosition[_account] > 0;
+        }
+    }
+
+    function getUserOpenBidTotalPlacedAmount(address _account) public view returns(uint) {
+        uint amount = 0;
+        for(uint i = 1; i <= positionCount; i++) {
+            amount = amount.add(userOpenBidPosition[_account][i]);
+        }
+        return amount;
+    }
+    
+    function getUserOpenBidPositionPlacedAmount(address _account, uint _position) public view returns(uint) {
+        return userOpenBidPosition[_account][_position];
     }
 
     function getPositionPhrase(uint index) public view returns (string memory) {
@@ -324,7 +365,12 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     }
 
     function getTotalPlacedAmount() public view returns (uint) {
-        return fixedTicketPrice.mul(totalUserPositions);
+        if(ticketType == TicketType.FLEXIBLE_BID) {
+            return totalOpenBidAmount;
+        }
+        else {
+            return fixedTicketPrice.mul(totalUserPositions);
+        }
     }
 
     function getTotalClaimableAmount() public view returns (uint) {
@@ -441,4 +487,5 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     event TicketWithdrawn(address account, uint amount);
     event BondIncreased(uint amount, uint totalAmount);
     event BondDecreased(uint amount, uint totalAmount);
+    event NewOpenBidsForPositions(address account, uint[] openBidPositions, uint[] openBidAmounts);   
 }

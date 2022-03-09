@@ -66,26 +66,26 @@ contract ExoticPositionalTags is Initializable, ProxyOwned, PausableUpgradeable,
 
     function getAllTags() external view returns (string[] memory, uint[] memory) {
         uint[] memory tagsNumber = new uint[](tagsCount);
-        string[] memory tagsLabel =  new string[](tagsCount);
-        for(uint i=1; i<=tagsCount; i++) {
-           tagsNumber[i-1] = tagIndexNumber[i];
-           tagsLabel[i-1] = tagLabel[tagIndexNumber[i]];
+        string[] memory tagsLabel = new string[](tagsCount);
+        for (uint i = 1; i <= tagsCount; i++) {
+            tagsNumber[i - 1] = tagIndexNumber[i];
+            tagsLabel[i - 1] = tagLabel[tagIndexNumber[i]];
         }
         return (tagsLabel, tagsNumber);
     }
-    
+
     function getAllTagsNumbers() external view returns (uint[] memory) {
         uint[] memory tagsNumber = new uint[](tagsCount);
-        for(uint i=1; i<=tagsCount; i++) {
-           tagsNumber[i-1] = tagIndexNumber[i];
+        for (uint i = 1; i <= tagsCount; i++) {
+            tagsNumber[i - 1] = tagIndexNumber[i];
         }
         return tagsNumber;
     }
-    
+
     function getAllTagsLabels() external view returns (string[] memory) {
-        string[] memory tagsLabel =  new string[](tagsCount);
-        for(uint i=1; i<=tagsCount; i++) {
-           tagsLabel[i-1] = tagLabel[tagIndexNumber[i]];
+        string[] memory tagsLabel = new string[](tagsCount);
+        for (uint i = 1; i <= tagsCount; i++) {
+            tagsLabel[i - 1] = tagLabel[tagIndexNumber[i]];
         }
         return tagsLabel;
     }

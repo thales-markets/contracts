@@ -53,7 +53,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     mapping(uint => address) public activeMarkets;
     uint public numOfActiveMarkets;
-    
+
     address public tagsAddress;
     uint public maxNumberOfTags;
 
@@ -104,8 +104,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(_positionCount == _positionPhrases.length, "Invalid position count with position phrases");
         require(bytes(_marketQuestion).length < 110, "Market question exceeds length");
 
-        for(uint i=0; i<_tags.length; i++) {
-            require(IExoticPositionalTags(tagsAddress).isValidTagNumber(_tags[i]), "Not a valid tag. Tag number does not exists");
+        for (uint i = 0; i < _tags.length; i++) {
+            require(
+                IExoticPositionalTags(tagsAddress).isValidTagNumber(_tags[i]),
+                "Not a valid tag. Tag number does not exists"
+            );
         }
 
         ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(Clones.clone(exoticMarketMastercopy));
@@ -123,7 +126,18 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
-        emit MarketCreated(address(exoticMarket), _marketQuestion, msg.sender);
+        emit MarketCreated(
+            address(exoticMarket),
+            _marketQuestion,
+            _marketSource,
+            _endOfPositioning,
+            _fixedTicketPrice,
+            _withdrawalAllowed,
+            _tags,
+            _positionCount,
+            _positionPhrases,
+            msg.sender
+        );
     }
 
     function resolveMarket(address _marketAddress, uint _outcomePosition) external {
@@ -283,7 +297,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         maximumPositionsAllowed = _maximumPositionsAllowed;
         emit NewMaximumPositionsAllowed(_maximumPositionsAllowed);
     }
-    
+
     function setMaxNumberOfTags(uint _maxNumberOfTags) external onlyOwner {
         require(_maxNumberOfTags > 2, "Invalid Maximum positions allowed");
         maxNumberOfTags = _maxNumberOfTags;
@@ -307,7 +321,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         thalesBonds = _thalesBonds;
         emit NewThalesBonds(_thalesBonds);
     }
-    
+
     function setTagsAddress(address _tagsAddress) external onlyOwner {
         require(_tagsAddress != address(0), "Invalid address");
         tagsAddress = _tagsAddress;
@@ -341,11 +355,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         activeMarkets[numOfActiveMarkets] = address(0);
     }
 
-
     event MinimumPositionDurationChanged(uint duration);
     event MinimumMarketMaturityDurationChanged(uint duration);
     event ExoticMarketMastercopyChanged(address _exoticMastercopy);
-    event MarketCreated(address marketAddress, string marketQuestion, address marketOwner);
     event MarketResolved(address marketAddress);
     event MarketCanceled(address marketAddress);
     event MarketReset(address marketAddress);
@@ -367,6 +379,18 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event MarketPaused(address marketAddress);
     event DisputePriceChanged(uint disputePrice);
     event NewMaxNumberOfTags(uint maxNumberOfTags);
+    event MarketCreated(
+        address marketAddress,
+        string marketQuestion,
+        string marketSource,
+        uint endOfPositioning,
+        uint fixedTicketPrice,
+        bool withdrawalAllowed,
+        uint[] tags,
+        uint positionCount,
+        string[] positionPhrases,
+        address marketOwner
+    );
 
     modifier checkMarketRequirements(uint _endOfPositioning) {
         require(exoticMarketMastercopy != address(0), "No ExoticMarket mastercopy present. Please update the mastercopy");

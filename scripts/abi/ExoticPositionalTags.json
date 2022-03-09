@@ -207,6 +207,50 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getAllTags",
+    "outputs": [
+      {
+        "internalType": "string[]",
+        "name": "",
+        "type": "string[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllTagsLabels",
+    "outputs": [
+      {
+        "internalType": "string[]",
+        "name": "",
+        "type": "string[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllTagsNumbers",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",

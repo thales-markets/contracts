@@ -33,13 +33,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint public creatorPercentage;
     uint public resolverPercentage;
     uint public withdrawalPercentage;
-    uint public maxOracleCouncilMembers;
-    uint public maxNumberOfTags;
 
+    uint public maxOracleCouncilMembers;
     address public exoticMarketMastercopy;
     address public oracleCouncilAddress;
     address public safeBoxAddress;
-    address public tagsAddress;
 
     address public thalesBonds;
     address public paymentToken;
@@ -55,6 +53,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     mapping(uint => address) public activeMarkets;
     uint public numOfActiveMarkets;
+    
+    address public tagsAddress;
+    uint public maxNumberOfTags;
 
     function initialize(
         address _owner,
@@ -94,7 +95,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
             "No allowance. Please approve ticket price allowance"
         );
-        require(_tags.length > 0 && _tags.length < maxNumberOfTags);
+        require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
         require(
             keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")),
             "Invalid market question (empty string)"
@@ -282,6 +283,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         maximumPositionsAllowed = _maximumPositionsAllowed;
         emit NewMaximumPositionsAllowed(_maximumPositionsAllowed);
     }
+    
+    function setMaxNumberOfTags(uint _maxNumberOfTags) external onlyOwner {
+        require(_maxNumberOfTags > 2, "Invalid Maximum positions allowed");
+        maxNumberOfTags = _maxNumberOfTags;
+        emit NewMaxNumberOfTags(_maxNumberOfTags);
+    }
 
     function setMaxOracleCouncilMembers(uint _maxOracleCouncilMembers) external onlyOwner {
         require(_maxOracleCouncilMembers > 3, "Invalid Maximum Oracle Council members. Number too low");
@@ -359,6 +366,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event PauserAddressRemoved(address pauserAddress);
     event MarketPaused(address marketAddress);
     event DisputePriceChanged(uint disputePrice);
+    event NewMaxNumberOfTags(uint maxNumberOfTags);
 
     modifier checkMarketRequirements(uint _endOfPositioning) {
         require(exoticMarketMastercopy != address(0), "No ExoticMarket mastercopy present. Please update the mastercopy");

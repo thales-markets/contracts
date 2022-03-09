@@ -20,8 +20,18 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+	}
+		
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
 	}
 
 	if (networkObj.chainId == 10) {
@@ -29,6 +39,8 @@ async function main() {
 	} else if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	} else if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
 		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;

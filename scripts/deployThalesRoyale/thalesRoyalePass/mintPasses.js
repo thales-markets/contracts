@@ -24,8 +24,17 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+	}
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
 	}
 
 	console.log('Account is: ' + owner.address);
@@ -72,7 +81,12 @@ async function main() {
 
 	const royalePass = await ThalesRoyalePass.attach(thalesRoyalePassAddress);
 
-	ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
+	} else {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	}
+	
 	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSDaddress);
 
 	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];

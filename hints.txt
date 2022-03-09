@@ -32,6 +32,16 @@ npx hardhat run --network optimisticKovan scripts/deployAMM/upgradeAMM.js
 npx hardhat run --network optimisticKovan scripts/l2_deployments/createMarket.js
 npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyalePass/mintPasses.js
 
-optimistic:
-npx hardhat run --network optimistic scripts/deployAMM/deployAMM.js
-npx hardhat run --network optimistic scripts/deployPriceFeed/updateAggregators.js
+optimisticEthereum:
+npx hardhat run --network optimisticEthereum scripts/deployAMM/deployAMM.js
+npx hardhat run --network optimisticEthereum scripts/deployPriceFeed/updateAggregators.js
+
+polygon test:
+npx hardhat run --network polygonMumbai scripts/deployPriceFeed/deployPriceFeed.js
+npx hardhat run --network polygonMumbai scripts/deployThalesRoyale/thalesRoyale/deployRoyale.js
+npx hardhat run --network polygonMumbai scripts/deployThalesRoyale/thalesRoyalePass/deployRoyalePass.js
+npx hardhat run --network polygonMumbai scripts/deployThalesRoyale/thalesRoyale/verifyOnly.js
+npx hardhat run --network polygonMumbai scripts/deployAMM/deploySafebox.js
+npx hardhat run --network polygonMumbai scripts/deployAMM/deployAMM.js
+npx hardhat run --network polygonMumbai scripts/deployPositions/deployPositions.js
+npx hardhat verify ADDRESS_CONTRACT --network polygonMumbai

@@ -25,15 +25,30 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+	}
+
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
 	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	sUSDAddress = getTargetAddress('ProxysUSD', network);
-	console.log('ProxysUSD :', sUSDAddress);
+	if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+		sUSDAddress = getTargetAddress('ProxyUSDC', network);
+	} else {
+		sUSDAddress = getTargetAddress('ProxysUSD', network);
+	}
+	
+	console.log('Proxy USD :', sUSDAddress);
 
 	royaleAddress = getTargetAddress('ThalesRoyale', network);
 	console.log('Found ThalesRoyale at:' + royaleAddress);

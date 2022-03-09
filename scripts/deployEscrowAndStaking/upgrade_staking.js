@@ -15,7 +15,7 @@ async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	if (networkObj.chainId == 10) {
-		network = 'optimistic';
+		network = 'optimisticEthereum';
 	}
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';

@@ -24,8 +24,8 @@ async function main() {
 	let network = networkObj.name;
 	let IssuerAddress;
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';

@@ -60,7 +60,11 @@ When using this method, the verification steps are different
 
 3. Verify the implementation, using the address from 2).
 
-4. Verify the proxy using the link: https://kovan-optimistic.etherscan.io/proxyContractChecker
+4. Verify the proxy using the link: 
+    - Kovan OP: https://kovan-optimistic.etherscan.io/proxyContractChecker
+    - OP Mainnet: https://optimistic.etherscan.io/proxyContractChecker
+    - Mumbai Polygon: https://mumbai.polygonscan.com/proxyContractChecker
+    - Polygon: https://polygonscan.com/proxyContractChecker
 
 
 ## How to upgrade a Proxy Contract with a new Implementation

@@ -25,7 +25,7 @@ async function main() {
 	
 	if (network == 'homestead') {
 		network = 'mainnet';
-		net_optimistic = 'optimistic';
+		net_optimistic = 'optimisticEthereum';
 	}
 	if (networkObj.chainId == 42) {
 		network = 'kovan';

@@ -21,6 +21,24 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     uint private constant FIXED_BOND_AMOUNT = 100 * 1e18;
     uint private constant CANCELED = 0;
 
+    struct MarketData {
+        string marketQuestion;
+        string marketSource;
+        TicketType ticketType;
+        uint endOfPositioning;
+        uint fixedTicketPrice;
+        uint creationTime;
+        bool withdrawalAllowed;
+        bool disputed;
+        bool resolved;
+        uint resolvedTime;
+        string[] positionPhrasesList;
+        uint[] tags;
+        uint totalPlacedAmount;
+        uint totalClaimableAmount;
+        uint[] amountsPerPosition;
+    }
+
     uint public creationTime;
     uint public resolvedTime;
     uint public lastDisputeTime;
@@ -485,23 +503,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         return tags.length;
     }
 
-    function getAllMarketData()
-        external
-        view
-        returns (
-            string memory,
-            string memory,
-            uint,
-            bool,
-            bool,
-            uint,
-            string[] memory,
-            uint[] memory,
-            uint,
-            uint,
-            uint[] memory
-        )
-    {
+    function getAllMarketData() external view returns (MarketData memory) {
         string[] memory positionPhrasesList = new string[](positionCount);
         uint[] memory amountsPerPosition = new uint[](positionCount);
         if (positionCount > 0) {
@@ -511,19 +513,24 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             }
         }
 
-        return (
-            marketQuestion,
-            marketSource,
-            creationTime,
-            disputed,
-            resolved,
-            resolvedTime,
-            positionPhrasesList,
-            tags,
-            getTotalPlacedAmount(),
-            getTotalClaimableAmount(),
-            amountsPerPosition
-        );
+        MarketData memory marketData;
+        marketData.marketQuestion = marketQuestion;
+        marketData.marketSource = marketSource;
+        marketData.ticketType = ticketType;
+        marketData.endOfPositioning = endOfPositioning;
+        marketData.fixedTicketPrice = fixedTicketPrice;
+        marketData.creationTime = creationTime;
+        marketData.withdrawalAllowed = withdrawalAllowed;
+        marketData.disputed = disputed;
+        marketData.resolved = resolved;
+        marketData.resolvedTime = resolvedTime;
+        marketData.positionPhrasesList = positionPhrasesList;
+        marketData.tags = tags;
+        marketData.totalPlacedAmount = getTotalPlacedAmount();
+        marketData.totalClaimableAmount = getTotalClaimableAmount();
+        marketData.amountsPerPosition = amountsPerPosition;
+
+        return marketData;
     }
 
     // INTERNAL FUNCTIONS

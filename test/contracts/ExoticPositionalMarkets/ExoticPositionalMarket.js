@@ -110,7 +110,7 @@ contract('Exotic Positional market', async accounts => {
 	});
 
 	describe('create single market', function() {
-		it('new market', async function() {
+		it('new market fixed', async function() {
 			const timestamp = await currentTime();
 			marketQuestion = 'Who will win the el clasico which will be played on 2022-02-22?';
 			marketSource = 'http://www.realmadrid.com';
@@ -139,10 +139,45 @@ contract('Exotic Positional market', async accounts => {
 
 			answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			answer = await deployedMarket.ticketType();
+			assert.equal(answer, '0');
+		});
+		
+		it('new market open bid', async function() {
+			const timestamp = await currentTime();
+			marketQuestion = 'Who will win the el clasico which will be played on 2022-02-22?';
+			marketSource = 'http://www.realmadrid.com';
+			endOfPositioning = (timestamp + DAY).toString();
+			fixedTicketPrice = "0";
+			withdrawalAllowed = true;
+			tag = [1, 2, 3];
+			paymentToken = Thales.address;
+			phrases = ['Real Madrid', 'FC Barcelona', 'It will be a draw'];
+			outcomePosition = '1';
+			
+			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
+				from: owner,
+			});
+			answer = await ExoticPositionalMarketManager.createExoticMarket(
+				marketQuestion,
+				marketSource,
+				endOfPositioning,
+				fixedTicketPrice,
+				withdrawalAllowed,
+				tag,
+				phrases.length,
+				phrases,
+				{ from: owner }
+				);
+				
+			answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			answer = await deployedMarket.ticketType();
+			assert.equal(answer, '1');
 		});
 	});
 
-	describe('create Exotic market', function() {
+	describe('create Fixed ticket Exotic market', function() {
 		beforeEach(async () => {
 			const timestamp = await currentTime();
 			marketQuestion = 'Who will win the el clasico which will be played on 2022-02-22?';

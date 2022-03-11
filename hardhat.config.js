@@ -23,6 +23,7 @@ const CACHE_FOLDER = 'cache';
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const INFURA = process.env.INFURA;
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY;
+const OP_ETHERSCAN_KEY = process.env.OP_ETHERSCAN_KEY;
 const PRIVATE_KEY_OPTIMISTIC_KOVAN = process.env.PRIVATE_KEY_OPTIMISTIC_KOVAN;
 const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : 'http://127.0.0.1:8545';
 

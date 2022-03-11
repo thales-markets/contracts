@@ -195,7 +195,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
                 claimableOpenBidAmount = totalOpenBidAmount;
                 totalOpenBidAmountPerPosition[_outcomePosition] = totalOpenBidAmount;
             } else {
-                claimableOpenBidAmount = totalOpenBidAmountPerPosition[_outcomePosition];
+                claimableOpenBidAmount = getTotalClaimableAmount();
             }
         }
         resolved = true;

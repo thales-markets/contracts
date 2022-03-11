@@ -39,7 +39,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         uint[] amountsPerPosition;
     }
 
-
     uint public creationTime;
     uint public resolvedTime;
     uint public lastDisputeTime;
@@ -145,7 +144,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
             // add to the total amount
             totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
-            if(userOpenBidPosition[msg.sender][_positions[i]] > 0) {
+            if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
                 firstTime = false;
             }
             userOpenBidPosition[msg.sender][_positions[i]] = userOpenBidPosition[msg.sender][_positions[i]].add(_amounts[i]);
@@ -246,8 +245,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             claimableTicketsCount = claimableTicketsCount.sub(1);
             userPosition[msg.sender] = 0;
-        }
-        else {
+        } else {
             claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
             resetForUserAllPositionsToZero(msg.sender);
         }
@@ -265,7 +263,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             firstUserClaimed = true;
         }
         emit WinningTicketClaimed(msg.sender, amount);
-        
     }
 
     function claimWinningTicketOnBehalf(address _user) external onlyOwner {
@@ -275,8 +272,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             claimableTicketsCount = claimableTicketsCount.sub(1);
             userPosition[_user] = 0;
-        }
-        else {
+        } else {
             claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
             resetForUserAllPositionsToZero(_user);
         }

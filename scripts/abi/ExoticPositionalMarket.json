@@ -1331,7 +1331,7 @@
   },
   {
     "inputs": [],
-    "name": "totalUserPositions",
+    "name": "totalUsersTakenPositions",
     "outputs": [
       {
         "internalType": "uint256",

@@ -213,6 +213,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal pure returns (bool) {
+        // TODO all resolved statuses if needed
         return _game.statusId == 8;
     }
 

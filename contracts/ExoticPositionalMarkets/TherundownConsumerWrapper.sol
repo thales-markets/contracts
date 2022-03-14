@@ -1,21 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-// external 
+// external
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@openzeppelin/contracts-4.4.1/security/Pausable.sol";
 import "@openzeppelin/contracts-4.4.1/access/Ownable.sol";
 
-// internal 
+// internal
 import "../interfaces/ITherundownConsumer.sol";
 
 contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
-
     using Chainlink for Chainlink.Request;
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(address _link, address _oracle, address _consumer) public {
+    constructor(
+        address _link,
+        address _oracle,
+        address _consumer
+    ) public {
         setChainlinkToken(_link);
         setChainlinkOracle(_oracle);
         consumer = ITherundownConsumer(_consumer);
@@ -33,13 +36,12 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint256 _date,
         string[] memory _statusIds,
         string[] memory _gameIds
-    ) public whenNotPaused isValidRequest(_market, _sportId){
-
+    ) public whenNotPaused isValidRequest(_market, _sportId) {
         Chainlink.Request memory req;
 
-        if(keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))){
+        if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
             req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesCreated.selector);
-        }else{
+        } else {
             req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesResolved.selector);
         }
 
@@ -57,13 +59,12 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         string memory _market,
         uint256 _sportId,
         uint256 _date
-    ) public whenNotPaused isValidRequest(_market, _sportId){
-
+    ) public whenNotPaused isValidRequest(_market, _sportId) {
         Chainlink.Request memory req;
 
-        if(keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))){
+        if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
             req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesCreated.selector);
-        }else{
+        } else {
             req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesResolved.selector);
         }
 
@@ -112,15 +113,14 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /* ========== MODIFIERS ========== */
 
-    modifier isValidRequest (string memory _market,uint256 _sportId) {
+    modifier isValidRequest(string memory _market, uint256 _sportId) {
         require(consumer.isSupportedMarket(_market), "Market is not supported");
         require(consumer.isSupportedSport(_sportId), "SportId is not supported");
         _;
-    }  
+    }
 
     /* ========== EVENTS ========== */
 
     event NewOracleAddress(address _oracle);
     event NewConsumer(address _consumer);
-
 }

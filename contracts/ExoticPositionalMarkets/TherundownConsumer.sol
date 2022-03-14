@@ -13,7 +13,6 @@ import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
  */
 
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
-    
     /* ========== CONSUMER STATE VARIABLES ========== */
 
     struct GameCreate {
@@ -32,10 +31,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== CONSTRUCTOR ========== */
 
-    function initialize(
-        address _owner,
-        uint[] memory _supportedSportIds
-    ) public initializer {
+    function initialize(address _owner, uint[] memory _supportedSportIds) public initializer {
         setOwner(_owner);
         _populateSports(_supportedSportIds);
     }
@@ -50,7 +46,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     mapping(uint => bool) public supportedSport;
 
-
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
 
     function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games) external {
@@ -58,14 +53,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         GameCreate memory game;
 
-        for (uint i=0; i<_games.length; i++) {
-
+        for (uint i = 0; i < _games.length; i++) {
             game = abi.decode(requestIdGamesCreated[_requestId][i], (GameCreate));
 
             gameCreated[game.gameId] = game;
 
             emit GameCreted(game.gameId, game);
-
         }
     }
 
@@ -74,14 +67,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         GameResolve memory game;
 
-        for (uint i=0; i<_games.length; i++) {
-
+        for (uint i = 0; i < _games.length; i++) {
             game = abi.decode(requestIdGamesResolved[_requestId][i], (GameResolve));
 
             gameResolved[game.gameId] = game;
 
             emit GameResolved(game.gameId, game);
-
         }
     }
 
@@ -106,31 +97,30 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function isSupportedMarket(string memory _market) external view returns (bool) {
-        return keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))
-                || keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("resolve"));
+        return
+            keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create")) ||
+            keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("resolve"));
     }
 
-    function isSupportedSport(uint _sportId) external view returns (bool) {  
+    function isSupportedSport(uint _sportId) external view returns (bool) {
         return supportedSport[_sportId];
     }
 
     /* ========== INTERNALS ========== */
 
-    function _populateSports(uint[] memory _supportedSportIds) internal{
+    function _populateSports(uint[] memory _supportedSportIds) internal {
         for (uint i; i < _supportedSportIds.length; i++) {
             supportedSport[_supportedSportIds[i]] = true;
         }
     }
 
     function _createMarket(bytes32 _gameId) internal {
-        
         GameCreate memory game = getGameCreatedById(_gameId);
 
         // TODO call to ExoticPositionalMarketManager.createExoticMarket();
     }
 
     function _resolveMarket(bytes32 _gameId) internal {
-        
         GameResolve memory game = getGameResolvedById(_gameId);
 
         // TODO call to ExoticPositionalMarketManager.resolveMarket()

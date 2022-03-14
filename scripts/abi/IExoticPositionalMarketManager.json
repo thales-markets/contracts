@@ -54,6 +54,54 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "_marketQuestion",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_marketSource",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_endOfPositioning",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_fixedTicketPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_withdrawalAllowed",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_tags",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_positionCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_positionPhrases",
+        "type": "string[]"
+      }
+    ],
+    "name": "createExoticMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_market",
         "type": "address"

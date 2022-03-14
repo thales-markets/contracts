@@ -296,6 +296,25 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "canUserClaim",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_account",
         "type": "address"
       }
@@ -555,6 +574,16 @@
             "internalType": "uint256[]",
             "name": "amountsPerPosition",
             "type": "uint256[]"
+          },
+          {
+            "internalType": "address",
+            "name": "creatorAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "resolverAddress",
+            "type": "address"
           }
         ],
         "internalType": "struct ExoticPositionalMarket.MarketData",

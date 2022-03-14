@@ -37,6 +37,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         uint totalPlacedAmount;
         uint totalClaimableAmount;
         uint[] amountsPerPosition;
+        address creatorAddress;
+        address resolverAddress;
     }
 
     uint public creationTime;
@@ -367,6 +369,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
                 (backstopTimeout > 0 && resolvedTime > 0 && block.timestamp > resolvedTime.add(backstopTimeout)));
     }
 
+    function canUserClaim(address _user) external view returns (bool) {
+        return canUsersClaim() && getUserClaimableAmount(_user) > 0;
+    }
+
     function canUserWithdraw(address _account) public view returns (bool) {
         if (ticketType == TicketType.FLEXIBLE_BID) {
             return withdrawalAllowed && canUsersPlacePosition() && getUserOpenBidTotalPlacedAmount(_account) > 0;
@@ -536,6 +542,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         marketData.totalPlacedAmount = getTotalPlacedAmount();
         marketData.totalClaimableAmount = getTotalClaimableAmount();
         marketData.amountsPerPosition = amountsPerPosition;
+        marketData.creatorAddress = marketManager.creatorAddress(address(this));
+        marketData.resolverAddress = marketManager.resolverAddress(address(this));
 
         return marketData;
     }

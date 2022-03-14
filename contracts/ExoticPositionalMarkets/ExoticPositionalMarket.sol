@@ -498,7 +498,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     }
 
     function getWinningAmountPerTicket() public view returns (uint) {
-        if (totalUsersTakenPositions == 0) {
+        if (totalUsersTakenPositions == 0 && !resolved) {
             return 0;
         } else {
             return getTotalClaimableAmount().div(ticketsPerPosition[winningPosition]);

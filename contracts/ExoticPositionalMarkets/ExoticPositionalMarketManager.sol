@@ -245,6 +245,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         ExoticPositionalMarket(_market).setBackstopTimeout(backstopTimeout);
     }
 
+    function setCustomBackstopTimeout(address _market, uint _timeout) external onlyOracleCouncilAndOwner {
+        require(_timeout > 0, "Invalid timeout");
+        require(ExoticPositionalMarket(_market).backstopTimeout() != _timeout, "Equal timeout. No changes needed");
+        ExoticPositionalMarket(_market).setBackstopTimeout(_timeout);
+    }
+
     function setExoticMarketMastercopy(address _exoticMastercopy) external onlyOwner {
         require(_exoticMastercopy != address(0), "Exotic market invalid");
         exoticMarketMastercopy = _exoticMastercopy;

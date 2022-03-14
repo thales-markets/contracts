@@ -8,6 +8,6 @@ interface ITherundownConsumer {
     function isSupportedMarket(string memory _market) external view returns (bool);
 
     // write functions
-    function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games) external;
-    function fulfillGamesResolved(bytes32 _requestId, bytes[] memory _games) external;
+    function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games, uint _sportsId) external;
+    function fulfillGamesResolved(bytes32 _requestId, bytes[] memory _games, uint _sportsId) external;
 }

@@ -12,6 +12,9 @@ import "../interfaces/ITherundownConsumer.sol";
 contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     using Chainlink for Chainlink.Request;
 
+    ITherundownConsumer public consumer;
+    mapping(bytes32 => uint) public sportIdPerRequestId; 
+
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
@@ -23,8 +26,6 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         setChainlinkOracle(_oracle);
         consumer = ITherundownConsumer(_consumer);
     }
-
-    ITherundownConsumer public consumer;
 
     /* ========== CONSUMER REQUEST FUNCTIONS ========== */
 
@@ -50,7 +51,9 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         req.addUint("sportId", _sportId);
         req.addStringArray("statusIds", _statusIds);
         req.addStringArray("gameIds", _gameIds);
-        sendChainlinkRequest(req, _payment);
+
+        bytes32 requestId = sendChainlinkRequest(req, _payment);
+        sportIdPerRequestId[requestId] = _sportId;
     }
 
     function requestGames(
@@ -71,17 +74,19 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         req.addUint("date", _date);
         req.add("market", _market);
         req.addUint("sportId", _sportId);
-        sendChainlinkRequest(req, _payment);
+
+        bytes32 requestId = sendChainlinkRequest(req, _payment);
+        sportIdPerRequestId[requestId] = _sportId;
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
 
     function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games) public recordChainlinkFulfillment(_requestId) {
-        consumer.fulfillGamesCreated(_requestId, _games);
+        consumer.fulfillGamesCreated(_requestId, _games, sportIdPerRequestId[_requestId]);
     }
 
     function fulfillGamesResolved(bytes32 _requestId, bytes[] memory _games) public recordChainlinkFulfillment(_requestId) {
-        consumer.fulfillGamesResolved(_requestId, _games);
+        consumer.fulfillGamesResolved(_requestId, _games, sportIdPerRequestId[_requestId]);
     }
 
     /* ========== VIEWS ========== */

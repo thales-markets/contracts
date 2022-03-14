@@ -51,6 +51,14 @@ async function main() {
 
     /* ========== PROPERTIES FOR INITIALIZE ========== */
 
+	const exoticManager = await ethers.getContractFactory('ExoticMarketManager');
+	let exoticManagerAddress = getTargetAddress('ExoticMarketManager', network);
+
+	console.log(
+		'ExoticMarketManager address: ',
+		exoticManagerAddress
+	);
+
 	const chainlink = require(`./chainlink/${network}.json`);
 
 	console.log(
@@ -66,13 +74,17 @@ async function main() {
 	// UEFA Champions League: 16
 	const allowedSports = [4, 16];
 
+	const twoPositionSports = [4];
+
     /* ========== DEPLOY CONTRACT ========== */
 
 	let TherundownConsumer = await ethers.getContractFactory('TherundownConsumer');
 	const therundown = await upgrades.deployProxy(TherundownConsumer, 
         [
         owner.address, 			
-		allowedSports
+		allowedSports,
+		exoticManagerAddress,
+		twoPositionSports
         ]
     );
 	await therundown.deployed();

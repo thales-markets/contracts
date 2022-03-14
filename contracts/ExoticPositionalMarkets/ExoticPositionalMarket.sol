@@ -41,6 +41,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         bool canMarketBeResolved;
         bool canMarketBeResolvedByPDAO;
         bool canUsersClaim;
+        bool isCancelled;
         bool paused;
         uint winningPosition;
         address creatorAddress;
@@ -355,6 +356,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         return creationTime > 0;
     }
 
+    function isMarketCancelled() public view returns (bool) {
+        return resolved && winningPosition == CANCELED;
+    }
+
     function canUsersPlacePosition() public view returns (bool) {
         return block.timestamp <= endOfPositioning && creationTime > 0 && !resolved;
     }
@@ -552,6 +557,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         marketData.canMarketBeResolved = canMarketBeResolved();
         marketData.canMarketBeResolvedByPDAO = canMarketBeResolvedByPDAO();
         marketData.canUsersClaim = canUsersClaim();
+        marketData.isCancelled = isMarketCancelled();
         marketData.paused = paused;
         marketData.winningPosition = winningPosition;
         marketData.creatorAddress = marketManager.creatorAddress(address(this));

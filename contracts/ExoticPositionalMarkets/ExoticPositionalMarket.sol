@@ -37,6 +37,12 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         uint totalPlacedAmount;
         uint totalClaimableAmount;
         uint[] amountsPerPosition;
+        bool canUsersPlacePosition;
+        bool canMarketBeResolved;
+        bool canMarketBeResolvedByPDAO;
+        bool canUsersClaim;
+        bool paused;
+        uint winningPosition;
         address creatorAddress;
         address resolverAddress;
     }
@@ -542,6 +548,12 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         marketData.totalPlacedAmount = getTotalPlacedAmount();
         marketData.totalClaimableAmount = getTotalClaimableAmount();
         marketData.amountsPerPosition = amountsPerPosition;
+        marketData.canUsersPlacePosition = canUsersPlacePosition();
+        marketData.canMarketBeResolved = canMarketBeResolved();
+        marketData.canMarketBeResolvedByPDAO = canMarketBeResolvedByPDAO();
+        marketData.canUsersClaim = canUsersClaim();
+        marketData.paused = paused;
+        marketData.winningPosition = winningPosition;
         marketData.creatorAddress = marketManager.creatorAddress(address(this));
         marketData.resolverAddress = marketManager.resolverAddress(address(this));
 

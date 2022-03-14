@@ -576,6 +576,36 @@
             "type": "uint256[]"
           },
           {
+            "internalType": "bool",
+            "name": "canUsersPlacePosition",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canMarketBeResolved",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canMarketBeResolvedByPDAO",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canUsersClaim",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "winningPosition",
+            "type": "uint256"
+          },
+          {
             "internalType": "address",
             "name": "creatorAddress",
             "type": "address"

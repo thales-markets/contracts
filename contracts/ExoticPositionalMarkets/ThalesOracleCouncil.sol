@@ -94,27 +94,27 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         return disputeVote[_market][_index].length.sub(1).sub(getVotesCountForMarketDispute(_market, _index));
     }
 
-    function getDistpute(address _market, uint _index) external view returns (Dispute memory) {
+    function getDispute(address _market, uint _index) external view returns (Dispute memory) {
         return dispute[_market][_index];
     }
 
-    function getDistputeTimestamp(address _market, uint _index) external view returns (uint) {
+    function getDisputeTimestamp(address _market, uint _index) external view returns (uint) {
         return dispute[_market][_index].disputeTimestamp;
     }
 
-    function getDistputeAddressOfDisputor(address _market, uint _index) external view returns (address) {
+    function getDisputeAddressOfDisputor(address _market, uint _index) external view returns (address) {
         return dispute[_market][_index].disputorAddress;
     }
 
-    function getDistputeString(address _market, uint _index) external view returns (string memory) {
+    function getDisputeString(address _market, uint _index) external view returns (string memory) {
         return dispute[_market][_index].disputeString;
     }
 
-    function getDistputeCode(address _market, uint _index) external view returns (uint) {
+    function getDisputeCode(address _market, uint _index) external view returns (uint) {
         return dispute[_market][_index].disputeCode;
     }
 
-    function getDistputeVotes(address _market, uint _index) external view returns (uint[] memory) {
+    function getDisputeVotes(address _market, uint _index) external view returns (uint[] memory) {
         return disputeVote[_market][_index];
     }
 

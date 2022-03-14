@@ -523,7 +523,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getDistpute",
+    "name": "getDispute",
     "outputs": [
       {
         "components": [
@@ -574,7 +574,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getDistputeAddressOfDisputor",
+    "name": "getDisputeAddressOfDisputor",
     "outputs": [
       {
         "internalType": "address",
@@ -598,7 +598,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getDistputeCode",
+    "name": "getDisputeCode",
     "outputs": [
       {
         "internalType": "uint256",
@@ -622,7 +622,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getDistputeString",
+    "name": "getDisputeString",
     "outputs": [
       {
         "internalType": "string",
@@ -646,7 +646,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getDistputeTimestamp",
+    "name": "getDisputeTimestamp",
     "outputs": [
       {
         "internalType": "uint256",
@@ -670,7 +670,7 @@
         "type": "uint256"
       }
     ],
-    "name": "getDistputeVotes",
+    "name": "getDisputeVotes",
     "outputs": [
       {
         "internalType": "uint256[]",

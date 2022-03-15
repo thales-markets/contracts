@@ -18,7 +18,6 @@ import "../interfaces/IExoticPositionalMarketManager.sol";
  */
 
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
-
     using SafeERC20Upgradeable for IERC20Upgradeable;
     /* ========== CONSTANTS =========== */
 
@@ -74,8 +73,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         twoPositionSports = _twoPositionSports;
         exoticManager = IExoticPositionalMarketManager(_exoticManager);
         //approve
-        IERC20Upgradeable(exoticManager.paymentToken()).approve(exoticManager.thalesBonds(),  
-        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+        IERC20Upgradeable(exoticManager.paymentToken()).approve(
+            exoticManager.thalesBonds(),
+            0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+        );
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -199,7 +200,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) internal {
         phrasePerGameId[_gameId].push(teamA);
         phrasePerGameId[_gameId].push(teamB);
-        if (_numberOfPositions > 2){
+        if (_numberOfPositions > 2) {
             phrasePerGameId[_gameId].push("It will be a draw");
         }
     }

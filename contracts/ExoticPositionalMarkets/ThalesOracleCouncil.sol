@@ -118,16 +118,21 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         return disputeVote[_market][_index];
     }
 
-    function isDisputeOpen(address _market, uint _index) external view returns(bool) {
+    function isDisputeOpen(address _market, uint _index) external view returns (bool) {
         return dispute[_market][_index].disputeCode == 0;
     }
-    
-    function isDisputeCancelled(address _market, uint _index) external view returns(bool) {
-        return dispute[_market][_index].disputeCode == REFUSE_ON_POSITIONING || dispute[_market][_index].disputeCode == REFUSE_MATURE;
+
+    function isDisputeCancelled(address _market, uint _index) external view returns (bool) {
+        return
+            dispute[_market][_index].disputeCode == REFUSE_ON_POSITIONING ||
+            dispute[_market][_index].disputeCode == REFUSE_MATURE;
     }
-    
-    function isOpenDisputeCancelled(address _market, uint _disputeIndex) external view returns(bool) {
-        return marketClosedForDisputes[_market] && dispute[_market][_disputeIndex].disputeCode == 0 && marketLastClosedDispute[_market] != _disputeIndex;
+
+    function isOpenDisputeCancelled(address _market, uint _disputeIndex) external view returns (bool) {
+        return
+            marketClosedForDisputes[_market] &&
+            dispute[_market][_disputeIndex].disputeCode == 0 &&
+            marketLastClosedDispute[_market] != _disputeIndex;
     }
 
     function canDisputorClaimbackBondFromUnclosedDispute(
@@ -203,7 +208,12 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             dispute[_market][marketTotalDisputes[_market]].disputeInPositioningPhase = true;
         }
         marketManager.disputeMarket(_market, msg.sender);
-        emit NewDispute(_market, _disputeString, msg.sender);
+        emit NewDispute(
+            _market,
+            _disputeString,
+            dispute[_market][marketTotalDisputes[_market]].disputeInPositioningPhase,
+            msg.sender
+        );
     }
 
     function voteForDispute(
@@ -258,10 +268,9 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         ]
             .add(1);
 
-        emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote);
+        emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote, msg.sender);
 
         if (disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] > (councilMemberCount.div(2))) {
-            dispute[_market][_disputeIndex].disputeCode = _disputeCodeVote;
             closeDispute(_market, _disputeIndex, _disputeCodeVote);
         }
     }
@@ -271,6 +280,9 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         uint _disputeIndex,
         uint _decidedOption
     ) internal nonReentrant {
+        require(dispute[_market][_disputeIndex].disputeCode == 0, "Dispute already closed");
+        require(_decidedOption > 0, "Invalid decided option");
+        dispute[_market][_disputeIndex].disputeCode = _decidedOption;
         if (_decidedOption == REFUSE_ON_POSITIONING || _decidedOption == REFUSE_MATURE) {
             // set dispute to false
             // send disputor BOND to SafeBox
@@ -417,8 +429,8 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     event NewOracleCouncilMember(address councilMember, uint councilMemberCount);
     event OracleCouncilMemberRemoved(address councilMember, uint councilMemberCount);
     event NewMarketManager(address marketManager);
-    event NewDispute(address market, string disputeString, address disputorAccount);
-    event VotedAddedForDispute(address market, uint disputeIndex, uint disputeCodeVote);
+    event NewDispute(address market, string disputeString, bool disputeInPositioningPhase, address disputorAccount);
+    event VotedAddedForDispute(address market, uint disputeIndex, uint disputeCodeVote, address voter);
     event MarketClosedForDisputes(address market, uint disputeFinalCode);
     event MarketReopenedForDisputes(address market);
     event DisputeClosed(address market, uint disputeIndex, uint decidedOption);

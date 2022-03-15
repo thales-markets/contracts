@@ -73,6 +73,12 @@
       },
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "disputeInPositioningPhase",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "disputorAccount",
         "type": "address"
@@ -210,6 +216,12 @@
         "internalType": "uint256",
         "name": "disputeCodeVote",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
       }
     ],
     "name": "VotedAddedForDispute",

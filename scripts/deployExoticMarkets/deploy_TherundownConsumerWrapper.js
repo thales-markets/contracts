@@ -50,51 +50,34 @@ async function main() {
 	const consumer = await ethers.getContractFactory('TherundownConsumer');
 	let consumerAddress = getTargetAddress('TherundownConsumer', network);
 
-	console.log(
-		'TherundownConsumer address: ',
-		consumerAddress
-	);
+	console.log('TherundownConsumer address: ', consumerAddress);
 
 	const chainlink = require(`./chainlink/${network}.json`);
 
-	console.log(
-		'LINK address: ',
-		chainlink["LINK"]
-	);
-	console.log(
-		'ORACLE address: ',
-		chainlink["ORACLE"]
-	);
+	console.log('LINK address: ', chainlink['LINK']);
+	console.log('ORACLE address: ', chainlink['ORACLE']);
 
 	// We get the contract to deploy
 	let TherundownConsumerWrapper = await ethers.getContractFactory('TherundownConsumerWrapper');
 	const TherundownConsumerWrapperDeployed = await TherundownConsumerWrapper.deploy(
-		chainlink["LINK"],
-		chainlink["ORACLE"],
+		chainlink['LINK'],
+		chainlink['ORACLE'],
 		consumerAddress
 	);
 	await TherundownConsumerWrapperDeployed.deployed();
 
 	setTargetAddress('TherundownConsumerWrapper', network, TherundownConsumerWrapperDeployed.address);
 
-	console.log(
-		'TherundownConsumerWrapper deployed to:',
-		TherundownConsumerWrapperDeployed.address
-	);
+	console.log('TherundownConsumerWrapper deployed to:', TherundownConsumerWrapperDeployed.address);
 
 	try {
 		await hre.run('verify:verify', {
 			address: TherundownConsumerWrapperDeployed.address,
-			constructorArguments: [
-				chainlink["LINK"],
-				chainlink["ORACLE"],
-				consumerAddress
-			]
+			constructorArguments: [chainlink['LINK'], chainlink['ORACLE'], consumerAddress],
 		});
 	} catch (e) {
 		console.log(e);
 	}
-	
 }
 
 function delay(time) {

@@ -49,57 +49,50 @@ async function main() {
 		network = 'polygon';
 	}
 
-    /* ========== PROPERTIES FOR INITIALIZE ========== */
+	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
 	const exoticManager = await ethers.getContractFactory('ExoticMarketManager');
 	let exoticManagerAddress = getTargetAddress('ExoticMarketManager', network);
 
-	console.log(
-		'ExoticMarketManager address: ',
-		exoticManagerAddress
-	);
+	console.log('ExoticMarketManager address: ', exoticManagerAddress);
 
 	const chainlink = require(`./chainlink/${network}.json`);
 
-	console.log(
-		'LINK address:',
-		chainlink["LINK"]
-	);
-	console.log(
-		'ORACLE address:',
-		chainlink["ORACLE"]
-	);
+	console.log('LINK address:', chainlink['LINK']);
+	console.log('ORACLE address:', chainlink['ORACLE']);
 
 	// NBA: 4
 	// UEFA Champions League: 16
 	const allowedSports = [4, 16];
 
 	const twoPositionSports = [4];
+	const fixedPrice = toUnit(10);
+	const withdrawalAllowed = true;
 
-    /* ========== DEPLOY CONTRACT ========== */
+	/* ========== DEPLOY CONTRACT ========== */
 
 	let TherundownConsumer = await ethers.getContractFactory('TherundownConsumer');
-	const therundown = await upgrades.deployProxy(TherundownConsumer, 
-        [
-        owner.address, 			
+	const therundown = await upgrades.deployProxy(TherundownConsumer, [
+		owner.address,
 		allowedSports,
 		exoticManagerAddress,
-		twoPositionSports
-        ]
-    );
+		twoPositionSports,
+		fixedPrice,
+		withdrawalAllowed,
+	]);
+
 	await therundown.deployed();
 
 	console.log('TherundownConsumer deployed to:', therundown.address);
 	setTargetAddress('TherundownConsumer', network, therundown.address);
 
-    const implementation = await getImplementationAddress(ethers.provider, therundown.address);
+	const implementation = await getImplementationAddress(ethers.provider, therundown.address);
 	console.log('TherundownConsumerImplementation: ', implementation);
-    setTargetAddress('TherundownConsumerImplementation', network, implementation);
+	setTargetAddress('TherundownConsumerImplementation', network, implementation);
 
-    await hre.run('verify:verify', {
-        address: implementation
-    });
-	
+	await hre.run('verify:verify', {
+		address: implementation,
+	});
 }
 
 function delay(time) {

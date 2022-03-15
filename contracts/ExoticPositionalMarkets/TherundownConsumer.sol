@@ -18,7 +18,11 @@ import "../interfaces/IExoticPositionalMarketManager.sol";
  */
 
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
+
+    /* ========== LIBRARIES ========== */
+
     using SafeERC20Upgradeable for IERC20Upgradeable;
+
     /* ========== CONSTANTS =========== */
 
     uint public constant RESULT_DRAW = 0;
@@ -43,8 +47,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== STATE VARIABLES ========== */
 
-    IExoticPositionalMarketManager public exoticManager;
-
     // Maps <RequestId, Result>
     mapping(bytes32 => bytes[]) public requestIdGamesCreated;
     mapping(bytes32 => bytes[]) public requestIdGamesResolved;
@@ -53,12 +55,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => GameCreate) public gameCreated;
     mapping(bytes32 => GameResolve) public gameResolved;
 
+    // sports props
     mapping(uint => bool) public supportedSport;
     uint[] public twoPositionSports;
 
+    // market props
+    IExoticPositionalMarketManager public exoticManager;
     mapping(bytes32 => string[]) public phrasePerGameId;
     mapping(bytes32 => uint[]) public tagsPerGameId;
     mapping(bytes32 => address) public marketPerGameId;
+    uint public fixedTicketPrice;
+    bool public withdrawalAllowed;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -66,12 +73,16 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         address _owner,
         uint[] memory _supportedSportIds,
         address _exoticManager,
-        uint[] memory _twoPositionSports
+        uint[] memory _twoPositionSports,
+        uint _fixedTicketPrice,
+        bool _withdrawalAllowed
     ) public initializer {
         setOwner(_owner);
         _populateSports(_supportedSportIds);
         twoPositionSports = _twoPositionSports;
         exoticManager = IExoticPositionalMarketManager(_exoticManager);
+        fixedTicketPrice = _fixedTicketPrice;
+        withdrawalAllowed = _withdrawalAllowed;
         //approve
         IERC20Upgradeable(exoticManager.paymentToken()).approve(
             exoticManager.thalesBonds(),
@@ -88,7 +99,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) external {
         requestIdGamesCreated[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
-            _createMarket(abi.decode(requestIdGamesCreated[_requestId][i], (GameCreate)), _sportId);
+            _createMarket(_requestId, abi.decode(requestIdGamesCreated[_requestId][i], (GameCreate)), _sportId);
         }
     }
 
@@ -154,7 +165,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _createMarket(GameCreate memory _game, uint _sportId) internal {
+    function _createMarket(bytes32 _requestId, GameCreate memory _game, uint _sportId) internal {
         gameCreated[_game.gameId] = _game;
 
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(_sportId);
@@ -165,10 +176,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // create
         exoticManager.createExoticMarket(
             _append(_game.homeTeam, _game.awayTeam),
-            "chainlink", // TODO ?
+            "https://market.link/nodes/098c3c5e-811d-4b8a-b2e3-d1806909c7d7/integrations", // TODO ?
             _game.startTime,
-            100, // TODO ?
-            true,
+            fixedTicketPrice,
+            withdrawalAllowed,
             tagsPerGameId[_game.gameId],
             numberOfPositions,
             phrasePerGameId[_game.gameId]
@@ -235,9 +246,25 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit SupportedSportsAdded(_sportId);
     }
 
+    function removeSupportedSport(uint _sportId) public onlyOwner {
+        require(supportedSport[_sportId], "Supported sport must exists");
+        supportedSport[_sportId] = false;
+        emit SupportedSportsRemoved(_sportId);
+    }
+
     function setExoticManager(address _exoticManager) public onlyOwner {
         exoticManager = IExoticPositionalMarketManager(_exoticManager);
         emit NewExoticPositionalMarketManager(_exoticManager);
+    }
+
+    function setFixedTicketPrice(uint _fixedTicketPrice) public onlyOwner {
+        fixedTicketPrice = _fixedTicketPrice;
+        emit NewFixedTicketPrice(_fixedTicketPrice);
+    }
+
+    function setWithdrawalAllowed(bool _withdrawalAllowed) public onlyOwner {
+        withdrawalAllowed = _withdrawalAllowed;
+        emit NewWithdrawalAllowed(_withdrawalAllowed);
     }
 
     /* ========== MODIFIERS ========== */
@@ -247,5 +274,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event GameCreted(address _marketAddress, bytes32 _id, GameCreate _game);
     event GameResolved(address _marketAddress, bytes32 _id, GameResolve _game);
     event SupportedSportsAdded(uint _sportId);
+    event SupportedSportsRemoved(uint _sportId);
+    event NewFixedTicketPrice(uint _fixedTicketPrice);
+    event NewWithdrawalAllowed(bool _withdrawalAllowed);
     event NewExoticPositionalMarketManager(address _exoticManager);
 }

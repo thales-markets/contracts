@@ -20,6 +20,7 @@ const {
 	fastForward,
 	toUnit,
 	currentTime,
+    bytesToString,
 	multiplyDecimalRound,
 	divideDecimalRound,
 } = require('../../utils')();
@@ -87,13 +88,14 @@ contract('TherundownConsumer', accounts => {
 	let gamesResolved;
 	let reqIdCreate;
 	let reqIdResolve;
-
+    
+    const game1Time = 1646958600;
 	const sportId_4 = 4; // NBA
 	const sportId_16 = 16; // CHL
 
 	beforeEach(async () => {
 
-        await fastForward(0); // set time so consumer can create market
+        await fastForward(game1Time - await currentTime() - SECOND);
 
 		ExoticPositionalMarket = await ExoticPositionalMarketContract.new();
 		ExoticPositionalMarketManager = await ExoticPositionalMarketManagerContract.new();

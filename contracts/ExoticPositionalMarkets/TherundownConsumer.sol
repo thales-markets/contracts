@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
@@ -16,6 +18,8 @@ import "../interfaces/IExoticPositionalMarketManager.sol";
  */
 
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
+
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /* ========== CONSTANTS =========== */
 
@@ -70,6 +74,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         _populateSports(_supportedSportIds);
         twoPositionSports = _twoPositionSports;
         exoticManager = IExoticPositionalMarketManager(_exoticManager);
+        //approve
+        IERC20Upgradeable(exoticManager.paymentToken()).approve(exoticManager.thalesBonds(),  
+        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -155,6 +162,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         _calculateTags(_game.gameId);
         _createPhrases(_game.gameId, _game.homeTeam, _game.awayTeam, numberOfPositions);
 
+        // create
         exoticManager.createExoticMarket(
             _append(_game.homeTeam, _game.awayTeam),
             "chainlink", // TODO ?
@@ -181,8 +189,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _append(string memory teamA, string memory teamB) internal pure returns (string memory) {
-        string memory vs = " vs ";
-        return string(abi.encodePacked(teamA, vs, teamB));
+        return string(abi.encodePacked(teamA, " vs ", teamB));
     }
 
     function _createPhrases(
@@ -191,14 +198,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         string memory teamB,
         uint _numberOfPositions
     ) internal {
-
-        string memory winning = " will win";
-
-        phrasePerGameId[_gameId].push(string(abi.encodePacked(teamA, winning)));
-        phrasePerGameId[_gameId].push(string(abi.encodePacked(teamB, winning)));
-
+        phrasePerGameId[_gameId].push(teamA);
+        phrasePerGameId[_gameId].push(teamB);
         if (_numberOfPositions > 2){
-            phrasePerGameId[_gameId].push("Result will be draw");
+            phrasePerGameId[_gameId].push("It will be a draw");
         }
     }
 
@@ -209,7 +212,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function _calculateTags(bytes32 _gameId) internal {
         // TODO tags
         tagsPerGameId[_gameId].push(1);
-        tagsPerGameId[_gameId].push(2);
+        tagsPerGameId[_gameId].push(102);
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal pure returns (bool) {
@@ -241,8 +244,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== EVENTS ========== */
 
-    event GameCreted(address _marketAddress, bytes32 __id, GameCreate _game);
-    event GameResolved(address _marketAddress, bytes32 __id, GameResolve _game);
+    event GameCreted(address _marketAddress, bytes32 _id, GameCreate _game);
+    event GameResolved(address _marketAddress, bytes32 _id, GameResolve _game);
     event SupportedSportsAdded(uint _sportId);
     event NewExoticPositionalMarketManager(address _exoticManager);
 }

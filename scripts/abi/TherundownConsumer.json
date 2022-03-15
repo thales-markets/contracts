@@ -11,7 +11,7 @@
       {
         "indexed": false,
         "internalType": "bytes32",
-        "name": "__id",
+        "name": "_id",
         "type": "bytes32"
       },
       {
@@ -58,7 +58,7 @@
       {
         "indexed": false,
         "internalType": "bytes32",
-        "name": "__id",
+        "name": "_id",
         "type": "bytes32"
       },
       {

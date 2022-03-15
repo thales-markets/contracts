@@ -18,7 +18,6 @@ import "../interfaces/IExoticPositionalMarketManager.sol";
  */
 
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
-
     /* ========== LIBRARIES ========== */
 
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -165,7 +164,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _createMarket(bytes32 _requestId, GameCreate memory _game, uint _sportId) internal {
+    function _createMarket(
+        bytes32 _requestId,
+        GameCreate memory _game,
+        uint _sportId
+    ) internal {
         gameCreated[_game.gameId] = _game;
 
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(_sportId);

@@ -86,6 +86,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     uint public claimableTicketsCount;
 
     uint public totalBondAmount;
+    uint public disputeClosedTime;
 
     function initialize(
         string memory _marketQuestion,
@@ -312,6 +313,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
 
     function closeDispute() external onlyOwner {
         require(disputed, "Market not disputed");
+        disputeClosedTime = block.timestamp;
         if (disputedInPositioningPhase) {
             disputed = false;
             disputedInPositioningPhase = false;
@@ -377,7 +379,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             resolved &&
             (!disputed) &&
             ((resolvedTime > 0 && block.timestamp > resolvedTime.add(marketManager.claimTimeoutDefaultPeriod())) ||
-                (backstopTimeout > 0 && resolvedTime > 0 && block.timestamp > resolvedTime.add(backstopTimeout)));
+                (backstopTimeout > 0 &&
+                    resolvedTime > 0 &&
+                    disputeClosedTime > 0 &&
+                    block.timestamp > disputeClosedTime.add(backstopTimeout)));
     }
 
     function canUserClaim(address _user) external view returns (bool) {

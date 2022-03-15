@@ -1250,7 +1250,7 @@ contract('Exotic Positional market', async accounts => {
 									assert.equal(answer, false);
 								});
 								it('market cancelled -> users can claim: backstop passed', async function() {
-									await fastForward(4 * HOUR + 5);
+									await fastForward((4 * HOUR)+ 10*SECOND);
 									answer = await deployedMarket.canUsersClaim();
 									assert.equal(answer, true);
 								});

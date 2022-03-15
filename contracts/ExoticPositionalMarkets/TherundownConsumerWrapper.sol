@@ -13,7 +13,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     using Chainlink for Chainlink.Request;
 
     ITherundownConsumer public consumer;
-    mapping(bytes32 => uint) public sportIdPerRequestId; 
+    mapping(bytes32 => uint) public sportIdPerRequestId;
 
     /* ========== CONSTRUCTOR ========== */
 

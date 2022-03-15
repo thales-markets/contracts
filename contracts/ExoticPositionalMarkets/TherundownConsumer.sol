@@ -16,7 +16,6 @@ import "../interfaces/IExoticPositionalMarketManager.sol";
  */
 
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
-
     /* ========== CONSTANTS =========== */
 
     uint public constant RESULT_DRAW = 0;
@@ -151,7 +150,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         gameCreated[_game.gameId] = _game;
 
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(_sportId);
-       
+
         _calculateTags(_game.gameId);
         _createPhrases(_game.gameId, _game.homeTeam, _game.awayTeam, numberOfPositions);
 
@@ -191,13 +190,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         string memory teamB,
         uint _numberOfPositions
     ) internal {
-
         string memory winning = " will win";
 
         phrasePerGameId[_gameId].push(string(abi.encodePacked(teamA, winning)));
         phrasePerGameId[_gameId].push(string(abi.encodePacked(teamB, winning)));
 
-        if (_numberOfPositions > 2){
+        if (_numberOfPositions > 2) {
             phrasePerGameId[_gameId].push("Result will be draw");
         }
     }
@@ -218,7 +216,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _callulateOutcome(GameResolve memory _game) internal pure returns (uint) {
-        if(_game.homeScore == _game.awayScore){
+        if (_game.homeScore == _game.awayScore) {
             return RESULT_DRAW;
         }
         return _game.homeScore > _game.awayScore ? HOME_WIN : AWAY_WIN;

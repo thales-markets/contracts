@@ -20,7 +20,7 @@ const {
 	fastForward,
 	toUnit,
 	currentTime,
-    bytesToString,
+	bytesToString,
 	multiplyDecimalRound,
 	divideDecimalRound,
 } = require('../../utils')();
@@ -88,15 +88,20 @@ contract('TherundownConsumer', accounts => {
 	let gamesResolved;
 	let reqIdCreate;
 	let reqIdResolve;
-    
-    const game1Time = 1646958600;
+	let reqIdFootballCreate;
+	let gameFootballid1;
+	let gameFootballid2;
+	let game_1_football_create;
+	let game_2_football_create;
+	let gamesFootballCreated;
+
+	const game1NBATime = 1646958600;
+	const gameFootballTime = 1647374400;
+
 	const sportId_4 = 4; // NBA
 	const sportId_16 = 16; // CHL
 
 	beforeEach(async () => {
-
-        await fastForward(game1Time - await currentTime() - SECOND);
-
 		ExoticPositionalMarket = await ExoticPositionalMarketContract.new();
 		ExoticPositionalMarketManager = await ExoticPositionalMarketManagerContract.new();
 		ThalesOracleCouncil = await ThalesOracleCouncilContract.new({ from: owner });
@@ -151,6 +156,16 @@ contract('TherundownConsumer', accounts => {
 			'0x3937346533663036386233333764313239656435633133646632376133326662000000000000000000000000000000000000000000000000000000000000006600000000000000000000000000000000000000000000000000000000000000710000000000000000000000000000000000000000000000000000000000000008';
 		gamesResolved = [game_1_resolve, game_2_resolve];
 
+		// football matches
+		reqIdFootballCreate = '0x61d7dd698383c58c7217cf366764a1e92a1f059b1b6ea799dce4030a942302f4';
+		gameFootballid1 = '0x3163626162623163303138373465363263313661316462333164363164353333';
+		gameFootballid2 = '0x3662646437313731316337393837643336643465333538643937393237356234';
+		game_1_football_create =
+			'0x00000000000000000000000000000000000000000000000000000000000000203163626162623163303138373465363263313661316462333164363164353333000000000000000000000000000000000000000000000000000000006230f040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000001d416a617820416d7374657264616d20416a617820416d7374657264616d000000000000000000000000000000000000000000000000000000000000000000000f42656e666963612042656e666963610000000000000000000000000000000000';
+		game_2_football_create =
+			'0x00000000000000000000000000000000000000000000000000000000000000203662646437313731316337393837643336643465333538643937393237356234000000000000000000000000000000000000000000000000000000006230f040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000234d616e6368657374657220556e69746564204d616e6368657374657220556e697465640000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001f41746c657469636f204d61647269642041746c657469636f204d616472696400';
+		gamesFootballCreated = [game_1_football_create, game_2_football_create];
+
 		TherundownConsumer = artifacts.require('TherundownConsumer');
 		TherundownConsumerDeployed = await TherundownConsumer.new();
 
@@ -160,7 +175,7 @@ contract('TherundownConsumer', accounts => {
 			ExoticPositionalMarketManager.address,
 			[sportId_4],
 			toUnit(10),
-            true,
+			true,
 			{ from: owner }
 		);
 
@@ -186,7 +201,9 @@ contract('TherundownConsumer', accounts => {
 	});
 
 	describe('Fulfill Games Created', () => {
-		it('Fulfill Games Created, create market, check results', async () => {
+		it('Fulfill Games Created - NBA, create market, check results', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdCreate,
 				gamesCreated,
@@ -227,10 +244,118 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 		});
+
+		it('Fulfill Games Created - Champions League AJAX, create market, check results', async () => {
+			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16
+			);
+
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
+
+			assert.equal(
+				game_1_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
+			);
+			assert.equal(
+				game_2_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
+			);
+
+			assert.equal(
+				'Ajax Amsterdam Ajax Amsterdam',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 0)
+			);
+
+			assert.equal(
+				'It will be a draw',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 2)
+			);
+
+			assert.equal(
+				'Benfica Benfica',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 1)
+			);
+
+			assert.equal(1, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 0));
+			assert.equal(102, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 1));
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			assert.equal('Ajax Amsterdam Ajax Amsterdam', game.homeTeam);
+			assert.equal('Benfica Benfica', game.awayTeam);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[1], 'GameCreted', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid1,
+				_game: game,
+			});
+		});
+
+		it('Fulfill Games Created - Champions League MUN UTD, create market, check results', async () => {
+			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16
+			);
+
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
+
+			assert.equal(
+				game_1_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
+			);
+			assert.equal(
+				game_2_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
+			);
+
+			assert.equal(
+				'Manchester United Manchester United',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 0)
+			);
+
+			assert.equal(
+				'It will be a draw',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 2)
+			);
+
+			assert.equal(
+				'Atletico Madrid Atletico Madrid',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 1)
+			);
+
+			assert.equal(1, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 0));
+			assert.equal(102, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 1));
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
+			assert.equal('Manchester United Manchester United', game.homeTeam);
+			assert.equal('Atletico Madrid Atletico Madrid', game.awayTeam);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[3], 'GameCreted', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid2,
+				_game: game,
+			});
+		});
 	});
 
 	describe('Fulfill Games Resolved', () => {
-		it('Fulfill Games Resolved, resolve markets, check results', async () => {
+		it('Fulfill Games Resolved - NBA, resolve markets, check results', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdCreate,
 				gamesCreated,

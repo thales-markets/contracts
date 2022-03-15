@@ -118,6 +118,18 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         return disputeVote[_market][_index];
     }
 
+    function isDisputeOpen(address _market, uint _index) external view returns(bool) {
+        return dispute[_market][_index].disputeCode == 0;
+    }
+    
+    function isDisputeCancelled(address _market, uint _index) external view returns(bool) {
+        return dispute[_market][_index].disputeCode == REFUSE_ON_POSITIONING || dispute[_market][_index].disputeCode == REFUSE_MATURE;
+    }
+    
+    function isOpenDisputeCancelled(address _market, uint _disputeIndex) external view returns(bool) {
+        return marketClosedForDisputes[_market] && dispute[_market][_disputeIndex].disputeCode == 0 && marketLastClosedDispute[_market] != _disputeIndex;
+    }
+
     function canDisputorClaimbackBondFromUnclosedDispute(
         address _market,
         uint _disputeIndex,
@@ -249,6 +261,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote);
 
         if (disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] > (councilMemberCount.div(2))) {
+            dispute[_market][_disputeIndex].disputeCode = _disputeCodeVote;
             closeDispute(_market, _disputeIndex, _disputeCodeVote);
         }
     }

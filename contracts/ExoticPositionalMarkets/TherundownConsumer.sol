@@ -20,7 +20,6 @@ import "../interfaces/IExoticPositionalMarketManager.sol";
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     using SafeERC20Upgradeable for IERC20Upgradeable;
-
     /* ========== CONSTANTS =========== */
 
     uint public constant RESULT_DRAW = 0;
@@ -158,7 +157,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         gameCreated[_game.gameId] = _game;
 
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(_sportId);
-       
+
         _calculateTags(_game.gameId);
         _createPhrases(_game.gameId, _game.homeTeam, _game.awayTeam, numberOfPositions);
 
@@ -221,7 +220,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _callulateOutcome(GameResolve memory _game) internal pure returns (uint) {
-        if(_game.homeScore == _game.awayScore){
+        if (_game.homeScore == _game.awayScore) {
             return RESULT_DRAW;
         }
         return _game.homeScore > _game.awayScore ? HOME_WIN : AWAY_WIN;

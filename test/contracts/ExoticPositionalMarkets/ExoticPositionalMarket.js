@@ -54,6 +54,7 @@ let marketQuestion,
 	phrases = [],
 	deployedMarket,
 	fixedBondAmount,
+	disputePrice,
 	outcomePosition,
 	outcomePosition2,
 	outcomePosition3;
@@ -88,6 +89,7 @@ contract('Exotic Positional market', async accounts => {
 			{ from: manager }
 		);
 		fixedBondAmount = toUnit(100);
+		disputePrice = toUnit(10);
 		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
 		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
 		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
@@ -1013,7 +1015,7 @@ contract('Exotic Positional market', async accounts => {
 							from: userTwo,
 						});
 						answer = await ThalesBonds.getClaimableBondAmountForMarket(deployedMarket.address);
-						let bond = fixedBondAmount * 2;
+						let bond = fixedBondAmount.add(disputePrice);
 						assert.equal(answer.toString(), bond.toString());
 					});
 

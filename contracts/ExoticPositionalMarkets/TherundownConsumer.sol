@@ -233,8 +233,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // TODO all resolved statuses if needed
         // 8 : STATUS_FINAL - NBA
         // 11 : STATUS_FULL_TIME - Champions league 90 min
-        return _game.statusId == 8 || 
-            _game.statusId == 11;
+        return _game.statusId == 8 || _game.statusId == 11;
     }
 
     function _callulateOutcome(GameResolve memory _game) internal pure returns (uint) {

@@ -126,7 +126,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             _positionPhrases
         );
         creatorAddress[address(exoticMarket)] = msg.sender;
-        IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
+        IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
         emit MarketCreated(
@@ -149,12 +149,20 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
         }
         if (creatorAddress[_marketAddress] != msg.sender) {
-            require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
             require(
-                IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
+                IERC20(paymentToken).balanceOf(msg.sender) >= ExoticPositionalMarket(_marketAddress).fixedBondAmount(),
+                "Low token amount for market creation"
+            );
+            require(
+                IERC20(paymentToken).allowance(msg.sender, thalesBonds) >=
+                    ExoticPositionalMarket(_marketAddress).fixedBondAmount(),
                 "No allowance. Please approve ticket price allowance"
             );
-            IThalesBonds(thalesBonds).sendResolverBondToMarket(_marketAddress, msg.sender, fixedBondAmount);
+            IThalesBonds(thalesBonds).sendResolverBondToMarket(
+                _marketAddress,
+                msg.sender,
+                ExoticPositionalMarket(_marketAddress).fixedBondAmount()
+            );
         }
         resolverAddress[_marketAddress] = msg.sender;
         ExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, msg.sender);
@@ -180,10 +188,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit MarketReset(_marketAddress);
     }
 
-    function sendRewardToDisputor(address _market, address _disputorAddress) external onlyOracleCouncilAndOwner {
-        require(arbitraryRewardForDisputor > 0, "The arbitrary reward is zero. Please adjust.");
-        IERC20(paymentToken).transfer(_disputorAddress, arbitraryRewardForDisputor);
-        emit RewardSentToDisputorForMarket(_market, _disputorAddress, arbitraryRewardForDisputor);
+    function sendRewardToDisputor(
+        address _market,
+        address _disputorAddress,
+        uint _amount
+    ) external onlyOracleCouncilAndOwner {
+        require(_amount > 0, "The arbitrary reward is zero. Please adjust.");
+        IERC20(paymentToken).transfer(_disputorAddress, _amount);
+        emit RewardSentToDisputorForMarket(_market, _disputorAddress, _amount);
     }
 
     function sendMarketBondAmountTo(
@@ -196,7 +208,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function disputeMarket(address _marketAddress, address _disputor) external onlyOracleCouncil {
-        IThalesBonds(thalesBonds).sendDisputorBondToMarket(_marketAddress, _disputor, fixedBondAmount);
+        IThalesBonds(thalesBonds).sendDisputorBondToMarket(
+            _marketAddress,
+            _disputor,
+            ExoticPositionalMarket(_marketAddress).disputePrice()
+        );
         require(!ExoticPositionalMarket(_marketAddress).paused(), "Market is already paused");
         if (!ExoticPositionalMarket(_marketAddress).disputed()) {
             ExoticPositionalMarket(_marketAddress).openDispute();

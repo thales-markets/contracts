@@ -7,7 +7,6 @@ interface IExoticPositionalMarketManager {
     function isActiveMarket(address _marketAddress) external view returns(bool);
     function numOfActiveMarkets() external view returns(uint);
     function getMarketBondAmount(address _market) external view returns (uint);
-    function fixedBondAmount() external view returns(uint);
     function maximumPositionsAllowed() external view returns(uint);
     function paymentToken() external view returns(address);
     function owner() external view returns(address);
@@ -24,8 +23,10 @@ interface IExoticPositionalMarketManager {
     function pDAOResolveTimePeriod() external view returns(uint);
     function claimTimeoutDefaultPeriod() external view returns(uint);
     function maxOracleCouncilMembers() external view returns(uint);
+    function fixedBondAmount() external view returns(uint);
     function disputePrice() external view returns(uint);
     function safeBoxLowAmount() external view returns(uint);
+    function arbitraryRewardForDisputor() external view returns(uint);
 
     function createExoticMarket(
         string memory _marketQuestion,
@@ -47,6 +48,6 @@ interface IExoticPositionalMarketManager {
     function sendMarketBondAmountTo(address _market, address _recepient, uint _amount) external;
     function addPauserAddress(address _pauserAddress) external;
     function removePauserAddress(address _pauserAddress) external;
-    function sendRewardToDisputor(address _market, address _disputorAddress) external;
+    function sendRewardToDisputor(address _market, address _disputorAddress, uint amount) external;
 
 }   

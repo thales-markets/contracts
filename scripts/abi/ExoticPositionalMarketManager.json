@@ -1254,6 +1254,11 @@
         "internalType": "address",
         "name": "_disputorAddress",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
       }
     ],
     "name": "sendRewardToDisputor",

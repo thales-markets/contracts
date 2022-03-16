@@ -13,6 +13,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "arbitraryRewardForDisputor",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -510,6 +523,11 @@
         "internalType": "address",
         "name": "_disputorAddress",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
     "name": "sendRewardToDisputor",

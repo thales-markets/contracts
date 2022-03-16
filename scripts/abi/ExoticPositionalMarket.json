@@ -255,6 +255,19 @@
   },
   {
     "inputs": [],
+    "name": "arbitraryDisputorReward",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "backstopTimeout",
     "outputs": [
       {
@@ -444,6 +457,19 @@
   },
   {
     "inputs": [],
+    "name": "disputePrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "disputed",
     "outputs": [
       {
@@ -496,8 +522,49 @@
   },
   {
     "inputs": [],
+    "name": "fixedBondAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "fixedTicketPrice",
     "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllAmounts",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "",
@@ -632,6 +699,26 @@
             "internalType": "address",
             "name": "resolverAddress",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fixedBondAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "disputePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "safeBoxLowAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "arbitraryDisputorReward",
+            "type": "uint256"
           }
         ],
         "internalType": "struct ExoticPositionalMarket.MarketData",
@@ -1248,6 +1335,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "safeBoxLowAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

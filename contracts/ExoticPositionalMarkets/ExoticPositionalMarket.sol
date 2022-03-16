@@ -46,6 +46,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         uint winningPosition;
         address creatorAddress;
         address resolverAddress;
+        uint fixedBondAmount;
+        uint disputePrice;
+        uint safeBoxLowAmount;
+        uint arbitraryDisputorReward;
     }
 
     uint public creationTime;
@@ -88,6 +92,11 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     uint public totalBondAmount;
     uint public disputeClosedTime;
 
+    uint public fixedBondAmount;
+    uint public disputePrice;
+    uint public safeBoxLowAmount;
+    uint public arbitraryDisputorReward;
+
     function initialize(
         string memory _marketQuestion,
         string memory _marketSource,
@@ -120,6 +129,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
                 _addPosition(_positionPhrases[i]);
             }
         }
+        fixedBondAmount = marketManager.fixedBondAmount();
+        disputePrice = marketManager.disputePrice();
+        safeBoxLowAmount = marketManager.safeBoxLowAmount();
+        arbitraryDisputorReward = marketManager.arbitraryRewardForDisputor();
     }
 
     function takeAPosition(uint _position) external notPaused {
@@ -450,11 +463,11 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         return amount;
     }
 
-    function getUserOpenBidPositionPlacedAmount(address _account, uint _position) public view returns (uint) {
+    function getUserOpenBidPositionPlacedAmount(address _account, uint _position) external view returns (uint) {
         return userOpenBidPosition[_account][_position];
     }
 
-    function getAllUserPositions(address _account) public view returns (uint[] memory) {
+    function getAllUserPositions(address _account) external view returns (uint[] memory) {
         uint[] memory userAllPositions = new uint[](positionCount);
         if (positionCount == 0) {
             return userAllPositions;
@@ -486,15 +499,15 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
 
     /// FIXED TICKET FUNCTIONS
 
-    function getUserPosition(address _account) public view returns (uint) {
+    function getUserPosition(address _account) external view returns (uint) {
         return userPosition[_account];
     }
 
-    function getUserPositionPhrase(address _account) public view returns (string memory) {
+    function getUserPositionPhrase(address _account) external view returns (string memory) {
         return (userPosition[_account] > 0) ? positionPhrase[userPosition[_account]] : string("");
     }
 
-    function getPotentialWinningAmountForPosition(uint _position) public view returns (uint) {
+    function getPotentialWinningAmountForPosition(uint _position) external view returns (uint) {
         if (totalUsersTakenPositions == 0) {
             return 0;
         } else {
@@ -510,7 +523,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         }
     }
 
-    function getAlreadyClaimedTickets() public view returns (uint) {
+    function getAlreadyClaimedTickets() external view returns (uint) {
         return canUsersClaim() ? ticketsPerPosition[winningPosition].sub(claimableTicketsCount) : 0;
     }
 
@@ -567,8 +580,25 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         marketData.winningPosition = winningPosition;
         marketData.creatorAddress = marketManager.creatorAddress(address(this));
         marketData.resolverAddress = marketManager.resolverAddress(address(this));
+        marketData.fixedBondAmount = fixedBondAmount;
+        marketData.disputePrice = disputePrice;
+        marketData.safeBoxLowAmount = safeBoxLowAmount;
+        marketData.arbitraryDisputorReward = arbitraryDisputorReward;
 
         return marketData;
+    }
+
+    function getAllAmounts()
+        external
+        view
+        returns (
+            uint,
+            uint,
+            uint,
+            uint
+        )
+    {
+        return (fixedBondAmount, disputePrice, safeBoxLowAmount, arbitraryDisputorReward);
     }
 
     // INTERNAL FUNCTIONS

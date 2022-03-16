@@ -255,7 +255,7 @@
   },
   {
     "inputs": [],
-    "name": "arbitraryDisputorReward",
+    "name": "arbitraryRewardForDisputor",
     "outputs": [
       {
         "internalType": "uint256",
@@ -717,7 +717,7 @@
           },
           {
             "internalType": "uint256",
-            "name": "arbitraryDisputorReward",
+            "name": "arbitraryRewardForDisputor",
             "type": "uint256"
           }
         ],

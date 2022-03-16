@@ -49,7 +49,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         uint fixedBondAmount;
         uint disputePrice;
         uint safeBoxLowAmount;
-        uint arbitraryDisputorReward;
+        uint arbitraryRewardForDisputor;
     }
 
     uint public creationTime;
@@ -95,7 +95,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     uint public fixedBondAmount;
     uint public disputePrice;
     uint public safeBoxLowAmount;
-    uint public arbitraryDisputorReward;
+    uint public arbitraryRewardForDisputor;
 
     function initialize(
         string memory _marketQuestion,
@@ -132,7 +132,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         fixedBondAmount = marketManager.fixedBondAmount();
         disputePrice = marketManager.disputePrice();
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
-        arbitraryDisputorReward = marketManager.arbitraryRewardForDisputor();
+        arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
     }
 
     function takeAPosition(uint _position) external notPaused {
@@ -583,7 +583,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         marketData.fixedBondAmount = fixedBondAmount;
         marketData.disputePrice = disputePrice;
         marketData.safeBoxLowAmount = safeBoxLowAmount;
-        marketData.arbitraryDisputorReward = arbitraryDisputorReward;
+        marketData.arbitraryRewardForDisputor = arbitraryRewardForDisputor;
 
         return marketData;
     }
@@ -598,7 +598,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             uint
         )
     {
-        return (fixedBondAmount, disputePrice, safeBoxLowAmount, arbitraryDisputorReward);
+        return (fixedBondAmount, disputePrice, safeBoxLowAmount, arbitraryRewardForDisputor);
     }
 
     // INTERNAL FUNCTIONS

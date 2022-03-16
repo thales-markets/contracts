@@ -56,6 +56,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     address public tagsAddress;
     uint public maxNumberOfTags;
+    uint public backstopTimeoutGeneral;
+    uint public safeBoxLowAmount;
+    uint public arbitraryRewardForDisputor;
 
     function initialize(
         address _owner,
@@ -155,7 +158,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         }
         resolverAddress[_marketAddress] = msg.sender;
         ExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, msg.sender);
-        emit MarketResolved(_marketAddress);
+        emit MarketResolved(_marketAddress, _outcomePosition);
     }
 
     function cancelMarket(address _marketAddress) external onlyOracleCouncilAndOwner {
@@ -175,6 +178,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         }
         ExoticPositionalMarket(_marketAddress).resetMarket();
         emit MarketReset(_marketAddress);
+    }
+
+    function sendRewardToDisputor(address _market, address _disputorAddress) external onlyOracleCouncilAndOwner {
+        require(arbitraryRewardForDisputor > 0, "The arbitrary reward is zero. Please adjust.");
+        IERC20(paymentToken).transfer(_disputorAddress, arbitraryRewardForDisputor);
+        emit RewardSentToDisputorForMarket(_market, _disputorAddress, arbitraryRewardForDisputor);
     }
 
     function sendMarketBondAmountTo(
@@ -229,12 +238,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     // SETTERS ///////////////////////////////////////////////////////////////////////////
 
-    function setFixedBondAmount(uint _fixedBond) external onlyOwner {
-        require(_fixedBond > 0, "Invalid bond amount");
-        fixedBondAmount = _fixedBond;
-        emit NewFixedBondAmount(_fixedBond);
-    }
-
     function setSafeBoxAddress(address _safeBoxAddress) external onlyOwner {
         require(_safeBoxAddress != address(0), "Invalid safeBox address");
         safeBoxAddress = _safeBoxAddress;
@@ -282,11 +285,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit WithdrawalPercentageChanged(_withdrawalPercentage);
     }
 
-    function setDisputePrice(uint _disputePrice) external onlyOwner {
-        disputePrice = _disputePrice;
-        emit DisputePriceChanged(_disputePrice);
-    }
-
     function setPDAOResolveTimePeriod(uint _pDAOResolveTimePeriod) external onlyOwner {
         pDAOResolveTimePeriod = _pDAOResolveTimePeriod;
         emit setPDAOResolveTimePeriodChanged(_pDAOResolveTimePeriod);
@@ -308,6 +306,49 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(_maxNumberOfTags > 2, "Invalid Maximum positions allowed");
         maxNumberOfTags = _maxNumberOfTags;
         emit NewMaxNumberOfTags(_maxNumberOfTags);
+    }
+
+    function setDisputePrice(uint _disputePrice) external onlyOwner {
+        require(_disputePrice > 0, "Invalid dispute price");
+        require(_disputePrice != disputePrice, "Price equal to last disputePrice");
+        disputePrice = _disputePrice;
+        emit NewDisputePrice(_disputePrice);
+    }
+
+    function setDefaultBackstopTimeout(uint _timeout) external onlyOwner {
+        require(_timeout > 0, "Invalid timeout");
+        require(_timeout != backstopTimeout, "Timeout equal to last backstopTimeout");
+        backstopTimeout = _timeout;
+        emit NewDefaultBackstopTimeout(_timeout);
+    }
+
+    function setFixedBondAmount(uint _bond) external onlyOwner {
+        require(_bond > 0, "Invalid bond");
+        require(_bond != fixedBondAmount, "Bond equal to last fixedBondAmount");
+        fixedBondAmount = _bond;
+        emit NewFixedBondAmount(_bond);
+    }
+
+    function setSafeBoxLowAmount(uint _safeBoxLowAmount) external onlyOwner {
+        require(_safeBoxLowAmount > 0, "Invalid amount");
+        require(_safeBoxLowAmount != safeBoxLowAmount, "Amount equal to SafeBoxLowAmount");
+        require(_safeBoxLowAmount < disputePrice, "Amount must be lower than dispute price. Please adjust accordingly.");
+        safeBoxLowAmount = _safeBoxLowAmount;
+        emit NewSafeBoxLowAmount(_safeBoxLowAmount);
+    }
+
+    function setArbitraryRewardForDisputor(uint _arbitraryRewardForDisputor) external onlyOwner {
+        require(_arbitraryRewardForDisputor > 0, "Invalid amount");
+        require(_arbitraryRewardForDisputor != arbitraryRewardForDisputor, "Amount equal to ArbitraryRewardForDisputor");
+        arbitraryRewardForDisputor = _arbitraryRewardForDisputor;
+        emit NewArbitraryRewardForDisputor(_arbitraryRewardForDisputor);
+    }
+
+    function setClaimTimeoutDefaultPeriod(uint _claimTimeout) external onlyOwner {
+        require(_claimTimeout > 0, "Invalid timeout");
+        require(_claimTimeout != claimTimeoutDefaultPeriod, "Timeout equal to last ClaimTimeoutDefaultPeriod");
+        claimTimeoutDefaultPeriod = _claimTimeout;
+        emit NewClaimTimeoutDefaultPeriod(_claimTimeout);
     }
 
     function setMaxOracleCouncilMembers(uint _maxOracleCouncilMembers) external onlyOwner {
@@ -364,7 +405,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event MinimumPositionDurationChanged(uint duration);
     event MinimumMarketMaturityDurationChanged(uint duration);
     event ExoticMarketMastercopyChanged(address _exoticMastercopy);
-    event MarketResolved(address marketAddress);
+    event MarketResolved(address marketAddress, uint outcomePosition);
     event MarketCanceled(address marketAddress);
     event MarketReset(address marketAddress);
     event NewOracleCouncilAddress(address oracleCouncilAddress);
@@ -383,8 +424,13 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event PauserAddressAdded(address pauserAddress);
     event PauserAddressRemoved(address pauserAddress);
     event MarketPaused(address marketAddress);
-    event DisputePriceChanged(uint disputePrice);
+    event NewDisputePrice(uint disputePrice);
     event NewMaxNumberOfTags(uint maxNumberOfTags);
+    event NewArbitraryRewardForDisputor(uint arbitraryRewardForDisputor);
+    event NewClaimTimeoutDefaultPeriod(uint claimTimeout);
+    event NewDefaultBackstopTimeout(uint timeout);
+    event NewSafeBoxLowAmount(uint safeBoxLowAmount);
+    event RewardSentToDisputorForMarket(address market, address disputorAddress, uint amount);
     event MarketCreated(
         address marketAddress,
         string marketQuestion,

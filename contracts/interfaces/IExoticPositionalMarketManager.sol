@@ -25,6 +25,7 @@ interface IExoticPositionalMarketManager {
     function claimTimeoutDefaultPeriod() external view returns(uint);
     function maxOracleCouncilMembers() external view returns(uint);
     function disputePrice() external view returns(uint);
+    function safeBoxLowAmount() external view returns(uint);
 
     function createExoticMarket(
         string memory _marketQuestion,
@@ -46,5 +47,6 @@ interface IExoticPositionalMarketManager {
     function sendMarketBondAmountTo(address _market, address _recepient, uint _amount) external;
     function addPauserAddress(address _pauserAddress) external;
     function removePauserAddress(address _pauserAddress) external;
+    function sendRewardToDisputor(address _market, address _disputorAddress) external;
 
 }   

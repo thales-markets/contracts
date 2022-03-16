@@ -452,6 +452,19 @@
   },
   {
     "inputs": [],
+    "name": "safeBoxLowAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "safeBoxPercentage",
     "outputs": [
       {
@@ -482,6 +495,24 @@
       }
     ],
     "name": "sendMarketBondAmountTo",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_disputorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "sendRewardToDisputor",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -94,6 +94,10 @@ contract('TherundownConsumer', accounts => {
 	let game_1_football_create;
 	let game_2_football_create;
 	let gamesFootballCreated;
+	let game_1_football_resolve;
+	let game_2_football_resolve;
+	let reqIdResolveFoodball;
+	let gamesResolvedFootball;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1647374400;
@@ -165,6 +169,12 @@ contract('TherundownConsumer', accounts => {
 		game_2_football_create =
 			'0x00000000000000000000000000000000000000000000000000000000000000203662646437313731316337393837643336643465333538643937393237356234000000000000000000000000000000000000000000000000000000006230f040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000234d616e6368657374657220556e69746564204d616e6368657374657220556e697465640000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001f41746c657469636f204d61647269642041746c657469636f204d616472696400';
 		gamesFootballCreated = [game_1_football_create, game_2_football_create];
+		game_1_football_resolve =
+			'0x316362616262316330313837346536326331366131646233316436316435333300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b';
+		game_2_football_resolve =
+			'0x366264643731373131633739383764333664346533353864393739323735623400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b';
+		reqIdResolveFoodball = '0xff8887a8535b7a8030962e6f6b1eba61c0f1cb82f706e77d834f15c781e47697';
+		gamesResolvedFootball = [game_1_football_resolve, game_2_football_resolve];
 
 		TherundownConsumer = artifacts.require('TherundownConsumer');
 		TherundownConsumerDeployed = await TherundownConsumer.new();
@@ -436,6 +446,202 @@ contract('TherundownConsumer', accounts => {
 			assert.eventEqual(tx_2.logs[0], 'GameResolved', {
 				_marketAddress: marketAdd,
 				_id: gameid1,
+				_game: gameR,
+			});
+		});
+
+		it('Fulfill Games Resolved - Champions League AJAX, resolve market, check results', async () => {
+			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16
+			);
+
+			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
+
+			assert.equal(
+				game_1_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
+			);
+			assert.equal(
+				game_2_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
+			);
+
+			assert.equal(
+				'Ajax Amsterdam Ajax Amsterdam',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 0)
+			);
+
+			assert.equal(
+				'It will be a draw',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 2)
+			);
+
+			assert.equal(
+				'Benfica Benfica',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 1)
+			);
+
+			assert.equal(1, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 0));
+			assert.equal(102, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 1));
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			assert.equal('Ajax Amsterdam Ajax Amsterdam', game.homeTeam);
+			assert.equal('Benfica Benfica', game.awayTeam);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[1], 'GameCreted', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid1,
+				_game: game,
+			});
+
+			assert.equal(
+				'Ajax Amsterdam Ajax Amsterdam vs Benfica Benfica',
+				await deployedMarket.marketQuestion()
+			);
+			assert.equal(3, await deployedMarket.positionCount());
+
+			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
+			assert.notEqual(0, await deployedMarket.creationTime());
+			assert.equal(false, await deployedMarket.disputed());
+			assert.equal(false, await deployedMarket.resolved());
+			assert.equal(false, await deployedMarket.canMarketBeResolved());
+
+			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
+
+			assert.equal(true, await deployedMarket.canMarketBeResolved());
+
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolveFoodball,
+				gamesResolvedFootball,
+				sportId_16
+			);
+
+			assert.equal(
+				game_1_football_resolve,
+				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 0)
+			);
+			assert.equal(
+				game_2_football_resolve,
+				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 1)
+			);
+
+			let gameR = await TherundownConsumerDeployed.gameResolved(gameFootballid1);
+			assert.equal(0, gameR.homeScore);
+			assert.equal(1, gameR.awayScore);
+			assert.equal(11, gameR.statusId);
+
+			assert.eventEqual(tx_2.logs[0], 'GameResolved', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid1,
+				_game: gameR,
+			});
+		});
+
+		it('Fulfill Games Resolved - Champions League MUN UTD, resolve market, check results', async () => {
+			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16
+			);
+
+			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
+			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
+
+			assert.equal(
+				game_1_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
+			);
+			assert.equal(
+				game_2_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
+			);
+
+			assert.equal(
+				'Manchester United Manchester United',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 0)
+			);
+
+			assert.equal(
+				'It will be a draw',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 2)
+			);
+
+			assert.equal(
+				'Atletico Madrid Atletico Madrid',
+				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 1)
+			);
+
+			assert.equal(1, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 0));
+			assert.equal(102, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 1));
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
+			assert.equal('Manchester United Manchester United', game.homeTeam);
+			assert.equal('Atletico Madrid Atletico Madrid', game.awayTeam);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[3], 'GameCreted', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid2,
+				_game: game,
+			});
+
+			assert.equal(
+				'Manchester United Manchester United vs Atletico Madrid Atletico Madrid',
+				await deployedMarket.marketQuestion()
+			);
+			assert.equal(3, await deployedMarket.positionCount());
+
+			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
+			assert.notEqual(0, await deployedMarket.creationTime());
+			assert.equal(false, await deployedMarket.disputed());
+			assert.equal(false, await deployedMarket.resolved());
+			assert.equal(false, await deployedMarket.canMarketBeResolved());
+
+			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
+
+			assert.equal(true, await deployedMarket.canMarketBeResolved());
+
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolveFoodball,
+				gamesResolvedFootball,
+				sportId_16
+			);
+
+			assert.equal(
+				game_1_football_resolve,
+				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 0)
+			);
+			assert.equal(
+				game_2_football_resolve,
+				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 1)
+			);
+
+			let gameR = await TherundownConsumerDeployed.gameResolved(gameFootballid2);
+			assert.equal(0, gameR.homeScore);
+			assert.equal(1, gameR.awayScore);
+			assert.equal(11, gameR.statusId);
+
+			assert.eventEqual(tx_2.logs[1], 'GameResolved', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid2,
 				_game: gameR,
 			});
 		});

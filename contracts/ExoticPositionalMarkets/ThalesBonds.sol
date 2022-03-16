@@ -123,7 +123,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         }
         if (_account == marketManager.resolverAddress(_market)) {
             require(marketBond[_market].resolverBond >= _amount, "Amount exceeds resolver bond");
-            marketBond[_market].creatorBond = marketBond[_market].creatorBond.sub(_amount);
+            marketBond[_market].resolverBond = marketBond[_market].resolverBond.sub(_amount);
         }
 
         if (marketBond[_market].disputorsCount > 0 && marketBond[_market].disputorBond[_account] > 0) {
@@ -132,6 +132,23 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
                 : 0;
             marketBond[_market].disputorsCount = marketBond[_market].disputorsCount.sub(1);
         }
+        transferBondFromMarket(_account, _amount);
+        emit BondTransferredFromMarketBondToUser(_market, _account, _amount);
+    }
+
+    function sendOpenDisputeBondFromMarketToDisputor(
+        address _market,
+        address _account,
+        uint _amount
+    ) external onlyOracleCouncilManagerAndOwner nonReentrant {
+        require(_amount <= marketBond[_market].totalMarketBond, "Exceeds total market bond");
+        marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.sub(_amount);
+        require(
+            marketBond[_market].disputorsCount > 0 && marketBond[_market].disputorBond[_account] >= _amount,
+            "Disputor already claimed its funds"
+        );
+        marketBond[_market].disputorBond[_account] = marketBond[_market].disputorBond[_account].sub(_amount);
+        marketBond[_market].disputorsCount = marketBond[_market].disputorsCount.sub(1);
         transferBondFromMarket(_account, _amount);
         emit BondTransferredFromMarketBondToUser(_market, _account, _amount);
     }

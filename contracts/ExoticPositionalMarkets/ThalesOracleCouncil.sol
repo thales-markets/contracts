@@ -186,6 +186,8 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     function openDispute(address _market, string memory _disputeString) external whenNotPaused {
         require(IExoticPositionalMarket(_market).isMarketCreated(), "Market not created");
         require(!marketClosedForDisputes[_market], "Market is closed for disputes");
+        require(marketManager.creatorAddress(_market) != msg.sender, "Creator can not dispute market");
+        require(!isOracleCouncilMember(msg.sender), "Oracle Council member can not open dispute.");
         require(
             IERC20(marketManager.paymentToken()).balanceOf(msg.sender) >= IExoticPositionalMarket(_market).disputePrice(),
             "Low token amount for disputing market"

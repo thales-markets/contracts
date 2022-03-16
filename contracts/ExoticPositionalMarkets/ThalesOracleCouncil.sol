@@ -223,11 +223,9 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         uint _winningPosition
     ) external onlyCouncilMembers {
         require(!marketClosedForDisputes[_market], "Market is closed for disputes. No reason for voting");
-        require(
-            _disputeIndex > 0 && _disputeIndex > marketLastClosedDispute[_market],
-            "Dispute non existent or already closed"
-        );
-        require(_disputeCodeVote <= VOTING_OPTIONS && _disputeCodeVote > 0, "Invalid dispute code");
+        require(_disputeIndex > 0, "Dispute non existent");
+        require(dispute[_market][_disputeIndex].disputeCode == 0, "Dispute already closed.");
+        require(_disputeCodeVote <= VOTING_OPTIONS && _disputeCodeVote > 0, "Invalid dispute code.");
         if (dispute[_market][marketTotalDisputes[_market]].disputeInPositioningPhase) {
             require(_disputeCodeVote < ACCEPT_RESULT, "Invalid voting code for dispute in positioning");
         } else {
@@ -340,7 +338,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             // IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(_market, marketManager.safeBoxAddress(), marketManager.safeBoxLowAmount());
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
-                IExoticPositionalMarket(_market).creatorAddress(),
+                marketManager.creatorAddress(_market),
                 IExoticPositionalMarket(_market).fixedBondAmount()
             );
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
@@ -416,6 +414,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             canDisputorClaimbackBondFromUnclosedDispute(_market, _disputeIndex, msg.sender),
             "Unable to claim bonds. Check if market is closed for disputes, disputor index, and dispute address"
         );
+        dispute[_market][_disputeIndex].disputeCode = ACCEPT_NO_SLASH;
         IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
             _market,
             msg.sender,

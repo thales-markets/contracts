@@ -311,7 +311,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             resetForUserAllPositionsToZero(msg.sender);
         }
         IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, amount);
-        if (!firstUserClaimed) {
+        if (!firstUserClaimed && winningPosition != CANCELED) {
             IERC20(marketManager.paymentToken()).safeTransfer(
                 marketManager.creatorAddress(address(this)),
                 getAdditionalCreatorAmount()

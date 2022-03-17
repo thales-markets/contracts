@@ -11,19 +11,22 @@ async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	let mainnetNetwork = 'mainnet';
+	let ThalesName;
 
 	if (network == 'homestead') {
 		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
 		return 0;
 	}
 	if (networkObj.chainId == 42) {
-		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimisticKovan\'")
-		return 0;
+		networkObj.name = 'kovan';
+		network = 'kovan';
+		ThalesName = "OpThales_L1";
 	}
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 		mainnetNetwork = 'kovan';
+		ThalesName = "OpThales_L2";
 	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimistic';
@@ -31,7 +34,7 @@ async function main() {
 	}
 	
     const ExoticMarketMastercopyAddress = getTargetAddress("ExoiticMarketMasterCopy", network);
-    const ThalesAddress = getTargetAddress("OpThales_L2", network);
+    const ThalesAddress = getTargetAddress(ThalesName, network);
     const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
     let minimumPositioningDuration = 0;
     let minimumMarketMaturityDuration = 0;

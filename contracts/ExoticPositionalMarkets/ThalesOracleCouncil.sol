@@ -47,6 +47,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     mapping(address => mapping(uint => uint[VOTING_OPTIONS])) public disputeVotesCount;
     mapping(address => mapping(uint => uint)) public disputeWinningPositionChoosen;
     mapping(address => address) public firstMemberThatChoseWinningPosition;
+    mapping(address => uint) public allOpenDisputesCancelledToIndexForMarket;
 
     function initialize(address _owner, address _marketManager) public initializer {
         setOwner(_owner);
@@ -130,9 +131,9 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
 
     function isOpenDisputeCancelled(address _market, uint _disputeIndex) external view returns (bool) {
         return
-            marketClosedForDisputes[_market] &&
+            (marketClosedForDisputes[_market] || _disputeIndex <= allOpenDisputesCancelledToIndexForMarket[_market]) &&
             dispute[_market][_disputeIndex].disputeCode == 0 &&
-            marketLastClosedDispute[_market] != _disputeIndex;
+            marketLastClosedDispute[_market] != _disputeIndex ;
     }
 
     function canDisputorClaimbackBondFromUnclosedDispute(
@@ -142,7 +143,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     ) public view returns (bool) {
         if (
             _disputeIndex <= marketTotalDisputes[_market] &&
-            marketClosedForDisputes[_market] &&
+            (marketClosedForDisputes[_market] || _disputeIndex <= allOpenDisputesCancelledToIndexForMarket[_market]) &&
             dispute[_market][_disputeIndex].disputorAddress == _disputorAddress &&
             dispute[_market][_disputeIndex].disputeCode == 0 &&
             marketLastClosedDispute[_market] != _disputeIndex
@@ -400,7 +401,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
                     IExoticPositionalMarket(_market).safeBoxLowAmount()
                 )
             );
-
+            allOpenDisputesCancelledToIndexForMarket[_market] = marketTotalDisputes[_market];
             marketLastClosedDispute[_market] = _disputeIndex;
             emit DisputeClosed(_market, _disputeIndex, _decidedOption);
         } else {

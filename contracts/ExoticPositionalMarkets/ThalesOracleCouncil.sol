@@ -306,7 +306,6 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             if (marketLastClosedDispute[_market] == marketTotalDisputes[_market]) {
                 marketManager.closeDispute(_market);
             }
-            emit MarketClosedForDisputes(_market, _decidedOption);
             emit DisputeClosed(_market, _disputeIndex, _decidedOption);
         } else if (_decidedOption == ACCEPT_SLASH) {
             // 4 hours

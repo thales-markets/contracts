@@ -371,6 +371,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         } else {
             disputed = false;
         }
+        emit MarketDisputed(false);
     }
 
     function transferToMarket(address _sender, uint _amount) public notPaused nonReentrant {

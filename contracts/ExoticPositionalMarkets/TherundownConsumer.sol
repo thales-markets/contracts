@@ -64,8 +64,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => string[]) public phrasePerGameId;
     mapping(bytes32 => uint[]) public tagsPerGameId;
     mapping(bytes32 => address) public marketPerGameId;
+    mapping(address => bool) public marketResolved;
     uint public fixedTicketPrice;
     bool public withdrawalAllowed;
+
+    // wrapper
+    address public wrapperAddress;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -96,10 +100,16 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         bytes32 _requestId,
         bytes[] memory _games,
         uint _sportId
-    ) external {
+    ) external onlyWrapper {
         requestIdGamesCreated[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
-            _createMarket(abi.decode(requestIdGamesCreated[_requestId][i], (GameCreate)), _sportId);
+            
+            GameCreate memory game = abi.decode(_games[i], (GameCreate));
+
+            // if already created market
+            if (marketPerGameId[game.gameId] == address(0)) {
+                _createMarket(game, _sportId);
+            }
         }
     }
 
@@ -107,10 +117,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         bytes32 _requestId,
         bytes[] memory _games,
         uint _sportId
-    ) external {
+    ) external onlyWrapper {
+        
         requestIdGamesResolved[_requestId] = _games;
+
         for (uint i = 0; i < _games.length; i++) {
-            _resolveMarket(abi.decode(requestIdGamesResolved[_requestId][i], (GameResolve)), _sportId);
+        
+            GameResolve memory game = abi.decode(_games[i], (GameResolve));
+        
+            // if already resolved
+            if (!marketResolved[marketPerGameId[game.gameId]]) {
+                _resolveMarket(abi.decode(_games[i], (GameResolve)), _sportId);
+            }
         }
     }
 
@@ -165,10 +183,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _createMarket(
-        GameCreate memory _game,
-        uint _sportId
-    ) internal {
+    function _createMarket(GameCreate memory _game, uint _sportId) internal {
         gameCreated[_game.gameId] = _game;
 
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(_sportId);
@@ -196,8 +211,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _resolveMarket(GameResolve memory _game, uint _sportId) internal {
         gameResolved[_game.gameId] = _game;
+
         if (_isGameStatusResolved(_game)) {
+            
             exoticManager.resolveMarket(marketPerGameId[_game.gameId], _callulateOutcome(_game));
+            marketResolved[marketPerGameId[_game.gameId]] = true;
+
             emit GameResolved(marketPerGameId[_game.gameId], _game.gameId, _game);
         } // TODO else what if EXAMPLE: 1 : STATUS_CANCELED
     }
@@ -271,7 +290,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit NewWithdrawalAllowed(_withdrawalAllowed);
     }
 
+    function setWrapperAddress(address _wrapperAddress) public onlyOwner {
+        require(_wrapperAddress != address(0), "Invalid address");
+        wrapperAddress = _wrapperAddress;
+        emit NewWrapperAddress(_wrapperAddress);
+    }
+
     /* ========== MODIFIERS ========== */
+
+    modifier onlyWrapper() {
+        require(msg.sender == wrapperAddress, "Only wrapper can call this function");
+        _;
+    }
 
     /* ========== EVENTS ========== */
 
@@ -282,4 +312,5 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event NewFixedTicketPrice(uint _fixedTicketPrice);
     event NewWithdrawalAllowed(bool _withdrawalAllowed);
     event NewExoticPositionalMarketManager(address _exoticManager);
+    event NewWrapperAddress(address _wrapperAddress);
 }

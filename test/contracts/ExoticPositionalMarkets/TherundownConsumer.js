@@ -33,7 +33,7 @@ const {
 } = require('../../utils/helpers');
 
 contract('TherundownConsumer', accounts => {
-	const [manager, first, owner, second, third, fourth, safeBox] = accounts;
+	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
@@ -191,6 +191,8 @@ contract('TherundownConsumer', accounts => {
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 		//await Thales.approve(ThalesBonds.address, toUnit('1000'), { from: TherundownConsumerDeployed.address });
 		await ExoticPositionalMarketManager.setTheRundownConsumerAddress(TherundownConsumerDeployed.address);
+		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
+		
 	});
 
 	describe('Init', () => {
@@ -217,7 +219,8 @@ contract('TherundownConsumer', accounts => {
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdCreate,
 				gamesCreated,
-				sportId_4
+				sportId_4,
+				{ from: wrapper }
 			);
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
@@ -260,7 +263,8 @@ contract('TherundownConsumer', accounts => {
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdFootballCreate,
 				gamesFootballCreated,
-				sportId_16
+				sportId_16,
+				{ from: wrapper }
 			);
 
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
@@ -312,7 +316,8 @@ contract('TherundownConsumer', accounts => {
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdFootballCreate,
 				gamesFootballCreated,
-				sportId_16
+				sportId_16,
+				{ from: wrapper }
 			);
 
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
@@ -366,7 +371,8 @@ contract('TherundownConsumer', accounts => {
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdCreate,
 				gamesCreated,
-				sportId_4
+				sportId_4,
+				{ from: wrapper }
 			);
 
 			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
@@ -422,7 +428,8 @@ contract('TherundownConsumer', accounts => {
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdResolve,
 				gamesResolved,
-				sportId_4
+				sportId_4,
+				{ from: wrapper }
 			);
 
 			assert.equal(
@@ -452,7 +459,8 @@ contract('TherundownConsumer', accounts => {
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdFootballCreate,
 				gamesFootballCreated,
-				sportId_16
+				sportId_16,
+				{ from: wrapper }
 			);
 
 			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
@@ -519,7 +527,8 @@ contract('TherundownConsumer', accounts => {
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdResolveFoodball,
 				gamesResolvedFootball,
-				sportId_16
+				sportId_16,
+				{ from: wrapper }
 			);
 
 			assert.equal(
@@ -549,7 +558,8 @@ contract('TherundownConsumer', accounts => {
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdFootballCreate,
 				gamesFootballCreated,
-				sportId_16
+				sportId_16,
+				{ from: wrapper }
 			);
 
 			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
@@ -616,7 +626,8 @@ contract('TherundownConsumer', accounts => {
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdResolveFoodball,
 				gamesResolvedFootball,
-				sportId_16
+				sportId_16,
+				{ from: wrapper }
 			);
 
 			assert.equal(

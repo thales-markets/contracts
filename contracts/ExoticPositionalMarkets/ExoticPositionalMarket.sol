@@ -218,6 +218,24 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         }
     }
 
+    function withdrawFromOpenBidPosition(uint _openBidPosition) external notPaused {
+        require(withdrawalAllowed, "Withdrawal not allowed");
+        require(canUsersPlacePosition(), "Not able to withdraw. Positioning time finished or market resolved");
+        require(ticketType == TicketType.FLEXIBLE_BID, "Market is not open bid");
+        require(userOpenBidPosition[msg.sender][_openBidPosition] > 0, "No amount placed for the position by the user");
+        uint totalToWithdraw = userOpenBidPosition[msg.sender][_openBidPosition];
+        userOpenBidPosition[msg.sender][_openBidPosition] = 0;
+        if (getUserOpenBidTotalPlacedAmount(msg.sender) == 0) {
+            totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
+        }
+        totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
+        uint withdrawalFee = totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
+        safeBoxAmount = safeBoxAmount.add(withdrawalFee.div(2));
+        IERC20(marketManager.paymentToken()).safeTransfer(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
+        IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, totalToWithdraw.sub(withdrawalFee));
+        emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
+    }
+
     // market resolved only through the Manager
     function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner {
         require(canMarketBeResolved(), "Market can not be resolved. It is disputed/not matured/resolved");

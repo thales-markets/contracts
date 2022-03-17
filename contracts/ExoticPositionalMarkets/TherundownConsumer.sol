@@ -199,7 +199,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         if (_isGameStatusResolved(_game)) {
             exoticManager.resolveMarket(marketPerGameId[_game.gameId], _callulateOutcome(_game));
             emit GameResolved(marketPerGameId[_game.gameId], _game.gameId, _game);
-        }// TODO else what if EXAMPLE: 1 : STATUS_CANCELED
+        } // TODO else what if EXAMPLE: 1 : STATUS_CANCELED
     }
 
     function _append(string memory teamA, string memory teamB) internal pure returns (string memory) {

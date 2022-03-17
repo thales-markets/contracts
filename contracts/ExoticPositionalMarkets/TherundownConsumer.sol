@@ -179,7 +179,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // create
         exoticManager.createExoticMarket(
             _append(_game.homeTeam, _game.awayTeam),
-            "Chainlink", // TODO ?
+            "chainlink_sports_data", // TODO ?
             _game.startTime,
             fixedTicketPrice,
             withdrawalAllowed,
@@ -199,7 +199,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         if (_isGameStatusResolved(_game)) {
             exoticManager.resolveMarket(marketPerGameId[_game.gameId], _callulateOutcome(_game));
             emit GameResolved(marketPerGameId[_game.gameId], _game.gameId, _game);
-        }
+        }// TODO else what if EXAMPLE: 1 : STATUS_CANCELED
     }
 
     function _append(string memory teamA, string memory teamB) internal pure returns (string memory) {
@@ -233,6 +233,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // TODO all resolved statuses if needed
         // 8 : STATUS_FINAL - NBA
         // 11 : STATUS_FULL_TIME - Champions league 90 min
+        // penalties, extra time, over time ???
         return _game.statusId == 8 || _game.statusId == 11;
     }
 

@@ -238,8 +238,7 @@ contract('TherundownConsumer', accounts => {
 			);
 			assert.equal('Brooklyn Nets', await TherundownConsumerDeployed.phrasePerGameId(gameid1, 1));
 
-			assert.equal(1, await TherundownConsumerDeployed.tagsPerGameId(gameid1, 0));
-			assert.equal(102, await TherundownConsumerDeployed.tagsPerGameId(gameid1, 1));
+			assert.equal(9004, await TherundownConsumerDeployed.tagsPerGameId(gameid1, 0));
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			assert.equal('Philadelphia 76ers', game.homeTeam);
@@ -291,8 +290,7 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 1)
 			);
 
-			assert.equal(1, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 0));
-			assert.equal(102, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 1));
+			assert.equal(9016, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 0));
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
 			assert.equal('Ajax Amsterdam Ajax Amsterdam', game.homeTeam);
@@ -344,8 +342,7 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 1)
 			);
 
-			assert.equal(1, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 0));
-			assert.equal(102, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 1));
+			assert.equal(9016, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 0));
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
 			assert.equal('Manchester United Manchester United', game.homeTeam);
@@ -393,8 +390,7 @@ contract('TherundownConsumer', accounts => {
 			);
 			assert.equal('Brooklyn Nets', await TherundownConsumerDeployed.phrasePerGameId(gameid1, 1));
 
-			assert.equal(1, await TherundownConsumerDeployed.tagsPerGameId(gameid1, 0));
-			assert.equal(102, await TherundownConsumerDeployed.tagsPerGameId(gameid1, 1));
+			assert.equal(9004, await TherundownConsumerDeployed.tagsPerGameId(gameid1, 0));
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			assert.equal('Philadelphia 76ers', game.homeTeam);
@@ -489,8 +485,7 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 1)
 			);
 
-			assert.equal(1, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 0));
-			assert.equal(102, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 1));
+			assert.equal(9016, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 0));
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
 			assert.equal('Ajax Amsterdam Ajax Amsterdam', game.homeTeam);
@@ -587,8 +582,7 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 1)
 			);
 
-			assert.equal(1, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 0));
-			assert.equal(102, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 1));
+			assert.equal(9016, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 0));
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
 			assert.equal('Manchester United Manchester United', game.homeTeam);

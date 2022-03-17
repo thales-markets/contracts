@@ -27,6 +27,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     uint public constant RESULT_DRAW = 0;
     uint public constant HOME_WIN = 1;
     uint public constant AWAY_WIN = 2;
+    uint public constant MIN_TAG_NUMBER = 9000;
 
     /* ========== CONSUMER STATE VARIABLES ========== */
 
@@ -98,7 +99,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) external {
         requestIdGamesCreated[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
-            _createMarket(_requestId, abi.decode(requestIdGamesCreated[_requestId][i], (GameCreate)), _sportId);
+            _createMarket(abi.decode(requestIdGamesCreated[_requestId][i], (GameCreate)), _sportId);
         }
     }
 
@@ -165,7 +166,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _createMarket(
-        bytes32 _requestId,
         GameCreate memory _game,
         uint _sportId
     ) internal {
@@ -173,13 +173,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(_sportId);
 
-        _calculateTags(_game.gameId);
+        _calculateTags(_game.gameId, _sportId);
         _createPhrases(_game.gameId, _game.homeTeam, _game.awayTeam, numberOfPositions);
 
         // create
         exoticManager.createCLMarket(
             _append(_game.homeTeam, _game.awayTeam),
-            "chainlink_sports_data", // TODO ?
+            "chainlink_sports_data",
             _game.startTime,
             fixedTicketPrice,
             withdrawalAllowed,
@@ -223,10 +223,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return isSportTwoPositionsSport(_sportsId) ? 2 : 3;
     }
 
-    function _calculateTags(bytes32 _gameId) internal {
-        // TODO tags
-        tagsPerGameId[_gameId].push(1);
-        tagsPerGameId[_gameId].push(102);
+    function _calculateTags(bytes32 _gameId, uint _sportsId) internal {
+        tagsPerGameId[_gameId].push(MIN_TAG_NUMBER + _sportsId);
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal pure returns (bool) {

@@ -59,6 +59,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint public backstopTimeoutGeneral;
     uint public safeBoxLowAmount;
     uint public arbitraryRewardForDisputor;
+    address public theRundownConsumerAddress;
+    mapping(address => bool) public isChainLinkMarket;
 
     function initialize(
         address _owner,
@@ -143,8 +145,70 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         );
     }
 
+    function createCLMarket(
+        string memory _marketQuestion,
+        string memory _marketSource,
+        uint _endOfPositioning,
+        uint _fixedTicketPrice,
+        bool _withdrawalAllowed,
+        uint[] memory _tags,
+        uint _positionCount,
+        string[] memory _positionPhrases
+    ) external checkMarketRequirements(_endOfPositioning) nonReentrant {
+        require(
+            theRundownConsumerAddress != address(0),
+            "Invalid theRundownConsumer address in Manager. Please set the theRundownConsumerAddress"
+        );
+        require(msg.sender == theRundownConsumerAddress, "Invalid creator. Creator has to be Therundownconsumer");
+        require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
+        require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
+        require(
+            IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
+            "No allowance. Please approve ticket price allowance"
+        );
+        require(
+            keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")),
+            "Invalid market question (empty string)"
+        );
+        require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid market source (empty string)");
+        require(_positionCount == _positionPhrases.length, "Invalid position count with position phrases");
+        require(bytes(_marketQuestion).length < 110, "Market question exceeds length");
+
+        ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(Clones.clone(exoticMarketMastercopy));
+        exoticMarket.initialize(
+            _marketQuestion,
+            _marketSource,
+            _endOfPositioning,
+            _fixedTicketPrice,
+            _withdrawalAllowed,
+            _tags,
+            _positionCount,
+            _positionPhrases
+        );
+        isChainLinkMarket[address(exoticMarket)] = true;
+        creatorAddress[address(exoticMarket)] = msg.sender;
+        IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
+        activeMarkets[numOfActiveMarkets] = address(exoticMarket);
+        numOfActiveMarkets = numOfActiveMarkets.add(1);
+        emit MarketCreated(
+            address(exoticMarket),
+            _marketQuestion,
+            _marketSource,
+            _endOfPositioning,
+            _fixedTicketPrice,
+            _withdrawalAllowed,
+            _tags,
+            _positionCount,
+            _positionPhrases,
+            msg.sender
+        );
+    }
+
     function resolveMarket(address _marketAddress, uint _outcomePosition) external {
         require(isActiveMarket(_marketAddress), "Market is not active");
+        if (isChainLinkMarket[_marketAddress]) {
+            require(msg.sender == theRundownConsumerAddress, "Invalid resolver. Resolver can be only theRundownConsumer");
+        }
         if (ExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
         }
@@ -313,6 +377,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit NewOracleCouncilAddress(_councilAddress);
     }
 
+    function setTheRundownConsumerAddress(address _theRundownConsumerAddress) external onlyOwner {
+        require(_theRundownConsumerAddress != address(0), "Invalid address");
+        theRundownConsumerAddress = _theRundownConsumerAddress;
+        emit NewTheRundownConsumerAddress(_theRundownConsumerAddress);
+    }
+
     function setMaximumPositionsAllowed(uint _maximumPositionsAllowed) external onlyOwner {
         require(_maximumPositionsAllowed > 2, "Invalid Maximum positions allowed");
         maximumPositionsAllowed = _maximumPositionsAllowed;
@@ -448,6 +518,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewDefaultBackstopTimeout(uint timeout);
     event NewSafeBoxLowAmount(uint safeBoxLowAmount);
     event RewardSentToDisputorForMarket(address market, address disputorAddress, uint amount);
+    event NewTheRundownConsumerAddress(address theRundownConsumerAddress);
     event MarketCreated(
         address marketAddress,
         string marketQuestion,

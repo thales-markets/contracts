@@ -39,6 +39,17 @@ interface IExoticPositionalMarketManager {
         string[] memory _positionPhrases
     ) external;
     
+    function createCLMarket(
+        string memory _marketQuestion,
+        string memory _marketSource,
+        uint _endOfPositioning,
+        uint _fixedTicketPrice,
+        bool _withdrawalAllowed,
+        uint[] memory _tags,
+        uint _positionCount,
+        string[] memory _positionPhrases
+    ) external;
+    
     function disputeMarket(address _marketAddress, address disputor) external;
     function resolveMarket(address _marketAddress, uint _outcomePosition) external;
     function resetMarket(address _marketAddress) external;

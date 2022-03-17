@@ -177,7 +177,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         _createPhrases(_game.gameId, _game.homeTeam, _game.awayTeam, numberOfPositions);
 
         // create
-        exoticManager.createExoticMarket(
+        exoticManager.createCLMarket(
             _append(_game.homeTeam, _game.awayTeam),
             "chainlink_sports_data", // TODO ?
             _game.startTime,

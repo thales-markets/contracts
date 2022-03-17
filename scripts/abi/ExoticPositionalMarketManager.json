@@ -364,6 +364,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "theRundownConsumerAddress",
+        "type": "address"
+      }
+    ],
+    "name": "NewTheRundownConsumerAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -679,6 +692,54 @@
         "type": "string[]"
       }
     ],
+    "name": "createCLMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_marketQuestion",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_marketSource",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_endOfPositioning",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_fixedTicketPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_withdrawalAllowed",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_tags",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_positionCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_positionPhrases",
+        "type": "string[]"
+      }
+    ],
     "name": "createExoticMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -869,6 +930,25 @@
       }
     ],
     "name": "isActiveMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "isChainLinkMarket",
     "outputs": [
       {
         "internalType": "bool",
@@ -1573,6 +1653,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_theRundownConsumerAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setTheRundownConsumerAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_withdrawalPercentage",
         "type": "uint256"
@@ -1599,6 +1692,19 @@
   {
     "inputs": [],
     "name": "thalesBonds",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "theRundownConsumerAddress",
     "outputs": [
       {
         "internalType": "address",

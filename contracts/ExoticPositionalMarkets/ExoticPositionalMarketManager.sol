@@ -175,6 +175,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
         }
         ExoticPositionalMarket(_marketAddress).cancelMarket();
+        resolverAddress[msg.sender] = safeBoxAddress;
         removeActiveMarket(_marketAddress);
         emit MarketCanceled(_marketAddress);
     }

@@ -180,9 +180,9 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
 
     function withdraw() external notPaused {
         require(withdrawalAllowed, "Withdrawal not allowed");
-        require(userPosition[msg.sender] > 0, "Not a ticket holder");
         require(canUsersPlacePosition(), "Not able to withdraw. Positioning time finished or market resolved");
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
+            require(userPosition[msg.sender] > 0, "Not a ticket holder");
             uint withdrawalFee =
                 fixedTicketPrice.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
             safeBoxAmount = safeBoxAmount.add(withdrawalFee.div(2));
@@ -196,7 +196,25 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, fixedTicketPrice.sub(withdrawalFee));
             emit TicketWithdrawn(msg.sender, fixedTicketPrice.sub(withdrawalFee));
         } else {
-            // _resolveFlexibleBid(_outcomePosition);
+            // withdraw all for open bid
+            uint totalToWithdraw;
+            for (uint i = 1; i <= positionCount; i++) {
+                if (userOpenBidPosition[msg.sender][i] > 0) {
+                    totalToWithdraw = totalToWithdraw.add(userOpenBidPosition[msg.sender][i]);
+                    userOpenBidPosition[msg.sender][i] = 0;
+                }
+            }
+            totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
+            totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
+            uint withdrawalFee =
+                totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
+            safeBoxAmount = safeBoxAmount.add(withdrawalFee.div(2));
+            IERC20(marketManager.paymentToken()).safeTransfer(
+                marketManager.creatorAddress(address(this)),
+                withdrawalFee.div(2)
+            );
+            IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, totalToWithdraw.sub(withdrawalFee));
+            emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
         }
     }
 
@@ -243,6 +261,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         }
         resolved = false;
         resolvedTime = 0;
+        resolverAddress = address(0);
         emit MarketReset();
     }
 
@@ -258,6 +277,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         }
         resolved = true;
         resolvedTime = block.timestamp;
+        resolverAddress = marketManager.safeBoxAddress();
         emit MarketResolved(CANCELED, msg.sender);
     }
 
@@ -666,4 +686,5 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     event BondIncreased(uint amount, uint totalAmount);
     event BondDecreased(uint amount, uint totalAmount);
     event NewOpenBidsForPositions(address account, uint[] openBidPositions, uint[] openBidAmounts);
+    event OpenBidUserWithdrawn(address account, uint withdrawnAmount, uint totalOpenBidAmountLeft);
 }

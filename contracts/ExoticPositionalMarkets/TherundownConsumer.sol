@@ -57,7 +57,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     // sports props
     mapping(uint => bool) public supportedSport;
-    uint[] public twoPositionSports;
+    mapping(uint => bool) public twoPositionSport;
 
     // market props
     IExoticPositionalMarketManager public exoticManager;
@@ -83,7 +83,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) public initializer {
         setOwner(_owner);
         _populateSports(_supportedSportIds);
-        twoPositionSports = _twoPositionSports;
+        _populateTwoPositionSports(_twoPositionSports);
         exoticManager = IExoticPositionalMarketManager(_exoticManager);
         fixedTicketPrice = _fixedTicketPrice;
         withdrawalAllowed = _withdrawalAllowed;
@@ -163,12 +163,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function isSportTwoPositionsSport(uint _sportsId) public view returns (bool) {
-        for (uint256 i = 0; i < twoPositionSports.length; i++) {
-            if (twoPositionSports[i] == _sportsId) {
-                return true;
-            }
-        }
-        return false;
+        return twoPositionSport[_sportsId];
     }
 
     function isGameInResolvedStatus(bytes32 _gameId) public view returns (bool) {
@@ -180,6 +175,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function _populateSports(uint[] memory _supportedSportIds) internal {
         for (uint i; i < _supportedSportIds.length; i++) {
             supportedSport[_supportedSportIds[i]] = true;
+        }
+    }
+
+    function _populateTwoPositionSports(uint[] memory _twoPositionSports) internal {
+        for (uint i; i < _twoPositionSports.length; i++) {
+            twoPositionSport[_twoPositionSports[i]] = true;
         }
     }
 
@@ -263,16 +264,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    function addSupportedSport(uint _sportId) public onlyOwner {
-        require(!supportedSport[_sportId], "Supported sport exists");
-        supportedSport[_sportId] = true;
-        emit SupportedSportsAdded(_sportId);
+    function setSupportedSport(uint _sportId, bool _isSuported) public onlyOwner {
+        supportedSport[_sportId] = _isSuported;
+        emit SupportedSportsChanged(_sportId, _isSuported);
     }
 
-    function removeSupportedSport(uint _sportId) public onlyOwner {
-        require(supportedSport[_sportId], "Supported sport must exists");
-        supportedSport[_sportId] = false;
-        emit SupportedSportsRemoved(_sportId);
+    function setwoPositionSport(uint _sportId, bool _isTwoPosition) public onlyOwner {
+        twoPositionSport[_sportId] = _isTwoPosition;
+        emit TwoPositionSportChanged(_sportId, _isTwoPosition);
     }
 
     function setExoticManager(address _exoticManager) public onlyOwner {
@@ -307,8 +306,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     event GameCreted(address _marketAddress, bytes32 _id, GameCreate _game);
     event GameResolved(address _marketAddress, bytes32 _id, GameResolve _game);
-    event SupportedSportsAdded(uint _sportId);
-    event SupportedSportsRemoved(uint _sportId);
+    event SupportedSportsChanged(uint _sportId, bool _isSupported);
+    event TwoPositionSportChanged(uint _sportId, bool _isTwoPosition);
     event NewFixedTicketPrice(uint _fixedTicketPrice);
     event NewWithdrawalAllowed(bool _withdrawalAllowed);
     event NewExoticPositionalMarketManager(address _exoticManager);

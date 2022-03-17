@@ -198,9 +198,15 @@
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_isSupported",
+        "type": "bool"
       }
     ],
-    "name": "SupportedSportsAdded",
+    "name": "SupportedSportsChanged",
     "type": "event"
   },
   {
@@ -211,9 +217,15 @@
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_isTwoPosition",
+        "type": "bool"
       }
     ],
-    "name": "SupportedSportsRemoved",
+    "name": "TwoPositionSportChanged",
     "type": "event"
   },
   {
@@ -271,19 +283,6 @@
   {
     "inputs": [],
     "name": "acceptOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_sportId",
-        "type": "uint256"
-      }
-    ],
-    "name": "addSupportedSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -846,19 +845,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_sportId",
-        "type": "uint256"
-      }
-    ],
-    "name": "removeSupportedSport",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
@@ -959,6 +945,24 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isSuported",
+        "type": "bool"
+      }
+    ],
+    "name": "setSupportedSport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bool",
         "name": "_withdrawalAllowed",
         "type": "bool"
@@ -978,6 +982,24 @@
       }
     ],
     "name": "setWrapperAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isTwoPosition",
+        "type": "bool"
+      }
+    ],
+    "name": "setwoPositionSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1046,12 +1068,12 @@
         "type": "uint256"
       }
     ],
-    "name": "twoPositionSports",
+    "name": "twoPositionSport",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

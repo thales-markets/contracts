@@ -157,6 +157,10 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         return (councilMemberIndex[_councilMember] > 0);
     }
 
+    function isMarketClosedForDisputes(address _market) public view returns (bool) {
+        return marketClosedForDisputes[_market] || IExoticPositionalMarket(_market).canUsersClaim();
+    }
+
     function setMarketManager(address _marketManager) external onlyOwner {
         require(_marketManager != address(0), "Invalid manager address");
         marketManager = IExoticPositionalMarketManager(_marketManager);
@@ -185,7 +189,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
 
     function openDispute(address _market, string memory _disputeString) external whenNotPaused {
         require(IExoticPositionalMarket(_market).isMarketCreated(), "Market not created");
-        require(!marketClosedForDisputes[_market], "Market is closed for disputes");
+        require(!isMarketClosedForDisputes(_market), "Market is closed for disputes");
         require(marketManager.creatorAddress(_market) != msg.sender, "Creator can not dispute market");
         require(!isOracleCouncilMember(msg.sender), "Oracle Council member can not open dispute.");
         require(
@@ -224,7 +228,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         uint _disputeCodeVote,
         uint _winningPosition
     ) external onlyCouncilMembers {
-        require(!marketClosedForDisputes[_market], "Market is closed for disputes. No reason for voting");
+        require(!isMarketClosedForDisputes(_market), "Market is closed for disputes. No reason for voting");
         require(_disputeIndex > 0, "Dispute non existent");
         require(dispute[_market][_disputeIndex].disputeCode == 0, "Dispute already closed.");
         require(_disputeCodeVote <= VOTING_OPTIONS && _disputeCodeVote > 0, "Invalid dispute code.");

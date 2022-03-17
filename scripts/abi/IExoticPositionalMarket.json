@@ -14,7 +14,7 @@
   },
   {
     "inputs": [],
-    "name": "canHoldersClaim",
+    "name": "canMarketBeResolved",
     "outputs": [
       {
         "internalType": "bool",
@@ -27,7 +27,7 @@
   },
   {
     "inputs": [],
-    "name": "canMarketBeResolved",
+    "name": "canUsersClaim",
     "outputs": [
       {
         "internalType": "bool",

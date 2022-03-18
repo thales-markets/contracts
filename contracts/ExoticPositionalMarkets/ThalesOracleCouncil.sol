@@ -248,7 +248,8 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
                 firstMemberThatChoseWinningPosition[_market] = msg.sender;
             } else if (
                 disputeWinningPositionChoosen[_market][_disputeIndex] != 0 &&
-                firstMemberThatChoseWinningPosition[_market] == msg.sender
+                firstMemberThatChoseWinningPosition[_market] == msg.sender &&
+                disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] <= 1
             ) {
                 disputeWinningPositionChoosen[_market][_disputeIndex] = _winningPosition;
             } else {

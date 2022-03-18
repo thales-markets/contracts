@@ -431,21 +431,13 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             canMarketBeResolvedByOwner() && block.timestamp >= endOfPositioning.add(marketManager.pDAOResolveTimePeriod());
     }
 
-    function canCreatorCancelMarket() public view returns (bool) {
-        if (totalUsersTakenPositions > 1) {
-            return false;
+    function canCreatorCancelMarket() external view returns (bool) {
+        if (totalUsersTakenPositions != 1) {
+            return totalUsersTakenPositions > 1 ? false : true;
         }
-        if (totalUsersTakenPositions == 0) {
-            return true;
-        }
-        if (ticketType == TicketType.FLEXIBLE_BID) {
-            return
-                totalOpenBidAmount == getUserOpenBidTotalPlacedAmount(marketManager.creatorAddress(address(this)))
+        return (fixedTicketPrice == 0 && totalOpenBidAmount == getUserOpenBidTotalPlacedAmount(marketManager.creatorAddress(address(this)))) || userPosition[marketManager.creatorAddress(address(this))] > 0
                     ? true
                     : false;
-        } else {
-            return userPosition[marketManager.creatorAddress(address(this))] > 0 ? true : false;
-        }
     }
 
     function canUsersClaim() public view returns (bool) {
@@ -615,7 +607,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
                 amountsPerPosition[i - 1] = getPlacedAmountPerPosition(i);
             }
         }
-
         MarketData memory marketData;
         marketData.marketQuestion = marketQuestion;
         marketData.marketSource = marketSource;
@@ -645,25 +636,12 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         marketData.disputePrice = disputePrice;
         marketData.safeBoxLowAmount = safeBoxLowAmount;
         marketData.arbitraryRewardForDisputor = arbitraryRewardForDisputor;
-
         return marketData;
     }
 
-    function getAllAmounts()
-        external
-        view
-        returns (
-            uint,
-            uint,
-            uint,
-            uint
-        )
-    {
+    function getAllAmounts() external view returns (uint,uint, uint, uint) {
         return (fixedBondAmount, disputePrice, safeBoxLowAmount, arbitraryRewardForDisputor);
     }
-
-    // INTERNAL FUNCTIONS
-
     function resetForUserAllPositionsToZero(address _account) internal nonReentrant {
         if (positionCount > 0) {
             for (uint i = 1; i <= positionCount; i++) {

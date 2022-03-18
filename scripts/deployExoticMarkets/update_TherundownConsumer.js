@@ -1,6 +1,6 @@
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const { getTargetAddress, setTargetAddress } = require('../../helpers');
+const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
 	

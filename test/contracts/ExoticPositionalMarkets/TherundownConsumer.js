@@ -235,14 +235,6 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
 			);
 
-			assert.equal(
-				'Philadelphia 76ers',
-				await TherundownConsumerDeployed.phrasePerGameId(gameid1, 0)
-			);
-			assert.equal('Brooklyn Nets', await TherundownConsumerDeployed.phrasePerGameId(gameid1, 1));
-
-			assert.equal(9004, await TherundownConsumerDeployed.tagsPerGameId(gameid1, 0));
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			assert.equal('Philadelphia 76ers', game.homeTeam);
 			assert.equal('Brooklyn Nets', game.awayTeam);
@@ -279,23 +271,6 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
 			);
 
-			assert.equal(
-				'Ajax Amsterdam Ajax Amsterdam',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 0)
-			);
-
-			assert.equal(
-				'It will be a draw',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 2)
-			);
-
-			assert.equal(
-				'Benfica Benfica',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 1)
-			);
-
-			assert.equal(9016, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 0));
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
 			assert.equal('Ajax Amsterdam Ajax Amsterdam', game.homeTeam);
 			assert.equal('Benfica Benfica', game.awayTeam);
@@ -331,23 +306,6 @@ contract('TherundownConsumer', accounts => {
 				game_2_football_create,
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
 			);
-
-			assert.equal(
-				'Manchester United Manchester United',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 0)
-			);
-
-			assert.equal(
-				'It will be a draw',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 2)
-			);
-
-			assert.equal(
-				'Atletico Madrid Atletico Madrid',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 1)
-			);
-
-			assert.equal(9016, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 0));
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
 			assert.equal('Manchester United Manchester United', game.homeTeam);
@@ -390,14 +348,6 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
 			);
 
-			assert.equal(
-				'Philadelphia 76ers',
-				await TherundownConsumerDeployed.phrasePerGameId(gameid1, 0)
-			);
-			assert.equal('Brooklyn Nets', await TherundownConsumerDeployed.phrasePerGameId(gameid1, 1));
-
-			assert.equal(9004, await TherundownConsumerDeployed.tagsPerGameId(gameid1, 0));
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			assert.equal('Philadelphia 76ers', game.homeTeam);
 			assert.equal('Brooklyn Nets', game.awayTeam);
@@ -420,6 +370,9 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(false, await deployedMarket.disputed());
 			assert.equal(false, await deployedMarket.resolved());
 			assert.equal(false, await deployedMarket.canMarketBeResolved());
+			assert.equal("Philadelphia 76ers", await deployedMarket.positionPhrase(1));
+			assert.equal("Brooklyn Nets", await deployedMarket.positionPhrase(2));
+			assert.equal(9004, await deployedMarket.tags(0));
 
 			await fastForward(await currentTime());
 
@@ -478,23 +431,6 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
 			);
 
-			assert.equal(
-				'Ajax Amsterdam Ajax Amsterdam',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 0)
-			);
-
-			assert.equal(
-				'It will be a draw',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 2)
-			);
-
-			assert.equal(
-				'Benfica Benfica',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid1, 1)
-			);
-
-			assert.equal(9016, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid1, 0));
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
 			assert.equal('Ajax Amsterdam Ajax Amsterdam', game.homeTeam);
 			assert.equal('Benfica Benfica', game.awayTeam);
@@ -519,6 +455,10 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(false, await deployedMarket.disputed());
 			assert.equal(false, await deployedMarket.resolved());
 			assert.equal(false, await deployedMarket.canMarketBeResolved());
+			assert.equal("Ajax Amsterdam Ajax Amsterdam", await deployedMarket.positionPhrase(1));
+			assert.equal("Benfica Benfica", await deployedMarket.positionPhrase(2));
+			assert.equal("It will be a draw", await deployedMarket.positionPhrase(3));
+			assert.equal(9016, await deployedMarket.tags(0));
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
@@ -577,23 +517,6 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
 			);
 
-			assert.equal(
-				'Manchester United Manchester United',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 0)
-			);
-
-			assert.equal(
-				'It will be a draw',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 2)
-			);
-
-			assert.equal(
-				'Atletico Madrid Atletico Madrid',
-				await TherundownConsumerDeployed.phrasePerGameId(gameFootballid2, 1)
-			);
-
-			assert.equal(9016, await TherundownConsumerDeployed.tagsPerGameId(gameFootballid2, 0));
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
 			assert.equal('Manchester United Manchester United', game.homeTeam);
 			assert.equal('Atletico Madrid Atletico Madrid', game.awayTeam);
@@ -618,6 +541,10 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(false, await deployedMarket.disputed());
 			assert.equal(false, await deployedMarket.resolved());
 			assert.equal(false, await deployedMarket.canMarketBeResolved());
+			assert.equal("Manchester United Manchester United", await deployedMarket.positionPhrase(1));
+			assert.equal("Atletico Madrid Atletico Madrid", await deployedMarket.positionPhrase(2));
+			assert.equal("It will be a draw", await deployedMarket.positionPhrase(3));
+			assert.equal(9016, await deployedMarket.tags(0));
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 

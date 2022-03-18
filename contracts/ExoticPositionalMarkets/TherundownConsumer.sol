@@ -61,8 +61,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     // market props
     IExoticPositionalMarketManager public exoticManager;
-    mapping(bytes32 => string[]) public phrasePerGameId;
-    mapping(bytes32 => uint[]) public tagsPerGameId;
     mapping(bytes32 => address) public marketPerGameId;
     mapping(address => bool) public marketResolved;
     uint public fixedTicketPrice;
@@ -186,9 +184,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(_sportId);
 
-        _calculateTags(_game.gameId, _sportId);
-        _createPhrases(_game.gameId, _game.homeTeam, _game.awayTeam, numberOfPositions);
-
         // create
         exoticManager.createCLMarket(
             _append(_game.homeTeam, _game.awayTeam),
@@ -196,9 +191,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             _game.startTime,
             fixedTicketPrice,
             withdrawalAllowed,
-            tagsPerGameId[_game.gameId],
+            _calculateTags(_sportId),
             numberOfPositions,
-            phrasePerGameId[_game.gameId]
+            _createPhrases(_game.homeTeam, _game.awayTeam, numberOfPositions)
         );
 
         address marketAddress = exoticManager.getActiveMarketAddress(exoticManager.numOfActiveMarkets() - 1);
@@ -223,24 +218,30 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _createPhrases(
-        bytes32 _gameId,
         string memory teamA,
         string memory teamB,
-        uint _numberOfPositions
-    ) internal {
-        phrasePerGameId[_gameId].push(teamA);
-        phrasePerGameId[_gameId].push(teamB);
+        uint _numberOfPositions) 
+    public pure returns(string[] memory) {
+
+        string[] memory result = new string[](_numberOfPositions);
+        
+        result[0] = teamA;
+        result[1] = teamB;
         if (_numberOfPositions > 2) {
-            phrasePerGameId[_gameId].push("It will be a draw");
+            result[2] = "It will be a draw";
         }
+        
+        return result;
     }
 
     function _calculateNumberOfPositionsBasedOnSport(uint _sportsId) internal returns (uint) {
         return isSportTwoPositionsSport(_sportsId) ? 2 : 3;
     }
 
-    function _calculateTags(bytes32 _gameId, uint _sportsId) internal {
-        tagsPerGameId[_gameId].push(MIN_TAG_NUMBER + _sportsId);
+    function _calculateTags(uint _sportsId) internal returns (uint[] memory) {
+        uint[] memory result = new uint[](1);
+        result[0] = MIN_TAG_NUMBER +_sportsId;
+        return result;
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal pure returns (bool) {

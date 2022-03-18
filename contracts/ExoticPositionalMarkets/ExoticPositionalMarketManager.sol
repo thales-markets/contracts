@@ -212,7 +212,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         if (ExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
         }
-        if (creatorAddress[_marketAddress] != msg.sender) {
+        if (msg.sender == creatorAddress[_marketAddress] || msg.sender == owner || msg.sender == oracleCouncilAddress) {
+            require(oracleCouncilAddress != address(0), "Invalid oracle council address");
+            require(creatorAddress[_marketAddress] != address(0), "Invalid creator address");
+            require(owner != address(0), "Invalid owner address");
+        } else {
             require(
                 IERC20(paymentToken).balanceOf(msg.sender) >= ExoticPositionalMarket(_marketAddress).fixedBondAmount(),
                 "Low token amount for market creation"
@@ -233,8 +237,38 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit MarketResolved(_marketAddress, _outcomePosition);
     }
 
-    function cancelMarket(address _marketAddress) external onlyOracleCouncilAndOwner {
+    function cancelMarket(address _marketAddress) external {
         require(isActiveMarket(_marketAddress), "Market is not active");
+        require(
+            msg.sender == oracleCouncilAddress || msg.sender == owner || msg.sender == creatorAddress[_marketAddress],
+            "Not OracleCouncil Address or Owner address or Creator address"
+        );
+        if (msg.sender != owner) {
+            require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
+            require(
+                creatorAddress[_marketAddress] != address(0),
+                "Not OracleCouncil address. Please update valid Oracle address"
+            );
+            // Creator can cancel if it is the only ticket holder or only one that placed open bid
+            if (msg.sender == creatorAddress[_marketAddress]) {
+                require(
+                    ExoticPositionalMarket(_marketAddress).totalUsersTakenPositions() <= 1,
+                    "More users already taken position"
+                );
+                if (ExoticPositionalMarket(_marketAddress).fixedTicketPrice() == 0) {
+                    require(
+                        ExoticPositionalMarket(_marketAddress).getTotalPlacedAmount() ==
+                            ExoticPositionalMarket(_marketAddress).getUserOpenBidTotalPlacedAmount(msg.sender),
+                        "Creator can not cancel the market at this point. More users placed position"
+                    );
+                } else {
+                    require(
+                        ExoticPositionalMarket(_marketAddress).getUserPosition(msg.sender) > 0,
+                        "The creator is not the single ticket holder. Can not cancel."
+                    );
+                }
+            }
+        }
         if (ExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
         }

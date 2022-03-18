@@ -219,6 +219,12 @@
       },
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "winningPosition",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "voter",
         "type": "address"

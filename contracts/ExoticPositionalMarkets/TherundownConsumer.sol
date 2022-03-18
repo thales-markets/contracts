@@ -103,7 +103,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) external onlyWrapper {
         requestIdGamesCreated[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
-            
             GameCreate memory game = abi.decode(_games[i], (GameCreate));
 
             // if already created market
@@ -118,13 +117,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         bytes[] memory _games,
         uint _sportId
     ) external onlyWrapper {
-        
         requestIdGamesResolved[_requestId] = _games;
 
         for (uint i = 0; i < _games.length; i++) {
-        
             GameResolve memory game = abi.decode(_games[i], (GameResolve));
-        
+
             // if already resolved
             if (!marketResolved[marketPerGameId[game.gameId]]) {
                 _resolveMarket(abi.decode(_games[i], (GameResolve)), _sportId);
@@ -214,7 +211,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         gameResolved[_game.gameId] = _game;
 
         if (_isGameStatusResolved(_game)) {
-            
             exoticManager.resolveMarket(marketPerGameId[_game.gameId], _callulateOutcome(_game));
             marketResolved[marketPerGameId[_game.gameId]] = true;
 

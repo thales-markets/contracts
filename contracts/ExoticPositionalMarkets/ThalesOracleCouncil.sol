@@ -133,7 +133,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         return
             (marketClosedForDisputes[_market] || _disputeIndex <= allOpenDisputesCancelledToIndexForMarket[_market]) &&
             dispute[_market][_disputeIndex].disputeCode == 0 &&
-            marketLastClosedDispute[_market] != _disputeIndex ;
+            marketLastClosedDispute[_market] != _disputeIndex;
     }
 
     function canDisputorClaimbackBondFromUnclosedDispute(
@@ -237,7 +237,10 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             require(_disputeCodeVote < ACCEPT_RESULT, "Invalid voting code for dispute in positioning");
         } else {
             require(_disputeCodeVote >= ACCEPT_RESULT, "Invalid voting code for dispute in positioning");
-            require(_disputeIndex > allOpenDisputesCancelledToIndexForMarket[_market], "Dispute is already cancelled previously");
+            require(
+                _disputeIndex > allOpenDisputesCancelledToIndexForMarket[_market],
+                "Dispute is already cancelled previously"
+            );
         }
         if (_winningPosition > 0 && _disputeCodeVote == ACCEPT_RESULT) {
             if (disputeWinningPositionChoosen[_market][_disputeIndex] == 0) {
@@ -257,10 +260,11 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         }
 
         // check if already has voted for another option, and revert the vote
-        if (
-            disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] > 0 &&
-            disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] != _disputeCodeVote
-        ) {
+        if (disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] > 0) {
+            require(
+                disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] != _disputeCodeVote,
+                "Same vote as previous"
+            );
             disputeVotesCount[_market][_disputeIndex][
                 disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]]
             ] = disputeVotesCount[_market][_disputeIndex][
@@ -276,7 +280,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         ]
             .add(1);
 
-        emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote, msg.sender);
+        emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote, _winningPosition, msg.sender);
 
         if (disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] > (councilMemberCount.div(2))) {
             closeDispute(_market, _disputeIndex, _disputeCodeVote);
@@ -453,7 +457,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     event OracleCouncilMemberRemoved(address councilMember, uint councilMemberCount);
     event NewMarketManager(address marketManager);
     event NewDispute(address market, string disputeString, bool disputeInPositioningPhase, address disputorAccount);
-    event VotedAddedForDispute(address market, uint disputeIndex, uint disputeCodeVote, address voter);
+    event VotedAddedForDispute(address market, uint disputeIndex, uint disputeCodeVote, uint winningPosition, address voter);
     event MarketClosedForDisputes(address market, uint disputeFinalCode);
     event MarketReopenedForDisputes(address market);
     event DisputeClosed(address market, uint disputeIndex, uint decidedOption);

@@ -51,7 +51,7 @@ async function main() {
 
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
-	const exoticManager = await ethers.getContractFactory('ExoticMarketManager');
+	const exoticManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
 	let exoticManagerAddress = getTargetAddress('ExoticMarketManager', network);
 
 	console.log('ExoticMarketManager address: ', exoticManagerAddress);
@@ -66,10 +66,12 @@ async function main() {
 	const allowedSports = [4, 16];
 
 	const twoPositionSports = [4];
-	const fixedPrice = toUnit(10);
+	const fixedPrice = w3utils.toWei('10');
 	const withdrawalAllowed = true;
 
 	/* ========== DEPLOY CONTRACT ========== */
+
+	console.log('Starting...');
 
 	let TherundownConsumer = await ethers.getContractFactory('TherundownConsumer');
 	const therundown = await upgrades.deployProxy(TherundownConsumer, [

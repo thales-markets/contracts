@@ -209,6 +209,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         if (isChainLinkMarket[_marketAddress]) {
             require(msg.sender == theRundownConsumerAddress, "Invalid resolver. Resolver can be only theRundownConsumer");
         }
+        if (msg.sender != owner && msg.sender != oracleCouncilAddress) {
+            require(ExoticPositionalMarket(_marketAddress).canMarketBeResolved(), "Market already resolved");
+        }
         if (ExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
         }
@@ -252,21 +255,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             // Creator can cancel if it is the only ticket holder or only one that placed open bid
             if (msg.sender == creatorAddress[_marketAddress]) {
                 require(
-                    ExoticPositionalMarket(_marketAddress).totalUsersTakenPositions() <= 1,
-                    "More users already taken position"
+                    ExoticPositionalMarket(_marketAddress).canCreatorCancelMarket(),
+                    "Market can not be cancelled by creator"
                 );
-                if (ExoticPositionalMarket(_marketAddress).fixedTicketPrice() == 0) {
-                    require(
-                        ExoticPositionalMarket(_marketAddress).getTotalPlacedAmount() ==
-                            ExoticPositionalMarket(_marketAddress).getUserOpenBidTotalPlacedAmount(msg.sender),
-                        "Creator can not cancel the market at this point. More users placed position"
-                    );
-                } else {
-                    require(
-                        ExoticPositionalMarket(_marketAddress).getUserPosition(msg.sender) > 0,
-                        "The creator is not the single ticket holder. Can not cancel."
-                    );
-                }
             }
         }
         if (ExoticPositionalMarket(_marketAddress).paused()) {

@@ -66,7 +66,9 @@
 		"TherundownConsumerImplementation": "0x45669F16644cD745E693b6bEb3A65E31f5b98320",
 		"ExoticMarketMasterCopy": "0x218594A8eE840282300531cbebbeDEBe4C885485",
 		"ExoticMarketManager": "0xbaE495fe38bF3f70F551d94f58716b173C4a009e",
-		"ExoticMarketManagerImplementation": "0x427a45FE1101da66e640cAB25920d6F374334fe1"
+		"ExoticMarketManagerImplementation": "0x427a45FE1101da66e640cAB25920d6F374334fe1",
+		"ThalesBonds": "0x08383DE28Ce4CC48773c7876d4A6649578C26153",
+		"ThalesBondsImplementation": "0xA17A70722dff78A06f585Fb2B2f63f0B16d75B8F"
 	},
 	"goerli": {
 		"Airdrop": "",
@@ -145,11 +147,11 @@
 		"ThalesStakingRewardsPool": "0xBfb2692Ae8c4399FD27977b9e14E8E69e31711d6",
 		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a",
 		"ExoiticMarket": "0xc85792c44c173F4b6Ee80f82144AcDb2c3bF5aA8",
-		"ExoticMarketMasterCopy": "0xB3940CC62C0d488ceaEa797bCAedfd880D2adf24",
+		"ExoticMarketMasterCopy": "0x135309623975cC011a0E0D74401d2bcCb0E1D246",
 		"ExoticMarketManager": "0x4eA42C9bD934e38C646a66512B1bc783BA81D812",
-		"ExoticMarketManagerImplementation": "0xaD8f08a73483A843121a54B418CDdc9791cE0e22",
+		"ExoticMarketManagerImplementation": "0xB21F4F2f921704c9970a3a61ebe6F59daE38247A",
 		"ThalesOracleCouncil": "0x61118647A361CBaFE9119D5d7e08Be5026A20dC4",
-		"ThalesOracleCouncilImplementation": "0xC51cd7C669e6c5765e51ADa60A1C82cFe89CF9f0",
+		"ThalesOracleCouncilImplementation": "0x08707fc31dB8D82c4264c4aa4d3476f2969C937A",
 		"ThalesBonds": "0xFA58e022acD77EE4f373b508c8265000A4f22994",
 		"ThalesBondsImplementation": "0x59a3B51081a3d7e47206CEc6CddC1E8c45E1c82B",
 		"ExoticPositionalTags": "0x912e29c66291e10565df22b2857EACC2Ea6A84A1",

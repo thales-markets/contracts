@@ -238,7 +238,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
 
     // market resolved only through the Manager
     function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner {
-        require(canMarketBeResolved(), "Market can not be resolved. It is disputed/not matured/resolved");
+        require(canMarketBeResolvedByOwner(), "Market can not be resolved. It is disputed/not matured");
         require(_outcomePosition <= positionCount, "Outcome position exeeds the position");
         winningPosition = _outcomePosition;
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
@@ -422,8 +422,30 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         return block.timestamp >= endOfPositioning && creationTime > 0 && (!disputed) && !resolved;
     }
 
+    function canMarketBeResolvedByOwner() public view returns (bool) {
+        return block.timestamp >= endOfPositioning && creationTime > 0 && (!disputed);
+    }
+
     function canMarketBeResolvedByPDAO() public view returns (bool) {
-        return canMarketBeResolved() && block.timestamp >= endOfPositioning.add(marketManager.pDAOResolveTimePeriod());
+        return
+            canMarketBeResolvedByOwner() && block.timestamp >= endOfPositioning.add(marketManager.pDAOResolveTimePeriod());
+    }
+
+    function canCreatorCancelMarket() public view returns (bool) {
+        if (totalUsersTakenPositions > 1) {
+            return false;
+        }
+        if (totalUsersTakenPositions == 0) {
+            return true;
+        }
+        if (ticketType == TicketType.FLEXIBLE_BID) {
+            return
+                totalOpenBidAmount == getUserOpenBidTotalPlacedAmount(marketManager.creatorAddress(address(this)))
+                    ? true
+                    : false;
+        } else {
+            return userPosition[marketManager.creatorAddress(address(this))] > 0 ? true : false;
+        }
     }
 
     function canUsersClaim() public view returns (bool) {

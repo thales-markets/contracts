@@ -306,7 +306,33 @@
   },
   {
     "inputs": [],
+    "name": "canCreatorCancelMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "canMarketBeResolved",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "canMarketBeResolvedByOwner",
     "outputs": [
       {
         "internalType": "bool",

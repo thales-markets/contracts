@@ -262,10 +262,6 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
 
         // check if already has voted for another option, and revert the vote
         if (disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] > 0) {
-            require(
-                disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] != _disputeCodeVote,
-                "Same vote as previous"
-            );
             disputeVotesCount[_market][_disputeIndex][
                 disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]]
             ] = disputeVotesCount[_market][_disputeIndex][

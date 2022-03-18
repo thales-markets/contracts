@@ -61,6 +61,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint public arbitraryRewardForDisputor;
     address public theRundownConsumerAddress;
     mapping(address => bool) public isChainLinkMarket;
+    address public marketDataAddress;
 
     function initialize(
         address _owner,
@@ -402,6 +403,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit NewOracleCouncilAddress(_councilAddress);
     }
 
+    function setMarketDataAddress(address _marketDataAddress) external onlyOwner {
+        require(_marketDataAddress != address(0), "Invalid address");
+        marketDataAddress = _marketDataAddress;
+        emit NewMarketDataAddress(_marketDataAddress);
+    }
+
     function setTheRundownConsumerAddress(address _theRundownConsumerAddress) external onlyOwner {
         require(_theRundownConsumerAddress != address(0), "Invalid address");
         theRundownConsumerAddress = _theRundownConsumerAddress;
@@ -544,6 +551,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewSafeBoxLowAmount(uint safeBoxLowAmount);
     event RewardSentToDisputorForMarket(address market, address disputorAddress, uint amount);
     event NewTheRundownConsumerAddress(address theRundownConsumerAddress);
+    event NewMarketDataAddress(address marketDataAddress);
+
     event MarketCreated(
         address marketAddress,
         string marketQuestion,

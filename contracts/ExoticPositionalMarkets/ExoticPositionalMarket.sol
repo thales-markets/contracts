@@ -21,37 +21,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     uint private constant FIXED_BOND_AMOUNT = 100 * 1e18;
     uint private constant CANCELED = 0;
 
-    struct MarketData {
-        string marketQuestion;
-        string marketSource;
-        TicketType ticketType;
-        uint endOfPositioning;
-        uint fixedTicketPrice;
-        uint creationTime;
-        bool withdrawalAllowed;
-        bool disputed;
-        bool resolved;
-        uint resolvedTime;
-        string[] positionPhrasesList;
-        uint[] tags;
-        uint totalPlacedAmount;
-        uint totalClaimableAmount;
-        uint[] amountsPerPosition;
-        bool canUsersPlacePosition;
-        bool canMarketBeResolved;
-        bool canMarketBeResolvedByPDAO;
-        bool canUsersClaim;
-        bool isCancelled;
-        bool paused;
-        uint winningPosition;
-        address creatorAddress;
-        address resolverAddress;
-        uint fixedBondAmount;
-        uint disputePrice;
-        uint safeBoxLowAmount;
-        uint arbitraryRewardForDisputor;
-    }
-
     uint public creationTime;
     uint public resolvedTime;
     uint public lastDisputeTime;
@@ -435,9 +404,12 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         if (totalUsersTakenPositions != 1) {
             return totalUsersTakenPositions > 1 ? false : true;
         }
-        return (fixedTicketPrice == 0 && totalOpenBidAmount == getUserOpenBidTotalPlacedAmount(marketManager.creatorAddress(address(this)))) || userPosition[marketManager.creatorAddress(address(this))] > 0
-                    ? true
-                    : false;
+        return
+            (fixedTicketPrice == 0 &&
+                totalOpenBidAmount == getUserOpenBidTotalPlacedAmount(marketManager.creatorAddress(address(this)))) ||
+                userPosition[marketManager.creatorAddress(address(this))] > 0
+                ? true
+                : false;
     }
 
     function canUsersClaim() public view returns (bool) {
@@ -598,50 +570,23 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         return tags.length;
     }
 
-    function getAllMarketData() external view returns (MarketData memory) {
-        string[] memory positionPhrasesList = new string[](positionCount);
-        uint[] memory amountsPerPosition = new uint[](positionCount);
-        if (positionCount > 0) {
-            for (uint i = 1; i <= positionCount; i++) {
-                positionPhrasesList[i - 1] = positionPhrase[i];
-                amountsPerPosition[i - 1] = getPlacedAmountPerPosition(i);
-            }
-        }
-        MarketData memory marketData;
-        marketData.marketQuestion = marketQuestion;
-        marketData.marketSource = marketSource;
-        marketData.ticketType = ticketType;
-        marketData.endOfPositioning = endOfPositioning;
-        marketData.fixedTicketPrice = fixedTicketPrice;
-        marketData.creationTime = creationTime;
-        marketData.withdrawalAllowed = withdrawalAllowed;
-        marketData.disputed = disputed;
-        marketData.resolved = resolved;
-        marketData.resolvedTime = resolvedTime;
-        marketData.positionPhrasesList = positionPhrasesList;
-        marketData.tags = tags;
-        marketData.totalPlacedAmount = getTotalPlacedAmount();
-        marketData.totalClaimableAmount = getTotalClaimableAmount();
-        marketData.amountsPerPosition = amountsPerPosition;
-        marketData.canUsersPlacePosition = canUsersPlacePosition();
-        marketData.canMarketBeResolved = canMarketBeResolved();
-        marketData.canMarketBeResolvedByPDAO = canMarketBeResolvedByPDAO();
-        marketData.canUsersClaim = canUsersClaim();
-        marketData.isCancelled = isMarketCancelled();
-        marketData.paused = paused;
-        marketData.winningPosition = winningPosition;
-        marketData.creatorAddress = marketManager.creatorAddress(address(this));
-        marketData.resolverAddress = marketManager.resolverAddress(address(this));
-        marketData.fixedBondAmount = fixedBondAmount;
-        marketData.disputePrice = disputePrice;
-        marketData.safeBoxLowAmount = safeBoxLowAmount;
-        marketData.arbitraryRewardForDisputor = arbitraryRewardForDisputor;
-        return marketData;
+    function getTicketType() external view returns (uint) {
+        return uint(ticketType);
     }
 
-    function getAllAmounts() external view returns (uint,uint, uint, uint) {
+    function getAllAmounts()
+        external
+        view
+        returns (
+            uint,
+            uint,
+            uint,
+            uint
+        )
+    {
         return (fixedBondAmount, disputePrice, safeBoxLowAmount, arbitraryRewardForDisputor);
     }
+
     function resetForUserAllPositionsToZero(address _account) internal nonReentrant {
         if (positionCount > 0) {
             for (uint i = 1; i <= positionCount; i++) {

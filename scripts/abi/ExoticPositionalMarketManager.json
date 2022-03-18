@@ -246,6 +246,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "marketDataAddress",
+        "type": "address"
+      }
+    ],
+    "name": "NewMarketDataAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "maxNumberOfTags",
         "type": "uint256"
@@ -980,6 +993,19 @@
   },
   {
     "inputs": [],
+    "name": "marketDataAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maxNumberOfTags",
     "outputs": [
       {
@@ -1464,6 +1490,19 @@
       }
     ],
     "name": "setFixedBondAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_marketDataAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setMarketDataAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -18,7 +18,7 @@ interface IExoticPositionalMarket {
     function fixedTicketPrice() external view returns(uint);
     function creationTime() external view returns(uint);
     function winningPosition() external view returns(uint);
-    function tags() external view returns(uint[] memory);
+    function getTags() external view returns(uint[] memory);
     function getTotalPlacedAmount() external view returns(uint);
     function getTotalClaimableAmount() external view returns(uint);
     function getPlacedAmountPerPosition(uint index) external view returns(uint);

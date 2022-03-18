@@ -443,7 +443,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         if (ticketType == TicketType.FLEXIBLE_BID) {
             return totalOpenBidAmount;
         } else {
-            return fixedTicketPrice.mul(totalUsersTakenPositions);
+            return totalUsersTakenPositions > 0 ? fixedTicketPrice.mul(totalUsersTakenPositions) : 0;
         }
     }
 
@@ -566,8 +566,12 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
                 .div(HUNDRED_PERCENT);
     }
 
-    function getTagsCount() public view returns (uint) {
+    function getTagsCount() external view returns (uint) {
         return tags.length;
+    }
+
+    function getTags() external view returns (uint[] memory) {
+        return tags;
     }
 
     function getTicketType() external view returns (uint) {

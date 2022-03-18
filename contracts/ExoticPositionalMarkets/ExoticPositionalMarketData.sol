@@ -69,46 +69,48 @@ contract ExoticPositionalMarketData is Initializable, ProxyOwned, PausableUpgrad
 
     function getAllMarketData(address _market) external view returns (MarketData memory) {
         uint positionCount = IExoticPositionalMarket(_market).positionCount();
+        IExoticPositionalMarket market = IExoticPositionalMarket(_market);
+        MarketData memory marketData;
+        marketData.marketQuestion = market.marketQuestion();
+        marketData.marketSource = market.marketSource();
+        marketData.ticketType = market.getTicketType();
+        marketData.endOfPositioning = market.endOfPositioning();
+        marketData.fixedTicketPrice = market.fixedTicketPrice();
+        marketData.creationTime = market.creationTime();
+        marketData.withdrawalAllowed = market.withdrawalAllowed();
+        marketData.disputed = market.disputed();
+        marketData.resolved = market.resolved();
+        marketData.resolvedTime = market.resolvedTime();
+        marketData.paused = market.paused();
+        marketData.winningPosition = market.winningPosition();
+        marketData.fixedBondAmount = market.fixedBondAmount();
+        marketData.disputePrice = market.disputePrice();
+        marketData.safeBoxLowAmount = market.safeBoxLowAmount();
+        marketData.arbitraryRewardForDisputor = market.arbitraryRewardForDisputor();
+        marketData.backstopTimeout = market.backstopTimeout();
+        marketData.disputeClosedTime = market.disputeClosedTime();
+        marketData.totalPlacedAmount = market.getTotalPlacedAmount();
+        marketData.totalClaimableAmount = market.getTotalClaimableAmount();
+        marketData.canUsersPlacePosition = market.canUsersPlacePosition();
+        marketData.canMarketBeResolved = market.canMarketBeResolved();
+        marketData.canMarketBeResolvedByPDAO = market.canMarketBeResolvedByPDAO();
+        marketData.canUsersClaim = market.canUsersClaim();
+        marketData.isCancelled = market.isMarketCancelled();
+        marketData.creatorAddress = IExoticPositionalMarketManager(marketManagerAddress).creatorAddress(_market);
+        marketData.resolverAddress = IExoticPositionalMarketManager(marketManagerAddress).resolverAddress(_market);
+        marketData.canCreatorCancelMarket = market.canCreatorCancelMarket();
+        marketData.tags = market.getTags();
+
         string[] memory positionPhrasesList = new string[](positionCount);
         uint[] memory amountsPerPosition = new uint[](positionCount);
         if (positionCount > 0) {
             for (uint i = 1; i <= positionCount; i++) {
-                positionPhrasesList[i - 1] = IExoticPositionalMarket(_market).positionPhrase(i);
-                amountsPerPosition[i - 1] = IExoticPositionalMarket(_market).getPlacedAmountPerPosition(i);
+                positionPhrasesList[i - 1] = market.positionPhrase(i);
+                amountsPerPosition[i - 1] = market.getPlacedAmountPerPosition(i);
             }
         }
-        MarketData memory marketData;
-        marketData.marketQuestion = IExoticPositionalMarket(_market).marketQuestion();
-        marketData.marketSource = IExoticPositionalMarket(_market).marketSource();
-        marketData.ticketType = IExoticPositionalMarket(_market).getTicketType();
-        marketData.endOfPositioning = IExoticPositionalMarket(_market).endOfPositioning();
-        marketData.fixedTicketPrice = IExoticPositionalMarket(_market).fixedTicketPrice();
-        marketData.creationTime = IExoticPositionalMarket(_market).creationTime();
-        marketData.withdrawalAllowed = IExoticPositionalMarket(_market).withdrawalAllowed();
-        marketData.disputed = IExoticPositionalMarket(_market).disputed();
-        marketData.resolved = IExoticPositionalMarket(_market).resolved();
-        marketData.resolvedTime = IExoticPositionalMarket(_market).resolvedTime();
         marketData.positionPhrasesList = positionPhrasesList;
-        marketData.tags = IExoticPositionalMarket(_market).tags();
-        marketData.totalPlacedAmount = IExoticPositionalMarket(_market).getTotalPlacedAmount();
-        marketData.totalClaimableAmount = IExoticPositionalMarket(_market).getTotalClaimableAmount();
         marketData.amountsPerPosition = amountsPerPosition;
-        marketData.canUsersPlacePosition = IExoticPositionalMarket(_market).canUsersPlacePosition();
-        marketData.canMarketBeResolved = IExoticPositionalMarket(_market).canMarketBeResolved();
-        marketData.canMarketBeResolvedByPDAO = IExoticPositionalMarket(_market).canMarketBeResolvedByPDAO();
-        marketData.canUsersClaim = IExoticPositionalMarket(_market).canUsersClaim();
-        marketData.isCancelled = IExoticPositionalMarket(_market).isMarketCancelled();
-        marketData.paused = IExoticPositionalMarket(_market).paused();
-        marketData.winningPosition = IExoticPositionalMarket(_market).winningPosition();
-        marketData.creatorAddress = IExoticPositionalMarketManager(marketManagerAddress).creatorAddress(address(this));
-        marketData.resolverAddress = IExoticPositionalMarketManager(marketManagerAddress).resolverAddress(address(this));
-        marketData.fixedBondAmount = IExoticPositionalMarket(_market).fixedBondAmount();
-        marketData.disputePrice = IExoticPositionalMarket(_market).disputePrice();
-        marketData.safeBoxLowAmount = IExoticPositionalMarket(_market).safeBoxLowAmount();
-        marketData.arbitraryRewardForDisputor = IExoticPositionalMarket(_market).arbitraryRewardForDisputor();
-        marketData.backstopTimeout = IExoticPositionalMarket(_market).backstopTimeout();
-        marketData.disputeClosedTime = IExoticPositionalMarket(_market).disputeClosedTime();
-        marketData.canCreatorCancelMarket = IExoticPositionalMarket(_market).canCreatorCancelMarket();
         return marketData;
     }
 

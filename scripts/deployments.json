@@ -61,14 +61,14 @@
 		"ProxyEscrowThalesImplementation": "0x596C785d91A18CC6f25861770f5238d176946B53",
 		"ProxyPriceFeed": "0x9800ea969f1647edE2D954a3C82DE891549F41C2",
 		"SNXIssuer": "0x2Ef87CE145476A895ef2D442d826aED1CFaf5627",
-		"TherundownConsumerWrapper": "0x884c1442bBA5E26ecd1D395828E1e061F1A376f7",
-		"TherundownConsumer": "0xD212694e2D37E698755899D8BEDd1436cf2eFEe6",
-		"TherundownConsumerImplementation": "0x45669F16644cD745E693b6bEb3A65E31f5b98320",
+		"TherundownConsumerWrapper": "0x7C65A1d3c87DE4a9D898B123ffbF6e2277897deD",
 		"ExoticMarketMasterCopy": "0x218594A8eE840282300531cbebbeDEBe4C885485",
 		"ExoticMarketManager": "0xbaE495fe38bF3f70F551d94f58716b173C4a009e",
 		"ExoticMarketManagerImplementation": "0x427a45FE1101da66e640cAB25920d6F374334fe1",
 		"ThalesBonds": "0x08383DE28Ce4CC48773c7876d4A6649578C26153",
-		"ThalesBondsImplementation": "0xA17A70722dff78A06f585Fb2B2f63f0B16d75B8F"
+		"ThalesBondsImplementation": "0xA17A70722dff78A06f585Fb2B2f63f0B16d75B8F",
+		"TherundownConsumer": "0x8ba7d76E8b4AF470cdE0E803Ec573Ed09f1939c1",
+		"TherundownConsumerImplementation": "0x399F68AA0704A26Fe0Ca36CfD955Ec82fc591984"
 	},
 	"goerli": {
 		"Airdrop": "",

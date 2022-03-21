@@ -14,7 +14,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     using SafeERC20 for IERC20;
 
     enum TicketType {FIXED_TICKET_PRICE, FLEXIBLE_BID}
-    uint private safeBoxAmount;
     uint private constant HUNDRED = 100;
     uint private constant ONE_PERCENT = 1e16;
     uint private constant HUNDRED_PERCENT = 1e18;
@@ -154,10 +153,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             require(userPosition[msg.sender] > 0, "Not a ticket holder");
             uint withdrawalFee =
                 fixedTicketPrice.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
-            safeBoxAmount = safeBoxAmount.add(withdrawalFee.div(2));
             totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
             ticketsPerPosition[userPosition[msg.sender]] = ticketsPerPosition[userPosition[msg.sender]].sub(1);
             userPosition[msg.sender] = 0;
+            IERC20(marketManager.paymentToken()).safeTransfer(marketManager.safeBoxAddress(), withdrawalFee.div(2));
             IERC20(marketManager.paymentToken()).safeTransfer(
                 marketManager.creatorAddress(address(this)),
                 withdrawalFee.div(2)
@@ -177,7 +176,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
             uint withdrawalFee =
                 totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
-            safeBoxAmount = safeBoxAmount.add(withdrawalFee.div(2));
+            IERC20(marketManager.paymentToken()).safeTransfer(marketManager.safeBoxAddress(), withdrawalFee.div(2));
             IERC20(marketManager.paymentToken()).safeTransfer(
                 marketManager.creatorAddress(address(this)),
                 withdrawalFee.div(2)
@@ -199,7 +198,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         }
         totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
         uint withdrawalFee = totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
-        safeBoxAmount = safeBoxAmount.add(withdrawalFee.div(2));
+        IERC20(marketManager.paymentToken()).safeTransfer(marketManager.safeBoxAddress(), withdrawalFee.div(2));
         IERC20(marketManager.paymentToken()).safeTransfer(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
         IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, totalToWithdraw.sub(withdrawalFee));
         emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
@@ -317,6 +316,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
                 getAdditionalResolverAmount()
             );
             IERC20(marketManager.paymentToken()).safeTransfer(marketManager.safeBoxAddress(), getSafeBoxAmount());
+            marketManager.issueBondsBackToCreatorAndResolver(address(this));
             firstUserClaimed = true;
         }
         emit WinningTicketClaimed(msg.sender, amount);
@@ -451,7 +451,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         if (totalUsersTakenPositions == 0) {
             return 0;
         } else {
-            return applyDeduction(getTotalPlacedAmount());
+            return winningPosition == CANCELED ? getTotalPlacedAmount() : applyDeduction(getTotalPlacedAmount());
         }
     }
 
@@ -510,7 +510,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
 
     function getUserOpenBidPotentialWinningForPosition(address _account, uint _position) public view returns (uint) {
         if (_position == CANCELED) {
-            return 0;
+            return getUserOpenBidTotalPlacedAmount(_account);
         }
         return
             userOpenBidPosition[_account][_position].mul(getTotalClaimableAmount()).div(
@@ -536,7 +536,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         if (totalUsersTakenPositions == 0) {
             return 0;
         } else {
-            return getTotalClaimableAmount().div(ticketsPerPosition[_position]);
+            return ticketsPerPosition[_position] > 0 ? getTotalClaimableAmount().div(ticketsPerPosition[_position]) : 0;
         }
     }
 
@@ -544,7 +544,10 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         if (totalUsersTakenPositions == 0 || !resolved || (ticketsPerPosition[winningPosition] == 0)) {
             return 0;
         } else {
-            return getTotalClaimableAmount().div(ticketsPerPosition[winningPosition]);
+            return
+                winningPosition == CANCELED
+                    ? fixedTicketPrice
+                    : getTotalClaimableAmount().div(ticketsPerPosition[winningPosition]);
         }
     }
 
@@ -608,7 +611,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     }
 
     function getSafeBoxAmount() internal view returns (uint) {
-        return getTotalFeesAmount().add(safeBoxAmount).sub(getAdditionalCreatorAmount()).sub(getAdditionalResolverAmount());
+        return getTotalFeesAmount().sub(getAdditionalCreatorAmount()).sub(getAdditionalResolverAmount());
     }
 
     function _initializeWithTwoParameters(

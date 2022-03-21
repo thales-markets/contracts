@@ -60,5 +60,7 @@ interface IExoticPositionalMarketManager {
     function addPauserAddress(address _pauserAddress) external;
     function removePauserAddress(address _pauserAddress) external;
     function sendRewardToDisputor(address _market, address _disputorAddress, uint amount) external;
+    function issueBondsBackToCreatorAndResolver(address _marketAddress) external ;
+
 
 }   

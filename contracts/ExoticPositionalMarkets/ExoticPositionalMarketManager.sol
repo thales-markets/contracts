@@ -62,6 +62,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     address public theRundownConsumerAddress;
     mapping(address => bool) public isChainLinkMarket;
     address public marketDataAddress;
+    bool public creationRestrictedToOwner;
 
     function initialize(
         address _owner,
@@ -96,6 +97,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         uint _positionCount,
         string[] memory _positionPhrases
     ) external checkMarketRequirements(_endOfPositioning) nonReentrant {
+        require(!creationRestrictedToOwner, "Market creation is restricted. (only owner)");
         require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
         require(
             IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
@@ -298,6 +300,16 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         ExoticPositionalMarket(_market).transferFromBondAmountToRecepient(_recepient, _amount);
     }
 
+    function issueBondsBackToCreatorAndResolver(address _marketAddress) external nonReentrant {
+        require(ExoticPositionalMarket(_marketAddress).canUsersClaim(), "Market not claimable");
+        require(
+            IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
+                IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0,
+            "Cretor and resolver bonds already claimed"
+        );
+        IThalesBonds(thalesBonds).issueBondsBackToCreatorAndResolver(_marketAddress);
+    }
+
     function disputeMarket(address _marketAddress, address _disputor) external onlyOracleCouncil {
         IThalesBonds(thalesBonds).sendDisputorBondToMarket(
             _marketAddress,
@@ -476,6 +488,15 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit NewMaxOracleCouncilMembers(_maxOracleCouncilMembers);
     }
 
+    function setCreationRestrictedToOwner(bool _creationRestrictedToOwner) external onlyOwner {
+        require(
+            _creationRestrictedToOwner != creationRestrictedToOwner,
+            "Invalid Maximum Oracle Council members. Number too low"
+        );
+        creationRestrictedToOwner = _creationRestrictedToOwner;
+        emit CreationRestrictedToOwnerChanged(_creationRestrictedToOwner);
+    }
+
     function setPaymentToken(address _paymentToken) external onlyOwner {
         require(_paymentToken != address(0), "Invalid address");
         paymentToken = _paymentToken;
@@ -552,6 +573,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event RewardSentToDisputorForMarket(address market, address disputorAddress, uint amount);
     event NewTheRundownConsumerAddress(address theRundownConsumerAddress);
     event NewMarketDataAddress(address marketDataAddress);
+    event CreationRestrictedToOwnerChanged(bool creationRestrictedToOwner);
 
     event MarketCreated(
         address marketAddress,

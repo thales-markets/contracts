@@ -6,6 +6,8 @@ interface IThalesBonds {
     function getClaimedBondAmountForMarket(address _market) external view returns(uint);
     function getClaimableBondAmountForMarket(address _market) external view returns(uint);
     function getDisputorBondForMarket(address _market, address _disputorAddress) external view returns (uint);
+    function getCreatorBondForMarket(address _market) external view returns (uint);
+    function getResolverBondForMarket(address _market) external view returns (uint);
 
     function sendCreatorBondToMarket(address _market, address _creatorAddress, uint _amount) external;
     function sendResolverBondToMarket(address _market, address _resolverAddress, uint _amount) external;
@@ -14,4 +16,5 @@ interface IThalesBonds {
     function sendOpenDisputeBondFromMarketToDisputor(address _market, address _account, uint _amount) external;
     function setOracleCouncilAddress(address _oracleCouncilAddress) external;
     function setManagerAddress(address _managerAddress) external;
+    function issueBondsBackToCreatorAndResolver(address _market) external;
 }   

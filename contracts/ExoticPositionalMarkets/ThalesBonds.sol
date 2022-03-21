@@ -13,6 +13,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../interfaces/IExoticPositionalMarketManager.sol";
+import "../interfaces/IExoticPositionalMarket.sol";
 
 contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
@@ -50,6 +51,14 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
 
     function getDisputorBondForMarket(address _market, address _disputorAddress) external view returns (uint) {
         return marketBond[_market].disputorBond[_disputorAddress];
+    }
+
+    function getCreatorBondForMarket(address _market) external view returns (uint) {
+        return marketBond[_market].creatorBond;
+    }
+
+    function getResolverBondForMarket(address _market) external view returns (uint) {
+        return marketBond[_market].resolverBond;
     }
 
     // different deposit functions to flag the bond amount : creator
@@ -117,7 +126,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
         require(_amount <= marketBond[_market].totalMarketBond, "Exceeds total market bond");
         marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.sub(_amount);
-        if (_account == marketManager.creatorAddress(_market)) {
+        if (_account == marketManager.creatorAddress(_market) && _account != marketManager.resolverAddress(_market)) {
             require(marketBond[_market].creatorBond >= _amount, "Amount exceeds creator bond");
             marketBond[_market].creatorBond = marketBond[_market].creatorBond.sub(_amount);
         }
@@ -127,10 +136,12 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         }
 
         if (marketBond[_market].disputorsCount > 0 && marketBond[_market].disputorBond[_account] > 0) {
-            marketBond[_market].disputorBond[_account] = marketBond[_market].disputorBond[_account] >= _amount
-                ? marketBond[_market].disputorBond[_account].sub(_amount)
-                : 0;
-            marketBond[_market].disputorsCount = marketBond[_market].disputorsCount.sub(1);
+            marketBond[_market].disputorBond[_account] = marketBond[_market].disputorBond[_account].sub(
+                IExoticPositionalMarket(_market).disputePrice()
+            );
+            marketBond[_market].disputorsCount = marketBond[_market].disputorBond[_account] > 0
+                ? marketBond[_market].disputorsCount
+                : marketBond[_market].disputorsCount.sub(1);
         }
         transferBondFromMarket(_account, _amount);
         emit BondTransferredFromMarketBondToUser(_market, _account, _amount);
@@ -151,6 +162,30 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         marketBond[_market].disputorsCount = marketBond[_market].disputorsCount.sub(1);
         transferBondFromMarket(_account, _amount);
         emit BondTransferredFromMarketBondToUser(_market, _account, _amount);
+    }
+
+    function issueBondsBackToCreatorAndResolver(address _market) external onlyOracleCouncilManagerAndOwner nonReentrant {
+        uint totalIssuedBack;
+        if (
+            marketManager.creatorAddress(_market) != marketManager.resolverAddress(_market) &&
+            marketBond[_market].creatorBond > 0
+        ) {
+            totalIssuedBack = totalIssuedBack.add(marketBond[_market].creatorBond);
+            transferBondFromMarket(marketManager.creatorAddress(_market), marketBond[_market].creatorBond);
+            emit BondTransferredFromMarketBondToUser(_market, marketManager.creatorAddress(_market), totalIssuedBack);
+            marketBond[_market].creatorBond = 0;
+        }
+        if (marketBond[_market].resolverBond > 0) {
+            totalIssuedBack = totalIssuedBack.add(marketBond[_market].resolverBond);
+            transferBondFromMarket(marketManager.resolverAddress(_market), marketBond[_market].resolverBond);
+            marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.sub(totalIssuedBack);
+            emit BondTransferredFromMarketBondToUser(
+                _market,
+                marketManager.resolverAddress(_market),
+                marketBond[_market].resolverBond
+            );
+            marketBond[_market].resolverBond = 0;
+        }
     }
 
     function transferToMarketBond(address _account, uint _amount) internal whenNotPaused {

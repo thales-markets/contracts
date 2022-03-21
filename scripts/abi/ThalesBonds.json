@@ -234,6 +234,25 @@
         "internalType": "address",
         "name": "_market",
         "type": "address"
+      }
+    ],
+    "name": "getCreatorBondForMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
       },
       {
         "internalType": "address",
@@ -242,6 +261,25 @@
       }
     ],
     "name": "getDisputorBondForMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "getResolverBondForMarket",
     "outputs": [
       {
         "internalType": "uint256",
@@ -287,6 +325,19 @@
       }
     ],
     "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "issueBondsBackToCreatorAndResolver",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

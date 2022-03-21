@@ -4,6 +4,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "creationRestrictedToOwner",
+        "type": "bool"
+      }
+    ],
+    "name": "CreationRestrictedToOwnerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "creatorPercentage",
         "type": "uint256"
@@ -759,6 +772,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "creationRestrictedToOwner",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -989,6 +1015,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      }
+    ],
+    "name": "issueBondsBackToCreatorAndResolver",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1407,6 +1446,19 @@
       }
     ],
     "name": "setClaimTimeoutDefaultPeriod",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_creationRestrictedToOwner",
+        "type": "bool"
+      }
+    ],
+    "name": "setCreationRestrictedToOwner",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

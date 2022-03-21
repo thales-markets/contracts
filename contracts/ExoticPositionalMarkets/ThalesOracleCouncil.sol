@@ -48,6 +48,8 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     mapping(address => mapping(uint => uint)) public disputeWinningPositionChoosen;
     mapping(address => address) public firstMemberThatChoseWinningPosition;
     mapping(address => uint) public allOpenDisputesCancelledToIndexForMarket;
+    mapping(address => mapping(uint => mapping(address => uint))) public disputeWinningPositionChoosenByMember;
+    mapping(address => mapping(uint => mapping(uint => uint))) public disputeWinningPositionVotes;
 
     function initialize(address _owner, address _marketManager) public initializer {
         setOwner(_owner);
@@ -146,7 +148,8 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             (marketClosedForDisputes[_market] || _disputeIndex <= allOpenDisputesCancelledToIndexForMarket[_market]) &&
             dispute[_market][_disputeIndex].disputorAddress == _disputorAddress &&
             dispute[_market][_disputeIndex].disputeCode == 0 &&
-            marketLastClosedDispute[_market] != _disputeIndex
+            marketLastClosedDispute[_market] != _disputeIndex &&
+            IThalesBonds(marketManager.thalesBonds()).getDisputorBondForMarket(_market, _disputorAddress) > 0
         ) {
             return true;
         } else {
@@ -243,20 +246,32 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             );
         }
         if (_winningPosition > 0 && _disputeCodeVote == ACCEPT_RESULT) {
-            if (disputeWinningPositionChoosen[_market][_disputeIndex] == 0) {
-                disputeWinningPositionChoosen[_market][_disputeIndex] = _winningPosition;
-                firstMemberThatChoseWinningPosition[_market] = msg.sender;
-            } else if (
-                disputeWinningPositionChoosen[_market][_disputeIndex] != 0 &&
-                firstMemberThatChoseWinningPosition[_market] == msg.sender &&
-                disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] <= 1
-            ) {
-                disputeWinningPositionChoosen[_market][_disputeIndex] = _winningPosition;
+            require(
+                _winningPosition != IExoticPositionalMarket(_market).winningPosition(),
+                "OC member can not vote for the resolved position"
+            );
+            require(
+                disputeWinningPositionChoosenByMember[_market][_disputeIndex][msg.sender] != _winningPosition,
+                "Voting for same winning position"
+            );
+            if (disputeWinningPositionChoosenByMember[_market][_disputeIndex][msg.sender] == 0) {
+                disputeWinningPositionChoosenByMember[_market][_disputeIndex][msg.sender] = _winningPosition;
+                disputeWinningPositionVotes[_market][_disputeIndex][_winningPosition] = disputeWinningPositionVotes[_market][
+                    _disputeIndex
+                ][_winningPosition]
+                    .add(1);
             } else {
-                require(
-                    disputeWinningPositionChoosen[_market][_disputeIndex] == _winningPosition,
-                    "Winning position mismatch. Use the initial winning position or vote for reset."
-                );
+                disputeWinningPositionVotes[_market][_disputeIndex][
+                    disputeWinningPositionChoosenByMember[_market][_disputeIndex][msg.sender]
+                ] = disputeWinningPositionVotes[_market][_disputeIndex][
+                    disputeWinningPositionChoosenByMember[_market][_disputeIndex][msg.sender]
+                ]
+                    .sub(1);
+                disputeWinningPositionChoosenByMember[_market][_disputeIndex][msg.sender] = _winningPosition;
+                disputeWinningPositionVotes[_market][_disputeIndex][_winningPosition] = disputeWinningPositionVotes[_market][
+                    _disputeIndex
+                ][_winningPosition]
+                    .add(1);
             }
         }
 
@@ -280,6 +295,15 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote, _winningPosition, msg.sender);
 
         if (disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] > (councilMemberCount.div(2))) {
+            if (_disputeCodeVote == ACCEPT_RESULT) {
+                (uint maxVotesForPosition, uint chosenPosition) =
+                    calculateWinningPositionBasedOnVotes(_market, _disputeIndex);
+                require(
+                    maxVotesForPosition >= (councilMemberCount - 1),
+                    "Votes for position not enough. OC should revise decisions."
+                );
+                disputeWinningPositionChoosen[_market][_disputeIndex] = chosenPosition;
+            }
             closeDispute(_market, _disputeIndex, _disputeCodeVote);
         }
     }
@@ -299,7 +323,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 marketManager.safeBoxAddress(),
-                IExoticPositionalMarket(_market).fixedBondAmount()
+                IExoticPositionalMarket(_market).disputePrice()
             );
             marketLastClosedDispute[_market] = _disputeIndex;
             //if it is the last dispute
@@ -422,16 +446,24 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             canDisputorClaimbackBondFromUnclosedDispute(_market, _disputeIndex, msg.sender),
             "Unable to claim bonds. Check if market is closed for disputes, disputor index, and dispute address"
         );
-        require(
-            IThalesBonds(marketManager.thalesBonds()).getDisputorBondForMarket(_market, msg.sender) > 0,
-            "Disputor already claimed (amount is zero) "
-        );
-        // dispute[_market][_disputeIndex].disputeCode = ACCEPT_NO_SLASH;
         IThalesBonds(marketManager.thalesBonds()).sendOpenDisputeBondFromMarketToDisputor(
             _market,
             msg.sender,
             IThalesBonds(marketManager.thalesBonds()).getDisputorBondForMarket(_market, msg.sender)
         );
+    }
+
+    function calculateWinningPositionBasedOnVotes(address _market, uint _disputeIndex) internal view returns (uint, uint) {
+        uint maxVotes;
+        uint position;
+        for (uint i = 0; i <= IExoticPositionalMarket(_market).positionCount(); i++) {
+            if (disputeWinningPositionVotes[_market][_disputeIndex][i] > maxVotes) {
+                maxVotes = disputeWinningPositionVotes[_market][_disputeIndex][i];
+                position = i;
+            }
+        }
+
+        return (maxVotes, position);
     }
 
     function closeMarketForDisputes(address _market) external onlyOwner {

@@ -70,8 +70,8 @@
 		"yaml-validator": "^3.0.0"
 	},
 	"dependencies": {
-		"@chainlink/contracts": "^0.3.1",
 		"@anders-t/ethers-ledger": "^1.0.4",
+		"@chainlink/contracts": "^0.3.1",
 		"@chainlink/contracts-0.0.10": "npm:@chainlink/contracts@0.0.10",
 		"@eth-optimism/contracts": "^0.4.14",
 		"@eth-optimism/message-relayer": "^0.2.4",
@@ -83,6 +83,7 @@
 		"@uniswap/v3-core": "^1.0.0",
 		"@uniswap/v3-periphery": "^1.3.0",
 		"abi-decoder": "2.3.0",
+		"base64-sol": "^1.0.1",
 		"big.js": "^6.1.1",
 		"commander": "5.1.0",
 		"crypto": "^1.0.1",

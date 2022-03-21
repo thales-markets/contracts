@@ -3,10 +3,17 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/IThalesRoyale.sol";
 
-contract TestThalesRoyale is IThalesRoyale {
+abstract contract TestThalesRoyale is IThalesRoyale {
 
     bool public participatedInLastRoyale;
     uint public buyInAmount;
+    uint public override season;
+
+    mapping(uint => uint) public override roundInASeason;
+    mapping(uint => mapping(address => mapping(uint256 => uint256))) public override positionInARoundPerSeason;
+    mapping(uint => mapping(uint => uint)) public override roundResultPerSeason;
+    mapping(uint => mapping(address => uint256)) public playerSignedUpPerSeason;
+
     constructor() {}
     /* ========== VIEWS / VARIABLES ========== */
 
@@ -24,6 +31,15 @@ contract TestThalesRoyale is IThalesRoyale {
 
     function setBuyInAmount(uint _buyIn) external {
         buyInAmount = _buyIn;
+    }
+
+    function isPlayerAliveInASpecificSeason(address player, uint _season) external view override returns (bool) {
+        if (roundInASeason[_season] > 1) {
+            return (positionInARoundPerSeason[_season][player][roundInASeason[_season] - 1] ==
+                roundResultPerSeason[_season][roundInASeason[_season] - 1]);
+        } else {
+            return playerSignedUpPerSeason[_season][player] != 0;
+        }
     }
    
 }

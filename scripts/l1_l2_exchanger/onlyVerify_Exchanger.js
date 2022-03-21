@@ -31,25 +31,26 @@ async function main() {
 		network = 'kovan';
 		net_optimistic = 'optimisticKovan';
 	}
-	if (networkObj.chainId == 69) {
-		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
-		return 0;
-	}
-	if (networkObj.chainId == 10) {
-		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
-		return 0;
-	}
+	// if (networkObj.chainId == 69) {
+	// 	console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
+	// 	return 0;
+	// }
+	// if (networkObj.chainId == 10) {
+	// 	console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
+	// 	return 0;
+	// }
 
 
-	const ProxyThalesExchanger_deployed = getTargetAddress('ProxyThalesExchanger', network);
-	const ProxyThalesExchangerImplementation = await getImplementationAddress(ethers.provider, ProxyThalesExchanger_deployed);
+	// const ProxyThalesExchanger_deployed = getTargetAddress('ProxyThalesExchanger', network);
+	// const ProxyThalesExchangerImplementation = await getImplementationAddress(ethers.provider, ProxyThalesExchanger_deployed);
 
-	console.log("Implementation ProxyThalesExchanger: ", ProxyThalesExchangerImplementation);
-	setTargetAddress('ProxyThalesExchangerImplementation', network, ProxyThalesExchangerImplementation);
+	// console.log("Implementation ProxyThalesExchanger: ", ProxyThalesExchangerImplementation);
+	// setTargetAddress('ProxyThalesExchangerImplementation', network, ProxyThalesExchangerImplementation);
 
 	try {
 		await hre.run('verify:verify', {
-			address: ProxyThalesExchangerImplementation,
+			address: '0xab411282DBA1cC152688AeC9a2325605F6D6d581',
+			constructorArguments: ['0xE1757E47417e4bFF5f3F01713A205E1709344D5D']
 		});
 	} catch (e) {
 		console.log(e);

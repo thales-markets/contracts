@@ -131,11 +131,11 @@
 		"PositionalMarketManager": "0xAfBA2e76B4580Ab88c07Beb2Ca884ca733fD4dD4",
 		"PositionalMarketManagerImplementation": "0x65356ce88811bfc18e40DD158e84F31422948e80",
 		"PositionalMarketData": "0x836dBB0251FBA7C2651ed2B353c9d4795c73225c",
-		"PriceFeed": "0x3c22C1bBC552A43b101b003dF5230322EA09CeD0",
+		"PriceFeed": "0x3c93711B7D3EA867cF271f9F49b6D96201596E17",
 		"ThalesRoyalePrivateRoom": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
 		"OpThales_L2": "0xf584ff99f97b5abb1872af1aa7924fedf3e1b53d",
 		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
-		"PriceFeedImplementation": "0x8C9f8b38cDCF1911Cb470326a435c4C1b192A80D",
+		"PriceFeedImplementation": "0xCD015F11f6eD310089B4E36525dd8b939d8D2410",
 		"DeciMath": "0x1308fC7f0746f9092ade14c981b7776427b0D237",
 		"ThalesAMMImplementation": "0x62d8D9ba5c6B38Bbc2900A70D3f279103e2A495A",
 		"ThalesAMM": "0xfaDAa3E704acB3f82DC769C34518d4f306C55FAf",
@@ -175,9 +175,7 @@
 		"PositionalMarketData": "0xd6BEd7D753DCbbbb8937Dd009788d6c815aE3094",
 		"ThalesRoyalePass": "0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9"
 	},
-	"polygon": { 
-		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174" 
-	},
+	"polygon": { "ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174" },
 	"localhost": {
 		"Airdrop": "",
 		"OngoingAirdrop": "0xB74DD224F1652672Fc5d18404Fe5AF120e1e0991",

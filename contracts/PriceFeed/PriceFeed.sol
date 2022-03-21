@@ -29,7 +29,7 @@ contract PriceFeed is Initializable, ProxyOwned {
     bytes32[] public currencyKeys;
     mapping(bytes32 => IUniswapV3Pool) public pools;
 
-    int24 public twapInterval;
+    int56 public twapInterval;
 
     struct RateAndUpdatedTime {
         uint216 rate;
@@ -127,7 +127,7 @@ contract PriceFeed is Initializable, ProxyOwned {
         return false;
     }
 
-    function setTwapInterval(int24 _twapInterval) external onlyOwner {
+    function setTwapInterval(int56 _twapInterval) external onlyOwner {
         twapInterval = _twapInterval;
     }
 
@@ -175,13 +175,13 @@ contract PriceFeed is Initializable, ProxyOwned {
             (sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         } else {
             uint32[] memory secondsAgos = new uint32[](2);
-            secondsAgos[0] = uint32(uint24(twapInterval)); // from (before)
+            secondsAgos[0] = uint32(uint56(twapInterval));
             secondsAgos[1] = 0; // to (now)
 
             (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(secondsAgos);
 
             // tick(imprecise as it's an integer) to price
-            sqrtPriceX96 = UniswapMath.getSqrtRatioAtTick(int24((tickCumulatives[1] - tickCumulatives[0])) / twapInterval);
+            sqrtPriceX96 = UniswapMath.getSqrtRatioAtTick(int24((tickCumulatives[1] - tickCumulatives[0]) / twapInterval));
         }
     }
 

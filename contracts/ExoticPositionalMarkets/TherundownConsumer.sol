@@ -114,8 +114,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) external onlyWrapper {
         requestIdGamesResolved[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
-            GameResolve memory game = abi.decode(_games[i], (GameResolve));
-            _resolveGameFulfill(_requestId, game, _sportId);
+            _resolveGameFulfill(_requestId, abi.decode(_games[i], (GameResolve)), _sportId);
         }
     }
 
@@ -270,7 +269,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // TODO all resolved statuses if needed
         // 8 : STATUS_FINAL - NBA
         // 11 : STATUS_FULL_TIME - Champions league 90 min
-        // penalties, extra time, over time ???
+        // penalties, extra time ???
         return _game.statusId == 8 || _game.statusId == 11;
     }
 

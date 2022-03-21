@@ -43,6 +43,59 @@
         "type": "tuple"
       }
     ],
+    "name": "CreateSportsMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "homeTeam",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "awayTeam",
+            "type": "string"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct TherundownConsumer.GameCreate",
+        "name": "_game",
+        "type": "tuple"
+      }
+    ],
     "name": "GameCreted",
     "type": "event"
   },
@@ -51,9 +104,15 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_marketAddress",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -195,6 +254,53 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "homeScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "awayScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "statusId",
+            "type": "uint8"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct TherundownConsumer.GameResolve",
+        "name": "_game",
+        "type": "tuple"
+      }
+    ],
+    "name": "ResolveSportsMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
@@ -312,6 +418,19 @@
   {
     "inputs": [],
     "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "createMarketForGame",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -860,6 +979,30 @@
         "type": "uint256"
       }
     ],
+    "name": "requestIdGameIds",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "name": "requestIdGamesCreated",
     "outputs": [
       {
@@ -893,6 +1036,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "resolveMarketForGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1007,6 +1163,25 @@
     "name": "setwoPositionSport",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "sportsIdPerGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

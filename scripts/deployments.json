@@ -68,7 +68,7 @@
 		"ThalesBonds": "0x08383DE28Ce4CC48773c7876d4A6649578C26153",
 		"ThalesBondsImplementation": "0xA17A70722dff78A06f585Fb2B2f63f0B16d75B8F",
 		"TherundownConsumer": "0x8ba7d76E8b4AF470cdE0E803Ec573Ed09f1939c1",
-		"TherundownConsumerImplementation": "0xBd4eEA759f79661a9BA7D9d06B9aBd0aB34bc652"
+		"TherundownConsumerImplementation": "0xde3857aaC0172849AD77045D8E56F44874807724"
 	},
 	"goerli": {
 		"Airdrop": "",

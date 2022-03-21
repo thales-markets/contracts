@@ -698,17 +698,22 @@
   {
     "inputs": [
       {
+        "internalType": "bool",
+        "name": "forNewUserView",
+        "type": "bool"
+      },
+      {
         "internalType": "uint256",
-        "name": "_position",
+        "name": "userAlreadyTakenPosition",
         "type": "uint256"
       }
     ],
-    "name": "getPotentialWinningAmountForPosition",
+    "name": "getPotentialWinningAmountForAllPosition",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "uint256[]",
         "name": "",
-        "type": "uint256"
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",

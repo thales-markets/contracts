@@ -533,11 +533,41 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         return (userPosition[_account] > 0) ? positionPhrase[userPosition[_account]] : string("");
     }
 
-    function getPotentialWinningAmountForPosition(uint _position) external view returns (uint) {
+    function getPotentialWinningAmountForAllPosition(bool forNewUserView, uint userAlreadyTakenPosition)
+        external
+        view
+        returns (uint[] memory)
+    {
+        uint[] memory potentialWinning = new uint[](positionCount);
+        for (uint i = 1; i <= positionCount; i++) {
+            potentialWinning[i - 1] = getPotentialWinningAmountForPosition(i, forNewUserView, userAlreadyTakenPosition == i);
+        }
+        return potentialWinning;
+    }
+
+    function getPotentialWinningAmountForPosition(
+        uint _position,
+        bool forNewUserView,
+        bool userHasAlreadyTakenThisPosition
+    ) internal view returns (uint) {
         if (totalUsersTakenPositions == 0) {
             return 0;
+        } else if (ticketsPerPosition[_position] == 0) {
+            return
+                forNewUserView
+                    ? applyDeduction(getTotalPlacedAmount().add(fixedTicketPrice))
+                    : applyDeduction(getTotalPlacedAmount());
         } else {
-            return ticketsPerPosition[_position] > 0 ? getTotalClaimableAmount().div(ticketsPerPosition[_position]) : 0;
+            if (forNewUserView) {
+                return
+                    applyDeduction(getTotalPlacedAmount().add(fixedTicketPrice)).div(ticketsPerPosition[_position].add(1));
+            } else {
+                uint calculatedPositions =
+                    userHasAlreadyTakenThisPosition && ticketsPerPosition[_position] > 0
+                        ? ticketsPerPosition[_position]
+                        : ticketsPerPosition[_position].add(1);
+                return applyDeduction(getTotalPlacedAmount()).div(calculatedPositions);
+            }
         }
     }
 

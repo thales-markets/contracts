@@ -299,7 +299,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
                 (uint maxVotesForPosition, uint chosenPosition) =
                     calculateWinningPositionBasedOnVotes(_market, _disputeIndex);
                 require(
-                    maxVotesForPosition >= (councilMemberCount - 1),
+                    maxVotesForPosition > (councilMemberCount.div(2)),
                     "Votes for position not enough. OC should revise decisions."
                 );
                 disputeWinningPositionChoosen[_market][_disputeIndex] = chosenPosition;

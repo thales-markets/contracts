@@ -29,14 +29,23 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	const IUniswapV3Pool = await ethers.getContractAt('IUniswapV3Pool', '0xf334f6104a179207ddacfb41fa3567feea8595c2');
+	const IUniswapV3Pool = await ethers.getContractAt('IUniswapV3Pool', '0x5e8b0fc35065a5d980c11f96cb52381de390b13f');
+	const PriceFeed = await ethers.getContractAt('PriceFeed', '0x671f9654a594f8966b19c0b466f306E1dFe912a6');
+
 
 	let secondsAgo = [];
-	secondsAgo.push(300); // from (before)
-	secondsAgo.push[0]; // to (now)
+	secondsAgo.push(1200); // from (before)
+	secondsAgo.push(0); // to (now)
 
-	let result = await IUniswapV3Pool.observe(secondsAgo);
-	console.log('Result is ' + result);
+	let result;
+	result = await IUniswapV3Pool.observe(secondsAgo);
+	console.log('Result is ' + result[0]);
+	let tick = (result[0][1] - result[0][0])/1200;
+	console.log(tick, 'tick');
+	const expectedRatio = Math.pow(1.0001, tick);
+	console.log('expected ratio', expectedRatio);
+
+	console.log("AELIN", await PriceFeed.rateForCurrency(toBytes32("AELIN")))
 }
 
 main()

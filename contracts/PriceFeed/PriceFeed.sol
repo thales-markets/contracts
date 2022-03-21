@@ -121,6 +121,7 @@ contract PriceFeed is Initializable, ProxyOwned {
             if (array[i] == entry) {
                 delete array[i];
                 array[i] = array[array.length - 1];
+                array.pop();
                 return true;
             }
         }
@@ -179,14 +180,14 @@ contract PriceFeed is Initializable, ProxyOwned {
             secondsAgos[1] = 0; // to (now)
 
             (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(secondsAgos);
-
             // tick(imprecise as it's an integer) to price
             sqrtPriceX96 = UniswapMath.getSqrtRatioAtTick(int24((tickCumulatives[1] - tickCumulatives[0]) / twapInterval));
         }
     }
 
     function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns (uint256 priceX96) {
-        return UniswapMath.mulDiv(sqrtPriceX96, sqrtPriceX96 * 10**18, UniswapMath.Q192);
+        uint256 price = UniswapMath.mulDiv(sqrtPriceX96, sqrtPriceX96, UniswapMath.Q96);
+        return UniswapMath.mulDiv(price, 10**18, UniswapMath.Q96);
     }
 
     function transferCurrencyKeys() external onlyOwner {

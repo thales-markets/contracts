@@ -236,7 +236,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         require(_disputeIndex > 0, "Dispute non existent");
         require(dispute[_market][_disputeIndex].disputeCode == 0, "Dispute already closed.");
         require(_disputeCodeVote <= VOTING_OPTIONS && _disputeCodeVote > 0, "Invalid dispute code.");
-        if (dispute[_market][marketTotalDisputes[_market]].disputeInPositioningPhase) {
+        if (dispute[_market][_disputeIndex].disputeInPositioningPhase) {
             require(_disputeCodeVote < ACCEPT_RESULT, "Invalid voting code for dispute in positioning phase");
         } else {
             require(_disputeCodeVote >= ACCEPT_RESULT, "Invalid voting code for dispute in maturity phase");

@@ -189,7 +189,6 @@ contract('TherundownConsumer', accounts => {
 			{ from: owner }
 		);
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
-		//await Thales.approve(ThalesBonds.address, toUnit('1000'), { from: TherundownConsumerDeployed.address });
 		await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
 			TherundownConsumerDeployed.address
 		);

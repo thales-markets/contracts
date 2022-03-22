@@ -215,7 +215,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             "Low token amount for disputing market"
         );
         require(
-            IERC20(marketManager.paymentToken()).allowance(msg.sender, address(marketManager)) >=
+            IERC20(marketManager.paymentToken()).allowance(msg.sender, marketManager.thalesBonds()) >=
                 IExoticPositionalMarket(_market).disputePrice(),
             "No allowance. Please approve ticket price allowance"
         );

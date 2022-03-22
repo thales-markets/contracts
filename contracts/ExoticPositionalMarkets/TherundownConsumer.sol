@@ -90,8 +90,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         fixedTicketPrice = _fixedTicketPrice;
         withdrawalAllowed = _withdrawalAllowed;
         //approve
-        IERC20Upgradeable(exoticManager.paymentToken()).approve(address(exoticManager),
-        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+        IERC20Upgradeable(exoticManager.paymentToken()).approve(
+            address(exoticManager),
+            0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+        );
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */

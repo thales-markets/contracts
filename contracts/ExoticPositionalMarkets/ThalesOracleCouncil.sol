@@ -197,6 +197,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         councilMemberAddress[councilMemberIndex[_councilMember]] = councilMemberAddress[councilMemberCount];
         councilMemberIndex[councilMemberAddress[councilMemberCount]] = councilMemberIndex[_councilMember];
         councilMemberCount = councilMemberCount.sub(1);
+        councilMemberIndex[_councilMember] = 0;
         marketManager.removePauserAddress(_councilMember);
         emit OracleCouncilMemberRemoved(_councilMember, councilMemberCount);
     }

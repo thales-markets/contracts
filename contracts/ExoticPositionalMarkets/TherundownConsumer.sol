@@ -24,9 +24,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== CONSTANTS =========== */
 
-    uint public constant RESULT_DRAW = 0;
     uint public constant HOME_WIN = 1;
     uint public constant AWAY_WIN = 2;
+    uint public constant RESULT_DRAW = 3;
     uint public constant MIN_TAG_NUMBER = 9000;
 
     /* ========== CONSUMER STATE VARIABLES ========== */
@@ -65,6 +65,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     IExoticPositionalMarketManager public exoticManager;
     mapping(bytes32 => address) public marketPerGameId;
     mapping(address => bool) public marketResolved;
+    mapping(address => bool) public marketCanceled;
     uint public fixedTicketPrice;
     bool public withdrawalAllowed;
 
@@ -124,7 +125,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function resolveMarketForGame(bytes32 _gameId) public {
-        require(!marketResolved[marketPerGameId[_gameId]], "Market resoved");
+        require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         _resolveMarket(_gameId);
     }
 
@@ -152,6 +153,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return
             keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create")) ||
             keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("resolve"));
+    }
+
+    function isGameResolvedOrCanceled(bytes32 _gameId) public view returns (bool) {
+        return marketResolved[marketPerGameId[_gameId]] || marketCanceled[marketPerGameId[_gameId]];
     }
 
     function isSupportedSport(uint _sportId) external view returns (bool) {
@@ -226,13 +231,24 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _resolveMarket(bytes32 _gameId) internal {
+
         GameResolve memory game = getGameResolvedById(_gameId);
+
         if (_isGameStatusResolved(game)) {
+
             exoticManager.resolveMarket(marketPerGameId[game.gameId], _callulateOutcome(game));
             marketResolved[marketPerGameId[game.gameId]] = true;
 
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, game);
-        } // TODO else what if EXAMPLE: 1 : STATUS_CANCELED
+
+        } else if(_isGameStatusCanceled(game)){
+
+            exoticManager.cancelMarket(marketPerGameId[game.gameId]);
+            marketCanceled[marketPerGameId[game.gameId]] = true;
+
+            emit CancelSportsMarket(marketPerGameId[game.gameId], game.gameId, game);
+            
+        }
     }
 
     function _append(string memory teamA, string memory teamB) internal pure returns (string memory) {
@@ -266,11 +282,15 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal pure returns (bool) {
-        // TODO all resolved statuses if needed
+        // TODO 
         // 8 : STATUS_FINAL - NBA
         // 11 : STATUS_FULL_TIME - Champions league 90 min
         // penalties, extra time ???
         return _game.statusId == 8 || _game.statusId == 11;
+    }
+
+    function _isGameStatusCanceled(GameResolve memory _game) internal pure returns (bool) {
+        return _game.statusId == 1;
     }
 
     function _callulateOutcome(GameResolve memory _game) internal pure returns (uint) {
@@ -326,6 +346,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event GameResolved(bytes32 _requestId, uint _sportId, bytes32 _id, GameResolve _game);
     event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game);
     event ResolveSportsMarket(address _marketAddress, bytes32 _id, GameResolve _game);
+    event CancelSportsMarket(address _marketAddress, bytes32 _id, GameResolve _game);
     event SupportedSportsChanged(uint _sportId, bool _isSupported);
     event TwoPositionSportChanged(uint _sportId, bool _isTwoPosition);
     event NewFixedTicketPrice(uint _fixedTicketPrice);

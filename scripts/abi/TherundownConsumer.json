@@ -22,6 +22,53 @@
             "type": "bytes32"
           },
           {
+            "internalType": "uint8",
+            "name": "homeScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "awayScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "statusId",
+            "type": "uint8"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct TherundownConsumer.GameResolve",
+        "name": "_game",
+        "type": "tuple"
+      }
+    ],
+    "name": "CancelSportsMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
             "internalType": "uint256",
             "name": "startTime",
             "type": "uint256"
@@ -809,6 +856,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "isGameResolvedOrCanceled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_sportsId",
         "type": "uint256"
@@ -871,6 +937,25 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "marketCanceled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

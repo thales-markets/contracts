@@ -718,7 +718,7 @@ contract('TherundownConsumer', accounts => {
 				_game: gameR,
 			});
 
-			await expect(TherundownConsumerDeployed.resolveMarketForGame(gameFootballid2, { from: owner })).to.be.revertedWith('Market resoved');
+			await expect(TherundownConsumerDeployed.resolveMarketForGame(gameFootballid2, { from: owner })).to.be.revertedWith('Market resoved or canceled');
 		});
 	});
 });

@@ -21512,27 +21512,27 @@
           {
             "contract": "ThalesBonds",
             "label": "marketManager",
-            "type": "t_contract(IExoticPositionalMarketManager)16967",
+            "type": "t_contract(IExoticPositionalMarketManager)2781",
             "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:22"
           },
           {
             "contract": "ThalesBonds",
             "label": "marketBond",
-            "type": "t_mapping(t_address,t_struct(MarketBond)10458_storage)",
+            "type": "t_mapping(t_address,t_struct(MarketBond)1351_storage)",
             "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:33"
           }
         ],
         "types": {
-          "t_contract(IExoticPositionalMarketManager)16967": {
+          "t_contract(IExoticPositionalMarketManager)2781": {
             "label": "contract IExoticPositionalMarketManager"
           },
-          "t_mapping(t_address,t_struct(MarketBond)10458_storage)": {
+          "t_mapping(t_address,t_struct(MarketBond)1351_storage)": {
             "label": "mapping(address => struct ThalesBonds.MarketBond)"
           },
           "t_address": {
             "label": "address"
           },
-          "t_struct(MarketBond)10458_storage": {
+          "t_struct(MarketBond)1351_storage": {
             "label": "struct ThalesBonds.MarketBond",
             "members": [
               {
@@ -21675,13 +21675,13 @@
           {
             "contract": "ThalesOracleCouncil",
             "label": "marketManager",
-            "type": "t_contract(IExoticPositionalMarketManager)16967",
+            "type": "t_contract(IExoticPositionalMarketManager)3406",
             "src": "contracts/ExoticPositionalMarkets/ThalesOracleCouncil.sol:31"
           },
           {
             "contract": "ThalesOracleCouncil",
             "label": "dispute",
-            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(Dispute)11527_storage))",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(Dispute)940_storage))",
             "src": "contracts/ExoticPositionalMarkets/ThalesOracleCouncil.sol:41"
           },
           {
@@ -21758,16 +21758,16 @@
           "t_mapping(t_address,t_uint256)": {
             "label": "mapping(address => uint256)"
           },
-          "t_contract(IExoticPositionalMarketManager)16967": {
+          "t_contract(IExoticPositionalMarketManager)3406": {
             "label": "contract IExoticPositionalMarketManager"
           },
-          "t_mapping(t_address,t_mapping(t_uint256,t_struct(Dispute)11527_storage))": {
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(Dispute)940_storage))": {
             "label": "mapping(address => mapping(uint256 => struct ThalesOracleCouncil.Dispute))"
           },
-          "t_mapping(t_uint256,t_struct(Dispute)11527_storage)": {
+          "t_mapping(t_uint256,t_struct(Dispute)940_storage)": {
             "label": "mapping(uint256 => struct ThalesOracleCouncil.Dispute)"
           },
-          "t_struct(Dispute)11527_storage": {
+          "t_struct(Dispute)940_storage": {
             "label": "struct ThalesOracleCouncil.Dispute",
             "members": [
               {

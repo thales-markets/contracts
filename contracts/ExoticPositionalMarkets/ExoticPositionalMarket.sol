@@ -545,7 +545,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         return potentialWinning;
     }
 
-    function getUserPotentialWinningAmount(address _account) external view returns(uint) {
+    function getUserPotentialWinningAmount(address _account) external view returns (uint) {
         return userPosition[_account] > 0 ? getPotentialWinningAmountForPosition(userPosition[_account], false, true) : 0;
     }
 

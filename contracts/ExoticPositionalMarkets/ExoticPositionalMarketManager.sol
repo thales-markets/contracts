@@ -13,6 +13,7 @@ import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 import "./ExoticPositionalMarket.sol";
 import "../interfaces/IThalesBonds.sol";
 import "../interfaces/IExoticPositionalTags.sol";
+import "../interfaces/IThalesOracleCouncil.sol";
 
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
@@ -212,6 +213,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         if (isChainLinkMarket[_marketAddress]) {
             require(msg.sender == theRundownConsumerAddress, "Invalid resolver. Resolver can be only theRundownConsumer");
         }
+        require(
+            !IThalesOracleCouncil(oracleCouncilAddress).isOracleCouncilMember(msg.sender),
+            "OC members can not resolve markets"
+        );
         if (msg.sender != owner && msg.sender != oracleCouncilAddress) {
             require(ExoticPositionalMarket(_marketAddress).canMarketBeResolved(), "Market already resolved");
         }

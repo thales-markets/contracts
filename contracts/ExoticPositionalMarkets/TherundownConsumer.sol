@@ -231,23 +231,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _resolveMarket(bytes32 _gameId) internal {
-
         GameResolve memory game = getGameResolvedById(_gameId);
 
         if (_isGameStatusResolved(game)) {
-
             exoticManager.resolveMarket(marketPerGameId[game.gameId], _callulateOutcome(game));
             marketResolved[marketPerGameId[game.gameId]] = true;
 
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, game);
-
-        } else if(_isGameStatusCanceled(game)){
-
+        } else if (_isGameStatusCanceled(game)) {
             exoticManager.cancelMarket(marketPerGameId[game.gameId]);
             marketCanceled[marketPerGameId[game.gameId]] = true;
 
             emit CancelSportsMarket(marketPerGameId[game.gameId], game.gameId, game);
-            
         }
     }
 
@@ -282,7 +277,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal pure returns (bool) {
-        // TODO 
+        // TODO
         // 8 : STATUS_FINAL - NBA
         // 11 : STATUS_FULL_TIME - Champions league 90 min
         // penalties, extra time ???

@@ -308,13 +308,14 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             if (_disputeCodeVote == ACCEPT_RESULT) {
                 (uint maxVotesForPosition, uint chosenPosition) =
                     calculateWinningPositionBasedOnVotes(_market, _disputeIndex);
-                require(
-                    maxVotesForPosition > (councilMemberCount.div(2)),
-                    "Votes for position not enough. OC should revise decisions."
-                );
-                disputeWinningPositionChoosen[_market][_disputeIndex] = chosenPosition;
+                if(maxVotesForPosition > (councilMemberCount.div(2))) {
+                    disputeWinningPositionChoosen[_market][_disputeIndex] = chosenPosition;
+                    closeDispute(_market, _disputeIndex, _disputeCodeVote);
+                }
             }
-            closeDispute(_market, _disputeIndex, _disputeCodeVote);
+            else {
+                closeDispute(_market, _disputeIndex, _disputeCodeVote);
+            }
         }
     }
 

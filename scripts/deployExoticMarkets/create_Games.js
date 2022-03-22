@@ -58,21 +58,17 @@ async function main() {
 
 	// NBA: 4
 	// UEFA Champions League: 16
-	const createMarketForSports = [4, 16];
+	const sports = [4, 16];
 
 	const market = 'create';
-
-	const bondAmount = w3utils.toWei('100');
-
 	const linkAmountPerRequest = w3utils.toWei('0.1'); // amount per request
-	const linkAmount = w3utils.toWei('0.2'); // number of request (createMarketForSports.length) * linkAmountPerRequest
+	const linkAmount = w3utils.toWei('0.2'); // sports.length * linkAmountPerRequest
 
 	const jobId = toBytes32(chainlink['JOB_ID']);
-
 	console.log('jobId bytes32: ', jobId);
 
 	let numberOfdays = 7; // number of days from today
-	let date = await getSecondsToDate(numberOfdays);
+	let date = await getSecondsToDate(numberOfdays); // CHANGE THIS PROP FOR DATE!!! (UINT)
 
 	console.log('Games on a date: ', date);
 
@@ -107,19 +103,19 @@ async function main() {
 	console.log('Done sending');
 
 	// request to create games for date
-	for (let i = 0; i < createMarketForSports.length; ) {
-		console.log('Create games for: ' + createMarketForSports[i], ', which is ' + i);
+	for (let i = 0; i < sports.length; ) {
+		console.log('Create games for: ' + sports[i], ', which is ' + i);
 		try {
 			tx = await wrapper.requestGames(
 				jobId,
 				linkAmountPerRequest,
 				market,
-				createMarketForSports[i],
+				sports[i],
 				date
 			);
 
 			await tx.wait().then(e => {
-				txLog(tx, 'Requested for: ' + createMarketForSports[i]);
+				txLog(tx, 'Requested for: ' + sports[i]);
 			});
 			i++;
 		} catch (e) {

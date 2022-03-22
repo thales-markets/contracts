@@ -189,7 +189,8 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     }
 
     function transferToMarketBond(address _account, uint _amount) internal whenNotPaused {
-        IERC20Upgradeable(marketManager.paymentToken()).safeTransferFrom(_account, address(this), _amount);
+        IERC20Upgradeable(marketManager.paymentToken()).safeTransferFrom(_account, address(marketManager), _amount);
+        IERC20Upgradeable(marketManager.paymentToken()).safeTransferFrom(address(marketManager), address(this), _amount);
     }
 
     function transferBondFromMarket(address _account, uint _amount) internal whenNotPaused {

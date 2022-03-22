@@ -120,12 +120,15 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     function getDisputeVotes(address _market, uint _index) external view returns (uint[] memory) {
         return disputeVote[_market][_index];
     }
-    
-    function getDisputeVoteOfCouncilMember(address _market, uint _index, address _councilMember) external view returns (uint) {
-        if(isOracleCouncilMember(_councilMember)) {
+
+    function getDisputeVoteOfCouncilMember(
+        address _market,
+        uint _index,
+        address _councilMember
+    ) external view returns (uint) {
+        if (isOracleCouncilMember(_councilMember)) {
             return disputeVote[_market][_index][councilMemberIndex[_councilMember]];
-        }
-        else {
+        } else {
             require(isOracleCouncilMember(_councilMember), "Not a council member");
             return 1e18;
         }
@@ -212,7 +215,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             "Low token amount for disputing market"
         );
         require(
-            IERC20(marketManager.paymentToken()).allowance(msg.sender, marketManager.thalesBonds()) >=
+            IERC20(marketManager.paymentToken()).allowance(msg.sender, address(marketManager)) >=
                 IExoticPositionalMarket(_market).disputePrice(),
             "No allowance. Please approve ticket price allowance"
         );
@@ -309,12 +312,11 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             if (_disputeCodeVote == ACCEPT_RESULT) {
                 (uint maxVotesForPosition, uint chosenPosition) =
                     calculateWinningPositionBasedOnVotes(_market, _disputeIndex);
-                if(maxVotesForPosition > (councilMemberCount.div(2))) {
+                if (maxVotesForPosition > (councilMemberCount.div(2))) {
                     disputeWinningPositionChoosen[_market][_disputeIndex] = chosenPosition;
                     closeDispute(_market, _disputeIndex, _disputeCodeVote);
                 }
-            }
-            else {
+            } else {
                 closeDispute(_market, _disputeIndex, _disputeCodeVote);
             }
         }

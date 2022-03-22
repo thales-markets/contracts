@@ -1560,6 +1560,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "setMaxAllowanceForBonds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",

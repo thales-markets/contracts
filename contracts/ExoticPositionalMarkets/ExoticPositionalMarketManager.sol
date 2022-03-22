@@ -101,7 +101,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(!creationRestrictedToOwner, "Market creation is restricted. (only owner)");
         require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
         require(
-            IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
+            IERC20(paymentToken).allowance(msg.sender, address(this)) >= fixedBondAmount,
             "No allowance. Please approve ticket price allowance"
         );
         require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
@@ -133,6 +133,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         );
         creatorAddress[address(exoticMarket)] = msg.sender;
         IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
+        IERC20(paymentToken).approve(address(exoticMarket), type(uint256).max);
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
         emit MarketCreated(
@@ -167,7 +168,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
         require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
         require(
-            IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
+            IERC20(paymentToken).allowance(msg.sender, address(this)) >= fixedBondAmount,
             "No allowance. Please approve ticket price allowance"
         );
         require(
@@ -192,6 +193,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         isChainLinkMarket[address(exoticMarket)] = true;
         creatorAddress[address(exoticMarket)] = msg.sender;
         IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
+        IERC20(paymentToken).approve(address(exoticMarket), type(uint256).max);
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
         emit MarketCreated(
@@ -233,7 +235,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 "Low token amount for market creation"
             );
             require(
-                IERC20(paymentToken).allowance(msg.sender, thalesBonds) >=
+                IERC20(paymentToken).allowance(msg.sender, address(this)) >=
                     ExoticPositionalMarket(_marketAddress).fixedBondAmount(),
                 "No allowance. Please approve ticket price allowance"
             );
@@ -510,7 +512,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function setThalesBonds(address _thalesBonds) external onlyOwner {
         require(_thalesBonds != address(0), "Invalid address");
+        if (thalesBonds != address(0)) {
+            IERC20(paymentToken).approve(address(thalesBonds), 0);
+        }
         thalesBonds = _thalesBonds;
+        IERC20(paymentToken).approve(address(thalesBonds), type(uint256).max);
         emit NewThalesBonds(_thalesBonds);
     }
 
@@ -518,6 +524,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(_tagsAddress != address(0), "Invalid address");
         tagsAddress = _tagsAddress;
         emit NewTagsAddress(_tagsAddress);
+    }
+
+    function setMaxAllowanceForBonds() external onlyOwner {
+        IERC20(paymentToken).approve(address(thalesBonds), type(uint256).max);
     }
 
     function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {

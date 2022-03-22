@@ -348,10 +348,11 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         require(_sender != address(0), "Invalid sender address");
         require(IERC20(marketManager.paymentToken()).balanceOf(_sender) >= _amount, "Sender balance low");
         require(
-            IERC20(marketManager.paymentToken()).allowance(_sender, address(this)) >= _amount,
+            IERC20(marketManager.paymentToken()).allowance(_sender, address(marketManager)) >= _amount,
             "No allowance. Please adjust the allowance"
         );
-        IERC20(marketManager.paymentToken()).safeTransferFrom(_sender, address(this), _amount);
+        IERC20(marketManager.paymentToken()).safeTransferFrom(_sender, address(marketManager), _amount);
+        IERC20(marketManager.paymentToken()).safeTransferFrom(address(marketManager), address(this), _amount);
     }
 
     function transferBondToMarket(address _sender, uint _amount) external notPaused {
@@ -659,6 +660,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         string memory _positionPhrase1,
         string memory _positionPhrase2
     ) internal {
+        require(_fixedTicketPrice == 0 || _fixedTicketPrice >= 1e18, "Fixed ticket price too low");
         creationTime = block.timestamp;
         marketQuestion = _marketQuestion;
         marketSource = _marketSource;

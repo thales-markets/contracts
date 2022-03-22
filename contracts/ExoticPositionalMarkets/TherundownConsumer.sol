@@ -56,6 +56,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => GameCreate) public gameCreated;
     mapping(bytes32 => GameResolve) public gameResolved;
     mapping(bytes32 => uint) public sportsIdPerGame;
+    mapping(bytes32 => bool) public gameFullfilResolved;
 
     // sports props
     mapping(uint => bool) public supportedSport;
@@ -121,11 +122,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function createMarketForGame(bytes32 _gameId) public {
         require(marketPerGameId[_gameId] == address(0), "Market for game already exists");
+        require(sportsIdPerGame[_gameId] > 0, "Need first to fulfill games");
         _createMarket(_gameId);
     }
 
     function resolveMarketForGame(bytes32 _gameId) public {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
+        require(gameFullfilResolved[_gameId], "Game needs to be fulfill games resolved");
         _resolveMarket(_gameId);
     }
 
@@ -191,7 +194,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint _sportId
     ) internal {
         gameResolved[_game.gameId] = _game;
-        sportsIdPerGame[_game.gameId] = _sportId;
+        gameFullfilResolved[_game.gameId] = true;
         emit GameResolved(requestId, _sportId, _game.gameId, _game);
     }
 

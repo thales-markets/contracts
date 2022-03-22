@@ -285,7 +285,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _isGameStatusCanceled(GameResolve memory _game) internal pure returns (bool) {
-        return _game.statusId == 1;
+        // 1 : STATUS_CANCELED
+        // 2 : STATUS_DELAYED
+        return _game.statusId == 1 || _game.statusId == 2;
     }
 
     function _callulateOutcome(GameResolve memory _game) internal pure returns (uint) {

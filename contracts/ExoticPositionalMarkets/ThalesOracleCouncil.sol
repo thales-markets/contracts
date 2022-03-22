@@ -120,6 +120,16 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     function getDisputeVotes(address _market, uint _index) external view returns (uint[] memory) {
         return disputeVote[_market][_index];
     }
+    
+    function getDisputeVoteOfCouncilMember(address _market, uint _index, address _councilMember) external view returns (uint) {
+        if(isOracleCouncilMember(_councilMember)) {
+            return disputeVote[_market][_index][councilMemberIndex[_councilMember]];
+        }
+        else {
+            require(isOracleCouncilMember(_councilMember), "Not a council member");
+            return 1e18;
+        }
+    }
 
     function isDisputeOpen(address _market, uint _index) external view returns (bool) {
         return dispute[_market][_index].disputeCode == 0;
@@ -214,7 +224,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         dispute[_market][marketTotalDisputes[_market]].disputeString = _disputeString;
         dispute[_market][marketTotalDisputes[_market]].disputeTimestamp = block.timestamp;
         disputeVote[_market][marketTotalDisputes[_market]] = new uint[](councilMemberCount + 1);
-        if (IExoticPositionalMarket(_market).canUsersPlacePosition()) {
+        if (!IExoticPositionalMarket(_market).resolved()) {
             dispute[_market][marketTotalDisputes[_market]].disputeInPositioningPhase = true;
         }
         marketManager.disputeMarket(_market, msg.sender);

@@ -91,7 +91,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         withdrawalAllowed = _withdrawalAllowed;
         //approve
         IERC20Upgradeable(exoticManager.paymentToken()).approve(
-            address(exoticManager),
+            exoticManager.thalesBonds(),
             0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
         );
     }

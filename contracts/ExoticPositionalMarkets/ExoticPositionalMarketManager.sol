@@ -296,7 +296,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit RewardSentToDisputorForMarket(_market, _disputorAddress, _amount);
     }
 
-
     function issueBondsBackToCreatorAndResolver(address _marketAddress) external nonReentrant {
         require(ExoticPositionalMarket(_marketAddress).canUsersClaim(), "Market not claimable");
         require(

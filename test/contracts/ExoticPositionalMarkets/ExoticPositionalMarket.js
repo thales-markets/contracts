@@ -285,10 +285,10 @@ contract('Exotic Positional market', async accounts => {
 		describe('position and resolve (no Council decision)', function() {
 			beforeEach(async () => {
 				let sumOfPositions = positionAmount1.add(positionAmount2).add(positionAmount3);
-				answer = await Thales.increaseAllowance(deployedMarket.address, sumOfPositions, {
+				answer = await Thales.increaseAllowance(ThalesBonds.address, sumOfPositions, {
 					from: userOne,
 				});
-				answer = await Thales.increaseAllowance(deployedMarket.address, sumOfPositions, {
+				answer = await Thales.increaseAllowance(ThalesBonds.address, sumOfPositions, {
 					from: userTwo,
 				});
 			});
@@ -318,7 +318,7 @@ contract('Exotic Positional market', async accounts => {
 					});
 
 					it('market resolved', async function() {
-						answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+						answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 							from: owner,
 						});
 						answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -331,7 +331,7 @@ contract('Exotic Positional market', async accounts => {
 					});
 
 					it('winning position match outcome position', async function() {
-						answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+						answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 							from: owner,
 						});
 						answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -345,7 +345,7 @@ contract('Exotic Positional market', async accounts => {
 
 					describe('market finalization', async function() {
 						beforeEach(async () => {
-							answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+							answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 								from: owner,
 							});
 							answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -421,7 +421,7 @@ contract('Exotic Positional market', async accounts => {
 					});
 
 					it('market resolved', async function() {
-						answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+						answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 							from: owner,
 						});
 						answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -434,7 +434,7 @@ contract('Exotic Positional market', async accounts => {
 					});
 
 					it('winning position match outcome position', async function() {
-						answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+						answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 							from: owner,
 						});
 						answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -448,7 +448,7 @@ contract('Exotic Positional market', async accounts => {
 
 					describe('market finalization', async function() {
 						beforeEach(async () => {
-							answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+							answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 								from: owner,
 							});
 							answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -529,7 +529,7 @@ contract('Exotic Positional market', async accounts => {
 					});
 
 					it('market resolved', async function() {
-						answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+						answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 							from: owner,
 						});
 						answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -542,7 +542,7 @@ contract('Exotic Positional market', async accounts => {
 					});
 
 					it('winning position match outcome position', async function() {
-						answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+						answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 							from: owner,
 						});
 						answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -556,7 +556,7 @@ contract('Exotic Positional market', async accounts => {
 
 					describe('market finalization', async function() {
 						beforeEach(async () => {
-							answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+							answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 								from: owner,
 							});
 							answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -702,7 +702,7 @@ contract('Exotic Positional market', async accounts => {
 		});
 		describe('position and resolve (no Council decision)', function() {
 			beforeEach(async () => {
-				answer = await Thales.increaseAllowance(deployedMarket.address, fixedTicketPrice, {
+				answer = await Thales.increaseAllowance(ThalesBonds.address, fixedTicketPrice, {
 					from: userOne,
 				});
 			});
@@ -736,7 +736,7 @@ contract('Exotic Positional market', async accounts => {
 					});
 
 					it('market resolved', async function() {
-						answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+						answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 							from: owner,
 						});
 						answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -749,7 +749,7 @@ contract('Exotic Positional market', async accounts => {
 					});
 
 					it('winning position match outcome position', async function() {
-						answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+						answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 							from: owner,
 						});
 						answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -763,7 +763,7 @@ contract('Exotic Positional market', async accounts => {
 
 					describe('market finalization', async function() {
 						beforeEach(async () => {
-							answer = await Thales.increaseAllowance(deployedMarket.address, fixedBondAmount, {
+							answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 								from: owner,
 							});
 							answer = await ExoticPositionalMarketManager.resolveMarket(
@@ -815,7 +815,7 @@ contract('Exotic Positional market', async accounts => {
 
 		describe('position and withdraw', function() {
 			beforeEach(async () => {
-				answer = await Thales.increaseAllowance(deployedMarket.address, toUnit('100'), {
+				answer = await Thales.increaseAllowance(ThalesBonds.address, toUnit('100'), {
 					from: userOne,
 				});
 			});
@@ -1179,13 +1179,13 @@ contract('Exotic Positional market', async accounts => {
 								disputeIndex = await ThalesOracleCouncil.getNextOpenDisputeIndex(
 									deployedMarket.address
 								);
-								answer = await Thales.increaseAllowance(deployedMarket.address, fixedTicketPrice, {
+								answer = await Thales.increaseAllowance(ThalesBonds.address, fixedTicketPrice, {
 									from: userOne,
 								});
-								answer = await Thales.increaseAllowance(deployedMarket.address, fixedTicketPrice, {
+								answer = await Thales.increaseAllowance(ThalesBonds.address, fixedTicketPrice, {
 									from: userTwo,
 								});
-								answer = await Thales.increaseAllowance(deployedMarket.address, fixedTicketPrice, {
+								answer = await Thales.increaseAllowance(ThalesBonds.address, fixedTicketPrice, {
 									from: userThree,
 								});
 							});

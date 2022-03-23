@@ -31,6 +31,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     }
 
     mapping(address => MarketBond) public marketBond;
+    mapping(address => uint) public marketFunds;
 
     function initialize(address _owner) public initializer {
         setOwner(_owner);
@@ -186,6 +187,18 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
             );
             marketBond[_market].resolverBond = 0;
         }
+    }
+
+    function transferToMarket(address _account, uint _amount) external whenNotPaused {
+        require(marketManager.isActiveMarket(msg.sender), "Caller is not an active market.");
+        marketFunds[msg.sender] = marketFunds[msg.sender].add(_amount);
+        transferToMarketBond(_account, _amount);
+    }
+    
+    function transferFromMarket(address _account, uint _amount) external whenNotPaused {
+        require(marketManager.isActiveMarket(msg.sender), "Caller is not an active market.");
+        marketFunds[msg.sender] = marketFunds[msg.sender].sub(_amount);
+        transferBondFromMarket(_account, _amount);
     }
 
     function transferToMarketBond(address _account, uint _amount) internal whenNotPaused {

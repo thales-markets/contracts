@@ -17,4 +17,6 @@ interface IThalesBonds {
     function setOracleCouncilAddress(address _oracleCouncilAddress) external;
     function setManagerAddress(address _managerAddress) external;
     function issueBondsBackToCreatorAndResolver(address _market) external;
+    function transferToMarket(address _account, uint _amount) external;    
+    function transferFromMarket(address _account, uint _amount) external;
 }   

@@ -1,6 +1,5 @@
 pragma solidity ^0.8.0;
 
-// import "@openzeppelin/contracts-4.4.1/access/Ownable.sol";
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
@@ -8,6 +7,7 @@ import "./OraclePausable.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../interfaces/IExoticPositionalMarketManager.sol";
+import "../interfaces/IThalesBonds.sol";
 
 contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, ProxyReentrancyGuard {
     using SafeMath for uint;
@@ -17,7 +17,6 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     uint private constant HUNDRED = 100;
     uint private constant ONE_PERCENT = 1e16;
     uint private constant HUNDRED_PERCENT = 1e18;
-    uint private constant FIXED_BOND_AMOUNT = 100 * 1e18;
     uint private constant CANCELED = 0;
 
     uint public creationTime;
@@ -38,6 +37,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     uint public backstopTimeout;
     bool public withdrawalAllowed;
     IExoticPositionalMarketManager public marketManager;
+    IThalesBonds public thalesBonds;
     address public resolverAddress;
 
     //stats
@@ -82,6 +82,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         require(_tags.length > 0);
         setOwner(msg.sender);
         marketManager = IExoticPositionalMarketManager(msg.sender);
+        thalesBonds = IThalesBonds(marketManager.thalesBonds());
         _initializeWithTwoParameters(
             _marketQuestion,
             _marketSource,
@@ -156,12 +157,12 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
             ticketsPerPosition[userPosition[msg.sender]] = ticketsPerPosition[userPosition[msg.sender]].sub(1);
             userPosition[msg.sender] = 0;
-            IERC20(marketManager.paymentToken()).safeTransfer(marketManager.safeBoxAddress(), withdrawalFee.div(2));
-            IERC20(marketManager.paymentToken()).safeTransfer(
+            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2));
+            thalesBonds.transferFromMarket(
                 marketManager.creatorAddress(address(this)),
                 withdrawalFee.div(2)
             );
-            IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, fixedTicketPrice.sub(withdrawalFee));
+            thalesBonds.transferFromMarket(msg.sender, fixedTicketPrice.sub(withdrawalFee));
             emit TicketWithdrawn(msg.sender, fixedTicketPrice.sub(withdrawalFee));
         } else {
             // withdraw all for open bid
@@ -176,12 +177,12 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
             uint withdrawalFee =
                 totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
-            IERC20(marketManager.paymentToken()).safeTransfer(marketManager.safeBoxAddress(), withdrawalFee.div(2));
-            IERC20(marketManager.paymentToken()).safeTransfer(
+            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2));
+            thalesBonds.transferFromMarket(
                 marketManager.creatorAddress(address(this)),
                 withdrawalFee.div(2)
             );
-            IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, totalToWithdraw.sub(withdrawalFee));
+            thalesBonds.transferFromMarket(msg.sender, totalToWithdraw.sub(withdrawalFee));
             emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
         }
     }
@@ -198,9 +199,9 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         }
         totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
         uint withdrawalFee = totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
-        IERC20(marketManager.paymentToken()).safeTransfer(marketManager.safeBoxAddress(), withdrawalFee.div(2));
-        IERC20(marketManager.paymentToken()).safeTransfer(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
-        IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, totalToWithdraw.sub(withdrawalFee));
+        thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2));
+        thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
+        thalesBonds.transferFromMarket(msg.sender, totalToWithdraw.sub(withdrawalFee));
         emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
     }
 
@@ -278,17 +279,17 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
             resetForUserAllPositionsToZero(msg.sender);
         }
-        IERC20(marketManager.paymentToken()).safeTransfer(msg.sender, amount);
+        thalesBonds.transferFromMarket(msg.sender, amount);
         if (!firstUserClaimed && winningPosition != CANCELED) {
-            IERC20(marketManager.paymentToken()).safeTransfer(
+            thalesBonds.transferFromMarket(
                 marketManager.creatorAddress(address(this)),
                 getAdditionalCreatorAmount()
             );
-            IERC20(marketManager.paymentToken()).safeTransfer(
+            thalesBonds.transferFromMarket(
                 marketManager.resolverAddress(address(this)),
                 getAdditionalResolverAmount()
             );
-            IERC20(marketManager.paymentToken()).safeTransfer(marketManager.safeBoxAddress(), getSafeBoxAmount());
+            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
             firstUserClaimed = true;
         }
@@ -306,17 +307,17 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
             resetForUserAllPositionsToZero(_user);
         }
-        IERC20(marketManager.paymentToken()).safeTransfer(_user, amount);
+        thalesBonds.transferFromMarket(_user, amount);
         if (!firstUserClaimed) {
-            IERC20(marketManager.paymentToken()).safeTransfer(
+            thalesBonds.transferFromMarket(
                 marketManager.creatorAddress(address(this)),
                 getAdditionalCreatorAmount()
             );
-            IERC20(marketManager.paymentToken()).safeTransfer(
+            thalesBonds.transferFromMarket(
                 marketManager.resolverAddress(address(this)),
                 getAdditionalResolverAmount()
             );
-            IERC20(marketManager.paymentToken()).safeTransfer(marketManager.safeBoxAddress(), getSafeBoxAmount());
+            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
             firstUserClaimed = true;
         }
@@ -344,28 +345,16 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         emit MarketDisputed(false);
     }
 
-    function transferToMarket(address _sender, uint _amount) public notPaused nonReentrant {
+    function transferToMarket(address _sender, uint _amount) internal notPaused nonReentrant {
         require(_sender != address(0), "Invalid sender address");
         require(IERC20(marketManager.paymentToken()).balanceOf(_sender) >= _amount, "Sender balance low");
         require(
-            IERC20(marketManager.paymentToken()).allowance(_sender, address(this)) >= _amount,
+            IERC20(marketManager.paymentToken()).allowance(_sender, marketManager.thalesBonds()) >= _amount,
             "No allowance. Please adjust the allowance"
         );
-        IERC20(marketManager.paymentToken()).safeTransferFrom(_sender, address(this), _amount);
+        IThalesBonds(marketManager.thalesBonds()).transferToMarket(_sender, _amount);
     }
 
-    function transferBondToMarket(address _sender, uint _amount) external notPaused {
-        totalBondAmount = totalBondAmount.add(_amount);
-        transferToMarket(_sender, _amount);
-    }
-
-    function transferFromBondAmountToRecepient(address _recepient, uint _amount) public onlyOwner {
-        require(_amount <= totalBondAmount, "Exceeds the total bond amount");
-        require(_recepient != address(0), "Invalid sender address");
-        require(IERC20(marketManager.paymentToken()).balanceOf(address(this)) >= _amount, "Market balance low");
-        totalBondAmount = totalBondAmount.sub(_amount);
-        IERC20(marketManager.paymentToken()).safeTransfer(_recepient, _amount);
-    }
 
     // SETTERS ///////////////////////////////////////////////////////
 

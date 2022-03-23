@@ -1374,29 +1374,6 @@
       },
       {
         "internalType": "address",
-        "name": "_recepient",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "sendMarketBondAmountTo",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
         "name": "_disputorAddress",
         "type": "address"
       },
@@ -1555,6 +1532,13 @@
       }
     ],
     "name": "setMarketDataAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "setMaxAllowanceForBonds",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

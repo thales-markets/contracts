@@ -296,14 +296,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit RewardSentToDisputorForMarket(_market, _disputorAddress, _amount);
     }
 
-    function sendMarketBondAmountTo(
-        address _market,
-        address _recepient,
-        uint _amount
-    ) external onlyOracleCouncilAndOwner {
-        require(_amount > 0, "Invalid amount");
-        ExoticPositionalMarket(_market).transferFromBondAmountToRecepient(_recepient, _amount);
-    }
 
     function issueBondsBackToCreatorAndResolver(address _marketAddress) external nonReentrant {
         require(ExoticPositionalMarket(_marketAddress).canUsersClaim(), "Market not claimable");

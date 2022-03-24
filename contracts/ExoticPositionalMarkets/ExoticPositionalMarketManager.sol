@@ -99,7 +99,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         uint _positionCount,
         string[] memory _positionPhrases
     ) external checkMarketRequirements(_endOfPositioning) nonReentrant {
-        require(!creationRestrictedToOwner, "Market creation is restricted. (only owner)");
+        require(!creationRestrictedToOwner || msg.sender == owner, "Market creation is restricted. (only owner)");
         require(_fixedTicketPrice == 0 || _fixedTicketPrice >= minFixedTicketPrice, "Exceeds min ticket price");
         require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
         require(

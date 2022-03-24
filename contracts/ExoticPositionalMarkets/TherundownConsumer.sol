@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "./GamesQueue.sol";
 
 // interface
 import "../interfaces/IExoticPositionalMarketManager.sol";
@@ -50,13 +51,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     // Maps <RequestId, Result>
     mapping(bytes32 => bytes[]) public requestIdGamesCreated;
     mapping(bytes32 => bytes[]) public requestIdGamesResolved;
-    mapping(bytes32 => bytes32[]) public requestIdGameIds;
 
     // Maps <GameId, Game>
     mapping(bytes32 => GameCreate) public gameCreated;
     mapping(bytes32 => GameResolve) public gameResolved;
     mapping(bytes32 => uint) public sportsIdPerGame;
-    mapping(bytes32 => bool) public gameFullfilResolved;
+    mapping(bytes32 => bool) public gameFulfilledCreated;
+    mapping(bytes32 => bool) public gameFulfilledResolved;
 
     // sports props
     mapping(uint => bool) public supportedSport;
@@ -73,6 +74,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     // wrapper
     address public wrapperAddress;
 
+    GamesQueue public queues;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -81,7 +84,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         address _exoticManager,
         uint[] memory _twoPositionSports,
         uint _fixedTicketPrice,
-        bool _withdrawalAllowed
+        bool _withdrawalAllowed,
+        GamesQueue _queues
     ) public initializer {
         setOwner(_owner);
         _populateSports(_supportedSportIds);
@@ -89,6 +93,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         exoticManager = IExoticPositionalMarketManager(_exoticManager);
         fixedTicketPrice = _fixedTicketPrice;
         withdrawalAllowed = _withdrawalAllowed;
+        queues = _queues;
         //approve
         IERC20Upgradeable(exoticManager.paymentToken()).approve(
             exoticManager.thalesBonds(),
@@ -122,13 +127,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function createMarketForGame(bytes32 _gameId) public {
         require(marketPerGameId[_gameId] == address(0), "Market for game already exists");
-        require(sportsIdPerGame[_gameId] > 0, "Need first to fulfill games");
+        require(gameFulfilledCreated[_gameId], "No such game fulfilled, created");
         _createMarket(_gameId);
     }
 
     function resolveMarketForGame(bytes32 _gameId) public {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
-        require(gameFullfilResolved[_gameId], "Game needs to be fulfill games resolved");
+        require(gameFulfilledResolved[_gameId], "No such game Fulfilled, resolved");
         _resolveMarket(_gameId);
     }
 
@@ -148,11 +153,15 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return gameCreated[_gameId];
     }
 
+    function getGameTime(bytes32 _gameId) public view returns (uint256) {
+        return gameCreated[_gameId].startTime;
+    }
+
     function getGameResolvedById(bytes32 _gameId) public view returns (GameResolve memory) {
         return gameResolved[_gameId];
     }
 
-    function isSupportedMarket(string memory _market) external view returns (bool) {
+    function isSupportedMarketType(string memory _market) external view returns (bool) {
         return
             keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create")) ||
             keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("resolve"));
@@ -181,11 +190,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         GameCreate memory _game,
         uint _sportId
     ) internal {
-        requestIdGameIds[requestId].push(_game.gameId);
         gameCreated[_game.gameId] = _game;
         sportsIdPerGame[_game.gameId] = _sportId;
+        queues.enqueueGamesCreated(_game.gameId);
+        gameFulfilledCreated[_game.gameId] = true;
 
-        emit GameCreted(requestId, _sportId, _game.gameId, _game);
+        emit GameCreted(requestId, _sportId, _game.gameId, _game, queues.lastCreated());
     }
 
     function _resolveGameFulfill(
@@ -193,9 +203,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         GameResolve memory _game,
         uint _sportId
     ) internal {
-        gameResolved[_game.gameId] = _game;
-        gameFullfilResolved[_game.gameId] = true;
-        emit GameResolved(requestId, _sportId, _game.gameId, _game);
+        if(_isGameReadyToBeResolved(_game)){
+            gameResolved[_game.gameId] = _game;
+            queues.enqueueGamesResolved(_game.gameId);
+            gameFulfilledResolved[_game.gameId] = true;
+        }
+
+        emit GameResolved(requestId, _sportId, _game.gameId, _game, queues.lastResolved());
     }
 
     function _populateSports(uint[] memory _supportedSportIds) internal {
@@ -230,6 +244,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         address marketAddress = exoticManager.getActiveMarketAddress(exoticManager.numOfActiveMarkets() - 1);
         marketPerGameId[game.gameId] = marketAddress;
 
+        queues.dequeueGamesCreated();
+
         emit CreateSportsMarket(marketAddress, game.gameId, game);
     }
 
@@ -240,10 +256,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             exoticManager.resolveMarket(marketPerGameId[game.gameId], _callulateOutcome(game));
             marketResolved[marketPerGameId[game.gameId]] = true;
 
+            queues.dequeueGamesCreated();
+
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, game);
         } else if (_isGameStatusCanceled(game)) {
             exoticManager.cancelMarket(marketPerGameId[game.gameId]);
             marketCanceled[marketPerGameId[game.gameId]] = true;
+
+            queues.dequeueGamesCreated();
 
             emit CancelSportsMarket(marketPerGameId[game.gameId], game.gameId, game);
         }
@@ -277,6 +297,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint[] memory result = new uint[](1);
         result[0] = MIN_TAG_NUMBER + _sportsId;
         return result;
+    }
+
+    function _isGameReadyToBeResolved(GameResolve memory _game) internal pure returns (bool) {
+        return _isGameStatusResolved(_game) || _isGameStatusCanceled(_game);
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal pure returns (bool) {
@@ -342,8 +366,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== EVENTS ========== */
 
-    event GameCreted(bytes32 _requestId, uint _sportId, bytes32 _id, GameCreate _game);
-    event GameResolved(bytes32 _requestId, uint _sportId, bytes32 _id, GameResolve _game);
+    event GameCreted(bytes32 _requestId, uint _sportId, bytes32 _id, GameCreate _game, uint _queueIndex);
+    event GameResolved(bytes32 _requestId, uint _sportId, bytes32 _id, GameResolve _game, uint _queueIndex);
     event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game);
     event ResolveSportsMarket(address _marketAddress, bytes32 _id, GameResolve _game);
     event CancelSportsMarket(address _marketAddress, bytes32 _id, GameResolve _game);

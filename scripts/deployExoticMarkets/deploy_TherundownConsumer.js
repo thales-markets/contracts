@@ -51,6 +51,13 @@ async function main() {
 
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
+	const GamesQueue = await ethers.getContractFactory('GamesQueue');
+	const gamesQueue = await GamesQueue.deploy();
+	await gamesQueue.deployed();
+
+	console.log('GamesQueue deployed to:', gamesQueue.address);
+	setTargetAddress('GamesQueue', network, gamesQueue.address);
+
 	const exoticManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
 	let exoticManagerAddress = getTargetAddress('ExoticMarketManager', network);
 
@@ -81,6 +88,7 @@ async function main() {
 		twoPositionSports,
 		fixedPrice,
 		withdrawalAllowed,
+		gamesQueue.address,
 	]);
 
 	await therundown.deployed();

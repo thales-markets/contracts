@@ -119,7 +119,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /* ========== MODIFIERS ========== */
 
     modifier isValidRequest(string memory _market, uint256 _sportId) {
-        require(consumer.isSupportedMarket(_market), "Market is not supported");
+        require(consumer.isSupportedMarketType(_market), "Market is not supported");
         require(consumer.isSupportedSport(_sportId), "SportId is not supported");
         _;
     }

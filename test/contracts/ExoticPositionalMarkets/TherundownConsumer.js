@@ -78,6 +78,7 @@ contract('TherundownConsumer', accounts => {
 	let MockExoticMarket;
 	let MockTherundownConsumerWrapper;
 	let initializeConsumerData;
+	let gamesQueue;
 	let game_1_create;
 	let game_1_resolve;
 	let gameid1;
@@ -114,6 +115,8 @@ contract('TherundownConsumer', accounts => {
 		ExoticPositionalTags = await ExoticPositionalTagsContract.new();
 		await ExoticPositionalTags.initialize(manager, { from: manager });
 		await ThalesBonds.initialize(manager, { from: manager });
+		let GamesQueue = artifacts.require('GamesQueue');
+		gamesQueue = await GamesQueue.new();
 
 		await ExoticPositionalMarketManager.initialize(
 			manager,
@@ -186,6 +189,7 @@ contract('TherundownConsumer', accounts => {
 			[sportId_4],
 			toUnit(10),
 			true,
+			gamesQueue.address,
 			{ from: owner }
 		);
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
@@ -206,9 +210,9 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(7));
 
-			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarket('create'));
-			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarket('resolve'));
-			assert.equal(false, await TherundownConsumerDeployed.isSupportedMarket('aaa'));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarketType('create'));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarketType('resolve'));
+			assert.equal(false, await TherundownConsumerDeployed.isSupportedMarketType('aaa'));
 		});
 	});
 
@@ -224,8 +228,8 @@ contract('TherundownConsumer', accounts => {
 				{ from: wrapper }
 			);
 
-			assert.equal(gameid1, await TherundownConsumerDeployed.requestIdGameIds(reqIdCreate, 0));
-			assert.equal(gameid2, await TherundownConsumerDeployed.requestIdGameIds(reqIdCreate, 1));
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
@@ -418,6 +422,9 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
 
+			assert.equal(1, await gamesQueue.firstCreated());
+			assert.equal(2, await gamesQueue.lastCreated());
+
 			assert.equal(
 				game_1_create,
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
@@ -442,6 +449,9 @@ contract('TherundownConsumer', accounts => {
 
 			// create markets
 			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			assert.equal(2, await gamesQueue.firstCreated());
+			assert.equal(2, await gamesQueue.lastCreated());
 
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
 

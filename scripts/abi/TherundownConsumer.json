@@ -141,6 +141,12 @@
         "internalType": "struct TherundownConsumer.GameCreate",
         "name": "_game",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_queueIndex",
+        "type": "uint256"
       }
     ],
     "name": "GameCreted",
@@ -194,6 +200,12 @@
         "internalType": "struct TherundownConsumer.GameResolve",
         "name": "_game",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_queueIndex",
+        "type": "uint256"
       }
     ],
     "name": "GameResolved",
@@ -596,7 +608,26 @@
         "type": "bytes32"
       }
     ],
-    "name": "gameFullfilResolved",
+    "name": "gameFulfilledCreated",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "gameFulfilledResolved",
     "outputs": [
       {
         "internalType": "bool",
@@ -818,6 +849,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getGameTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -846,6 +896,11 @@
         "internalType": "bool",
         "name": "_withdrawalAllowed",
         "type": "bool"
+      },
+      {
+        "internalType": "contract GamesQueue",
+        "name": "_queues",
+        "type": "address"
       }
     ],
     "name": "initialize",
@@ -918,7 +973,7 @@
         "type": "string"
       }
     ],
-    "name": "isSupportedMarket",
+    "name": "isSupportedMarketType",
     "outputs": [
       {
         "internalType": "bool",
@@ -1071,24 +1126,13 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "requestIdGameIds",
+    "inputs": [],
+    "name": "queues",
     "outputs": [
       {
-        "internalType": "bytes32",
+        "internalType": "contract GamesQueue",
         "name": "",
-        "type": "bytes32"
+        "type": "address"
       }
     ],
     "stateMutability": "view",

@@ -53,7 +53,7 @@
         "type": "string"
       }
     ],
-    "name": "isSupportedMarket",
+    "name": "isSupportedMarketType",
     "outputs": [
       {
         "internalType": "bool",

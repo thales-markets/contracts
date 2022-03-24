@@ -196,7 +196,6 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     }
 
     function transferFromMarket(address _account, uint _amount) external whenNotPaused {
-        require(marketManager.isActiveMarket(msg.sender), "Caller is not an active market.");
         marketFunds[msg.sender] = marketFunds[msg.sender].sub(_amount);
         transferBondFromMarket(_account, _amount);
     }

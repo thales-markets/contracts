@@ -178,7 +178,8 @@ contract('ThalesRoyale', accounts => {
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'SignedUp', {
 				user: first,
-				season: season_1
+				season: season_1,
+				position: 0
 			});
 		});
 

@@ -9422,6 +9422,1116 @@
           }
         }
       }
+    },
+    "58325cf9754f9d3947b8ae6638cbcda4eb26226655000c7b9889a9ec331a602a": {
+      "address": "0xa01a9f8b3Ae18dDF755166F7eD93A2796Cd3fF27",
+      "txHash": "0x3c3ad45c8511d51432cf76b7b42a7b5b183ae5295899677e9463e5371fba75ea",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardToken",
+            "type": "t_contract(IERC20Upgradeable)390",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:34"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "royalePass",
+            "type": "t_contract(IThalesRoyalePass)3701",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:35"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "oracleKey",
+            "type": "t_bytes32",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:36"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "priceFeed",
+            "type": "t_contract(IPriceFeed)3676",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:37"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "safeBox",
+            "type": "t_address",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:39"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:40"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rounds",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:42"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "signUpPeriod",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:43"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundChoosingLength",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:44"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundLength",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:45"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "nextSeasonStartsAutomatically",
+            "type": "t_bool",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:47"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "pauseBetweenSeasonsTime",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:48"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundTargetPrice",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:50"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "buyInAmount",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:51"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "season",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:55"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardPerSeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:57"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "signedUpPlayersCount",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:58"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundInASeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:59"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "seasonStarted",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:60"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "seasonFinished",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:61"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "seasonCreationTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:62"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "royaleInSeasonStarted",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:63"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "royaleSeasonEndTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:64"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundInSeasonEndTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:65"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundInASeasonStartTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:66"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "playersPerSeason",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:67"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "playerSignedUpPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:68"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundResultPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:69"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "targetPricePerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:70"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "finalPricePerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:71"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "positionsPerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_uint256)))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:72"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "totalPlayersPerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:73"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "eliminatedPerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:74"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "positionInARoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:76"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardCollectedPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:77"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardPerWinnerPerSeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:78"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "unclaimedRewardPerSeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:79"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "oracleKeyPerSeason",
+            "type": "t_mapping(t_uint256,t_bytes32)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:81"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)390": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(IThalesRoyalePass)3701": {
+            "label": "contract IThalesRoyalePass"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_contract(IPriceFeed)3676": {
+            "label": "contract IPriceFeed"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(uint256 => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_uint256)))": {
+            "label": "mapping(uint256 => mapping(uint256 => mapping(uint256 => uint256)))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))": {
+            "label": "mapping(uint256 => mapping(address => mapping(uint256 => uint256)))"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "b147379035bab169e19c21438de7e451d078010fd01905eca60361f0f08544b6": {
+      "address": "0xD437ee9c9B6884BDd355e705907Bb21D01b965D2",
+      "txHash": "0xa9060781d2e693712c9adc6b6763b540c43dca75a474ef2043a143cf459f15b4",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardToken",
+            "type": "t_contract(IERC20Upgradeable)6406",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:34"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "royalePass",
+            "type": "t_contract(IThalesRoyalePass)21933",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:35"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "oracleKey",
+            "type": "t_bytes32",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:36"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "priceFeed",
+            "type": "t_contract(IPriceFeed)21778",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:37"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "safeBox",
+            "type": "t_address",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:39"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:40"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rounds",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:42"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "signUpPeriod",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:43"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundChoosingLength",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:44"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundLength",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:45"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "nextSeasonStartsAutomatically",
+            "type": "t_bool",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:47"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "pauseBetweenSeasonsTime",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:48"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundTargetPrice",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:50"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "buyInAmount",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:51"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "season",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:55"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardPerSeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:57"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "signedUpPlayersCount",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:58"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundInASeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:59"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "seasonStarted",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:60"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "seasonFinished",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:61"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "seasonCreationTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:62"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "royaleInSeasonStarted",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:63"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "royaleSeasonEndTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:64"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundInSeasonEndTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:65"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundInASeasonStartTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:66"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "playersPerSeason",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:67"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "playerSignedUpPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:68"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundResultPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:69"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "targetPricePerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:70"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "finalPricePerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:71"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "positionsPerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_uint256)))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:72"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "totalPlayersPerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:73"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "eliminatedPerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:74"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "positionInARoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:76"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardCollectedPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:77"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardPerWinnerPerSeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:78"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "unclaimedRewardPerSeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:79"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "oracleKeyPerSeason",
+            "type": "t_mapping(t_uint256,t_bytes32)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:81"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)6406": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(IThalesRoyalePass)21933": {
+            "label": "contract IThalesRoyalePass"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_contract(IPriceFeed)21778": {
+            "label": "contract IPriceFeed"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(uint256 => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_uint256)))": {
+            "label": "mapping(uint256 => mapping(uint256 => mapping(uint256 => uint256)))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))": {
+            "label": "mapping(uint256 => mapping(address => mapping(uint256 => uint256)))"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "976d8e3c0518772ee76620be3bed5ec756bc4b2a225637dc72e99aeda74bebf2": {
+      "address": "0xdb289F332AF08D088b69fC2CB4234cDa0eD7b919",
+      "txHash": "0x33aca0d8713eb57b8858b48211a905a0269956f39450803554adde61f1bf13b4",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardToken",
+            "type": "t_contract(IERC20Upgradeable)6406",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:34"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "royalePass",
+            "type": "t_contract(IThalesRoyalePass)21937",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:35"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "oracleKey",
+            "type": "t_bytes32",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:36"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "priceFeed",
+            "type": "t_contract(IPriceFeed)21782",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:37"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "safeBox",
+            "type": "t_address",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:39"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:40"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rounds",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:42"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "signUpPeriod",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:43"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundChoosingLength",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:44"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundLength",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:45"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "nextSeasonStartsAutomatically",
+            "type": "t_bool",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:47"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "pauseBetweenSeasonsTime",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:48"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundTargetPrice",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:50"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "buyInAmount",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:51"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "season",
+            "type": "t_uint256",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:55"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardPerSeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:57"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "signedUpPlayersCount",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:58"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundInASeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:59"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "seasonStarted",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:60"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "seasonFinished",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:61"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "seasonCreationTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:62"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "royaleInSeasonStarted",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:63"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "royaleSeasonEndTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:64"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundInSeasonEndTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:65"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundInASeasonStartTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:66"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "playersPerSeason",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:67"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "playerSignedUpPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:68"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "roundResultPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:69"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "targetPricePerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:70"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "finalPricePerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:71"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "positionsPerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_uint256)))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:72"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "totalPlayersPerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:73"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "eliminatedPerRoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:74"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "positionInARoundPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:76"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardCollectedPerSeason",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:77"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "rewardPerWinnerPerSeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:78"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "unclaimedRewardPerSeason",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:79"
+          },
+          {
+            "contract": "ThalesRoyale",
+            "label": "oracleKeyPerSeason",
+            "type": "t_mapping(t_uint256,t_bytes32)",
+            "src": "contracts/ThalesRoyale/ThalesRoyale.sol:81"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20Upgradeable)6406": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(IThalesRoyalePass)21937": {
+            "label": "contract IThalesRoyalePass"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_contract(IPriceFeed)21782": {
+            "label": "contract IPriceFeed"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(uint256 => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_uint256,t_uint256)))": {
+            "label": "mapping(uint256 => mapping(uint256 => mapping(uint256 => uint256)))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256)))": {
+            "label": "mapping(uint256 => mapping(address => mapping(uint256 => uint256)))"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
     }
   }
 }

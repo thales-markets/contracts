@@ -1,5 +1,6 @@
 const path = require('path');
 const { ethers, upgrades } = require('hardhat');
+const w3utils = require('web3-utils');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
 
@@ -40,11 +41,12 @@ async function main() {
     console.log("ExoticUSD Deployed on", ExoticUSDDeployed.address);
 	setTargetAddress('ExoticUSD', network, ExoticUSDDeployed.address);
 
-	
+	await delay(5000);
+	await ExoticUSDDeployed.setDefaultAmount(w3utils.toWei("100", "ether"));
 	// const ExoticMarketManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
 	// await ExoticMarketManagerDeployed.setTagsAddress(ExoticUSDDeployed.address);
 	// console.log("ExoticTags address set in ExoticMarketManager");
-	
+	await delay(5000);
 
     try {
 		await hre.run('verify:verify', {

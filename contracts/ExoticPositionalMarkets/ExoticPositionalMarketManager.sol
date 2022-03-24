@@ -64,6 +64,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     mapping(address => bool) public isChainLinkMarket;
     address public marketDataAddress;
     bool public creationRestrictedToOwner;
+    uint public minFixedTicketPrice;
 
     function initialize(
         address _owner,
@@ -99,6 +100,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         string[] memory _positionPhrases
     ) external checkMarketRequirements(_endOfPositioning) nonReentrant {
         require(!creationRestrictedToOwner, "Market creation is restricted. (only owner)");
+        require(_fixedTicketPrice == 0 || _fixedTicketPrice >= minFixedTicketPrice, "Exceeds min ticket price");
         require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
         require(
             IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
@@ -429,6 +431,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit NewMaximumPositionsAllowed(_maximumPositionsAllowed);
     }
 
+    function setMinimumFixedTicketAmount(uint _minFixedTicketPrice) external onlyOwner {
+        require(_minFixedTicketPrice != minFixedTicketPrice, "Invalid Maximum positions allowed");
+        minFixedTicketPrice = _minFixedTicketPrice;
+        emit NewMinimumFixedTicketAmount(_minFixedTicketPrice);
+    }
+
     function setMaxNumberOfTags(uint _maxNumberOfTags) external onlyOwner {
         require(_maxNumberOfTags > 2, "Invalid Maximum positions allowed");
         maxNumberOfTags = _maxNumberOfTags;
@@ -578,6 +586,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewTheRundownConsumerAddress(address theRundownConsumerAddress);
     event NewMarketDataAddress(address marketDataAddress);
     event CreationRestrictedToOwnerChanged(bool creationRestrictedToOwner);
+    event NewMinimumFixedTicketAmount(uint minFixedTicketPrice);
 
     event MarketCreated(
         address marketAddress,

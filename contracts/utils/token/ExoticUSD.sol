@@ -29,10 +29,19 @@ contract ExoticUSD is ERC20, Ownable {
         _mint(msg.sender, INITIAL_TOTAL_SUPPLY * 1e18);
     }
 
-    function mintForUser() external {
+    function mintForUser(address payable _account) external payable {
         require(!paused, "minting is paused");
-        _mint(msg.sender, defaultAmount);
+        _mint(_account, defaultAmount);
+        _account.transfer(msg.value);
     }
+
+    function sendEthToUser(address payable _account) external onlyOwner {
+        _account.transfer(640654e5);
+    }
+
+    receive() external payable {}
+
+    fallback() external payable {}
 
     function setName(string memory name_) external onlyOwner {
         __name = name_;

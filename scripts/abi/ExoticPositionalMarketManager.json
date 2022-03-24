@@ -311,6 +311,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "minFixedTicketPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMinimumFixedTicketAmount",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oracleCouncilAddress",
         "type": "address"
@@ -1084,6 +1097,19 @@
   },
   {
     "inputs": [],
+    "name": "minFixedTicketPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "minimumPositioningDuration",
     "outputs": [
       {
@@ -1578,6 +1604,19 @@
       }
     ],
     "name": "setMaximumPositionsAllowed",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minFixedTicketPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinimumFixedTicketAmount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

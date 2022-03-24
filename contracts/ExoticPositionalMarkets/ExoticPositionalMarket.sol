@@ -109,7 +109,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         require(_position <= positionCount, "Position value invalid");
         require(canUsersPlacePosition(), "Positioning finished/market resolved");
         //require(same position)
-        require(ticketType == TicketType.FIXED_TICKET_PRICE, "Not Fixed Ticket market");
+        require(ticketType == TicketType.FIXED_TICKET_PRICE, "Not Fixed type");
         if (userPosition[msg.sender] == 0) {
             transferToMarket(msg.sender, fixedTicketPrice);
             totalUsersTakenPositions = totalUsersTakenPositions.add(1);
@@ -559,7 +559,8 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
                 return forNewUserView ? applyDeduction(totalOpenBidAmount.add(1e18)) : applyDeduction(totalOpenBidAmount);
             } else {
                 if (forNewUserView) {
-                    applyDeduction(totalOpenBidAmount.add(1e18)).div(totalOpenBidAmountPerPosition[_position].add(1e18));
+                    return
+                        applyDeduction(totalOpenBidAmount.add(1e18)).div(totalOpenBidAmountPerPosition[_position].add(1e18));
                 } else {
                     uint calculatedPositions =
                         userHasAlreadyTakenThisPosition && totalOpenBidAmountPerPosition[_position] > 0

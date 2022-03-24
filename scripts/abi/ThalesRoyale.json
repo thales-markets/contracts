@@ -389,6 +389,12 @@
         "internalType": "uint256",
         "name": "season",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
       }
     ],
     "name": "SignedUp",

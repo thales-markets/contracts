@@ -131,7 +131,7 @@
 		"PositionalMarketManager": "0xAfBA2e76B4580Ab88c07Beb2Ca884ca733fD4dD4",
 		"PositionalMarketManagerImplementation": "0x65356ce88811bfc18e40DD158e84F31422948e80",
 		"PositionalMarketData": "0x836dBB0251FBA7C2651ed2B353c9d4795c73225c",
-		"PriceFeed": "0x3c22C1bBC552A43b101b003dF5230322EA09CeD0",
+		"PriceFeed": "0xDa00B46a924dA3019b2F5fC13E770956F75C04C7",
 		"ThalesRoyalePrivateRoom": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
 		"OpThales_L2": "0xf584ff99f97b5abb1872af1aa7924fedf3e1b53d",
 		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
@@ -150,7 +150,7 @@
 		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a",
 		"ThalesRoyalePass": "0x288eF27eC4fEaD97F81A6F578152fd00DdFBB448",
 		"ThalesRoyale": "0xE1757E47417e4bFF5f3F01713A205E1709344D5D",
-		"ThalesRoyaleImplementation": "0x0bd3CECA020919a690C38EEAE61B848224D1C220",
+		"ThalesRoyaleImplementation": "0xdb289F332AF08D088b69fC2CB4234cDa0eD7b919",
 		"GUniLPToken": "0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
 		"LPStakingRewards": "0x44d55a58211b2120Dc9f280ae68B99ffcaC03c7C",
 		"LPStakingRewardsImplementation": "0x40b8F4852eB5394c1EcABc1bEf09016a868f90FC"
@@ -175,9 +175,7 @@
 		"PositionalMarketData": "0xd6BEd7D753DCbbbb8937Dd009788d6c815aE3094",
 		"ThalesRoyalePass": "0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9"
 	},
-	"polygon": { 
-		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174" 
-	},
+	"polygon": { "ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174" },
 	"localhost": {
 		"Airdrop": "",
 		"OngoingAirdrop": "0xB74DD224F1652672Fc5d18404Fe5AF120e1e0991",

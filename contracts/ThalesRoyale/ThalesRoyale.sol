@@ -135,7 +135,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(!royaleInSeasonStarted[season], "Already started");
         require(seasonStarted[season], "Season not started yet");
 
-        oracleKeyPerSeason[season] = oracleKey;
         roundTargetPrice = priceFeed.rateForCurrency(oracleKeyPerSeason[season]);
         roundInASeason[season] = 1;
         targetPricePerRoundPerSeason[season][roundInASeason[season]] = roundTargetPrice;
@@ -244,6 +243,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         season = season + 1;
         seasonCreationTime[season] = block.timestamp;
         seasonStarted[season] = true;
+        oracleKeyPerSeason[season] = oracleKey;
 
         emit NewSeasonStarted(season);
     }
@@ -323,7 +323,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
         _buyIn(_player, buyInAmount);
 
-        emit SignedUp(_player, season);
+        emit SignedUp(_player, season, _position);
     }
 
     function _signUpPlayerWithPass(
@@ -341,7 +341,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
         _buyInWithPass(_player, _passId);
 
-        emit SignedUp(_player, season);
+        emit SignedUp(_player, season, _position);
     }
 
     function _putPosition(
@@ -541,7 +541,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     /* ========== EVENTS ========== */
 
-    event SignedUp(address user, uint season);
+    event SignedUp(address user, uint season, uint position);
     event RoundClosed(uint season, uint round, uint result, uint strikePrice, uint finalPrice, uint numberOfEliminatedPlayers, uint numberOfWinningPlayers);
     event TookAPosition(address user, uint season, uint round, uint position);
     event RoyaleStarted(uint season, uint totalPlayers, uint totalReward);

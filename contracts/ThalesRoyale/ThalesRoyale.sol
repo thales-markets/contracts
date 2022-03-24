@@ -78,6 +78,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     mapping(uint => uint) public unclaimedRewardPerSeason;
     
     IThalesRoyalePass public royalePass;
+    mapping(uint => bytes32) public oracleKeyPerSeason;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -134,7 +135,8 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(!royaleInSeasonStarted[season], "Already started");
         require(seasonStarted[season], "Season not started yet");
 
-        roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
+        oracleKeyPerSeason[season] = oracleKey;
+        roundTargetPrice = priceFeed.rateForCurrency(oracleKeyPerSeason[season]);
         roundInASeason[season] = 1;
         targetPricePerRoundPerSeason[season][roundInASeason[season]] = roundTargetPrice;
         royaleInSeasonStarted[season] = true;
@@ -182,7 +184,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         uint nextRound = currentSeasonRound + 1;
 
         // getting price
-        uint currentPriceFromOracle = priceFeed.rateForCurrency(oracleKey);
+        uint currentPriceFromOracle = priceFeed.rateForCurrency(oracleKeyPerSeason[season]);
         uint stikePrice = roundTargetPrice;
 
         finalPricePerRoundPerSeason[season][currentSeasonRound] = currentPriceFromOracle;
@@ -490,6 +492,21 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         emit NewThalesRoyalePass(_royalePass);
     }
 
+    function setOracleKey(bytes32 _oracleKey) public onlyOwner {
+        oracleKey = _oracleKey;
+        emit NewOracleKey(_oracleKey);
+    }
+
+    function setRewardToken(address _rewardToken) public onlyOwner {
+        rewardToken = IERC20Upgradeable(_rewardToken);
+        emit NewRewardToken(_rewardToken);
+    }
+
+    function setNumberOfRounds(uint _rounds) public onlyOwner {
+        rounds = _rounds;
+        emit NewNumberOfRounds(_rounds);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier playerCanSignUp() {
@@ -542,4 +559,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     event NewSafeBoxPercentage(uint _safeBoxPercentage);
     event NewSafeBox(address _safeBox);
     event NewThalesRoyalePass(address _royalePass);
+    event NewOracleKey(bytes32 _oracleKey);
+    event NewRewardToken(address _rewardToken);
+    event NewNumberOfRounds(uint _rounds);
 }

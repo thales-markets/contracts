@@ -101,6 +101,10 @@ async function main() {
 	setTargetAddress('TherundownConsumerImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
+		address: gamesQueue.address,
+	})
+
+	await hre.run('verify:verify', {
 		address: implementation,
 	});
 }

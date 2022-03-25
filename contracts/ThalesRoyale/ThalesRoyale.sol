@@ -507,15 +507,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         emit NewNumberOfRounds(_rounds);
     }
 
-    function fulfillOracleKeyHistoryData(uint _seasonFrom, uint _seasonTo, bytes32 _oracleKey) external onlyOwner {
-        for (uint i=_seasonFrom; i<=_seasonTo; i++) {
-            if(oracleKeyPerSeason[i] == 0){
-                oracleKeyPerSeason[i] = _oracleKey;
-                emit HistoryDataAdded(i, _oracleKey);
-            }
-        }
-    }
-
     /* ========== MODIFIERS ========== */
 
     modifier playerCanSignUp() {
@@ -571,5 +562,4 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     event NewOracleKey(bytes32 _oracleKey);
     event NewRewardToken(address _rewardToken);
     event NewNumberOfRounds(uint _rounds);
-    event HistoryDataAdded(uint _season, bytes32 _oracleKey);
 }

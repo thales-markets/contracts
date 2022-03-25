@@ -127,6 +127,7 @@ contract('Exotic Positional market', async accounts => {
 			tag = [1, 2, 3];
 			paymentToken = Thales.address;
 			phrases = ['Real Madrid', 'FC Barcelona', 'It will be a draw'];
+			// phrases = ['Real Madrid', 'FC Barcelona', 'FC Barcelona'];
 			outcomePosition = '1';
 
 			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {

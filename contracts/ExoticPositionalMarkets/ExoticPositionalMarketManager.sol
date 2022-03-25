@@ -114,7 +114,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid market source (empty string)");
         require(_positionCount == _positionPhrases.length, "Invalid position count with position phrases");
         require(bytes(_marketQuestion).length < 110, "Market question exceeds length");
-
+        require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
         for (uint i = 0; i < _tags.length; i++) {
             require(
                 IExoticPositionalTags(tagsAddress).isValidTagNumber(_tags[i]),
@@ -179,6 +179,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid market source (empty string)");
         require(_positionCount == _positionPhrases.length, "Invalid position count with position phrases");
         require(bytes(_marketQuestion).length < 110, "Market question exceeds length");
+        require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
 
         ExoticPositionalMarket exoticMarket = ExoticPositionalMarket(Clones.clone(exoticMarketMastercopy));
         exoticMarket.initialize(
@@ -552,6 +553,15 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         activeMarkets[getActiveMarketIndex(_marketAddress)] = activeMarkets[numOfActiveMarkets.sub(1)];
         numOfActiveMarkets = numOfActiveMarkets.sub(1);
         activeMarkets[numOfActiveMarkets] = address(0);
+    }
+
+    function thereAreNonEqualPositions(string[] memory positionPhrases) internal pure returns(bool) {
+        for(uint i=0; i<positionPhrases.length-1; i++) {
+            if(keccak256(abi.encode(positionPhrases[i])) == keccak256(abi.encode(positionPhrases[i+1]))){
+                return false;
+            }
+        }
+        return true;
     }
 
     event MinimumPositionDurationChanged(uint duration);

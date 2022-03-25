@@ -5,6 +5,25 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "_season",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_oracleKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "HistoryDataAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "buyInAmount",
         "type": "uint256"
       }
@@ -608,6 +627,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_oracleKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "fulfillOracleKeyHistoryData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

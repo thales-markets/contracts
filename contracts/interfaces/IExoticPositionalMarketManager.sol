@@ -27,6 +27,7 @@ interface IExoticPositionalMarketManager {
     function disputePrice() external view returns(uint);
     function safeBoxLowAmount() external view returns(uint);
     function arbitraryRewardForDisputor() external view returns(uint);
+    function disputeStringLengthLimit() external view returns(uint);
 
     function createExoticMarket(
         string memory _marketQuestion,

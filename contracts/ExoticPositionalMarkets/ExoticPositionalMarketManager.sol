@@ -65,6 +65,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     address public marketDataAddress;
     bool public creationRestrictedToOwner;
     uint public minFixedTicketPrice;
+    uint public disputeStringLengthLimit;
 
     function initialize(
         address _owner,
@@ -472,6 +473,13 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         safeBoxLowAmount = _safeBoxLowAmount;
         emit NewSafeBoxLowAmount(_safeBoxLowAmount);
     }
+    
+    function setDisputeStringLengthLimit(uint _disputeStringLengthLimit) external onlyOwner {
+        require(_disputeStringLengthLimit > 0, "Invalid amount");
+        require(_disputeStringLengthLimit != disputeStringLengthLimit, "Amount equal to SafeBoxLowAmount");
+        disputeStringLengthLimit = _disputeStringLengthLimit;
+        emit NewDisputeStringLengthLimit(_disputeStringLengthLimit);
+    }
 
     function setArbitraryRewardForDisputor(uint _arbitraryRewardForDisputor) external onlyOwner {
         require(_arbitraryRewardForDisputor > 0, "Invalid amount");
@@ -522,10 +530,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(_tagsAddress != address(0), "Invalid address");
         tagsAddress = _tagsAddress;
         emit NewTagsAddress(_tagsAddress);
-    }
-
-    function setMaxAllowanceForBonds() external onlyOwner {
-        IERC20(paymentToken).approve(address(thalesBonds), type(uint256).max);
     }
 
     function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
@@ -597,6 +601,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewMarketDataAddress(address marketDataAddress);
     event CreationRestrictedToOwnerChanged(bool creationRestrictedToOwner);
     event NewMinimumFixedTicketAmount(uint minFixedTicketPrice);
+    event NewDisputeStringLengthLimit(uint disputeStringLengthLimit);
+
 
     event MarketCreated(
         address marketAddress,

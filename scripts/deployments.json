@@ -66,10 +66,10 @@
 		"ExoticMarketManagerImplementation": "0x427a45FE1101da66e640cAB25920d6F374334fe1",
 		"ThalesBonds": "0x08383DE28Ce4CC48773c7876d4A6649578C26153",
 		"ThalesBondsImplementation": "0xA17A70722dff78A06f585Fb2B2f63f0B16d75B8F",
-		"GamesQueue": "0xaEC94F054845F73098F00a041109330708AEabB1",
-		"TherundownConsumer": "0xb54e0BF315Dd32DaF4aFa64d0082C6717E01d015",
-		"TherundownConsumerImplementation": "0xA6939fB0CdAce39e29C270992689ef25840bf666",
-		"TherundownConsumerWrapper": "0x41422B62c77615C8d794416E177F8d68F0f83419"
+		"GamesQueue": "0xD799905c45AcA7c0Fee42215458E980CB465742a",
+		"TherundownConsumer": "0x861c6913275De9835aF95300fDBC140426b809e7",
+		"TherundownConsumerImplementation": "0x56fDab0682CF28C1D31A45ECc8Bb07135aa1c3fe",
+		"TherundownConsumerWrapper": "0xB82c82b6066e31E8ce3A69A25823D33c5dd40111"
 	},
 	"goerli": {
 		"Airdrop": "",

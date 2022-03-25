@@ -110,7 +110,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) external onlyWrapper {
         requestIdGamesCreated[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
-            _createGameFulfill(_requestId, abi.decode(_games[i], (GameCreate)), _sportId);
+            GameCreate memory game = abi.decode(_games[i], (GameCreate));
+            if(!queues.existingGamesInCreatedQueue(game.gameId)){
+                _createGameFulfill(_requestId, game, _sportId);
+            }
         }
     }
 
@@ -128,6 +131,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function createMarketForGame(bytes32 _gameId) public {
         require(marketPerGameId[_gameId] == address(0), "Market for game already exists");
         require(gameFulfilledCreated[_gameId], "No such game fulfilled, created");
+        require(queues.gamesCreateQueue(queues.firstCreated()) == _gameId, "Must be first in a queue");
         _createMarket(_gameId);
     }
 
@@ -256,14 +260,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             exoticManager.resolveMarket(marketPerGameId[game.gameId], _callulateOutcome(game));
             marketResolved[marketPerGameId[game.gameId]] = true;
 
-            queues.dequeueGamesCreated();
+            queues.dequeueGamesResolved();
 
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, game);
         } else if (_isGameStatusCanceled(game)) {
             exoticManager.cancelMarket(marketPerGameId[game.gameId]);
             marketCanceled[marketPerGameId[game.gameId]] = true;
 
-            queues.dequeueGamesCreated();
+            queues.dequeueGamesResolved();
 
             emit CancelSportsMarket(marketPerGameId[game.gameId], game.gameId, game);
         }
@@ -357,6 +361,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit NewWrapperAddress(_wrapperAddress);
     }
 
+
+    function setQueueAddress(GamesQueue _queues) public onlyOwner {
+        queues = _queues;
+        emit NewQueueAddress(_queues);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyWrapper() {
@@ -377,4 +387,5 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event NewWithdrawalAllowed(bool _withdrawalAllowed);
     event NewExoticPositionalMarketManager(address _exoticManager);
     event NewWrapperAddress(address _wrapperAddress);
+    event NewQueueAddress(GamesQueue _queues);
 }

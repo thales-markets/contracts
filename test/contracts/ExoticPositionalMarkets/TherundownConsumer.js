@@ -380,6 +380,9 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
+			// clean first in queue
+			await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+
 			// create markets
 			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
 
@@ -392,7 +395,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
@@ -658,6 +661,11 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
+			await expect(TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })).to.be.revertedWith('Must be first in a queue');
+
+			// clean first in queue
+			await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+
 			// create markets
 			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
 
@@ -670,7 +678,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());

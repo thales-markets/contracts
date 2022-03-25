@@ -4,6 +4,7 @@ contract GamesQueue {
 
     // create games queue
     mapping(uint => bytes32) public gamesCreateQueue;
+    mapping(bytes32 => bool) public existingGamesInCreatedQueue;
     uint public firstCreated = 1;
     uint public lastCreated = 0;
 
@@ -15,10 +16,11 @@ contract GamesQueue {
     function enqueueGamesCreated(bytes32 data) public {
         lastCreated += 1;
         gamesCreateQueue[lastCreated] = data;
+        existingGamesInCreatedQueue[data] = true;
     }
 
     function dequeueGamesCreated() public returns (bytes32 data) {
-        require(lastCreated >= firstCreated);  // non-empty queue
+        require(lastCreated >= firstCreated, "No more elements in a queue");
 
         data = gamesCreateQueue[firstCreated];
 

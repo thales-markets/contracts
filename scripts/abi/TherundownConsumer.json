@@ -242,6 +242,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "contract GamesQueue",
+        "name": "_queues",
+        "type": "address"
+      }
+    ],
+    "name": "NewQueueAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bool",
         "name": "_withdrawalAllowed",
         "type": "bool"
@@ -1247,6 +1260,19 @@
       }
     ],
     "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract GamesQueue",
+        "name": "_queues",
+        "type": "address"
+      }
+    ],
+    "name": "setQueueAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -632,6 +632,16 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_seasonFrom",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_seasonTo",
+        "type": "uint256"
+      },
+      {
         "internalType": "bytes32",
         "name": "_oracleKey",
         "type": "bytes32"

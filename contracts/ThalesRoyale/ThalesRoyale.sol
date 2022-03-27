@@ -78,6 +78,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     mapping(uint => uint) public unclaimedRewardPerSeason;
     
     IThalesRoyalePass public royalePass;
+    mapping(uint => bytes32) public oracleKeyPerSeason;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -134,7 +135,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(!royaleInSeasonStarted[season], "Already started");
         require(seasonStarted[season], "Season not started yet");
 
-        roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
+        roundTargetPrice = priceFeed.rateForCurrency(oracleKeyPerSeason[season]);
         roundInASeason[season] = 1;
         targetPricePerRoundPerSeason[season][roundInASeason[season]] = roundTargetPrice;
         royaleInSeasonStarted[season] = true;
@@ -182,7 +183,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         uint nextRound = currentSeasonRound + 1;
 
         // getting price
-        uint currentPriceFromOracle = priceFeed.rateForCurrency(oracleKey);
+        uint currentPriceFromOracle = priceFeed.rateForCurrency(oracleKeyPerSeason[season]);
         uint stikePrice = roundTargetPrice;
 
         finalPricePerRoundPerSeason[season][currentSeasonRound] = currentPriceFromOracle;
@@ -242,6 +243,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         season = season + 1;
         seasonCreationTime[season] = block.timestamp;
         seasonStarted[season] = true;
+        oracleKeyPerSeason[season] = oracleKey;
 
         emit NewSeasonStarted(season);
     }
@@ -321,7 +323,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
         _buyIn(_player, buyInAmount);
 
-        emit SignedUp(_player, season);
+        emit SignedUp(_player, season, _position);
     }
 
     function _signUpPlayerWithPass(
@@ -339,7 +341,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
         _buyInWithPass(_player, _passId);
 
-        emit SignedUp(_player, season);
+        emit SignedUp(_player, season, _position);
     }
 
     function _putPosition(
@@ -490,6 +492,30 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         emit NewThalesRoyalePass(_royalePass);
     }
 
+    function setOracleKey(bytes32 _oracleKey) public onlyOwner {
+        oracleKey = _oracleKey;
+        emit NewOracleKey(_oracleKey);
+    }
+
+    function setRewardToken(address _rewardToken) public onlyOwner {
+        rewardToken = IERC20Upgradeable(_rewardToken);
+        emit NewRewardToken(_rewardToken);
+    }
+
+    function setNumberOfRounds(uint _rounds) public onlyOwner {
+        rounds = _rounds;
+        emit NewNumberOfRounds(_rounds);
+    }
+
+    function fulfillOracleKeyHistoryData(uint _seasonFrom, uint _seasonTo, bytes32 _oracleKey) external onlyOwner {
+        for (uint i=_seasonFrom; i<=_seasonTo; i++) {
+            if(oracleKeyPerSeason[i] == 0){
+                oracleKeyPerSeason[i] = _oracleKey;
+                emit HistoryDataAdded(i, _oracleKey);
+            }
+        }
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier playerCanSignUp() {
@@ -524,7 +550,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     /* ========== EVENTS ========== */
 
-    event SignedUp(address user, uint season);
+    event SignedUp(address user, uint season, uint position);
     event RoundClosed(uint season, uint round, uint result, uint strikePrice, uint finalPrice, uint numberOfEliminatedPlayers, uint numberOfWinningPlayers);
     event TookAPosition(address user, uint season, uint round, uint position);
     event RoyaleStarted(uint season, uint totalPlayers, uint totalReward);
@@ -542,4 +568,8 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     event NewSafeBoxPercentage(uint _safeBoxPercentage);
     event NewSafeBox(address _safeBox);
     event NewThalesRoyalePass(address _royalePass);
+    event NewOracleKey(bytes32 _oracleKey);
+    event NewRewardToken(address _rewardToken);
+    event NewNumberOfRounds(uint _rounds);
+    event HistoryDataAdded(uint _season, bytes32 _oracleKey);
 }

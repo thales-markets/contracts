@@ -148,6 +148,23 @@ contract('ThalesRoyale', accounts => {
 
 		it('Signing up cant be called twice', async () => {
 
+			await royale.fulfillOracleKeyHistoryData(1, 4, toBytes32('SNX'), { from: owner });
+
+			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(0));
+			assert.equal(toBytes32('SNX'), await royale.oracleKeyPerSeason(1));
+			assert.equal(toBytes32('SNX'), await royale.oracleKeyPerSeason(2));
+			assert.equal(toBytes32('SNX'), await royale.oracleKeyPerSeason(3));
+			assert.equal(toBytes32('SNX'), await royale.oracleKeyPerSeason(4));
+			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(5));
+			assert.notEqual(toBytes32('ETH'), await royale.oracleKeyPerSeason(5));
+
+			await royale.fulfillOracleKeyHistoryData(4, 5, toBytes32('ETH'), { from: owner });
+			assert.notEqual(toBytes32('ETH'), await royale.oracleKeyPerSeason(4));
+			assert.equal(toBytes32('SNX'), await royale.oracleKeyPerSeason(4));
+			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(5));
+			assert.equal(toBytes32('ETH'), await royale.oracleKeyPerSeason(5));
+
+
 			await royale.startNewSeason({ from: owner });
 
 			await royale.signUp({ from: first });
@@ -178,7 +195,8 @@ contract('ThalesRoyale', accounts => {
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'SignedUp', {
 				user: first,
-				season: season_1
+				season: season_1,
+				position: 0
 			});
 		});
 

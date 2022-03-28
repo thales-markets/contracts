@@ -189,7 +189,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
         finalPricePerRoundPerSeason[season][currentSeasonRound] = currentPriceFromOracle;
         roundResultPerSeason[season][currentSeasonRound] = currentPriceFromOracle >= stikePrice ? UP : DOWN;
-        uint loosingResult = currentPriceFromOracle >= stikePrice ? DOWN : UP;
+        uint losingResult = currentPriceFromOracle >= stikePrice ? DOWN : UP;
         roundTargetPrice = currentPriceFromOracle;
 
         uint winningPositionsPerRound =
@@ -206,8 +206,8 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         eliminatedPerRoundPerSeason[season][currentSeasonRound] =
             totalPlayersPerRoundPerSeason[season][currentSeasonRound] -
             winningPositionsPerRound;
-        
-        _cleanPositions(loosingResult, currentSeasonRound, nextRound);
+
+        _cleanPositions(losingResult, nextRound);
 
         // if no one is left no need to set values
         if (winningPositionsPerRound > 0) {
@@ -439,22 +439,21 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         emit PutFunds(_from, _season, _amount);
     }
 
-    function _cleanPositions(uint _loosingPosition, uint _currentRound, uint _nextRound) internal {
+    function _cleanPositions(uint _losingPosition, uint _nextRound) internal {
             
-            address[] memory players = playersPerSeasonPerPosition[season][_loosingPosition];
+            address[] memory players = playersPerSeason[season];
 
             for(uint i = 0; i < players.length; i++){
-                if(positionInARoundPerSeason[season][players[i]][_currentRound] == _loosingPosition){
-                    for(uint j = _nextRound; j <= rounds; j++){
-                        // decrease position count
-                        if (positionInARoundPerSeason[season][players[i]][j] == DOWN) {
-                            positionsPerRoundPerSeason[season][j][DOWN]--;
-                        } else if (positionInARoundPerSeason[season][players[i]][j] == UP) {
-                            positionsPerRoundPerSeason[season][j][UP]--;
+                if(positionInARoundPerSeason[season][players[i]][_nextRound - 1] == _losingPosition
+                    || positionInARoundPerSeason[season][players[i]][_nextRound - 1] == 0){
+                    // decrease position count
+                    if (positionInARoundPerSeason[season][players[i]][_nextRound] == DOWN) {
+                            positionsPerRoundPerSeason[season][_nextRound][DOWN]--;
+                    } else if (positionInARoundPerSeason[season][players[i]][_nextRound] == UP) {
+                            positionsPerRoundPerSeason[season][_nextRound][UP]--;
                         }
-                        // setting 0 position
-                        positionInARoundPerSeason[season][players[i]][j] = 0;
-                    }
+                    // setting 0 position
+                    positionInARoundPerSeason[season][players[i]][_nextRound] = 0;
                 }
             }
     }

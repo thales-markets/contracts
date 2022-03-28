@@ -2102,18 +2102,18 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(true, isPlayerFourthAlive);
 
 		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 2));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 3));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 4));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 5));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 6));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 7));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 3));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 4));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 5));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 6));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 7));
 
 		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 2));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 3));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 4));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 5));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 6));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 7));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, second, 3));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, second, 4));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, second, 5));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, second, 6));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, second, 7));
 
 		let totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 1); // round 1
 		assert.equal(4, totalPlayersInARound);
@@ -2164,10 +2164,10 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 1)); // defult 1
 		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 2)); // defult 1
 		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 3));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 4));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 5));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 6));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 7));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 4));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 5));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 6));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 7));
 
 		assert.equal(false, isPlayerFirstAlive); 
 		assert.equal(false, isPlayerSecondAlive);
@@ -2251,11 +2251,11 @@ contract('ThalesRoyale', accounts => {
 
 		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 1));
 		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 2)); 
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 3));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 4));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 5));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 6));
-		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 7));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 3));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 4));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 5));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 6));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 7));
 
 		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 1));
 		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 2)); 

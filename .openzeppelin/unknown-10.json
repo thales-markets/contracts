@@ -6425,7 +6425,7 @@
           {
             "contract": "ThalesRoyale",
             "label": "rewardToken",
-            "type": "t_contract(IERC20Upgradeable)6406",
+            "type": "t_contract(IERC20Upgradeable)390",
             "src": "contracts/ThalesRoyale/ThalesRoyale.sol:34"
           },
           {
@@ -6437,7 +6437,7 @@
           {
             "contract": "ThalesRoyale",
             "label": "priceFeed",
-            "type": "t_contract(IPriceFeed)21830",
+            "type": "t_contract(IPriceFeed)3728",
             "src": "contracts/ThalesRoyale/ThalesRoyale.sol:36"
           },
           {
@@ -6641,7 +6641,7 @@
           {
             "contract": "ThalesRoyale",
             "label": "royalePass",
-            "type": "t_contract(IThalesRoyalePass)21985",
+            "type": "t_contract(IThalesRoyalePass)3753",
             "src": "contracts/ThalesRoyale/ThalesRoyale.sol:80"
           },
           {
@@ -6652,13 +6652,13 @@
           }
         ],
         "types": {
-          "t_contract(IERC20Upgradeable)6406": {
+          "t_contract(IERC20Upgradeable)390": {
             "label": "contract IERC20Upgradeable"
           },
           "t_bytes32": {
             "label": "bytes32"
           },
-          "t_contract(IPriceFeed)21830": {
+          "t_contract(IPriceFeed)3728": {
             "label": "contract IPriceFeed"
           },
           "t_address": {
@@ -6706,7 +6706,7 @@
           "t_mapping(t_address,t_bool)": {
             "label": "mapping(address => bool)"
           },
-          "t_contract(IThalesRoyalePass)21985": {
+          "t_contract(IThalesRoyalePass)3753": {
             "label": "contract IThalesRoyalePass"
           },
           "t_mapping(t_uint256,t_bytes32)": {

@@ -66,6 +66,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     bool public creationRestrictedToOwner;
     uint public minFixedTicketPrice;
     uint public disputeStringLengthLimit;
+    mapping(address => bool) public cancelledByCreator;
 
     function initialize(
         address _owner,
@@ -98,16 +99,18 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         bool _withdrawalAllowed,
         uint[] memory _tags,
         uint _positionCount,
+        uint _positionOfCreator,
         string[] memory _positionPhrases
     ) external checkMarketRequirements(_endOfPositioning) nonReentrant {
         require(!creationRestrictedToOwner || msg.sender == owner, "Market creation is restricted. (only owner)");
         require(_fixedTicketPrice == 0 || _fixedTicketPrice >= minFixedTicketPrice, "Exceeds min ticket price");
-        require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low token amount for market creation");
+        require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice), "Low token amount for market creation");
         require(
-            IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount,
+            IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount.add(_fixedTicketPrice),
             "No allowance. Please approve ticket price allowance"
         );
         require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
+        require(_positionOfCreator > 0 && _positionOfCreator <= _positionCount);
         require(
             keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")),
             "Invalid market question (empty string)"
@@ -135,9 +138,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             _positionPhrases
         );
         creatorAddress[address(exoticMarket)] = msg.sender;
-        IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
+        IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
+        if(_fixedTicketPrice > 0) {
+            exoticMarket.takeCreatorInitialPosition(_positionOfCreator);
+        }
         emit MarketCreated(
             address(exoticMarket),
             _marketQuestion,
@@ -264,19 +270,23 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 creatorAddress[_marketAddress] != address(0),
                 "Not OracleCouncil address. Please update valid Oracle address"
             );
-            // Creator can cancel if it is the only ticket holder or only one that placed open bid
-            if (msg.sender == creatorAddress[_marketAddress]) {
-                require(
-                    ExoticPositionalMarket(_marketAddress).canCreatorCancelMarket(),
-                    "Market can not be cancelled by creator"
-                );
-            }
+        }
+        // Creator can cancel if it is the only ticket holder or only one that placed open bid
+        if (msg.sender == creatorAddress[_marketAddress]) {
+            require(
+                ExoticPositionalMarket(_marketAddress).canCreatorCancelMarket(),
+                "Market can not be cancelled by creator"
+            );
+            cancelledByCreator[_marketAddress] = true;
         }
         if (ExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "Only Protocol DAO can operate on paused market");
         }
         ExoticPositionalMarket(_marketAddress).cancelMarket();
         resolverAddress[msg.sender] = safeBoxAddress;
+        if (cancelledByCreator[_marketAddress]) {
+            ExoticPositionalMarket(_marketAddress).claimWinningTicketOnBehalf(creatorAddress[_marketAddress]);
+        }
         removeActiveMarket(_marketAddress);
         emit MarketCanceled(_marketAddress);
     }
@@ -301,7 +311,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function issueBondsBackToCreatorAndResolver(address _marketAddress) external nonReentrant {
-        require(ExoticPositionalMarket(_marketAddress).canUsersClaim(), "Market not claimable");
+        require(ExoticPositionalMarket(_marketAddress).canUsersClaim() || cancelledByCreator[_marketAddress], "Market not claimable");
         require(
             IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
                 IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0,
@@ -473,7 +483,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         safeBoxLowAmount = _safeBoxLowAmount;
         emit NewSafeBoxLowAmount(_safeBoxLowAmount);
     }
-    
+
     function setDisputeStringLengthLimit(uint _disputeStringLengthLimit) external onlyOwner {
         require(_disputeStringLengthLimit > 0, "Invalid amount");
         require(_disputeStringLengthLimit != disputeStringLengthLimit, "Amount equal to SafeBoxLowAmount");
@@ -559,9 +569,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         activeMarkets[numOfActiveMarkets] = address(0);
     }
 
-    function thereAreNonEqualPositions(string[] memory positionPhrases) internal pure returns(bool) {
-        for(uint i=0; i<positionPhrases.length-1; i++) {
-            if(keccak256(abi.encode(positionPhrases[i])) == keccak256(abi.encode(positionPhrases[i+1]))){
+    function thereAreNonEqualPositions(string[] memory positionPhrases) internal pure returns (bool) {
+        for (uint i = 0; i < positionPhrases.length - 1; i++) {
+            if (keccak256(abi.encode(positionPhrases[i])) == keccak256(abi.encode(positionPhrases[i + 1]))) {
                 return false;
             }
         }
@@ -602,7 +612,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event CreationRestrictedToOwnerChanged(bool creationRestrictedToOwner);
     event NewMinimumFixedTicketAmount(uint minFixedTicketPrice);
     event NewDisputeStringLengthLimit(uint disputeStringLengthLimit);
-
 
     event MarketCreated(
         address marketAddress,

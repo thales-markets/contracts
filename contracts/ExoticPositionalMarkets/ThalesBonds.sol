@@ -167,25 +167,25 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
 
     function issueBondsBackToCreatorAndResolver(address _market) external onlyOracleCouncilManagerAndOwner nonReentrant {
         uint totalIssuedBack;
-        if (
-            marketManager.creatorAddress(_market) != marketManager.resolverAddress(_market) &&
-            marketBond[_market].creatorBond > 0
-        ) {
-            totalIssuedBack = totalIssuedBack.add(marketBond[_market].creatorBond);
-            transferBondFromMarket(marketManager.creatorAddress(_market), marketBond[_market].creatorBond);
-            emit BondTransferredFromMarketBondToUser(_market, marketManager.creatorAddress(_market), totalIssuedBack);
-            marketBond[_market].creatorBond = 0;
-        }
-        if (marketBond[_market].resolverBond > 0) {
-            totalIssuedBack = totalIssuedBack.add(marketBond[_market].resolverBond);
-            transferBondFromMarket(marketManager.resolverAddress(_market), marketBond[_market].resolverBond);
-            marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.sub(totalIssuedBack);
-            emit BondTransferredFromMarketBondToUser(
-                _market,
-                marketManager.resolverAddress(_market),
-                marketBond[_market].resolverBond
+        if (marketBond[_market].totalMarketBond >= marketBond[_market].creatorBond.add(marketBond[_market].resolverBond)) {
+            marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.sub(
+                marketBond[_market].creatorBond.add(marketBond[_market].resolverBond)
             );
-            marketBond[_market].resolverBond = 0;
+            if (
+                marketManager.creatorAddress(_market) != marketManager.resolverAddress(_market) &&
+                marketBond[_market].creatorBond > 0
+            ) {
+                totalIssuedBack = marketBond[_market].creatorBond;
+                marketBond[_market].creatorBond = 0;
+                transferBondFromMarket(marketManager.creatorAddress(_market), totalIssuedBack);
+                emit BondTransferredFromMarketBondToUser(_market, marketManager.creatorAddress(_market), totalIssuedBack);
+            }
+            if (marketBond[_market].resolverBond > 0) {
+                totalIssuedBack = marketBond[_market].resolverBond;
+                marketBond[_market].resolverBond = 0;
+                transferBondFromMarket(marketManager.resolverAddress(_market), totalIssuedBack);
+                emit BondTransferredFromMarketBondToUser(_market, marketManager.resolverAddress(_market), totalIssuedBack);
+            }
         }
     }
 
@@ -196,6 +196,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     }
 
     function transferFromMarket(address _account, uint _amount) external whenNotPaused {
+        require(marketFunds[msg.sender] >= _amount, "insufficient market funds");
         marketFunds[msg.sender] = marketFunds[msg.sender].sub(_amount);
         transferBondFromMarket(_account, _amount);
     }

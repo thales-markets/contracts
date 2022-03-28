@@ -130,7 +130,7 @@ contract('Exotic Positional market', async accounts => {
 			// phrases = ['Real Madrid', 'FC Barcelona', 'FC Barcelona'];
 			outcomePosition = '1';
 
-			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
+			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount.add(fixedTicketPrice), {
 				from: owner,
 			});
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
@@ -141,6 +141,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
+				"1",
 				phrases,
 				{ from: owner }
 			);
@@ -176,6 +177,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
+				"1",
 				phrases,
 				{ from: owner }
 				);
@@ -203,7 +205,7 @@ contract('Exotic Positional market', async accounts => {
 			phrases = ['Real Madrid', 'Draw', 'FC Barcelona'];
 			outcomePosition = '1';
 
-			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
+			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount.add(fixedTicketPrice), {
 				from: owner,
 			});
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
@@ -214,6 +216,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
+				"1",
 				phrases,
 				{ from: owner }
 			);
@@ -626,7 +629,7 @@ contract('Exotic Positional market', async accounts => {
 			phrases = ['Real Madrid', 'FC Barcelona', 'It will be a draw'];
 			outcomePosition = '1';
 
-			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
+			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount.add(fixedTicketPrice), {
 				from: owner,
 			});
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
@@ -637,6 +640,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
+				"1",
 				phrases,
 				{ from: owner }
 			);
@@ -714,7 +718,7 @@ contract('Exotic Positional market', async accounts => {
 				});
 				it('1 ticket holder', async function() {
 					answer = await deployedMarket.totalUsersTakenPositions();
-					assert.equal(answer, outcomePosition);
+					assert.equal(answer.toString(), "2");
 				});
 				it('ticket holder position match', async function() {
 					answer = await deployedMarket.getUserPosition(userOne);
@@ -797,6 +801,14 @@ contract('Exotic Positional market', async accounts => {
 								let result = parseFloat(fixedTicketPrice.toString()) * 0.97;
 								assert.equal(answer.toString(), result.toString());
 							});
+							
+							it('claimable fee amount', async function() {
+								answer = await deployedMarket.getTotalFeesAmount();
+								let result = 2*(parseFloat(fixedTicketPrice.toString()) * 0.03);
+								// assert.equal(answer.toString(), "0");
+								assert.equal(answer.toString(), result.toString());
+							});
+
 							it('claimed amount match', async function() {
 								let result = await Thales.balanceOf(userOne);
 								result =
@@ -827,7 +839,7 @@ contract('Exotic Positional market', async accounts => {
 				});
 				it('1 ticket holder', async function() {
 					answer = await deployedMarket.totalUsersTakenPositions();
-					assert.equal(answer, outcomePosition);
+					assert.equal(answer.toString(), "2");
 				});
 				it('ticket holder position match', async function() {
 					answer = await deployedMarket.getUserPosition(userOne);
@@ -1199,7 +1211,7 @@ contract('Exotic Positional market', async accounts => {
 								answer = await deployedMarket.takeAPosition('2', { from: userTwo });
 								answer = await deployedMarket.takeAPosition('3', { from: userThree });
 								answer = await deployedMarket.totalUsersTakenPositions();
-								assert.equal(answer.toString(), '3');
+								assert.equal(answer.toString(), '4');
 							});
 
 							describe('ACCEPT_SLASH (Code 1)', function() {
@@ -1246,7 +1258,7 @@ contract('Exotic Positional market', async accounts => {
 								});
 								it('market cancelled -> totalUsersTakenPositions: 3', async function() {
 									answer = await deployedMarket.totalUsersTakenPositions();
-									assert.equal(answer.toString(), '3');
+									assert.equal(answer.toString(), '4');
 								});
 								it('market cancelled -> users can not claim: backstop timeout', async function() {
 									answer = await deployedMarket.canUsersClaim();

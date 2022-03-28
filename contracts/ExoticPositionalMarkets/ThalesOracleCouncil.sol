@@ -223,8 +223,10 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             keccak256(abi.encode(_disputeString)) != keccak256(abi.encode("")),
             "Invalid market question (empty string)"
         );
-        require(bytes(_disputeString).length < marketManager.disputeStringLengthLimit() 
-                || bytes(_disputeString).length < 110, "String exceeds length");
+        require(
+            bytes(_disputeString).length < marketManager.disputeStringLengthLimit() || bytes(_disputeString).length < 110,
+            "String exceeds length"
+        );
 
         marketTotalDisputes[_market] = marketTotalDisputes[_market].add(1);
         dispute[_market][marketTotalDisputes[_market]].disputorAddress = msg.sender;

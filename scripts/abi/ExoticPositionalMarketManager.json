@@ -247,6 +247,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "disputeStringLengthLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewDisputeStringLengthLimit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "fixedBond",
         "type": "uint256"
       }
@@ -663,6 +676,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "cancelledByCreator",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "claimTimeoutDefaultPeriod",
     "outputs": [
@@ -774,6 +806,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "_positionOfCreator",
+        "type": "uint256"
+      },
+      {
         "internalType": "string[]",
         "name": "_positionPhrases",
         "type": "string[]"
@@ -850,6 +887,19 @@
   {
     "inputs": [],
     "name": "disputePrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "disputeStringLengthLimit",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1526,6 +1576,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_disputeStringLengthLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDisputeStringLengthLimit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_exoticMastercopy",
         "type": "address"
@@ -1558,13 +1621,6 @@
       }
     ],
     "name": "setMarketDataAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "setMaxAllowanceForBonds",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

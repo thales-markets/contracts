@@ -1,7 +1,6 @@
 pragma solidity ^0.8.0;
 
 contract GamesQueue {
-
     // create games queue
     mapping(uint => bytes32) public gamesCreateQueue;
     mapping(bytes32 => bool) public existingGamesInCreatedQueue;
@@ -34,7 +33,7 @@ contract GamesQueue {
     }
 
     function dequeueGamesResolved() public returns (bytes32 data) {
-        require(lastResolved >= firstResolved);  // non-empty queue
+        require(lastResolved >= firstResolved); // non-empty queue
 
         data = gamesResolvedQueue[firstResolved];
 

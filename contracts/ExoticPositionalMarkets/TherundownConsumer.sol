@@ -111,7 +111,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         requestIdGamesCreated[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
             GameCreate memory game = abi.decode(_games[i], (GameCreate));
-            if(!queues.existingGamesInCreatedQueue(game.gameId)){
+            if (!queues.existingGamesInCreatedQueue(game.gameId)) {
                 _createGameFulfill(_requestId, game, _sportId);
             }
         }
@@ -207,7 +207,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         GameResolve memory _game,
         uint _sportId
     ) internal {
-        if(_isGameReadyToBeResolved(_game)){
+        if (_isGameReadyToBeResolved(_game)) {
             gameResolved[_game.gameId] = _game;
             queues.enqueueGamesResolved(_game.gameId);
             gameFulfilledResolved[_game.gameId] = true;
@@ -360,7 +360,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         wrapperAddress = _wrapperAddress;
         emit NewWrapperAddress(_wrapperAddress);
     }
-
 
     function setQueueAddress(GamesQueue _queues) public onlyOwner {
         queues = _queues;

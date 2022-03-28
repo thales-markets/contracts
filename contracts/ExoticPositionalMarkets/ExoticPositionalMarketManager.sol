@@ -104,7 +104,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     ) external checkMarketRequirements(_endOfPositioning) nonReentrant {
         require(!creationRestrictedToOwner || msg.sender == owner, "Market creation is restricted. (only owner)");
         require(_fixedTicketPrice == 0 || _fixedTicketPrice >= minFixedTicketPrice, "Exceeds min ticket price");
-        require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice), "Low token amount for market creation");
+        require(
+            IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice),
+            "Low token amount for market creation"
+        );
         require(
             IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount.add(_fixedTicketPrice),
             "No allowance. Please approve ticket price allowance"
@@ -141,8 +144,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
-        if(_fixedTicketPrice > 0) {
+        if (_fixedTicketPrice > 0) {
             exoticMarket.takeCreatorInitialPosition(_positionOfCreator);
+        } else {
+            uint[] memory positions = new uint[](1);
+            uint[] memory amounts = new uint[](1);
+            positions[0] = _positionOfCreator;
+            amounts[0] = minFixedTicketPrice;
+            exoticMarket.takeCreatorInitialOpenBidPositions(positions, amounts);
         }
         emit MarketCreated(
             address(exoticMarket),
@@ -311,7 +320,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function issueBondsBackToCreatorAndResolver(address _marketAddress) external nonReentrant {
-        require(ExoticPositionalMarket(_marketAddress).canUsersClaim() || cancelledByCreator[_marketAddress], "Market not claimable");
+        require(
+            ExoticPositionalMarket(_marketAddress).canUsersClaim() || cancelledByCreator[_marketAddress],
+            "Market not claimable"
+        );
         require(
             IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
                 IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0,

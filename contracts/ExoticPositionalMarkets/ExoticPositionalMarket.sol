@@ -108,11 +108,35 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     function takeCreatorInitialPosition(uint _position) external onlyOwner {
         require(_position > 0 && _position <= positionCount, "Value invalid");
         require(ticketType == TicketType.FIXED_TICKET_PRICE, "Not Fixed type");
+        address creatorAddress = marketManager.creatorAddress(address(this));
         totalUsersTakenPositions = totalUsersTakenPositions.add(1);
         ticketsPerPosition[_position] = ticketsPerPosition[_position].add(1);
-        userPosition[marketManager.creatorAddress(address(this))] = _position;
-        transferToMarket(marketManager.creatorAddress(address(this)), fixedTicketPrice);
-        emit NewPositionTaken(marketManager.creatorAddress(address(this)), _position, fixedTicketPrice);
+        userPosition[creatorAddress] = _position;
+        transferToMarket(creatorAddress, fixedTicketPrice);
+        emit NewPositionTaken(creatorAddress, _position, fixedTicketPrice);
+    }
+
+    function takeCreatorInitialOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external onlyOwner {
+        require(_positions.length > 0 && _positions.length <= positionCount, "Invalid num of positions.");
+        require(ticketType == TicketType.FLEXIBLE_BID, "Not Open Bid market");
+        uint totalDepositedAmount = 0;
+        address creatorAddress = marketManager.creatorAddress(address(this));
+        for (uint i = 0; i < _positions.length; i++) {
+            require(_positions[i] > 0, "Non-zero position expected");
+            require(_positions[i] <= positionCount, "Position value invalid");
+            require(_amounts[i] > 0, "Zero amount");
+            // add to the amount of the position
+            totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
+            // add to the total amount
+            totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
+            userOpenBidPosition[creatorAddress][_positions[i]] = userOpenBidPosition[creatorAddress][_positions[i]].add(
+                _amounts[i]
+            );
+            totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
+        }
+        totalUsersTakenPositions = totalUsersTakenPositions.add(1);
+        transferToMarket(creatorAddress, totalDepositedAmount);
+        emit NewOpenBidsForPositions(creatorAddress, _positions, _amounts);
     }
 
     function takeAPosition(uint _position) external notPaused {
@@ -330,7 +354,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
             firstUserClaimed = true;
         }
-        emit WinningTicketClaimed(msg.sender, amount);
+        emit WinningTicketClaimed(_user, amount);
     }
 
     function openDispute() external onlyOwner {
@@ -412,8 +436,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
 
     function canUsersClaim() public view returns (bool) {
         return
-            resolved &&
-            (!disputed) && noWinners || 
+            (resolved && (!disputed) && noWinners) ||
             ((resolvedTime > 0 && block.timestamp > resolvedTime.add(marketManager.claimTimeoutDefaultPeriod())) ||
                 (backstopTimeout > 0 &&
                     resolvedTime > 0 &&
@@ -470,8 +493,9 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
             return getUserOpenBidTotalClaimableAmount(_account);
         } else {
             return
-                noWinners || (userPosition[_account] > 0 &&
-                    (userPosition[_account] == winningPosition || winningPosition == CANCELED)) 
+                noWinners ||
+                    (userPosition[_account] > 0 &&
+                        (userPosition[_account] == winningPosition || winningPosition == CANCELED))
                     ? getWinningAmountPerTicket()
                     : 0;
         }
@@ -536,95 +560,95 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         return (userPosition[_account] > 0) ? positionPhrase[userPosition[_account]] : string("");
     }
 
-    // function getPotentialWinningAmountForAllPosition(bool forNewUserView, uint userAlreadyTakenPosition)
-    //     external
-    //     view
-    //     returns (uint[] memory)
-    // {
-    //     uint[] memory potentialWinning = new uint[](positionCount);
-    //     for (uint i = 1; i <= positionCount; i++) {
-    //         potentialWinning[i - 1] = getPotentialWinningAmountForPosition(i, forNewUserView, userAlreadyTakenPosition == i);
-    //     }
-    //     return potentialWinning;
-    // }
+    function getPotentialWinningAmountForAllPosition(bool forNewUserView, uint userAlreadyTakenPosition)
+        external
+        view
+        returns (uint[] memory)
+    {
+        uint[] memory potentialWinning = new uint[](positionCount);
+        for (uint i = 1; i <= positionCount; i++) {
+            potentialWinning[i - 1] = getPotentialWinningAmountForPosition(i, forNewUserView, userAlreadyTakenPosition == i);
+        }
+        return potentialWinning;
+    }
 
-    // function getUserPotentialWinningAmountForAllPosition(address _account) external view returns (uint[] memory) {
-    //     uint[] memory potentialWinning = new uint[](positionCount);
-    //     bool forNewUserView = getUserOpenBidTotalPlacedAmount(_account) > 0;
-    //     for (uint i = 1; i <= positionCount; i++) {
-    //         potentialWinning[i - 1] = getPotentialWinningAmountForPosition(
-    //             i,
-    //             forNewUserView,
-    //             userOpenBidPosition[_account][i] > 0
-    //         );
-    //     }
-    //     return potentialWinning;
-    // }
+    function getUserPotentialWinningAmountForAllPosition(address _account) external view returns (uint[] memory) {
+        uint[] memory potentialWinning = new uint[](positionCount);
+        bool forNewUserView = getUserOpenBidTotalPlacedAmount(_account) > 0;
+        for (uint i = 1; i <= positionCount; i++) {
+            potentialWinning[i - 1] = getPotentialWinningAmountForPosition(
+                i,
+                forNewUserView,
+                userOpenBidPosition[_account][i] > 0
+            );
+        }
+        return potentialWinning;
+    }
 
-    // function getUserPotentialWinningAmount(address _account) external view returns (uint) {
-    //     if (ticketType == TicketType.FLEXIBLE_BID) {
-    //         uint maxWin;
-    //         uint amount;
-    //         for (uint i = 1; i <= positionCount; i++) {
-    //             amount = getPotentialWinningAmountForPosition(userOpenBidPosition[_account][i], false, true);
-    //             if (amount > maxWin) {
-    //                 maxWin = amount;
-    //             }
-    //         }
-    //         return maxWin;
-    //     } else {
-    //         return
-    //             userPosition[_account] > 0 ? getPotentialWinningAmountForPosition(userPosition[_account], false, true) : 0;
-    //     }
-    // }
+    function getUserPotentialWinningAmount(address _account) external view returns (uint) {
+        if (ticketType == TicketType.FLEXIBLE_BID) {
+            uint maxWin;
+            uint amount;
+            for (uint i = 1; i <= positionCount; i++) {
+                amount = getPotentialWinningAmountForPosition(userOpenBidPosition[_account][i], false, true);
+                if (amount > maxWin) {
+                    maxWin = amount;
+                }
+            }
+            return maxWin;
+        } else {
+            return
+                userPosition[_account] > 0 ? getPotentialWinningAmountForPosition(userPosition[_account], false, true) : 0;
+        }
+    }
 
-    // function getPotentialWinningAmountForPosition(
-    //     uint _position,
-    //     bool forNewUserView,
-    //     bool userHasAlreadyTakenThisPosition
-    // ) internal view returns (uint) {
-    //     if (totalUsersTakenPositions == 0) {
-    //         return 0;
-    //     } else if (ticketType == TicketType.FLEXIBLE_BID) {
-    //         if (totalOpenBidAmountPerPosition[_position] == 0) {
-    //             return forNewUserView ? applyDeduction(totalOpenBidAmount.add(1e18)) : applyDeduction(totalOpenBidAmount);
-    //         } else {
-    //             if (forNewUserView) {
-    //                 return
-    //                     applyDeduction(totalOpenBidAmount.add(1e18)).div(totalOpenBidAmountPerPosition[_position].add(1e18));
-    //             } else {
-    //                 uint calculatedPositions =
-    //                     userHasAlreadyTakenThisPosition && totalOpenBidAmountPerPosition[_position] > 0
-    //                         ? totalOpenBidAmountPerPosition[_position]
-    //                         : totalOpenBidAmountPerPosition[_position].add(1e18);
-    //                 return applyDeduction(totalOpenBidAmount).div(calculatedPositions);
-    //             }
-    //         }
-    //     } else {
-    //         if (ticketsPerPosition[_position] == 0) {
-    //             return
-    //                 forNewUserView
-    //                     ? applyDeduction(getTotalPlacedAmount().add(fixedTicketPrice))
-    //                     : applyDeduction(getTotalPlacedAmount());
-    //         } else {
-    //             if (forNewUserView) {
-    //                 return
-    //                     applyDeduction(getTotalPlacedAmount().add(fixedTicketPrice)).div(
-    //                         ticketsPerPosition[_position].add(1)
-    //                     );
-    //             } else {
-    //                 uint calculatedPositions =
-    //                     userHasAlreadyTakenThisPosition && ticketsPerPosition[_position] > 0
-    //                         ? ticketsPerPosition[_position]
-    //                         : ticketsPerPosition[_position].add(1);
-    //                 return applyDeduction(getTotalPlacedAmount()).div(calculatedPositions);
-    //             }
-    //         }
-    //     }
-    // }
+    function getPotentialWinningAmountForPosition(
+        uint _position,
+        bool forNewUserView,
+        bool userHasAlreadyTakenThisPosition
+    ) internal view returns (uint) {
+        if (totalUsersTakenPositions == 0) {
+            return 0;
+        } else if (ticketType == TicketType.FLEXIBLE_BID) {
+            if (totalOpenBidAmountPerPosition[_position] == 0) {
+                return forNewUserView ? applyDeduction(totalOpenBidAmount.add(1e18)) : applyDeduction(totalOpenBidAmount);
+            } else {
+                if (forNewUserView) {
+                    return
+                        applyDeduction(totalOpenBidAmount.add(1e18)).div(totalOpenBidAmountPerPosition[_position].add(1e18));
+                } else {
+                    uint calculatedPositions =
+                        userHasAlreadyTakenThisPosition && totalOpenBidAmountPerPosition[_position] > 0
+                            ? totalOpenBidAmountPerPosition[_position]
+                            : totalOpenBidAmountPerPosition[_position].add(1e18);
+                    return applyDeduction(totalOpenBidAmount).div(calculatedPositions);
+                }
+            }
+        } else {
+            if (ticketsPerPosition[_position] == 0) {
+                return
+                    forNewUserView
+                        ? applyDeduction(getTotalPlacedAmount().add(fixedTicketPrice))
+                        : applyDeduction(getTotalPlacedAmount());
+            } else {
+                if (forNewUserView) {
+                    return
+                        applyDeduction(getTotalPlacedAmount().add(fixedTicketPrice)).div(
+                            ticketsPerPosition[_position].add(1)
+                        );
+                } else {
+                    uint calculatedPositions =
+                        userHasAlreadyTakenThisPosition && ticketsPerPosition[_position] > 0
+                            ? ticketsPerPosition[_position]
+                            : ticketsPerPosition[_position].add(1);
+                    return applyDeduction(getTotalPlacedAmount()).div(calculatedPositions);
+                }
+            }
+        }
+    }
 
     function getWinningAmountPerTicket() public view returns (uint) {
-        if (totalUsersTakenPositions == 0 || !resolved || (!noWinners && (ticketsPerPosition[winningPosition] == 0)) ) {
+        if (totalUsersTakenPositions == 0 || !resolved || (!noWinners && (ticketsPerPosition[winningPosition] == 0))) {
             return 0;
         }
         if (noWinners) {
@@ -651,30 +675,30 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
                 .div(HUNDRED_PERCENT);
     }
 
-    function getTagsCount() external view returns (uint) {
-        return tags.length;
-    }
+    // function getTagsCount() external view returns (uint) {
+    //     return tags.length;
+    // }
 
-    function getTags() external view returns (uint[] memory) {
-        return tags;
-    }
+    // function getTags() external view returns (uint[] memory) {
+    //     return tags;
+    // }
 
-    function getTicketType() external view returns (uint) {
-        return uint(ticketType);
-    }
+    // function getTicketType() external view returns (uint) {
+    //     return uint(ticketType);
+    // }
 
-    function getAllAmounts()
-        external
-        view
-        returns (
-            uint,
-            uint,
-            uint,
-            uint
-        )
-    {
-        return (fixedBondAmount, disputePrice, safeBoxLowAmount, arbitraryRewardForDisputor);
-    }
+    // function getAllAmounts()
+    //     external
+    //     view
+    //     returns (
+    //         uint,
+    //         uint,
+    //         uint,
+    //         uint
+    //     )
+    // {
+    //     return (fixedBondAmount, disputePrice, safeBoxLowAmount, arbitraryRewardForDisputor);
+    // }
 
     function resetForUserAllPositionsToZero(address _account) internal nonReentrant {
         if (positionCount > 0) {

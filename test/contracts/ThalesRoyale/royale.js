@@ -2045,4 +2045,385 @@ contract('ThalesRoyale', accounts => {
 
 	});
 
+	it('Sign up with ALL ROUNDS default positions check values, first scenario', async () => {
+		await royale.startNewSeason({ from: owner });
+		
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2));
+
+		await royale.signUpWithPosition(2, { from: first });
+		await royale.signUpWithPosition(2, { from: second });
+		await royale.signUpWithPosition(1, { from: third });
+		await royale.signUpWithPosition(1, { from: fourth });
+
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 1, 1)); // round 1
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 1, 2)); // round 1
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 2, 1)); // round 2
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 2, 2)); // round 2
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 2, 1)); // round 3
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 2, 2)); // round 3 ...
+
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 1));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 2)); 
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 3));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 4));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 5));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 6));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 7));
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.startRoyaleInASeason();
+
+		await MockPriceFeedDeployed.setPricetoReturn(900);
+
+		//#1
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_1 = await royale.closeRound();
+
+		// check if event is emited
+		assert.eventEqual(tx_close_1.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 1,
+			result: 1,
+			strikePrice: 1000,
+			finalPrice: 900,
+			numberOfEliminatedPlayers: 2,
+			numberOfWinningPlayers: 2
+		});
+
+		let isPlayerFirstAlive = await royale.isPlayerAlive(first);
+		let isPlayerSecondAlive = await royale.isPlayerAlive(second);
+		let isPlayerThirdAlive = await royale.isPlayerAlive(third);
+		let isPlayerFourthAlive = await royale.isPlayerAlive(fourth);
+
+		assert.equal(false, isPlayerFirstAlive);
+		assert.equal(false, isPlayerSecondAlive);
+		assert.equal(true, isPlayerThirdAlive);
+		assert.equal(true, isPlayerFourthAlive);
+
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 2));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 3));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 4));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 5));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 6));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 7));
+
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 2));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 3));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 4));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 5));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 6));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, second, 7));
+
+		let totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 1); // round 1
+		assert.equal(4, totalPlayersInARound);
+
+		totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 2); // round 2
+		assert.equal(2, totalPlayersInARound);
+
+		let eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 1);
+		assert.equal(2, eliminatedPlayersInARound);
+
+		//#2
+		await expect(royale.takeAPosition(1, { from: first })).to.be.revertedWith(
+			'Player no longer alive'
+		);
+
+		await expect(royale.takeAPosition(1, { from: second })).to.be.revertedWith(
+			'Player no longer alive'
+		);
+
+		await royale.takeAPosition(2, { from: third });
+		
+		await MockPriceFeedDeployed.setPricetoReturn(1100);
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_2 = await royale.closeRound();
+
+		// check if event is emited
+		assert.eventEqual(tx_close_2.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 2,
+			result: 2,
+			strikePrice: 900,
+			finalPrice: 1100,
+			numberOfEliminatedPlayers: 1,
+			numberOfWinningPlayers: 1
+		});
+
+		assert.eventEqual(tx_close_2.logs[1], 'RoyaleFinished', {
+			season: season_1,
+			numberOfWinners: 1,
+			rewardPerWinner: toUnit(10000),
+		});
+
+		isPlayerFirstAlive = await royale.isPlayerAlive(first);
+		isPlayerSecondAlive = await royale.isPlayerAlive(second);
+		isPlayerThirdAlive = await royale.isPlayerAlive(third);
+		isPlayerFourthAlive = await royale.isPlayerAlive(fourth);
+
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 1)); // defult 1
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 2)); // defult 1
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 3));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 4));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 5));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 6));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 7));
+
+		assert.equal(false, isPlayerFirstAlive); 
+		assert.equal(false, isPlayerSecondAlive);
+		assert.equal(true, isPlayerThirdAlive);
+		assert.equal(false, isPlayerFourthAlive);
+
+		totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 3);
+		assert.equal(1, totalPlayersInARound);
+
+		eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 2);
+		assert.equal(1, eliminatedPlayersInARound);
+
+		await expect(royale.takeAPosition(1, { from: first })).to.be.revertedWith(
+			'Competition finished'
+		);
+
+		await expect(royale.takeAPosition(1, { from: third })).to.be.revertedWith(
+			'Competition finished'
+		);
+	});
+
+	it('Sign up with ALL ROUNDS default positions check values, second scenario', async () => {
+		await royale.startNewSeason({ from: owner });
+		
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2));
+
+		await royale.signUpWithPosition(2, { from: first });
+		await royale.signUpWithPosition(1, { from: second });
+		await royale.signUpWithPosition(1, { from: third });
+		await royale.signUpWithPosition(1, { from: fourth });
+
+		assert.equal(first, await royale.playersPerSeasonPerPosition(season_1, 2, 0));
+		assert.equal(second, await royale.playersPerSeasonPerPosition(season_1, 1, 0));
+		assert.equal(third, await royale.playersPerSeasonPerPosition(season_1, 1, 1));
+		assert.equal(fourth, await royale.playersPerSeasonPerPosition(season_1, 1, 2));
+
+		assert.equal(3, await royale.positionsPerRoundPerSeason(season_1, 1, 1)); // round 1
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 1, 2)); // round 1
+		assert.equal(3, await royale.positionsPerRoundPerSeason(season_1, 2, 1)); // round 2
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 2, 2)); // round 2
+		assert.equal(3, await royale.positionsPerRoundPerSeason(season_1, 2, 1)); // round 3
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 2, 2)); // round 3 ...
+
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 1));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 2)); 
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 3));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 4));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 5));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 6));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 7));
+
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 1));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 2)); 
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 3));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 4));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 5));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 6));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 7));
+
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 1));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 2)); 
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 3));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 4));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 5));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 6));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 7));
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.startRoyaleInASeason();
+
+		await MockPriceFeedDeployed.setPricetoReturn(900);
+
+		//#1
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_1 = await royale.closeRound();
+
+		assert.equal(1, await royale.roundResultPerSeason(season_1, 1));
+		assert.equal(3, await royale.positionsPerRoundPerSeason(season_1, 1, 1)); // round 1 winning
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 1, 2)); // round 1 loosing
+
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, first, 1));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 2)); 
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 3));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 4));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 5));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 6));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, first, 7));
+
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 1));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 2)); 
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 3));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 4));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 5));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 6));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 7));
+
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 1));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 2)); 
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 3));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 4));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 5));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 6));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 7));
+
+
+		// check if event is emited
+		assert.eventEqual(tx_close_1.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 1,
+			result: 1,
+			strikePrice: 1000,
+			finalPrice: 900,
+			numberOfEliminatedPlayers: 1,
+			numberOfWinningPlayers: 3
+		});
+
+		let isPlayerFirstAlive = await royale.isPlayerAlive(first);
+		let isPlayerSecondAlive = await royale.isPlayerAlive(second);
+		let isPlayerThirdAlive = await royale.isPlayerAlive(third);
+		let isPlayerFourthAlive = await royale.isPlayerAlive(fourth);
+
+		assert.equal(false, isPlayerFirstAlive);
+		assert.equal(true, isPlayerSecondAlive);
+		assert.equal(true, isPlayerThirdAlive);
+		assert.equal(true, isPlayerFourthAlive);
+
+		let totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 1); // round 1
+		assert.equal(4, totalPlayersInARound);
+
+		totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 2); // round 2
+		assert.equal(3, totalPlayersInARound);
+
+		let eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 1);
+		assert.equal(1, eliminatedPlayersInARound);
+
+		//#2
+		await expect(royale.takeAPosition(1, { from: first })).to.be.revertedWith(
+			'Player no longer alive'
+		);
+
+		await royale.takeAPosition(2, { from: second });
+		await royale.takeAPosition(2, { from: third });
+
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 1));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, second, 2)); 
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 3));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 4));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 5));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 6));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, second, 7));
+
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 1));
+		assert.equal(2, await royale.positionInARoundPerSeason(season_1, third, 2)); 
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 3));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 4));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 5));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 6));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, third, 7));
+
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 0));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 1));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 2)); 
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 3));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 4));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 5));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 6));
+		assert.equal(1, await royale.positionInARoundPerSeason(season_1, fourth, 7));
+		assert.equal(0, await royale.positionInARoundPerSeason(season_1, fourth, 8));
+		
+		await MockPriceFeedDeployed.setPricetoReturn(1100);
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_2 = await royale.closeRound();
+
+		assert.equal(2, await royale.roundResultPerSeason(season_1, 2));
+
+		totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 3);
+		assert.equal(2, totalPlayersInARound);
+
+		eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 2);
+		assert.equal(1, eliminatedPlayersInARound);
+
+		// check if event is emited
+		assert.eventEqual(tx_close_2.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 2,
+			result: 2,
+			strikePrice: 900,
+			finalPrice: 1100,
+			numberOfEliminatedPlayers: 1,
+			numberOfWinningPlayers: 2
+		});
+
+		isPlayerFirstAlive = await royale.isPlayerAlive(first);
+		isPlayerSecondAlive = await royale.isPlayerAlive(second);
+		isPlayerThirdAlive = await royale.isPlayerAlive(third);
+		isPlayerFourthAlive = await royale.isPlayerAlive(fourth);
+
+		assert.equal(false, isPlayerFirstAlive); 
+		assert.equal(true, isPlayerSecondAlive);
+		assert.equal(true, isPlayerThirdAlive);
+		assert.equal(false, isPlayerFourthAlive);
+
+		//#3
+		await expect(royale.takeAPosition(1, { from: first })).to.be.revertedWith(
+			'Player no longer alive'
+		);
+
+		await expect(royale.takeAPosition(1, { from: fourth })).to.be.revertedWith(
+			'Player no longer alive'
+		);
+
+		await MockPriceFeedDeployed.setPricetoReturn(1200);
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_3 = await royale.closeRound();
+
+		// check if event is emited
+		assert.eventEqual(tx_close_3.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 3,
+			result: 2,
+			strikePrice: 1100,
+			finalPrice: 1200,
+			numberOfEliminatedPlayers: 2,
+			numberOfWinningPlayers: 2
+		});
+
+		assert.eventEqual(tx_close_3.logs[1], 'RoyaleFinished', {
+			season: season_1,
+			numberOfWinners: 2,
+			rewardPerWinner: toUnit(5000),
+		});
+
+		isPlayerFirstAlive = await royale.isPlayerAlive(first);
+		isPlayerSecondAlive = await royale.isPlayerAlive(second);
+		isPlayerThirdAlive = await royale.isPlayerAlive(third);
+		isPlayerFourthAlive = await royale.isPlayerAlive(fourth);
+
+		assert.equal(false, isPlayerFirstAlive); 
+		assert.equal(true, isPlayerSecondAlive);
+		assert.equal(true, isPlayerThirdAlive);
+		assert.equal(false, isPlayerFourthAlive);
+
+		totalPlayersInARound = await royale.totalPlayersPerRoundPerSeason(season_1, 4);
+		assert.equal(0, totalPlayersInARound);
+
+		eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 3);
+		assert.equal(2, eliminatedPlayersInARound);
+
+		await expect(royale.takeAPosition(1, { from: first })).to.be.revertedWith(
+			'Competition finished'
+		);
+
+		await expect(royale.takeAPosition(1, { from: third })).to.be.revertedWith(
+			'Competition finished'
+		);
+
+	});
 });

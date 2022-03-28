@@ -2200,11 +2200,6 @@ contract('ThalesRoyale', accounts => {
 		await royale.signUpWithPosition(1, { from: third });
 		await royale.signUpWithPosition(1, { from: fourth });
 
-		assert.equal(first, await royale.playersPerSeasonPerPosition(season_1, 2, 0));
-		assert.equal(second, await royale.playersPerSeasonPerPosition(season_1, 1, 0));
-		assert.equal(third, await royale.playersPerSeasonPerPosition(season_1, 1, 1));
-		assert.equal(fourth, await royale.playersPerSeasonPerPosition(season_1, 1, 2));
-
 		assert.equal(3, await royale.positionsPerRoundPerSeason(season_1, 1, 1)); // round 1
 		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 1, 2)); // round 1
 		assert.equal(3, await royale.positionsPerRoundPerSeason(season_1, 2, 1)); // round 2

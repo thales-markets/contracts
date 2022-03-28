@@ -79,7 +79,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     
     IThalesRoyalePass public royalePass;
     mapping(uint => bytes32) public oracleKeyPerSeason;
-    mapping(uint => mapping(uint => address[])) public playersPerSeasonPerPosition;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -322,7 +321,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         signedUpPlayersCount[season]++;
 
         if (_position != 0) {
-            playersPerSeasonPerPosition[season][_position].push(_player);
             for(uint i = 1; i <= rounds; i++){
                 _putPosition(_player, season, i, _position);
             }
@@ -343,7 +341,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         signedUpPlayersCount[season]++;
 
         if (_position != 0) {
-            playersPerSeasonPerPosition[season][_position].push(_player);
             for(uint i = 1; i <= rounds; i++){
                 _putPosition(_player, season, i, _position);
             }

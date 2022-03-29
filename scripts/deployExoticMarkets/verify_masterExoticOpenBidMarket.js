@@ -33,20 +33,15 @@ async function main() {
 		network = 'optimistic';
 	}
 	
-
-	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalFixedMarket');
-	const ExoticMarketDeployed = await ExoticMarket.deploy();
-    await ExoticMarketDeployed.deployed();
-	console.log("ExoticMarketMarket Deployed on", ExoticMarketDeployed.address);
-	setTargetAddress('ExoticMarketMasterCopy', network, ExoticMarketDeployed.address);
 	
-	const ExoticMarketManagerAddress = getTargetAddress("ExoticMarketManager", network);
-    const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
-    const ExoticMarketManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
-    
-	
-    await ExoticMarketManagerDeployed.setExoticMarketMastercopy(ExoticMarketDeployed.address);
-	console.log("ExoticMarket Mastercopy updated");
+	const ExoticMarketMastercopyAddress = getTargetAddress("ExoticMarketOpenBidMastercopy", network);
+    try {
+		await hre.run('verify:verify', {
+			address: ExoticMarketMastercopyAddress,
+		});
+	} catch (e) {
+		console.log(e);
+	}
 	
 }
 

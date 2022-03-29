@@ -42,4 +42,13 @@ interface IExoticPositionalMarket {
 
 
     function transferBondToMarket(address _sender, uint _amount) external;
+    function resolveMarket(uint _outcomePosition, address _resolverAddress) external;
+    function cancelMarket() external;
+    function resetMarket() external;
+    function claimWinningTicketOnBehalf(address _user) external;
+    function openDispute() external;
+    function closeDispute() external;
+    function setBackstopTimeout(uint _timeoutPeriod) external;
+
+
 }

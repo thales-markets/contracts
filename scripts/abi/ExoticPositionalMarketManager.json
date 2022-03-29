@@ -44,6 +44,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "exoticOpenBidMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "ExoticMarketOpenBidMastercopyChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "marketAddress",
         "type": "address"
       }
@@ -925,6 +938,19 @@
   },
   {
     "inputs": [],
+    "name": "exoticMarketOpenBidMastercopy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "fixedBondAmount",
     "outputs": [
       {
@@ -1595,6 +1621,19 @@
       }
     ],
     "name": "setExoticMarketMastercopy",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_exoticOpenBidMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "setExoticMarketOpenBidMastercopy",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

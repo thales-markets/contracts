@@ -136,9 +136,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             );
         }
 
-        if(_fixedTicketPrice > 0) {
+        if (_fixedTicketPrice > 0) {
             ExoticPositionalFixedMarket exoticMarket = ExoticPositionalFixedMarket(Clones.clone(exoticMarketMastercopy));
-            
+
             exoticMarket.initialize(
                 _marketQuestion,
                 _marketSource,
@@ -166,11 +166,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 _positionPhrases,
                 msg.sender
             );
-        }
-        else {
+        } else {
+            ExoticPositionalOpenBidMarket exoticMarket =
+                ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
 
-            ExoticPositionalOpenBidMarket exoticMarket = ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
-            
             exoticMarket.initialize(
                 _marketQuestion,
                 _marketSource,
@@ -239,7 +238,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(bytes(_marketQuestion).length < 110, "Market question exceeds length");
         require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
 
-        ExoticPositionalFixedMarket exoticMarket = ExoticPositionalFixedMarket(Clones.clone(exoticMarketOpenBidMastercopy));
+        ExoticPositionalOpenBidMarket exoticMarket =
+            ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
         exoticMarket.initialize(
             _marketQuestion,
             _marketSource,
@@ -442,7 +442,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         exoticMarketMastercopy = _exoticMastercopy;
         emit ExoticMarketMastercopyChanged(_exoticMastercopy);
     }
-    
+
     function setExoticMarketOpenBidMastercopy(address _exoticOpenBidMastercopy) external onlyOwner {
         require(_exoticOpenBidMastercopy != address(0), "Exotic market invalid");
         exoticMarketOpenBidMastercopy = _exoticOpenBidMastercopy;

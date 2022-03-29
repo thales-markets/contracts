@@ -39,7 +39,7 @@ contract('TherundownConsumer', accounts => {
 	const MAX_NUMBER =
 		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
-	const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalMarket');
+	const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalOpenBidMarket');
 	const ExoticPositionalMarketManagerContract = artifacts.require('ExoticPositionalMarketManager');
 	const ThalesOracleCouncilContract = artifacts.require('ThalesOracleCouncil');
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
@@ -128,6 +128,9 @@ contract('TherundownConsumer', accounts => {
 		fixedBondAmount = toUnit(100);
 
 		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
+		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(
+			ExoticPositionalMarket.address
+		);
 		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
 		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
 		await ExoticPositionalMarketManager.setTagsAddress(ExoticPositionalTags.address);
@@ -661,7 +664,9 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			await expect(TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })).to.be.revertedWith('Must be first in a queue');
+			await expect(
+				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
+			).to.be.revertedWith('Must be first in a queue');
 
 			// clean first in queue
 			await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
@@ -691,7 +696,9 @@ contract('TherundownConsumer', accounts => {
 			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
 			assert.equal(9016, await deployedMarket.tags(0));
 
-			await expect(TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })).to.be.revertedWith('Market for game already exists');
+			await expect(
+				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
+			).to.be.revertedWith('Market for game already exists');
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
@@ -735,7 +742,9 @@ contract('TherundownConsumer', accounts => {
 				_game: gameR,
 			});
 
-			await expect(TherundownConsumerDeployed.resolveMarketForGame(gameFootballid2, { from: owner })).to.be.revertedWith('Market resoved or canceled');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketForGame(gameFootballid2, { from: owner })
+			).to.be.revertedWith('Market resoved or canceled');
 		});
 	});
 });

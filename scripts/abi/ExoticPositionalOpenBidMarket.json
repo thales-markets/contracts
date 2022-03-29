@@ -108,6 +108,12 @@
         "internalType": "address",
         "name": "resolverAddress",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "noWinner",
+        "type": "bool"
       }
     ],
     "name": "MarketResolved",

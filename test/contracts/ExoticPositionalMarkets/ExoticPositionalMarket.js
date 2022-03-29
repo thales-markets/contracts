@@ -83,7 +83,7 @@ contract('Exotic Positional market', async accounts => {
 		Thales = await ThalesContract.new({ from: owner });
 		ThalesBonds = await ThalesBondsContract.new();
 		ExoticPositionalTags = await ExoticPositionalTagsContract.new();
-		await ExoticPositionalTags.initialize(manager, {from:manager});
+		await ExoticPositionalTags.initialize(manager, { from: manager });
 		await ThalesBonds.initialize(manager, { from: manager });
 
 		await ExoticPositionalMarketManager.initialize(
@@ -95,7 +95,9 @@ contract('Exotic Positional market', async accounts => {
 		fixedBondAmount = toUnit(100);
 		disputePrice = toUnit(10);
 		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
-		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(ExoticPositionalOpenBidMarket.address);
+		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(
+			ExoticPositionalOpenBidMarket.address
+		);
 		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
 		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
 		await ExoticPositionalMarketManager.setTagsAddress(ExoticPositionalTags.address);
@@ -108,12 +110,12 @@ contract('Exotic Positional market', async accounts => {
 		await Thales.transfer(userTwo, toUnit('1000'), { from: owner });
 		await Thales.transfer(userThree, toUnit('1000'), { from: owner });
 
-		await ExoticPositionalTags.addTag("Sport", "1");
-		await ExoticPositionalTags.addTag("Football", "101");
-		await ExoticPositionalTags.addTag("Basketball", "102");
-		await ExoticPositionalTags.addTag("Crypto", "2");
-		await ExoticPositionalTags.addTag("Bitcoin", "201");
-		await ExoticPositionalTags.addTag("Politics", "3");
+		await ExoticPositionalTags.addTag('Sport', '1');
+		await ExoticPositionalTags.addTag('Football', '101');
+		await ExoticPositionalTags.addTag('Basketball', '102');
+		await ExoticPositionalTags.addTag('Crypto', '2');
+		await ExoticPositionalTags.addTag('Bitcoin', '201');
+		await ExoticPositionalTags.addTag('Politics', '3');
 	});
 
 	describe('initial deploy', function() {
@@ -136,9 +138,13 @@ contract('Exotic Positional market', async accounts => {
 			// phrases = ['Real Madrid', 'FC Barcelona', 'FC Barcelona'];
 			outcomePosition = '1';
 
-			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount.add(fixedTicketPrice), {
-				from: owner,
-			});
+			answer = await Thales.increaseAllowance(
+				ThalesBonds.address,
+				fixedBondAmount.add(fixedTicketPrice),
+				{
+					from: owner,
+				}
+			);
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				marketSource,
@@ -147,7 +153,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				"1",
+				'1',
 				phrases,
 				{ from: owner }
 			);
@@ -157,13 +163,13 @@ contract('Exotic Positional market', async accounts => {
 			answer = await deployedMarket.ticketType();
 			assert.equal(answer, '0');
 		});
-		
+
 		it('new market open bid', async function() {
 			const timestamp = await currentTime();
 			marketQuestion = 'Who will win the el clasico which will be played on 2022-02-22?';
 			marketSource = 'http://www.realmadrid.com';
 			endOfPositioning = (timestamp + DAY).toString();
-			fixedTicketPrice = "0";
+			fixedTicketPrice = '0';
 			let minFixedTicketPrice = toUnit('10');
 			withdrawalAllowed = true;
 			tag = [1, 2, 3];
@@ -172,10 +178,14 @@ contract('Exotic Positional market', async accounts => {
 			outcomePosition = '1';
 			outcomePosition2 = '2';
 			outcomePosition3 = '3';
-			
-			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount.add(minFixedTicketPrice), {
-				from: owner,
-			});
+
+			answer = await Thales.increaseAllowance(
+				ThalesBonds.address,
+				fixedBondAmount.add(minFixedTicketPrice),
+				{
+					from: owner,
+				}
+			);
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				marketSource,
@@ -184,11 +194,11 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				"1",
+				'1',
 				phrases,
 				{ from: owner }
-				);
-				
+			);
+
 			answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedOpenBidMarket = await ExoticPositionalOpenBidMarketContract.at(answer);
 			answer = await deployedOpenBidMarket.ticketType();
@@ -213,9 +223,13 @@ contract('Exotic Positional market', async accounts => {
 			phrases = ['Real Madrid', 'Draw', 'FC Barcelona'];
 			outcomePosition = '1';
 
-			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount.add(minFixedTicketPrice), {
-				from: owner,
-			});
+			answer = await Thales.increaseAllowance(
+				ThalesBonds.address,
+				fixedBondAmount.add(minFixedTicketPrice),
+				{
+					from: owner,
+				}
+			);
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				marketSource,
@@ -224,7 +238,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				"1",
+				'1',
 				phrases,
 				{ from: owner }
 			);
@@ -238,12 +252,12 @@ contract('Exotic Positional market', async accounts => {
 			answer = await ExoticPositionalMarketManager.numOfActiveMarkets();
 			assert.equal(answer, '1');
 		});
-		
+
 		it('market type: fixed Bid', async function() {
 			answer = await deployedOpenBidMarket.ticketType();
 			assert.equal(answer, '1');
 		});
-		
+
 		it('new market is active?', async function() {
 			answer = await ExoticPositionalMarketManager.isActiveMarket(deployedOpenBidMarket.address);
 			// console.log('Market address: ', deployedOpenBidMarket.address);
@@ -282,7 +296,9 @@ contract('Exotic Positional market', async accounts => {
 		});
 
 		it('total bond amount', async function() {
-			answer = await ThalesBonds.getTotalDepositedBondAmountForMarket(deployedOpenBidMarket.address);
+			answer = await ThalesBonds.getTotalDepositedBondAmountForMarket(
+				deployedOpenBidMarket.address
+			);
 			assert.equal(answer.toString(), fixedBondAmount);
 		});
 
@@ -309,18 +325,22 @@ contract('Exotic Positional market', async accounts => {
 
 			describe('userOne takes position', async function() {
 				beforeEach(async () => {
-					answer = await deployedOpenBidMarket.takeOpenBidPositions([outcomePosition],[positionAmount1], { from: userOne });
+					answer = await deployedOpenBidMarket.takeOpenBidPositions(
+						[outcomePosition],
+						[positionAmount1],
+						{ from: userOne }
+					);
 				});
 				it('1 ticket holder', async function() {
 					answer = await deployedOpenBidMarket.totalUsersTakenPositions();
-					assert.equal(answer.toString(), "2");
+					assert.equal(answer.toString(), '2');
 				});
 				it('ticket holder position match', async function() {
 					answer = await deployedOpenBidMarket.getAllUserPositions(userOne);
-					console.log(answer.toString())
+					console.log(answer.toString());
 					// assert.equal(answer.toString(), outcomePosition);
 				});
-				
+
 				describe('resolve with ticket holder result', async function() {
 					beforeEach(async () => {
 						await fastForward(DAY + SECOND);
@@ -389,10 +409,10 @@ contract('Exotic Positional market', async accounts => {
 							});
 							it('claimable amount', async function() {
 								answer = await deployedOpenBidMarket.getUserClaimableAmount(userOne);
-								console.log("Claimable: ",answer.toString());
+								console.log('Claimable: ', answer.toString());
 								let totalAmount = positionAmount1.add(toUnit('10'));
 								let amount = positionAmount1.mul(totalAmount).div(totalAmount);
-								let result = (parseFloat(amount.toString()) * 0.97 - 10);
+								let result = parseFloat(amount.toString()) * 0.97 - 10;
 								// assert.equal(answer.toString(), result.toString());
 							});
 							it('claimed amount match', async function() {
@@ -403,29 +423,33 @@ contract('Exotic Positional market', async accounts => {
 								answer = await Thales.balanceOf(userOne);
 								// assert.approximately(answer.toString(), result.toString());
 								answer = await deployedOpenBidMarket.getUserClaimableAmount(userOne);
-								console.log("Claimable: ",answer.toString());
-								assert.equal(answer.toString(), "0");
+								console.log('Claimable: ', answer.toString());
+								assert.equal(answer.toString(), '0');
 							});
 						});
 					});
 				});
 			});
-			
+
 			describe('user takes two positions', async function() {
 				beforeEach(async () => {
-					answer = await deployedOpenBidMarket.takeOpenBidPositions([outcomePosition, outcomePosition2],[positionAmount1, positionAmount2], { from: userOne });
+					answer = await deployedOpenBidMarket.takeOpenBidPositions(
+						[outcomePosition, outcomePosition2],
+						[positionAmount1, positionAmount2],
+						{ from: userOne }
+					);
 				});
 				it('1 ticket holder', async function() {
 					answer = await deployedOpenBidMarket.totalUsersTakenPositions();
-					assert.equal(answer, "2");
+					assert.equal(answer, '2');
 				});
 				it('ticket holder position match', async function() {
 					answer = await deployedOpenBidMarket.getAllUserPositions(userOne);
-					console.log(answer.toString())
+					console.log(answer.toString());
 					assert.equal(answer[0].toString(), positionAmount1);
 					assert.equal(answer[1].toString(), positionAmount2);
 				});
-				
+
 				describe('resolve with ticket holder result', async function() {
 					beforeEach(async () => {
 						await fastForward(DAY + SECOND);
@@ -494,20 +518,21 @@ contract('Exotic Positional market', async accounts => {
 							});
 							it('claimable amount', async function() {
 								answer = await deployedOpenBidMarket.getUserClaimableAmount(userOne);
-								console.log("Claimable: ",answer.toString());
-								let result = parseFloat((positionAmount1.add(positionAmount2)).toString()) * 0.97;
+								console.log('Claimable: ', answer.toString());
+								let result = parseFloat(positionAmount1.add(positionAmount2).toString()) * 0.97;
 								// assert.equal(answer.toString(), result.toString());
 							});
 							it('claimed amount match', async function() {
 								let result = await Thales.balanceOf(userOne);
 								result =
-									parseFloat(result.toString()) + parseFloat((positionAmount1.add(positionAmount2)).toString()) * 0.97;
+									parseFloat(result.toString()) +
+									parseFloat(positionAmount1.add(positionAmount2).toString()) * 0.97;
 								await deployedOpenBidMarket.claimWinningTicket({ from: userOne });
 								answer = await Thales.balanceOf(userOne);
 								// assert.equal(answer.toString(), result.toString());
 								answer = await deployedOpenBidMarket.getUserClaimableAmount(userOne);
-								console.log("Claimable: ",answer.toString());
-								assert.equal(answer.toString(), "0");
+								console.log('Claimable: ', answer.toString());
+								assert.equal(answer.toString(), '0');
 							});
 						});
 					});
@@ -516,24 +541,32 @@ contract('Exotic Positional market', async accounts => {
 
 			describe('two users take two different positions', async function() {
 				beforeEach(async () => {
-					answer = await deployedOpenBidMarket.takeOpenBidPositions([outcomePosition, outcomePosition2],[positionAmount1, positionAmount2], { from: userOne });
-					answer = await deployedOpenBidMarket.takeOpenBidPositions([outcomePosition2, outcomePosition3],[positionAmount2, positionAmount3], { from: userTwo });
+					answer = await deployedOpenBidMarket.takeOpenBidPositions(
+						[outcomePosition, outcomePosition2],
+						[positionAmount1, positionAmount2],
+						{ from: userOne }
+					);
+					answer = await deployedOpenBidMarket.takeOpenBidPositions(
+						[outcomePosition2, outcomePosition3],
+						[positionAmount2, positionAmount3],
+						{ from: userTwo }
+					);
 				});
 				it('1 ticket holder', async function() {
 					answer = await deployedOpenBidMarket.totalUsersTakenPositions();
-					assert.equal(answer, "3");
+					assert.equal(answer, '3');
 				});
 				it('ticket holder position match', async function() {
 					answer = await deployedOpenBidMarket.getAllUserPositions(userOne);
-					console.log("userThree: ",answer.toString())
+					console.log('userThree: ', answer.toString());
 					assert.equal(answer[0].toString(), positionAmount1);
 					assert.equal(answer[1].toString(), positionAmount2);
 					answer = await deployedOpenBidMarket.getAllUserPositions(userTwo);
-					console.log("userTwo: ",answer.toString())
+					console.log('userTwo: ', answer.toString());
 					assert.equal(answer[1].toString(), positionAmount2);
 					assert.equal(answer[2].toString(), positionAmount3);
 				});
-				
+
 				describe('resolve with ticket holder result', async function() {
 					beforeEach(async () => {
 						await fastForward(DAY + SECOND);
@@ -602,29 +635,43 @@ contract('Exotic Positional market', async accounts => {
 							});
 							it('claimable amount', async function() {
 								answer = await deployedOpenBidMarket.getUserClaimableAmount(userOne);
-								console.log("Claimable: ",answer.toString());
-								let result = parseFloat((positionAmount1.add(positionAmount2.add(positionAmount2)).add(positionAmount3)).toString()) * 0.97/2;
+								console.log('Claimable: ', answer.toString());
+								let result =
+									(parseFloat(
+										positionAmount1
+											.add(positionAmount2.add(positionAmount2))
+											.add(positionAmount3)
+											.toString()
+									) *
+										0.97) /
+									2;
 								// assert.equal(answer.toString(), result.toString());
 							});
 							it('claimed amount match', async function() {
 								let result = await Thales.balanceOf(userOne);
 								result =
-									parseFloat(result.toString()) + parseFloat((positionAmount1.add(positionAmount2.add(positionAmount2)).add(positionAmount3)).toString()) * 0.97/2;
+									parseFloat(result.toString()) +
+									(parseFloat(
+										positionAmount1
+											.add(positionAmount2.add(positionAmount2))
+											.add(positionAmount3)
+											.toString()
+									) *
+										0.97) /
+										2;
 								await deployedOpenBidMarket.claimWinningTicket({ from: userOne });
 								answer = await Thales.balanceOf(userOne);
 								// assert.equal(answer.toString(), result.toString());
 								answer = await deployedOpenBidMarket.getUserClaimableAmount(userOne);
-								console.log("Claimable: ",answer.toString());
-								assert.equal(answer.toString(), "0");
+								console.log('Claimable: ', answer.toString());
+								assert.equal(answer.toString(), '0');
 							});
 						});
 					});
 				});
 			});
-
 		});
 	});
-
 
 	// /// FIXED TICKET MARKETS
 
@@ -641,9 +688,13 @@ contract('Exotic Positional market', async accounts => {
 			phrases = ['Real Madrid', 'FC Barcelona', 'It will be a draw'];
 			outcomePosition = '1';
 
-			answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount.add(fixedTicketPrice), {
-				from: owner,
-			});
+			answer = await Thales.increaseAllowance(
+				ThalesBonds.address,
+				fixedBondAmount.add(fixedTicketPrice),
+				{
+					from: owner,
+				}
+			);
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				marketSource,
@@ -652,7 +703,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				"1",
+				'1',
 				phrases,
 				{ from: owner }
 			);
@@ -730,7 +781,7 @@ contract('Exotic Positional market', async accounts => {
 				});
 				it('1 ticket holder', async function() {
 					answer = await deployedMarket.totalUsersTakenPositions();
-					assert.equal(answer.toString(), "2");
+					assert.equal(answer.toString(), '2');
 				});
 				it('ticket holder position match', async function() {
 					answer = await deployedMarket.getUserPosition(userOne);
@@ -813,10 +864,10 @@ contract('Exotic Positional market', async accounts => {
 								let result = parseFloat(fixedTicketPrice.toString()) * 0.97;
 								assert.equal(answer.toString(), result.toString());
 							});
-							
+
 							it('claimable fee amount', async function() {
 								answer = await deployedMarket.getTotalFeesAmount();
-								let result = 2*(parseFloat(fixedTicketPrice.toString()) * 0.03);
+								let result = 2 * (parseFloat(fixedTicketPrice.toString()) * 0.03);
 								// assert.equal(answer.toString(), "0");
 								assert.equal(answer.toString(), result.toString());
 							});
@@ -829,8 +880,8 @@ contract('Exotic Positional market', async accounts => {
 								answer = await Thales.balanceOf(userOne);
 								assert.equal(answer.toString(), result.toString());
 								answer = await deployedMarket.getUserClaimableAmount(userOne);
-								console.log("Claimable: ",answer.toString());
-								assert.equal(answer.toString(), "0");
+								console.log('Claimable: ', answer.toString());
+								assert.equal(answer.toString(), '0');
 							});
 						});
 					});
@@ -851,7 +902,7 @@ contract('Exotic Positional market', async accounts => {
 				});
 				it('1 ticket holder', async function() {
 					answer = await deployedMarket.totalUsersTakenPositions();
-					assert.equal(answer.toString(), "2");
+					assert.equal(answer.toString(), '2');
 				});
 				it('ticket holder position match', async function() {
 					answer = await deployedMarket.getUserPosition(userOne);
@@ -1277,7 +1328,7 @@ contract('Exotic Positional market', async accounts => {
 									assert.equal(answer, false);
 								});
 								it('market cancelled -> users can claim: backstop passed', async function() {
-									await fastForward((4 * HOUR)+ 10*SECOND);
+									await fastForward(4 * HOUR + 10 * SECOND);
 									answer = await deployedMarket.canUsersClaim();
 									assert.equal(answer, true);
 								});
@@ -1288,7 +1339,4 @@ contract('Exotic Positional market', async accounts => {
 			});
 		});
 	});
-
-
-
 });

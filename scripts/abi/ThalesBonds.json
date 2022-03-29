@@ -486,6 +486,16 @@
         "internalType": "uint256",
         "name": "_amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_bondToReduce",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_disputorAddress",
+        "type": "address"
       }
     ],
     "name": "sendBondFromMarketToUser",

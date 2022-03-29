@@ -165,8 +165,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         }
         totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
         totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
-        uint withdrawalFee =
-            totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
+        uint withdrawalFee = totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
         thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2));
         thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
         thalesBonds.transferFromMarket(msg.sender, totalToWithdraw.sub(withdrawalFee));
@@ -203,12 +202,15 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             claimableOpenBidAmount = getTotalClaimableAmount();
             if (totalOpenBidAmountPerPosition[_outcomePosition] == 0) {
                 noWinners = true;
+            } else {
+                noWinners = false;
             }
         }
         resolved = true;
+        noWinners = false;
         resolvedTime = block.timestamp;
         resolverAddress = _resolverAddress;
-        emit MarketResolved(_outcomePosition, _resolverAddress);
+        emit MarketResolved(_outcomePosition, _resolverAddress, noWinners);
     }
 
     function resetMarket() external onlyOwner {
@@ -218,6 +220,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         }
         claimableOpenBidAmount = 0;
         resolved = false;
+        noWinners = false;
         resolvedTime = 0;
         resolverAddress = address(0);
         emit MarketReset();
@@ -231,7 +234,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         resolved = true;
         resolvedTime = block.timestamp;
         resolverAddress = marketManager.safeBoxAddress();
-        emit MarketResolved(CANCELED, msg.sender);
+        emit MarketResolved(CANCELED, msg.sender, noWinners);
     }
 
     function claimWinningTicket() external notPaused {
@@ -354,7 +357,8 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
 
     function canUsersClaim() public view returns (bool) {
         return
-            (resolved && (!disputed) && noWinners) ||
+            resolved &&
+            (!disputed) &&
             ((resolvedTime > 0 && block.timestamp > resolvedTime.add(marketManager.claimTimeoutDefaultPeriod())) ||
                 (backstopTimeout > 0 &&
                     resolvedTime > 0 &&
@@ -486,13 +490,12 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     ) internal view returns (uint) {
         if (totalUsersTakenPositions == 0) {
             return 0;
-        } 
+        }
         if (totalOpenBidAmountPerPosition[_position] == 0) {
             return forNewUserView ? applyDeduction(totalOpenBidAmount.add(1e18)) : applyDeduction(totalOpenBidAmount);
         } else {
             if (forNewUserView) {
-                return
-                    applyDeduction(totalOpenBidAmount.add(1e18)).div(totalOpenBidAmountPerPosition[_position].add(1e18));
+                return applyDeduction(totalOpenBidAmount.add(1e18)).div(totalOpenBidAmountPerPosition[_position].add(1e18));
             } else {
                 uint calculatedPositions =
                     userHasAlreadyTakenThisPosition && totalOpenBidAmountPerPosition[_position] > 0
@@ -596,7 +599,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
 
     event MarketDisputed(bool disputed);
     event MarketCreated(uint creationTime, uint positionCount, bytes32 phrase);
-    event MarketResolved(uint winningPosition, address resolverAddress);
+    event MarketResolved(uint winningPosition, address resolverAddress, bool noWinner);
     event MarketReset();
     event WinningTicketClaimed(address account, uint amount);
     event BackstopTimeoutPeriodChanged(uint timeoutPeriod);

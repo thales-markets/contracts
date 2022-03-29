@@ -142,7 +142,6 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         emit TicketWithdrawn(msg.sender, fixedTicketPrice.sub(withdrawalFee));
     }
 
-
     // market resolved only through the Manager
     function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner {
         require(canMarketBeResolvedByOwner(), "Market not resolvable. Disputed/not matured");
@@ -157,12 +156,13 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
                 noWinners = true;
             } else {
                 claimableTicketsCount = ticketsPerPosition[_outcomePosition];
+                noWinners = false;
             }
         }
         resolved = true;
         resolvedTime = block.timestamp;
         resolverAddress = _resolverAddress;
-        emit MarketResolved(_outcomePosition, _resolverAddress);
+        emit MarketResolved(_outcomePosition, _resolverAddress, noWinners);
     }
 
     function resetMarket() external onlyOwner {
@@ -172,6 +172,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         }
         claimableTicketsCount = 0;
         resolved = false;
+        noWinners = false;
         resolvedTime = 0;
         resolverAddress = address(0);
         emit MarketReset();
@@ -182,9 +183,10 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         claimableTicketsCount = totalUsersTakenPositions;
         ticketsPerPosition[winningPosition] = totalUsersTakenPositions;
         resolved = true;
+        noWinners = false;
         resolvedTime = block.timestamp;
         resolverAddress = marketManager.safeBoxAddress();
-        emit MarketResolved(CANCELED, msg.sender);
+        emit MarketResolved(CANCELED, msg.sender, noWinners);
     }
 
     function claimWinningTicket() external notPaused {
@@ -298,15 +300,13 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         if (totalUsersTakenPositions != 1) {
             return totalUsersTakenPositions > 1 ? false : true;
         }
-        return
-                userPosition[marketManager.creatorAddress(address(this))] > 0
-                ? true
-                : false;
+        return userPosition[marketManager.creatorAddress(address(this))] > 0 ? true : false;
     }
 
     function canUsersClaim() public view returns (bool) {
         return
-            (resolved && (!disputed) && noWinners) ||
+            resolved &&
+            (!disputed) &&
             ((resolvedTime > 0 && block.timestamp > resolvedTime.add(marketManager.claimTimeoutDefaultPeriod())) ||
                 (backstopTimeout > 0 &&
                     resolvedTime > 0 &&
@@ -327,7 +327,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function getTotalPlacedAmount() public view returns (uint) {
-            return totalUsersTakenPositions > 0 ? fixedTicketPrice.mul(totalUsersTakenPositions) : 0;
+        return totalUsersTakenPositions > 0 ? fixedTicketPrice.mul(totalUsersTakenPositions) : 0;
     }
 
     function getTotalClaimableAmount() public view returns (uint) {
@@ -348,9 +348,8 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
 
     function getUserClaimableAmount(address _account) public view returns (uint) {
         return
-            noWinners ||
-                (userPosition[_account] > 0 &&
-                    (userPosition[_account] == winningPosition || winningPosition == CANCELED))
+            userPosition[_account] > 0 &&
+                (noWinners || userPosition[_account] == winningPosition || winningPosition == CANCELED)
                 ? getWinningAmountPerTicket()
                 : 0;
     }
@@ -389,8 +388,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function getUserPotentialWinningAmount(address _account) external view returns (uint) {
-        return
-            userPosition[_account] > 0 ? getPotentialWinningAmountForPosition(userPosition[_account], false, true) : 0;
+        return userPosition[_account] > 0 ? getPotentialWinningAmountForPosition(userPosition[_account], false, true) : 0;
     }
 
     function getPotentialWinningAmountForPosition(
@@ -400,7 +398,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     ) internal view returns (uint) {
         if (totalUsersTakenPositions == 0) {
             return 0;
-        } 
+        }
         if (ticketsPerPosition[_position] == 0) {
             return
                 forNewUserView
@@ -409,9 +407,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         } else {
             if (forNewUserView) {
                 return
-                    applyDeduction(getTotalPlacedAmount().add(fixedTicketPrice)).div(
-                        ticketsPerPosition[_position].add(1)
-                    );
+                    applyDeduction(getTotalPlacedAmount().add(fixedTicketPrice)).div(ticketsPerPosition[_position].add(1));
             } else {
                 uint calculatedPositions =
                     userHasAlreadyTakenThisPosition && ticketsPerPosition[_position] > 0
@@ -521,7 +517,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
 
     event MarketDisputed(bool disputed);
     event MarketCreated(uint creationTime, uint positionCount, bytes32 phrase);
-    event MarketResolved(uint winningPosition, address resolverAddress);
+    event MarketResolved(uint winningPosition, address resolverAddress, bool noWinner);
     event MarketReset();
     event WinningTicketClaimed(address account, uint amount);
     event BackstopTimeoutPeriodChanged(uint timeoutPeriod);

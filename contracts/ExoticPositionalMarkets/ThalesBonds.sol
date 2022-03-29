@@ -33,6 +33,12 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     mapping(address => MarketBond) public marketBond;
     mapping(address => uint) public marketFunds;
 
+    uint private constant CREATOR_BOND = 101;
+    uint private constant RESOLVER_BOND = 102;
+    uint private constant DISPUTOR_BOND = 103;
+    uint private constant CREATOR_AND_DISPUTOR = 104;
+    uint private constant RESOLVER_AND_DISPUTOR = 105;
+
     function initialize(address _owner) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -123,27 +129,53 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     function sendBondFromMarketToUser(
         address _market,
         address _account,
-        uint _amount
+        uint _amount,
+        uint _bondToReduce,
+        address _disputorAddress
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
         require(_amount <= marketBond[_market].totalMarketBond, "Exceeds total market bond");
-        marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.sub(_amount);
-        if (_account == marketManager.creatorAddress(_market) && _account != marketManager.resolverAddress(_market)) {
-            require(marketBond[_market].creatorBond >= _amount, "Amount exceeds creator bond");
+        require(_bondToReduce >= CREATOR_BOND && _bondToReduce <= RESOLVER_AND_DISPUTOR, "Invalid bondToReduce");
+        if (_bondToReduce == CREATOR_BOND && _amount <= marketBond[_market].creatorBond) {
             marketBond[_market].creatorBond = marketBond[_market].creatorBond.sub(_amount);
-        }
-        if (_account == marketManager.resolverAddress(_market)) {
-            require(marketBond[_market].resolverBond >= _amount, "Amount exceeds resolver bond");
+        } else if (_bondToReduce == RESOLVER_BOND && _amount <= marketBond[_market].resolverBond) {
             marketBond[_market].resolverBond = marketBond[_market].resolverBond.sub(_amount);
-        }
-
-        if (marketBond[_market].disputorsCount > 0 && marketBond[_market].disputorBond[_account] > 0) {
-            marketBond[_market].disputorBond[_account] = marketBond[_market].disputorBond[_account].sub(
-                IExoticPositionalMarket(_market).disputePrice()
+        } else if (
+            _bondToReduce == DISPUTOR_BOND &&
+            marketBond[_market].disputorBond[_disputorAddress] >= 0 &&
+            _amount <= IExoticPositionalMarket(_market).disputePrice()
+        ) {
+            marketBond[_market].disputorBond[_disputorAddress] = marketBond[_market].disputorBond[_disputorAddress].sub(
+                _amount
             );
             marketBond[_market].disputorsCount = marketBond[_market].disputorBond[_account] > 0
                 ? marketBond[_market].disputorsCount
                 : marketBond[_market].disputorsCount.sub(1);
+        } else if (
+            _bondToReduce == CREATOR_AND_DISPUTOR &&
+            _amount <= marketBond[_market].creatorBond.add(IExoticPositionalMarket(_market).disputePrice()) &&
+            _amount > marketBond[_market].creatorBond
+        ) {
+            marketBond[_market].disputorBond[_disputorAddress] = marketBond[_market].disputorBond[_disputorAddress].sub(
+                _amount.sub(marketBond[_market].creatorBond)
+            );
+            marketBond[_market].creatorBond = 0;
+            marketBond[_market].disputorsCount = marketBond[_market].disputorBond[_account] > 0
+                ? marketBond[_market].disputorsCount
+                : marketBond[_market].disputorsCount.sub(1);
+        } else if (
+            _bondToReduce == RESOLVER_AND_DISPUTOR &&
+            _amount <= marketBond[_market].resolverBond.add(IExoticPositionalMarket(_market).disputePrice()) &&
+            _amount > marketBond[_market].resolverBond
+        ) {
+            marketBond[_market].disputorBond[_disputorAddress] = marketBond[_market].disputorBond[_disputorAddress].sub(
+                _amount.sub(marketBond[_market].resolverBond)
+            );
+            marketBond[_market].resolverBond = 0;
+            marketBond[_market].disputorsCount = marketBond[_market].disputorBond[_account] > 0
+                ? marketBond[_market].disputorsCount
+                : marketBond[_market].disputorsCount.sub(1);
         }
+        marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.sub(_amount);
         transferBondFromMarket(_account, _amount);
         emit BondTransferredFromMarketBondToUser(_market, _account, _amount);
     }

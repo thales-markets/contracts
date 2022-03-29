@@ -51,6 +51,12 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     mapping(address => mapping(uint => mapping(address => uint))) public disputeWinningPositionChoosenByMember;
     mapping(address => mapping(uint => mapping(uint => uint))) public disputeWinningPositionVotes;
 
+    uint private constant CREATOR_BOND = 101;
+    uint private constant RESOLVER_BOND = 102;
+    uint private constant DISPUTOR_BOND = 103;
+    uint private constant CREATOR_AND_DISPUTOR = 104;
+    uint private constant RESOLVER_AND_DISPUTOR = 105;
+
     function initialize(address _owner, address _marketManager) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -342,7 +348,9 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 marketManager.safeBoxAddress(),
-                IExoticPositionalMarket(_market).disputePrice()
+                IExoticPositionalMarket(_market).disputePrice(),
+                DISPUTOR_BOND,
+                dispute[_market][_disputeIndex].disputorAddress
             );
             marketLastClosedDispute[_market] = _disputeIndex;
             //if it is the last dispute
@@ -365,13 +373,17 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 marketManager.safeBoxAddress(),
-                IExoticPositionalMarket(_market).safeBoxLowAmount()
+                IExoticPositionalMarket(_market).safeBoxLowAmount(),
+                CREATOR_BOND,
+                dispute[_market][_disputeIndex].disputorAddress
             );
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
                 (IExoticPositionalMarket(_market).fixedBondAmount().add(IExoticPositionalMarket(_market).disputePrice()))
-                    .sub(IExoticPositionalMarket(_market).safeBoxLowAmount())
+                    .sub(IExoticPositionalMarket(_market).safeBoxLowAmount()),
+                CREATOR_AND_DISPUTOR,
+                dispute[_market][_disputeIndex].disputorAddress
             );
 
             marketLastClosedDispute[_market] = _disputeIndex;
@@ -390,12 +402,16 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 marketManager.creatorAddress(_market),
-                IExoticPositionalMarket(_market).fixedBondAmount()
+                IExoticPositionalMarket(_market).fixedBondAmount(),
+                CREATOR_BOND,
+                dispute[_market][_disputeIndex].disputorAddress
             );
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
-                IExoticPositionalMarket(_market).disputePrice().sub(IExoticPositionalMarket(_market).safeBoxLowAmount())
+                IExoticPositionalMarket(_market).disputePrice().sub(IExoticPositionalMarket(_market).safeBoxLowAmount()),
+                DISPUTOR_BOND,
+                dispute[_market][_disputeIndex].disputorAddress
             );
             marketManager.sendRewardToDisputor(
                 _market,
@@ -417,12 +433,16 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 marketManager.safeBoxAddress(),
-                IExoticPositionalMarket(_market).fixedBondAmount()
+                IExoticPositionalMarket(_market).fixedBondAmount(),
+                RESOLVER_BOND,
+                dispute[_market][_disputeIndex].disputorAddress
             );
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
-                IExoticPositionalMarket(_market).disputePrice()
+                IExoticPositionalMarket(_market).disputePrice(),
+                DISPUTOR_BOND,
+                dispute[_market][_disputeIndex].disputorAddress
             );
 
             marketClosedForDisputes[_market] = true;
@@ -437,14 +457,18 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 marketManager.safeBoxAddress(),
-                IExoticPositionalMarket(_market).safeBoxLowAmount()
+                IExoticPositionalMarket(_market).safeBoxLowAmount(),
+                RESOLVER_BOND,
+                dispute[_market][_disputeIndex].disputorAddress
             );
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
                 IExoticPositionalMarket(_market).fixedBondAmount().add(IExoticPositionalMarket(_market).disputePrice()).sub(
                     IExoticPositionalMarket(_market).safeBoxLowAmount()
-                )
+                ),
+                RESOLVER_AND_DISPUTOR,
+                dispute[_market][_disputeIndex].disputorAddress
             );
             allOpenDisputesCancelledToIndexForMarket[_market] = marketTotalDisputes[_market];
             marketLastClosedDispute[_market] = _disputeIndex;

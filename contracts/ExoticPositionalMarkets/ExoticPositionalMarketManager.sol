@@ -127,7 +127,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         );
         require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid market source (empty string)");
         require(_positionCount == _positionPhrases.length, "Invalid position count with position phrases");
-        require(bytes(_marketQuestion).length < 110, "Market question exceeds length");
+        require(bytes(_marketQuestion).length < 210, "mQuestion exceeds length");
+        require(bytes(_marketSource).length < 210, "mSource exceeds length");
         require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
         for (uint i = 0; i < _tags.length; i++) {
             require(
@@ -255,7 +256,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
         activeMarkets[numOfActiveMarkets] = address(exoticMarket);
         numOfActiveMarkets = numOfActiveMarkets.add(1);
-        emit MarketCreated(
+        emit CLMarketCreated(
             address(exoticMarket),
             _marketQuestion,
             _marketSource,
@@ -674,6 +675,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewMinimumFixedTicketAmount(uint minFixedTicketPrice);
     event NewDisputeStringLengthLimit(uint disputeStringLengthLimit);
 
+
     event MarketCreated(
         address marketAddress,
         string marketQuestion,
@@ -686,16 +688,19 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         string[] positionPhrases,
         address marketOwner
     );
-
-    modifier checkMarketRequirements(uint _endOfPositioning) {
-        require(exoticMarketMastercopy != address(0), "No ExoticMarket mastercopy present. Please update the mastercopy");
-        require(thalesBonds != address(0), "Invalid Thales bond address");
-        require(
-            _endOfPositioning >= block.timestamp.add(minimumPositioningDuration),
-            "Posiitioning period too low. Increase the endOfPositioning"
-        );
-        _;
-    }
+    
+    event CLMarketCreated(
+        address marketAddress,
+        string marketQuestion,
+        string marketSource,
+        uint endOfPositioning,
+        uint fixedTicketPrice,
+        bool withdrawalAllowed,
+        uint[] tags,
+        uint positionCount,
+        string[] positionPhrases,
+        address marketOwner
+    );
 
     modifier onlyOracleCouncil() {
         require(msg.sender == oracleCouncilAddress, "Not OracleCouncil address");

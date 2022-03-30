@@ -409,7 +409,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             IThalesBonds(marketManager.thalesBonds()).sendBondFromMarketToUser(
                 _market,
                 dispute[_market][_disputeIndex].disputorAddress,
-                IExoticPositionalMarket(_market).disputePrice().sub(IExoticPositionalMarket(_market).safeBoxLowAmount()),
+                IExoticPositionalMarket(_market).disputePrice(),
                 DISPUTOR_BOND,
                 dispute[_market][_disputeIndex].disputorAddress
             );

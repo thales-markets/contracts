@@ -131,6 +131,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         require(withdrawalAllowed, "Withdrawal not allowed");
         require(canUsersPlacePosition(), "Positioning finished/market resolved");
         require(userPosition[msg.sender] > 0, "Not a ticket holder");
+        require(msg.sender != marketManager.creatorAddress(address(this)), "Creator can not withdraw");
         uint withdrawalFee =
             fixedTicketPrice.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
         totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
@@ -319,6 +320,9 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function canUserWithdraw(address _account) public view returns (bool) {
+        if(_account == marketManager.creatorAddress(address(this))) {
+            return false;
+        }
         return withdrawalAllowed && canUsersPlacePosition() && userPosition[_account] > 0;
     }
 

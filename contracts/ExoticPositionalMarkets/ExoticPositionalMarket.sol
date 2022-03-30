@@ -185,6 +185,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
     function withdraw() external notPaused {
         require(withdrawalAllowed, "Withdrawal not allowed");
         require(canUsersPlacePosition(), "Positioning finished/market resolved");
+        require(msg.sender != marketManager.creatorAddress(address(this)), "Creator can not withdraw");
         if (ticketType == TicketType.FIXED_TICKET_PRICE) {
             require(userPosition[msg.sender] > 0, "Not a ticket holder");
             uint withdrawalFee =
@@ -221,6 +222,7 @@ contract ExoticPositionalMarket is Initializable, ProxyOwned, OraclePausable, Pr
         require(canUsersPlacePosition(), "Positioning finished/market resolved");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not openBid Market");
         require(userOpenBidPosition[msg.sender][_openBidPosition] > 0, "No amount placed for position by user");
+        require(msg.sender != marketManager.creatorAddress(address(this)), "Creator can not withdraw");
         uint totalToWithdraw = userOpenBidPosition[msg.sender][_openBidPosition];
         userOpenBidPosition[msg.sender][_openBidPosition] = 0;
         if (getUserOpenBidTotalPlacedAmount(msg.sender) == 0) {

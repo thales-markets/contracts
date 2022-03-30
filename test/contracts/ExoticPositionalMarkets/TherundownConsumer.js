@@ -116,7 +116,8 @@ contract('TherundownConsumer', accounts => {
 		await ExoticPositionalTags.initialize(manager, { from: manager });
 		await ThalesBonds.initialize(manager, { from: manager });
 		let GamesQueue = artifacts.require('GamesQueue');
-		gamesQueue = await GamesQueue.new();
+		gamesQueue = await GamesQueue.new({from:owner});
+		await gamesQueue.initialize(owner, { from: owner });
 
 		await ExoticPositionalMarketManager.initialize(
 			manager,
@@ -200,6 +201,9 @@ contract('TherundownConsumer', accounts => {
 			TherundownConsumerDeployed.address
 		);
 		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
+
+		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
+
 	});
 
 	describe('Init', () => {
@@ -233,6 +237,14 @@ contract('TherundownConsumer', accounts => {
 
 			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
 			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+
+			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
+			assert.equal(sportId_4, await gamesQueue.sportPerGameId(gameid1));
+			assert.equal(sportId_4, await gamesQueue.sportPerGameId(gameid2));
+			assert.bnEqual(1646958600, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1646967600, await gamesQueue.gameStartPerGameId(gameid2));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
@@ -285,6 +297,7 @@ contract('TherundownConsumer', accounts => {
 			assert.equal('Philadelphia 76ers', await deployedMarket.positionPhrase(1));
 			assert.equal('Brooklyn Nets', await deployedMarket.positionPhrase(2));
 			assert.equal(9004, await deployedMarket.tags(0));
+
 		});
 
 		it('Fulfill Games Created - Champions League AJAX, create market, check results', async () => {
@@ -425,6 +438,14 @@ contract('TherundownConsumer', accounts => {
 				{ from: wrapper }
 			);
 
+			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
+			assert.equal(sportId_4, await gamesQueue.sportPerGameId(gameid1));
+			assert.equal(sportId_4, await gamesQueue.sportPerGameId(gameid2));
+			assert.bnEqual(1646958600, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1646967600, await gamesQueue.gameStartPerGameId(gameid2));
+
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
 
@@ -524,6 +545,10 @@ contract('TherundownConsumer', accounts => {
 				_id: gameid1,
 				_game: gameR,
 			});
+
+			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 
 		it('Fulfill Games Resolved - Champions League AJAX, resolve market, check results', async () => {
@@ -745,6 +770,10 @@ contract('TherundownConsumer', accounts => {
 			await expect(
 				TherundownConsumerDeployed.resolveMarketForGame(gameFootballid2, { from: owner })
 			).to.be.revertedWith('Market resoved or canceled');
+
+			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 	});
 });

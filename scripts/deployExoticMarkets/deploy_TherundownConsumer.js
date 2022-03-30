@@ -51,13 +51,6 @@ async function main() {
 
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
-	const GamesQueue = await ethers.getContractFactory('GamesQueue');
-	const gamesQueue = await GamesQueue.deploy();
-	await gamesQueue.deployed();
-
-	console.log('GamesQueue deployed to:', gamesQueue.address);
-	setTargetAddress('GamesQueue', network, gamesQueue.address);
-
 	const exoticManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
 	let exoticManagerAddress = getTargetAddress('ExoticMarketManager', network);
 
@@ -78,7 +71,26 @@ async function main() {
 
 	/* ========== DEPLOY CONTRACT ========== */
 
+	// queue
+
 	console.log('Starting...');
+
+	const GamesQueue = await ethers.getContractFactory('GamesQueue');
+
+	const gamesQueue = await upgrades.deployProxy(GamesQueue, [
+		owner.address
+	]);
+
+	await gamesQueue.deployed();
+
+	console.log('GamesQueue deployed to:', gamesQueue.address);
+	setTargetAddress('GamesQueue', network, gamesQueue.address);
+
+	const implementationQueue = await getImplementationAddress(ethers.provider, gamesQueue.address);
+	console.log('GamesQueueImplementation: ', implementationQueue);
+	setTargetAddress('GamesQueueImplementation', network, implementationQueue);
+
+	// consumer
 
 	let TherundownConsumer = await ethers.getContractFactory('TherundownConsumer');
 	const therundown = await upgrades.deployProxy(TherundownConsumer, [
@@ -101,7 +113,7 @@ async function main() {
 	setTargetAddress('TherundownConsumerImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
-		address: gamesQueue.address,
+		address: implementationQueue
 	})
 
 	await hre.run('verify:verify', {

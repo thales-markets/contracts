@@ -150,6 +150,16 @@
       "address": "0x861c6913275De9835aF95300fDBC140426b809e7",
       "txHash": "0x282ea474b5836ea8cbe77c4c0a70ea538a205f8eff810de3cfccaac063d8b1a1",
       "kind": "transparent"
+    },
+    {
+      "address": "0xff11f7DB258729baB22a864a8CC10f00c45AeB05",
+      "txHash": "0x4134d6709c26ea6abfe6a1141e1b205143ab74f5f54b9a2ee9d5d8aa0c231b28",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xfC7AB8c62B336137F837f9f2810A860e0347d690",
+      "txHash": "0x5fe39aa02fb48ee82d48ae61565db103b204aead5d90d4d08ed0306934e8559d",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -3097,6 +3107,416 @@
             "label": "mapping(address => bool)"
           },
           "t_contract(GamesQueue)10420": {
+            "label": "contract GamesQueue"
+          }
+        }
+      }
+    },
+    "f77cab08d6754571ea9f288f71669b95eb25546dfc593453250370fc28efa670": {
+      "address": "0xb86b517EB77B5b31a805a7B6849B92d71808E0B0",
+      "txHash": "0x5b8b114fd565a03b17d40f98a9b588c79c9162fc24fb2a48bbe3b02cdb0d6221",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:5"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:9"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:10"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "gamesCreateQueue",
+            "type": "t_mapping(t_uint256,t_bytes32)",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:16"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "existingGamesInCreatedQueue",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:17"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "firstCreated",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:18"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "lastCreated",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:19"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "gameStartPerGameId",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:20"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "sportPerGameId",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:21"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "unproccessedGames",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:24"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "unproccessedGamesIndex",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:25"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "gamesResolvedQueue",
+            "type": "t_mapping(t_uint256,t_bytes32)",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:26"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "firstResolved",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:27"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "lastResolved",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:28"
+          },
+          {
+            "contract": "GamesQueue",
+            "label": "consumer",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/GamesQueue.sol:30"
+          }
+        ],
+        "types": {
+          "t_mapping(t_uint256,t_bytes32)": {
+            "label": "mapping(uint256 => bytes32)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_address": {
+            "label": "address"
+          }
+        }
+      }
+    },
+    "7b40bad2fa152e2a3a327df167da19439ca82bb0a4bb0dc1251f9a57738d3663": {
+      "address": "0x4c8c9C316791E5A5F7e69e1a40a59cE1b69c59C1",
+      "txHash": "0xe041185a470cc99babc9fecba020144318f7e7128297573718e4323b7c5a8fa9",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:5"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:9"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:10"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "requestIdGamesCreated",
+            "type": "t_mapping(t_bytes32,t_array(t_bytes_storage)dyn_storage)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:52"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "requestIdGamesResolved",
+            "type": "t_mapping(t_bytes32,t_array(t_bytes_storage)dyn_storage)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:53"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameCreated",
+            "type": "t_mapping(t_bytes32,t_struct(GameCreate)19544_storage)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:56"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameResolved",
+            "type": "t_mapping(t_bytes32,t_struct(GameResolve)19553_storage)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:57"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "sportsIdPerGame",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:58"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameFulfilledCreated",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:59"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameFulfilledResolved",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:60"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "supportedSport",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:63"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "twoPositionSport",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:64"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "exoticManager",
+            "type": "t_contract(IExoticPositionalMarketManager)23136",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:67"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "marketPerGameId",
+            "type": "t_mapping(t_bytes32,t_address)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:68"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "marketResolved",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:69"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "marketCanceled",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:70"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "fixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:71"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "withdrawalAllowed",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:72"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "wrapperAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:75"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "queues",
+            "type": "t_contract(GamesQueue)15908",
+            "src": "contracts/ExoticPositionalMarkets/TherundownConsumer.sol:77"
+          }
+        ],
+        "types": {
+          "t_mapping(t_bytes32,t_array(t_bytes_storage)dyn_storage)": {
+            "label": "mapping(bytes32 => bytes[])"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_array(t_bytes_storage)dyn_storage": {
+            "label": "bytes[]"
+          },
+          "t_bytes_storage": {
+            "label": "bytes"
+          },
+          "t_mapping(t_bytes32,t_struct(GameCreate)19544_storage)": {
+            "label": "mapping(bytes32 => struct TherundownConsumer.GameCreate)"
+          },
+          "t_struct(GameCreate)19544_storage": {
+            "label": "struct TherundownConsumer.GameCreate",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "startTime",
+                "type": "t_uint256"
+              },
+              {
+                "label": "homeTeam",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "awayTeam",
+                "type": "t_string_storage"
+              }
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_mapping(t_bytes32,t_struct(GameResolve)19553_storage)": {
+            "label": "mapping(bytes32 => struct TherundownConsumer.GameResolve)"
+          },
+          "t_struct(GameResolve)19553_storage": {
+            "label": "struct TherundownConsumer.GameResolve",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "homeScore",
+                "type": "t_uint8"
+              },
+              {
+                "label": "awayScore",
+                "type": "t_uint8"
+              },
+              {
+                "label": "statusId",
+                "type": "t_uint8"
+              }
+            ]
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_contract(IExoticPositionalMarketManager)23136": {
+            "label": "contract IExoticPositionalMarketManager"
+          },
+          "t_mapping(t_bytes32,t_address)": {
+            "label": "mapping(bytes32 => address)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_contract(GamesQueue)15908": {
             "label": "contract GamesQueue"
           }
         }

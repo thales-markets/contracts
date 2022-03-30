@@ -196,7 +196,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) internal {
         gameCreated[_game.gameId] = _game;
         sportsIdPerGame[_game.gameId] = _sportId;
-        queues.enqueueGamesCreated(_game.gameId);
+        queues.enqueueGamesCreated(_game.gameId, _game.startTime, _sportId);
         gameFulfilledCreated[_game.gameId] = true;
 
         emit GameCreted(requestId, _sportId, _game.gameId, _game, queues.lastCreated());
@@ -255,22 +255,31 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _resolveMarket(bytes32 _gameId) internal {
         GameResolve memory game = getGameResolvedById(_gameId);
+        uint index = queues.unproccessedGamesIndex(_gameId);
+
+        // it can return ZERO index, needs checking
+        require(_gameId == queues.unproccessedGames(index), "Invalid Game ID");
 
         if (_isGameStatusResolved(game)) {
             exoticManager.resolveMarket(marketPerGameId[game.gameId], _callulateOutcome(game));
             marketResolved[marketPerGameId[game.gameId]] = true;
 
-            queues.dequeueGamesResolved();
+            _cleanStorageQueue(index);
 
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, game);
         } else if (_isGameStatusCanceled(game)) {
             exoticManager.cancelMarket(marketPerGameId[game.gameId]);
             marketCanceled[marketPerGameId[game.gameId]] = true;
 
-            queues.dequeueGamesResolved();
+            _cleanStorageQueue(index);
 
             emit CancelSportsMarket(marketPerGameId[game.gameId], game.gameId, game);
         }
+    }
+
+    function _cleanStorageQueue(uint index) internal {
+        queues.dequeueGamesResolved();
+        queues.removeItemUnproccessedGames(index);
     }
 
     function _append(string memory teamA, string memory teamB) internal pure returns (string memory) {

@@ -60,14 +60,15 @@ contract ThalesRoyalePassport is
 
         address player = ownerOf(tokenId);
         uint timestamp = tokenTimestamps[tokenId];
-        
+
         uint season = thalesRoyale.tokenSeason(tokenId);
         uint currentRound = thalesRoyale.roundInASeason(season);
         bool alive = thalesRoyale.isTokenAliveInASpecificSeason(tokenId, season);
         uint[] memory positions = thalesRoyale.getTokenPositions(tokenId);
+        bool seasonFinished = thalesRoyale.seasonFinished(season);
 
         imageURI = NFTDescriptor.constructTokenURI(
-            NFTSVG.SVGParams(player, timestamp, tokenId, season, currentRound, positions, alive)
+            NFTSVG.SVGParams(player, timestamp, tokenId, season, currentRound, positions, alive, seasonFinished)
         );
     }
 

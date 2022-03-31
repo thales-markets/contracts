@@ -17,18 +17,22 @@ library NFTSVG {
         uint round;
         uint[] positions;
         bool alive;
+        bool seasonFinished;
     }
 
     function generateSVG(SVGParams memory params) internal pure returns (string memory svg) {
-        return
-            string(
-                abi.encodePacked(
-                    generateSVGBase(),
-                    //generateSVGStamps(params.round, params.positions),
-                    generateSVGData(params.player, params.timestamp, params.round, params.season),
-                    "</g></svg>"
-                )
-            );
+        if (!params.alive) {
+            svg = string(abi.encodePacked(generateSVGEliminated()));
+        }
+
+        svg = string(
+            abi.encodePacked(
+                generateSVGBase(),
+                //generateSVGStamps(params.round, params.positions),
+                generateSVGData(params.player, params.timestamp, params.round, params.season),
+                "</g></svg>"
+            )
+        );
     }
 
     function generateSVGBase() private pure returns (string memory svg) {
@@ -36,9 +40,20 @@ library NFTSVG {
             abi.encodePacked(
                 '<?xml version="1.0" encoding="utf-8"?>',
                 '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 492.2 700" style="enable-background:new 0 0 492.2 700;" xml:space="preserve">',
-                '<defs><style type="text/css">@import url(\'http://fonts.googleapis.com/css?family=Lobster|Fontdiner+Swanky|Crafty+Girls|Pacifico|Satisfy|Gloria+Hallelujah|Bangers|Audiowide|Sacramento\');</style></defs>',
+                "<defs><style type=\"text/css\">@import url('http://fonts.googleapis.com/css?family=Lobster|Fontdiner+Swanky|Crafty+Girls|Pacifico|Satisfy|Gloria+Hallelujah|Bangers|Audiowide|Sacramento');</style></defs>",
                 "<style type=\"text/css\">st0{fill:#F5F0EB;}.st1{fill:#A0482D;}.st2{fill:#299956;}.st3{enable-background:new;}.st4{fill:#7F6F6F;}.st5{font-family:'Satisfy';}.st6{font-size:22.0664px;}</style>",
                 '<g><image style="overflow:visible;" width="1984" height="2851" xlink:href="https://thales-ajlyy.s3.eu-central-1.amazonaws.com/main.png"  transform="matrix(0.2484 0 0 0.2484 -1.4276 -4.1244)"></image>'
+            )
+        );
+    }
+
+    function generateSVGEliminated() private pure returns (string memory svg) {
+        svg = string(
+            abi.encodePacked(
+                '<?xml version="1.0" encoding="utf-8"?>',
+                '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 492.2 700" style="enable-background:new 0 0 492.2 700;" xml:space="preserve">',
+                '<g><image style="overflow:visible;" width="1984" height="2851" xlink:href="https://thales-ajlyy.s3.eu-central-1.amazonaws.com/eliminated.png"  transform="matrix(0.2484 0 0 0.2484 -1.4276 -4.1244)"></image>',
+                "</g></svg>"
             )
         );
     }

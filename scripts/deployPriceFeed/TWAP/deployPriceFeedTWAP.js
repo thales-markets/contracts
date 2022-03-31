@@ -34,13 +34,13 @@ async function main() {
 	await priceFeed.deployed();
 
 	console.log('PriceFeed deployed to:', priceFeed.address);
-	setTargetAddress('PriceFeedTwap', network, priceFeed.address);
+	setTargetAddress('PriceFeed', network, priceFeed.address);
 
 	const priceFeedImplementation = await getImplementationAddress(
 		ethers.provider,
 		priceFeed.address
 	);
-	setTargetAddress('PriceFeedTwapImplementation', network, priceFeedImplementation);
+	setTargetAddress('PriceFeedImplementation', network, priceFeedImplementation);
 
 
 	let tx = await priceFeed.setETH('0x4200000000000000000000000000000000000006');
@@ -48,6 +48,14 @@ async function main() {
 	await tx.wait().then(e => {
 		console.log('PriceFeed: ETH address set');
 	});
+
+	const aggregators = require(`../aggregators/${network}.json`);
+	for (let [key, aggregator] of Object.entries(aggregators)) {
+		let tx = await priceFeed.addAggregator(toBytes32(key), aggregator);
+		await tx.wait().then(e => {
+			console.log('PriceFeed update: addAggregator for', key);
+		});
+	}
 
 	tx = await priceFeed.addPool(toBytes32('LYRA'), '0x50c5725949a6f0c72e6c4a641f24049a917db0cb', '0xf334f6104a179207ddacfb41fa3567feea8595c2');
 	await tx.wait().then(e => {

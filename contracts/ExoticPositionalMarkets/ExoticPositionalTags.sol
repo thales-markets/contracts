@@ -94,7 +94,7 @@ contract ExoticPositionalTags is Initializable, ProxyOwned, PausableUpgradeable,
         return tagsCount;
     }
 
-    function addTag(string memory _label, uint _number) external {
+    function addTag(string memory _label, uint _number) external onlyOwner {
         require(_number > 0, "Number must not be zero");
         require(tagNumberIndex[_number] == 0, "Tag already exists");
         require(keccak256(abi.encode(_label)) != keccak256(abi.encode("")), "Invalid label (empty string)");

@@ -11,7 +11,6 @@ import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
     Storage for games (created or resolved)
 */
 contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
-
     // create games queue
     mapping(uint => bytes32) public gamesCreateQueue;
     mapping(bytes32 => bool) public existingGamesInCreatedQueue;
@@ -29,9 +28,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
 
     address public consumer;
 
-    function initialize(
-        address _owner
-    ) public initializer {
+    function initialize(address _owner) public initializer {
         setOwner(_owner);
         firstCreated = 1;
         lastCreated = 0;
@@ -39,8 +36,11 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         lastResolved = 0;
     }
 
-    function enqueueGamesCreated(bytes32 data, uint startTime, uint sportsId) onlyConsumer public {
-
+    function enqueueGamesCreated(
+        bytes32 data,
+        uint startTime,
+        uint sportsId
+    ) public onlyConsumer {
         lastCreated += 1;
         gamesCreateQueue[lastCreated] = data;
 
@@ -64,7 +64,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit DequeueGamesCreated(data, firstResolved - 1);
     }
 
-    function enqueueGamesResolved(bytes32 data) onlyConsumer public {
+    function enqueueGamesResolved(bytes32 data) public onlyConsumer {
         lastResolved += 1;
         gamesResolvedQueue[lastResolved] = data;
 
@@ -82,7 +82,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit DequeueGamesResolved(data, firstResolved - 1);
     }
 
-    function removeItemUnproccessedGames(uint index) public onlyConsumer{
+    function removeItemUnproccessedGames(uint index) public onlyConsumer {
         require(index < unproccessedGames.length, "No such index in array");
 
         bytes32 dataProccessed = unproccessedGames[index];
@@ -94,7 +94,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit GameProcessed(dataProccessed, index);
     }
 
-    function getLengthUnproccessedGames() public view returns(uint){
+    function getLengthUnproccessedGames() public view returns (uint) {
         return unproccessedGames.length;
     }
 
@@ -115,5 +115,4 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     event DequeueGamesResolved(bytes32 _gameId, uint _index);
     event GameProcessed(bytes32 _gameId, uint _index);
     event NewConsumerAddress(address _consumer);
-
 }

@@ -320,7 +320,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function canUserWithdraw(address _account) public view returns (bool) {
-        if(_account == marketManager.creatorAddress(address(this))) {
+        if (_account == marketManager.creatorAddress(address(this))) {
             return false;
         }
         return withdrawalAllowed && canUsersPlacePosition() && userPosition[_account] > 0;

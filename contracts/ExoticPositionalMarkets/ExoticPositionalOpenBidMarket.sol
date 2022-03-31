@@ -373,7 +373,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     }
 
     function canUserWithdraw(address _account) public view returns (bool) {
-        if(_account == marketManager.creatorAddress(address(this))) {
+        if (_account == marketManager.creatorAddress(address(this))) {
             return false;
         }
         return withdrawalAllowed && canUsersPlacePosition() && getUserOpenBidTotalPlacedAmount(_account) > 0;

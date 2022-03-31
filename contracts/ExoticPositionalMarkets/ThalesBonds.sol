@@ -147,9 +147,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
             marketBond[_market].disputorBond[_disputorAddress] = marketBond[_market].disputorBond[_disputorAddress].sub(
                 _amount
             );
-            marketBond[_market].disputorsTotalBond = marketBond[_market].disputorsTotalBond.sub(
-                _amount
-            );
+            marketBond[_market].disputorsTotalBond = marketBond[_market].disputorsTotalBond.sub(_amount);
             marketBond[_market].disputorsCount = marketBond[_market].disputorBond[_disputorAddress] > 0
                 ? marketBond[_market].disputorsCount
                 : marketBond[_market].disputorsCount.sub(1);
@@ -194,7 +192,10 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         address _account,
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
-        require(_amount <= marketBond[_market].totalMarketBond && _amount <= marketBond[_market].disputorsTotalBond, "Exceeds total market bond");
+        require(
+            _amount <= marketBond[_market].totalMarketBond && _amount <= marketBond[_market].disputorsTotalBond,
+            "Exceeds total market bond"
+        );
         require(
             marketBond[_market].disputorsCount > 0 && marketBond[_market].disputorBond[_account] >= _amount,
             "Disputor already claimed its funds"
@@ -203,8 +204,8 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         marketBond[_market].disputorBond[_account] = marketBond[_market].disputorBond[_account].sub(_amount);
         marketBond[_market].disputorsTotalBond = marketBond[_market].disputorsTotalBond.sub(_amount);
         marketBond[_market].disputorsCount = marketBond[_market].disputorBond[_account] > 0
-                ? marketBond[_market].disputorsCount
-                : marketBond[_market].disputorsCount.sub(1);
+            ? marketBond[_market].disputorsCount
+            : marketBond[_market].disputorsCount.sub(1);
         transferBondFromMarket(_account, _amount);
         emit BondTransferredFromMarketBondToUser(_market, _account, _amount);
     }
@@ -231,6 +232,13 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
                 emit BondTransferredFromMarketBondToUser(_market, marketManager.resolverAddress(_market), totalIssuedBack);
             }
         }
+    }
+
+    function transferCreatorToResolverBonds(address _market) external onlyOracleCouncilManagerAndOwner nonReentrant {
+        require(marketBond[_market].creatorBond > 0, "Creator bond is 0");
+        marketBond[_market].resolverBond = marketBond[_market].creatorBond;
+        marketBond[_market].creatorBond = 0;
+        emit BondTransferredFromCreatorToResolver(_market, marketBond[_market].resolverBond);
     }
 
     function transferToMarket(address _account, uint _amount) external whenNotPaused {
@@ -280,4 +288,5 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     event BondTransferredFromMarketBondToUser(address market, address account, uint amount);
     event NewOracleCouncilAddress(address oracleCouncil);
     event NewManagerAddress(address managerAddress);
+    event BondTransferredFromCreatorToResolver(address market, uint amount);
 }

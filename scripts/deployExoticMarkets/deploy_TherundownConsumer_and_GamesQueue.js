@@ -112,6 +112,12 @@ async function main() {
 	console.log('TherundownConsumerImplementation: ', implementation);
 	setTargetAddress('TherundownConsumerImplementation', network, implementation);
 
+	await therundown.setQueueAddress(gamesQueue.address);
+	console.log("GamesQueue address set in TherundownConsumer");
+
+	await gamesQueue.setConsumerAddress(therundown.address);
+	console.log("TherundownConsumer address set in GamesQueue");
+
 	await hre.run('verify:verify', {
 		address: implementationQueue
 	})

@@ -111,7 +111,12 @@ async function main() {
 	let successfullyMinted = false;
 	let successfullyEthSend = false;
 	for (let i = 0; i < players.length; ) {
+
 		console.log('Minting/sending for: ' + players[i], ', which is ' + i);
+
+		const balance = await ethers.provider.getBalance(players[i]);
+		console.log('ETH balance of ' + players[i] + ' is ' + balance);
+
 		try {
 			// mint
 			if (!successfullyMinted) {
@@ -125,18 +130,20 @@ async function main() {
 				console.log('Minted!');
 			}
 
-			// send eth
-			if (!successfullyEthSend) {
-				console.log('ETH sending...');
-				tx = await owner.sendTransaction({
-					to: players[i],
-					value: ethToSend,
-				});
-				await tx.wait().then(e => {
-					txLog(tx, 'send ETH to ' + players[i]);
-				});
-				successfullyEthSend = true;
-				console.log('ETH send!');
+			if (balance == 0) {
+				// send eth
+				if (!successfullyEthSend) {
+					console.log('ETH sending...');
+					tx = await owner.sendTransaction({
+						to: players[i],
+						value: ethToSend,
+					});
+					await tx.wait().then(e => {
+						txLog(tx, 'send ETH to ' + players[i]);
+					});
+					successfullyEthSend = true;
+					console.log('ETH send!');
+				}
 			}
 
 			successfullyMinted = false;

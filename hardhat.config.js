@@ -24,6 +24,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const INFURA = process.env.INFURA;
 const INFURA_POLYGON = process.env.INFURA_POLYGON;
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY;
+const OP_ETHERSCAN_KEY = process.env.OP_ETHERSCAN_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 const PRIVATE_KEY_OPTIMISTIC_KOVAN = process.env.PRIVATE_KEY_OPTIMISTIC_KOVAN;
 const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : 'http://127.0.0.1:8545';
@@ -39,8 +40,8 @@ module.exports = {
 			goerli: ETHERSCAN_KEY,
 			kovan: ETHERSCAN_KEY,
 			// optimism
-			optimisticEthereum: ETHERSCAN_KEY,
-			optimisticKovan: ETHERSCAN_KEY,
+			optimisticEthereum: OP_ETHERSCAN_KEY,
+			optimisticKovan: OP_ETHERSCAN_KEY,
 			// polygon
 			polygon: POLYGONSCAN_API_KEY,
 			polygonMumbai: POLYGONSCAN_API_KEY,

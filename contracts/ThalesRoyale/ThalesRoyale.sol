@@ -78,6 +78,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     mapping(uint => uint) public unclaimedRewardPerSeason;
     
     IThalesRoyalePass public royalePass;
+    mapping(uint => bytes32) public oracleKeyPerSeason;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -134,7 +135,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(!royaleInSeasonStarted[season], "Already started");
         require(seasonStarted[season], "Season not started yet");
 
-        roundTargetPrice = priceFeed.rateForCurrency(oracleKey);
+        roundTargetPrice = priceFeed.rateForCurrency(oracleKeyPerSeason[season]);
         roundInASeason[season] = 1;
         targetPricePerRoundPerSeason[season][roundInASeason[season]] = roundTargetPrice;
         royaleInSeasonStarted[season] = true;
@@ -182,11 +183,12 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         uint nextRound = currentSeasonRound + 1;
 
         // getting price
-        uint currentPriceFromOracle = priceFeed.rateForCurrency(oracleKey);
+        uint currentPriceFromOracle = priceFeed.rateForCurrency(oracleKeyPerSeason[season]);
         uint stikePrice = roundTargetPrice;
 
         finalPricePerRoundPerSeason[season][currentSeasonRound] = currentPriceFromOracle;
         roundResultPerSeason[season][currentSeasonRound] = currentPriceFromOracle >= stikePrice ? UP : DOWN;
+        uint losingResult = currentPriceFromOracle >= stikePrice ? DOWN : UP;
         roundTargetPrice = currentPriceFromOracle;
 
         uint winningPositionsPerRound =
@@ -203,6 +205,8 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         eliminatedPerRoundPerSeason[season][currentSeasonRound] =
             totalPlayersPerRoundPerSeason[season][currentSeasonRound] -
             winningPositionsPerRound;
+
+        _cleanPositions(losingResult, nextRound);
 
         // if no one is left no need to set values
         if (winningPositionsPerRound > 0) {
@@ -242,6 +246,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         season = season + 1;
         seasonCreationTime[season] = block.timestamp;
         seasonStarted[season] = true;
+        oracleKeyPerSeason[season] = oracleKey;
 
         emit NewSeasonStarted(season);
     }
@@ -316,12 +321,14 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         signedUpPlayersCount[season]++;
 
         if (_position != 0) {
-            _putPosition(_player, season, 1, _position);
+            for(uint i = 1; i <= rounds; i++){
+                _putPosition(_player, season, i, _position);
+            }
         }
 
         _buyIn(_player, buyInAmount);
 
-        emit SignedUp(_player, season);
+        emit SignedUp(_player, season, _position);
     }
 
     function _signUpPlayerWithPass(
@@ -334,12 +341,14 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         signedUpPlayersCount[season]++;
 
         if (_position != 0) {
-            _putPosition(_player, season, 1, _position);
+            for(uint i = 1; i <= rounds; i++){
+                _putPosition(_player, season, i, _position);
+            }
         }
 
         _buyInWithPass(_player, _passId);
 
-        emit SignedUp(_player, season);
+        emit SignedUp(_player, season, _position);
     }
 
     function _putPosition(
@@ -427,6 +436,25 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         emit PutFunds(_from, _season, _amount);
     }
 
+    function _cleanPositions(uint _losingPosition, uint _nextRound) internal {
+            
+            address[] memory players = playersPerSeason[season];
+
+            for(uint i = 0; i < players.length; i++){
+                if(positionInARoundPerSeason[season][players[i]][_nextRound - 1] == _losingPosition
+                    || positionInARoundPerSeason[season][players[i]][_nextRound - 1] == 0){
+                    // decrease position count
+                    if (positionInARoundPerSeason[season][players[i]][_nextRound] == DOWN) {
+                            positionsPerRoundPerSeason[season][_nextRound][DOWN]--;
+                    } else if (positionInARoundPerSeason[season][players[i]][_nextRound] == UP) {
+                            positionsPerRoundPerSeason[season][_nextRound][UP]--;
+                        }
+                    // setting 0 position
+                    positionInARoundPerSeason[season][players[i]][_nextRound] = 0;
+                }
+            }
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     function putFunds(uint _amount, uint _season) external {
@@ -490,6 +518,21 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         emit NewThalesRoyalePass(_royalePass);
     }
 
+    function setOracleKey(bytes32 _oracleKey) public onlyOwner {
+        oracleKey = _oracleKey;
+        emit NewOracleKey(_oracleKey);
+    }
+
+    function setRewardToken(address _rewardToken) public onlyOwner {
+        rewardToken = IERC20Upgradeable(_rewardToken);
+        emit NewRewardToken(_rewardToken);
+    }
+
+    function setNumberOfRounds(uint _rounds) public onlyOwner {
+        rounds = _rounds;
+        emit NewNumberOfRounds(_rounds);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier playerCanSignUp() {
@@ -524,7 +567,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     /* ========== EVENTS ========== */
 
-    event SignedUp(address user, uint season);
+    event SignedUp(address user, uint season, uint position);
     event RoundClosed(uint season, uint round, uint result, uint strikePrice, uint finalPrice, uint numberOfEliminatedPlayers, uint numberOfWinningPlayers);
     event TookAPosition(address user, uint season, uint round, uint position);
     event RoyaleStarted(uint season, uint totalPlayers, uint totalReward);
@@ -542,4 +585,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     event NewSafeBoxPercentage(uint _safeBoxPercentage);
     event NewSafeBox(address _safeBox);
     event NewThalesRoyalePass(address _royalePass);
+    event NewOracleKey(bytes32 _oracleKey);
+    event NewRewardToken(address _rewardToken);
+    event NewNumberOfRounds(uint _rounds);
 }

@@ -92,16 +92,16 @@ contract RangedMarket {
             (IPosition up, IPosition down) = IPositionalMarket(leftMarket).getOptions();
             IERC20Upgradeable(address(down)).safeTransfer(msg.sender, value);
 
-            (IPosition up, IPosition down) = IPositionalMarket(rightMarket).getOptions();
-            IERC20Upgradeable(address(up)).safeTransfer(msg.sender, value);
+            (IPosition up1, IPosition down1) = IPositionalMarket(rightMarket).getOptions();
+            IERC20Upgradeable(address(up1)).safeTransfer(msg.sender, value);
 
             positions.outp.burn(claimant, value);
         } else {
             (IPosition up, IPosition down) = IPositionalMarket(leftMarket).getOptions();
             IERC20Upgradeable(address(up)).safeTransfer(msg.sender, value);
 
-            (IPosition up, IPosition down) = IPositionalMarket(rightMarket).getOptions();
-            IERC20Upgradeable(address(down)).safeTransfer(msg.sender, value);
+            (IPosition up1, IPosition down1) = IPositionalMarket(rightMarket).getOptions();
+            IERC20Upgradeable(address(down1)).safeTransfer(msg.sender, value);
 
             positions.inp.burn(claimant, value);
         }

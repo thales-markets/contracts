@@ -110,7 +110,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         Position position,
         uint amount
     ) public view returns (uint) {
-        if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
+        if (amount < 1) {
             return 0;
         }
         uint basePrice = price(market, position);
@@ -249,7 +249,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             }
             // add price calculation
             (uint maturity, uint destructino) = marketContract.times();
-
+            if (maturity < block.timestamp) {
+                return false;
+            }
             uint timeLeftToMaturity = maturity - block.timestamp;
             return timeLeftToMaturity > minimalTimeLeftToMaturity;
         } else {

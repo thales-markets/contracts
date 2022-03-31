@@ -56,13 +56,64 @@ contract OutPosition is IERC20 {
         }
     }
 
-    function burn(address claimant, uint amount) {
+    function burn(address claimant, uint amount) external {
         balanceOf[claimant] = balanceOf[claimant] - amount;
         totalSupply = totalSupply - amount;
     }
 
-    function mint(address minter, uint amount) {
+    function mint(address minter, uint amount) external {
         totalSupply = totalSupply + amount;
         balanceOf[minter] = balanceOf[minter] + amount; // Increment rather than assigning since a transfer may have occurred.
+    }
+
+    /* ---------- ERC20 Functions ---------- */
+
+    function _transfer(
+        address _from,
+        address _to,
+        uint _value
+    ) internal returns (bool success) {
+        require(_to != address(0) && _to != address(this), "Invalid address");
+
+        uint fromBalance = balanceOf[_from];
+        require(_value <= fromBalance, "Insufficient balance");
+
+        balanceOf[_from] = fromBalance - _value;
+        balanceOf[_to] = balanceOf[_to] - _value;
+
+        emit Transfer(_from, _to, _value);
+        return true;
+    }
+
+    function transfer(address _to, uint _value) external override returns (bool success) {
+        return _transfer(msg.sender, _to, _value);
+    }
+
+    function transferFrom(
+        address _from,
+        address _to,
+        uint _value
+    ) external override returns (bool success) {
+        if (msg.sender != thalesPositionalAMM) {
+            uint fromAllowance = allowances[_from][msg.sender];
+            require(_value <= fromAllowance, "Insufficient allowance");
+            allowances[_from][msg.sender] = fromAllowance - _value;
+        }
+        return _transfer(_from, _to, _value);
+    }
+
+    function approve(address _spender, uint _value) external override returns (bool success) {
+        require(_spender != address(0));
+        allowances[msg.sender][_spender] = _value;
+        emit Approval(msg.sender, _spender, _value);
+        return true;
+    }
+
+    function getBalanceOf(address account) external view returns (uint) {
+        return balanceOf[account];
+    }
+
+    function getTotalSupply() external view returns (uint) {
+        return totalSupply;
     }
 }

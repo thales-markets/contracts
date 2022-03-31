@@ -169,6 +169,7 @@ contract('ThalesAMM', accounts => {
 	let rewardTokenAddress;
 	let ThalesAMM;
 	let thalesAMM;
+	let rangedMarketsAMM;
 	let MockPriceFeedDeployed;
 
 	beforeEach(async () => {
@@ -211,6 +212,20 @@ contract('ThalesAMM', accounts => {
 		await thalesAMM.setMaxSupportedPrice(toUnit(0.95), { from: owner });
 
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+
+		let RangedMarketsAMM = artifacts.require('RangedMarketsAMM');
+		rangedMarketsAMM = await RangedMarketsAMM.new();
+
+		await rangedMarketsAMM.initialize(
+			managerOwner,
+			thalesAMM.address,
+			toUnit('0.01'),
+			toUnit('1000'),
+			sUSDSynth.address
+		);
+
+		console.log('Successfully create rangedMarketsAMM ' + rangedMarketsAMM.address);
+		sUSDSynth.issue(rangedMarketsAMM.address, sUSDQtyAmm);
 	});
 
 	const Position = {
@@ -218,26 +233,128 @@ contract('ThalesAMM', accounts => {
 		DOWN: toBN(1),
 	};
 
+	const RangedPosition = {
+		IN: toBN(0),
+		OUT: toBN(1),
+	};
+
 	describe('Test ranged AMM', () => {
 		it('create market test', async () => {
 			let now = await currentTime();
-			let newMarket = await createMarket(
+			let leftMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
+				toUnit(9000),
 				now + day * 10,
 				toUnit(10),
 				creatorSigner
 			);
 
-			let RangedMarketsAMM = artifacts.require('RangedMarketsAMM');
-			let rangedMarketsAMM = await RangedMarketsAMM.new();
+			let rightMarket = await createMarket(
+				manager,
+				sETHKey,
+				toUnit(11000),
+				now + day * 10,
+				toUnit(10),
+				creatorSigner
+			);
 
+			let minInPrice = await rangedMarketsAMM.minInPrice(leftMarket.address, rightMarket.address);
+			console.log('minInPrice is:' + minInPrice / 1e18);
 
+			let availableToBuyFromAMMLeft = await thalesAMM.availableToBuyFromAMM(
+				leftMarket.address,
+				Position.DOWN
+			);
+			console.log('availableToBuyFromAMM leftMarket is:' + availableToBuyFromAMMLeft / 1e18);
 
+			let availableToBuyFromAMMRight = await thalesAMM.availableToBuyFromAMM(
+				rightMarket.address,
+				Position.UP
+			);
+			console.log('availableToBuyFromAMM rightMarket is:' + availableToBuyFromAMMRight / 1e18);
 
+			let availableToBuyFromAMMOut = await rangedMarketsAMM.availableToBuyFromAMM(
+				leftMarket.address,
+				rightMarket.address,
+				RangedPosition.OUT
+			);
+
+			console.log('availableToBuyFromAMMOut is:' + availableToBuyFromAMMOut / 1e18);
+
+			availableToBuyFromAMMLeft = await thalesAMM.availableToBuyFromAMM(
+				leftMarket.address,
+				Position.UP
+			);
+			console.log('availableToBuyFromAMM IN leftMarket  is:' + availableToBuyFromAMMLeft / 1e18);
+
+			availableToBuyFromAMMRight = await thalesAMM.availableToBuyFromAMM(
+				rightMarket.address,
+				Position.DOWN
+			);
+			console.log('availableToBuyFromAMM IN rightMarket is:' + availableToBuyFromAMMRight / 1e18);
+
+			let availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
+				leftMarket.address,
+				rightMarket.address,
+				RangedPosition.IN
+			);
+
+			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
+
+			let buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
+				leftMarket.address,
+				rightMarket.address,
+				RangedPosition.IN,
+				toUnit('1')
+			);
+
+			console.log('buyInQuote is:' + buyInQuote / 1e18);
+
+			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
+				leftMarket.address,
+				rightMarket.address,
+				RangedPosition.IN,
+				toUnit('2')
+			);
+
+			console.log('buyInQuote 2 is:' + buyInQuote / 1e18);
+
+			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
+				leftMarket.address,
+				rightMarket.address,
+				RangedPosition.IN,
+				toUnit('10')
+			);
+
+			console.log('buyInQuote 10 is :' + buyInQuote / 1e18);
+
+			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
+				leftMarket.address,
+				rightMarket.address,
+				RangedPosition.IN,
+				toUnit('100')
+			);
+
+			console.log('buyInQuote 100 is :' + buyInQuote / 1e18);
+
+			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
+				leftMarket.address,
+				rightMarket.address,
+				RangedPosition.IN,
+				toUnit('1000')
+			);
+
+			console.log('buyInQuote 1000 is :' + buyInQuote / 1e18);
+
+			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
+				leftMarket.address,
+				rightMarket.address,
+				RangedPosition.IN,
+				toUnit(availableToBuyFromAMMIn / 1e18 + '')
+			);
+
+			console.log('buyInQuote availableToBuyFromAMMIn is :' + buyInQuote / 1e18);
 		});
 	});
-
-
 });

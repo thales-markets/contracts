@@ -35,4 +35,6 @@ interface IThalesAMM {
         uint expectedPayout,
         uint additionalSlippage
     ) external;
+
+    function isMarketInAMMTrading(address market) external view returns (bool);
 }

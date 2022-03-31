@@ -111,7 +111,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function takeAPosition(uint _position) external notPaused {
-        require(_position > 0, "Non-zero position expected");
+        require(_position > 0, "Invalid position");
         require(_position <= positionCount, "Position value invalid");
         require(canUsersPlacePosition(), "Positioning finished/market resolved");
         //require(same position)
@@ -128,10 +128,10 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function withdraw() external notPaused {
-        require(withdrawalAllowed, "Withdrawal not allowed");
+        require(withdrawalAllowed, "Not allowed");
         require(canUsersPlacePosition(), "Positioning finished/market resolved");
         require(userPosition[msg.sender] > 0, "Not a ticket holder");
-        require(msg.sender != marketManager.creatorAddress(address(this)), "Creator can not withdraw");
+        require(msg.sender != marketManager.creatorAddress(address(this)), "Can not withdraw");
         uint withdrawalFee =
             fixedTicketPrice.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
         totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
@@ -145,7 +145,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
 
     // market resolved only through the Manager
     function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner {
-        require(canMarketBeResolvedByOwner(), "Market not resolvable. Disputed/not matured");
+        require(canMarketBeResolvedByOwner(), "Not resolvable. Disputed/not matured");
         require(_outcomePosition <= positionCount, "Outcome exeeds positionNum");
         winningPosition = _outcomePosition;
         if (_outcomePosition == CANCELED) {
@@ -167,7 +167,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function resetMarket() external onlyOwner {
-        require(resolved, "Market is not resolved");
+        require(resolved, "Not resolved");
         if (winningPosition == CANCELED) {
             ticketsPerPosition[winningPosition] = 0;
         }
@@ -191,9 +191,9 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function claimWinningTicket() external notPaused {
-        require(canUsersClaim(), "Market not finalized");
+        require(canUsersClaim(), "Not finalized.");
         uint amount = getUserClaimableAmount(msg.sender);
-        require(amount > 0, "Claimable amount is zero.");
+        require(amount > 0, "Zero claimable.");
         claimableTicketsCount = claimableTicketsCount.sub(1);
         userPosition[msg.sender] = 0;
         thalesBonds.transferFromMarket(msg.sender, amount);
@@ -209,9 +209,9 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function claimWinningTicketOnBehalf(address _user) external onlyOwner {
-        require(canUsersClaim() || marketManager.cancelledByCreator(address(this)), "Market not finalized");
+        require(canUsersClaim() || marketManager.cancelledByCreator(address(this)), "Not finalized.");
         uint amount = getUserClaimableAmount(_user);
-        require(amount > 0, "Claimable amount is zero.");
+        require(amount > 0, "Zero claimable.");
         claimableTicketsCount = claimableTicketsCount.sub(1);
         userPosition[_user] = 0;
         thalesBonds.transferFromMarket(_user, amount);
@@ -233,8 +233,8 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function openDispute() external onlyOwner {
-        require(isMarketCreated(), "Market not created");
-        require(!disputed, "Market already disputed");
+        require(isMarketCreated(), "Not created");
+        require(!disputed, "Already disputed");
         disputed = true;
         disputedInPositioningPhase = canUsersPlacePosition();
         lastDisputeTime = block.timestamp;
@@ -242,7 +242,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function closeDispute() external onlyOwner {
-        require(disputed, "Market not disputed");
+        require(disputed, "Not disputed");
         disputeClosedTime = block.timestamp;
         if (disputedInPositioningPhase) {
             disputed = false;
@@ -254,7 +254,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function transferToMarket(address _sender, uint _amount) internal notPaused nonReentrant {
-        require(_sender != address(0), "Invalid sender address");
+        require(_sender != address(0), "Invalid sender");
         require(IERC20(marketManager.paymentToken()).balanceOf(_sender) >= _amount, "Sender balance low");
         require(
             IERC20(marketManager.paymentToken()).allowance(_sender, marketManager.thalesBonds()) >= _amount,

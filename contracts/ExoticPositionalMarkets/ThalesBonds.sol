@@ -74,8 +74,8 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         address _creatorAddress,
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
-        require(_amount > 0, "Bond Amount can not be zero");
-        require(_market != address(0), "Invalid market address");
+        require(_amount > 0, "Bond zero");
+        require(_market != address(0), "Invalid address");
         marketBond[_market].creatorBond = _amount;
         marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.add(_amount);
         marketBond[_market].totalDepositedMarketBond = marketBond[_market].totalDepositedMarketBond.add(_amount);
@@ -89,18 +89,13 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         address _resolverAddress,
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
-        require(_amount > 0, "Bond Amount can not be zero");
-        require(_market != address(0), "Invalid market address");
+        require(_amount > 0, "Bond zero");
+        require(_market != address(0), "Invalid address");
         // in case the creator is the resolver, move the bond to the resolver
-        if (marketManager.creatorAddress(_market) == _resolverAddress) {
-            marketBond[_market].resolverBond = marketBond[_market].creatorBond;
-            marketBond[_market].creatorBond = 0;
-        } else {
-            marketBond[_market].resolverBond = _amount;
-            marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.add(_amount);
-            marketBond[_market].totalDepositedMarketBond = marketBond[_market].totalDepositedMarketBond.add(_amount);
-            transferToMarketBond(_resolverAddress, _amount);
-        }
+        marketBond[_market].resolverBond = _amount;
+        marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.add(_amount);
+        marketBond[_market].totalDepositedMarketBond = marketBond[_market].totalDepositedMarketBond.add(_amount);
+        transferToMarketBond(_resolverAddress, _amount);
         emit ResolverBondSent(_market, _resolverAddress, _amount);
     }
 
@@ -110,8 +105,8 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         address _disputorAddress,
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
-        require(_amount > 0, "Bond Amount can not be zero");
-        require(_market != address(0), "Invalid market address");
+        require(_amount > 0, "Bond zero");
+        require(_market != address(0), "Invalid address");
 
         // if it is first dispute for the disputor, the counter is increased
         if (marketBond[_market].disputorBond[_disputorAddress] == 0) {
@@ -133,7 +128,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         uint _bondToReduce,
         address _disputorAddress
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
-        require(_amount <= marketBond[_market].totalMarketBond, "Exceeds total market bond");
+        require(_amount <= marketBond[_market].totalMarketBond, "Exceeds bond");
         require(_bondToReduce >= CREATOR_BOND && _bondToReduce <= RESOLVER_AND_DISPUTOR, "Invalid bondToReduce");
         if (_bondToReduce == CREATOR_BOND && _amount <= marketBond[_market].creatorBond) {
             marketBond[_market].creatorBond = marketBond[_market].creatorBond.sub(_amount);
@@ -194,11 +189,11 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
         require(
             _amount <= marketBond[_market].totalMarketBond && _amount <= marketBond[_market].disputorsTotalBond,
-            "Exceeds total market bond"
+            "Exceeds bond"
         );
         require(
             marketBond[_market].disputorsCount > 0 && marketBond[_market].disputorBond[_account] >= _amount,
-            "Disputor already claimed its funds"
+            "Already claimed"
         );
         marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.sub(_amount);
         marketBond[_market].disputorBond[_account] = marketBond[_market].disputorBond[_account].sub(_amount);
@@ -235,20 +230,20 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     }
 
     function transferCreatorToResolverBonds(address _market) external onlyOracleCouncilManagerAndOwner nonReentrant {
-        require(marketBond[_market].creatorBond > 0, "Creator bond is 0");
+        require(marketBond[_market].creatorBond > 0, "Creator bond 0");
         marketBond[_market].resolverBond = marketBond[_market].creatorBond;
         marketBond[_market].creatorBond = 0;
         emit BondTransferredFromCreatorToResolver(_market, marketBond[_market].resolverBond);
     }
 
     function transferToMarket(address _account, uint _amount) external whenNotPaused {
-        require(marketManager.isActiveMarket(msg.sender), "Caller is not an active market.");
+        require(marketManager.isActiveMarket(msg.sender), "Not active market.");
         marketFunds[msg.sender] = marketFunds[msg.sender].add(_amount);
         transferToMarketBond(_account, _amount);
     }
 
     function transferFromMarket(address _account, uint _amount) external whenNotPaused {
-        require(marketFunds[msg.sender] >= _amount, "insufficient market funds");
+        require(marketFunds[msg.sender] >= _amount, "Low funds.");
         marketFunds[msg.sender] = marketFunds[msg.sender].sub(_amount);
         transferBondFromMarket(_account, _amount);
     }
@@ -262,7 +257,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     }
 
     function setMarketManager(address _managerAddress) external onlyOwner {
-        require(_managerAddress != address(0), "Invalid OracleCouncil address");
+        require(_managerAddress != address(0), "Invalid OC");
         marketManager = IExoticPositionalMarketManager(_managerAddress);
         emit NewManagerAddress(_managerAddress);
     }
@@ -272,12 +267,12 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
             msg.sender == marketManager.oracleCouncilAddress() ||
                 msg.sender == address(marketManager) ||
                 msg.sender == owner,
-            "Not OracleCouncil Address, not Manager or Owner address"
+            "Not OC/Manager/Owner"
         );
-        require(address(marketManager) != address(0), "Not Manager address. Please update valid Manager address");
+        require(address(marketManager) != address(0), "Invalid Manager");
         require(
             marketManager.oracleCouncilAddress() != address(0),
-            "Not OracleCouncil address. Please update valid Oracle address"
+            "Invalid OC"
         );
         _;
     }

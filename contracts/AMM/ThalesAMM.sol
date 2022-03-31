@@ -15,9 +15,10 @@ import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
+import "../interfaces/IThalesAMM.sol";
 import "./DeciMath.sol";
 
-contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
+contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable, IThalesAMM {
     using SafeMath for uint;
     using SafeERC20 for IERC20;
 
@@ -45,8 +46,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint ups;
         uint downs;
     }
-
-    enum Position {Up, Down}
 
     mapping(address => uint) public spentOnMarket;
 

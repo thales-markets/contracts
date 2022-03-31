@@ -25,6 +25,7 @@ const YEAR = 31556926;
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const MAX_NUMBER = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
+// contracts
 const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalFixedMarket');
 const ExoticPositionalOpenBidMarketContract = artifacts.require('ExoticPositionalOpenBidMarket');
 const ExoticPositionalMarketManagerContract = artifacts.require('ExoticPositionalMarketManager');

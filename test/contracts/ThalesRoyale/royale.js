@@ -12,14 +12,9 @@ const DAY = 86400;
 const WEEK = 604800;
 const YEAR = 31556926;
 
-const {
-	fastForward,
-	toUnit
-} = require('../../utils')();
+const { fastForward, toUnit } = require('../../utils')();
 
-const {
-	encodeCall
-} = require('../../utils/helpers');
+const { encodeCall } = require('../../utils/helpers');
 
 function extractJSONFromURI(uri) {
 	const encodedJSON = uri.substr('data:application/json;base64,'.length);
@@ -495,7 +490,6 @@ contract('ThalesRoyale', accounts => {
 			);
 
 			let isTokenOneClaimedReward_before = await royale.tokenRewardCollectedPerSeason(
-				season_1,
 				firstPassportId
 			);
 			assert.equal(false, isTokenOneClaimedReward_before);
@@ -511,7 +505,6 @@ contract('ThalesRoyale', accounts => {
 			});
 
 			let isTokenOneClaimedReward_after = await royale.tokenRewardCollectedPerSeason(
-				season_1,
 				firstPassportId
 			);
 			assert.equal(isTokenOneClaimedReward_after, true);
@@ -1344,7 +1337,6 @@ contract('ThalesRoyale', accounts => {
 			).to.be.revertedWith('Token is not alive');
 
 			let isPlayerOneClaimedReward_before = await royale.tokenRewardCollectedPerSeason(
-				season_1,
 				thirdPassportId
 			);
 			assert.equal(false, isPlayerOneClaimedReward_before);
@@ -1360,7 +1352,6 @@ contract('ThalesRoyale', accounts => {
 			});
 
 			let isPlayerOneClaimedReward_after = await royale.tokenRewardCollectedPerSeason(
-				season_1,
 				thirdPassportId
 			);
 			assert.equal(true, isPlayerOneClaimedReward_after);
@@ -1486,7 +1477,6 @@ contract('ThalesRoyale', accounts => {
 		).to.be.revertedWith('Token is not alive');
 
 		let isTokenOneClaimedReward_before = await royale.tokenRewardCollectedPerSeason(
-			season_1,
 			firstPassportId
 		);
 		assert.equal(false, isTokenOneClaimedReward_before);
@@ -1501,10 +1491,7 @@ contract('ThalesRoyale', accounts => {
 			reward: toUnit(5000),
 		});
 
-		let isTokenOneClaimedReward_after = await royale.tokenRewardCollectedPerSeason(
-			season_1,
-			firstPassportId
-		);
+		let isTokenOneClaimedReward_after = await royale.tokenRewardCollectedPerSeason(firstPassportId);
 		assert.equal(isTokenOneClaimedReward_after, true);
 
 		// check if player can collect two times
@@ -1708,10 +1695,7 @@ contract('ThalesRoyale', accounts => {
 
 		// #2, #5, #6, #7 - winner tokens
 		// #2, #1, #2, #1 - winner players
-		let isToken2ClaimedReward_before = await royale.tokenRewardCollectedPerSeason(
-			season_1,
-			secondPassportId
-		);
+		let isToken2ClaimedReward_before = await royale.tokenRewardCollectedPerSeason(secondPassportId);
 		assert.equal(false, isToken2ClaimedReward_before);
 
 		const tx = await royale.claimRewardForSeason(season_1, secondPassportId, { from: second });
@@ -1724,16 +1708,10 @@ contract('ThalesRoyale', accounts => {
 			reward: toUnit(4375),
 		});
 
-		let isToken2ClaimedReward_after = await royale.tokenRewardCollectedPerSeason(
-			season_1,
-			secondPassportId
-		);
+		let isToken2ClaimedReward_after = await royale.tokenRewardCollectedPerSeason(secondPassportId);
 		assert.equal(isToken2ClaimedReward_after, true);
 
-		let isToken6ClaimedReward_before = await royale.tokenRewardCollectedPerSeason(
-			season_1,
-			sixthPassportId
-		);
+		let isToken6ClaimedReward_before = await royale.tokenRewardCollectedPerSeason(sixthPassportId);
 		assert.equal(false, isToken6ClaimedReward_before);
 
 		const tx_sixthPassportId = await royale.claimRewardForSeason(season_1, sixthPassportId, {
@@ -1748,10 +1726,7 @@ contract('ThalesRoyale', accounts => {
 			reward: toUnit(4375),
 		});
 
-		let isToken6ClaimedReward_after = await royale.tokenRewardCollectedPerSeason(
-			season_1,
-			sixthPassportId
-		);
+		let isToken6ClaimedReward_after = await royale.tokenRewardCollectedPerSeason(sixthPassportId);
 		assert.equal(isToken6ClaimedReward_after, true);
 
 		// check if player can collect two times
@@ -1876,6 +1851,10 @@ contract('ThalesRoyale', accounts => {
 		await fastForward(HOUR * 72 + 1);
 		await royale.closeRound();
 
+		// fetch token uri
+		const tokenURI1 = await passport.tokenURI(sixthPassportIdSeason2);
+		console.log(tokenURI1);
+
 		//#2
 		await royale.takeAPosition(firstPassportIdSeason2, 1, { from: first });
 		await royale.takeAPosition(secondPassportIdSeason2, 2, { from: second });
@@ -1985,7 +1964,6 @@ contract('ThalesRoyale', accounts => {
 		).to.be.revertedWith('Token is not alive');
 
 		let isToken5ClaimedReward_before_s2 = await royale.tokenRewardCollectedPerSeason(
-			season_2,
 			fifthPassportIdSeason2
 		);
 		assert.equal(false, isToken5ClaimedReward_before_s2);
@@ -2003,13 +1981,11 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		let isToken5ClaimedReward_after_s2 = await royale.tokenRewardCollectedPerSeason(
-			season_2,
 			fifthPassportIdSeason2
 		);
 		assert.equal(isToken5ClaimedReward_after_s2, true);
 
 		let isToken6ClaimedReward_before_s2 = await royale.tokenRewardCollectedPerSeason(
-			season_2,
 			sixthPassportIdSeason2
 		);
 		assert.equal(false, isToken6ClaimedReward_before_s2);
@@ -2027,11 +2003,9 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		let isToken6ClaimedReward_after_s2 = await royale.tokenRewardCollectedPerSeason(
-			season_2,
 			sixthPassportIdSeason2
 		);
 		assert.equal(isToken6ClaimedReward_after_s2, true);
-
 
 		// check if player can collect two times
 		await expect(
@@ -2048,13 +2022,13 @@ contract('ThalesRoyale', accounts => {
 			royale.claimRewardForSeason(season_2, secondPassportIdSeason2, { from: second })
 		).to.be.revertedWith('Token is not alive');
 
+		// fetch token uri
+		const tokenURI = await passport.tokenURI(sixthPassportIdSeason2);
+		console.log(tokenURI);
+		const metadata = extractJSONFromURI(tokenURI);
 
-        // fetch token uri
-        const tokenURI = await passport.tokenURI(sixthPassportIdSeason2);
-        const metadata = extractJSONFromURI(tokenURI);
-
-        assert.equal(metadata.name, 'Thales Royale Passport');
-        assert.equal(metadata.description, 'Thales Royale Passport - season 2');
+		assert.equal(metadata.name, 'Thales Royale Passport');
+		assert.equal(metadata.description, 'Thales Royale Passport - season 2');
 	});
 
 	it('Two players take loosing positions no one left but they can collect and they are winners', async () => {
@@ -2133,9 +2107,9 @@ contract('ThalesRoyale', accounts => {
 		await royale.closeRound();
 
 		// check if can collect rewards before royale ends
-		await expect(royale.claimRewardForSeason(season_1, firstPassportId, { from: first })).to.be.revertedWith(
-			'Royale must be finished!'
-		);
+		await expect(
+			royale.claimRewardForSeason(season_1, firstPassportId, { from: first })
+		).to.be.revertedWith('Royale must be finished!');
 
 		//#7
 		await royale.takeAPosition(firstPassportId, 1, { from: first });
@@ -2160,11 +2134,13 @@ contract('ThalesRoyale', accounts => {
 		await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
 
 		// check if player which not win can collect
-		await expect(royale.claimRewardForSeason(season_1, thirdPassportId, { from: third })).to.be.revertedWith(
-			'Token is not alive'
-		);
+		await expect(
+			royale.claimRewardForSeason(season_1, thirdPassportId, { from: third })
+		).to.be.revertedWith('Token is not alive');
 
-		let isPlayerOneClaimedReward_before = await royale.tokenRewardCollectedPerSeason(season_1, firstPassportId);
+		let isPlayerOneClaimedReward_before = await royale.tokenRewardCollectedPerSeason(
+			firstPassportId
+		);
 		assert.equal(false, isPlayerOneClaimedReward_before);
 
 		assert.bnEqual(await royale.unclaimedRewardPerSeason(season_1), toUnit(10000));
@@ -2175,17 +2151,19 @@ contract('ThalesRoyale', accounts => {
 		assert.eventEqual(tx.logs[0], 'RewardClaimed', {
 			season: season_1,
 			winner: first,
-            tokenId: firstPassportId,
+			tokenId: firstPassportId,
 			reward: toUnit(5000),
 		});
 
-		let isPlayerOneClaimedReward_after = await royale.tokenRewardCollectedPerSeason(season_1, firstPassportId);
+		let isPlayerOneClaimedReward_after = await royale.tokenRewardCollectedPerSeason(
+			firstPassportId
+		);
 		assert.equal(isPlayerOneClaimedReward_after, true);
 
 		// check if player can collect two times
-		await expect(royale.claimRewardForSeason(season_1, firstPassportId, { from: first })).to.be.revertedWith(
-			'Reward already collected'
-		);
+		await expect(
+			royale.claimRewardForSeason(season_1, firstPassportId, { from: first })
+		).to.be.revertedWith('Reward already collected');
 
 		// check if different then owner can start season
 		await expect(royale.startNewSeason({ from: first })).to.be.revertedWith(
@@ -2193,9 +2171,9 @@ contract('ThalesRoyale', accounts => {
 		);
 
 		// check if player can collect ex season
-		await expect(royale.claimRewardForSeason(season_1, firstPassportId, { from: first })).to.be.revertedWith(
-			'Reward already collected'
-		);
+		await expect(
+			royale.claimRewardForSeason(season_1, firstPassportId, { from: first })
+		).to.be.revertedWith('Reward already collected');
 		await fastForward(WEEK * 1 + 1);
 
 		assert.bnEqual(await royale.unclaimedRewardPerSeason(season_1), toUnit(5000));
@@ -2270,17 +2248,19 @@ contract('ThalesRoyale', accounts => {
 		assert.eventEqual(tx.logs[0], 'RewardClaimed', {
 			season: season_1,
 			winner: first,
-            tokenId: firstPassportId,
+			tokenId: firstPassportId,
 			reward: toUnit(8000),
 		});
 
-		let isPlayerOneClaimedReward_after = await royale.tokenRewardCollectedPerSeason(season_1, firstPassportId);
+		let isPlayerOneClaimedReward_after = await royale.tokenRewardCollectedPerSeason(
+			firstPassportId
+		);
 		assert.equal(isPlayerOneClaimedReward_after, true);
 
 		// check if player can collect two times
-		await expect(royale.claimRewardForSeason(season_1, firstPassportId, { from: first })).to.be.revertedWith(
-			'Reward already collected'
-		);
+		await expect(
+			royale.claimRewardForSeason(season_1, firstPassportId, { from: first })
+		).to.be.revertedWith('Reward already collected');
 	});
 
 	it('Sign up with positions check values', async () => {

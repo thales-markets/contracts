@@ -37,7 +37,7 @@ library NFTDescriptor {
     function generateSVGImage(NFTSVG.SVGParams memory params) private pure returns (string memory svg) {
         return
             NFTSVG.generateSVG(
-                NFTSVG.SVGParams(params.player, params.timestamp, params.tokenId, params.season, params.round, params.alive)
+                NFTSVG.SVGParams(params.player, params.timestamp, params.tokenId, params.season, params.round, params.positions, params.alive)
             );
     }
 

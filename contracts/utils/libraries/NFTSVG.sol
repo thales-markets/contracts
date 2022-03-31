@@ -15,6 +15,7 @@ library NFTSVG {
         uint tokenId;
         uint season;
         uint round;
+        uint[] positions;
         bool alive;
     }
 
@@ -22,64 +23,58 @@ library NFTSVG {
         return
             string(
                 abi.encodePacked(
-                    generateSVGBase(params),
-                    generateSVGStamps(params.round, params.alive),
-                    generateSVGRareSparkle(params.tokenId, params.timestamp),
-                    "</svg>"
+                    generateSVGBase(),
+                    //generateSVGStamps(params.round, params.positions),
+                    generateSVGData(params.player, params.timestamp, params.round, params.season),
+                    "</g></svg>"
                 )
             );
     }
 
-    function generateSVGBase(SVGParams memory params) private pure returns (string memory svg) {
+    function generateSVGBase() private pure returns (string memory svg) {
         svg = string(
             abi.encodePacked(
-                '<svg width="450" height="300" viewBox="0 0 450 300" xmlns="http://www.w3.org/2000/svg">',
-                '<rect x="25"  y="25"  width="350" height="175" fill="white" stroke="black"/>',
-                '<text x="30" y="45" fill="blue">Thales royale</text>',
-                '<text x="30" y="70" fill="green">Player ',
-                addressToString(params.player),
+                '<?xml version="1.0" encoding="utf-8"?>',
+                '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 492.2 700" style="enable-background:new 0 0 492.2 700;" xml:space="preserve">',
+                '<defs><style type="text/css">@import url(\'http://fonts.googleapis.com/css?family=Lobster|Fontdiner+Swanky|Crafty+Girls|Pacifico|Satisfy|Gloria+Hallelujah|Bangers|Audiowide|Sacramento\');</style></defs>',
+                "<style type=\"text/css\">st0{fill:#F5F0EB;}.st1{fill:#A0482D;}.st2{fill:#299956;}.st3{enable-background:new;}.st4{fill:#7F6F6F;}.st5{font-family:'Satisfy';}.st6{font-size:22.0664px;}</style>",
+                '<g><image style="overflow:visible;" width="1984" height="2851" xlink:href="https://thales-ajlyy.s3.eu-central-1.amazonaws.com/main.png"  transform="matrix(0.2484 0 0 0.2484 -1.4276 -4.1244)"></image>'
+            )
+        );
+    }
+
+    function generateSVGData(
+        address player,
+        uint timestamp,
+        uint round,
+        uint season
+    ) private pure returns (string memory svg) {
+        svg = string(
+            abi.encodePacked(
+                '<text transform="matrix(1 0 0 1 15.8619 477.3381)" class="st4 st5 st6">',
+                addressToString(player),
                 "</text>",
-                '<text x="30" y="95" fill="green">Issued ',
-                params.timestamp.toString(),
+                '<text transform="matrix(1 0 0 1 15.8619 503.8186)" class="st4 st5 st6">Timestamp ',
+                Strings.toString(timestamp),
                 "</text>",
-                '<text x="30" y="115" fill="green">Season ',
-                params.season.toString(),
+                '<text transform="matrix(1 0 0 1 15.8619 530.2961)" class="st4 st5 st6">Round #',
+                Strings.toString(round),
+                "</text>",
+                '<text transform="matrix(1 0 0 1 15.8619 556.7766)" class="st4 st5 st6">Season ',
+                Strings.toString(season),
                 "</text>"
             )
         );
     }
 
-    function generateSVGStamps(uint round, bool alive) private pure returns (string memory svg) {
-        string memory stamps = string(abi.encodePacked("Stamps: "));
-        for(uint i; i < round; i++) {
-            stamps = string(abi.encodePacked(stamps, " #", round));
-        }
-
-        if (!alive) {
-            svg = string(
-                abi.encodePacked(
-                    '<text x="30" y="135" fill="black">',
-                    "Dead - Last alive in round #",
-                    round.toString(),
-                    "</text>"
-                )
-            );
-        } else {
-            svg = "";
-        }
-    }
-
-    function generateSVGRareSparkle(uint tokenId, uint timestamp) private pure returns (string memory svg) {
-        if (isRare(tokenId, timestamp)) {
-            svg = string(abi.encodePacked(""));
-        } else {
-            svg = "";
-        }
-    }
-
-    function isRare(uint tokenId, uint timestamp) internal pure returns (bool) {
-        return false;
-    }
+    // function generateSVGStamps(uint round, uint[] memory positions) private pure returns (string memory stamps) {
+    //     stamps = string(abi.encodePacked(""));
+    //     for (uint i = 1; i <= round; i++) {
+    //         uint position = positions[i];
+    //         string memory stamp = Stamps.getStamp(round, position);
+    //         stamps = string(abi.encodePacked(stamps, stamp));
+    //     }
+    // }
 
     function addressToString(address _addr) internal pure returns (string memory) {
         bytes memory s = new bytes(40);

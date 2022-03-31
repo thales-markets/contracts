@@ -3,22 +3,35 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/IThalesRoyale.sol";
 
-abstract contract TestThalesRoyale is IThalesRoyale {
+contract TestThalesRoyale is IThalesRoyale {
 
     bool public participatedInLastRoyale;
     uint public buyInAmount;
     uint public override season;
 
     mapping(uint => uint) public override roundInASeason;
-    mapping(uint => mapping(address => mapping(uint256 => uint256))) public override positionInARoundPerSeason;
+    mapping(uint => uint) public override tokenSeason;
     mapping(uint => mapping(uint => uint)) public override roundResultPerSeason;
     mapping(uint => mapping(address => uint256)) public playerSignedUpPerSeason;
+    mapping(uint => mapping(uint => uint256)) public tokensMintedPerSeason;
+    mapping(uint => mapping(uint => uint)) public totalTokensPerRoundPerSeason;
+    mapping(uint => mapping(uint256 => uint256)) public tokenPositionInARoundPerSeason;
+    mapping(uint => uint[]) public tokenPositions;
 
     constructor() {}
     /* ========== VIEWS / VARIABLES ========== */
 
     function hasParticipatedInCurrentOrLastRoyale(address player) external view override returns (bool){
         return participatedInLastRoyale;
+    }
+
+    function isTokenAliveInASpecificSeason(uint tokenId, uint _season) external view override returns (bool) {
+        if (roundInASeason[_season] > 1) {
+            return (tokenPositionInARoundPerSeason[tokenId][roundInASeason[_season] - 1] ==
+                roundResultPerSeason[_season][roundInASeason[_season] - 1]);
+        } else {
+            return tokensMintedPerSeason[_season][tokenId] != 0;
+        }
     }
 
     function setParticipatedInLastRoyale(bool _participated) external {
@@ -33,13 +46,8 @@ abstract contract TestThalesRoyale is IThalesRoyale {
         buyInAmount = _buyIn;
     }
 
-    function isPlayerAliveInASpecificSeason(address player, uint _season) external view override returns (bool) {
-        if (roundInASeason[_season] > 1) {
-            return (positionInARoundPerSeason[_season][player][roundInASeason[_season] - 1] ==
-                roundResultPerSeason[_season][roundInASeason[_season] - 1]);
-        } else {
-            return playerSignedUpPerSeason[_season][player] != 0;
-        }
+    function getTokenPositions(uint tokenId) public override view returns (uint[] memory) {
+        return tokenPositions[tokenId];
     }
    
 }

@@ -86,8 +86,9 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     mapping(uint => uint) public tokenSeason;
     mapping(uint => mapping(uint => uint256)) public tokensMintedPerSeason;
     mapping(uint => mapping(uint => uint)) public totalTokensPerRoundPerSeason;
-    mapping(uint => mapping(uint => mapping(uint256 => uint256))) public tokenPositionInARoundPerSeason;
-    mapping(uint => mapping(uint => bool)) public tokenRewardCollectedPerSeason;
+    mapping(uint => mapping(uint256 => uint256)) public tokenPositionInARoundPerSeason;
+    mapping(uint => uint[]) public tokenPositions;
+    mapping(uint => bool) public tokenRewardCollectedPerSeason;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -164,11 +165,11 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(royaleInSeasonStarted[season], "Competition not started yet");
         require(!seasonFinished[season], "Competition finished");
 
-        require(tokenPositionInARoundPerSeason[season][tokenId][roundInASeason[season]] != position, "Same position");
+        require(tokenPositionInARoundPerSeason[tokenId][roundInASeason[season]] != position, "Same position");
 
         if (roundInASeason[season] != 1) {
             require(
-                tokenPositionInARoundPerSeason[season][tokenId][roundInASeason[season] - 1] ==
+                tokenPositionInARoundPerSeason[tokenId][roundInASeason[season] - 1] ==
                 roundResultPerSeason[season][roundInASeason[season] - 1],
                 "Token no longer valid"
             );
@@ -177,9 +178,9 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(block.timestamp < roundInASeasonStartTime[season] + roundChoosingLength, "Round positioning finished");
 
         // this block is when sender change positions in a round - first reduce
-        if (tokenPositionInARoundPerSeason[season][tokenId][roundInASeason[season]] == DOWN) {
+        if (tokenPositionInARoundPerSeason[tokenId][roundInASeason[season]] == DOWN) {
             positionsPerRoundPerSeason[season][roundInASeason[season]][DOWN]--;
-        } else if (tokenPositionInARoundPerSeason[season][tokenId][roundInASeason[season]] == UP) {
+        } else if (tokenPositionInARoundPerSeason[tokenId][roundInASeason[season]] == UP) {
             positionsPerRoundPerSeason[season][roundInASeason[season]][UP]--;
         }
 
@@ -321,7 +322,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     function isTokenAliveInASpecificSeason(uint tokenId, uint _season) public view returns (bool) {
         if (roundInASeason[_season] > 1) {
-            return (tokenPositionInARoundPerSeason[_season][tokenId][roundInASeason[_season] - 1] ==
+            return (tokenPositionInARoundPerSeason[tokenId][roundInASeason[_season] - 1] ==
                 roundResultPerSeason[_season][roundInASeason[_season] - 1]);
         } else {
             return tokensMintedPerSeason[_season][tokenId] != 0;
@@ -339,7 +340,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     function isTokenAlive(uint tokenId) public view returns (bool) {
         if (roundInASeason[season] > 1) {
-            return (tokenPositionInARoundPerSeason[season][tokenId][roundInASeason[season] - 1] ==
+            return (tokenPositionInARoundPerSeason[tokenId][roundInASeason[season] - 1] ==
                 roundResultPerSeason[season][roundInASeason[season] - 1]);
         } else {
             return tokensMintedPerSeason[season][tokenId] != 0;
@@ -350,16 +351,8 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         return tokensPerSeason[_season];
     }
 
-    // improve 
-    function getPlayerTokensForSeason(address player, uint _season) public view returns (uint[] memory) {
-        uint[] memory tokens;
-        uint count = 0;
-        for(uint i = 0; i < tokensPerSeason[_season].length; i++) {
-            if(thalesRoyalePassport.ownerOf(tokensPerSeason[_season][i]) == player) {
-                tokens[count++] = i;
-            }
-        }
-        return tokens;
+    function getTokenPositions(uint tokenId) public view returns (uint[] memory) {
+        return tokenPositions[tokenId];
     }
 
     function getBuyInAmount() public view returns (uint) {
@@ -421,9 +414,14 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         // set value
         positionInARoundPerSeason[_season][_player][_round] = _position;
         // set token value
-        tokenPositionInARoundPerSeason[_season][_tokenId][_round] = _position;
-        //thalesRoyalePassport.setPosition(_passportId, _round, _position);
+        tokenPositionInARoundPerSeason[_tokenId][_round] = _position;
+        
+        if(tokenPositions[_tokenId].length == _round) {
+            tokenPositions[_tokenId].pop();
+        }
 
+        tokenPositions[_tokenId].push(_position);
+        
         // add number of positions
         if (_position == UP) {
             positionsPerRoundPerSeason[_season][_round][_position]++;
@@ -474,11 +472,11 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     function _claimRewardForSeason(address _winner, uint _season, uint _tokenId) internal {
         require(rewardPerSeason[_season] > 0, "Reward must be set");
-        require(!tokenRewardCollectedPerSeason[_season][_tokenId], "Reward already collected");
+        require(!tokenRewardCollectedPerSeason[_tokenId], "Reward already collected");
         require(rewardToken.balanceOf(address(this)) >= rewardPerWinnerPerSeason[_season], "Not enough balance for rewards");
 
         // set collected -> true
-        tokenRewardCollectedPerSeason[_season][_tokenId] = true;
+        tokenRewardCollectedPerSeason[_tokenId] = true;
 
         unclaimedRewardPerSeason[_season] = unclaimedRewardPerSeason[_season].sub(rewardPerWinnerPerSeason[_season]);
 

@@ -12,7 +12,6 @@ import "../interfaces/IThalesRoyale.sol";
 import "../utils/libraries/NFTSVG.sol";
 import "../utils/libraries/NFTDescriptor.sol";
 
-
 contract ThalesRoyalePassport is
     ERC721EnumerableUpgradeable,
     PausableUpgradeable,
@@ -39,7 +38,6 @@ contract ThalesRoyalePassport is
     }
 
     function safeMint(address recipient) external whenNotPaused onlyRoyale returns (uint tokenId) {
-
         _tokenIdCounter.increment();
 
         tokenId = _tokenIdCounter.current();
@@ -59,13 +57,18 @@ contract ThalesRoyalePassport is
     /* ========== VIEW ========== */
     function tokenURI(uint tokenId) public view override returns (string memory imageURI) {
         require(_exists(tokenId), "Passport doesn't exist");
-        uint season = thalesRoyale.tokenSeason(tokenId);
+
         address player = ownerOf(tokenId);
         uint timestamp = tokenTimestamps[tokenId];
-        uint round = thalesRoyale.roundInASeason(season);
+        
+        uint season = thalesRoyale.tokenSeason(tokenId);
+        uint currentRound = thalesRoyale.roundInASeason(season);
         bool alive = thalesRoyale.isTokenAliveInASpecificSeason(tokenId, season);
+        uint[] memory positions = thalesRoyale.getTokenPositions(tokenId);
 
-        imageURI = NFTDescriptor.constructTokenURI(NFTSVG.SVGParams(player, timestamp, tokenId, season, round, alive));
+        imageURI = NFTDescriptor.constructTokenURI(
+            NFTSVG.SVGParams(player, timestamp, tokenId, season, currentRound, positions, alive)
+        );
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */

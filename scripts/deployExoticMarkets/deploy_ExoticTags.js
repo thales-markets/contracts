@@ -54,78 +54,23 @@ async function main() {
 	await ExoticMarketManagerDeployed.setTagsAddress(ExoticTagsDeployed.address);
 	console.log("ExoticTags address set in ExoticMarketManager");
 
-	// Add tags
-	let label = "Sport";
-	let tagNumber = "1";
-	tx = await ExoticTagsDeployed.addTag(label, tagNumber, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('New tag added ', label, ' with number: ', tagNumber);
-	});
-	await delay(1000);
-	
-	label = "Football";
-	tagNumber = "101";
-	tx = await ExoticTagsDeployed.addTag(label, tagNumber, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('New tag added ', label, ' with number: ', tagNumber);
-	});
-	await delay(1000);
-	
-	label = "Basketball";
-	tagNumber = "102";
-	tx = await ExoticTagsDeployed.addTag(label, tagNumber, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('New tag added ', label, ' with number: ', tagNumber);
-	});
-	await delay(1000);
-	
-	label = "Crypto";
-	tagNumber = "2";
-	tx = await ExoticTagsDeployed.addTag(label, tagNumber, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('New tag added ', label, ' with number: ', tagNumber);
-	});
-	await delay(1000);
-	
-	label = "Politics";
-	tagNumber = "3";
-	tx = await ExoticTagsDeployed.addTag(label, tagNumber, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('New tag added ', label, ' with number: ', tagNumber);
-	});
-	await delay(1000);
-	
-	label = "Pop-culture";
-	tagNumber = "4";
-	tx = await ExoticTagsDeployed.addTag(label, tagNumber, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('New tag added ', label, ' with number: ', tagNumber);
-	});
-	await delay(1000);
-	
-	label = "Esports";
-	tagNumber = "5";
-	tx = await ExoticTagsDeployed.addTag(label, tagNumber, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('New tag added ', label, ' with number: ', tagNumber);
-	});
-	await delay(1000);
-	
-	label = "Bitcoin";
-	tagNumber = "201";
-	tx = await ExoticTagsDeployed.addTag(label, tagNumber, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('New tag added ', label, ' with number: ', tagNumber);
-	});
-	await delay(1000);
-	
-	label = "Ethereum";
-	tagNumber = "202";
-	tx = await ExoticTagsDeployed.addTag(label, tagNumber, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('New tag added ', label, ' with number: ', tagNumber);
-	});
-	await delay(1000);
+	let labels = ["Sport", "Crypto", "Politics", "Pop-culture", "Esports", "DeFi", "Football", "Basketball", "Bitcoin", "Ethereum"];
+	let tagNumbers = ["1", "2", "3", "4", "5", "6", "101", "102", "201", "202"]
+
+	if(labels.length == tagNumbers.length) {
+		// Add tags
+		for(let i=0;i < labels.length; i++) {
+			tx = await ExoticTagsDeployed.addTag(labels[i], tagNumbers[i], {from:owner.address});
+			await tx.wait().then(e => {
+				console.log('New tag added ', labels[i], ' with number: ', tagNumbers[i]);
+			});
+			await delay(1000);
+		}
+		console.log("Tags added");
+	}
+	else {
+		console.log("Tag labels and tag numbers items count are not equal.")
+	}
 	
 
     try {

@@ -163,7 +163,7 @@
 		"ExoticUSD": "0x762838253A45a9106cc859ec99dF31DF48FCf735",
 		"ExoticMarketOpenBidMastercopy": "0xd8bE0F9D2C5e86997F422F14B97FABd6253ff777",
 		"ExoticRewards": "0x18D3f889C45D3EB94dF04020bF4942E98A782C0c",
-		"ExoticRewardsImplementation": "0xde464aD48e7214Bc121B1b53c993a0856d7B2A47"
+		"ExoticRewardsImplementation": "0xcb25A2128220e67cF3A53c64b1C4e5FCcE254d97"
 	},
 	"localhost": {
 		"Airdrop": "",

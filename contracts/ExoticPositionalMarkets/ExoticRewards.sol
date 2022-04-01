@@ -70,6 +70,10 @@ contract ExoticRewards is Initializable, ProxyOwned, PausableUpgradeable, ProxyR
         _;
     }
 
+    receive() external payable {}
+
+    fallback() external payable {}
+
     event NewPaymentToken(address paymentTokenAddress);
     event NewManagerAddress(address managerAddress);
     event RewardIssued(address market, address disputorAddress, uint amount);

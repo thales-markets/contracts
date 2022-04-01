@@ -35,18 +35,19 @@ async function main() {
 	
 	const ExoticTagsDeployed = await ExoticTagsContract.attach(ExoticTagsAddress);
 	console.log("Adding tags to Exotic tags");
-    // await ExoticTagsDeployed.addTag("Sport", "1");
-    // await delay(5000);
-    // await ExoticTagsDeployed.addTag("Football", "101");
-    await delay(5000);
-    await ExoticTagsDeployed.addTag("Basketball", "102");
-    await delay(5000);
-    await ExoticTagsDeployed.addTag("Crypto", "2");
-    await delay(5000);
-    await ExoticTagsDeployed.addTag("Bitcoin", "201");
-    await delay(5000);
-    await ExoticTagsDeployed.addTag("Politics", "3");
-	
+
+
+	let labels = ["Sport", "Crypto", "Politics", "Pop-culture", "Esports", "Football", "Basketball", "Bitcoin", "Ethereum"];
+	let tagNumbers = ["1", "2", "3", "4", "5", "101", "102", "201", "202"]
+
+	// Add tags
+	for(let i=0;i < labels.length; i++) {
+		tx = await ExoticTagsDeployed.addTag(labels[i], tagNumbers[i], {from:owner.address});
+		await tx.wait().then(e => {
+			console.log('New tag added ', labels[i], ' with number: ', tagNumbers[i]);
+		});
+		await delay(1000);
+	}
 	console.log("Tags added");
     
     

@@ -39,16 +39,12 @@ async function main() {
 	const ExoticRewardsDeployed = await ExoticRewardsContract.attach(ExoticRewardsAddress);
 
     await ExoticUSDDeployed.mintForUser(ExoticRewardsDeployed.address, {
-        value: 0.1,
-        gasLimit: 5000000
+        // from: owner.address,
+        value: ethers.utils.parseEther("0"),
+        gasLimit: "5000000"
     });
 	console.log("Minted 100 eUSD to ExoticRewards");
-    // await ExoticTagsDeployed.addTag("Sport", "1");
-    // await delay(5000);
-    // await ExoticTagsDeployed.addTag("Football", "101");
-    
-    
-    
+   
 
 }
 

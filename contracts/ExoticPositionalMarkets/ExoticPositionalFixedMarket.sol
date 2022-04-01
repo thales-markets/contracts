@@ -171,11 +171,12 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         if (winningPosition == CANCELED) {
             ticketsPerPosition[winningPosition] = 0;
         }
+        winningPosition = 0;
         claimableTicketsCount = 0;
         resolved = false;
         noWinners = false;
         resolvedTime = 0;
-        resolverAddress = address(0);
+        resolverAddress = marketManager.safeBoxAddress();
         emit MarketReset();
     }
 
@@ -197,11 +198,12 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         claimableTicketsCount = claimableTicketsCount.sub(1);
         userPosition[msg.sender] = 0;
         thalesBonds.transferFromMarket(msg.sender, amount);
-        if (!firstUserClaimed && winningPosition != CANCELED) {
-            address creatorAddress = marketManager.creatorAddress(address(this));
-            thalesBonds.transferFromMarket(creatorAddress, getAdditionalCreatorAmount());
-            thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());
-            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
+        if (!firstUserClaimed) {
+            if(winningPosition != CANCELED) {
+                thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
+                thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());
+                thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
+            }
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
             firstUserClaimed = true;
         }
@@ -222,10 +224,12 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         ) {
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
         }
-        if (!firstUserClaimed && winningPosition != CANCELED) {
-            thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
-            thalesBonds.transferFromMarket(marketManager.resolverAddress(address(this)), getAdditionalResolverAmount());
-            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
+        if (!firstUserClaimed) {
+            if(winningPosition != CANCELED) {
+                thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
+                thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());
+                thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
+            }
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
             firstUserClaimed = true;
         }

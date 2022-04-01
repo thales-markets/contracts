@@ -16,6 +16,7 @@ import "../interfaces/IThalesBonds.sol";
 import "../interfaces/IExoticPositionalTags.sol";
 import "../interfaces/IThalesOracleCouncil.sol";
 import "../interfaces/IExoticPositionalMarket.sol";
+import "../interfaces/IExoticRewards.sol";
 
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
@@ -70,6 +71,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint public disputeStringLengthLimit;
     mapping(address => bool) public cancelledByCreator;
     address public exoticMarketOpenBidMastercopy;
+    address public exoticRewards;
 
     function initialize(
         address _owner,
@@ -289,8 +291,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 IExoticPositionalMarket(_marketAddress).fixedBondAmount()
             );
         }
-        resolverAddress[_marketAddress] = msg.sender;
-        IExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, msg.sender);
+        resolverAddress[_marketAddress] = msg.sender != oracleCouncilAddress ? msg.sender : safeBoxAddress;
+        IExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, resolverAddress[_marketAddress]);            
         emit MarketResolved(_marketAddress, _outcomePosition);
     }
 
@@ -337,9 +339,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         address _disputorAddress,
         uint _amount
     ) external onlyOracleCouncilAndOwner {
-        require(_amount > 0, "Zero reward");
-        IERC20(paymentToken).transfer(_disputorAddress, _amount);
-        emit RewardSentToDisputorForMarket(_market, _disputorAddress, _amount);
+        IExoticRewards(exoticRewards).sendRewardToDisputoraddress(_market, _disputorAddress, _amount);
+        // emit RewardSentToDisputorForMarket(_market, _disputorAddress, _amount);
     }
 
     function issueBondsBackToCreatorAndResolver(address _marketAddress) external nonReentrant {
@@ -373,10 +374,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         }
         require(IExoticPositionalMarket(_marketAddress).disputed(), "Market not disputed");
         IExoticPositionalMarket(_marketAddress).closeDispute();
-    }
-
-    function getMarketBondAmount(address _market) external view returns (uint) {
-        return IExoticPositionalMarket(_market).totalBondAmount();
     }
 
     function getActiveMarketAddress(uint _index) external view returns (address) {
@@ -428,6 +425,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(_exoticOpenBidMastercopy != address(0), "Exotic market invalid");
         exoticMarketOpenBidMastercopy = _exoticOpenBidMastercopy;
         emit ExoticMarketOpenBidMastercopyChanged(_exoticOpenBidMastercopy);
+    }
+    
+    function setExoticRewards(address _exoticRewards) external onlyOwner {
+        require(_exoticRewards != address(0), "Exotic rewards invalid");
+        exoticRewards = _exoticRewards;
+        emit ExoticRewardsChanged(_exoticRewards);
     }
 
     function setMinimumPositioningDuration(uint _duration) external onlyOwner {
@@ -645,12 +648,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewClaimTimeoutDefaultPeriod(uint claimTimeout);
     event NewDefaultBackstopTimeout(uint timeout);
     event NewSafeBoxLowAmount(uint safeBoxLowAmount);
-    event RewardSentToDisputorForMarket(address market, address disputorAddress, uint amount);
+    // event RewardSentToDisputorForMarket(address market, address disputorAddress, uint amount);
     event NewTheRundownConsumerAddress(address theRundownConsumerAddress);
     event NewMarketDataAddress(address marketDataAddress);
     event CreationRestrictedToOwnerChanged(bool creationRestrictedToOwner);
     event NewMinimumFixedTicketAmount(uint minFixedTicketPrice);
     event NewDisputeStringLengthLimit(uint disputeStringLengthLimit);
+    event ExoticRewardsChanged(address exoticRewards);
+
 
     event MarketCreated(
         address marketAddress,

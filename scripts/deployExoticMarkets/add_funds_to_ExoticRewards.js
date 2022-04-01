@@ -1,5 +1,6 @@
 const path = require('path');
-const { ethers } = require('hardhat');
+const { ethers, upgrades } = require('hardhat');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
 
 const { getTargetAddress, setTargetAddress } = require('../helpers');
@@ -29,35 +30,25 @@ async function main() {
 		network = 'optimistic';
 	}
 	
-
+    const ExoticRewardsContract = await ethers.getContractFactory('ExoticRewards');
+	const ExoticRewardsAddress = getTargetAddress("ExoticRewards", network);
+    const ExoticUSDContract = await ethers.getContractFactory('ExoticUSD');
+	const ExoticUSDAddress = getTargetAddress("ExoticUSD", network);
 	
-	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalFixedMarket');
-	const ExoticMarketDeployed = await ExoticMarket.deploy();
-    await ExoticMarketDeployed.deployed();
-	console.log("ExoticMarket Deployed on", ExoticMarketDeployed.address);
-	setTargetAddress('ExoticMarketMasterCopy', network, ExoticMarketDeployed.address);
+    const ExoticUSDDeployed = await ExoticUSDContract.attach(ExoticUSDAddress);
+	const ExoticRewardsDeployed = await ExoticRewardsContract.attach(ExoticRewardsAddress);
 
-    try {
-		await hre.run('verify:verify', {
-			address: ExoticMarketDeployed.address,
-		});
-	} catch (e) {
-		console.log(e);
-	}
-
+    await ExoticUSDDeployed.mintForUser(ExoticRewardsDeployed.address, {
+        value: 0.1,
+        gasLimit: 5000000
+    });
+	console.log("Minted 100 eUSD to ExoticRewards");
+    // await ExoticTagsDeployed.addTag("Sport", "1");
     // await delay(5000);
-
-    // await ExoticMarketDeployed.initializeWithTwoParameters(
-    //     "Who will win the el clasico which will be played on 2022-02-22?",
-    //     "2000",
-    //     "50000",
-    //     "300",
-    //     "5",
-    //     "[0,1]",
-    //     "Real Madrid",
-    //     "FC Barcelona",
-    //     "It will be a draw"
-    // );
+    // await ExoticTagsDeployed.addTag("Football", "101");
+    
+    
+    
 
 }
 

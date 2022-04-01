@@ -124,6 +124,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "exoticRewards",
+        "type": "address"
+      }
+    ],
+    "name": "ExoticRewardsChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "marketAddress",
         "type": "address"
       }
@@ -592,31 +605,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "disputorAddress",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "RewardSentToDisputorForMarket",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "safeBoxPercentage",
         "type": "uint256"
@@ -1018,6 +1006,19 @@
   },
   {
     "inputs": [],
+    "name": "exoticRewards",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "fixedBondAmount",
     "outputs": [
       {
@@ -1057,25 +1058,6 @@
       }
     ],
     "name": "getActiveMarketIndex",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
-    "name": "getMarketBondAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1701,6 +1683,19 @@
       }
     ],
     "name": "setExoticMarketOpenBidMastercopy",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_exoticRewards",
+        "type": "address"
+      }
+    ],
+    "name": "setExoticRewards",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

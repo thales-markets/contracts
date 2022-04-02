@@ -79,6 +79,15 @@ async function checkRetroVesting() {
 				}
 			});
 
+		await vestingContract.methods
+			.totalClaimed(address)
+			.call({ from: '0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe' })
+			.then(async function(result) {
+				if (result != '0') {
+					vestee.totalClaimed = result / 1e18;
+				}
+			});
+
 		vestedStakers.push(vestee);
 	}
 

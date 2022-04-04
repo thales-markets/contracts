@@ -29,12 +29,15 @@ contract PriceFeed is Initializable, ProxyOwned {
     bytes32[] public currencyKeys;
     mapping(bytes32 => IUniswapV3Pool) public pools;
 
-    int24 public twapInterval;
+    int56 public twapInterval;
 
     struct RateAndUpdatedTime {
         uint216 rate;
         uint40 time;
     }
+
+    address public _ETH;
+    address public _wETH;
 
     function initialize(address _owner) external initializer {
         setOwner(_owner);
@@ -55,18 +58,28 @@ contract PriceFeed is Initializable, ProxyOwned {
         emit AggregatorAdded(currencyKey, address(aggregator));
     }
 
-    function addPool(bytes32 currencyKey, address poolAddress) external onlyOwner {
+    function addPool(bytes32 currencyKey, address currencyAddress, address poolAddress) external onlyOwner {
         // check if aggregator exists for given currency key
         AggregatorV2V3Interface aggregator = aggregators[currencyKey];
         require(address(aggregator) == address(0), "Aggregator already exists for key");
 
         IUniswapV3Pool pool = IUniswapV3Pool(poolAddress);
+        address token0 = pool.token0();
+        address token1 = pool.token1();
+        bool token0valid = token0 == _wETH || token0 == _ETH;
+        bool token1valid = token1 == _wETH || token1 == _ETH;
+
+        // check if one of tokens is wETH or ETH
+        require(token0valid || token1valid, "Pool not valid: ETH is not an asset");
+        // check if currency is asset in given
+        require(currencyAddress == token0 || currencyAddress == token1, "Pool not valid: currency is not an asset");
         (uint160 sqrtPriceX96, , , , , , ) = pool.slot0();
-        require(sqrtPriceX96 > 0, "Given Pool is invalid");
+        require(sqrtPriceX96 > 0, "Pool not valid");
         if (address(pools[currencyKey]) == address(0)) {
             currencyKeys.push(currencyKey);
         }
         pools[currencyKey] = pool;
+        currencyKeyDecimals[currencyKey] = 18;
         emit PoolAdded(currencyKey, address(pool));
     }
 
@@ -121,14 +134,25 @@ contract PriceFeed is Initializable, ProxyOwned {
             if (array[i] == entry) {
                 delete array[i];
                 array[i] = array[array.length - 1];
+                array.pop();
                 return true;
             }
         }
         return false;
     }
 
-    function setTwapInterval(int24 _twapInterval) external onlyOwner {
+    function setTwapInterval(int56 _twapInterval) external onlyOwner {
         twapInterval = _twapInterval;
+    }
+
+    function setWETH(address token) external onlyOwner {
+        _wETH = token;
+        emit AddressChangedwETH(token);
+    }
+
+    function setETH(address token) external onlyOwner {
+        _ETH = token;
+        emit AddressChangedETH(token);
     }
 
     function _formatAnswer(bytes32 currencyKey, int256 rate) internal view returns (uint) {
@@ -146,26 +170,40 @@ contract PriceFeed is Initializable, ProxyOwned {
         require(address(aggregator) != address(0) || address(pool) != address(0), "No aggregator or pool exists for key");
 
         if (aggregator != AggregatorV2V3Interface(address(0))) {
-            // this view from the aggregator is the most gas efficient but it can throw when there's no data,
-            // so let's call it low-level to suppress any reverts
-            bytes memory payload = abi.encodeWithSignature("latestRoundData()");
-            // solhint-disable avoid-low-level-calls
-            (bool success, bytes memory returnData) = address(aggregator).staticcall(payload);
-
-            if (success) {
-                (, int256 answer, , uint256 updatedAt, ) = abi.decode(
-                    returnData,
-                    (uint80, int256, uint256, uint256, uint80)
-                );
-                return RateAndUpdatedTime({rate: uint216(_formatAnswer(currencyKey, answer)), time: uint40(updatedAt)});
-            }
+            return _getAggregatorRate(address(aggregator), currencyKey);
         } else {
-            uint256 answer = _getPriceFromSqrtPrice(_getTwap(address(pool)));
+            require(address(aggregators["ETH"]) != address(0), "Price for ETH does not exist");
+            uint256 ratio = _getPriceFromSqrtPrice(_getTwap(address(pool)));
+            uint256 ethPrice = _getAggregatorRate(address(aggregators["ETH"]), "ETH").rate * 10**18; 
+            address token0 = pool.token0();
+            uint answer;
+
+            if(token0 == _ETH || token0 == _wETH) {
+                answer = ethPrice / ratio;
+            } else {
+                answer = ethPrice * ratio;
+            }
             return
                 RateAndUpdatedTime({
                     rate: uint216(_formatAnswer(currencyKey, int256(answer))),
                     time: uint40(block.timestamp)
                 });
+        }
+    }
+
+    function _getAggregatorRate(address aggregator, bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory ) {
+        // this view from the aggregator is the most gas efficient but it can throw when there's no data,
+        // so let's call it low-level to suppress any reverts
+        bytes memory payload = abi.encodeWithSignature("latestRoundData()");
+        // solhint-disable avoid-low-level-calls
+        (bool success, bytes memory returnData) = aggregator.staticcall(payload);
+
+        if (success) {
+            (, int256 answer, , uint256 updatedAt, ) = abi.decode(
+                returnData,
+                (uint80, int256, uint256, uint256, uint80)
+            );
+            return RateAndUpdatedTime({rate: uint216(_formatAnswer(currencyKey, answer)), time: uint40(updatedAt)});
         }
     }
 
@@ -175,18 +213,18 @@ contract PriceFeed is Initializable, ProxyOwned {
             (sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         } else {
             uint32[] memory secondsAgos = new uint32[](2);
-            secondsAgos[0] = uint32(uint24(twapInterval)); // from (before)
+            secondsAgos[0] = uint32(uint56(twapInterval));
             secondsAgos[1] = 0; // to (now)
 
             (int56[] memory tickCumulatives, ) = IUniswapV3Pool(pool).observe(secondsAgos);
-
             // tick(imprecise as it's an integer) to price
-            sqrtPriceX96 = UniswapMath.getSqrtRatioAtTick(int24((tickCumulatives[1] - tickCumulatives[0])) / twapInterval);
+            sqrtPriceX96 = UniswapMath.getSqrtRatioAtTick(int24((tickCumulatives[1] - tickCumulatives[0]) / twapInterval));
         }
     }
 
     function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns (uint256 priceX96) {
-        return UniswapMath.mulDiv(sqrtPriceX96, sqrtPriceX96 * 10**18, UniswapMath.Q192);
+        uint256 price = UniswapMath.mulDiv(sqrtPriceX96, sqrtPriceX96, UniswapMath.Q96);
+        return UniswapMath.mulDiv(price, 10**18, UniswapMath.Q96);
     }
 
     function transferCurrencyKeys() external onlyOwner {
@@ -201,4 +239,6 @@ contract PriceFeed is Initializable, ProxyOwned {
     event AggregatorRemoved(bytes32 currencyKey, address aggregator);
     event PoolAdded(bytes32 currencyKey, address pool);
     event PoolRemoved(bytes32 currencyKey, address pool);
+    event AddressChangedETH(address token);
+    event AddressChangedwETH(address token);
 }

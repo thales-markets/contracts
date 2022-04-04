@@ -181,7 +181,16 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('Signing up cant be called twice', async () => {
+
+			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(0));
+			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(2));
+			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(1));
+
 			await royale.startNewSeason({ from: owner });
+			
+			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(0));
+			assert.equal(toBytes32('SNX'), await royale.oracleKeyPerSeason(1));
+			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(2));
 
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -217,6 +226,7 @@ contract('ThalesRoyale', accounts => {
 				user: first,
 				tokenId: firstPassportId,
 				season: season_1,
+				position: 0
 			});
 		});
 
@@ -1857,8 +1867,8 @@ contract('ThalesRoyale', accounts => {
 		const positions = await royale.getTokenPositions(sixthPassportIdSeason2);
 		console.log('positions', positions[0]);
 		// fetch token uri
-		// const tokenURI1 = await passport.tokenURI(sixthPassportIdSeason2);
-		// console.log(tokenURI1);
+		const tokenURI1 = await passport.tokenURI(sixthPassportIdSeason2);
+		console.log(tokenURI1);
 		
 
 		//#2
@@ -2374,5 +2384,392 @@ contract('ThalesRoyale', accounts => {
 
 		assert.bnEqual(0, await voucher.balanceOf(first));
 		assert.bnEqual(0, await voucher.balanceOf(second));
+	});
+
+	it('Sign up with ALL ROUNDS default positions check values, first scenario', async () => {
+		await royale.startNewSeason({ from: owner });
+		
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2));
+
+		await royale.signUpWithPosition(2, { from: first });
+		await royale.signUpWithPosition(2, { from: second });
+		await royale.signUpWithPosition(1, { from: third });
+		await royale.signUpWithPosition(1, { from: fourth });
+
+		const firstPassportId = 1;
+		const secondPassportId = 2;
+		const thirdPassportId = 3;
+		const fourthPassportId = 4;
+
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 1, 1)); // round 1
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 1, 2)); // round 1
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 2, 1)); // round 2
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 2, 2)); // round 2
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 2, 1)); // round 3
+		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 2, 2)); // round 3 ...
+
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 1));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 3));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 4));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 5));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 6));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 7));
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.startRoyaleInASeason();
+
+		await MockPriceFeedDeployed.setPricetoReturn(900);
+
+		//#1
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_1 = await royale.closeRound();
+
+		// check if event is emited
+		assert.eventEqual(tx_close_1.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 1,
+			result: 1,
+			strikePrice: 1000,
+			finalPrice: 900,
+			numberOfEliminatedPlayers: 2,
+			numberOfWinningPlayers: 2
+		});
+
+		let isTokenFirstAlive = await royale.isTokenAlive(firstPassportId);
+		let isTokenSecondAlive = await royale.isTokenAlive(secondPassportId);
+		let isTokenThirdAlive = await royale.isTokenAlive(thirdPassportId);
+		let isTokenFourthAlive = await royale.isTokenAlive(fourthPassportId);
+
+		assert.equal(false, isTokenFirstAlive);
+		assert.equal(false, isTokenSecondAlive);
+		assert.equal(true, isTokenThirdAlive);
+		assert.equal(true, isTokenFourthAlive);
+
+		assert.equal(0, await royale.tokenPositionInARoundPerSeason(firstPassportId, 2));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 3));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 4));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 5));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 6));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 7));
+
+		assert.equal(0, await royale.tokenPositionInARoundPerSeason(secondPassportId, 2));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(secondPassportId, 3));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(secondPassportId, 4));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(secondPassportId, 5));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(secondPassportId, 6));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(secondPassportId, 7));
+
+		let totalTokensInARound = await royale.totalTokensPerRoundPerSeason(season_1, 1); // round 1
+		assert.equal(4, totalTokensInARound);
+
+		totalTokensInARound = await royale.totalTokensPerRoundPerSeason(season_1, 2); // round 2
+		assert.equal(2, totalTokensInARound);
+
+		let eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 1);
+		assert.equal(2, eliminatedPlayersInARound);
+
+		//#2
+		await expect(royale.takeAPosition(firstPassportId, 1, { from: first })).to.be.revertedWith(
+			'Token no longer valid'
+		);
+
+		await expect(royale.takeAPosition(secondPassportId, 1, { from: second })).to.be.revertedWith(
+			'Token no longer valid'
+		);
+
+		await royale.takeAPosition(thirdPassportId, 2, { from: third });
+		
+		await MockPriceFeedDeployed.setPricetoReturn(1100);
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_2 = await royale.closeRound();
+
+		// check if event is emited
+		assert.eventEqual(tx_close_2.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 2,
+			result: 2,
+			strikePrice: 900,
+			finalPrice: 1100,
+			numberOfEliminatedPlayers: 1,
+			numberOfWinningPlayers: 1
+		});
+
+		assert.eventEqual(tx_close_2.logs[1], 'RoyaleFinished', {
+			season: season_1,
+			numberOfWinners: 1,
+			rewardPerWinner: toUnit(10000),
+		});
+
+		isTokenFirstAlive = await royale.isTokenAlive(firstPassportId);
+		isTokenSecondAlive = await royale.isTokenAlive(secondPassportId);
+		isTokenThirdAlive = await royale.isTokenAlive(thirdPassportId);
+		isTokenFourthAlive = await royale.isTokenAlive(fourthPassportId);
+
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 1)); // defult 1
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 2)); // defult 1
+		assert.equal(0, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 3));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 4));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 5));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 6));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 7));
+
+		assert.equal(false, isTokenFirstAlive); 
+		assert.equal(false, isTokenSecondAlive);
+		assert.equal(true, isTokenThirdAlive);
+		assert.equal(false, isTokenFourthAlive);
+
+		totalTokensInARound = await royale.totalTokensPerRoundPerSeason(season_1, 3);
+		assert.equal(1, totalTokensInARound);
+
+		eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 2);
+		assert.equal(1, eliminatedPlayersInARound);
+
+		await expect(royale.takeAPosition(firstPassportId, 1, { from: first })).to.be.revertedWith(
+			'Competition finished'
+		);
+
+		await expect(royale.takeAPosition(thirdPassportId, 1, { from: third })).to.be.revertedWith(
+			'Competition finished'
+		);
+	});
+
+	it('Sign up with ALL ROUNDS default positions check values, second scenario', async () => {
+		await royale.startNewSeason({ from: owner });
+		
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2));
+
+		await royale.signUpWithPosition(2, { from: first });
+		await royale.signUpWithPosition(1, { from: second });
+		await royale.signUpWithPosition(1, { from: third });
+		await royale.signUpWithPosition(1, { from: fourth });
+
+		const firstPassportId = 1;
+		const secondPassportId = 2;
+		const thirdPassportId = 3;
+		const fourthPassportId = 4;
+
+		assert.equal(3, await royale.positionsPerRoundPerSeason(season_1, 1, 1)); // round 1
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 1, 2)); // round 1
+		assert.equal(3, await royale.positionsPerRoundPerSeason(season_1, 2, 1)); // round 2
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 2, 2)); // round 2
+		assert.equal(3, await royale.positionsPerRoundPerSeason(season_1, 2, 1)); // round 3
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 2, 2)); // round 3 ...
+
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 1));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 2)); 
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 3));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 4));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 5));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 6));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 7));
+
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 1));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 3));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 4));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 5));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 6));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 7));
+
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 1));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 3));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 4));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 5));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 6));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 7));
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.startRoyaleInASeason();
+
+		await MockPriceFeedDeployed.setPricetoReturn(900);
+
+		//#1
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_1 = await royale.closeRound();
+
+		assert.equal(1, await royale.roundResultPerSeason(season_1, 1));
+		assert.equal(3, await royale.positionsPerRoundPerSeason(season_1, 1, 1)); // round 1 winning
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 1, 2)); // round 1 loosing
+
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 1));
+		assert.equal(0, await royale.tokenPositionInARoundPerSeason(firstPassportId, 2)); 
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 3));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 4));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 5));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 6));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 7));
+
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 1));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 3));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 4));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 5));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 6));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 7));
+
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 1));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 3));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 4));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 5));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 6));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 7));
+
+
+		// check if event is emited
+		assert.eventEqual(tx_close_1.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 1,
+			result: 1,
+			strikePrice: 1000,
+			finalPrice: 900,
+			numberOfEliminatedPlayers: 1,
+			numberOfWinningPlayers: 3
+		});
+
+		let isTokenFirstAlive = await royale.isTokenAlive(firstPassportId);
+		let isTokenSecondAlive = await royale.isTokenAlive(secondPassportId);
+		let isTokenThirdAlive = await royale.isTokenAlive(thirdPassportId);
+		let isTokenFourthAlive = await royale.isTokenAlive(fourthPassportId);
+
+		assert.equal(false, isTokenFirstAlive);
+		assert.equal(true, isTokenSecondAlive);
+		assert.equal(true, isTokenThirdAlive);
+		assert.equal(true, isTokenFourthAlive);
+
+		let totalTokensInARound = await royale.totalTokensPerRoundPerSeason(season_1, 1); // round 1
+		assert.equal(4, totalTokensInARound);
+
+		totalTokensInARound = await royale.totalTokensPerRoundPerSeason(season_1, 2); // round 2
+		assert.equal(3, totalTokensInARound);
+
+		let eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 1);
+		assert.equal(1, eliminatedPlayersInARound);
+
+		//#2
+		await expect(royale.takeAPosition(firstPassportId, 1, { from: first })).to.be.revertedWith(
+			'Token no longer valid'
+		);
+
+		await royale.takeAPosition(secondPassportId, 2, { from: second });
+		await royale.takeAPosition(thirdPassportId, 2, { from: third });
+
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 1));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(secondPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 3));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 4));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 5));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 6));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 7));
+
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 1));
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 3));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 4));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 5));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 6));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 7));
+
+		assert.equal(0, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 0));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 1));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 3));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 4));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 5));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 6));
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 7));
+		assert.equal(0, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 8));
+		
+		await MockPriceFeedDeployed.setPricetoReturn(1100);
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_2 = await royale.closeRound();
+
+		assert.equal(2, await royale.roundResultPerSeason(season_1, 2));
+
+		totalTokensInARound = await royale.totalTokensPerRoundPerSeason(season_1, 3);
+		assert.equal(2, totalTokensInARound);
+
+		eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 2);
+		assert.equal(1, eliminatedPlayersInARound);
+
+		// check if event is emited
+		assert.eventEqual(tx_close_2.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 2,
+			result: 2,
+			strikePrice: 900,
+			finalPrice: 1100,
+			numberOfEliminatedPlayers: 1,
+			numberOfWinningPlayers: 2
+		});
+
+		isTokenFirstAlive = await royale.isTokenAlive(firstPassportId);
+		isTokenSecondAlive = await royale.isTokenAlive(secondPassportId);
+		isTokenThirdAlive = await royale.isTokenAlive(thirdPassportId);
+		isTokenFourthAlive = await royale.isTokenAlive(fourthPassportId);
+
+		assert.equal(false, isTokenFirstAlive); 
+		assert.equal(true, isTokenSecondAlive);
+		assert.equal(true, isTokenThirdAlive);
+		assert.equal(false, isTokenFourthAlive);
+
+		//#3
+		await expect(royale.takeAPosition(firstPassportId, 1, { from: first })).to.be.revertedWith(
+			'Token no longer valid'
+		);
+
+		await expect(royale.takeAPosition(fourthPassportId, 1, { from: fourth })).to.be.revertedWith(
+			'Token no longer valid'
+		);
+
+		await MockPriceFeedDeployed.setPricetoReturn(1200);
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_3 = await royale.closeRound();
+
+		// check if event is emited
+		assert.eventEqual(tx_close_3.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 3,
+			result: 2,
+			strikePrice: 1100,
+			finalPrice: 1200,
+			numberOfEliminatedPlayers: 2,
+			numberOfWinningPlayers: 2
+		});
+
+		assert.eventEqual(tx_close_3.logs[1], 'RoyaleFinished', {
+			season: season_1,
+			numberOfWinners: 2,
+			rewardPerWinner: toUnit(5000),
+		});
+
+		isTokenFirstAlive = await royale.isTokenAlive(firstPassportId);
+		isTokenSecondAlive = await royale.isTokenAlive(secondPassportId);
+		isTokenThirdAlive = await royale.isTokenAlive(thirdPassportId);
+		isTokenFourthAlive = await royale.isTokenAlive(fourthPassportId);
+
+		assert.equal(false, isTokenFirstAlive); 
+		assert.equal(true, isTokenSecondAlive);
+		assert.equal(true, isTokenThirdAlive);
+		assert.equal(false, isTokenFourthAlive);
+
+		totalTokensInARound = await royale.totalTokensPerRoundPerSeason(season_1, 4);
+		assert.equal(0, totalTokensInARound);
+
+		eliminatedPlayersInARound = await royale.eliminatedPerRoundPerSeason(season_1, 3);
+		assert.equal(2, eliminatedPlayersInARound);
+
+		await expect(royale.takeAPosition(firstPassportId, 1, { from: first })).to.be.revertedWith(
+			'Competition finished'
+		);
+
+		await expect(royale.takeAPosition(thirdPassportId, 1, { from: third })).to.be.revertedWith(
+			'Competition finished'
+		);
+
 	});
 });

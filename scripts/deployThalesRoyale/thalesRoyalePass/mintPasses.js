@@ -51,26 +51,26 @@ async function main() {
 
 	// CHANGE addresses
 	players = [
-		'0x0EE081687aeDbfcC29Af677a283b1d2f404a2516',
-		'0x51ef44D4b09b998b214897cCc9973c46172C6D85',
-		'0xDf5fa32B726a5118281e74aD3B7C707423e28F8B',
+		'0x752cdfdffaeebe73bb1388f69f94553ade64c988',
+		'0x706D961Ab69d54a0FCbaa13E77842279A5724139',
+		'0xdc5D225547FAdE385F34C2C139Bf043Adb2779c6',
 		'0x3fb4185036dBf5E0322C23584948fa97597B482c',
-		'0xA82820D837490F27b0D548D9E1aaF29E798a2d12',
-		'0x75200f08EB8Bae1Ca7b22e539aCA7Cefd64f82Ad',
-		'0x7bcB720895900289395D5787Ee32e0016334962D',
-		'0x9223F2e38510AA77ded779c5F22C67F4E8315EeA',
-		'0xCAEC5eA92dDE2062B45E2Da100870eAC3e1866d3',
-		'0x3852C563ccef8436468e5F5f07d1d9f282817391',
-		'0x8be60fe9F7C8d940D8DA9d5dDD0D8E0c15A4288B',
-		'0x95B9F2F528338b0cDB3F14442837b0e7F05DCEeC',
-		'0x952580D41f10dB41d97fcd6B1984bC2538eEFC2c',
-		'0x6C85553e86609Ba71f646bFdC506D65981a4a2D9',
-		'0x2e9D73745E04A90A83Ba13303705d5534E38F296',
-		'0x2cb9c829D2F7Dab6769B1207328D0441C6A8727D',
-		'0xe626E8ca82603e3B44751f8562B5ED126d345140',
-		'0x97ecF820857527480e06e8F775D9C9281BBA2267',
-		'0x7C46d2356CF09F037599C00eE8f330D42A090Ee4',
-		'0x70F8D86aC14548cE33Da8a3Fcd19076c56e0Ea9D'
+		'0xa113824E1F3c08580C1638eF4B480BadF884f7bf',
+		'0x98Ec0DAbCa4D663638F31BAE866f3F3Ab8eBD220',
+		'0x9755e3d858a3310e9915e490104435ed4f0d7547',
+		'0x9a29bbAfEB9D443cCdd3c4f8Ebd426Aacb20ef33',
+		'0xb8c1b2704da2984b396bd199ef9a8ac19b2c98c1',
+		'0x00Ae7Fe77AB7C4e77F894C76c167DC310766c57a',
+		'0xb7aCFf9f8AdF276e89F1a85fe573A7C2e6A63bF6',
+		'0x34feC027EE0a1ff0AEF548e6602cfdB4389479BB',
+		'0x57D3017DB560Ea906E67cEeF0250348793C05053',
+		'0x9cE2Cb750ECf2053Ac2526792f1DaC88E9508B41',
+		'0x0bebe2165de412e7925ab8352e36f3b0493dd3b9',
+		'0xEae03EB54eB26B38057544895E834aF42fc46A69',
+		'0xf7f6f7ec25c52c3e4794c9e2d32020ec00c07dc2',
+		'0x8989759b3e23511214ac89be112f4eb52cb6db3c',
+		'0x2b5b64df5e31a31d2e48de94b15c2093bc4cc09c',
+		'0x43c21cC46637Ae611d2b3BEEaD90A73aE56362b3'
 	];
 
 	/* ========== MINT ROYALE PASSES ========== */
@@ -111,7 +111,12 @@ async function main() {
 	let successfullyMinted = false;
 	let successfullyEthSend = false;
 	for (let i = 0; i < players.length; ) {
+
 		console.log('Minting/sending for: ' + players[i], ', which is ' + i);
+
+		const balance = await ethers.provider.getBalance(players[i]);
+		console.log('ETH balance of ' + players[i] + ' is ' + balance);
+
 		try {
 			// mint
 			if (!successfullyMinted) {
@@ -125,18 +130,20 @@ async function main() {
 				console.log('Minted!');
 			}
 
-			// send eth
-			if (!successfullyEthSend) {
-				console.log('ETH sending...');
-				tx = await owner.sendTransaction({
-					to: players[i],
-					value: ethToSend,
-				});
-				await tx.wait().then(e => {
-					txLog(tx, 'send ETH to ' + players[i]);
-				});
-				successfullyEthSend = true;
-				console.log('ETH send!');
+			if (balance == 0) {
+				// send eth
+				if (!successfullyEthSend) {
+					console.log('ETH sending...');
+					tx = await owner.sendTransaction({
+						to: players[i],
+						value: ethToSend,
+					});
+					await tx.wait().then(e => {
+						txLog(tx, 'send ETH to ' + players[i]);
+					});
+					successfullyEthSend = true;
+					console.log('ETH send!');
+				}
 			}
 
 			successfullyMinted = false;

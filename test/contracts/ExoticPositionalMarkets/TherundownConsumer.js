@@ -139,6 +139,10 @@ contract('TherundownConsumer', accounts => {
 		await ExoticPositionalMarketManager.setFixedBondAmount(fixedBondAmount, { from: manager });
 		await ExoticPositionalMarketManager.setSafeBoxAddress(safeBox, { from: manager });
 		await ExoticPositionalMarketManager.setMaximumPositionsAllowed('5', { from: manager });
+		await ExoticPositionalMarketManager.setMarketQuestionStringLimit('1000', { from: manager });
+		await ExoticPositionalMarketManager.setMarketSourceStringLimit('1000', { from: manager });
+		await ExoticPositionalMarketManager.setMarketPositionStringLimit('60', { from: manager });
+
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });

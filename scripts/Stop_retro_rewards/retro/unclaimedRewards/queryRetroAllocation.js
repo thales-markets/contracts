@@ -1,10 +1,12 @@
 const keccak256 = require('keccak256');
-const { web3 } = require('hardhat');
 const Big = require('big.js');
 var Contract = require('web3-eth-contract');
 // set provider for all later instances to use
 const Web3 = require('web3');
 Contract.setProvider(
+	new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/27301cd3b3134269bfb2271a79a5beae')
+);
+var web3 = new Web3(
 	new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/27301cd3b3134269bfb2271a79a5beae')
 );
 
@@ -13,7 +15,7 @@ const {
 	txLog,
 	setTargetAddress,
 	getTargetAddress,
-} = require('../../helpers.js');
+} = require('../../../helpers.js');
 
 const fs = require('fs');
 let vestingEscrowAbi = require('./vestingEscrow.json');
@@ -46,13 +48,16 @@ for (let [key, value] of Object.entries(investitors)) {
 
 async function checkRetroVesting() {
 	let vestedStakers = [];
+	let vestedStakersContracts = [];
 	let addressesArray = Array.from(allAddressesSet);
+	let totalAvailableToClaim = 0;
+	let totalClaimed = 0;
 	for (let addressCount in addressesArray) {
 		let address = addressesArray[addressCount].toLowerCase();
-		// if (investitorsSet.has(address)) {
-		// 	console.log('Regular staker is also an investitor ' + address);
-		// 	continue;
-		// }
+		if (investitorsSet.has(address)) {
+			console.log('skipping as its an investitor ' + address);
+			continue;
+		}
 		let vestee = {};
 		await vestingContract.methods
 			.balanceOf(address)
@@ -60,7 +65,9 @@ async function checkRetroVesting() {
 			.then(async function(result) {
 				if (result != '0') {
 					vestee.address = address;
-					vestee.balance = result / 1e18;
+					vestee.balance = result;
+					vestee.balanceDec = result / 1e18;
+					totalAvailableToClaim = totalAvailableToClaim + vestee.balanceDec;
 				}
 			});
 
@@ -70,21 +77,50 @@ async function checkRetroVesting() {
 			.then(async function(result) {
 				if (result != '0') {
 					vestee.totalClaimed = result / 1e18;
+					totalClaimed = totalClaimed + vestee.totalClaimed;
 				}
 			});
+		let contractChecker = await web3.eth.getCode(vestee.address);
+		let isContract = contractChecker != '0x';
+		vestee.isContract = isContract;
+		if (isContract) {
+			vestedStakersContracts.push(vestee);
+		}
 		vestedStakers.push(vestee);
 	}
 
+	console.log("Total available to claim is " + totalAvailableToClaim);
+	console.log("Total claimed is " + totalClaimed);
+
 	vestedStakers.sort(function(a, b) {
 		// Compare the 2 dates
-		if (a.balance > b.balance) return -1;
-		if (a.balance < b.balance) return 1;
+		if (a.balanceDec > b.balanceDec) return -1;
+		if (a.balanceDec < b.balanceDec) return 1;
+		return 0;
+	});
+
+	vestedStakersContracts.sort(function(a, b) {
+		// Compare the 2 dates
+		if (a.balanceDec > b.balanceDec) return -1;
+		if (a.balanceDec < b.balanceDec) return 1;
 		return 0;
 	});
 
 	fs.writeFileSync(
-		'scripts/Stop_retro_rewards/retro/availableToClaim.json',
+		'scripts/Stop_retro_rewards/retro/unclaimedRewards/availableToClaim.json',
 		JSON.stringify(vestedStakers),
+		function(err) {
+			if (err) return console.log(err);
+		}
+	);
+
+	const ObjectsToCsv = require('objects-to-csv');
+	const csv = new ObjectsToCsv(vestedStakers);
+	await csv.toDisk('scripts/Stop_retro_rewards/retro/unclaimedRewards/availableToClaim.csv');
+
+	fs.writeFileSync(
+		'scripts/Stop_retro_rewards/retro/unclaimedRewards/availableToClaimContracts.json',
+		JSON.stringify(vestedStakersContracts),
 		function(err) {
 			if (err) return console.log(err);
 		}

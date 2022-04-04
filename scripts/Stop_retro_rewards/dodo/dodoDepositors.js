@@ -1,10 +1,12 @@
 const keccak256 = require('keccak256');
-const { web3 } = require('hardhat');
 const Big = require('big.js');
 var Contract = require('web3-eth-contract');
 // set provider for all later instances to use
 const Web3 = require('web3');
 Contract.setProvider(
+	new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/27301cd3b3134269bfb2271a79a5beae')
+);
+var web3 = new Web3(
 	new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/27301cd3b3134269bfb2271a79a5beae')
 );
 
@@ -62,6 +64,9 @@ async function checkDoDoDepositors() {
 					let lper = {};
 					lper.balance = result / 1e18;
 					lper.address = dev.returnValues[1].toLowerCase();
+					let contractChecker = await web3.eth.getCode(lper.address);
+					let isContract = contractChecker != '0x';
+					lper.isContract = isContract;
 					console.log('Result is ' + result);
 					stillInLPToken.push(lper);
 				}
@@ -104,6 +109,9 @@ async function checkDoDoDepositors() {
 					let lper = {};
 					lper.balance = result / 1e18;
 					lper.address = dev.returnValues[0].toLowerCase();
+					let contractChecker = await web3.eth.getCode(lper.address);
+					let isContract = contractChecker != '0x';
+					lper.isContract = isContract;
 					console.log('Result is ' + result);
 
 					await dodoPool.methods
@@ -130,9 +138,7 @@ async function checkDoDoDepositors() {
 	let total = 0;
 
 	stillInLPers.forEach(s => {
-		if (addressProcessed.has(s.address.toLowerCase())) {
-			console.log('PROBLEM, address ' + s.address.toLowerCase() + ' is repeated');
-		} else {
+		if (!addressProcessed.has(s.address.toLowerCase())) {
 			addressProcessed.add(s.address.toLowerCase());
 			total = total + s.balance;
 			mergedResult.push(s);
@@ -141,13 +147,6 @@ async function checkDoDoDepositors() {
 
 	stillInLPToken.forEach(s => {
 		if (addressProcessed.has(s.address.toLowerCase())) {
-			console.log(
-				'PROBLEM, address ' +
-					s.address.toLowerCase() +
-					' is repeated. It has ' +
-					s.balance +
-					' LP tokens '
-			);
 			let obj = mergedResult.find(o => o.address.toLowerCase() == s.address.toLowerCase());
 			obj.balance = obj.balance + s.balance;
 			total = total + s.balance;
@@ -234,6 +233,10 @@ async function checkDoDoDepositors() {
 			if (err) return console.log(err);
 		}
 	);
+
+	const ObjectsToCsv = require('objects-to-csv')
+	const csv = new ObjectsToCsv(mergedResult);
+	await csv.toDisk('scripts/Stop_retro_rewards/dodo/mergedResult.csv');
 }
 
 checkDoDoDepositors()

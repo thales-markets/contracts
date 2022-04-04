@@ -57,6 +57,8 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     uint private constant CREATOR_AND_DISPUTOR = 104;
     uint private constant RESOLVER_AND_DISPUTOR = 105;
 
+    mapping(address => uint) public marketOpenDisputesCount;
+
     function initialize(address _owner, address _marketManager) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -69,19 +71,11 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         return !marketClosedForDisputes[_market] && IExoticPositionalMarket(_market).isMarketCreated();
     }
 
-    function getMarketOpenDisputes(address _market) public view returns (uint) {
-        return marketTotalDisputes[_market].sub(marketLastClosedDispute[_market]);
+    function getMarketOpenDisputes(address _market) external view returns (uint) {
+        return marketOpenDisputesCount[_market];
     }
 
-    function getNextOpenDisputeIndex(address _market) public view returns (uint) {
-        if (getMarketOpenDisputes(_market) > 0) {
-            return (marketLastClosedDispute[_market].add(1));
-        } else {
-            return 0;
-        }
-    }
-
-    function getMarketClosedDisputes(address _market) external view returns (uint) {
+    function getMarketLastClosedDispute(address _market) external view returns (uint) {
         return marketLastClosedDispute[_market];
     }
 
@@ -235,6 +229,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         );
 
         marketTotalDisputes[_market] = marketTotalDisputes[_market].add(1);
+        marketOpenDisputesCount[_market] = marketOpenDisputesCount[_market].add(1);
         dispute[_market][marketTotalDisputes[_market]].disputorAddress = msg.sender;
         dispute[_market][marketTotalDisputes[_market]].disputeString = _disputeString;
         dispute[_market][marketTotalDisputes[_market]].disputeTimestamp = block.timestamp;
@@ -341,6 +336,9 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         require(dispute[_market][_disputeIndex].disputeCode == 0, "Dispute already closed");
         require(_decidedOption > 0, "Invalid decided option");
         dispute[_market][_disputeIndex].disputeCode = _decidedOption;
+        marketOpenDisputesCount[_market] = marketOpenDisputesCount[_market] > 0
+            ? marketOpenDisputesCount[_market].sub(1)
+            : 0;
         if (_decidedOption == REFUSE_ON_POSITIONING || _decidedOption == REFUSE_MATURE) {
             // set dispute to false
             // send disputor BOND to SafeBox
@@ -357,7 +355,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             if (_decidedOption == REFUSE_MATURE) {
                 marketManager.setBackstopTimeout(_market);
             }
-            if (marketLastClosedDispute[_market] == marketTotalDisputes[_market]) {
+            if (marketOpenDisputesCount[_market] == 0) {
                 marketManager.closeDispute(_market);
             }
             emit DisputeClosed(_market, _disputeIndex, _decidedOption);
@@ -471,16 +469,11 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
                 dispute[_market][_disputeIndex].disputorAddress
             );
             allOpenDisputesCancelledToIndexForMarket[_market] = marketTotalDisputes[_market];
+            marketOpenDisputesCount[_market] = 0;
             marketLastClosedDispute[_market] = _disputeIndex;
             emit DisputeClosed(_market, _disputeIndex, _decidedOption);
         } else {
             // (CANCEL)
-            //4 hours backstop
-            // marketManager.setBackstopTimeout(_market);
-            // close market disputes
-            // marketClosedForDisputes[_market] = true;
-            // close market(cancel market)
-            // marketManager.cancelMarket(_market);
         }
     }
 

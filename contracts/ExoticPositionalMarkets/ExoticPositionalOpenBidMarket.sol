@@ -48,10 +48,11 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     uint public claimableOpenBidAmount;
     mapping(uint => uint) public totalOpenBidAmountPerPosition;
     mapping(address => mapping(uint => uint)) public userOpenBidPosition;
+    mapping(address => uint) public userAlreadyClaimed;
 
     bool public resolved;
     bool public disputedInPositioningPhase;
-    bool public firstUserClaimed;
+    bool public feesAndBondsClaimed;
     uint public winningPosition;
     uint public claimableTicketsCount;
 
@@ -192,6 +193,19 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
     }
 
+    function issueFees() external notPaused {
+        require(canUsersClaim(), "Not finalized");
+        require(!feesAndBondsClaimed, "Fees claimed");
+        if (winningPosition != CANCELED) {
+            thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
+            thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());
+            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
+        }
+        marketManager.issueBondsBackToCreatorAndResolver(address(this));
+        feesAndBondsClaimed = true;
+        emit FeesIssued(getTotalFeesAmount());
+    }
+
     // market resolved only through the Manager
     function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner {
         require(canMarketBeResolvedByOwner(), "Market not resolvable. Disputed/not matured");
@@ -246,15 +260,16 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
         resetForUserAllPositionsToZero(msg.sender);
         thalesBonds.transferFromMarket(msg.sender, amount);
-        if (!firstUserClaimed) {
-            if(winningPosition != CANCELED) {
+        if (!feesAndBondsClaimed) {
+            if (winningPosition != CANCELED) {
                 thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
                 thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());
                 thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
             }
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
-            firstUserClaimed = true;
+            feesAndBondsClaimed = true;
         }
+        userAlreadyClaimed[msg.sender] = userAlreadyClaimed[msg.sender].add(amount);
         emit WinningTicketClaimed(msg.sender, amount);
     }
 
@@ -272,15 +287,16 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         ) {
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
         }
-        if (!firstUserClaimed) {
-            if(winningPosition != CANCELED) {
+        if (!feesAndBondsClaimed) {
+            if (winningPosition != CANCELED) {
                 thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
                 thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());
                 thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
             }
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
-            firstUserClaimed = true;
+            feesAndBondsClaimed = true;
         }
+        userAlreadyClaimed[msg.sender] = userAlreadyClaimed[msg.sender].add(amount);
         emit WinningTicketClaimed(_user, amount);
     }
 
@@ -553,6 +569,19 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         return (fixedBondAmount, disputePrice, safeBoxLowAmount, arbitraryRewardForDisputor);
     }
 
+    function getAllFees()
+        external
+        view
+        returns (
+            uint,
+            uint,
+            uint,
+            uint
+        )
+    {
+        return (getAdditionalCreatorAmount(), getAdditionalResolverAmount(), getSafeBoxAmount(), getTotalFeesAmount());
+    }
+
     function resetForUserAllPositionsToZero(address _account) internal nonReentrant {
         if (positionCount > 0) {
             for (uint i = 1; i <= positionCount; i++) {
@@ -600,7 +629,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
 
     function _addPosition(string memory _position) internal {
         require(keccak256(abi.encode(_position)) != keccak256(abi.encode("")), "Invalid position label (empty string)");
-        require(bytes(_position).length < 50, "Position label exceeds length");
+        // require(bytes(_position).length < marketManager.marketPositionStringLimit(), "Position label exceeds length");
         positionCount = positionCount.add(1);
         positionPhrase[positionCount] = _position;
     }
@@ -616,4 +645,5 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     event BondDecreased(uint amount, uint totalAmount);
     event NewOpenBidsForPositions(address account, uint[] openBidPositions, uint[] openBidAmounts);
     event OpenBidUserWithdrawn(address account, uint withdrawnAmount, uint totalOpenBidAmountLeft);
+    event FeesIssued(uint totalFees);
 }

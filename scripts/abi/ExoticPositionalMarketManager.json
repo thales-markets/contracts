@@ -229,6 +229,32 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "marketPositionStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MarketPositionStringLimitChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "marketQuestionStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MarketQuestionStringLimitChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "marketAddress",
         "type": "address"
@@ -254,6 +280,19 @@
       }
     ],
     "name": "MarketResolved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "marketSourceStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MarketSourceStringLimitChanged",
     "type": "event"
   },
   {
@@ -514,6 +553,19 @@
       }
     ],
     "name": "NewTheRundownConsumerAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "openBidAllowed",
+        "type": "bool"
+      }
+    ],
+    "name": "OpenBidAllowedChanged",
     "type": "event"
   },
   {
@@ -1183,6 +1235,45 @@
   },
   {
     "inputs": [],
+    "name": "marketPositionStringLimit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketQuestionStringLimit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketSourceStringLimit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maxNumberOfTags",
     "outputs": [
       {
@@ -1280,6 +1371,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "openBidAllowed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1730,6 +1834,45 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_marketPositionStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMarketPositionStringLimit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_marketQuestionStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMarketQuestionStringLimit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_marketSourceStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMarketSourceStringLimit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_maxNumberOfTags",
         "type": "uint256"
       }
@@ -1787,6 +1930,19 @@
       }
     ],
     "name": "setMinimumPositioningDuration",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_openBidAllowed",
+        "type": "bool"
+      }
+    ],
+    "name": "setOpenBidAllowed",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

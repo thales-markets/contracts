@@ -23,7 +23,6 @@ contract ExoticRewards is Initializable, ProxyOwned, PausableUpgradeable, ProxyR
     IERC20Upgradeable public paymentToken;
     mapping(address => uint) public marketIssuedReward;
 
-    
     function initialize(address _owner, address _managerAddress) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -48,7 +47,7 @@ contract ExoticRewards is Initializable, ProxyOwned, PausableUpgradeable, ProxyR
         marketManager = IExoticPositionalMarketManager(_managerAddress);
         emit NewManagerAddress(_managerAddress);
     }
-    
+
     function setPaymentToken(address _paymentToken) external onlyOwner {
         require(_paymentToken != address(0), "Invalid address");
         paymentToken = IERC20Upgradeable(_paymentToken);
@@ -63,10 +62,7 @@ contract ExoticRewards is Initializable, ProxyOwned, PausableUpgradeable, ProxyR
             "Not OC/Manager/Owner"
         );
         require(address(marketManager) != address(0), "Invalid Manager");
-        require(
-            marketManager.oracleCouncilAddress() != address(0),
-            "Invalid OC"
-        );
+        require(marketManager.oracleCouncilAddress() != address(0), "Invalid OC");
         _;
     }
 

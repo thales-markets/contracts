@@ -270,10 +270,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
             "Not OC/Manager/Owner"
         );
         require(address(marketManager) != address(0), "Invalid Manager");
-        require(
-            marketManager.oracleCouncilAddress() != address(0),
-            "Invalid OC"
-        );
+        require(marketManager.oracleCouncilAddress() != address(0), "Invalid OC");
         _;
     }
 

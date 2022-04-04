@@ -72,6 +72,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     mapping(address => bool) public cancelledByCreator;
     address public exoticMarketOpenBidMastercopy;
     address public exoticRewards;
+    uint public marketQuestionStringLimit;
+    uint public marketSourceStringLimit;
+    uint public marketPositionStringLimit;
+    bool public openBidAllowed;
 
     function initialize(
         address _owner,
@@ -109,7 +113,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     ) external nonReentrant {
         require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low.");
         require(!creationRestrictedToOwner || msg.sender == owner, "Creation is restricted. ");
-        require(_fixedTicketPrice == 0 || _fixedTicketPrice >= minFixedTicketPrice, "Exceeds min tickPrice");
+        require(
+            (openBidAllowed && _fixedTicketPrice == 0) || _fixedTicketPrice >= minFixedTicketPrice,
+            "Exceeds min tickPrice"
+        );
         require(
             IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice),
             "Low amount for creation."
@@ -123,8 +130,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")), "Invalid question.");
         require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid source");
         require(_positionCount == _positionPhrases.length, "Invalid posCount.");
-        require(bytes(_marketQuestion).length < 210, "mQuestion exceeds length");
-        require(bytes(_marketSource).length < 210, "mSource exceeds length");
+        require(bytes(_marketQuestion).length < marketQuestionStringLimit, "mQuestion exceeds length");
+        require(bytes(_marketSource).length < marketSourceStringLimit, "mSource exceeds length");
         require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
         for (uint i = 0; i < _tags.length; i++) {
             require(IExoticPositionalTags(tagsAddress).isValidTagNumber(_tags[i]), "Not valid tag.");
@@ -292,7 +299,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             );
         }
         resolverAddress[_marketAddress] = msg.sender != oracleCouncilAddress ? msg.sender : safeBoxAddress;
-        IExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, resolverAddress[_marketAddress]);            
+        IExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, resolverAddress[_marketAddress]);
         emit MarketResolved(_marketAddress, _outcomePosition);
     }
 
@@ -426,7 +433,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         exoticMarketOpenBidMastercopy = _exoticOpenBidMastercopy;
         emit ExoticMarketOpenBidMastercopyChanged(_exoticOpenBidMastercopy);
     }
-    
+
     function setExoticRewards(address _exoticRewards) external onlyOwner {
         require(_exoticRewards != address(0), "Exotic rewards invalid");
         exoticRewards = _exoticRewards;
@@ -456,6 +463,21 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     function setWithdrawalPercentage(uint _withdrawalPercentage) external onlyOwner {
         withdrawalPercentage = _withdrawalPercentage;
         emit WithdrawalPercentageChanged(_withdrawalPercentage);
+    }
+
+    function setMarketQuestionStringLimit(uint _marketQuestionStringLimit) external onlyOwner {
+        marketQuestionStringLimit = _marketQuestionStringLimit;
+        emit MarketQuestionStringLimitChanged(_marketQuestionStringLimit);
+    }
+
+    function setMarketSourceStringLimit(uint _marketSourceStringLimit) external onlyOwner {
+        marketSourceStringLimit = _marketSourceStringLimit;
+        emit MarketSourceStringLimitChanged(_marketSourceStringLimit);
+    }
+
+    function setMarketPositionStringLimit(uint _marketPositionStringLimit) external onlyOwner {
+        marketPositionStringLimit = _marketPositionStringLimit;
+        emit MarketSourceStringLimitChanged(_marketPositionStringLimit);
     }
 
     function setPDAOResolveTimePeriod(uint _pDAOResolveTimePeriod) external onlyOwner {
@@ -561,6 +583,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit CreationRestrictedToOwnerChanged(_creationRestrictedToOwner);
     }
 
+    function setOpenBidAllowed(bool _openBidAllowed) external onlyOwner {
+        openBidAllowed = _openBidAllowed;
+        emit OpenBidAllowedChanged(_openBidAllowed);
+    }
+
     function setPaymentToken(address _paymentToken) external onlyOwner {
         require(_paymentToken != address(0), "Invalid address");
         paymentToken = _paymentToken;
@@ -610,9 +637,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         activeMarkets[numOfActiveMarkets] = address(0);
     }
 
-    function thereAreNonEqualPositions(string[] memory positionPhrases) internal pure returns (bool) {
+    function thereAreNonEqualPositions(string[] memory positionPhrases) internal view returns (bool) {
         for (uint i = 0; i < positionPhrases.length - 1; i++) {
-            if (keccak256(abi.encode(positionPhrases[i])) == keccak256(abi.encode(positionPhrases[i + 1]))) {
+            if (
+                keccak256(abi.encode(positionPhrases[i])) == keccak256(abi.encode(positionPhrases[i + 1])) ||
+                bytes(positionPhrases[i]).length > marketPositionStringLimit
+            ) {
                 return false;
             }
         }
@@ -655,7 +685,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event NewMinimumFixedTicketAmount(uint minFixedTicketPrice);
     event NewDisputeStringLengthLimit(uint disputeStringLengthLimit);
     event ExoticRewardsChanged(address exoticRewards);
-
+    event MarketSourceStringLimitChanged(uint marketSourceStringLimit);
+    event MarketQuestionStringLimitChanged(uint marketQuestionStringLimit);
+    event MarketPositionStringLimitChanged(uint marketPositionStringLimit);
+    event OpenBidAllowedChanged(bool openBidAllowed);
 
     event MarketCreated(
         address marketAddress,

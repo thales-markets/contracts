@@ -14,6 +14,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IThalesRoyalePass.sol";
 import "../interfaces/IThalesRoyalePassport.sol";
+import "../interfaces/IPassportPosition.sol";
 
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
@@ -87,7 +88,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     mapping(uint => mapping(uint => uint256)) public tokensMintedPerSeason;
     mapping(uint => mapping(uint => uint)) public totalTokensPerRoundPerSeason;
     mapping(uint => mapping(uint256 => uint256)) public tokenPositionInARoundPerSeason;
-    mapping(uint => uint[]) public tokenPositions;
+    mapping(uint => IPassportPosition.Position[]) public tokenPositions;
     mapping(uint => bool) public tokenRewardCollectedPerSeason;
 
     /* ========== CONSTRUCTOR ========== */
@@ -351,8 +352,20 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         return tokensPerSeason[_season];
     }
 
-    function getTokenPositions(uint tokenId) public view returns (uint[] memory) {
+    function getTokenPositions(uint tokenId) public view returns (IPassportPosition.Position[] memory) {
         return tokenPositions[tokenId];
+    }
+
+    function getTokenPositionsTest(uint tokenId) public view returns (uint sum) {
+        IPassportPosition.Position[] memory positions = getTokenPositions(tokenId);
+        uint sum;
+        for (uint i = 0; i < positions.length; i++) {
+            sum = sum + positions[i].round;
+            // uint position = positions[i].position;
+            // uint round = positions[i].round;
+            // string memory stamp = generateSVGStamp(round, position, baseURI);
+            // stamps = string(abi.encodePacked(stamps, stamp));
+        }
     }
 
     function getBuyInAmount() public view returns (uint) {
@@ -420,7 +433,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
             tokenPositions[_tokenId].pop();
         }
 
-        tokenPositions[_tokenId].push(_position);
+        tokenPositions[_tokenId].push(IPassportPosition.Position(_round, _position));
         
         // add number of positions
         if (_position == UP) {

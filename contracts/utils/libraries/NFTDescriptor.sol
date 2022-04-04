@@ -45,7 +45,8 @@ library NFTDescriptor {
                     params.round,
                     params.positions,
                     params.alive,
-                    params.seasonFinished
+                    params.seasonFinished,
+                    params.baseURI
                 )
             );
     }

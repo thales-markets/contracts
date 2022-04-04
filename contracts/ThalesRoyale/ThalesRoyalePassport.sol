@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721Burnab
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 
 import "../interfaces/IThalesRoyale.sol";
+import "../interfaces/IPassportPosition.sol";
 import "../utils/libraries/NFTSVG.sol";
 import "../utils/libraries/NFTDescriptor.sol";
 
@@ -29,12 +30,14 @@ contract ThalesRoyalePassport is
 
     IThalesRoyale public thalesRoyale;
     mapping(uint => uint) public tokenTimestamps;
+    string public baseUri;
 
     /* ========== CONSTRUCTOR ========== */
 
-    function initialize(address _thalesRoyaleAddress) public initializer {
+    function initialize(address _thalesRoyaleAddress, string memory _baseUri) public initializer {
         __ERC721_init("Thales Royale Passport", "TRS");
         thalesRoyale = IThalesRoyale(_thalesRoyaleAddress);
+        baseUri = _baseUri;
     }
 
     function safeMint(address recipient) external whenNotPaused onlyRoyale returns (uint tokenId) {
@@ -64,11 +67,11 @@ contract ThalesRoyalePassport is
         uint season = thalesRoyale.tokenSeason(tokenId);
         uint currentRound = thalesRoyale.roundInASeason(season);
         bool alive = thalesRoyale.isTokenAliveInASpecificSeason(tokenId, season);
-        uint[] memory positions = thalesRoyale.getTokenPositions(tokenId);
+        IPassportPosition.Position[] memory positions = thalesRoyale.getTokenPositions(tokenId);
         bool seasonFinished = thalesRoyale.seasonFinished(season);
 
         imageURI = NFTDescriptor.constructTokenURI(
-            NFTSVG.SVGParams(player, timestamp, tokenId, season, currentRound, positions, alive, seasonFinished)
+            NFTSVG.SVGParams(player, timestamp, tokenId, season, currentRound, positions, alive, seasonFinished, baseUri)
         );
     }
 
@@ -88,6 +91,12 @@ contract ThalesRoyalePassport is
         require(_thalesRoyaleAddress != address(0), "Invalid address");
         thalesRoyale = IThalesRoyale(_thalesRoyaleAddress);
         emit ThalesRoyaleAddressChanged(_thalesRoyaleAddress);
+    }
+
+    function setBaseURI(string memory _baseUri) external onlyOwner {
+        baseUri = _baseUri;
+
+        emit BaseUriChanged(_baseUri);
     }
 
     function _beforeTokenTransfer(
@@ -126,4 +135,5 @@ contract ThalesRoyalePassport is
     event ThalesRoyalePassportBurned(uint _tokenId);
     event ThalesRoyaleAddressChanged(address _thalesRoyaleAddress);
     event ThalesRoyalePassportPaused(bool _state);
+    event BaseUriChanged(string _baseURI);
 }

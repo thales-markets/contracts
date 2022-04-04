@@ -66,7 +66,8 @@
 		"ProxyEscrowThalesImplementation": "0x596C785d91A18CC6f25861770f5238d176946B53",
 		"ProxyPriceFeed": "0x9800ea969f1647edE2D954a3C82DE891549F41C2",
 		"SNXIssuer": "0x2Ef87CE145476A895ef2D442d826aED1CFaf5627",
-		"ThalesRoyalePassport": "0x6ABF7ea1c7d9185e37432c12089202Cd329BFc88"
+		"ThalesRoyalePassport": "",
+		"ThalesRoyalePassportImplementation": ""
 	},
 	"goerli": {
 		"Airdrop": "",
@@ -119,7 +120,9 @@
 		"OptimisticAirdrop": "0x42B6e9b5Bb96a02E02e651d3104Fc3546E1313F2",
 		"OngoingAirdrop": "0x8D47b12ce25E2dc6866e8aAC0DbD823Da09fADd6",
 		"GUniLPToken": "0xac6705bc7f6a35eb194bdb89066049d6f1b0b1b5",
-		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29"
+		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29",
+		"ThalesRoyalePassport": "",
+		"ThalesRoyalePassportImplementation": ""
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
@@ -149,9 +152,10 @@
 		"OngoingAirdrop": "0xcA8d82a30fd9dfec102eCdfb59A13e9a86C2Ee6F",
 		"ThalesStakingRewardsPool": "0xBfb2692Ae8c4399FD27977b9e14E8E69e31711d6",
 		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a",
-		"ThalesRoyale": "0xCEeF736126b25e67bb41099a442E4E1B8608eA2f",
-		"ThalesRoyaleImplementation": "0x0f0ee516d8F6aA08Af89749703FD14673038608F",
-		"ThalesRoyalePassport": "0x111A28f711caC4a05c06fBB9c13461E7F368d17B"
+		"ThalesRoyale": "0xBdD87E3b483c92F789C571BCD1056f0be50c5B71",
+		"ThalesRoyaleImplementation": "0x7cea40A6569E538D1AC812C0D4Ff37b505466dC0",
+		"ThalesRoyalePassport": "0xd6EFA47324374c715043BF8cFfbaAC8fE6098c87",
+		"ThalesRoyalePassportImplementation": "0xe027cf643b9948112D153Ab27E86d3AEEde7E534"
 	},
 	"localhost": {
 		"Airdrop": "",

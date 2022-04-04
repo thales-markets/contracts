@@ -1,6 +1,7 @@
-const { ethers } = require('hardhat');
+const { ethers, upgrades } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
 const w3utils = require('web3-utils');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -29,33 +30,45 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-    const thalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
+	const thalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
 	console.log('Found ThalesRoyale at:', thalesRoyaleAddress);
 
-    const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
-    const royale = await ThalesRoyale.attach(
-		thalesRoyaleAddress
-	);
+	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
+	const royale = await ThalesRoyale.attach(thalesRoyaleAddress);
+
+	const passportURI = 'https://thales-ajlyy.s3.eu-central-1.amazonaws.com';
 
 	const ThalesRoyalePassport = await ethers.getContractFactory('ThalesRoyalePassport');
-	const ThalesRoyalePassportDeployed = await ThalesRoyalePassport.deploy(thalesRoyaleAddress);
-	await ThalesRoyalePassportDeployed.deployed();
-	setTargetAddress('ThalesRoyalePassport', network, ThalesRoyalePassportDeployed.address);
+	const thalesRoyalePassport = await upgrades.deployProxy(ThalesRoyalePassport, [
+		thalesRoyaleAddress,
+		passportURI,
+	]);
+	await thalesRoyalePassport.deployed();
 
-	console.log('ThalesRoyalePassport deployed to:', ThalesRoyalePassportDeployed.address);
+	console.log('ThalesRoyalePassort deployed to:', thalesRoyalePassport.address);
+	setTargetAddress('ThalesRoyalePassport', network, thalesRoyalePassport.address);
 
-    // set passport address
-	let tx = await royale.setThalesRoyalePassport(ThalesRoyalePassportDeployed.address);
-	
+	const implementation = await getImplementationAddress(
+		ethers.provider,
+		thalesRoyalePassport.address
+	);
+	console.log('ThalesRoyalePassportImplementation: ', implementation);
+	setTargetAddress('ThalesRoyalePassportImplementation', network, implementation);
+
+	// set passport address
+	let tx = await royale.setThalesRoyalePassport(thalesRoyalePassport.address);
+
 	await tx.wait().then(e => {
 		console.log('ThalesRoyalePassport address successfully updated in ThalesRoyale');
 	});
 
-
-	await hre.run('verify:verify', {
-		address: ThalesRoyalePassportDeployed.address,
-		constructorArguments: [thalesRoyaleAddress],
-	});
+	try {
+		await hre.run('verify:verify', {
+			address: implementation,
+		});
+	} catch (e) {
+		console.log(e);
+	}
 }
 
 main()

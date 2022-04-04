@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/IThalesRoyale.sol";
 
-contract TestThalesRoyale is IThalesRoyale {
+contract TestThalesRoyale is IThalesRoyale { 
 
     bool public participatedInLastRoyale;
     uint public buyInAmount;
@@ -11,12 +11,13 @@ contract TestThalesRoyale is IThalesRoyale {
 
     mapping(uint => uint) public override roundInASeason;
     mapping(uint => uint) public override tokenSeason;
+    mapping(uint => bool) public override seasonFinished;
     mapping(uint => mapping(uint => uint)) public override roundResultPerSeason;
     mapping(uint => mapping(address => uint256)) public playerSignedUpPerSeason;
     mapping(uint => mapping(uint => uint256)) public tokensMintedPerSeason;
     mapping(uint => mapping(uint => uint)) public totalTokensPerRoundPerSeason;
     mapping(uint => mapping(uint256 => uint256)) public tokenPositionInARoundPerSeason;
-    mapping(uint => uint[]) public tokenPositions;
+    mapping(uint => IPassportPosition.Position[]) public tokenPositions;
 
     constructor() {}
     /* ========== VIEWS / VARIABLES ========== */
@@ -46,7 +47,7 @@ contract TestThalesRoyale is IThalesRoyale {
         buyInAmount = _buyIn;
     }
 
-    function getTokenPositions(uint tokenId) public override view returns (uint[] memory) {
+    function getTokenPositions(uint tokenId) public override view returns (IPassportPosition.Position[] memory) {
         return tokenPositions[tokenId];
     }
    

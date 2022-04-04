@@ -46,6 +46,7 @@ contract('ThalesRoyale', accounts => {
 		const thalesQty = toUnit(10000);
 		const thalesQty_2500 = toUnit(2500);
 		const uri = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/0';
+		const passportURI = 'https://thales-ajlyy.s3.eu-central-1.amazonaws.com';
 
 		let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 
@@ -122,7 +123,7 @@ contract('ThalesRoyale', accounts => {
 		let ThalesRoyalePassportImplementation = await ThalesRoyalePassport.new({ from: owner });
 		passport = await ThalesRoyalePassport.at(ThalesRoyalePassportDeployed.address);
 
-		let initializePassportData = encodeCall('initialize', ['address'], [royale.address]);
+		let initializePassportData = encodeCall('initialize', ['address', 'string'], [royale.address, passportURI]);
 
 		await ThalesRoyalePassportDeployed.upgradeToAndCall(
 			ThalesRoyalePassportImplementation.address,
@@ -359,6 +360,8 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(1, eliminatedTokensInARoundOne);
 
 			assert.equal(false, isTokenFirstAlive);
+
+			console.log('eliminated', await passport.tokenURI(firstPassportId));
 
 			await expect(royale.takeAPosition(firstPassportId, 2, { from: first })).to.be.revertedWith(
 				'Token no longer valid'
@@ -1851,9 +1854,12 @@ contract('ThalesRoyale', accounts => {
 		await fastForward(HOUR * 72 + 1);
 		await royale.closeRound();
 
+		const positions = await royale.getTokenPositions(sixthPassportIdSeason2);
+		console.log('positions', positions[0]);
 		// fetch token uri
-		const tokenURI1 = await passport.tokenURI(sixthPassportIdSeason2);
-		console.log(tokenURI1);
+		// const tokenURI1 = await passport.tokenURI(sixthPassportIdSeason2);
+		// console.log(tokenURI1);
+		
 
 		//#2
 		await royale.takeAPosition(firstPassportIdSeason2, 1, { from: first });
@@ -2022,9 +2028,11 @@ contract('ThalesRoyale', accounts => {
 			royale.claimRewardForSeason(season_2, secondPassportIdSeason2, { from: second })
 		).to.be.revertedWith('Token is not alive');
 
+		console.log('finished', await royale.seasonFinished(season_2));
+
 		// fetch token uri
 		const tokenURI = await passport.tokenURI(sixthPassportIdSeason2);
-		console.log(tokenURI);
+		// console.log(tokenURI);
 		const metadata = extractJSONFromURI(tokenURI);
 
 		assert.equal(metadata.name, 'Thales Royale Passport');

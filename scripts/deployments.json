@@ -149,7 +149,7 @@
 		"ThalesStakingRewardsPool": "0xBfb2692Ae8c4399FD27977b9e14E8E69e31711d6",
 		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a",
 		"ExoiticMarket": "0xc85792c44c173F4b6Ee80f82144AcDb2c3bF5aA8",
-		"ExoticMarketMasterCopy": "0xe64392B656D9D6371d2bb13d2d5D5c71baf097fB",
+		"ExoticMarketMasterCopy": "0xE33aA8ff555bB2386d4F37Fa21a8D8E63b3A4A01",
 		"ExoticMarketManager": "0x4eA42C9bD934e38C646a66512B1bc783BA81D812",
 		"ExoticMarketManagerImplementation": "0xBB28db231B04D5Fcc4986910825289AAA6eD80C4",
 		"ThalesOracleCouncil": "0x61118647A361CBaFE9119D5d7e08Be5026A20dC4",
@@ -161,7 +161,7 @@
 		"ExoticPositionalMarketData": "0x6fb9914E1777f4C034B2813cDc035682eA62Df0c",
 		"ExoticPositionalMarketDataImplementation": "0x231B97DA9dd80F08da9f9546271c52F3ED57EbF2",
 		"ExoticUSD": "0x762838253A45a9106cc859ec99dF31DF48FCf735",
-		"ExoticMarketOpenBidMastercopy": "0x247A86DE321974D5AA38E9D8d0b03721364cb08F",
+		"ExoticMarketOpenBidMastercopy": "0x011a1E068C975734f1ABcA86C3E8e5454bC3A9a1",
 		"ExoticRewards": "0x18D3f889C45D3EB94dF04020bF4942E98A782C0c",
 		"ExoticRewardsImplementation": "0xcb25A2128220e67cF3A53c64b1C4e5FCcE254d97"
 	},

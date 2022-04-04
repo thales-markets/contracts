@@ -105,13 +105,13 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     }
 
     function takeCreatorInitialOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external onlyOwner {
-        require(_positions.length > 0 && _positions.length <= positionCount, "Invalid num of positions.");
-        require(ticketType == TicketType.FLEXIBLE_BID, "Not Open Bid market");
+        require(_positions.length > 0 && _positions.length <= positionCount, "Invalid posNum");
+        require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
         uint totalDepositedAmount = 0;
         address creatorAddress = marketManager.creatorAddress(address(this));
         for (uint i = 0; i < _positions.length; i++) {
-            require(_positions[i] > 0, "Non-zero position expected");
-            require(_positions[i] <= positionCount, "Position value invalid");
+            require(_positions[i] > 0, "Non-zero expected");
+            require(_positions[i] <= positionCount, "Value invalid");
             require(_amounts[i] > 0, "Zero amount");
             // add to the amount of the position
             totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
@@ -127,16 +127,16 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit NewOpenBidsForPositions(creatorAddress, _positions, _amounts);
     }
 
-    function takeOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external notPaused {
-        require(_positions.length > 0, "Invalid num of positions.");
-        require(_positions.length <= positionCount, "Position exceeds num of positions");
-        require(canUsersPlacePosition(), "Positioning finished/market resolved");
-        require(ticketType == TicketType.FLEXIBLE_BID, "Not Open Bid market");
+    function takeOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external notPaused nonReentrant {
+        require(_positions.length > 0, "Invalid posNum");
+        require(_positions.length <= positionCount, "Exceeds count");
+        require(canUsersPlacePosition(), "Market resolved");
+        require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
         uint totalDepositedAmount = 0;
         bool firstTime = true;
         for (uint i = 0; i < _positions.length; i++) {
-            require(_positions[i] > 0, "Non-zero position expected");
-            require(_positions[i] <= positionCount, "Position value invalid");
+            require(_positions[i] > 0, "Non-zero expected");
+            require(_positions[i] <= positionCount, "Value invalid");
             require(_amounts[i] > 0, "Zero amount");
             // add to the amount of the position
             totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
@@ -153,9 +153,9 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit NewOpenBidsForPositions(msg.sender, _positions, _amounts);
     }
 
-    function withdraw() external notPaused {
+    function withdraw() external notPaused nonReentrant {
         require(withdrawalAllowed, "Withdrawal not allowed");
-        require(canUsersPlacePosition(), "Positioning finished/market resolved");
+        require(canUsersPlacePosition(), "Market resolved");
         require(msg.sender != marketManager.creatorAddress(address(this)), "Creator can not withdraw");
         // withdraw all for open bid
         uint totalToWithdraw;
@@ -174,11 +174,11 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
     }
 
-    function withdrawFromOpenBidPosition(uint _openBidPosition) external notPaused {
+    function withdrawFromOpenBidPosition(uint _openBidPosition) external notPaused nonReentrant {
         require(withdrawalAllowed, "Withdrawal not allowed");
-        require(canUsersPlacePosition(), "Positioning finished/market resolved");
+        require(canUsersPlacePosition(), "Market resolved");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not openBid Market");
-        require(userOpenBidPosition[msg.sender][_openBidPosition] > 0, "No amount placed for position by user");
+        require(userOpenBidPosition[msg.sender][_openBidPosition] > 0, "No amount for position");
         require(msg.sender != marketManager.creatorAddress(address(this)), "Creator can not withdraw");
         uint totalToWithdraw = userOpenBidPosition[msg.sender][_openBidPosition];
         userOpenBidPosition[msg.sender][_openBidPosition] = 0;
@@ -193,7 +193,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
     }
 
-    function issueFees() external notPaused {
+    function issueFees() external notPaused nonReentrant {
         require(canUsersClaim(), "Not finalized");
         require(!feesAndBondsClaimed, "Fees claimed");
         if (winningPosition != CANCELED) {
@@ -208,7 +208,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
 
     // market resolved only through the Manager
     function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner {
-        require(canMarketBeResolvedByOwner(), "Market not resolvable. Disputed/not matured");
+        require(canMarketBeResolvedByOwner(), "Disputed/not matured");
         require(_outcomePosition <= positionCount, "Outcome exeeds positionNum");
         winningPosition = _outcomePosition;
         if (_outcomePosition == CANCELED) {
@@ -253,7 +253,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit MarketResolved(CANCELED, msg.sender, noWinners);
     }
 
-    function claimWinningTicket() external notPaused {
+    function claimWinningTicket() external notPaused nonReentrant {
         require(canUsersClaim(), "Market not finalized");
         uint amount = getUserClaimableAmount(msg.sender);
         require(amount > 0, "Claimable amount is zero.");
@@ -321,7 +321,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit MarketDisputed(false);
     }
 
-    function transferToMarket(address _sender, uint _amount) internal notPaused nonReentrant {
+    function transferToMarket(address _sender, uint _amount) internal notPaused {
         require(_sender != address(0), "Invalid sender address");
         require(IERC20(marketManager.paymentToken()).balanceOf(_sender) >= _amount, "Sender balance low");
         require(
@@ -582,7 +582,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         return (getAdditionalCreatorAmount(), getAdditionalResolverAmount(), getSafeBoxAmount(), getTotalFeesAmount());
     }
 
-    function resetForUserAllPositionsToZero(address _account) internal nonReentrant {
+    function resetForUserAllPositionsToZero(address _account) internal {
         if (positionCount > 0) {
             for (uint i = 1; i <= positionCount; i++) {
                 userOpenBidPosition[_account][i] = 0;

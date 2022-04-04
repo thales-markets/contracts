@@ -111,7 +111,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         emit NewPositionTaken(creatorAddress, _position, fixedTicketPrice);
     }
 
-    function takeAPosition(uint _position) external notPaused {
+    function takeAPosition(uint _position) external notPaused nonReentrant {
         require(_position > 0, "Invalid position");
         require(_position <= positionCount, "Position value invalid");
         require(canUsersPlacePosition(), "Positioning finished/market resolved");
@@ -128,7 +128,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         emit NewPositionTaken(msg.sender, _position, fixedTicketPrice);
     }
 
-    function withdraw() external notPaused {
+    function withdraw() external notPaused nonReentrant {
         require(withdrawalAllowed, "Not allowed");
         require(canUsersPlacePosition(), "Positioning finished/market resolved");
         require(userPosition[msg.sender] > 0, "Not a ticket holder");
@@ -144,7 +144,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         emit TicketWithdrawn(msg.sender, fixedTicketPrice.sub(withdrawalFee));
     }
 
-    function issueFees() external notPaused {
+    function issueFees() external notPaused nonReentrant {
         require(canUsersClaim(), "Not finalized");
         require(!feesAndBondsClaimed, "Fees claimed");
         if (winningPosition != CANCELED) {
@@ -205,7 +205,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         emit MarketResolved(CANCELED, msg.sender, noWinners);
     }
 
-    function claimWinningTicket() external notPaused {
+    function claimWinningTicket() external notPaused nonReentrant {
         require(canUsersClaim(), "Not finalized.");
         uint amount = getUserClaimableAmount(msg.sender);
         require(amount > 0, "Zero claimable.");
@@ -273,7 +273,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         emit MarketDisputed(false);
     }
 
-    function transferToMarket(address _sender, uint _amount) internal notPaused nonReentrant {
+    function transferToMarket(address _sender, uint _amount) internal notPaused {
         require(_sender != address(0), "Invalid sender");
         require(IERC20(marketManager.paymentToken()).balanceOf(_sender) >= _amount, "Sender balance low");
         require(

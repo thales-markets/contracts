@@ -138,7 +138,7 @@ library NFTSVG {
         for (uint i = 0; i < positions.length; i++) {
             uint position = positions[i].position;
             uint round = positions[i].round;
-            if(currentRound >= round && position > 0) {
+            if(currentRound >= round) {
                 string memory stamp = generateSVGStamp(round, position, baseURI, seasonFinished);
                 stamps = string(abi.encodePacked(stamps, stamp));
             }

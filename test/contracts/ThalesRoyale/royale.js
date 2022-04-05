@@ -43,8 +43,9 @@ contract('ThalesRoyale', accounts => {
 
 	beforeEach(async () => {
 		const thalesQty_0 = toUnit(0);
-		const thalesQty = toUnit(10000);
+		const thalesQty = toUnit(20000);
 		const thalesQty_2500 = toUnit(2500);
+		const thalesQty_5000 = toUnit(5000);
 		const uri = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/0';
 		const passportURI = 'https://thales-ajlyy.s3.eu-central-1.amazonaws.com';
 
@@ -180,7 +181,7 @@ contract('ThalesRoyale', accounts => {
 			);
 		});
 
-		it('Signing up cant be called twice', async () => {
+		it('Signing up can be called twice - two passports are minted', async () => {
 
 			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(0));
 			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(2));
@@ -192,8 +193,10 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(toBytes32('SNX'), await royale.oracleKeyPerSeason(1));
 			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(2));
 
+			// first token id #1, second token id #2
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
+
 
 			let initTotalTokensInARound = await royale.totalTokensPerRoundPerSeason(season_1, 1);
 			// not started
@@ -203,7 +206,15 @@ contract('ThalesRoyale', accounts => {
 			// not started
 			assert.equal(0, initEliminatedTokensInARound);
 
-			await expect(royale.signUp({ from: first })).to.be.revertedWith('Player already signed up');
+			await ThalesDeployed.transfer(first, toUnit(2500), { from: owner });
+			await ThalesDeployed.approve(royale.address, toUnit(2500), { from: first });
+
+			// third token id #3
+			await royale.signUp({ from: first })
+
+			assert.equal(await passport.ownerOf(1), first);
+			assert.equal(await passport.ownerOf(2), second);
+			assert.equal(await passport.ownerOf(3), first);
 		});
 
 		it('Signing up No enough tokens', async () => {
@@ -221,10 +232,8 @@ contract('ThalesRoyale', accounts => {
 			// check if passport is minted
 			assert.equal(await passport.ownerOf(firstPassportId), first);
 
-			// add logs[0]
-
 			// check if event is emited
-			assert.eventEqual(tx.logs[7], 'SignedUpPassport', {
+			assert.eventEqual(tx.logs[0], 'SignedUpPassport', {
 				user: first,
 				tokenId: firstPassportId,
 				season: season_1,
@@ -1870,7 +1879,7 @@ contract('ThalesRoyale', accounts => {
 		console.log('positions', positions[0]);
 		// fetch token uri
 		const tokenURI1 = await passport.tokenURI(sixthPassportIdSeason2);
-		console.log(tokenURI1);
+		//console.log(tokenURI1);
 		
 
 		//#2
@@ -2044,7 +2053,7 @@ contract('ThalesRoyale', accounts => {
 
 		// fetch token uri
 		const tokenURI = await passport.tokenURI(sixthPassportIdSeason2);
-		console.log(tokenURI);
+		//console.log(tokenURI);
 		const metadata = extractJSONFromURI(tokenURI);
 
 		assert.equal(metadata.name, 'Thales Royale Passport');

@@ -30,7 +30,7 @@ library NFTSVG {
                 abi.encodePacked(
                     generateSVGBase(params.seasonFinished, params.baseURI),
                     generateSVGData(params.player, params.timestamp, params.round, params.season, params.seasonFinished),
-                    generateSVGStamps(params.positions, params.baseURI, params.seasonFinished),
+                    generateSVGStamps(params.positions, params.baseURI, params.seasonFinished, params.round),
                     "</svg>"
                 )
             );
@@ -131,14 +131,17 @@ library NFTSVG {
     function generateSVGStamps(
         IPassportPosition.Position[] memory positions,
         string memory baseURI,
-        bool seasonFinished
+        bool seasonFinished,
+        uint currentRound
     ) private pure returns (string memory stamps) {
         stamps = string(abi.encodePacked(""));
         for (uint i = 0; i < positions.length; i++) {
             uint position = positions[i].position;
             uint round = positions[i].round;
-            string memory stamp = generateSVGStamp(round, position, baseURI, seasonFinished);
-            stamps = string(abi.encodePacked(stamps, stamp));
+            if(currentRound >= round && position > 0) {
+                string memory stamp = generateSVGStamp(round, position, baseURI, seasonFinished);
+                stamps = string(abi.encodePacked(stamps, stamp));
+            }
         }
     }
 

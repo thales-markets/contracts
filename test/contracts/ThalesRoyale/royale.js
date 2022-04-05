@@ -221,12 +221,14 @@ contract('ThalesRoyale', accounts => {
 			// check if passport is minted
 			assert.equal(await passport.ownerOf(firstPassportId), first);
 
+			// add logs[0]
+
 			// check if event is emited
-			assert.eventEqual(tx.logs[0], 'SignedUp', {
+			assert.eventEqual(tx.logs[7], 'SignedUpPassport', {
 				user: first,
 				tokenId: firstPassportId,
 				season: season_1,
-				position: 0
+				positions: [0, 0, 0, 0, 0, 0, 0]
 			});
 		});
 
@@ -510,7 +512,7 @@ contract('ThalesRoyale', accounts => {
 			const tx = await royale.claimRewardForSeason(season_1, firstPassportId, { from: first });
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[0], 'RewardClaimed', {
+			assert.eventEqual(tx.logs[0], 'RewardClaimedPassport', {
 				season: season_1,
 				winner: first,
 				tokenId: firstPassportId,
@@ -1357,7 +1359,7 @@ contract('ThalesRoyale', accounts => {
 			const tx = await royale.claimRewardForSeason(season_1, thirdPassportId, { from: third });
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[0], 'RewardClaimed', {
+			assert.eventEqual(tx.logs[0], 'RewardClaimedPassport', {
 				season: season_1,
 				winner: third,
 				tokenId: thirdPassportId,
@@ -1372,7 +1374,7 @@ contract('ThalesRoyale', accounts => {
 			const tx1 = await royale.claimRewardForSeason(season_1, secondPassportId, { from: second });
 
 			// check if event is emited
-			assert.eventEqual(tx1.logs[0], 'RewardClaimed', {
+			assert.eventEqual(tx1.logs[0], 'RewardClaimedPassport', {
 				season: season_1,
 				winner: second,
 				tokenId: secondPassportId,
@@ -1497,7 +1499,7 @@ contract('ThalesRoyale', accounts => {
 		const tx = await royale.claimRewardForSeason(season_1, firstPassportId, { from: first });
 
 		// check if event is emited
-		assert.eventEqual(tx.logs[0], 'RewardClaimed', {
+		assert.eventEqual(tx.logs[0], 'RewardClaimedPassport', {
 			season: season_1,
 			winner: first,
 			tokenId: firstPassportId,
@@ -1714,7 +1716,7 @@ contract('ThalesRoyale', accounts => {
 		const tx = await royale.claimRewardForSeason(season_1, secondPassportId, { from: second });
 
 		// check if event is emited
-		assert.eventEqual(tx.logs[0], 'RewardClaimed', {
+		assert.eventEqual(tx.logs[0], 'RewardClaimedPassport', {
 			season: season_1,
 			winner: second,
 			tokenId: secondPassportId,
@@ -1732,7 +1734,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		// check if event is emited
-		assert.eventEqual(tx_sixthPassportId.logs[0], 'RewardClaimed', {
+		assert.eventEqual(tx_sixthPassportId.logs[0], 'RewardClaimedPassport', {
 			season: season_1,
 			winner: second,
 			tokenId: sixthPassportId,
@@ -1989,7 +1991,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		// check if event is emited
-		assert.eventEqual(tx_s2.logs[0], 'RewardClaimed', {
+		assert.eventEqual(tx_s2.logs[0], 'RewardClaimedPassport', {
 			season: season_2,
 			winner: first,
 			tokenId: fifthPassportIdSeason2,
@@ -2011,7 +2013,7 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		// check if event is emited
-		assert.eventEqual(tx_s2_token6.logs[0], 'RewardClaimed', {
+		assert.eventEqual(tx_s2_token6.logs[0], 'RewardClaimedPassport', {
 			season: season_2,
 			winner: first,
 			tokenId: sixthPassportIdSeason2,
@@ -2042,7 +2044,7 @@ contract('ThalesRoyale', accounts => {
 
 		// fetch token uri
 		const tokenURI = await passport.tokenURI(sixthPassportIdSeason2);
-		// console.log(tokenURI);
+		console.log(tokenURI);
 		const metadata = extractJSONFromURI(tokenURI);
 
 		assert.equal(metadata.name, 'Thales Royale Passport');
@@ -2166,7 +2168,7 @@ contract('ThalesRoyale', accounts => {
 		const tx = await royale.claimRewardForSeason(season_1, firstPassportId, { from: first });
 
 		// check if event is emited
-		assert.eventEqual(tx.logs[0], 'RewardClaimed', {
+		assert.eventEqual(tx.logs[0], 'RewardClaimedPassport', {
 			season: season_1,
 			winner: first,
 			tokenId: firstPassportId,
@@ -2263,7 +2265,7 @@ contract('ThalesRoyale', accounts => {
 		const tx = await royale.claimRewardForSeason(season_1, firstPassportId, { from: first });
 
 		// check if event is emited
-		assert.eventEqual(tx.logs[0], 'RewardClaimed', {
+		assert.eventEqual(tx.logs[0], 'RewardClaimedPassport', {
 			season: season_1,
 			winner: first,
 			tokenId: firstPassportId,
@@ -2288,20 +2290,20 @@ contract('ThalesRoyale', accounts => {
 		let reward = await royale.rewardPerSeason(season_1);
 		assert.bnEqual(reward, toUnit(0));
 
-		await expect(royale.signUpWithPosition(3, { from: first })).to.be.revertedWith(
+		await expect(royale.signUpWithPosition([3, 1, 1, 1, 1, 1, 1], { from: first })).to.be.revertedWith(
 			'Position can only be 1 or 2'
 		);
-		await expect(royale.signUpWithPosition(0, { from: first })).to.be.revertedWith(
+		await expect(royale.signUpWithPosition([0, 0, 0, 0, 0, 0, 0], { from: first })).to.be.revertedWith(
 			'Position can only be 1 or 2'
 		);
 
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2));
 
-		await royale.signUpWithPosition(1, { from: first });
-		await royale.signUpWithPosition(2, { from: second });
-		await royale.signUpWithPosition(1, { from: third });
-		await royale.signUpWithPosition(2, { from: fourth });
+		await royale.signUpWithPosition([1, 1, 1, 1, 1, 1, 1], { from: first });
+		await royale.signUpWithPosition([2, 2, 2, 2, 2, 2, 2], { from: second });
+		await royale.signUpWithPosition([1, 1, 1, 1, 1, 1, 2], { from: third });
+		await royale.signUpWithPosition([2, 2, 2, 2, 2, 2, 2], { from: fourth });
 
 		const firstPassportId = 1;
 		const secondPassportId = 2;
@@ -2364,7 +2366,7 @@ contract('ThalesRoyale', accounts => {
 		await expect(royale.signUpWithPass(1, { from: second })).to.be.revertedWith(
 			'Owner of the token not valid'
 		);
-		await expect(royale.signUpWithPassWithPosition(2, 2, { from: first })).to.be.revertedWith(
+		await expect(royale.signUpWithPassWithPosition(2, [2, 2, 2, 2, 2, 2, 2], { from: first })).to.be.revertedWith(
 			'Owner of the token not valid'
 		);
 
@@ -2372,7 +2374,7 @@ contract('ThalesRoyale', accounts => {
 		assert.bnEqual(1, await voucher.balanceOf(second));
 
 		await royale.signUpWithPass(1, { from: first });
-		await royale.signUpWithPassWithPosition(2, 2, { from: second });
+		await royale.signUpWithPassWithPosition(2, [2, 2, 2, 2, 2, 2, 2], { from: second });
 
 		assert.bnEqual(2, await royale.mintedTokensCount(season_1));
 
@@ -2392,10 +2394,10 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2));
 
-		await royale.signUpWithPosition(2, { from: first });
-		await royale.signUpWithPosition(2, { from: second });
-		await royale.signUpWithPosition(1, { from: third });
-		await royale.signUpWithPosition(1, { from: fourth });
+		await royale.signUpWithPosition([2, 2, 2, 2, 2, 2, 2], { from: first });
+		await royale.signUpWithPosition([2, 2, 2, 2, 2, 2, 2], { from: second });
+		await royale.signUpWithPosition([1, 1, 1, 1, 1, 1, 1], { from: third });
+		await royale.signUpWithPosition([1, 1, 1, 1, 1, 1, 1], { from: fourth });
 
 		const firstPassportId = 1;
 		const secondPassportId = 2;
@@ -2541,10 +2543,10 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2));
 
-		await royale.signUpWithPosition(2, { from: first });
-		await royale.signUpWithPosition(1, { from: second });
-		await royale.signUpWithPosition(1, { from: third });
-		await royale.signUpWithPosition(1, { from: fourth });
+		await royale.signUpWithPosition([2, 2, 2, 2, 2, 2, 2], { from: first });
+		await royale.signUpWithPosition([1, 1, 1, 1, 1, 1, 1], { from: second });
+		await royale.signUpWithPosition([1, 1, 1, 1, 1, 1, 1], { from: third });
+		await royale.signUpWithPosition([1, 1, 1, 1, 1, 1, 1], { from: fourth });
 
 		const firstPassportId = 1;
 		const secondPassportId = 2;

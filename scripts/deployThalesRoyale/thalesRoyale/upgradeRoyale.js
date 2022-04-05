@@ -44,7 +44,10 @@ async function main() {
 
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const implementation = await upgrades.prepareUpgrade(thalesRoyaleAddress, ThalesRoyale);
-	await upgrades.upgradeProxy(thalesRoyaleAddress, ThalesRoyale);
+
+	if(networkObj.chainId == 69) {
+		await upgrades.upgradeProxy(thalesRoyaleAddress, ThalesRoyale);
+	}
 
 	console.log('ThalesRoyale upgraded');
 

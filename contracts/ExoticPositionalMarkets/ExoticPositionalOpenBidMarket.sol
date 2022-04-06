@@ -286,8 +286,9 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             thalesBonds.getCreatorBondForMarket(address(this)) > 0
         ) {
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
+            feesAndBondsClaimed = true;
         }
-        if (!feesAndBondsClaimed) {
+        else if (!feesAndBondsClaimed) {
             if (winningPosition != CANCELED) {
                 thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
                 thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());

@@ -328,6 +328,9 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     function isTokenAliveInASpecificSeason(uint tokenId, uint _season) public view returns (bool) {
+        if(_season != tokenSeason[tokenId]) {
+            return false;
+        }
         if (roundInASeason[_season] > 1) {
             return (tokenPositionInARoundPerSeason[tokenId][roundInASeason[_season] - 1] ==
                 roundResultPerSeason[_season][roundInASeason[_season] - 1]);
@@ -337,6 +340,9 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
     }
 
     function isTokenAlive(uint tokenId) public view returns (bool) {
+        if(season != tokenSeason[tokenId]) {
+            return false;
+        }
         if (roundInASeason[season] > 1) {
             return (tokenPositionInARoundPerSeason[tokenId][roundInASeason[season] - 1] ==
                 roundResultPerSeason[season][roundInASeason[season] - 1]);
@@ -615,7 +621,6 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     modifier onlyWinners(uint _season, uint tokenId) {
         require(seasonFinished[_season], "Royale must be finished!");
-        require(_season == tokenSeason[tokenId], "Wrong season");
         require(thalesRoyalePassport.ownerOf(tokenId) == msg.sender, "Not an owner");
         require(isTokenAliveInASpecificSeason(tokenId, _season), "Token is not alive");
         _;

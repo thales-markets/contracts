@@ -1863,6 +1863,8 @@ contract('ThalesRoyale', accounts => {
 
 		await royale.takeAPosition(firstPassportIdSeason2, 2, { from: first });
 		await royale.takeAPosition(secondPassportIdSeason2, 2, { from: second });
+		await royale.takeAPosition(secondPassportIdSeason2, 1, { from: second });
+		await royale.takeAPosition(secondPassportIdSeason2, 2, { from: second });
 		await royale.takeAPosition(thirdPassportIdSeason2, 2, { from: third });
 		await royale.takeAPosition(fourthPassportIdSeason2, 2, { from: fourth });
 		await royale.takeAPosition(fifthPassportIdSeason2, 2, { from: fifth });
@@ -1879,7 +1881,7 @@ contract('ThalesRoyale', accounts => {
 		console.log('positions', positions[0]);
 		// fetch token uri
 		const tokenURI1 = await passport.tokenURI(sixthPassportIdSeason2);
-		//console.log(tokenURI1);
+		console.log(tokenURI1);
 		
 
 		//#2
@@ -1939,6 +1941,8 @@ contract('ThalesRoyale', accounts => {
 
 		//#6
 		await royale.takeAPosition(fifthPassportIdSeason2, 2, { from: first });
+		await royale.takeAPosition(sixthPassportIdSeason2, 2, { from: first });
+		await royale.takeAPosition(sixthPassportIdSeason2, 1, { from: first });
 		await royale.takeAPosition(sixthPassportIdSeason2, 2, { from: first });
 		await royale.takeAPosition(seventhPassportIdSeason2, 2, { from: first });
 
@@ -2053,7 +2057,7 @@ contract('ThalesRoyale', accounts => {
 
 		// fetch token uri
 		const tokenURI = await passport.tokenURI(sixthPassportIdSeason2);
-		//console.log(tokenURI);
+		console.log(tokenURI);
 		const metadata = extractJSONFromURI(tokenURI);
 
 		assert.equal(metadata.name, 'Thales Royale Passport');

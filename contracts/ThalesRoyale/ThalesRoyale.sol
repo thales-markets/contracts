@@ -398,11 +398,12 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         // set token value
         tokenPositionInARoundPerSeason[_tokenId][_round] = _position;
         
-        if(tokenPositions[_tokenId].length == _round) {
-            tokenPositions[_tokenId].pop();
-        }
 
-        tokenPositions[_tokenId].push(IPassportPosition.Position(_round, _position));
+        if(tokenPositions[_tokenId].length >= _round) {
+            tokenPositions[_tokenId][_round - 1] = IPassportPosition.Position(_round, _position);   
+        } else {
+            tokenPositions[_tokenId].push(IPassportPosition.Position(_round, _position));
+        }
         
         // add number of positions
         if (_position == UP) {

@@ -18,7 +18,10 @@
 		"SNXIssuer": "0xC2F1F551bfAd1E9A3b4816513bFd41d77f40F915",
 		"OpThales_L1": "0x8947da500Eb47F82df21143D0C01A29862a8C3c5",
 		"ProxyThalesExchanger": "0x3124a11216273018c8f37181b4505d36573d9701",
-		"ProxyThalesExchangerImplementation": "0xE0B31640B07E4BCFAFc190d7DDE951BA3286Dd63"
+		"ProxyThalesExchangerImplementation": "0xE0B31640B07E4BCFAFc190d7DDE951BA3286Dd63",
+		"InvestorsAirdropUnclaimedRetro": "0x4f896abE9E28C2Db248a8DdAC205ca1cf84A2771",
+		"VestingEscrowInvestors": "0x088c6Ad16ba124F1d40fD2A3EDe63ef2E8dAe39f",
+		"VestingEscrowInvestorsImplementation": "0xcA52bcA5Bd68B75b38a0ef2bAC683fC245e0F912"
 	},
 	"ropsten": {
 		"Airdrop": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",
@@ -65,7 +68,10 @@
 		"ProxyStakingThalesImplementation": "0x062106C253029A0065c3829dB00f6483444510C9",
 		"ProxyEscrowThalesImplementation": "0x596C785d91A18CC6f25861770f5238d176946B53",
 		"ProxyPriceFeed": "0x9800ea969f1647edE2D954a3C82DE891549F41C2",
-		"SNXIssuer": "0x2Ef87CE145476A895ef2D442d826aED1CFaf5627"
+		"SNXIssuer": "0x2Ef87CE145476A895ef2D442d826aED1CFaf5627",
+		"InvestorsAirdropUnclaimedRetro": "0x686525728323b10bF611C6d260604c02946792ab",
+		"VestingEscrowInvestors": "0x758c5D4b48A9beDcF38f81cB6f75cd8Ce92C846E",
+		"VestingEscrowInvestorsImplementation": "0x2Be57E642B04376338F4Ce1BA8ecC5105AaF5995"
 	},
 	"goerli": {
 		"Airdrop": "",
@@ -118,7 +124,8 @@
 		"OptimisticAirdrop": "0x42B6e9b5Bb96a02E02e651d3104Fc3546E1313F2",
 		"OngoingAirdrop": "0x8D47b12ce25E2dc6866e8aAC0DbD823Da09fADd6",
 		"GUniLPToken": "0xac6705bc7f6a35eb194bdb89066049d6f1b0b1b5",
-		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29"
+		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29",
+		"OptimisticAirdropUnclaimedRetro": "0x3Da91E5eD564eE46d4D734E1F99F395f0969101a"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
@@ -153,7 +160,8 @@
 		"LPStakingRewards": "0x44d55a58211b2120Dc9f280ae68B99ffcaC03c7C",
 		"LPStakingRewardsImplementation": "0x40b8F4852eB5394c1EcABc1bEf09016a868f90FC",
 		"ThalesRoyale": "0x8f73e225Df3cacD7e6F62AE75538E72feA52d58F",
-		"ThalesRoyaleImplementation": "0xf4Ed706603C666c336B2Ea969D3597a1024a8eb9"
+		"ThalesRoyaleImplementation": "0xf4Ed706603C666c336B2Ea969D3597a1024a8eb9",
+		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058"
 	},
 	"polygonMumbai": {
 		"ProxyUSDC": "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",

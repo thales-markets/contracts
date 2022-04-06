@@ -1,0 +1,94 @@
+[
+	{
+		"address": "0x020b2f1fe869302375a3762c6d510139328c1889",
+		"balance": "18265703702604200139970",
+		"balanceDec": 18265.7037026042,
+		"isContract": true
+	},
+	{
+		"address": "0xda4ef8520b1a57d7d63f1e249606d1a459698876",
+		"balance": "4770718032477936816591",
+		"balanceDec": 4770.7180324779365,
+		"isContract": true
+	},
+	{
+		"address": "0xcd9d4988c0ae61887b075ba77f08cbfad2b65068",
+		"balance": "3766648206621699197508",
+		"balanceDec": 3766.648206621699,
+		"isContract": true
+	},
+	{
+		"address": "0xfad1611565ac495c927000623f0d04c84e1091e6",
+		"balance": "2246777298555306995256",
+		"balanceDec": 2246.777298555307,
+		"isContract": true
+	},
+	{
+		"address": "0x5fe906fe169807f6b8c16fca609ef9cc60d711ef",
+		"balance": "1737719466361113568175",
+		"balanceDec": 1737.7194663611135,
+		"isContract": true
+	},
+	{
+		"address": "0x8ca24021e3ee3b5c241bbfcee0712554d7dc38a1",
+		"balance": "1070227111174150937184",
+		"balanceDec": 1070.2271111741509,
+		"totalClaimed": 177323.4250287468,
+		"isContract": true
+	},
+	{
+		"address": "0xfb5f4e0656ebff31743e674d324554fd185e1c4b",
+		"balance": "1015167933367588003371",
+		"balanceDec": 1015.1679333675879,
+		"isContract": true
+	},
+	{
+		"address": "0xe7178db9e123f053aabfd2c28520bf6b63cb4a47",
+		"balance": "515063904451160032586",
+		"balanceDec": 515.06390445116,
+		"totalClaimed": 85692.07238266972,
+		"isContract": true
+	},
+	{
+		"address": "0xc351163c50bacafb07ef38d4906015bf36fc1a27",
+		"balance": "178331471383052069766",
+		"balanceDec": 178.33147138305205,
+		"isContract": true
+	},
+	{
+		"address": "0x3e41c972fa68af8c1541e940521e40075c1a6ad5",
+		"balance": "175628959514948618736",
+		"balanceDec": 175.62895951494863,
+		"isContract": true
+	},
+	{
+		"address": "0xb4d999815ddbac2d29ad72d3b813cbb252fc6849",
+		"balance": "159936109149855355601",
+		"balanceDec": 159.93610914985535,
+		"isContract": true
+	},
+	{
+		"address": "0x29d23b73dd0ed729f516bb55622765af102f0e33",
+		"balance": "93223799993983848339",
+		"balanceDec": 93.22379999398385,
+		"isContract": true
+	},
+	{
+		"address": "0x695f00450641968b264e1d2e98dff3e013143a37",
+		"balance": "68431285087121315084",
+		"balanceDec": 68.43128508712132,
+		"isContract": true
+	},
+	{
+		"address": "0x0309c98b1bffa350bcb3f9fb9780970ca32a5060",
+		"balance": "52569630599834098102",
+		"balanceDec": 52.5696305998341,
+		"isContract": true
+	},
+	{
+		"address": "0x510398f76cee472a7c9b61f403ae18073e84a5d3",
+		"balance": "29985847083707305074",
+		"balanceDec": 29.985847083707306,
+		"isContract": true
+	}
+]

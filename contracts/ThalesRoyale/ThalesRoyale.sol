@@ -615,6 +615,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
     modifier onlyWinners(uint _season, uint tokenId) {
         require(seasonFinished[_season], "Royale must be finished!");
+        require(_season == tokenSeason[tokenId], "Wrong season");
         require(thalesRoyalePassport.ownerOf(tokenId) == msg.sender, "Not an owner");
         require(isTokenAliveInASpecificSeason(tokenId, _season), "Token is not alive");
         _;

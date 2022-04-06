@@ -35,8 +35,8 @@ async function main() {
 }
 
 async function vestTokens(owner, fundingAdmins, confs, network) {
-	const startTime = (await ethers.provider.getBlock()).timestamp + 60 * 60 * 24 * 2; // start in 2 days
-	const VESTING_PERIOD = 86400 * 7 * 80; //80 weeks
+	const startTime = (await ethers.provider.getBlock()).timestamp + 60 * 60; // start in 2 days
+	const VESTING_PERIOD = 86400 * 7 * 75; //80 weeks
 
 	const VestingEscrow = await ethers.getContractFactory('VestingEscrowProxy');
 	const VestingEscrowDeployed = await upgrades.deployProxy(VestingEscrow, [

@@ -18,7 +18,10 @@
 		"SNXIssuer": "0xC2F1F551bfAd1E9A3b4816513bFd41d77f40F915",
 		"OpThales_L1": "0x8947da500Eb47F82df21143D0C01A29862a8C3c5",
 		"ProxyThalesExchanger": "0x3124a11216273018c8f37181b4505d36573d9701",
-		"ProxyThalesExchangerImplementation": "0xE0B31640B07E4BCFAFc190d7DDE951BA3286Dd63"
+		"ProxyThalesExchangerImplementation": "0xE0B31640B07E4BCFAFc190d7DDE951BA3286Dd63",
+		"InvestorsAirdropUnclaimedRetro": "0x4f896abE9E28C2Db248a8DdAC205ca1cf84A2771",
+		"VestingEscrowInvestors": "0x088c6Ad16ba124F1d40fD2A3EDe63ef2E8dAe39f",
+		"VestingEscrowInvestorsImplementation": "0xcA52bcA5Bd68B75b38a0ef2bAC683fC245e0F912"
 	},
 	"ropsten": {
 		"Airdrop": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",
@@ -121,7 +124,8 @@
 		"OptimisticAirdrop": "0x42B6e9b5Bb96a02E02e651d3104Fc3546E1313F2",
 		"OngoingAirdrop": "0x8D47b12ce25E2dc6866e8aAC0DbD823Da09fADd6",
 		"GUniLPToken": "0xac6705bc7f6a35eb194bdb89066049d6f1b0b1b5",
-		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29"
+		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29",
+		"OptimisticAirdropUnclaimedRetro": "0x3Da91E5eD564eE46d4D734E1F99F395f0969101a"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

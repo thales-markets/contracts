@@ -204,7 +204,7 @@ async function checkDoDoDepositors() {
 
 	mergedResult.forEach(m => {
 		m.totalThalesLP = m.balance * thalesPerLPToken;
-		m.totalWETHLP = m.balance * wethPerLPToken;
+		m.totalWETHLP = m.balance * wethPerLPToken * 1.05;
 		if (m.pendingReward) {
 			m.totalThales = m.pendingReward * 1.0 + m.totalThalesLP;
 		} else m.totalThales = m.totalThalesLP;
@@ -234,7 +234,7 @@ async function checkDoDoDepositors() {
 		}
 	);
 
-	const ObjectsToCsv = require('objects-to-csv')
+	const ObjectsToCsv = require('objects-to-csv');
 	const csv = new ObjectsToCsv(mergedResult);
 	await csv.toDisk('scripts/Stop_retro_rewards/dodo/mergedResult.csv');
 }

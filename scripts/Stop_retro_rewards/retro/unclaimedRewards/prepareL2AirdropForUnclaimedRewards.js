@@ -43,15 +43,10 @@ async function prepareOngoingAirdropMigration() {
 		let address = airdropee.address;
 		address = address.toLowerCase();
 		console.log('Processing ' + i + ' . address');
-		let contractChecker = await web3.eth.getCode(address);
-		let isContract = contractChecker != '0x';
 		i++;
-		if (isContract) {
-			airdropee.isContract = isContract;
+		if (airdropee.isContract) {
 			contractsInOngoingRewards.push(airdropee);
 		} else {
-			airdropee.isContract = false;
-
 			let hash = keccak256(
 				web3.utils.encodePacked(eoaairdropscount, airdropee.address, airdropee.balance)
 			);

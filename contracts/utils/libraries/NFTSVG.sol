@@ -29,7 +29,7 @@ library NFTSVG {
             svg = string(
                 abi.encodePacked(
                     generateSVGBase(params.seasonFinished, params.baseURI),
-                    generateSVGData(params.player, params.timestamp, params.round, params.season, params.seasonFinished),
+                    generateSVGData(params.player, params.tokenId, params.timestamp, params.season, params.seasonFinished),
                     generateSVGStamps(params.positions, params.baseURI, params.seasonFinished, params.round),
                     "</svg>"
                 )
@@ -44,8 +44,8 @@ library NFTSVG {
                 abi.encodePacked(
                     '<?xml version="1.0" encoding="utf-8"?>',
                     '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 492.2 700" style="enable-background:new 0 0 492.2 700;" xml:space="preserve">',
-                    "<defs><style type=\"text/css\">@import url('http://fonts.googleapis.com/css?family=Lobster|Fontdiner+Swanky|Crafty+Girls|Pacifico|Satisfy|Gloria+Hallelujah|Bangers|Audiowide|Sacramento');</style></defs>",
-                    "<style type=\"text/css\">st0{fill:#F5F0EB;}.st1{fill:#A0482D;}.st2{fill:#299956;}.st3{enable-background:new;}.st4{fill:#7F6F6F;}.st5{font-family:'Satisfy';}.st6{font-size:22.0664px;}</style>",
+                    "<defs><style type=\"text/css\">@import url('https://fonts.googleapis.com/css?family=Special+Elite');</style></defs>",
+                    "<style type=\"text/css\">st0{fill:#F5F0EB;}.st1{fill:#A0482D;}.st2{fill:#299956;}.st3{enable-background:new;}.st4{fill:#7F6F6F;}.st5{font-family:'Special Elite';}.st6{font-size:18px;}</style>",
                     '<image style="overflow:visible;" width="1984" height="2851" xlink:href="',
                     baseURI,
                     '/winner.png"  transform="matrix(0.2486 0 0 0.2486 1.2623 -2.4119)"></image>'
@@ -56,8 +56,8 @@ library NFTSVG {
                 abi.encodePacked(
                     '<?xml version="1.0" encoding="utf-8"?>',
                     '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 492.2 700" style="enable-background:new 0 0 492.2 700;" xml:space="preserve">',
-                    "<defs><style type=\"text/css\">@import url('https://thales-ajlyy.s3.eu-central-1.amazonaws.com/ELEGANT+TYPEWRITER+Regular.ttf');</style></defs>",
-                    "<style type=\"text/css\">st0{fill:#F5F0EB;}.st1{fill:#A0482D;}.st2{fill:#299956;}.st3{enable-background:new;}.st4{fill:#7F6F6F;}.st5{font-family:'ELEGANT TYPEWRITER Regular';}.st6{font-size:22.0664px;}</style>",
+                    "<defs><style type=\"text/css\">@import url('https://fonts.googleapis.com/css?family=Special+Elite');</style></defs>",
+                    "<style type=\"text/css\">st0{fill:#F5F0EB;}.st1{fill:#A0482D;}.st2{fill:#299956;}.st3{enable-background:new;}.st4{fill:#7F6F6F;}.st5{font-family:'Special Elite';}.st6{font-size:19px;}</style>",
                     '<image style="overflow:visible;" width="1984" height="2851" xlink:href="',
                     baseURI,
                     '/main.png"  transform="matrix(0.2484 0 0 0.2484 -1.4276 -4.1244)"></image>'
@@ -81,8 +81,8 @@ library NFTSVG {
 
     function generateSVGData(
         address player,
+        uint tokenId,
         uint timestamp,
-        uint round,
         uint season,
         bool seasonFinished
     ) private pure returns (string memory svg) {
@@ -92,14 +92,12 @@ library NFTSVG {
                 generateSVGTimestamp(timestamp, seasonFinished),
                 '<text transform="',
                 !seasonFinished ? "matrix(1 0 0 1 15.8619 530.2961)" : "matrix(1 0 0 1 34.7126 571.7894)",
-                '" class="st4 st5 st6">Round #',
-                Strings.toString(round),
+                '" class="st4 st5 st6">Passport No: ',
+                Strings.toString(tokenId),
                 "</text>",
                 '<text transform="',
                 !seasonFinished ? "matrix(1 0 0 1 15.8619 556.7766)" : "matrix(1 0 0 1 34.7126 596.3534)",
-                '" class="st4 st5 st6">Season ',
-                Strings.toString(season),
-                "</text>"
+                '" class="st4 st5 st6">Place of residence: Metaverse</text>'
             )
         );
     }
@@ -121,7 +119,7 @@ library NFTSVG {
             abi.encodePacked(
                 '<text transform="',
                 !seasonFinished ? "matrix(1 0 0 1 15.8619 503.8186)" : "matrix(1 0 0 1 34.7126 547.2279)",
-                '" class="st4 st5 st6">Timestamp ',
+                '" class="st4 st5 st6">Issued On: ',
                 Strings.toString(timestamp),
                 "</text>"
             )
@@ -135,10 +133,11 @@ library NFTSVG {
         uint currentRound
     ) private pure returns (string memory stamps) {
         stamps = string(abi.encodePacked(""));
+        uint rounds = seasonFinished ? currentRound - 1 : currentRound;
         for (uint i = 0; i < positions.length; i++) {
             uint position = positions[i].position;
             uint round = positions[i].round;
-            if(currentRound >= round) {
+            if(rounds >= round) {
                 string memory stamp = generateSVGStamp(round, position, baseURI, seasonFinished);
                 stamps = string(abi.encodePacked(stamps, stamp));
             }

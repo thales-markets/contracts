@@ -420,7 +420,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
             positionsPerRoundPerSeason[_season][_round][_position]++;
         }
 
-        emit TookAPosition(_player, _season, _round, _position);
+        emit TookAPositionPassport(_player, _tokenId, _season, _round, _position);
     }
 
     function _populateReward(uint numberOfWinners) internal {
@@ -645,6 +645,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         uint numberOfWinningPlayers
     );
     event TookAPosition(address user, uint season, uint round, uint position);
+    event TookAPositionPassport(address user, uint tokenId, uint season, uint round, uint position);
     event RoyaleStarted(uint season, uint totalTokens, uint totalReward);
     event RoyaleFinished(uint season, uint numberOfWinners, uint rewardPerWinner);
     event RewardClaimedPassport(uint season, address winner, uint tokenId, uint reward);

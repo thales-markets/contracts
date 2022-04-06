@@ -359,6 +359,11 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         return tokenPositions[tokenId];
     }
 
+    // deprecated from passport impl
+    function getPlayersForSeason(uint _season) public view returns (address[] memory) {
+        return playersPerSeason[_season];
+    }
+
     function getBuyInAmount() public view returns (uint) {
         return buyInAmount;
     }

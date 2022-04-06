@@ -35,6 +35,7 @@ contract ThalesRoyalePassport is
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(address _thalesRoyaleAddress, string memory _baseUri) public initializer {
+        __Ownable_init();
         __ERC721_init("Thales Royale Passport", "TRS");
         thalesRoyale = IThalesRoyale(_thalesRoyaleAddress);
         baseUri = _baseUri;

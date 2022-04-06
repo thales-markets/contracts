@@ -644,7 +644,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         uint numberOfEliminatedPlayers,
         uint numberOfWinningPlayers
     );
-    event TookAPosition(address user, uint season, uint round, uint position);
+    event TookAPosition(address user, uint season, uint round, uint position); //deprecated from passport impl.
     event TookAPositionPassport(address user, uint tokenId, uint season, uint round, uint position);
     event RoyaleStarted(uint season, uint totalTokens, uint totalReward);
     event RoyaleFinished(uint season, uint numberOfWinners, uint rewardPerWinner);

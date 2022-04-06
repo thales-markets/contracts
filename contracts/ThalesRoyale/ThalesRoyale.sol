@@ -3,10 +3,8 @@ pragma solidity ^0.8.0;
 
 // external
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
@@ -23,7 +21,6 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     /* ========== LIBRARIES ========== */
 
-    using SafeMathUpgradeable for uint;
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /* ========== CONSTANTS =========== */
@@ -107,7 +104,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         uint _buyInAmount,
         uint _pauseBetweenSeasonsTime,
         bool _nextSeasonStartsAutomatically
-    ) public initializer {
+    ) external initializer {
         setOwner(_owner);
         initNonReentrant();
         oracleKey = _oracleKey;
@@ -185,10 +182,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(tokenPositionInARoundPerSeason[tokenId][roundInASeason[season]] != position, "Same position");
 
         if (roundInASeason[season] != 1) {
-            require(
-                isTokenAlive(tokenId),
-                "Token no longer valid"
-            );
+            require(isTokenAlive(tokenId),"Token no longer valid");
         }
 
         require(block.timestamp < roundInASeasonStartTime[season] + roundChoosingLength, "Round positioning finished");
@@ -213,6 +207,9 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
 
         // getting price
         uint currentPriceFromOracle = priceFeed.rateForCurrency(oracleKeyPerSeason[season]);
+
+        require(currentPriceFromOracle > 0, "Oracle Price must be larger than 0");
+
         uint stikePrice = roundTargetPrice;
 
         finalPricePerRoundPerSeason[season][currentSeasonRound] = currentPriceFromOracle;
@@ -419,7 +416,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         require(seasonFinished[season], "Royale must be finished");
         require(numberOfWinners > 0, "There is no alive players left in Royale");
 
-        rewardPerWinnerPerSeason[season] = rewardPerSeason[season].div(numberOfWinners);
+        rewardPerWinnerPerSeason[season] = rewardPerSeason[season] / numberOfWinners;
     }
 
     function _buyIn(address _sender, uint _amount) internal {
@@ -445,10 +442,10 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         uint amountSafeBox = 0;
 
         if (safeBoxPercentage > 0) {
-            amountSafeBox = _amount.div(100).mul(safeBoxPercentage);
+            amountSafeBox = (_amount * safeBoxPercentage) / 100;
         }
 
-        uint amountBuyIn = _amount.sub(amountSafeBox);
+        uint amountBuyIn = _amount - amountSafeBox;
 
         return (amountBuyIn, amountSafeBox);
     }
@@ -461,7 +458,7 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         // set collected -> true
         tokenRewardCollectedPerSeason[_tokenId] = true;
 
-        unclaimedRewardPerSeason[_season] = unclaimedRewardPerSeason[_season].sub(rewardPerWinnerPerSeason[_season]);
+        unclaimedRewardPerSeason[_season] = unclaimedRewardPerSeason[_season] - rewardPerWinnerPerSeason[_season];
 
         // transfering rewardPerToken
         rewardToken.safeTransfer(_winner, rewardPerWinnerPerSeason[_season]);
@@ -512,74 +509,77 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         _putFunds(msg.sender, _amount, _season);
     }
 
-    function setNextSeasonStartsAutomatically(bool _nextSeasonStartsAutomatically) public onlyOwner {
+    function setNextSeasonStartsAutomatically(bool _nextSeasonStartsAutomatically) external onlyOwner {
         nextSeasonStartsAutomatically = _nextSeasonStartsAutomatically;
         emit NewNextSeasonStartsAutomatically(_nextSeasonStartsAutomatically);
     }
 
-    function setPauseBetweenSeasonsTime(uint _pauseBetweenSeasonsTime) public onlyOwner {
+    function setPauseBetweenSeasonsTime(uint _pauseBetweenSeasonsTime) external onlyOwner {
         pauseBetweenSeasonsTime = _pauseBetweenSeasonsTime;
         emit NewPauseBetweenSeasonsTime(_pauseBetweenSeasonsTime);
     }
 
-    function setSignUpPeriod(uint _signUpPeriod) public onlyOwner {
+    function setSignUpPeriod(uint _signUpPeriod) external onlyOwner {
         signUpPeriod = _signUpPeriod;
         emit NewSignUpPeriod(_signUpPeriod);
     }
 
-    function setRoundChoosingLength(uint _roundChoosingLength) public onlyOwner {
+    function setRoundChoosingLength(uint _roundChoosingLength) external onlyOwner {
         roundChoosingLength = _roundChoosingLength;
         emit NewRoundChoosingLength(_roundChoosingLength);
     }
 
-    function setRoundLength(uint _roundLength) public onlyOwner {
+    function setRoundLength(uint _roundLength) external onlyOwner {
         roundLength = _roundLength;
         emit NewRoundLength(_roundLength);
     }
 
-    function setPriceFeed(IPriceFeed _priceFeed) public onlyOwner {
+    function setPriceFeed(IPriceFeed _priceFeed) external onlyOwner {
         priceFeed = _priceFeed;
         emit NewPriceFeed(_priceFeed);
     }
 
-    function setThalesRoyalePassport(IThalesRoyalePassport _thalesRoyalePassport) public onlyOwner {
+    function setThalesRoyalePassport(IThalesRoyalePassport _thalesRoyalePassport) external onlyOwner {
         require(address(_thalesRoyalePassport) != address(0), "Invalid address");
         thalesRoyalePassport = _thalesRoyalePassport;
         emit NewThalesRoyalePassport(_thalesRoyalePassport);
     }
 
-    function setBuyInAmount(uint _buyInAmount) public onlyOwner {
+    function setBuyInAmount(uint _buyInAmount) external onlyOwner {
         buyInAmount = _buyInAmount;
         emit NewBuyInAmount(_buyInAmount);
     }
 
-    function setSafeBoxPercentage(uint _safeBoxPercentage) public onlyOwner {
-        require(_safeBoxPercentage >= 0 && _safeBoxPercentage <= 100, "Must be in between 0 and 100 %");
+    function setSafeBoxPercentage(uint _safeBoxPercentage) external onlyOwner {
+        require(_safeBoxPercentage <= 100, "Must be in between 0 and 100 %");
         safeBoxPercentage = _safeBoxPercentage;
         emit NewSafeBoxPercentage(_safeBoxPercentage);
     }
 
-    function setSafeBox(address _safeBox) public onlyOwner {
+    function setSafeBox(address _safeBox) external onlyOwner {
+        require(_safeBox != address(0), "Invalid address");
         safeBox = _safeBox;
         emit NewSafeBox(_safeBox);
     }
 
-    function setRoyalePassAddress(address _royalePass) public onlyOwner {
+    function setRoyalePassAddress(address _royalePass) external onlyOwner {
+        require(address(_royalePass) != address(0), "Invalid address");
         royalePass = IThalesRoyalePass(_royalePass);
         emit NewThalesRoyalePass(_royalePass);
     }
 
-    function setOracleKey(bytes32 _oracleKey) public onlyOwner {
+    function setOracleKey(bytes32 _oracleKey) external onlyOwner {
         oracleKey = _oracleKey;
         emit NewOracleKey(_oracleKey);
     }
 
-    function setRewardToken(address _rewardToken) public onlyOwner {
+    function setRewardToken(address _rewardToken) external onlyOwner {
+        require(address(_rewardToken) != address(0), "Invalid address");
         rewardToken = IERC20Upgradeable(_rewardToken);
         emit NewRewardToken(_rewardToken);
     }
 
-    function setNumberOfRounds(uint _rounds) public onlyOwner {
+    function setNumberOfRounds(uint _rounds) external onlyOwner {
         rounds = _rounds;
         emit NewNumberOfRounds(_rounds);
     }

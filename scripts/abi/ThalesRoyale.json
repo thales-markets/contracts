@@ -186,6 +186,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "contract IThalesRoyalePassport",
+        "name": "_thalesRoyalePassport",
+        "type": "address"
+      }
+    ],
+    "name": "NewThalesRoyalePassport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -287,6 +300,37 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "winner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      }
+    ],
+    "name": "RewardClaimedPassport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "season",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "round",
         "type": "uint256"
@@ -362,7 +406,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "totalPlayers",
+        "name": "totalTokens",
         "type": "uint256"
       },
       {
@@ -398,6 +442,37 @@
       }
     ],
     "name": "SignedUp",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "season",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "positions",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "SignedUpPassport",
     "type": "event"
   },
   {
@@ -548,6 +623,11 @@
         "internalType": "uint256",
         "name": "_season",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       }
     ],
     "name": "claimRewardForSeason",
@@ -627,16 +707,47 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getTokenPositions",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "round",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "position",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IPassportPosition.Position[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_season",
         "type": "uint256"
       }
     ],
-    "name": "getPlayersForSeason",
+    "name": "getTokensForSeason",
     "outputs": [
       {
-        "internalType": "address[]",
+        "internalType": "uint256[]",
         "name": "",
-        "type": "address[]"
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",
@@ -734,12 +845,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       }
     ],
-    "name": "isPlayerAlive",
+    "name": "isTokenAlive",
     "outputs": [
       {
         "internalType": "bool",
@@ -753,9 +864,9 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -763,12 +874,31 @@
         "type": "uint256"
       }
     ],
-    "name": "isPlayerAliveInASpecificSeason",
+    "name": "isTokenAliveInASpecificSeason",
     "outputs": [
       {
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "mintedTokensCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1559,6 +1689,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "contract IThalesRoyalePassport",
+        "name": "_thalesRoyalePassport",
+        "type": "address"
+      }
+    ],
+    "name": "setThalesRoyalePassport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "signUp",
     "outputs": [],
@@ -1599,9 +1742,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "position",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
       }
     ],
     "name": "signUpWithPassWithPosition",
@@ -1612,9 +1755,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "position",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
       }
     ],
     "name": "signUpWithPosition",
@@ -1659,6 +1802,11 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "position",
         "type": "uint256"
       }
@@ -1693,6 +1841,158 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "thalesRoyalePassport",
+    "outputs": [
+      {
+        "internalType": "contract IThalesRoyalePassport",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenPositionInARoundPerSeason",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenPositions",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenRewardCollectedPerSeason",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokenSeason",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokensMintedPerSeason",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tokensPerSeason",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1706,6 +2006,30 @@
       }
     ],
     "name": "totalPlayersPerRoundPerSeason",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "totalTokensPerRoundPerSeason",
     "outputs": [
       {
         "internalType": "uint256",

@@ -81,7 +81,16 @@
 		"TherundownConsumerImplementation": "0x4c8c9C316791E5A5F7e69e1a40a59cE1b69c59C1",
 		"InvestorsAirdropUnclaimedRetro": "0x686525728323b10bF611C6d260604c02946792ab",
 		"VestingEscrowInvestors": "0x758c5D4b48A9beDcF38f81cB6f75cd8Ce92C846E",
-		"VestingEscrowInvestorsImplementation": "0x2Be57E642B04376338F4Ce1BA8ecC5105AaF5995"
+		"VestingEscrowInvestorsImplementation": "0x2Be57E642B04376338F4Ce1BA8ecC5105AaF5995",
+		"ExoticMarketOpenBidMastercopy": "0x582FB96EE4ea5b5Eb6f8BFb3ba3fDeAe15d08744",
+		"ExoticRewards": "0xf86614c7A7a408CD0550f1de52d0e450548535B9",
+		"ExoticRewardsImplementation": "0x5aA87dbA0F1486DB34Cd806eDa32f4d66ca4Ae30",
+		"ExoticPositionalMarketData": "0x1320163aD4D48b87A4B35BABd18c050883cbA3Bb",
+		"ExoticPositionalMarketDataImplementation": "0x1B3DD824fC5B42dfc486B0E060Ba2A556B98Bab4",
+		"ThalesOracleCouncil": "0xB003F181303F5CFee75222DA8FD410A08B1613F8",
+		"ThalesOracleCouncilImplementation": "0xd0bb5bF2df1df4C047F79Faf599d2ACAcAEA64CF",
+		"ExoticPositionalTags": "0x0d9fEC177281bb276265Afa66710401392A13173",
+		"ExoticPositionalTagsImplementation": "0x17f63D216626fE4315d24cDc22141FBcb0356066"
 	},
 	"goerli": {
 		"Airdrop": "",

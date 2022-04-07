@@ -16,8 +16,8 @@ async function main() {
 		return 0;
 	}
 	if (networkObj.chainId == 42) {
-		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimisticKovan\'")
-		return 0;
+		networkObj.name = 'kovan';
+		network = 'kovan';
 	}
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';

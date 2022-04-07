@@ -1,132 +1,93 @@
 [
   {
+    "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
         "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
-    "name": "getClaimableBondAmountForMarket",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
-    "name": "getClaimedBondAmountForMarket",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
-    "name": "getCreatorBondForMarket",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
+        "name": "owner",
         "type": "address"
       },
       {
+        "indexed": true,
         "internalType": "address",
-        "name": "_disputorAddress",
+        "name": "approved",
         "type": "address"
-      }
-    ],
-    "name": "getDisputorBondForMarket",
-    "outputs": [
+      },
       {
+        "indexed": true,
         "internalType": "uint256",
-        "name": "",
+        "name": "tokenId",
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
+    "name": "Approval",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "approved",
+        "type": "bool"
+      }
+    ],
+    "name": "ApprovalForAll",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "Transfer",
+    "type": "event"
   },
   {
     "inputs": [
       {
         "internalType": "address",
-        "name": "_market",
+        "name": "to",
         "type": "address"
-      }
-    ],
-    "name": "getResolverBondForMarket",
-    "outputs": [
+      },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "tokenId",
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
-    "name": "getTotalDepositedBondAmountForMarket",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
-    "name": "issueBondsBackToCreatorAndResolver",
+    "name": "approve",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -135,31 +96,48 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_market",
+        "name": "owner",
         "type": "address"
-      },
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "burn",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "address",
-        "name": "_account",
+        "name": "player",
         "type": "address"
       },
       {
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_bondToReduce",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_disputorAddress",
-        "type": "address"
       }
     ],
-    "name": "sendBondFromMarketToUser",
+    "name": "burnWithTransfer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -176,7 +154,7 @@
     "outputs": [
       {
         "internalType": "address",
-        "name": "_market",
+        "name": "operator",
         "type": "address"
       }
     ],
@@ -187,7 +165,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_creatorAddress",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "operator",
         "type": "address"
       }
     ],
@@ -210,30 +193,55 @@
         "type": "uint256"
       }
     ],
-    "name": "sendCreatorBondToMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "ownerOf",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "pricePaidForVoucher",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
       {
         "internalType": "address",
-        "name": "_market",
+        "name": "from",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "_disputorAddress",
+        "name": "to",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "tokenId",
         "type": "uint256"
       }
     ],
-    "name": "sendDisputorBondToMarket",
+    "name": "safeTransferFrom",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -242,21 +250,26 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_market",
+        "name": "from",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "_account",
+        "name": "to",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "tokenId",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
       }
     ],
-    "name": "sendOpenDisputeBondFromMarketToDisputor",
+    "name": "safeTransferFrom",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -265,96 +278,58 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_market",
+        "name": "operator",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_approved",
+        "type": "bool"
+      }
+    ],
+    "name": "setApprovalForAll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "_resolverAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "sendResolverBondToMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_managerAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setManagerAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_oracleCouncilAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setOracleCouncilAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
-    "name": "transferCreatorToResolverBonds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
+        "name": "to",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "tokenId",
         "type": "uint256"
       }
     ],
-    "name": "transferFromMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "transferToMarket",
+    "name": "transferFrom",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

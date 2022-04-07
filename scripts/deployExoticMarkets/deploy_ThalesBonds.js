@@ -19,7 +19,6 @@ async function main() {
 	if (networkObj.chainId == 42) {
 		networkObj.name = 'kovan';
 		network = 'kovan';
-		ThalesName = "OpThales_L1";
 	}
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';

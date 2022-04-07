@@ -23,6 +23,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     bytes32[] public unproccessedGames;
     mapping(bytes32 => uint) public unproccessedGamesIndex;
     mapping(uint => bytes32) public gamesResolvedQueue;
+    mapping(bytes32 => bool) public existingGamesInResolvedQueue;
     uint public firstResolved;
     uint public lastResolved;
 
@@ -67,6 +68,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     function enqueueGamesResolved(bytes32 data) public onlyConsumer {
         lastResolved += 1;
         gamesResolvedQueue[lastResolved] = data;
+        existingGamesInResolvedQueue[data] = true;
 
         emit EnqueueGamesResolved(data, lastCreated);
     }

@@ -8,6 +8,7 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
+
 	if (network === 'unknown') {
 		network = 'localhost';
 	}
@@ -21,9 +22,20 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
+
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
+	}
+
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
@@ -50,11 +62,16 @@ async function main() {
 		});
 	}
 
+	let tx = await priceFeed.setETH('0x4200000000000000000000000000000000000006');
+	await tx.wait().then(e => {
+		console.log('PriceFeed: ETH address set');
+	});
+
 	// RAI/WETH pool kovan 0x3641abc98ef25ce74939fd15f04a4da677f45e0f
-    let tx = await priceFeed.addPool(toBytes32('RAI'), '0x3641abc98ef25ce74939fd15f04a4da677f45e0f');
+    /*let tx = await priceFeed.addPool(toBytes32('RAI'), '0x3641abc98ef25ce74939fd15f04a4da677f45e0f');
     await tx.wait().then(e => {
 		console.log('PriceFeed: addPool for RAI');
-	});
+	});*/
 
 	try {
 		await hre.run('verify:verify', {

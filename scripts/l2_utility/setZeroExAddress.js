@@ -31,41 +31,41 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if(networkObj.chainId == 10) {
-		networkObj.name = "optimistic";
-		network = 'optimistic'		
+		networkObj.name = "optimisticEthereum";
+		network = 'optimisticEthereum'		
 	}
 
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + network);
 
-	const BinaryOptionMarketManagerAddress = getTargetAddress('BinaryOptionMarketManager', network);
-	console.log('Found BinaryOptionMarketManager at:' + BinaryOptionMarketManagerAddress);
+	const PositionalMarketManagerAddress = getTargetAddress('PositionalMarketManager', network);
+	console.log('Found PositionalMarketManager at:' + PositionalMarketManagerAddress);
 	
 
 	const ZeroExAddress = getTargetAddress('ZeroEx', network);
 	console.log('Found 0x at:' + ZeroExAddress);
 
-	// const BinaryOptionMarketFactoryAddress = getTargetAddress('BinaryOptionMarketFactory', network);
-	// console.log('Found BinaryOptionMarketFactory at:' + BinaryOptionMarketFactoryAddress);
+	// const PositionalMarketFactoryAddress = getTargetAddress('PositionalMarketFactory', network);
+	// console.log('Found PositionalMarketFactory at:' + PositionalMarketFactoryAddress);
 
-	// let abi = ['function setBinaryOptionsMarketFactory(address _binaryOptionMarketFactory) external'];
-	// let contract = new ethers.Contract(BinaryOptionMarketManagerAddress, abi, owner);
+	// let abi = ['function setPositionalMarketFactory(address _positionalMarketFactory) external'];
+	// let contract = new ethers.Contract(PositionalMarketManagerAddress, abi, owner);
 
-	// let setBinaryOptions = await contract.setBinaryOptionsMarketFactory(
-	// 	BinaryOptionMarketFactoryAddress,
+	// let setPositions = await contract.setPositionalMarketFactory(
+	// 	PositionalMarketFactoryAddress,
 	// 	{
 	// 		from: owner.address,
 	// 		gasLimit: 5000000
 	// 	}
 	// );
-	// console.log(setBinaryOptions)
-	// setBinaryOptions.wait().then(console.log('Done transfer! $$$$ >'));
+	// console.log(setPositions)
+	// setPositions.wait().then(console.log('Done transfer! $$$$ >'));
 
 
 	
-	// 3. Deployment BinaryOption Market Factory
+	// 3. Deployment Position Market Factory
 	let abi = ['function setZeroExAddress(address _zeroExAddress) public'];
-	let contract = new ethers.Contract(BinaryOptionMarketManagerAddress, abi, owner);
+	let contract = new ethers.Contract(PositionalMarketManagerAddress, abi, owner);
 	let setZeroEx = await contract.setZeroExAddress(
 			ZeroExAddress,
 			{

@@ -1,12 +1,36 @@
 [
   {
     "inputs": [],
-    "payable": false,
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
   {
-    "constant": true,
+    "inputs": [],
+    "name": "buyInAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getBuyInAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -22,12 +46,10 @@
         "type": "bool"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
     "inputs": [],
     "name": "participatedInLastRoyale",
     "outputs": [
@@ -37,12 +59,23 @@
         "type": "bool"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_buyIn",
+        "type": "uint256"
+      }
+    ],
+    "name": "setBuyInAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bool",
@@ -52,7 +85,6 @@
     ],
     "name": "setParticipatedInLastRoyale",
     "outputs": [],
-    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   }

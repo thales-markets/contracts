@@ -31,8 +31,8 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 
 	console.log('Account is:' + owner.address);
@@ -66,12 +66,12 @@ async function main() {
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 	console.log('Found proxysUSD at:' + proxysUSD.address);
 
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager');
-	let binaryOptionMarketAddress = getTargetAddress('BinaryOptionMarketManager', network);
-	let binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.attach(
-		binaryOptionMarketAddress
+	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
+	let PositionalMarketAddress = getTargetAddress('PositionalMarketManager', network);
+	let PositionalMarketManagerDeployed = await PositionalMarketManager.attach(
+		PositionalMarketAddress
 	);
-	console.log('BinaryOptionMarketManager attached to:', binaryOptionMarketManagerDeployed.address);
+	console.log('PositionalMarketManager attached to:', PositionalMarketManagerDeployed.address);
 
 	const ETHKey = toBytes32('ETH');
 	const initialMint = w3utils.toWei('1');
@@ -80,7 +80,7 @@ async function main() {
 	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
 	let contract = new ethers.Contract(proxysUSD.address, abi, owner);
 	let approval = await contract.approve(
-		binaryOptionMarketManagerDeployed.address,
+		PositionalMarketManagerDeployed.address,
 		w3utils.toWei('1000'),
 		{
 			from: owner.address,
@@ -90,7 +90,7 @@ async function main() {
 
 	const hour = 60 * 60;
 
-	const result = await binaryOptionMarketManagerDeployed.createMarket(
+	const result = await PositionalMarketManagerDeployed.createMarket(
 		ETHKey,
 		w3utils.toWei('3400'),
 		now + hour*72,
@@ -123,7 +123,7 @@ async function main() {
 			false,
 			ZERO_ADDRESS
 		],
-		contract: 'contracts/BinaryOptions/BinaryOptionMarket.sol:BinaryOptionMarket',
+		contract: 'contracts/Positions/PositionalMarket.sol:PositionalMarket',
 	});
 }
 

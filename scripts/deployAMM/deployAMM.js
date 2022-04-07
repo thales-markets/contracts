@@ -19,9 +19,20 @@ async function main() {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 	}
+
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+	}
+		
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
 	}
 
 	if (networkObj.chainId == 10) {
@@ -29,7 +40,9 @@ async function main() {
 	} else if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	} else {
+	} else if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
+	}else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
 		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
 	}
@@ -77,15 +90,15 @@ async function main() {
 	setTargetAddress('ThalesAMM', network, ThalesAMM_deployed.address);
 	setTargetAddress('ThalesAMMImplementation', network, ThalesAMMImplementation);
 
-	let managerAddress = getTargetAddress('BinaryOptionMarketManager', network);
+	let managerAddress = getTargetAddress('PositionalMarketManager', network);
 
-	const BinaryOptionMarketFactory = await ethers.getContractFactory('BinaryOptionMarketFactory');
-	let factoryAddress = getTargetAddress('BinaryOptionMarketFactory', network);
-	const BinaryOptionMarketFactoryInstance = await BinaryOptionMarketFactory.attach(factoryAddress);
+	const PositionalMarketFactory = await ethers.getContractFactory('PositionalMarketFactory');
+	let factoryAddress = getTargetAddress('PositionalMarketFactory', network);
+	const PositionalMarketFactoryInstance = await PositionalMarketFactory.attach(factoryAddress);
 
-	let tx = await ThalesAMM_deployed.setBinaryOptionsMarketManager(managerAddress);
+	let tx = await ThalesAMM_deployed.setPositionalMarketManager(managerAddress);
 	await tx.wait().then(e => {
-		console.log('ThalesAMM: setBinaryOptionsMarketManager');
+		console.log('ThalesAMM: setPositionalMarketManager');
 	});
 
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
@@ -120,9 +133,9 @@ async function main() {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(SNX, 120)');
 	});
 
-	tx = await BinaryOptionMarketFactoryInstance.setThalesAMM(ThalesAMM_deployed.address);
+	tx = await PositionalMarketFactoryInstance.setThalesAMM(ThalesAMM_deployed.address);
 	await tx.wait().then(e => {
-		console.log('BinaryOptionMarketFactoryInstance: setThalesAMM');
+		console.log('PositionalMarketFactoryInstance: setThalesAMM');
 	});
 
 	//setLookupTables
@@ -168,6 +181,7 @@ async function main() {
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setSafeBoxImpact()');
 	});
+
 
 	await hre.run('verify:verify', {
 		address: deciMath.address,

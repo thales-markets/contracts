@@ -21,8 +21,8 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 
 	console.log('Account is: ' + owner.address);
@@ -32,6 +32,7 @@ async function main() {
 	console.log('Found ThalesAMM at:', thalesAmmAddress);
 
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
+	upgrades.prepareUpgrade
 	await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
 
 	console.log('ThalesAMM upgraded');
@@ -44,10 +45,41 @@ async function main() {
 
 	let ThalesAMM_deployed = ThalesAMM.attach(thalesAmmAddress);
 
-	const stakingThales = getTargetAddress('StakingThales', network);
-	let tx = await ThalesAMM_deployed.setStakingThales(stakingThales);
+	const safeBoxImpact = w3utils.toWei('0.01');
+	let tx = await ThalesAMM_deployed.setSafeBoxImpact(safeBoxImpact);
 	await tx.wait().then(e => {
-		console.log('ThalesAMM: setStakingThales()');
+		console.log('ThalesAMM: setSafeBoxImpact()');
+	});
+
+	const minSpread = w3utils.toWei('0.02');
+	tx = await ThalesAMM_deployed.setMinSpread(minSpread);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setMinSpread()');
+	});
+
+	const maxSpread = w3utils.toWei('0.2');
+	tx = await ThalesAMM_deployed.setMaxSpread(maxSpread);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setMinSpread()');
+	});
+
+	const minSupportedPrice = w3utils.toWei('0.05');
+	tx = await ThalesAMM_deployed.setMinSupportedPrice(minSupportedPrice);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setMinSupportedPrice()');
+	});
+
+	const maxSupportedPrice = w3utils.toWei('0.95');
+	tx = await ThalesAMM_deployed.setMaxSupportedPrice(maxSupportedPrice);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setMaxSupportedPrice()');
+	});
+
+	const hour = 60 * 60;
+	const minimalTimeLeftToMaturity = hour * 8;
+	tx = await ThalesAMM_deployed.setMinimalTimeLeftToMaturity(minimalTimeLeftToMaturity);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setMinimalTimeLeftToMaturity()');
 	});
 
 	try {

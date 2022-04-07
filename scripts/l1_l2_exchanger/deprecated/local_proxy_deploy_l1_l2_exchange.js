@@ -31,7 +31,7 @@ async function main() {
 	
 	const local_L1 = 'localhost'
 	
-	const local_L2 = 'optimistic'
+	const local_L2 = 'optimisticEthereum'
 	
     const l1RpcProvider = new ethers.providers.JsonRpcProvider(process.env.LOCAL_OPT_IP_2)
     const l2RpcProvider = new ethers.providers.JsonRpcProvider(process.env.LOCAL_OPT_IP)

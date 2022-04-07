@@ -1,6 +1,5 @@
 [
   {
-    "constant": true,
     "inputs": [
       {
         "internalType": "address",
@@ -26,12 +25,10 @@
         "type": "uint256"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": false,
     "inputs": [
       {
         "internalType": "address",
@@ -56,7 +53,6 @@
     ],
     "name": "setAccountsDebtEntry",
     "outputs": [],
-    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   }

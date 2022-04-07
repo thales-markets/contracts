@@ -19,8 +19,8 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 
 	if (networkObj.chainId == 10) {
@@ -63,40 +63,40 @@ async function main() {
 	);
 	console.log('isMarketInAMMTrading: ' + isMarketInAMMTrading);
 
-	let availableToBuyFromAMMLong = await ThalesAMMDProxyeployed.availableToBuyFromAMM(
+	let availableToBuyFromAMMUp = await ThalesAMMDProxyeployed.availableToBuyFromAMM(
 		'0xf633bfb0ddb5bc64e0cbbd50f4b793d2cb8ca833',
 		0
 	);
-	let availableToBuyFromAMMShort = await ThalesAMMDProxyeployed.availableToBuyFromAMM(
+	let availableToBuyFromAMMDown = await ThalesAMMDProxyeployed.availableToBuyFromAMM(
 		'0xf633bfb0ddb5bc64e0cbbd50f4b793d2cb8ca833',
 		1
 	);
-	console.log('availableToBuyFromAMMLong: ' + availableToBuyFromAMMLong);
-	console.log('availableToBuyFromAMMShort: ' + availableToBuyFromAMMShort);
+	console.log('availableToBuyFromAMMUp: ' + availableToBuyFromAMMUp);
+	console.log('availableToBuyFromAMMDown: ' + availableToBuyFromAMMDown);
 
-	let availableToSellToAMMLong = await ThalesAMMDProxyeployed.availableToSellToAMM(
+	let availableToSellToAMMUp = await ThalesAMMDProxyeployed.availableToSellToAMM(
 		'0xf633bfb0ddb5bc64e0cbbd50f4b793d2cb8ca833',
 		0
 	);
-	let availableToSellToAMMShort = await ThalesAMMDProxyeployed.availableToSellToAMM(
+	let availableToSellToAMMDown = await ThalesAMMDProxyeployed.availableToSellToAMM(
 		'0xf633bfb0ddb5bc64e0cbbd50f4b793d2cb8ca833',
 		1
 	);
-	console.log('availableToSellToAMMLong: ' + availableToSellToAMMLong);
-	console.log('availableToSellToAMMShort: ' + availableToSellToAMMShort);
+	console.log('availableToSellToAMMUp: ' + availableToSellToAMMUp);
+	console.log('availableToSellToAMMDown: ' + availableToSellToAMMDown);
 
-	let buyFromAmmQuoteLong = await ThalesAMMDProxyeployed.buyFromAmmQuote(
+	let buyFromAmmQuoteUp = await ThalesAMMDProxyeployed.buyFromAmmQuote(
 		'0xf633bfb0ddb5bc64e0cbbd50f4b793d2cb8ca833',
 		0,
 		w3utils.toWei('1000')
 	);
-	let sellToAmmQuoteLong = await ThalesAMMDProxyeployed.sellToAmmQuote(
+	let sellToAmmQuoteUp = await ThalesAMMDProxyeployed.sellToAmmQuote(
 		'0xf633bfb0ddb5bc64e0cbbd50f4b793d2cb8ca833',
 		0,
 		w3utils.toWei('1000')
 	);
-	console.log('buyFromAmmQuoteLong: ' + buyFromAmmQuoteLong);
-	console.log('sellToAmmQuoteLong: ' + sellToAmmQuoteLong);
+	console.log('buyFromAmmQuoteUp: ' + buyFromAmmQuoteUp);
+	console.log('sellToAmmQuoteUp: ' + sellToAmmQuoteUp);
 
 	let spentOnMarket = await ThalesAMMDProxyeployed.spentOnMarket(
 		'0xf633bfb0ddb5bc64e0cbbd50f4b793d2cb8ca833'

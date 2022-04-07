@@ -27,8 +27,8 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 
 	const proxyOwner = new ethers.Wallet(privateKey1, ethers.provider);

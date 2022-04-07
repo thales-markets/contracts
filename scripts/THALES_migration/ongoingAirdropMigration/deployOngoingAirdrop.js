@@ -22,8 +22,8 @@ async function deploy_ongoing_airdrop() {
 		network = 'optimisticKovan';
 		THALES = getTargetAddress('OpThales_L2', network);
 	} else if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 		THALES = getTargetAddress('OpThales_L2', network);
 	} else if (network === 'unknown') {
 		network = 'localhost';

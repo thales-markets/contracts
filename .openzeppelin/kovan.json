@@ -160,6 +160,21 @@
       "address": "0xfC7AB8c62B336137F837f9f2810A860e0347d690",
       "txHash": "0x5fe39aa02fb48ee82d48ae61565db103b204aead5d90d4d08ed0306934e8559d",
       "kind": "transparent"
+    },
+    {
+      "address": "0xEF3D940994Ce190be3c0917723D261cc71d30097",
+      "txHash": "0x36d9e4d39f19cb4411d0ecef04773b422486c72fc6ece6b74aa69cd3ebf1a40c",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xC1E57ADb450C3eb418C37Df752ED2Fe3e45b0EDE",
+      "txHash": "0x09b6e76730c5ecfb72b0fc4165ce703bc39382111c39d4f5dd3ed29dbb492842",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x758c5D4b48A9beDcF38f81cB6f75cd8Ce92C846E",
+      "txHash": "0x87ec5c941836b0822246b93bf05f5d099374bbd93e0980821c0a2f603e438569",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -861,6 +876,136 @@
         }
       }
     },
+    "0acc557c4070333146985395d9bcf7273b68e8944099dc2cdd8505684fa47105": {
+    "address": "0x6a1618f20ef4cB06a4caa8f129701051eCC5C649",
+    "txHash": "0x6e867580b600c525b991599f112d83afd86513622a70a1951cb0217daec71e1f",
+    "layout": {
+      "storage": [
+        {
+          "contract": "Initializable",
+          "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/upgrades-core/contracts/Initializable.sol:63"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:17"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/ProxyPausable.sol:9"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/ProxyPausable.sol:10"
+          },
+          {
+            "contract": "ThalesExchanger",
+            "label": "ThalesToken",
+            "type": "t_contract(IERC20)1462",
+            "src": "contracts/exchange_L1_L2/ThalesExchanger.sol:16"
+          },
+          {
+            "contract": "ThalesExchanger",
+            "label": "OpThalesToken",
+            "type": "t_contract(IERC20)1462",
+            "src": "contracts/exchange_L1_L2/ThalesExchanger.sol:17"
+          },
+          {
+            "contract": "ThalesExchanger",
+            "label": "L1Bridge",
+            "type": "t_contract(iOVM_L1ERC20Bridge)79",
+            "src": "contracts/exchange_L1_L2/ThalesExchanger.sol:18"
+          },
+          {
+            "contract": "ThalesExchanger",
+            "label": "l2TokenAddress",
+            "type": "t_address",
+            "src": "contracts/exchange_L1_L2/ThalesExchanger.sol:20"
+          },
+          {
+            "contract": "ThalesExchanger",
+            "label": "enabledThalesToOpThales",
+            "type": "t_bool",
+            "src": "contracts/exchange_L1_L2/ThalesExchanger.sol:26"
+          },
+          {
+            "contract": "ThalesExchanger",
+            "label": "enabledOpThalesToThales",
+            "type": "t_bool",
+            "src": "contracts/exchange_L1_L2/ThalesExchanger.sol:27"
+          }
+        ],
+        "types": {
+          "t_contract(IERC20)1462": {
+            "label": "contract IERC20"
+          },
+          "t_contract(iOVM_L1ERC20Bridge)79": {
+            "label": "contract iOVM_L1ERC20Bridge"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },    
     "54832bcef9eab4f2d6db6931535372316c91f37f3d0b1f190f68ca0a2c10468a": {
       "address": "0x6b81a14cB40b038Edb183f0Ce53FddB5d2fEC726",
       "txHash": "0xf9980ebfd8362a901b891c75407bdec84f3ef2b4dfed25ac1f68fc1583c9d325",
@@ -3108,6 +3253,124 @@
           },
           "t_contract(GamesQueue)10420": {
             "label": "contract GamesQueue"
+          }
+        }
+      }
+    },
+    "f52e799e54f2c540cb3d53b958ee37357984351a647249b945358b08a75c5caf": {
+      "address": "0x2Be57E642B04376338F4Ce1BA8ecC5105AaF5995",
+      "txHash": "0x4cb4a923ff9e6f3cefddc571921d43015e7abe49cd9bbc87b5addb9ac1fa7f1f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "token",
+            "type": "t_address",
+            "src": "contracts\\RetroDistribution\\VestingEscrowProxy.sol:18"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "startTime",
+            "type": "t_uint256",
+            "src": "contracts\\RetroDistribution\\VestingEscrowProxy.sol:19"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "endTime",
+            "type": "t_uint256",
+            "src": "contracts\\RetroDistribution\\VestingEscrowProxy.sol:20"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "initialLocked",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\RetroDistribution\\VestingEscrowProxy.sol:21"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "totalClaimed",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\RetroDistribution\\VestingEscrowProxy.sol:22"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "initialLockedSupply",
+            "type": "t_uint256",
+            "src": "contracts\\RetroDistribution\\VestingEscrowProxy.sol:24"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_bool": {
+            "label": "bool"
           }
         }
       }

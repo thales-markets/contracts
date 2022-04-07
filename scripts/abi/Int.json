@@ -1,0 +1,21 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_a",
+        "type": "string"
+      }
+    ],
+    "name": "parseInt",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_parsedInt",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  }
+]

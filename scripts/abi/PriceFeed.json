@@ -4,6 +4,32 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "AddressChangedETH",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "AddressChangedwETH",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bytes32",
         "name": "currencyKey",
         "type": "bytes32"
@@ -109,6 +135,32 @@
   },
   {
     "inputs": [],
+    "name": "_ETH",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_wETH",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -138,6 +190,11 @@
         "internalType": "bytes32",
         "name": "currencyKey",
         "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "currencyAddress",
+        "type": "address"
       },
       {
         "internalType": "address",
@@ -396,6 +453,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "setETH",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_owner",
         "type": "address"
       }
@@ -408,12 +478,25 @@
   {
     "inputs": [
       {
-        "internalType": "uint32",
+        "internalType": "int56",
         "name": "_twapInterval",
-        "type": "uint32"
+        "type": "int56"
       }
     ],
     "name": "setTwapInterval",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "setWETH",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -443,9 +526,9 @@
     "name": "twapInterval",
     "outputs": [
       {
-        "internalType": "uint32",
+        "internalType": "int56",
         "name": "",
-        "type": "uint32"
+        "type": "int56"
       }
     ],
     "stateMutability": "view",

@@ -39,3 +39,16 @@ Note: for each season you need to change propery inside script (propery season)
 `npx hardhat run --network XXXXX scripts/deployThalesRoyale/thalesRoyale/changeSafeBoxRoyaleSeason.js`
 
 Note: In script you can change percentage and also address for safebox
+
+@Deprecated -  reason deleted signUpOnBehalf method in Royale contract
+3. Script for sign up players on behalf of owner [git version](https://github.com/thales-markets/contracts/blob/main/scripts/deployThalesRoyale/thalesRoyale/signUpOnBehalf.js)
+
+`npx hardhat run --network XXXXX scripts/deployThalesRoyale/thalesRoyale/signUpOnBehalf.js`
+
+Note: In script you can change players which you need to sign up. SEASON must be started first.
+
+4. Script for minting passes [git version](https://github.com/thales-markets/contracts/blob/main/scripts/deployThalesRoyale/thalesRoyalePass/mintPasses.js)
+
+`npx hardhat run --network XXXXX scripts/deployThalesRoyale/thalesRoyalePass/mintPasses.js`
+
+Note: In script you can change players for which you mint passes. Aslo, amount sUSD for which you approve 30 sUSD x N (number of players) 

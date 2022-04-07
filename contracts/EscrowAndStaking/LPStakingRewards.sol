@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.5.16;
 
 import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
@@ -128,6 +129,24 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
 
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(rewardsDuration);
+        emit RewardAdded(reward);
+    }
+
+    function addReward(uint256 reward) external onlyOwner updateReward(address(0)) {
+        require(block.timestamp < periodFinish, "Rewards must be active");
+
+        uint256 remaining = periodFinish.sub(block.timestamp);
+        uint256 leftover = remaining.mul(rewardRate);
+        rewardRate = reward.add(leftover).div(remaining);
+
+        // Ensure the provided reward amount is not more than the balance in the contract.
+        // This keeps the reward rate in the right range, preventing overflows due to
+        // very high values of rewardRate in the earned and rewardsPerToken functions;
+        // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
+        uint balance = rewardsToken.balanceOf(address(this));
+        require(rewardRate <= balance.div(remaining), "Provided reward too high");
+
+        lastUpdateTime = block.timestamp;
         emit RewardAdded(reward);
     }
 

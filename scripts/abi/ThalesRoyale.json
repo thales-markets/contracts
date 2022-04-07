@@ -31,6 +31,32 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "_rounds",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewNumberOfRounds",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_oracleKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "NewOracleKey",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "pauseBetweenSeasonsTime",
         "type": "uint256"
       }
@@ -49,6 +75,19 @@
       }
     ],
     "name": "NewPriceFeed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_rewardToken",
+        "type": "address"
+      }
+    ],
+    "name": "NewRewardToken",
     "type": "event"
   },
   {
@@ -127,6 +166,19 @@
       }
     ],
     "name": "NewSignUpPeriod",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_royalePass",
+        "type": "address"
+      }
+    ],
+    "name": "NewThalesRoyalePass",
     "type": "event"
   },
   {
@@ -336,6 +388,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "season",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "position",
         "type": "uint256"
       }
     ],
@@ -553,6 +611,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getBuyInAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -745,6 +816,25 @@
   {
     "inputs": [],
     "name": "oracleKey",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "oracleKeyPerSeason",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -1159,6 +1249,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "royalePass",
+    "outputs": [
+      {
+        "internalType": "contract IThalesRoyalePass",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1302,6 +1405,32 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_rounds",
+        "type": "uint256"
+      }
+    ],
+    "name": "setNumberOfRounds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_oracleKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setOracleKey",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -1341,6 +1470,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_rewardToken",
+        "type": "address"
+      }
+    ],
+    "name": "setRewardToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_roundChoosingLength",
         "type": "uint256"
@@ -1360,6 +1502,19 @@
       }
     ],
     "name": "setRoundLength",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_royalePass",
+        "type": "address"
+      }
+    ],
+    "name": "setRoyalePassAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1421,6 +1576,50 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "passId",
+        "type": "uint256"
+      }
+    ],
+    "name": "signUpWithPass",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "passId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
+      }
+    ],
+    "name": "signUpWithPassWithPosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
+      }
+    ],
+    "name": "signUpWithPosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

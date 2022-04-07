@@ -62,8 +62,9 @@ async function main() {
 	console.log('ORACLE address:', chainlink['ORACLE']);
 
 	// NBA: 4
+	// EPL: 11
 	// UEFA Champions League: 16
-	const allowedSports = [4, 16];
+	const allowedSports = [4, 11, 16];
 
 	const twoPositionSports = [4];
 	const fixedPrice = w3utils.toWei('10');

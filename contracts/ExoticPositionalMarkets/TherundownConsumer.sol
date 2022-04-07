@@ -86,7 +86,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint _fixedTicketPrice,
         bool _withdrawalAllowed,
         GamesQueue _queues
-    ) public initializer {
+    ) external initializer {
         setOwner(_owner);
         _populateSports(_supportedSportIds);
         _populateTwoPositionSports(_twoPositionSports);
@@ -124,18 +124,21 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) external onlyWrapper {
         requestIdGamesResolved[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
-            _resolveGameFulfill(_requestId, abi.decode(_games[i], (GameResolve)), _sportId);
+            GameResolve memory game = abi.decode(_games[i], (GameResolve));
+            if (!queues.existingGamesInResolvedQueue(game.gameId)) {
+                _resolveGameFulfill(_requestId, game, _sportId);
+            }
         }
     }
 
-    function createMarketForGame(bytes32 _gameId) public {
+    function createMarketForGame(bytes32 _gameId) external {
         require(marketPerGameId[_gameId] == address(0), "Market for game already exists");
         require(gameFulfilledCreated[_gameId], "No such game fulfilled, created");
         require(queues.gamesCreateQueue(queues.firstCreated()) == _gameId, "Must be first in a queue");
         _createMarket(_gameId);
     }
 
-    function resolveMarketForGame(bytes32 _gameId) public {
+    function resolveMarketForGame(bytes32 _gameId) external {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         require(gameFulfilledResolved[_gameId], "No such game Fulfilled, resolved");
         _resolveMarket(_gameId);
@@ -211,9 +214,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             gameResolved[_game.gameId] = _game;
             queues.enqueueGamesResolved(_game.gameId);
             gameFulfilledResolved[_game.gameId] = true;
+            
+            emit GameResolved(requestId, _sportId, _game.gameId, _game, queues.lastResolved());
         }
-
-        emit GameResolved(requestId, _sportId, _game.gameId, _game, queues.lastResolved());
     }
 
     function _populateSports(uint[] memory _supportedSportIds) internal {
@@ -339,38 +342,38 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    function setSupportedSport(uint _sportId, bool _isSuported) public onlyOwner {
+    function setSupportedSport(uint _sportId, bool _isSuported) external onlyOwner {
         supportedSport[_sportId] = _isSuported;
         emit SupportedSportsChanged(_sportId, _isSuported);
     }
 
-    function setwoPositionSport(uint _sportId, bool _isTwoPosition) public onlyOwner {
+    function setwoPositionSport(uint _sportId, bool _isTwoPosition) external onlyOwner {
         twoPositionSport[_sportId] = _isTwoPosition;
         emit TwoPositionSportChanged(_sportId, _isTwoPosition);
     }
 
-    function setExoticManager(address _exoticManager) public onlyOwner {
+    function setExoticManager(address _exoticManager) external onlyOwner {
         exoticManager = IExoticPositionalMarketManager(_exoticManager);
         emit NewExoticPositionalMarketManager(_exoticManager);
     }
 
-    function setFixedTicketPrice(uint _fixedTicketPrice) public onlyOwner {
+    function setFixedTicketPrice(uint _fixedTicketPrice) external onlyOwner {
         fixedTicketPrice = _fixedTicketPrice;
         emit NewFixedTicketPrice(_fixedTicketPrice);
     }
 
-    function setWithdrawalAllowed(bool _withdrawalAllowed) public onlyOwner {
+    function setWithdrawalAllowed(bool _withdrawalAllowed) external onlyOwner {
         withdrawalAllowed = _withdrawalAllowed;
         emit NewWithdrawalAllowed(_withdrawalAllowed);
     }
 
-    function setWrapperAddress(address _wrapperAddress) public onlyOwner {
+    function setWrapperAddress(address _wrapperAddress) external onlyOwner {
         require(_wrapperAddress != address(0), "Invalid address");
         wrapperAddress = _wrapperAddress;
         emit NewWrapperAddress(_wrapperAddress);
     }
 
-    function setQueueAddress(GamesQueue _queues) public onlyOwner {
+    function setQueueAddress(GamesQueue _queues) external onlyOwner {
         queues = _queues;
         emit NewQueueAddress(_queues);
     }

@@ -76,6 +76,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint public marketSourceStringLimit;
     uint public marketPositionStringLimit;
     bool public openBidAllowed;
+    uint public withdrawalTimePercentage;
 
     function initialize(
         address _owner,
@@ -464,6 +465,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         withdrawalPercentage = _withdrawalPercentage;
         emit WithdrawalPercentageChanged(_withdrawalPercentage);
     }
+    
+    function setWithdrawalTimePercentage(uint _withdrawalTimePercentage) external onlyOwner {
+        withdrawalTimePercentage = _withdrawalTimePercentage;
+        emit WithdrawalTimePercentageChanged(_withdrawalTimePercentage);
+    }
 
     function setMarketQuestionStringLimit(uint _marketQuestionStringLimit) external onlyOwner {
         marketQuestionStringLimit = _marketQuestionStringLimit;
@@ -689,6 +695,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event MarketQuestionStringLimitChanged(uint marketQuestionStringLimit);
     event MarketPositionStringLimitChanged(uint marketPositionStringLimit);
     event OpenBidAllowedChanged(bool openBidAllowed);
+    event WithdrawalTimePercentageChanged(uint withdrawalTimePercentage);
+
 
     event MarketCreated(
         address marketAddress,

@@ -111,6 +111,7 @@ contract('Exotic Positional market', async accounts => {
 		await ExoticPositionalMarketManager.setMarketSourceStringLimit('1000', { from: manager });
 		await ExoticPositionalMarketManager.setMarketPositionStringLimit('60', { from: manager });
 		await ExoticPositionalMarketManager.setOpenBidAllowed(true, { from: manager });
+		await ExoticPositionalMarketManager.setWithdrawalTimePercentage("1", { from: manager });
 		await Thales.transfer(userOne, toUnit('1000'), { from: owner });
 		await Thales.transfer(userTwo, toUnit('1000'), { from: owner });
 		await Thales.transfer(userThree, toUnit('1000'), { from: owner });

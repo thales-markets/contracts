@@ -59,6 +59,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     uint public disputePrice;
     uint public safeBoxLowAmount;
     uint public arbitraryRewardForDisputor;
+    uint public withdrawalPeriod;
     bool public noWinners;
 
     function initialize(
@@ -98,6 +99,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         disputePrice = marketManager.disputePrice();
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
+        withdrawalPeriod = block.timestamp.add((_endOfPositioning.sub(block.timestamp)).mul(marketManager.withdrawalTimePercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT));
     }
 
     function takeCreatorInitialPosition(uint _position) external onlyOwner {
@@ -130,7 +132,8 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
 
     function withdraw() external notPaused nonReentrant {
         require(withdrawalAllowed, "Not allowed");
-        require(canUsersPlacePosition(), "Positioning finished/market resolved");
+        require(canUsersPlacePosition(), "Market resolved");
+        require(block.timestamp <= withdrawalPeriod, "Withdrawal expired");
         require(userPosition[msg.sender] > 0, "Not a ticket holder");
         require(msg.sender != marketManager.creatorAddress(address(this)), "Can not withdraw");
         uint withdrawalFee =

@@ -697,6 +697,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "withdrawalTimePercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawalTimePercentageChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "pDAOResolveTimePeriod",
         "type": "uint256"
       }
@@ -2104,6 +2117,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_withdrawalTimePercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setWithdrawalTimePercentage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "tagsAddress",
     "outputs": [
@@ -2158,6 +2184,19 @@
   {
     "inputs": [],
     "name": "withdrawalPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawalTimePercentage",
     "outputs": [
       {
         "internalType": "uint256",

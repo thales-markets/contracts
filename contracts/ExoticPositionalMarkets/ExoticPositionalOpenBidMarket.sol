@@ -53,6 +53,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     bool public resolved;
     bool public disputedInPositioningPhase;
     bool public feesAndBondsClaimed;
+    bool public noWinners;
     uint public winningPosition;
     uint public claimableTicketsCount;
 
@@ -63,7 +64,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     uint public disputePrice;
     uint public safeBoxLowAmount;
     uint public arbitraryRewardForDisputor;
-    bool public noWinners;
+    uint public withdrawalPeriod;
 
     function initialize(
         string memory _marketQuestion,
@@ -77,7 +78,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     ) external initializer {
         require(
             _positionCount >= 2 && _positionCount <= IExoticPositionalMarketManager(msg.sender).maximumPositionsAllowed(),
-            "Invalid num of positions"
+            "Invalid num pos"
         );
         require(_tags.length > 0);
         setOwner(msg.sender);
@@ -102,6 +103,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         disputePrice = marketManager.disputePrice();
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
+        withdrawalPeriod = block.timestamp.add((_endOfPositioning.sub(block.timestamp)).mul(marketManager.withdrawalTimePercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT));
     }
 
     function takeCreatorInitialOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external onlyOwner {
@@ -113,9 +115,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
             require(_amounts[i] > 0, "Zero amount");
-            // add to the amount of the position
             totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
-            // add to the total amount
             totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
             userOpenBidPosition[creatorAddress][_positions[i]] = userOpenBidPosition[creatorAddress][_positions[i]].add(
                 _amounts[i]
@@ -138,9 +138,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
             require(_amounts[i] > 0, "Zero amount");
-            // add to the amount of the position
             totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
-            // add to the total amount
             totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
             if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
                 firstTime = false;
@@ -153,20 +151,32 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit NewOpenBidsForPositions(msg.sender, _positions, _amounts);
     }
 
-    function withdraw() external notPaused nonReentrant {
-        require(withdrawalAllowed, "Withdrawal not allowed");
+    function withdraw(uint _openBidPosition) external notPaused nonReentrant {
+        require(withdrawalAllowed, "Not allowed");
         require(canUsersPlacePosition(), "Market resolved");
-        require(msg.sender != marketManager.creatorAddress(address(this)), "Creator can not withdraw");
-        // withdraw all for open bid
+        require(block.timestamp <= withdrawalPeriod, "Withdrawal expired");
+        require(msg.sender != marketManager.creatorAddress(address(this)), "Creator forbidden");
         uint totalToWithdraw;
-        for (uint i = 1; i <= positionCount; i++) {
-            if (userOpenBidPosition[msg.sender][i] > 0) {
-                totalToWithdraw = totalToWithdraw.add(userOpenBidPosition[msg.sender][i]);
-                userOpenBidPosition[msg.sender][i] = 0;
+        if(_openBidPosition == 0) {
+            for (uint i = 1; i <= positionCount; i++) {
+                if (userOpenBidPosition[msg.sender][i] > 0) {
+                    totalToWithdraw = totalToWithdraw.add(userOpenBidPosition[msg.sender][i]);
+                    userOpenBidPosition[msg.sender][i] = 0;
+                }
             }
+            totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
+            totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
         }
-        totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
-        totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
+        else {
+            require(userOpenBidPosition[msg.sender][_openBidPosition] > 0, "No amount for position");
+            totalToWithdraw = userOpenBidPosition[msg.sender][_openBidPosition];
+            userOpenBidPosition[msg.sender][_openBidPosition] = 0;
+            if (getUserOpenBidTotalPlacedAmount(msg.sender) == 0) {
+                totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
+            }
+            totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
+        }
+
         uint withdrawalFee = totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
         thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2));
         thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
@@ -174,24 +184,25 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
     }
 
-    function withdrawFromOpenBidPosition(uint _openBidPosition) external notPaused nonReentrant {
-        require(withdrawalAllowed, "Withdrawal not allowed");
-        require(canUsersPlacePosition(), "Market resolved");
-        require(ticketType == TicketType.FLEXIBLE_BID, "Not openBid Market");
-        require(userOpenBidPosition[msg.sender][_openBidPosition] > 0, "No amount for position");
-        require(msg.sender != marketManager.creatorAddress(address(this)), "Creator can not withdraw");
-        uint totalToWithdraw = userOpenBidPosition[msg.sender][_openBidPosition];
-        userOpenBidPosition[msg.sender][_openBidPosition] = 0;
-        if (getUserOpenBidTotalPlacedAmount(msg.sender) == 0) {
-            totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
-        }
-        totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
-        uint withdrawalFee = totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
-        thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2));
-        thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
-        thalesBonds.transferFromMarket(msg.sender, totalToWithdraw.sub(withdrawalFee));
-        emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
-    }
+    // function withdrawFromOpenBidPosition(uint _openBidPosition) external notPaused nonReentrant {
+    //     require(withdrawalAllowed, "Not allowed");
+    //     require(canUsersPlacePosition(), "Market resolved");
+    //     require(block.timestamp <= withdrawalPeriod, "Withdrawal expired");
+    //     require(ticketType == TicketType.FLEXIBLE_BID, "Not openBid Market");
+    //     require(userOpenBidPosition[msg.sender][_openBidPosition] > 0, "No amount for position");
+    //     require(msg.sender != marketManager.creatorAddress(address(this)), "Creator forbidden");
+    //     uint totalToWithdraw = userOpenBidPosition[msg.sender][_openBidPosition];
+    //     userOpenBidPosition[msg.sender][_openBidPosition] = 0;
+    //     if (getUserOpenBidTotalPlacedAmount(msg.sender) == 0) {
+    //         totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
+    //     }
+    //     totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
+    //     uint withdrawalFee = totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
+    //     thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2));
+    //     thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
+    //     thalesBonds.transferFromMarket(msg.sender, totalToWithdraw.sub(withdrawalFee));
+    //     emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
+    // }
 
     function issueFees() external notPaused nonReentrant {
         require(canUsersClaim(), "Not finalized");
@@ -206,7 +217,6 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit FeesIssued(getTotalFeesAmount());
     }
 
-    // market resolved only through the Manager
     function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner {
         require(canMarketBeResolvedByOwner(), "Disputed/not matured");
         require(_outcomePosition <= positionCount, "Outcome exeeds positionNum");
@@ -617,12 +627,8 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         marketQuestion = _marketQuestion;
         marketSource = _marketSource;
         endOfPositioning = _endOfPositioning;
-        // Ticket Type can be determined based on ticket price
         ticketType = _fixedTicketPrice > 0 ? TicketType.FIXED_TICKET_PRICE : TicketType.FLEXIBLE_BID;
-        fixedTicketPrice = _fixedTicketPrice;
-        // Withdrawal allowance determined based on withdrawal percentage, if it is over 100% then it is forbidden
         withdrawalAllowed = _withdrawalAllowed;
-        // The tag is just a number for now
         tags = _tags;
         _addPosition(_positionPhrase1);
         _addPosition(_positionPhrase2);
@@ -630,7 +636,6 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
 
     function _addPosition(string memory _position) internal {
         require(keccak256(abi.encode(_position)) != keccak256(abi.encode("")), "Invalid position label (empty string)");
-        // require(bytes(_position).length < marketManager.marketPositionStringLimit(), "Position label exceeds length");
         positionCount = positionCount.add(1);
         positionPhrase[positionCount] = _position;
     }

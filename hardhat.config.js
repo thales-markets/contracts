@@ -174,12 +174,12 @@ module.exports = {
 			accounts: [PRIVATE_KEY],
 		},
 		polygonMumbai: {
-			url: "https://polygon-mumbai.infura.io/v3/" + INFURA_POLYGON,
+			url: "https://polygon-mumbai.infura.io/v3/" + INFURA,
 			accounts: [PRIVATE_KEY],
 			gasPrice: 80000000000
 		},
 		polygon: {
-			url: "https://polygon-mainnet.infura.io/v3/" + INFURA_POLYGON,
+			url: "https://polygon-mainnet.infura.io/v3/" + INFURA,
 			accounts: [PRIVATE_KEY],
 		}, 
 	},

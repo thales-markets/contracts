@@ -46,3 +46,15 @@ npx hardhat run --network polygonMumbai scripts/deployAMM/deploySafebox.js
 npx hardhat run --network polygonMumbai scripts/deployAMM/deployAMM.js
 npx hardhat run --network polygonMumbai scripts/deployPositions/deployPositions.js
 npx hardhat verify ADDRESS_CONTRACT --network polygonMumbai
+
+polygon main:
+npx hardhat run --network polygon scripts/deployPriceFeed/deployPriceFeed.js
+npx hardhat run --network polygon scripts/deployPositions/deployPositions.js
+npx hardhat run --network polygon scripts/deployAMM/deploySafebox.js
+npx hardhat run --network polygon scripts/deployAMM/deployAMM.js
+npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyale/deployRoyale.js
+npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyalePass/deployRoyalePass.js
+npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyale/verifyOnly.js
+
+
+npx hardhat verify ADDRESS_CONTRACT --network polygon

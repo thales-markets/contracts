@@ -406,7 +406,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         if (_account == marketManager.creatorAddress(address(this))) {
             return false;
         }
-        return withdrawalAllowed && canUsersPlacePosition() && getUserOpenBidTotalPlacedAmount(_account) > 0;
+        return withdrawalAllowed && canUsersPlacePosition() && getUserOpenBidTotalPlacedAmount(_account) > 0 && block.timestamp <= withdrawalPeriod;
     }
 
     function getPositionPhrase(uint index) public view returns (string memory) {

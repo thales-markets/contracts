@@ -347,7 +347,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         if (_account == marketManager.creatorAddress(address(this))) {
             return false;
         }
-        return withdrawalAllowed && canUsersPlacePosition() && userPosition[_account] > 0;
+        return withdrawalAllowed && canUsersPlacePosition() && userPosition[_account] > 0 && block.timestamp <= withdrawalPeriod;
     }
 
     function getPositionPhrase(uint index) public view returns (string memory) {

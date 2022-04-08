@@ -346,6 +346,20 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return _game.homeScore > _game.awayScore ? HOME_WIN : AWAY_WIN;
     }
 
+    /* ========== GAMES MANAGEMENT ========== */
+
+    function removeFromCreatedQueue() external onlyOwner {
+        queues.dequeueGamesCreated();
+    }
+
+    function removeFromResolvedQueue() external onlyOwner {
+        queues.dequeueGamesResolved();
+    }
+
+    function removeFromUnprocessedGamesArray(uint _index) external onlyOwner {
+        queues.removeItemUnproccessedGames(_index);
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     function setSupportedSport(uint _sportId, bool _isSuported) external onlyOwner {

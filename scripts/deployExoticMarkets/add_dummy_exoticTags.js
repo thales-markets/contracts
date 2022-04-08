@@ -17,8 +17,8 @@ async function main() {
 		return 0;
 	}
 	if (networkObj.chainId == 42) {
-		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimisticKovan\'")
-		return 0;
+		networkObj.name = 'kovan';
+		network = 'kovan';
 	}
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
@@ -37,16 +37,30 @@ async function main() {
 	console.log("Adding tags to Exotic tags");
 
 
-	let labels = ["Sport", "Crypto", "Politics", "Pop-culture", "Esports", "Football", "Basketball", "Bitcoin", "Ethereum"];
-	let tagNumbers = ["1", "2", "3", "4", "5", "101", "102", "201", "202"]
-
+	let labels = ["Sport", "Crypto", "Politics", "Pop-culture", 
+	"Esports", "Football", "Basketball", "Bitcoin", "Ethereum", "Finance", "TradFi", 
+	"NCAA Men's Football", "NFL", "MLB", "NBA", "NCAA Men's Basketball", "NHL", "WNBA", "MLS",
+	"EPL", "Ligue 1", "Bundesliga", "La Liga", "Serie A", "UEFA Champions League"
+	];
+	
+	let tagNumbers = ["1", "2", "3", "4", "5", "101", "102", "201", "202", "6", "601", 
+						"9001", "9002", "9003", "9004", "9005", "9006", "9008", "9010",
+						"9011", "9012", "9013", "9014", "9015", "9016"
+					]
+	let checkTag;
 	// Add tags
 	for(let i=0;i < labels.length; i++) {
-		tx = await ExoticTagsDeployed.addTag(labels[i], tagNumbers[i], {from:owner.address});
-		await tx.wait().then(e => {
-			console.log('New tag added ', labels[i], ' with number: ', tagNumbers[i]);
-		});
-		await delay(1000);
+		checkTag = await ExoticTagsDeployed.isValidTagNumber(tagNumbers[i]);
+		if(!checkTag) {
+			tx = await ExoticTagsDeployed.addTag(labels[i], tagNumbers[i], {from:owner.address});
+			await tx.wait().then(e => {
+				console.log('New tag added ', labels[i], ' with number: ', tagNumbers[i]);
+			});
+			await delay(1000);
+		}
+		else {
+			console.log("Tag already added")
+		}
 	}
 	console.log("Tags added");
     

@@ -54,8 +54,18 @@ async function main() {
 	await ExoticMarketManagerDeployed.setTagsAddress(ExoticTagsDeployed.address);
 	console.log("ExoticTags address set in ExoticMarketManager");
 
-	let labels = ["Sport", "Crypto", "Politics", "Pop-culture", "Esports", "DeFi", "Football", "Basketball", "Bitcoin", "Ethereum"];
-	let tagNumbers = ["1", "2", "3", "4", "5", "6", "101", "102", "201", "202"]
+	let labels = [
+		"Sport", "Crypto", "Politics", "Pop-culture", 
+		"Esports", "Football", "Basketball", "Bitcoin", "Ethereum", "Finance", "TradFi", 
+		"NCAA Men's Football", "NFL", "MLB", "NBA", "NCAA Men's Basketball", "NHL", "WNBA", "MLS",
+		"EPL", "Ligue 1", "Bundesliga", "La Liga", "Serie A", "UEFA Champions League"
+	];
+	
+	let tagNumbers = [
+		"1", "2", "3", "4", "5", "101", "102", "201", "202", "6", "601", 
+		"9001", "9002", "9003", "9004", "9005", "9006", "9008", "9010",
+		"9011", "9012", "9013", "9014", "9015", "9016"
+					]
 
 	if(labels.length == tagNumbers.length) {
 		// Add tags

@@ -123,7 +123,7 @@ async function main() {
 
 	tx = await ExoticManagerDeployed.setMinimumFixedTicketAmount(w3utils.toWei("10", "ether"), {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\nsetMinimumFixedTicketAmount: 10');
+        console.log('\n setMinimumFixedTicketAmount: 10');
     });
     await delay(1000);
 	

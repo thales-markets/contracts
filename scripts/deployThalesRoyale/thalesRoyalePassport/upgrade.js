@@ -39,20 +39,20 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const thalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
-	console.log('Found ThalesRoyale at:', thalesRoyaleAddress);
+	const thalesRoyalePassportAddress = getTargetAddress('ThalesRoyalePassport', network);
+	console.log('Found ThalesRoyalePassport at:', thalesRoyalePassportAddress);
 
-	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
-	const implementation = await upgrades.prepareUpgrade(thalesRoyaleAddress, ThalesRoyale);
+	const ThalesRoyalePassport = await ethers.getContractFactory('ThalesRoyalePassport');
+	const implementation = await upgrades.prepareUpgrade(thalesRoyalePassportAddress, ThalesRoyalePassport);
 
 	if(networkObj.chainId == 69) {
-		await upgrades.upgradeProxy(thalesRoyaleAddress, ThalesRoyale);
+		await upgrades.upgradeProxy(thalesRoyalePassportAddress, ThalesRoyalePassport);
 	}
 
-	console.log('ThalesRoyale upgraded');
+	console.log('ThalesRoyalePassport upgraded');
 
-	console.log('ThalesRoyaleImplementation: ', implementation);
-    setTargetAddress('ThalesRoyaleImplementation', network, implementation);
+	console.log('ThalesRoyalePassportImplementation: ', implementation);
+    setTargetAddress('ThalesRoyalePassportImplementation', network, implementation);
 
     await hre.run('verify:verify', {
         address: implementation

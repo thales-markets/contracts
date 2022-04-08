@@ -159,8 +159,10 @@
 		"GUniLPToken": "0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
 		"LPStakingRewards": "0x44d55a58211b2120Dc9f280ae68B99ffcaC03c7C",
 		"LPStakingRewardsImplementation": "0x40b8F4852eB5394c1EcABc1bEf09016a868f90FC",
-		"ThalesRoyale": "0x8f73e225Df3cacD7e6F62AE75538E72feA52d58F",
-		"ThalesRoyaleImplementation": "0xf4Ed706603C666c336B2Ea969D3597a1024a8eb9",
+		"ThalesRoyale": "0x5De27390C8280Db5732Ee6aA7f7aBC4e2a476B30",
+		"ThalesRoyaleImplementation": "0x59477c6d82076EcFfe3C255c208ec8b5ab35254d",
+		"ThalesRoyalePassport": "0x8363a01892dE85BC871005570B481c374f2aB3e6",
+		"ThalesRoyalePassportImplementation": "0xBB842D83403f11f5d232d724358AAD96430f1485",
 		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058"
 	},
 	"polygonMumbai": {

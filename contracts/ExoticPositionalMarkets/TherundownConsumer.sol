@@ -111,7 +111,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         requestIdGamesCreated[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
             GameCreate memory game = abi.decode(_games[i], (GameCreate));
-            if (!queues.existingGamesInCreatedQueue(game.gameId)) {
+            if (!queues.existingGamesInCreatedQueue(game.gameId) && !isSameTeamOrTBD(game.homeTeam, game.awayTeam)) {
                 _createGameFulfill(_requestId, game, _sportId);
             }
         }
@@ -172,6 +172,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return
             keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create")) ||
             keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("resolve"));
+    }
+
+    function isSameTeamOrTBD(string memory _teamA, string memory _teamB) public view returns (bool) {
+        return keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked(_teamB)) ||
+            keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked("TBD TBD")) ||
+            keccak256(abi.encodePacked(_teamB)) == keccak256(abi.encodePacked("TBD TBD"));
     }
 
     function isGameResolvedOrCanceled(bytes32 _gameId) public view returns (bool) {

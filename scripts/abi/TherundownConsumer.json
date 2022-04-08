@@ -962,6 +962,30 @@
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "_teamA",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_teamB",
+        "type": "string"
+      }
+    ],
+    "name": "isSameTeamOrTBD",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_sportsId",
         "type": "uint256"

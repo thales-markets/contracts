@@ -121,13 +121,20 @@ contract('TherundownConsumer', accounts => {
 
 		await ExoticPositionalMarketManager.initialize(
 			manager,
-			minimumPositioningDuration,
-			Thales.address,
 			{ from: manager }
 		);
 
 		fixedBondAmount = toUnit(100);
-
+		await ExoticPositionalMarketManager.setPaymentToken(Thales.address);
+		await ExoticPositionalMarketManager.setMaxNumberOfTags('5', { from: manager });
+		await ExoticPositionalMarketManager.setSafeBoxPercentage('1', { from: manager });
+		await ExoticPositionalMarketManager.setCreatorPercentage('1', { from: manager });
+		await ExoticPositionalMarketManager.setResolverPercentage('1', { from: manager });
+		await ExoticPositionalMarketManager.setPDAOResolveTimePeriod('172800', { from: manager });
+		await ExoticPositionalMarketManager.setMaxOracleCouncilMembers('5', { from: manager });
+		await ExoticPositionalMarketManager.setDefaultBackstopTimeout('14400', { from: manager });
+		await ExoticPositionalMarketManager.setWithdrawalPercentage('6', { from: manager });
+		await ExoticPositionalMarketManager.setClaimTimeoutDefaultPeriod('86400', { from: manager });
 		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
 		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(
 			ExoticPositionalMarket.address

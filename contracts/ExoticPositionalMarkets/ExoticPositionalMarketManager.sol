@@ -21,10 +21,11 @@ import "../interfaces/IExoticRewards.sol";
 // internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../utils/libraries/AddressSetLib.sol";
 
 contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
-
+    
     uint private constant backstopTimeoutDefault = 4 hours;
     uint private constant fixedBondAmountDefault = 100 * 1e18;
 
@@ -78,26 +79,15 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     bool public openBidAllowed;
     uint public withdrawalTimePercentage;
 
+    using AddressSetLib for AddressSetLib.AddressSet;
+    AddressSetLib.AddressSet private _activeMarkets;
+    // AddressSetLib.AddressSet private _maturedMarkets;
+
     function initialize(
-        address _owner,
-        uint _minimumPositioningDuration,
-        address _paymentToken
+        address _owner
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
-        minimumPositioningDuration = _minimumPositioningDuration;
-        backstopTimeout = backstopTimeoutDefault;
-        maximumPositionsAllowed = 5;
-        paymentToken = _paymentToken;
-        safeBoxPercentage = 1;
-        creatorPercentage = 1;
-        resolverPercentage = 1;
-        withdrawalPercentage = 6;
-        claimTimeoutDefaultPeriod = 1 days;
-        pDAOResolveTimePeriod = 2 days;
-        maxOracleCouncilMembers = 5;
-        disputePrice = 10 * 1e18;
-        maxNumberOfTags = 5;
     }
 
     // Create Exotic market
@@ -153,8 +143,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             );
             creatorAddress[address(exoticMarket)] = msg.sender;
             IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
-            activeMarkets[numOfActiveMarkets] = address(exoticMarket);
-            numOfActiveMarkets = numOfActiveMarkets.add(1);
+            _activeMarkets.add(address(exoticMarket));
             exoticMarket.takeCreatorInitialPosition(_positionOfCreator);
             emit MarketCreated(
                 address(exoticMarket),
@@ -184,8 +173,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             );
             creatorAddress[address(exoticMarket)] = msg.sender;
             IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
-            activeMarkets[numOfActiveMarkets] = address(exoticMarket);
-            numOfActiveMarkets = numOfActiveMarkets.add(1);
+            _activeMarkets.add(address(exoticMarket));
             uint[] memory positions = new uint[](1);
             uint[] memory amounts = new uint[](1);
             positions[0] = _positionOfCreator;
@@ -243,8 +231,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         isChainLinkMarket[address(exoticMarket)] = true;
         creatorAddress[address(exoticMarket)] = msg.sender;
         IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
-        activeMarkets[numOfActiveMarkets] = address(exoticMarket);
-        numOfActiveMarkets = numOfActiveMarkets.add(1);
+        _activeMarkets.add(address(exoticMarket));
         emit CLMarketCreated(
             address(exoticMarket),
             _marketQuestion,
@@ -260,7 +247,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function resolveMarket(address _marketAddress, uint _outcomePosition) external {
-        require(isActiveMarket(_marketAddress), "Market is not active");
+        require(isActiveMarket(_marketAddress), "NotActive");
         if (isChainLinkMarket[_marketAddress]) {
             require(msg.sender == theRundownConsumerAddress, "Only theRundownConsumer");
         }
@@ -305,7 +292,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function cancelMarket(address _marketAddress) external {
-        require(isActiveMarket(_marketAddress), "Market is not active");
+        require(isActiveMarket(_marketAddress), "NotActive");
         require(
             msg.sender == oracleCouncilAddress || msg.sender == owner || msg.sender == creatorAddress[_marketAddress],
             "Invalid address"
@@ -329,12 +316,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         if (cancelledByCreator[_marketAddress]) {
             IExoticPositionalMarket(_marketAddress).claimWinningTicketOnBehalf(creatorAddress[_marketAddress]);
         }
-        removeActiveMarket(_marketAddress);
         emit MarketCanceled(_marketAddress);
     }
 
     function resetMarket(address _marketAddress) external onlyOracleCouncilAndOwner {
-        require(isActiveMarket(_marketAddress), "Market not active");
+        require(isActiveMarket(_marketAddress), "NotActive");
         if (IExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "only pDAO");
         }
@@ -347,11 +333,13 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         address _disputorAddress,
         uint _amount
     ) external onlyOracleCouncilAndOwner {
+        require(isActiveMarket(_market), "NotActive");
         IExoticRewards(exoticRewards).sendRewardToDisputoraddress(_market, _disputorAddress, _amount);
         // emit RewardSentToDisputorForMarket(_market, _disputorAddress, _amount);
     }
 
     function issueBondsBackToCreatorAndResolver(address _marketAddress) external nonReentrant {
+        require(isActiveMarket(_marketAddress), "NotActive");
         require(
             IExoticPositionalMarket(_marketAddress).canUsersClaim() || cancelledByCreator[_marketAddress],
             "Not claimable"
@@ -365,6 +353,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function disputeMarket(address _marketAddress, address _disputor) external onlyOracleCouncil {
+        require(isActiveMarket(_marketAddress), "NotActive");
         IThalesBonds(thalesBonds).sendDisputorBondToMarket(
             _marketAddress,
             _disputor,
@@ -377,6 +366,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function closeDispute(address _marketAddress) external onlyOracleCouncilAndOwner {
+        require(isActiveMarket(_marketAddress), "NotActive");
         if (IExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "Only pDAO");
         }
@@ -384,22 +374,18 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         IExoticPositionalMarket(_marketAddress).closeDispute();
     }
 
-    function getActiveMarketAddress(uint _index) external view returns (address) {
-        return activeMarkets[_index];
-    }
-
-    function getActiveMarketIndex(address _marketAddress) public view returns (uint) {
-        for (uint i = 0; i < numOfActiveMarkets; i++) {
-            if (activeMarkets[i] == _marketAddress) {
-                return i;
-            }
-        }
-        return numOfActiveMarkets;
-    }
-
     function isActiveMarket(address _marketAddress) public view returns (bool) {
-        return getActiveMarketIndex(_marketAddress) < numOfActiveMarkets;
+        return _activeMarkets.contains(_marketAddress);
     }
+    
+    function numberOfActiveMarkets() external view returns (uint) {
+        return _activeMarkets.elements.length;
+    }
+
+    function getActiveMarketAddress(uint _index) external view returns(address) {
+        return _activeMarkets.elements[_index];
+    }
+
 
     function isPauserAddress(address _pauser) external view returns (bool) {
         return pauserIndex[_pauser] > 0;
@@ -637,11 +623,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     // INTERNAL FUNCTIONS
 
-    function removeActiveMarket(address _marketAddress) internal {
-        activeMarkets[getActiveMarketIndex(_marketAddress)] = activeMarkets[numOfActiveMarkets.sub(1)];
-        numOfActiveMarkets = numOfActiveMarkets.sub(1);
-        activeMarkets[numOfActiveMarkets] = address(0);
-    }
+    // function removeActiveMarket(address _marketAddress) internal {
+    //     _activeMarkets.remove(_marketAddress);
+    //     _maturedMarkets.add(_marketAddress);
+    // }
 
     function thereAreNonEqualPositions(string[] memory positionPhrases) internal view returns (bool) {
         for (uint i = 0; i < positionPhrases.length - 1; i++) {

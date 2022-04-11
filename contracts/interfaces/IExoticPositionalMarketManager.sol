@@ -5,7 +5,7 @@ interface IExoticPositionalMarketManager {
     function getActiveMarketAddress(uint _index) external view returns(address);
     function getActiveMarketIndex(address _marketAddress) external view returns(uint);
     function isActiveMarket(address _marketAddress) external view returns(bool);
-    function numOfActiveMarkets() external view returns(uint);
+    function numberOfActiveMarkets() external view returns(uint);
     function getMarketBondAmount(address _market) external view returns (uint);
     function maximumPositionsAllowed() external view returns(uint);
     function paymentToken() external view returns(address);

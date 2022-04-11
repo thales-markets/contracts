@@ -75,7 +75,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
         require(_amount > 0, "Bond zero");
-        require(_market != address(0), "Invalid address");
+        // no checks for active market, market creation not finalized
         marketBond[_market].creatorBond = _amount;
         marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.add(_amount);
         marketBond[_market].totalDepositedMarketBond = marketBond[_market].totalDepositedMarketBond.add(_amount);
@@ -90,7 +90,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
         require(_amount > 0, "Bond zero");
-        require(_market != address(0), "Invalid address");
+        require(marketManager.isActiveMarket(_market), "Invalid address");
         // in case the creator is the resolver, move the bond to the resolver
         marketBond[_market].resolverBond = _amount;
         marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.add(_amount);
@@ -106,7 +106,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
         require(_amount > 0, "Bond zero");
-        require(_market != address(0), "Invalid address");
+        require(marketManager.isActiveMarket(_market), "Invalid address");
 
         // if it is first dispute for the disputor, the counter is increased
         if (marketBond[_market].disputorBond[_disputorAddress] == 0) {
@@ -128,6 +128,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         uint _bondToReduce,
         address _disputorAddress
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
+        require(marketManager.isActiveMarket(_market), "Invalid address");
         require(_amount <= marketBond[_market].totalMarketBond, "Exceeds bond");
         require(_bondToReduce >= CREATOR_BOND && _bondToReduce <= RESOLVER_AND_DISPUTOR, "Invalid bondToReduce");
         if (_bondToReduce == CREATOR_BOND && _amount <= marketBond[_market].creatorBond) {
@@ -187,6 +188,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         address _account,
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner nonReentrant {
+        require(marketManager.isActiveMarket(_market), "Invalid address");
         require(
             _amount <= marketBond[_market].totalMarketBond && _amount <= marketBond[_market].disputorsTotalBond,
             "Exceeds bond"
@@ -206,6 +208,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     }
 
     function issueBondsBackToCreatorAndResolver(address _market) external onlyOracleCouncilManagerAndOwner nonReentrant {
+        require(marketManager.isActiveMarket(_market), "Invalid address");
         uint totalIssuedBack;
         if (marketBond[_market].totalMarketBond >= marketBond[_market].creatorBond.add(marketBond[_market].resolverBond)) {
             marketBond[_market].totalMarketBond = marketBond[_market].totalMarketBond.sub(
@@ -230,6 +233,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     }
 
     function transferCreatorToResolverBonds(address _market) external onlyOracleCouncilManagerAndOwner nonReentrant {
+        require(marketManager.isActiveMarket(_market), "Invalid address");
         require(marketBond[_market].creatorBond > 0, "Creator bond 0");
         marketBond[_market].resolverBond = marketBond[_market].creatorBond;
         marketBond[_market].creatorBond = 0;
@@ -243,6 +247,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     }
 
     function transferFromMarket(address _account, uint _amount) external whenNotPaused {
+        require(marketManager.isActiveMarket(msg.sender), "Not active market.");
         require(marketFunds[msg.sender] >= _amount, "Low funds.");
         marketFunds[msg.sender] = marketFunds[msg.sender].sub(_amount);
         transferBondFromMarket(_account, _amount);

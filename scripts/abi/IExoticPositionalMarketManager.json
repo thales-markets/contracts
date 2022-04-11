@@ -404,7 +404,7 @@
   },
   {
     "inputs": [],
-    "name": "numOfActiveMarkets",
+    "name": "numberOfActiveMarkets",
     "outputs": [
       {
         "internalType": "uint256",

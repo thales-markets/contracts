@@ -254,7 +254,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             _createPhrases(game.homeTeam, game.awayTeam, numberOfPositions)
         );
 
-        address marketAddress = exoticManager.getActiveMarketAddress(exoticManager.numOfActiveMarkets() - 1);
+        address marketAddress = exoticManager.getActiveMarketAddress(exoticManager.numberOfActiveMarkets() - 1);
         marketPerGameId[game.gameId] = marketAddress;
 
         queues.dequeueGamesCreated();

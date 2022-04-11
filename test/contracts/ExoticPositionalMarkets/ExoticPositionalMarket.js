@@ -89,12 +89,21 @@ contract('Exotic Positional market', async accounts => {
 
 		await ExoticPositionalMarketManager.initialize(
 			manager,
-			minimumPositioningDuration,
-			Thales.address,
 			{ from: manager }
 		);
 		fixedBondAmount = toUnit(100);
 		disputePrice = toUnit(10);
+		await ExoticPositionalMarketManager.setPaymentToken(Thales.address);
+		await ExoticPositionalMarketManager.setMaxNumberOfTags('5', { from: manager });
+		await ExoticPositionalMarketManager.setSafeBoxPercentage('1', { from: manager });
+		await ExoticPositionalMarketManager.setCreatorPercentage('1', { from: manager });
+		await ExoticPositionalMarketManager.setResolverPercentage('1', { from: manager });
+		await ExoticPositionalMarketManager.setPDAOResolveTimePeriod('172800', { from: manager });
+		await ExoticPositionalMarketManager.setMaxOracleCouncilMembers('5', { from: manager });
+		await ExoticPositionalMarketManager.setDefaultBackstopTimeout('14400', { from: manager });
+		await ExoticPositionalMarketManager.setWithdrawalPercentage('6', { from: manager });
+		await ExoticPositionalMarketManager.setClaimTimeoutDefaultPeriod('86400', { from: manager });
+		await ExoticPositionalMarketManager.setDisputePrice(disputePrice, { from: manager });
 		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
 		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(
 			ExoticPositionalOpenBidMarket.address
@@ -167,7 +176,7 @@ contract('Exotic Positional market', async accounts => {
 			answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 			answer = await deployedMarket.ticketType();
-			assert.equal(answer, '0');
+			assert.equal(answer.toString(), '0');
 		});
 
 		it('new market open bid', async function() {
@@ -208,7 +217,7 @@ contract('Exotic Positional market', async accounts => {
 			answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedOpenBidMarket = await ExoticPositionalOpenBidMarketContract.at(answer);
 			answer = await deployedOpenBidMarket.ticketType();
-			assert.equal(answer, '1');
+			assert.equal(answer.toString(), '1');
 		});
 	});
 
@@ -252,11 +261,11 @@ contract('Exotic Positional market', async accounts => {
 			answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedOpenBidMarket = await ExoticPositionalOpenBidMarketContract.at(answer);
 			answer = await deployedOpenBidMarket.ticketType();
-			assert.equal(answer, '1');
+			assert.equal(answer.toString(), '1');
 		});
 		it('new market', async function() {
-			answer = await ExoticPositionalMarketManager.numOfActiveMarkets();
-			assert.equal(answer, '1');
+			answer = await ExoticPositionalMarketManager.numberOfActiveMarkets();
+			assert.equal(answer.toString(), '1');
 		});
 
 		it('market type: fixed Bid', async function() {
@@ -718,7 +727,7 @@ contract('Exotic Positional market', async accounts => {
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 		});
 		it('new market', async function() {
-			answer = await ExoticPositionalMarketManager.numOfActiveMarkets();
+			answer = await ExoticPositionalMarketManager.numberOfActiveMarkets();
 			assert.equal(answer, '1');
 		});
 

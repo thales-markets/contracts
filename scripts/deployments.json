@@ -137,14 +137,16 @@
 		"ThalesStakingRewardsPool": "0xc44DfC6ffaf195E2535fc13D75a79D9238459782",
 		"ThalesStakingRewardsPoolImplementation": "0x0AbC94987F6b98bFE6fD40F749e445a2857a4Ee3",
 		"ThalesRoyale": "0x3198ab211CdF3E4d13a698E1Fb819507BcA2e579",
-		"ThalesRoyaleImplementation": "0x9Bb3fD74634ecD2Db310fbaeB0bE1891720E644F",
+		"ThalesRoyaleImplementation": "0xaAF0caE140A7DEaf14C97F5c410201FBe30E33f5",
 		"LPStakingRewards": "0x31a20E5b7b1b067705419D57Ab4F72E81cC1F6Bf",
 		"LPStakingRewardsImplementation": "0xa143E04a0090Cc55c13a8280D52192A2d008DD6F",
 		"OptimisticAirdrop": "0x42B6e9b5Bb96a02E02e651d3104Fc3546E1313F2",
 		"OngoingAirdrop": "0x8D47b12ce25E2dc6866e8aAC0DbD823Da09fADd6",
 		"GUniLPToken": "0xac6705bc7f6a35eb194bdb89066049d6f1b0b1b5",
 		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29",
-		"OptimisticAirdropUnclaimedRetro": "0x3Da91E5eD564eE46d4D734E1F99F395f0969101a"
+		"OptimisticAirdropUnclaimedRetro": "0x3Da91E5eD564eE46d4D734E1F99F395f0969101a",
+		"ThalesRoyalePassport": "0xf534848023ba851c6265e8F99a919c4d5fd05CD0",
+		"ThalesRoyalePassportImplementation": "0x131f611470D831F56e2fcaA72250a5D768056dfE"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
@@ -194,8 +196,10 @@
 		"GUniLPToken": "0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
 		"LPStakingRewards": "0x44d55a58211b2120Dc9f280ae68B99ffcaC03c7C",
 		"LPStakingRewardsImplementation": "0x40b8F4852eB5394c1EcABc1bEf09016a868f90FC",
-		"ThalesRoyale": "0x8f73e225Df3cacD7e6F62AE75538E72feA52d58F",
-		"ThalesRoyaleImplementation": "0xf4Ed706603C666c336B2Ea969D3597a1024a8eb9",
+		"ThalesRoyale": "0x5De27390C8280Db5732Ee6aA7f7aBC4e2a476B30",
+		"ThalesRoyaleImplementation": "0x59477c6d82076EcFfe3C255c208ec8b5ab35254d",
+		"ThalesRoyalePassport": "0x8363a01892dE85BC871005570B481c374f2aB3e6",
+		"ThalesRoyalePassportImplementation": "0xBB842D83403f11f5d232d724358AAD96430f1485",
 		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058"
 	},
 	"polygonMumbai": {

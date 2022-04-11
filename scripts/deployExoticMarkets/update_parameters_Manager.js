@@ -185,9 +185,9 @@ async function main() {
     });
     await delay(1000);    
    
-    tx = await ExoticManagerDeployed.setWithdrawalTimePercentage("50", {from: owner.address});
+    tx = await ExoticManagerDeployed.setWithdrawalTimePeriod("28800", {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setWithdrawalTimePercentage: 50');
+        console.log('\n setWithdrawalTimePeriod: 28800 - 8h');
     });
     await delay(1000);    
 	

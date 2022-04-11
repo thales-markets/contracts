@@ -99,7 +99,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         disputePrice = marketManager.disputePrice();
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
-        withdrawalPeriod = block.timestamp.add((_endOfPositioning.sub(block.timestamp)).mul(marketManager.withdrawalTimePercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT));
+        withdrawalPeriod = block.timestamp.add(marketManager.withdrawalTimePeriod());
     }
 
     function takeCreatorInitialPosition(uint _position) external onlyOwner {
@@ -343,6 +343,11 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         return canUsersClaim() && getUserClaimableAmount(_user) > 0;
     }
 
+    function canIssueFees() external view returns(bool) {
+        return !feesAndBondsClaimed && (thalesBonds.getCreatorBondForMarket(address(this)) > 0 ||
+                thalesBonds.getResolverBondForMarket(address(this)) > 0);
+    }
+    
     function canUserWithdraw(address _account) public view returns (bool) {
         if (_account == marketManager.creatorAddress(address(this))) {
             return false;

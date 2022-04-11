@@ -669,7 +669,7 @@
   },
   {
     "inputs": [],
-    "name": "withdrawalTimePercentage",
+    "name": "withdrawalTimePeriod",
     "outputs": [
       {
         "internalType": "uint256",

@@ -134,6 +134,7 @@ contract('TherundownConsumer', accounts => {
 		await ExoticPositionalMarketManager.setMaxOracleCouncilMembers('5', { from: manager });
 		await ExoticPositionalMarketManager.setDefaultBackstopTimeout('14400', { from: manager });
 		await ExoticPositionalMarketManager.setWithdrawalPercentage('6', { from: manager });
+		await ExoticPositionalMarketManager.setWithdrawalTimePeriod("28800", { from: manager });
 		await ExoticPositionalMarketManager.setClaimTimeoutDefaultPeriod('86400', { from: manager });
 		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
 		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(

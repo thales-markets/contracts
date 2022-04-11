@@ -103,7 +103,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         disputePrice = marketManager.disputePrice();
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
-        withdrawalPeriod = block.timestamp.add((_endOfPositioning.sub(block.timestamp)).mul(marketManager.withdrawalTimePercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT));
+        withdrawalPeriod = block.timestamp.add(marketManager.withdrawalTimePeriod());
     }
 
     function takeCreatorInitialOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external onlyOwner {
@@ -407,6 +407,11 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             return false;
         }
         return withdrawalAllowed && canUsersPlacePosition() && getUserOpenBidTotalPlacedAmount(_account) > 0 && block.timestamp <= withdrawalPeriod;
+    }
+
+    function canIssueFees() external view returns(bool) {
+        return !feesAndBondsClaimed && (thalesBonds.getCreatorBondForMarket(address(this)) > 0 ||
+                thalesBonds.getResolverBondForMarket(address(this)) > 0);
     }
 
     function getPositionPhrase(uint index) public view returns (string memory) {

@@ -697,11 +697,11 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "withdrawalTimePercentage",
+        "name": "withdrawalTimePeriod",
         "type": "uint256"
       }
     ],
-    "name": "WithdrawalTimePercentageChanged",
+    "name": "WithdrawalTimePeriodChanged",
     "type": "event"
   },
   {
@@ -2104,11 +2104,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_withdrawalTimePercentage",
+        "name": "_withdrawalTimePeriod",
         "type": "uint256"
       }
     ],
-    "name": "setWithdrawalTimePercentage",
+    "name": "setWithdrawalTimePeriod",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -2181,6 +2181,19 @@
   {
     "inputs": [],
     "name": "withdrawalTimePercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawalTimePeriod",
     "outputs": [
       {
         "internalType": "uint256",

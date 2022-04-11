@@ -313,6 +313,19 @@
   },
   {
     "inputs": [],
+    "name": "canIssueFees",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "canMarketBeResolved",
     "outputs": [
       {

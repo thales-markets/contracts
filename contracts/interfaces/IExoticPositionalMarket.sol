@@ -40,6 +40,7 @@ interface IExoticPositionalMarket {
     function paused() external view returns (bool);
     function canCreatorCancelMarket() external view returns (bool);
     function getAllFees() external view returns (uint, uint, uint, uint);
+    function canIssueFees() external view returns (bool);
 
 
     function transferBondToMarket(address _sender, uint _amount) external;

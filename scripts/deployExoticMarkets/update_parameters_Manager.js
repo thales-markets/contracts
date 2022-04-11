@@ -13,6 +13,7 @@ async function main() {
 	let network = networkObj.name;
 	let mainnetNetwork = 'mainnet';
     let PaymentTokenAddress;
+    let SafeBoxAddress;
 
 	if (network == 'homestead') {
 		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
@@ -22,17 +23,20 @@ async function main() {
 		networkObj.name = 'kovan';
 		network = 'kovan';
         PaymentTokenAddress =  getTargetAddress("OpThales_L1", network);
+        SafeBoxAddress = owner.address;
 	}
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 		mainnetNetwork = 'kovan';
         PaymentTokenAddress =  getTargetAddress("ExoticUSD", network);
+        SafeBoxAddress = owner.address;
 	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimistic';
 		network = 'optimistic';
         PaymentTokenAddress = "0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9" // sUSD on OP
+        SafeBoxAddress =  getTargetAddress("SafeBox", network);
 	}
 	
     const ExoticMarketMastercopyAddress = getTargetAddress("ExoticMarketMasterCopy", network);
@@ -42,21 +46,21 @@ async function main() {
 	let tx;
 	const ExoticManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
 	
-	tx = await ExoticManagerDeployed.setArbitraryRewardForDisputor(w3utils.toWei("0.2", "ether"), {from: owner.address});
+	tx = await ExoticManagerDeployed.setArbitraryRewardForDisputor(w3utils.toWei("10", "ether"), {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setArbitraryRewardForDisputor: 0.2');
+        console.log('\n setArbitraryRewardForDisputor: 10');
     });
     await delay(1000);
 	
-    tx = await ExoticManagerDeployed.setDefaultBackstopTimeout("3600", {from: owner.address});
+    tx = await ExoticManagerDeployed.setDefaultBackstopTimeout("14400", {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setDefaultBackstopTimeout: 3600');
+        console.log('\n setDefaultBackstopTimeout: 14400 (4 hours)');
     });
     await delay(1000);
     
-    tx = await ExoticManagerDeployed.setClaimTimeoutDefaultPeriod("120", {from: owner.address});
+    tx = await ExoticManagerDeployed.setClaimTimeoutDefaultPeriod("86400", {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setClaimTimeoutDefaultPeriod: 120');
+        console.log('\n setClaimTimeoutDefaultPeriod: 86400 (24 hours)');
     });
     await delay(1000);
     
@@ -67,9 +71,9 @@ async function main() {
     await delay(1000);
     
     
-    tx = await ExoticManagerDeployed.setDisputePrice(w3utils.toWei("1", "ether"), {from: owner.address});
+    tx = await ExoticManagerDeployed.setDisputePrice(w3utils.toWei("100", "ether"), {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setDisputePrice: 1');
+        console.log('\n setDisputePrice: 100');
     });
     await delay(1000);
     
@@ -79,9 +83,9 @@ async function main() {
     });
     await delay(1000);
 
-    tx = await ExoticManagerDeployed.setFixedBondAmount(w3utils.toWei("2", "ether"), {from: owner.address});
+    tx = await ExoticManagerDeployed.setFixedBondAmount(w3utils.toWei("100", "ether"), {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setFixedBondAmount: 2');
+        console.log('\n setFixedBondAmount: 100');
     });
     await delay(1000);
    
@@ -127,9 +131,9 @@ async function main() {
     });
     await delay(1000);
     
-    tx = await ExoticManagerDeployed.setMinimumPositioningDuration("60", {from: owner.address});
+    tx = await ExoticManagerDeployed.setMinimumPositioningDuration("28800", {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setMinimumPositioningDuration: 8');
+        console.log('\n setMinimumPositioningDuration: 28800 (8 hours)');
     });
     await delay(1000);
     
@@ -141,7 +145,7 @@ async function main() {
     
     tx = await ExoticManagerDeployed.setPDAOResolveTimePeriod("172800", {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setPDAOResolveTimePeriod: 172800');
+        console.log('\n setPDAOResolveTimePeriod: 172800 (48 hours)');
     });
     await delay(1000);    
     
@@ -157,15 +161,15 @@ async function main() {
     });
     await delay(1000);    
     
-    tx = await ExoticManagerDeployed.setSafeBoxAddress(owner.address, {from: owner.address});
+    tx = await ExoticManagerDeployed.setSafeBoxAddress(SafeBoxAddress, {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setSafeBoxAddress: ', owner.address);
+        console.log('\n setSafeBoxAddress: ', SafeBoxAddress);
     });
     await delay(1000);
 
-    tx = await ExoticManagerDeployed.setSafeBoxLowAmount(w3utils.toWei("0.1", "ether"), {from: owner.address});
+    tx = await ExoticManagerDeployed.setSafeBoxLowAmount(w3utils.toWei("10", "ether"), {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setSafeBoxLowAmount: 0.1');
+        console.log('\n setSafeBoxLowAmount: 10');
     });
     await delay(1000);
     
@@ -181,9 +185,9 @@ async function main() {
     });
     await delay(1000);    
    
-    tx = await ExoticManagerDeployed.setWithdrawalTimePercentage("80", {from: owner.address});
+    tx = await ExoticManagerDeployed.setWithdrawalTimePercentage("50", {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setWithdrawalTimePercentage: 80');
+        console.log('\n setWithdrawalTimePercentage: 50');
     });
     await delay(1000);    
 	

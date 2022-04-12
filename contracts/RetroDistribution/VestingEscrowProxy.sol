@@ -16,31 +16,30 @@ contract VestingEscrowProxy is Initializable, ProxyReentrancyGuard, ProxyOwned, 
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     address public token;
-    uint256 public startTime;
-    uint256 public endTime;
+    mapping(address => uint256) public startTime;
+    mapping(address => uint256) public endTime;
     mapping(address => uint256) public initialLocked;
     mapping(address => uint256) public totalClaimed;
+    mapping(address => uint256) public disabledAt;
 
     uint256 public initialLockedSupply;
 
-    function initialize(
-        address _owner,
-        address _token,
-        uint256 _startTime,
-        uint256 _endTime
-    ) public initializer {
+    function initialize(address _owner, address _token) public initializer {
         setOwner(_owner);
         initNonReentrant();
-        require(_startTime >= block.timestamp, "Start time must be in future");
-        require(_endTime > _startTime, "End time must be greater than start time");
         token = _token;
-        startTime = _startTime;
-        endTime = _endTime;
     }
 
-    function fund(address[] calldata _recipients, uint256[] calldata _amounts) external onlyOwner {
+    function fund(
+        address[] memory _recipients,
+        uint256[] memory _amounts,
+        uint256[] memory _startTimes,
+        uint256[] memory _endTimes
+    ) external onlyOwner {
         uint256 _totalAmount = 0;
         for (uint256 index = 0; index < _recipients.length; index++) {
+            require(_startTimes[index] >= block.timestamp, "Start time must be in future");
+            require(_endTimes[index] > _startTimes[index], "End time must be greater than start time");
             uint256 amount = _amounts[index];
             address recipient = _recipients[index];
             if (recipient == address(0)) {
@@ -55,8 +54,8 @@ contract VestingEscrowProxy is Initializable, ProxyReentrancyGuard, ProxyOwned, 
     }
 
     function _totalVestedOf(address _recipient, uint256 _time) internal view returns (uint256) {
-        uint256 start = startTime;
-        uint256 end = endTime;
+        uint256 start = startTime[_recipient];
+        uint256 end = endTime[_recipient];
         uint256 locked = initialLocked[_recipient];
 
         if (_time < start) return 0;
@@ -64,8 +63,8 @@ contract VestingEscrowProxy is Initializable, ProxyReentrancyGuard, ProxyOwned, 
     }
 
     function _totalVested() internal view returns (uint256) {
-        uint256 start = startTime;
-        uint256 end = endTime;
+        uint256 start = startTime[_recipient];
+        uint256 end = endTime[_recipient];
         uint256 locked = initialLockedSupply;
 
         if (block.timestamp < start) {
@@ -103,18 +102,32 @@ contract VestingEscrowProxy is Initializable, ProxyReentrancyGuard, ProxyOwned, 
         emit Claim(msg.sender, claimable);
     }
 
-    function setStartTime(uint256 _startTime) external onlyOwner {
-        startTime = _startTime;
+    function disableClaim(address _recipient) external onlyOwner {
+        disabledAt[_recipient] = block.timestamp;
+
+        emit DisableClaim(_recipient);
     }
 
-    function setEndTime(uint256 _endTime) external onlyOwner {
-        endTime = _endTime;
+
+    function setStartTime(address _recipient, uint256 _startTime) external onlyOwner {
+        startTime[_recipient] = _startTime;
+        emit StartTimeChanged(_recipient, _startTime);
+    }
+
+    function setEndTime(address _recipient, uint256 _endTime) external onlyOwner {
+        endTime[_recipient] = _endTime;
+        emit EndTimeChanged(_recipient, _endTime);
     }
 
     function setToken(address _token) external onlyOwner {
         token = _token;
+        emit TokenChanged(_token);
     }
 
-    event Fund(address indexed _recipient, uint256 _amount);
-    event Claim(address indexed _address, uint256 _amount);
+    event Fund(address _recipient, uint256 _amount);
+    event Claim(address _address, uint256 _amount);
+    event StartTimeChanged(address _recipient, uint256 _startTime);
+    event EndTimeChanged(address _recipient, uint256 _endTime);
+    event TokenChanged(address _token);
+    event DisableClaim(address _recipient);
 }

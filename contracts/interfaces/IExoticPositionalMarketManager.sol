@@ -2,6 +2,7 @@ pragma solidity ^0.8.0;
 
 interface IExoticPositionalMarketManager {
     /* ========== VIEWS / VARIABLES ========== */
+    function paused() external view returns (bool);
     function getActiveMarketAddress(uint _index) external view returns(address);
     function getActiveMarketIndex(address _marketAddress) external view returns(uint);
     function isActiveMarket(address _marketAddress) external view returns(bool);

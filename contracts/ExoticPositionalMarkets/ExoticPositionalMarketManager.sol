@@ -25,9 +25,10 @@ import "../utils/libraries/AddressSetLib.sol";
 
 contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
+    using AddressSetLib for AddressSetLib.AddressSet;
     
-    uint private constant backstopTimeoutDefault = 4 hours;
-    uint private constant fixedBondAmountDefault = 100 * 1e18;
+    AddressSetLib.AddressSet private _activeMarkets;
+    // AddressSetLib.AddressSet private _maturedMarkets;
 
     uint public fixedBondAmount;
     uint public backstopTimeout;
@@ -38,51 +39,41 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     uint public creatorPercentage;
     uint public resolverPercentage;
     uint public withdrawalPercentage;
-
-    uint public maxOracleCouncilMembers;
-    address public exoticMarketMastercopy;
-    address public oracleCouncilAddress;
-    address public safeBoxAddress;
-
-    address public thalesBonds;
-    address public paymentToken;
     uint public maximumPositionsAllowed;
     uint public disputePrice;
-
-    mapping(uint => address) public pauserAddress;
+    uint public maxOracleCouncilMembers;
     uint public pausersCount;
-    mapping(address => uint) public pauserIndex;
-
-    mapping(address => address) public creatorAddress;
-    mapping(address => address) public resolverAddress;
-
-    mapping(uint => address) public activeMarkets;
-    uint public numOfActiveMarkets;
-
-    address public tagsAddress;
     uint public maxNumberOfTags;
     uint public backstopTimeoutGeneral;
     uint public safeBoxLowAmount;
     uint public arbitraryRewardForDisputor;
-    address public theRundownConsumerAddress;
-    mapping(address => bool) public isChainLinkMarket;
-    address public marketDataAddress;
-    bool public creationRestrictedToOwner;
     uint public minFixedTicketPrice;
     uint public disputeStringLengthLimit;
-    mapping(address => bool) public cancelledByCreator;
-    address public exoticMarketOpenBidMastercopy;
-    address public exoticRewards;
     uint public marketQuestionStringLimit;
     uint public marketSourceStringLimit;
     uint public marketPositionStringLimit;
-    bool public openBidAllowed;
-    uint public withdrawalTimePercentage;
-
-    using AddressSetLib for AddressSetLib.AddressSet;
-    AddressSetLib.AddressSet private _activeMarkets;
     uint public withdrawalTimePeriod;
-    // AddressSetLib.AddressSet private _maturedMarkets;
+    bool public creationRestrictedToOwner;
+    bool public openBidAllowed;
+
+    address public exoticMarketMastercopy;
+    address public oracleCouncilAddress;
+    address public safeBoxAddress;
+    address public thalesBonds;
+    address public paymentToken;
+    address public tagsAddress;
+    address public theRundownConsumerAddress;
+    address public marketDataAddress;
+    address public exoticMarketOpenBidMastercopy;
+    address public exoticRewards;
+
+    mapping(uint => address) public pauserAddress;
+    mapping(address => uint) public pauserIndex;
+
+    mapping(address => address) public creatorAddress;
+    mapping(address => address) public resolverAddress;
+    mapping(address => bool) public isChainLinkMarket;
+    mapping(address => bool) public cancelledByCreator;
 
     function initialize(
         address _owner

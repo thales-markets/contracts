@@ -22,49 +22,41 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     uint public creationTime;
     uint public resolvedTime;
     uint public lastDisputeTime;
-    bool public disputed;
-
-    // from init
-    string public marketQuestion;
-    string public marketSource;
-    TicketType public ticketType;
-    mapping(uint => string) public positionPhrase;
     uint public positionCount;
     uint public endOfPositioning;
     uint public marketMaturity;
     uint public fixedTicketPrice;
-    uint[] public tags;
     uint public backstopTimeout;
-    bool public withdrawalAllowed;
-    IExoticPositionalMarketManager public marketManager;
-    IThalesBonds public thalesBonds;
-    address public resolverAddress;
-
-    //stats
     uint public totalUsersTakenPositions;
-
-    // open bid parameters
     uint public totalOpenBidAmount;
     uint public claimableOpenBidAmount;
-    mapping(uint => uint) public totalOpenBidAmountPerPosition;
-    mapping(address => mapping(uint => uint)) public userOpenBidPosition;
-    mapping(address => uint) public userAlreadyClaimed;
-
-    bool public resolved;
-    bool public disputedInPositioningPhase;
-    bool public feesAndBondsClaimed;
-    bool public noWinners;
     uint public winningPosition;
-    uint public claimableTicketsCount;
-
-    uint public totalBondAmount;
     uint public disputeClosedTime;
-
     uint public fixedBondAmount;
     uint public disputePrice;
     uint public safeBoxLowAmount;
     uint public arbitraryRewardForDisputor;
     uint public withdrawalPeriod;
+
+    bool public noWinners;
+    bool public disputed;
+    bool public resolved;
+    bool public disputedInPositioningPhase;
+    bool public feesAndBondsClaimed;
+    bool public withdrawalAllowed;
+
+    address public resolverAddress;
+    TicketType public ticketType;
+    IExoticPositionalMarketManager public marketManager;
+    IThalesBonds public thalesBonds;
+
+    mapping(address => mapping(uint => uint)) public userOpenBidPosition;
+    mapping(address => uint) public userAlreadyClaimed;
+    mapping(uint => uint) public totalOpenBidAmountPerPosition;
+    mapping(uint => string) public positionPhrase;
+    uint[] public tags;
+    string public marketQuestion;
+    string public marketSource;
 
     function initialize(
         string memory _marketQuestion,

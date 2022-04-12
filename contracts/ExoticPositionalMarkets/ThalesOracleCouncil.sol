@@ -23,12 +23,13 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     uint private constant ACCEPT_RESET = 5;
     uint private constant REFUSE_MATURE = 6;
 
-    uint private constant TEN_SUSD = 10 * 1e18;
+    uint private constant CREATOR_BOND = 101;
+    uint private constant RESOLVER_BOND = 102;
+    uint private constant DISPUTOR_BOND = 103;
+    uint private constant CREATOR_AND_DISPUTOR = 104;
+    uint private constant RESOLVER_AND_DISPUTOR = 105;
 
-    mapping(uint => address) public councilMemberAddress;
-    mapping(address => uint) public councilMemberIndex;
-    uint public councilMemberCount;
-    IExoticPositionalMarketManager public marketManager;
+    uint private constant TEN_SUSD = 10 * 1e18;
 
     struct Dispute {
         address disputorAddress;
@@ -38,26 +39,23 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
         bool disputeInPositioningPhase;
     }
 
-    mapping(address => mapping(uint => Dispute)) public dispute;
+    IExoticPositionalMarketManager public marketManager;
+    uint public councilMemberCount;
+    mapping(uint => address) public councilMemberAddress;
+    mapping(address => uint) public councilMemberIndex;
     mapping(address => uint) public marketTotalDisputes;
     mapping(address => uint) public marketLastClosedDispute;
+    mapping(address => uint) public allOpenDisputesCancelledToIndexForMarket;
+    mapping(address => uint) public marketOpenDisputesCount;
     mapping(address => bool) public marketClosedForDisputes;
+    mapping(address => address) public firstMemberThatChoseWinningPosition;
 
+    mapping(address => mapping(uint => Dispute)) public dispute;
     mapping(address => mapping(uint => uint[])) public disputeVote;
     mapping(address => mapping(uint => uint[VOTING_OPTIONS])) public disputeVotesCount;
     mapping(address => mapping(uint => uint)) public disputeWinningPositionChoosen;
-    mapping(address => address) public firstMemberThatChoseWinningPosition;
-    mapping(address => uint) public allOpenDisputesCancelledToIndexForMarket;
     mapping(address => mapping(uint => mapping(address => uint))) public disputeWinningPositionChoosenByMember;
     mapping(address => mapping(uint => mapping(uint => uint))) public disputeWinningPositionVotes;
-
-    uint private constant CREATOR_BOND = 101;
-    uint private constant RESOLVER_BOND = 102;
-    uint private constant DISPUTOR_BOND = 103;
-    uint private constant CREATOR_AND_DISPUTOR = 104;
-    uint private constant RESOLVER_AND_DISPUTOR = 105;
-
-    mapping(address => uint) public marketOpenDisputesCount;
 
     function initialize(address _owner, address _marketManager) public initializer {
         setOwner(_owner);

@@ -27,8 +27,8 @@ async function main() {
 		mainnetNetwork = 'kovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 	
     const MarketDataContract = await ethers.getContractFactory('ExoticPositionalMarketData');

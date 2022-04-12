@@ -469,19 +469,6 @@
   },
   {
     "inputs": [],
-    "name": "claimableTicketsCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "closeDispute",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1424,19 +1411,6 @@
         "internalType": "enum ExoticPositionalOpenBidMarket.TicketType",
         "name": "",
         "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalBondAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",

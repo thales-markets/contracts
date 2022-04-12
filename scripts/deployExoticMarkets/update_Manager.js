@@ -27,8 +27,8 @@ async function main() {
 		mainnetNetwork = 'kovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 	
     const ExoticMarketMastercopyAddress = getTargetAddress("ExoticMarketMasterCopy", network);
@@ -48,13 +48,6 @@ async function main() {
 	console.log('Implementation ExoticMarketManager: ', ExoticMarketManagerImplementation);
 	setTargetAddress('ExoticMarketManagerImplementation', network, ExoticMarketManagerImplementation);
 
-	// await delay(5000);
-	
-	// const ExoticManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
-	
-	// await ExoticManagerDeployed.setMinimumFixedTicketAmount(w3utils.toWei("10", "ether"), {from: owner.address})
-	
-	// await delay(5000);
 	
 	try {
 		await hre.run('verify:verify', {

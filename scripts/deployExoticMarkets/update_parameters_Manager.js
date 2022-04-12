@@ -33,9 +33,9 @@ async function main() {
         SafeBoxAddress = owner.address;
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
-        PaymentTokenAddress = "0x8c6f28f2F1A3C87F0f938b96d27520d9751ec8d9" // sUSD on OP
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+        PaymentTokenAddress = getTargetAddress("ProxysUSD", network); // sUSD on OP
         SafeBoxAddress =  getTargetAddress("SafeBox", network);
 	}
 	

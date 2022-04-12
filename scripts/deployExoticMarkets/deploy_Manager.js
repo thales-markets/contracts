@@ -29,22 +29,14 @@ async function main() {
 		ThalesName = "OpThales_L2";
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 	
-    const ExoticMarketMastercopyAddress = getTargetAddress("ExoiticMarketMasterCopy", network);
-    const ThalesAddress = getTargetAddress(ThalesName, network);
     const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
-    let minimumPositioningDuration = 0;
-    let minimumMarketMaturityDuration = 0;
-
-    console.log("Mastercopy at address", ExoticMarketMastercopyAddress);
-    
+   
     const ExoticMarketManagerDeployed = await upgrades.deployProxy(ExoticMarketManager, [
-        owner.address,
-		minimumPositioningDuration,
-		ThalesAddress
+        owner.address
 	]);
 	await ExoticMarketManagerDeployed.deployed;
     

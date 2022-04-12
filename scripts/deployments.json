@@ -227,9 +227,9 @@
 		"PriceFeed": "0xCd9c0E99396627C7746b4363B880939Ac2828d3E",
 		"PriceFeedImplementation": "0x6B33b99E3D3213DF963375E6d94aBa968351f803",
 		"PositionMastercopy": "0xC6e9c95823D7CC98A92D73de89D69548E2774cd8",
-		"PositionalMarketMastercopy": "0xEcA7A1b229BB6Ad5c96FeeCdBF095750A71889ac",
+		"PositionalMarketMastercopy": "0x6B57cc2931346D0121cFD60CB35BD9286250165b",
 		"PositionalMarketManager": "0x85f1B57A1D3Ac7605de3Df8AdA056b3dB9676eCE",
-		"PositionalMarketManagerImplementation": "0xE0B31640B07E4BCFAFc190d7DDE951BA3286Dd63",
+		"PositionalMarketManagerImplementation": "0x186ECa53486104A3CA90f18dB25e5C19fD6265FB",
 		"PositionalMarketFactory": "0xE5C83ad4bE4D2F78C1B4f30DB86cD14516bbC724",
 		"PositionalMarketFactoryImplementation": "0x8Eb4eB483f0DfB0910d24351d11b4D098d82080D",
 		"PositionalMarketData": "0xAF662BB75e9c1b6bb3e6EF9c0BD4Ac3507646B9A",
@@ -238,7 +238,7 @@
 		"SafeBoxImplementation": "0x5cf3b1882357BB66Cf3cd2c85b81AbBc85553962",
 		"DeciMath": "0x134Cc78D89061B87d8db3Fc90a24D61f65794088",
 		"ThalesAMM": "0x9b6d76B1C6140FbB0ABc9C4a348BFf4e4e8a1213",
-		"ThalesAMMImplementation": "0x8Fc9310EC4c6d090Bd6Ad90025B47927399aDad6"
+		"ThalesAMMImplementation": "0x5F8b6a881C7f97a73Ba21a64F36CB4E5eCa6bbA6"
 	},
 	"localhost": {
 		"Airdrop": "",

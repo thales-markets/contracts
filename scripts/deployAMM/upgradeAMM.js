@@ -43,45 +43,6 @@ async function main() {
 
 	setTargetAddress('ThalesAMMImplementation', network, ThalesAMMImplementation);
 
-	let ThalesAMM_deployed = ThalesAMM.attach(thalesAmmAddress);
-
-	const safeBoxImpact = w3utils.toWei('0.01');
-	let tx = await ThalesAMM_deployed.setSafeBoxImpact(safeBoxImpact);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setSafeBoxImpact()');
-	});
-
-	const minSpread = w3utils.toWei('0.02');
-	tx = await ThalesAMM_deployed.setMinSpread(minSpread);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setMinSpread()');
-	});
-
-	const maxSpread = w3utils.toWei('0.2');
-	tx = await ThalesAMM_deployed.setMaxSpread(maxSpread);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setMinSpread()');
-	});
-
-	const minSupportedPrice = w3utils.toWei('0.05');
-	tx = await ThalesAMM_deployed.setMinSupportedPrice(minSupportedPrice);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setMinSupportedPrice()');
-	});
-
-	const maxSupportedPrice = w3utils.toWei('0.95');
-	tx = await ThalesAMM_deployed.setMaxSupportedPrice(maxSupportedPrice);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setMaxSupportedPrice()');
-	});
-
-	const hour = 60 * 60;
-	const minimalTimeLeftToMaturity = hour * 8;
-	tx = await ThalesAMM_deployed.setMinimalTimeLeftToMaturity(minimalTimeLeftToMaturity);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setMinimalTimeLeftToMaturity()');
-	});
-
 	try {
 		await hre.run('verify:verify', {
 			address: ThalesAMMImplementation,

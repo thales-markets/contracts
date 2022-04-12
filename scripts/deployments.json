@@ -146,7 +146,20 @@
 		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29",
 		"OptimisticAirdropUnclaimedRetro": "0x3Da91E5eD564eE46d4D734E1F99F395f0969101a",
 		"ThalesRoyalePassport": "0xf534848023ba851c6265e8F99a919c4d5fd05CD0",
-		"ThalesRoyalePassportImplementation": "0x131f611470D831F56e2fcaA72250a5D768056dfE"
+		"ThalesRoyalePassportImplementation": "0x131f611470D831F56e2fcaA72250a5D768056dfE",
+		"ExoticMarketManager": "0x9a51524422DDF1B8AfEc04CBa6451a6c50320998",
+		"ExoticMarketManagerImplementation": "0xaC1D6991441D2113Ac812bEa5DA4B20AF01274FD",
+		"ThalesOracleCouncil": "0xDF3eefC2ED0F31947a67f0e817DfD92717630E38",
+		"ThalesOracleCouncilImplementation": "0x752E92343fc2BbA40439126aB870FadBcf17050c",
+		"ThalesBonds": "0x160Ca569999601bca06109D42d561D85D6Bb4b57",
+		"ThalesBondsImplementation": "0x391a45F31c1837E3d837c23e05F42A098329D50d",
+		"ExoticMarketMasterCopy": "0x39Ed4A44C5a390415F1b1dDE2C77a61168aAdFbf",
+		"ExoticRewards": "0x5c936675212cB832aa82bA4b8a1F237Cf8db97aD",
+		"ExoticRewardsImplementation": "0xdF593a822B0Ba768816bA5a3d06FA3E1A8F7000E",
+		"ExoticPositionalMarketData": "0x7B3241C61889185188E3B444abEf7298fAe6B1E1",
+		"ExoticPositionalMarketDataImplementation": "0x648200a8d65E477b7222b89019bb877209d1B0cF",
+		"ExoticPositionalTags": "0xd550bD32B434bA870642F94710eb220f542Ed3F3",
+		"ExoticPositionalTagsImplementation": "0x7a911614e0a916FB59A14EBd5c186dD076d1eDBc"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

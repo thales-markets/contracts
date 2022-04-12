@@ -72,7 +72,7 @@ contract ThalesRoyalePassport is
         bool seasonFinished = thalesRoyale.seasonFinished(season);
 
         imageURI = NFTDescriptor.constructTokenURI(
-            NFTSVG.SVGParams(player, timestamp, tokenId, season, currentRound, positions, alive, seasonFinished, baseUri)
+            NFTSVG.SVGParams(player, timestamp, tokenId, season, currentRound, positions, alive, seasonFinished)
         );
     }
 

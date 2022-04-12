@@ -15,11 +15,12 @@ npx hardhat test test/contracts/ThalesRoyale/royalePrivate.js
 npx hardhat test test/contracts/ThalesAMM/thalesamm.js
 npx hardhat test test/contracts/ThalesAMM/thalesammImprovements.js
 
-
 npx hardhat coverage
 
-
 sports:
+npx hardhat run --network kovan scripts/SportsBinaryOptions/createUSOpenMarkets.js
+npx hardhat run --network kovan scripts/deployExoticMarkets/deploy_TherundownConsumerWrapper.js
+npx hardhat run --network kovan scripts/deployExoticMarkets/deploy_TherundownConsumer.js 
 npx hardhat run --network kovan scripts/SportsPositions/createUSOpenMarkets.js
 
 optimistic kovan:

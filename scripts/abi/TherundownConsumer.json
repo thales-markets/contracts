@@ -74,6 +74,21 @@
             "type": "uint256"
           },
           {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
+          },
+          {
             "internalType": "string",
             "name": "homeTeam",
             "type": "string"
@@ -125,6 +140,21 @@
             "internalType": "uint256",
             "name": "startTime",
             "type": "uint256"
+          },
+          {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
           },
           {
             "internalType": "string",
@@ -600,6 +630,21 @@
         "type": "uint256"
       },
       {
+        "internalType": "int24",
+        "name": "homeOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "awayOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "drawOdds",
+        "type": "int24"
+      },
+      {
         "internalType": "string",
         "name": "homeTeam",
         "type": "string"
@@ -708,6 +753,21 @@
             "type": "uint256"
           },
           {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
+          },
+          {
             "internalType": "string",
             "name": "homeTeam",
             "type": "string"
@@ -752,6 +812,21 @@
             "internalType": "uint256",
             "name": "startTime",
             "type": "uint256"
+          },
+          {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
           },
           {
             "internalType": "string",
@@ -873,6 +948,63 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getOddsAwayTeam",
+    "outputs": [
+      {
+        "internalType": "int24",
+        "name": "",
+        "type": "int24"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getOddsDraw",
+    "outputs": [
+      {
+        "internalType": "int24",
+        "name": "",
+        "type": "int24"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getOddsHomeTeam",
+    "outputs": [
+      {
+        "internalType": "int24",
+        "name": "",
+        "type": "int24"
       }
     ],
     "stateMutability": "view",

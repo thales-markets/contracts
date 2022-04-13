@@ -35,6 +35,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     struct GameCreate {
         bytes32 gameId;
         uint256 startTime;
+        int24 homeOdds;
+        int24 awayOdds;
+        int24 drawOdds;
         string homeTeam;
         string awayTeam;
     }
@@ -162,6 +165,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function getGameTime(bytes32 _gameId) public view returns (uint256) {
         return gameCreated[_gameId].startTime;
+    }
+
+    function getOddsHomeTeam(bytes32 _gameId) public view returns (int24) {
+        return gameCreated[_gameId].homeOdds;
+    }
+
+    function getOddsAwayTeam(bytes32 _gameId) public view returns (int24) {
+        return gameCreated[_gameId].awayOdds;
+    }
+
+    function getOddsDraw(bytes32 _gameId) public view returns (int24) {
+        return gameCreated[_gameId].drawOdds;
     }
 
     function getGameResolvedById(bytes32 _gameId) public view returns (GameResolve memory) {

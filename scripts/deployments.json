@@ -146,7 +146,7 @@
 		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29",
 		"OptimisticAirdropUnclaimedRetro": "0x3Da91E5eD564eE46d4D734E1F99F395f0969101a",
 		"ThalesRoyalePassport": "0xf534848023ba851c6265e8F99a919c4d5fd05CD0",
-		"ThalesRoyalePassportImplementation": "0x131f611470D831F56e2fcaA72250a5D768056dfE"
+		"ThalesRoyalePassportImplementation": "0xd051b22871f23d12eEdF54d695420F43C9d3C268"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

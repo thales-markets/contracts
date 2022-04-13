@@ -336,12 +336,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             IExoticPositionalMarket(_marketAddress).canUsersClaim() || cancelledByCreator[_marketAddress],
             "Not claimable"
         );
-        require(
-            IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
-                IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0,
-            "Bonds already claimed"
-        );
-        IThalesBonds(thalesBonds).issueBondsBackToCreatorAndResolver(_marketAddress);
+        if(IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
+        IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0) {
+            IThalesBonds(thalesBonds).issueBondsBackToCreatorAndResolver(_marketAddress);
+        }
     }
 
     function disputeMarket(address _marketAddress, address _disputor) external onlyOracleCouncil whenNotPaused {

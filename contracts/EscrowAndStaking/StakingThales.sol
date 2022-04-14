@@ -90,6 +90,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     uint public totalStakedLastPeriodEnd;
     uint public totalEscrowedLastPeriodEnd;
+    address public exoticBonds;
 
     IAddressResolver public addressResolver;
 
@@ -231,6 +232,12 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(_thalesAMM != address(0), "Invalid address");
         thalesAMM = _thalesAMM;
         emit ThalesAMMAddressChanged(_thalesAMM);
+    }
+    
+    function setExoticBonds(address _exoticBonds) public onlyOwner {
+        require(_exoticBonds != address(0), "Invalid address");
+        exoticBonds = _exoticBonds;
+        emit ExoticBondsAddressChanged(_exoticBonds);
     }
 
     function setPriceFeed(address _priceFeed) public onlyOwner {
@@ -565,7 +572,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function updateVolume(address account, uint amount) external {
-        require(msg.sender == address(thalesAMM), "Invalid address");
+        require(msg.sender == address(thalesAMM) || msg.sender == exoticBonds, "Invalid address");
         require(msg.sender != address(0), "Invalid address");
         if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
@@ -692,5 +699,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event ThalesStakingRewardsPoolChanged(address thalesStakingRewardsPool);
     event SNXVolumeRewardsMultiplierChanged(uint ammVolumeRewardsMultiplier);
     event AddressResolverChanged(address addressResolver);
+    event ExoticBondsAddressChanged(address exoticBonds);
 
 }

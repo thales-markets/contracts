@@ -28,22 +28,42 @@ async function main() {
 
 	console.log('Owner is:' + owner.address);
 	console.log('Network name:' + network);
+	
+	const ProxyStaking = getTargetAddress('StakingThales', network);
+	const NewStaking = await ethers.getContractFactory('StakingThales');
+	const AddressResolverAddress = getTargetAddress('AddressResolver', network);
+	let StakingImplementation;
+	console.log("Address of staking: ",ProxyStaking);
 
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
+		await upgrades.upgradeProxy(ProxyStaking, NewStaking);
+		await delay(5000);
+	
+		console.log('Staking upgraded');
+	
+		StakingImplementation = await getImplementationAddress(ethers.provider, ProxyStaking);
+	
 	}
-	const ProxyStaking = getTargetAddress('StakingThales', network);
-	const NewStaking = await ethers.getContractFactory('StakingThales');
-	console.log("Address of staking: ",ProxyStaking);
 
-	await upgrades.upgradeProxy(ProxyStaking, NewStaking);
-	await delay(5000);
+	if (networkObj.chainId == 10) {
+		network = 'optimisticEthereum';
+		StakingImplementation = await upgrades.prepareUpgrade(ExoticRewardsAddress, ExoticRewardsContract);
+		await delay(5000);
+		console.log('Staking upgraded');
+	}
 
-	console.log('Staking upgraded');
-
-	const StakingImplementation = await getImplementationAddress(ethers.provider, ProxyStaking);
 	console.log('Implementation Staking: ', StakingImplementation);
 	setTargetAddress('StakingThalesImplementation', network, StakingImplementation);
+
+	const StakingThales = await NewStaking.attach(ProxyStaking);
+    console.log("StakingThales attached on: ", StakingThales.address);
+
+	tx = await StakingThales.setAddressResolver(AddressResolverAddress, {from:owner.address});
+	await tx.wait().then(e => {
+		console.log('Staking Thales: setAddressResolver ', AddressResolverAddress);
+	});
+	delay(1000);
 
 	try {
 		await hre.run('verify:verify', {

@@ -262,7 +262,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit EscrowChanged(_escrowThalesContract);
     }
 
-    function setAddressResolver(address _addressResolver) public onlyOwner {
+    function setAddressResolver(address _addressResolver) external onlyOwner {
         require(_addressResolver != address(0), "Invalid address");
         addressResolver = IAddressResolver(_addressResolver);
         emit AddressResolverChanged(_addressResolver);

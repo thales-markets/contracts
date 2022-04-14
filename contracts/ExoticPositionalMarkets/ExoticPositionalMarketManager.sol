@@ -194,19 +194,28 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         bool _withdrawalAllowed,
         uint[] memory _tags,
         uint _positionCount,
+        uint[] memory _positionsOfCreator,
         string[] memory _positionPhrases
-    ) external nonReentrant {
+    ) external nonReentrant whenNotPaused {
         require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low");
         require(theRundownConsumerAddress != address(0), "Invalid theRundownConsumer");
         require(msg.sender == theRundownConsumerAddress, "Invalid creator");
         require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
-        require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low amount for creation");
-        require(IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount, "No allowance.");
         require(keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")), "Invalid question");
         require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid source");
         require(_positionCount == _positionPhrases.length, "Invalid posCount");
         require(bytes(_marketQuestion).length < 110, "Question exceeds length");
         require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
+        require(_positionsOfCreator.length == _positionCount, "Creator init deposit wrong");
+        uint totalCreatorDeposit;
+        uint[] memory creatorPositions = new uint[](_positionCount);
+        for(uint i=0; i<_positionCount; i++) {
+            totalCreatorDeposit = totalCreatorDeposit.add(_positionsOfCreator[i]);
+            creatorPositions[i] = i+1;
+        }
+        require(IERC20(paymentToken).balanceOf(msg.sender) >= totalCreatorDeposit, "Low amount for creation");
+        require(IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= totalCreatorDeposit, "No allowance.");
+
 
         ExoticPositionalOpenBidMarket exoticMarket =
             ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
@@ -222,8 +231,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         );
         isChainLinkMarket[address(exoticMarket)] = true;
         creatorAddress[address(exoticMarket)] = msg.sender;
-        IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
+        // IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
         _activeMarkets.add(address(exoticMarket));
+        exoticMarket.takeCreatorInitialOpenBidPositions(creatorPositions, _positionsOfCreator);
         emit CLMarketCreated(
             address(exoticMarket),
             _marketQuestion,

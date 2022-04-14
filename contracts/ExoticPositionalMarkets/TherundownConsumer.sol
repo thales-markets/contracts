@@ -266,6 +266,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             withdrawalAllowed,
             _calculateTags(sportId),
             numberOfPositions,
+            [], // todo calculation
             _createPhrases(game.homeTeam, game.awayTeam, numberOfPositions)
         );
 

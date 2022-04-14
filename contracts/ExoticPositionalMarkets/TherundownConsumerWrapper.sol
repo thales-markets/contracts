@@ -14,6 +14,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     ITherundownConsumer public consumer;
     mapping(bytes32 => uint) public sportIdPerRequestId;
+    mapping(address => bool) public whitelistedAddresses;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -37,7 +38,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint256 _date,
         string[] memory _statusIds,
         string[] memory _gameIds
-    ) public whenNotPaused isValidRequest(_market, _sportId) {
+    ) public whenNotPaused isValidRequest(_market, _sportId) isAddressWhitelisted {
         Chainlink.Request memory req;
 
         if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
@@ -62,7 +63,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         string memory _market,
         uint256 _sportId,
         uint256 _date
-    ) public whenNotPaused isValidRequest(_market, _sportId) {
+    ) public whenNotPaused isValidRequest(_market, _sportId) isAddressWhitelisted {
         Chainlink.Request memory req;
 
         if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
@@ -101,17 +102,23 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    function setOracle(address _oracle) public onlyOwner {
+    function addToWhitelist(address _whitelistAddress) external onlyOwner {
+        require(_whitelistAddress != address(0), "Invalid address");
+        whitelistedAddresses[_whitelistAddress] = true;
+        emit AddedIntoWhitelist(_whitelistAddress);
+    }
+
+    function setOracle(address _oracle) external onlyOwner {
         setChainlinkOracle(_oracle);
         emit NewOracleAddress(_oracle);
     }
 
-    function setConsumer(address _consumer) public onlyOwner {
+    function setConsumer(address _consumer) external onlyOwner {
         consumer = ITherundownConsumer(_consumer);
         emit NewConsumer(_consumer);
     }
 
-    function withdrawLink() public onlyOwner {
+    function withdrawLink() external onlyOwner {
         LinkTokenInterface linkToken = LinkTokenInterface(chainlinkTokenAddress());
         require(linkToken.transfer(msg.sender, linkToken.balanceOf(address(this))), "Unable to transfer");
     }
@@ -124,8 +131,14 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         _;
     }
 
+    modifier isAddressWhitelisted() {
+        require(whitelistedAddresses[msg.sender], "Address not supported");
+        _;
+    }
+
     /* ========== EVENTS ========== */
 
     event NewOracleAddress(address _oracle);
     event NewConsumer(address _consumer);
+    event AddedIntoWhitelist(address _whitelistAddress);
 }

@@ -203,8 +203,9 @@ contract('TherundownConsumer', accounts => {
 			[sportId_4, sportId_16],
 			ExoticPositionalMarketManager.address,
 			[sportId_4],
-			toUnit(10),
+			toUnit(0),
 			true,
+			toUnit(100),
 			gamesQueue.address,
 			{ from: owner }
 		);
@@ -213,6 +214,7 @@ contract('TherundownConsumer', accounts => {
 			TherundownConsumerDeployed.address
 		);
 		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
+		await TherundownConsumerDeployed.addToWhitelist(third, { from: owner });
 
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
@@ -567,7 +569,7 @@ contract('TherundownConsumer', accounts => {
 			assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameid1,
-				_game: gameR,
+				_outcome: 2,
 			});
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
@@ -575,7 +577,7 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 
-		it('Fulfill Games Resolved - Champions League AJAX, resolve market, check results', async () => {
+		it('Fulfill Games Resolved - Champions League Game 1, resolve market, check results', async () => {
 			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
 
 			// req. games
@@ -674,11 +676,11 @@ contract('TherundownConsumer', accounts => {
 			assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameFootballid1,
-				_game: gameR,
+				_outcome: 2,
 			});
 		});
 
-		it('Fulfill Games Resolved - Champions League MUN UTD, resolve market, check results', async () => {
+		it('Fulfill Games Resolved - Champions League Game 2, resolve market, check results', async () => {
 			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
 
 			// req games
@@ -788,7 +790,7 @@ contract('TherundownConsumer', accounts => {
 			assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameFootballid2,
-				_game: gameR,
+				_outcome: 2,
 			});
 
 			await expect(
@@ -798,6 +800,293 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
+		});
+	});
+
+	describe('Game resolve/clancel Manually', () => {
+		it('Resolve game 1 Manually, check results', async () => {
+			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
+				{ from: wrapper }
+			);
+
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
+
+			assert.equal(
+				game_1_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
+			);
+			assert.equal(
+				game_2_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
+			);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			assert.equal('Atletico Madrid Atletico Madrid', game.homeTeam);
+			assert.equal('Manchester City Manchester City', game.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreted', {
+				_requestId: reqIdFootballCreate,
+				_sportId: sportId_16,
+				_id: gameFootballid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid1,
+				_game: game,
+			});
+
+			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+
+			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
+			assert.notEqual(0, await deployedMarket.creationTime());
+			assert.equal(false, await deployedMarket.disputed());
+			assert.equal(false, await deployedMarket.resolved());
+			assert.equal(false, await deployedMarket.canMarketBeResolved());
+			assert.equal('Atletico Madrid Atletico Madrid', await deployedMarket.positionPhrase(1));
+			assert.equal('Manchester City Manchester City', await deployedMarket.positionPhrase(2));
+			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
+			assert.equal(9016, await deployedMarket.tags(0));
+
+			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
+
+			await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, { from: second })).to.be.revertedWith('Address not supported');
+			await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 0, { from: third })).to.be.revertedWith('Bad outcome for three position game');
+			await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 4, { from: third })).to.be.revertedWith('Bad outcome for three position game');
+			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: second })).to.be.revertedWith('Address not supported');
+			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for three position game');
+			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, { from: third })).to.be.revertedWith('Bad outcome for three position game');
+
+			const tx_2 = await TherundownConsumerDeployed.resolveGameManually(
+				gameFootballid1, 2, { from: third }
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_2.logs[0], 'ResolveSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid1,
+				_outcome: 2,
+			});
+
+			await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
+
+			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
+		});
+
+		it('Resolve market address manually, check results', async () => {
+			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+
+			// req games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
+				{ from: wrapper }
+			);
+
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
+
+			assert.equal(
+				game_1_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
+			);
+			assert.equal(
+				game_2_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
+			);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
+			assert.equal('Liverpool Liverpool', game.homeTeam);
+			assert.equal('Benfica Benfica', game.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[1], 'GameCreted', {
+				_requestId: reqIdFootballCreate,
+				_sportId: sportId_16,
+				_id: gameFootballid2,
+				_game: game,
+			});
+
+			await expect(
+				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
+			).to.be.revertedWith('Must be first in a queue');
+
+			// clean first in queue
+			await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid2,
+				_game: game,
+			});
+
+			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
+			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+
+			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
+			assert.notEqual(0, await deployedMarket.creationTime());
+			assert.equal(false, await deployedMarket.disputed());
+			assert.equal(false, await deployedMarket.resolved());
+			assert.equal(false, await deployedMarket.canMarketBeResolved());
+			assert.equal('Liverpool Liverpool', await deployedMarket.positionPhrase(1));
+			assert.equal('Benfica Benfica', await deployedMarket.positionPhrase(2));
+			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
+			assert.equal(9016, await deployedMarket.tags(0));
+
+			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
+
+			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: second })).to.be.revertedWith('Address not supported');
+			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for three position game');
+			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, { from: third })).to.be.revertedWith('Bad outcome for three position game');
+
+			const tx_2 = await TherundownConsumerDeployed.resolveMarketManually(
+				marketAdd, 1, { from: third }
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_2.logs[0], 'ResolveSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid2,
+				_outcome: 1,
+			});
+
+			await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid2, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
+			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
+
+			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
+		});
+
+
+		it('Cancel market Manually, check results', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				{ from: wrapper }
+			);
+
+			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
+			assert.equal(sportId_4, await gamesQueue.sportPerGameId(gameid1));
+			assert.equal(sportId_4, await gamesQueue.sportPerGameId(gameid2));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
+
+			assert.equal(1, await gamesQueue.firstCreated());
+			assert.equal(2, await gamesQueue.lastCreated());
+
+			assert.equal(
+				game_1_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
+			);
+			assert.equal(
+				game_2_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
+			);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			assert.equal('Atlanta Hawks', game.homeTeam);
+			assert.equal('Charlotte Hornets', game.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreted', {
+				_requestId: reqIdCreate,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			assert.equal(2, await gamesQueue.firstCreated());
+			assert.equal(2, await gamesQueue.lastCreated());
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+
+			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+
+			assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.marketQuestion());
+			assert.equal(2, await deployedMarket.positionCount());
+
+			assert.bnEqual(gameTime, await deployedMarket.endOfPositioning());
+			assert.notEqual(0, await deployedMarket.creationTime());
+			assert.equal(false, await deployedMarket.disputed());
+			assert.equal(false, await deployedMarket.resolved());
+			assert.equal(false, await deployedMarket.canMarketBeResolved());
+			assert.equal('Atlanta Hawks', await deployedMarket.positionPhrase(1));
+			assert.equal('Charlotte Hornets', await deployedMarket.positionPhrase(2));
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			//await fastForward(await currentTime());
+
+			await expect(TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: second })).to.be.revertedWith('Address not supported');
+			await expect(TherundownConsumerDeployed.cancelMarketManually(second, { from: third })).to.be.revertedWith('No market created for game');
+			await expect(TherundownConsumerDeployed.cancelGameManually(gameFootballid1, { from: third })).to.be.revertedWith('No market created for game');
+
+			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for two position game');
+			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, { from: third })).to.be.revertedWith('Bad outcome for two position game');
+
+			/*const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(
+				marketAdd, { from: third }
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_2.logs[0], 'CancelSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1
+			});
+
+			await expect(TherundownConsumerDeployed.resolveGameManually(gameid1, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
+			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
+			await expect(TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: third })).to.be.revertedWith('Market resoved or canceled');
+
+			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));*/
 		});
 	});
 });

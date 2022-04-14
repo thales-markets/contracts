@@ -413,6 +413,24 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit NewQueueAddress(_queues);
     }
 
+    function calculateAndNormalizeOdds(int[] memory _americanOdds) internal view returns(uint[] memory) {
+        uint[] memory normalizedOdds = new uint[](_americanOdds.length);
+        uint totalOdds;
+        for(uint i=0; i<_americanOdds.length; i++) {
+            if(_americanOdds[i] >= 0) {
+                normalizedOdds[i] = (100 / (uint(_americanOdds[i])+100) ) * 100;
+            }
+            else if(_americanOdds[i] < 0) {
+                normalizedOdds[i] = (uint(-_americanOdds[i]) / (uint(-_americanOdds[i])+100)) * 100;
+            }
+            totalOdds += normalizedOdds[i];
+        }
+        for(uint i=0; i<normalizedOdds.length; i++) {
+            normalizedOdds[i] = 100/totalOdds * normalizedOdds[i];
+        }
+        return normalizedOdds;
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyWrapper() {

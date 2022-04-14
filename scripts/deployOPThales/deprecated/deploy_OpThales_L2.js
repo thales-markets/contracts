@@ -18,7 +18,7 @@ async function main() {
 	let network = networkObj.name;
 
 	if (network == 'homestead') {
-		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
+		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimisticEthereum\'")
 		return 0;
 	}
 	if (networkObj.chainId == 69) {
@@ -26,8 +26,8 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 	
 	let mainnet_provider = new ethers.providers.InfuraProvider("homestead");	

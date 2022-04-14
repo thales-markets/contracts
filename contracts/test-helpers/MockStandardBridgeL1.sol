@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // @unsupported: ovm
-pragma solidity ^0.6.10;
+pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 // /* Interface Imports */

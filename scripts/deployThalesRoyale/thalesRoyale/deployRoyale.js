@@ -26,8 +26,18 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+	}
+
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
 	}
 
 	console.log('Account is: ' + owner.address);
@@ -39,11 +49,10 @@ async function main() {
 	const priceFeed = await ethers.getContractFactory('PriceFeed');
 	let priceFeedAddress = getTargetAddress('PriceFeed', network);
 
-	if (networkObj.chainId == 10 || networkObj.chainId == 69) {
-		rewardTokenAddress = getTargetAddress('ProxysUSD', network);
+	if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+		rewardTokenAddress = getTargetAddress('ProxyUSDC', network);
 	} else {
-		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-		rewardTokenAddress = ProxyERC20sUSD.address;
+		rewardTokenAddress = getTargetAddress('ProxysUSD', network);
 	}
 
 	console.log('Found ProxyERC20sUSD at:' + rewardTokenAddress);
@@ -59,6 +68,7 @@ async function main() {
 	const roundChoosingLength = hour * 8;
 	const roundLength = day;
 	const pauseBetweenSeasonsTime = week * 2;
+	const seasonStartsAutomatically = false;
 
 	const rounds = 6;
 	const buyIn = w3utils.toWei('30');
@@ -76,7 +86,7 @@ async function main() {
         roundLength,			//8
         buyIn,					//9
         pauseBetweenSeasonsTime,//10
-        false					//11
+		seasonStartsAutomatically//11
         ]
     );
 	await royale.deployed();
@@ -88,9 +98,13 @@ async function main() {
 	console.log('ThalesRoyaleImplementation: ', implementation);
     setTargetAddress('ThalesRoyaleImplementation', network, implementation);
 
-    await hre.run('verify:verify', {
-        address: implementation
-    });
+	try {
+		await hre.run('verify:verify', {
+            address: implementation
+        });
+	} catch (e) {
+		console.log(e);
+	}
 
 }
 

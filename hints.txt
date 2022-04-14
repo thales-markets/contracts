@@ -13,12 +13,14 @@ npx hardhat test test/contracts/RetroDistribution/VestingEscrowStressTest.js --o
 npx hardhat test test/contracts/ThalesRoyale/royale.js
 npx hardhat test test/contracts/ThalesRoyale/royalePrivate.js
 npx hardhat test test/contracts/ThalesAMM/thalesamm.js
-
+npx hardhat test test/contracts/ThalesAMM/thalesammImprovements.js
 
 npx hardhat coverage
 
-
 sports:
+npx hardhat run --network kovan scripts/SportsBinaryOptions/createUSOpenMarkets.js
+npx hardhat run --network kovan scripts/deployExoticMarkets/deploy_TherundownConsumerWrapper.js
+npx hardhat run --network kovan scripts/deployExoticMarkets/deploy_TherundownConsumer.js 
 npx hardhat run --network kovan scripts/SportsPositions/createUSOpenMarkets.js
 
 optimistic kovan:
@@ -29,7 +31,30 @@ npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyal
 npx hardhat run --network optimisticKovan scripts/deployAMM/deployAMM.js
 npx hardhat run --network optimisticKovan scripts/deployAMM/upgradeAMM.js
 npx hardhat run --network optimisticKovan scripts/l2_deployments/createMarket.js
+npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyalePass/mintPasses.js
 
-optimistic:
-npx hardhat run --network optimistic scripts/deployAMM/deployAMM.js
-npx hardhat run --network optimistic scripts/deployPriceFeed/updateAggregators.js
+optimisticEthereum:
+npx hardhat run --network optimisticEthereum scripts/deployAMM/deployAMM.js
+npx hardhat run --network optimisticEthereum scripts/deployPriceFeed/updateAggregators.js
+
+polygon test:
+npx hardhat run --network polygonMumbai scripts/deployPriceFeed/deployPriceFeed.js
+npx hardhat run --network polygonMumbai scripts/deployThalesRoyale/thalesRoyale/deployRoyale.js
+npx hardhat run --network polygonMumbai scripts/deployThalesRoyale/thalesRoyalePass/deployRoyalePass.js
+npx hardhat run --network polygonMumbai scripts/deployThalesRoyale/thalesRoyale/verifyOnly.js
+npx hardhat run --network polygonMumbai scripts/deployAMM/deploySafebox.js
+npx hardhat run --network polygonMumbai scripts/deployAMM/deployAMM.js
+npx hardhat run --network polygonMumbai scripts/deployPositions/deployPositions.js
+npx hardhat verify ADDRESS_CONTRACT --network polygonMumbai
+
+polygon main:
+npx hardhat run --network polygon scripts/deployPriceFeed/deployPriceFeed.js
+npx hardhat run --network polygon scripts/deployPositions/deployPositions.js
+npx hardhat run --network polygon scripts/deployAMM/deploySafebox.js
+npx hardhat run --network polygon scripts/deployAMM/deployAMM.js
+npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyale/deployRoyale.js
+npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyalePass/deployRoyalePass.js
+npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyale/verifyOnly.js
+
+
+npx hardhat verify ADDRESS_CONTRACT --network polygon

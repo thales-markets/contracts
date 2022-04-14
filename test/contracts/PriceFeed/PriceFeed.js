@@ -24,14 +24,14 @@ let deployerSigner, ownerSigner, oracleSigner, accountOneSigner;
 
 contract('Price Feed', async accounts => {
 	const [deployerAccount, owner, oracle, accountOne, accountTwo] = accounts;
-	const [SNX, JPY, XTZ, BNB, sUSD, EUR, LINK, LYRA, fastGasPrice] = [
+	const [SNX, JPY, XTZ, BNB, AELIN, EUR, ETH, LYRA, fastGasPrice] = [
 		'SNX',
 		'JPY',
 		'XTZ',
 		'BNB',
-		'sUSD',
+		'AELIN',
 		'EUR',
-		'LINK',
+		'ETH',
 		'LYRA',
 		'fastGasPrice',
 	].map(toBytes32);
@@ -40,16 +40,21 @@ contract('Price Feed', async accounts => {
 		aggregatorXTZ,
 		aggregatorLINK,
 		aggregatorLYRA,
+		aggregatorETH,
 		aggregatorFastGasPrice,
 		initialTime,
 		timeSent,
-		pool_LYRA_DAI,
+		pool_LYRA_ETH,
+		pool_AELIN_ETH,
+		pool_LYRA_AELIN,
 		uniswapFactory,
-		price;
+		price_LYRA_ETH,
+		price_AELIN_ETH;
 
 	const tokens = [
 		'0xd917287d0423beb3d2f6620b6eaa590c80600658', // LYRA
-		'0x6b175474e89094c44da98b954eedeac495271d0f', // DAI
+		'0x61baadcf22d2565b0f471b291c475db5555e0b76', // AELIN
+		'0x4200000000000000000000000000000000000006', // ETH
 	];
 
 	before(async () => {
@@ -60,35 +65,62 @@ contract('Price Feed', async accounts => {
 			contracts: ['PriceFeed'],
 		}));
 
+
 		aggregatorJPY = await MockAggregator.new({ from: owner });
 		aggregatorXTZ = await MockAggregator.new({ from: owner });
 		aggregatorLINK = await MockAggregator.new({ from: owner });
 		aggregatorLYRA = await MockAggregator.new({ from: owner });
+		aggregatorETH = await MockAggregator.new({ from: owner });
 		aggregatorFastGasPrice = await MockAggregator.new({ from: owner });
 
 		aggregatorJPY.setDecimals('8');
 		aggregatorXTZ.setDecimals('8');
 		aggregatorLINK.setDecimals('8');
 		aggregatorLYRA.setDecimals('8');
+		aggregatorETH.setDecimals('8');
 		aggregatorFastGasPrice.setDecimals('0');
+
+		// set ETH address
+		await instance.connect(ownerSigner).setETH(tokens[2]);
+		await instance.connect(ownerSigner).addAggregator(ETH, aggregatorETH.address);
 
 		uniswapFactory = await MockUniswapV3Factory.new({ from: owner });
 
-		// create LYRA/DAI pool
+		// create ETH/LYRA pool, token0 = ETH, token1 = LYRA
+		await uniswapFactory.createPool(tokens[2], tokens[0], 3000);
+		const poolAddressLYRA = await uniswapFactory.getPool(tokens[2], tokens[0], 3000);
+
+		// create ETH/AELIN pool, token0 = AELIN, token1 = ETH
+		// OBSERVE - tokenA AELIN < tokenB ETH, so token0 will be ETH 
+		await uniswapFactory.createPool(tokens[1], tokens[2], 3000);
+		const poolAddressAELIN = await uniswapFactory.getPool(tokens[1], tokens[2], 3000);
+
+		// create LYRA/AELIN pool
 		await uniswapFactory.createPool(tokens[0], tokens[1], 3000);
-		const poolAddress = await uniswapFactory.getPool(tokens[0], tokens[1], 3000);
+		const poolAddress_LYRA_AELIN = await uniswapFactory.getPool(tokens[0], tokens[1], 3000);
 
 		const MockUniswapV3Pool = await ethers.getContractFactory('MockUniswapV3Pool');
-		pool_LYRA_DAI = MockUniswapV3Pool.attach(poolAddress);
+		pool_LYRA_ETH = MockUniswapV3Pool.attach(poolAddressLYRA);
+		pool_AELIN_ETH = MockUniswapV3Pool.attach(poolAddressAELIN);
+		pool_LYRA_AELIN = MockUniswapV3Pool.attach(poolAddress_LYRA_AELIN);
 
-		// initial ratio is 1/5 = 0.2
-		price = BigNumber.from(encodePriceSqrt(1, 5));
-		await pool_LYRA_DAI.initialize(price);
+		// initial ratio ETH/LYRA is e.g. 12/5 = 2.4
+		price_LYRA_ETH = BigNumber.from(encodePriceSqrt(12, 5));
+		await pool_LYRA_ETH.initialize(price_LYRA_ETH);
 
-		const { sqrtPriceX96, observationIndex } = await pool_LYRA_DAI.slot0();
+		// initial ratio ETH/AELIN is e.g. 1/4 = 0.25
+		price_AELIN_ETH = BigNumber.from(encodePriceSqrt(1, 4));
+		await pool_AELIN_ETH.initialize(price_AELIN_ETH);
+
+		const { sqrtPriceX96, observationIndex } = await pool_LYRA_ETH.slot0();
 		console.log(sqrtPriceX96.toString(), observationIndex);
-		console.log('tick spacing', await pool_LYRA_DAI.tickSpacing());
-		console.log('token0', await pool_LYRA_DAI.token0());
+		console.log('tick spacing', await pool_LYRA_ETH.tickSpacing());
+		console.log('token0 pool_LYRA_ETH', await pool_LYRA_ETH.token0());
+		console.log('token1 pool_LYRA_ETH', await pool_LYRA_ETH.token1());
+
+		console.log('token0 pool_AELIN_ETH', await pool_AELIN_ETH.token0());
+		console.log('token1 pool_AELIN_ETH', await pool_AELIN_ETH.token1());
+
 	});
 
 	beforeEach(async () => {
@@ -129,7 +161,7 @@ contract('Price Feed', async accounts => {
 			});
 
 			it('then the list of currencyKeys lists it', async () => {
-				assert.equal('JPY', bytesToString(await instance.currencyKeys(0)));
+				assert.equal('JPY', bytesToString(await instance.currencyKeys(1)));
 			});
 
 			it('and the AggregatorAdded event is emitted', async () => {
@@ -166,8 +198,8 @@ contract('Price Feed', async accounts => {
 				});
 
 				it('then the list of currencyKeys lists it also', async () => {
-					assert.equal('JPY', bytesToString(await instance.currencyKeys(0)));
-					assert.equal('XTZ', bytesToString(await instance.currencyKeys(1)));
+					assert.equal('JPY', bytesToString(await instance.currencyKeys(1)));
+					assert.equal('XTZ', bytesToString(await instance.currencyKeys(2)));
 				});
 
 				it('and the AggregatorAdded event is emitted', async () => {
@@ -224,33 +256,33 @@ contract('Price Feed', async accounts => {
 		describe('when the owner attempts to add an invalid address for LYRA ', () => {
 			it('then zero address is invalid', async () => {
 				await assert.revert(
-					instance.connect(ownerSigner).addPool(LYRA, ZERO_ADDRESS)
+					instance.connect(ownerSigner).addPool(LYRA, tokens[0], ZERO_ADDRESS)
 					// 'function call to a non-contract account' (this reason is not valid in Ganache so fails in coverage)
 				);
 			});
 			it('and a non uniswap pool address is invalid', async () => {
 				await assert.revert(
-					instance.connect(ownerSigner).addPool(LYRA, instance.address)
+					instance.connect(ownerSigner).addPool(LYRA, tokens[0], instance.address)
 					// 'function selector was not recognized'  (this reason is not valid in Ganache so fails in coverage)
 				);
 			});
 		});
 
-		describe('when the owner adds LYRA/DAI pool', () => {
+		describe('when the owner adds LYRA/ETH pool', () => {
 			let txn;
 			beforeEach(async () => {
-				txn = await instance.connect(ownerSigner).addPool(LYRA, pool_LYRA_DAI.address);
+				txn = await instance.connect(ownerSigner).addPool(LYRA, tokens[0], pool_LYRA_ETH.address);
 			});
 
 			it('then the list of currencyKeys lists it', async () => {
-				assert.equal('LYRA', bytesToString(await instance.currencyKeys(3)));
+				assert.equal('LYRA', bytesToString(await instance.currencyKeys(4)));
 			});
 
 			it('and the PoolAdded event is emitted', async () => {
 				let receipt = await txn.wait();
 				assert.equal(receipt.events[0].event, 'PoolAdded');
 				assert.equal(receipt.events[0].args.currencyKey, LYRA);
-				assert.equal(receipt.events[0].args.pool, pool_LYRA_DAI.address);
+				assert.equal(receipt.events[0].args.pool, pool_LYRA_ETH.address);
 			});
 
 			it('only an owner can remove a pool', async () => {
@@ -268,37 +300,126 @@ contract('Price Feed', async accounts => {
 				});
 			});
 
+			describe('when the currency is not an asset in pool', () => {
+				it('then it reverts', async () => {
+					await assert.revert(
+						instance.connect(ownerSigner).addPool(LYRA, tokens[0], pool_AELIN_ETH.address),
+						'Pool not valid: currency is not an asset'
+					);
+				});
+			});
+
+			describe('when ETH is not an asset in pool', () => {
+				it('then it reverts', async () => {
+					await assert.revert(
+						instance.connect(ownerSigner).addPool(LYRA, tokens[0], pool_LYRA_AELIN.address),
+						'Pool not valid: ETH is not an asset'
+					);
+				});
+			});
+
 			describe('when the price is fetched for LYRA', () => {
 				it('when twap interval is 0 initial ratio is returned', async () => {
-					await instance.connect(ownerSigner).addPool(LYRA, pool_LYRA_DAI.address);
+					const newRate = 3395.73255295;
+					let timestamp = await currentTime();
+					await aggregatorETH.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
+			
+					await instance.connect(ownerSigner).addPool(LYRA, tokens[0], pool_LYRA_ETH.address);
 					await instance.connect(ownerSigner).setTwapInterval(0);
-					console.log((await pool_LYRA_DAI.slot0()).toString());
+					console.log((await pool_LYRA_ETH.slot0()).toString());
 					const result = await instance.connect(accountOneSigner).rateForCurrency(LYRA);
 					const resultDecimal = parseFloat(result.toString())/10**18;
 
-					// initial ratio is 0.2
-					expect(resultDecimal).to.be.approximately(0.2, 0.00000000001);
+					// initial ratio ETH/LYRA = 2.4
+					const price = newRate/2.4;
+
+					expect(resultDecimal).to.be.approximately(price, 0.00000000001);
 
 				});
 
 				it('when twap interval is greater than 0', async () => {
-					await instance.connect(ownerSigner).addPool(LYRA, pool_LYRA_DAI.address);
+					const newRate = 3395.73255295;
+					let timestamp = await currentTime();
+					await aggregatorETH.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
+
+					await instance.connect(ownerSigner).addPool(LYRA, tokens[0], pool_LYRA_ETH.address);
 					
-					await instance.connect(ownerSigner).setTwapInterval(300);
-					await fastForward(300);
+					await instance.connect(ownerSigner).setTwapInterval(1200);
+					await fastForward(1200);
 				
-					const observeResult = await pool_LYRA_DAI.observe([300, 0]);
+					const observeResult = await pool_LYRA_ETH.observe([1200, 0]);
 					const tickCumulatives = observeResult.tickCumulatives;
-					const ratioAtTick = parseInt((tickCumulatives[1].sub(tickCumulatives[0])).div(300).toString());
+					const ratioAtTick = parseInt((tickCumulatives[1].sub(tickCumulatives[0])).div(1200).toString());
 					console.log('ratio at tick', ratioAtTick.toString());
 
-					// price = 1.0001^tick
-					const expectedPrice = Math.pow(1.0001, ratioAtTick);
-					console.log('expected price', expectedPrice);
+					// ratio = 1.0001^tick
+					const expectedRatio = Math.pow(1.0001, ratioAtTick);
+					console.log('expected ratio', expectedRatio);
+
+					// initial ratio ETH/LYRA = 2.4
+					const price = newRate/2.4;
 				
 					const result = await instance.connect(accountOneSigner).rateForCurrency(LYRA);
 					const resultDecimal = parseFloat(result.toString())/10**18;
-					expect(resultDecimal).to.be.approximately(expectedPrice, 0.00000000001);
+
+					console.log("result", resultDecimal);
+					console.log("price", price);
+
+					expect(expectedRatio).to.be.approximately(expectedRatio, 0.00000000001);
+					expect(resultDecimal).to.be.approximately(price, 0.1);
+				});
+				
+			});
+
+			describe('when the price is fetched for AELIN', () => {
+				it('when twap interval is 0 initial ratio is returned', async () => {
+					const newRate = 3395.73255295;
+					let timestamp = await currentTime();
+					await aggregatorETH.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
+			
+					await instance.connect(ownerSigner).addPool(AELIN, tokens[1], pool_AELIN_ETH.address);
+					await instance.connect(ownerSigner).setTwapInterval(0);
+					console.log((await pool_AELIN_ETH.slot0()).toString());
+					const result = await instance.connect(accountOneSigner).rateForCurrency(AELIN);
+					const resultDecimal = parseFloat(result.toString())/10**18;
+
+					// initial ratio ETH/AELIN = 0.25;
+					const price = newRate/0.25;
+
+					expect(resultDecimal).to.be.approximately(price, 0.00000000001);
+
+				});
+
+				it('when twap interval is greater than 0', async () => {
+					const newRate = 3395.73255295;
+					let timestamp = await currentTime();
+					await aggregatorETH.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
+
+					await instance.connect(ownerSigner).addPool(AELIN, tokens[1], pool_AELIN_ETH.address);
+					
+					await instance.connect(ownerSigner).setTwapInterval(1200);
+					await fastForward(1200);
+				
+					const observeResult = await pool_AELIN_ETH.observe([1200, 0]);
+					const tickCumulatives = observeResult.tickCumulatives;
+					const ratioAtTick = parseInt((tickCumulatives[1].sub(tickCumulatives[0])).div(1200).toString());
+					console.log('ratio at tick', ratioAtTick.toString());
+
+					// ratio = 1.0001^tick
+					const expectedRatio = Math.pow(1.0001, ratioAtTick);
+					console.log('expected ratio', expectedRatio);
+
+					// initial ratio ETH/AELIN = 0.25;
+					const price = newRate/0.25;
+				
+					const result = await instance.connect(accountOneSigner).rateForCurrency(AELIN);
+					const resultDecimal = parseFloat(result.toString())/10**18;
+
+					console.log("result", resultDecimal);
+					console.log("price", price);
+
+					expect(expectedRatio).to.be.approximately(expectedRatio, 0.00000000001);
+					expect(resultDecimal).to.be.approximately(price, 1);
 				});
 				
 			});
@@ -320,16 +441,16 @@ contract('Price Feed', async accounts => {
 
 			it('cannot add pool for LYRA if aggregator already exists', async () => {
 				await assert.revert(
-					instance.connect(ownerSigner).addPool(LYRA, pool_LYRA_DAI.address),
+					instance.connect(ownerSigner).addPool(LYRA, tokens[0], pool_LYRA_ETH.address),
 					'Aggregator already exists for key'
 				);
 			});
 
 			it('can add pool for LYRA when aggregator is removed', async () => {
 				await instance.connect(ownerSigner).removeAggregator(LYRA);
-				await instance.connect(ownerSigner).addPool(LYRA, pool_LYRA_DAI.address);
+				await instance.connect(ownerSigner).addPool(LYRA, tokens[0], pool_LYRA_ETH.address);
 
-				assert.equal(await instance.connect(ownerSigner).pools(LYRA), pool_LYRA_DAI.address);
+				assert.equal(await instance.connect(ownerSigner).pools(LYRA), pool_LYRA_ETH.address);
 				assert.equal(await instance.connect(ownerSigner).aggregators(LYRA), ZERO_ADDRESS);
 					
 			});

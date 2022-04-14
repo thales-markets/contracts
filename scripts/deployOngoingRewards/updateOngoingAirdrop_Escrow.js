@@ -26,8 +26,8 @@ async function deploy_ongoing_airdrop() {
 		Thales = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');;
 	}
 	else if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 		THALES = getTargetAddress('OpThales_L2', network);
 		Thales = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');;
 	}

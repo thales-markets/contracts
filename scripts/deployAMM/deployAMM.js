@@ -19,9 +19,20 @@ async function main() {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 	}
+
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+	}
+
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
 	}
 
 	if (networkObj.chainId == 10) {
@@ -29,6 +40,8 @@ async function main() {
 	} else if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	} else if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
 		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
@@ -57,11 +70,11 @@ async function main() {
 		owner.address,
 		priceFeedAddress,
 		ProxyERC20sUSDaddress,
-		w3utils.toWei('1000'),
+		w3utils.toWei('30'),
 		deciMath.address,
-		w3utils.toWei('0.01'),
-		w3utils.toWei('0.05'),
-		hour * 2,
+		w3utils.toWei('0.02'),
+		w3utils.toWei('0.20'),
+		hour * 8,
 	]);
 	await ThalesAMM_deployed.deployed();
 
@@ -120,6 +133,14 @@ async function main() {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(SNX, 120)');
 	});
 
+	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
+		toBytes32('MATIC'),
+		w3utils.toWei('120')
+	);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setImpliedVolatilityPerAsset(MATIC, 120)');
+	});
+
 	tx = await PositionalMarketFactoryInstance.setThalesAMM(ThalesAMM_deployed.address);
 	await tx.wait().then(e => {
 		console.log('PositionalMarketFactoryInstance: setThalesAMM');
@@ -152,10 +173,12 @@ async function main() {
 	});
 
 	const stakingThales = getTargetAddress('StakingThales', network);
-	tx = await ThalesAMM_deployed.setStakingThales(stakingThales);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setStakingThales()');
-	});
+	if (stakingThales) {
+		tx = await ThalesAMM_deployed.setStakingThales(stakingThales);
+		await tx.wait().then(e => {
+			console.log('ThalesAMM: setStakingThales()');
+		});
+	}
 
 	const safeBox = getTargetAddress('SafeBox', network);
 	tx = await ThalesAMM_deployed.setSafeBox(safeBox);

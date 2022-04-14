@@ -46,7 +46,7 @@
         "type": "address"
       },
       {
-        "internalType": "contract IERC20",
+        "internalType": "contract IERC20Upgradeable",
         "name": "_sUSD",
         "type": "address"
       }
@@ -100,7 +100,7 @@
     "name": "sUSD",
     "outputs": [
       {
-        "internalType": "contract IERC20",
+        "internalType": "contract IERC20Upgradeable",
         "name": "",
         "type": "address"
       }

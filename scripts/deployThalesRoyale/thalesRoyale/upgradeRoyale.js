@@ -22,8 +22,18 @@ async function main() {
 		network = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+	}
+	
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
 	}
 
 	console.log('Account is: ' + owner.address);
@@ -34,6 +44,10 @@ async function main() {
 
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const implementation = await upgrades.prepareUpgrade(thalesRoyaleAddress, ThalesRoyale);
+
+	if(networkObj.chainId == 69) {
+		await upgrades.upgradeProxy(thalesRoyaleAddress, ThalesRoyale);
+	}
 
 	console.log('ThalesRoyale upgraded');
 

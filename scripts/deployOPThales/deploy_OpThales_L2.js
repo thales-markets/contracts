@@ -16,7 +16,7 @@ async function main() {
 	let mainnetNetwork = 'mainnet';
 
 	if (network == 'homestead') {
-		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
+		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimisticEthereum\'")
 		return 0;
 	}
 	if (networkObj.chainId == 42) {
@@ -29,8 +29,8 @@ async function main() {
 		mainnetNetwork = 'kovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 	
 	const l2Wallet = new ethers.Wallet(user_key, ethers.provider);

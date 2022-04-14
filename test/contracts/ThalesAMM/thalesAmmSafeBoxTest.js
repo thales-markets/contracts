@@ -24,12 +24,7 @@ const {
 } = require('../../utils/helpers');
 
 let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
-let PositionalMarket,
-	priceFeed,
-	oracle,
-	sUSDSynth,
-	PositionalMarketMastercopy,
-	PositionMastercopy;
+let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 let market, up, down, position, Synth;
 
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
@@ -78,16 +73,20 @@ contract('ThalesAMM', accounts => {
 	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.connect(creator).createMarket(
-			oracleKey,
-			strikePrice.toString(),
-			maturity,
-			initialMint.toString(),
-			false,
-			ZERO_ADDRESS
-		);
+		const tx = await man
+			.connect(creator)
+			.createMarket(
+				oracleKey,
+				strikePrice.toString(),
+				maturity,
+				initialMint.toString(),
+				false,
+				ZERO_ADDRESS
+			);
 		let receipt = await tx.wait();
-		const marketEvent = receipt.events.find((event) => event['event'] && event['event'] === 'MarketCreated');
+		const marketEvent = receipt.events.find(
+			event => event['event'] && event['event'] === 'MarketCreated'
+		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
 
@@ -129,7 +128,9 @@ contract('ThalesAMM', accounts => {
 		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
 		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
-		await factory.connect(ownerSigner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
+		await factory
+			.connect(ownerSigner)
+			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
@@ -206,6 +207,8 @@ contract('ThalesAMM', accounts => {
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(80), { from: owner });
 		await thalesAMM.setSafeBoxImpact(toUnit(0.01), { from: owner });
 		await thalesAMM.setSafeBox(safeBox, { from: owner });
+		await thalesAMM.setMinSupportedPrice(toUnit(0.05), { from: owner });
+		await thalesAMM.setMaxSupportedPrice(toUnit(0.95), { from: owner });
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 	});
 
@@ -214,7 +217,7 @@ contract('ThalesAMM', accounts => {
 		DOWN: toBN(1),
 	};
 
-	describe('Test AMM', () => {
+	describe('Test Safe Box', () => {
 		it('Safe box', async () => {
 			let strike = 4000;
 			let now = await currentTime();
@@ -280,14 +283,14 @@ contract('ThalesAMM', accounts => {
 			let buyFromAmmQuoteDown = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.DOWN,
-				toUnit(availableToBuyFromAMMDown / 1e18)
+				toUnit(availableToBuyFromAMMDown / 1e18 - 1)
 			);
 			console.log('buyFromAmmQuoteDown decimal is:' + buyFromAmmQuoteDown / 1e18);
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			await thalesAMM.buyFromAMM(
 				newMarket.address,
 				Position.DOWN,
-				toUnit(availableToBuyFromAMMDown/ 1e18),
+				toUnit(availableToBuyFromAMMDown / 1e18 - 1),
 				buyFromAmmQuoteDown,
 				additionalSlippage,
 				{ from: minter }
@@ -323,13 +326,13 @@ contract('ThalesAMM', accounts => {
 			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.DOWN,
-				toUnit(availableToSellToAMM / 1e18-1)
+				toUnit(availableToSellToAMM / 1e18 - 1)
 			);
 			console.log('sellToAmmQuote is ' + sellToAmmQuote / 1e18);
 			await thalesAMM.sellToAMM(
 				newMarket.address,
 				Position.DOWN,
-				toUnit(availableToSellToAMM / 1e18-1),
+				toUnit(availableToSellToAMM / 1e18 - 1),
 				sellToAmmQuote,
 				additionalSlippage,
 				{ from: minter }

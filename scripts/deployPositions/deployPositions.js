@@ -19,12 +19,24 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
+	}
+
 	if (networkObj.chainId == 10) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-		network = 'optimistic';
+		network = 'optimisticEthereum';
 	} else if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
+	}if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
 		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
@@ -107,21 +119,11 @@ async function main() {
 	);
 
 	// set whitelisted addresses for L2
-	if (networkObj.chainId === 10 || networkObj.chainId === 69) {
+	if (networkObj.chainId === 10 || networkObj.chainId === 69|| networkObj.chainId === 137) {
 		const whitelistedAddresses = [
 			'0x9841484A4a6C0B61C4EEa71376D76453fd05eC9C',
 			'0x461783A831E6dB52D68Ba2f3194F6fd1E0087E04',
-			'0xb8D08D9537FC8E5624c298302137c5b5ce2F301D',
-			'0x9f8e4ee788D9b00A3409584E18034aA7B736C396',
-			'0xB27E08908D6Ecbe7F9555b9e048871532bE89302',
-			'0x169379d950ceffa34f5d92e33e40B7F3787F0f71',
-			'0xeBaCC96EA6449DB03732e11f807188e4E57CCa97',
-			'0xFe0eBCACFcca78E2dab89210b70B6755Fe209419',
-			'0xfE5F7Be0dB53D43829B5D22F7C4d1953400eA5CF',
-			'0xa95c7e7d7b0c796f314cbb6f95593cbd67beb994',
-			'0xe966C59c15566A994391F6226fee5bc0eF70F87A',
-			'0x36688C92700618f1D676698220F1AF44492811FE',
-			'0xAa32a69dCC7f0FB97312Ab9fC3a96326dDA124C4',
+			'0x5027ce356c375a934b4d1de9240ba789072a5af1'
 		];
 
 		let transaction = await PositionalMarketManagerDeployed.setWhitelistedAddresses(

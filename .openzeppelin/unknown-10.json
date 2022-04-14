@@ -8836,7 +8836,7 @@
           {
             "contract": "ExoticRewards",
             "label": "marketManager",
-            "type": "t_contract(IExoticPositionalMarketManager)38984",
+            "type": "t_contract(IExoticPositionalMarketManager)39065",
             "src": "contracts/ExoticPositionalMarkets/ExoticRewards.sol:22"
           },
           {
@@ -8853,7 +8853,7 @@
           }
         ],
         "types": {
-          "t_contract(IExoticPositionalMarketManager)38984": {
+          "t_contract(IExoticPositionalMarketManager)39065": {
             "label": "contract IExoticPositionalMarketManager"
           },
           "t_contract(IERC20Upgradeable)6720": {
@@ -9668,6 +9668,124 @@
           },
           "t_contract(IThalesStakingRewardsPool)14440": {
             "label": "contract IThalesStakingRewardsPool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "476724b004c67c89e14f22c38208220c95833b2f9c514a87b31ac6c55f3c498e": {
+      "address": "0xb089A5B34f061FF658C783AFe948AbBb1eaD9886",
+      "txHash": "0x5236410f4871f85c87a3c823372329acfb112dbb292ab721cd49e51507b15a1f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ExoticRewards",
+            "label": "marketManager",
+            "type": "t_contract(IExoticPositionalMarketManager)39060",
+            "src": "contracts/ExoticPositionalMarkets/ExoticRewards.sol:22"
+          },
+          {
+            "contract": "ExoticRewards",
+            "label": "paymentToken",
+            "type": "t_contract(IERC20Upgradeable)6720",
+            "src": "contracts/ExoticPositionalMarkets/ExoticRewards.sol:23"
+          },
+          {
+            "contract": "ExoticRewards",
+            "label": "marketIssuedReward",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticRewards.sol:24"
+          }
+        ],
+        "types": {
+          "t_contract(IExoticPositionalMarketManager)39060": {
+            "label": "contract IExoticPositionalMarketManager"
+          },
+          "t_contract(IERC20Upgradeable)6720": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"

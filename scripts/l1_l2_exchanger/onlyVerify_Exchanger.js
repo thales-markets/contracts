@@ -50,6 +50,7 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: ProxyThalesExchangerImplementation,
+			constructorArguments: []
 		});
 	} catch (e) {
 		console.log(e);

@@ -74,6 +74,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     mapping(address => address) public resolverAddress;
     mapping(address => bool) public isChainLinkMarket;
     mapping(address => bool) public cancelledByCreator;
+    uint public maxAmountForOpenBidPosition;
 
     function initialize(
         address _owner
@@ -591,6 +592,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         tagsAddress = _tagsAddress;
         emit NewTagsAddress(_tagsAddress);
     }
+    
+    function setMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition) external onlyOwner {
+        require(_maxAmountForOpenBidPosition != maxAmountForOpenBidPosition, "Same value");
+        maxAmountForOpenBidPosition = _maxAmountForOpenBidPosition;
+        emit NewMaxAmountForOpenBidPosition(_maxAmountForOpenBidPosition);
+    }
 
     function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
         require(_pauserAddress != address(0), "Invalid address");
@@ -671,6 +678,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event MarketPositionStringLimitChanged(uint marketPositionStringLimit);
     event OpenBidAllowedChanged(bool openBidAllowed);
     event WithdrawalTimePeriodChanged(uint withdrawalTimePeriod);
+    event NewMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition);
 
 
     event MarketCreated(

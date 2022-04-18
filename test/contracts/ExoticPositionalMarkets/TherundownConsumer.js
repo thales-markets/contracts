@@ -136,6 +136,8 @@ contract('TherundownConsumer', accounts => {
 		await ExoticPositionalMarketManager.setWithdrawalPercentage('6', { from: manager });
 		await ExoticPositionalMarketManager.setWithdrawalTimePeriod("28800", { from: manager });
 		await ExoticPositionalMarketManager.setClaimTimeoutDefaultPeriod('86400', { from: manager });
+		let maxOpenBidPositon = toUnit(1000);
+		await ExoticPositionalMarketManager.setMaxAmountForOpenBidPosition(maxOpenBidPositon, { from: manager });
 		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
 		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(
 			ExoticPositionalMarket.address

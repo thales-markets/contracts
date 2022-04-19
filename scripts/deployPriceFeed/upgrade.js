@@ -41,7 +41,9 @@ async function main() {
 	console.log('Found PriceFeed at:', priceFeedAddress);
 
 	const PriceFeed = await ethers.getContractFactory('PriceFeed');
-	await upgrades.upgradeProxy(priceFeedAddress, PriceFeed);
+	if (networkObj.chainId == 69) {
+		await upgrades.upgradeProxy(priceFeedAddress, PriceFeed);
+	}
 
 	console.log('PriceFeed upgraded');
 

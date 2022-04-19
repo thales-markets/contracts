@@ -319,6 +319,30 @@ contract('Price Feed', async accounts => {
 			});
 
 			describe('when the price is fetched for LYRA', () => {
+				it('should set useLastTickForTWAP and return initial ratio', async () => {
+					const newRate = 3395.73255295;
+					let timestamp = await currentTime();
+					await aggregatorETH.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
+			
+					await instance.connect(ownerSigner).addPool(LYRA, tokens[0], pool_LYRA_ETH.address);
+					await instance.connect(ownerSigner).setLastTickForTWAP(LYRA);
+
+					assert.equal(await instance.useLastTickForTWAP(LYRA), true);
+
+					console.log((await pool_LYRA_ETH.slot0()).toString());
+					const result = await instance.connect(accountOneSigner).rateForCurrency(LYRA);
+					const resultDecimal = parseFloat(result.toString())/10**18;
+
+					// initial ratio ETH/LYRA = 2.4
+					const price = newRate/2.4;
+
+					expect(resultDecimal).to.be.approximately(price, 0.00000000001);
+
+					// set last tick to false
+					await instance.connect(ownerSigner).setLastTickForTWAP(LYRA);
+					assert.equal(await instance.useLastTickForTWAP(LYRA), false);
+				});
+
 				it('when twap interval is 0 initial ratio is returned', async () => {
 					const newRate = 3395.73255295;
 					let timestamp = await currentTime();

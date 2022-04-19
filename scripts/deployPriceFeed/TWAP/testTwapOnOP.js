@@ -29,23 +29,26 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	const IUniswapV3Pool = await ethers.getContractAt('IUniswapV3Pool', '0x5e8b0fc35065a5d980c11f96cb52381de390b13f');
-	const PriceFeed = await ethers.getContractAt('PriceFeed', '0x671f9654a594f8966b19c0b466f306E1dFe912a6');
+	const IUniswapV3Pool = await ethers.getContractAt('IUniswapV3Pool', '0x535541f1aa08416e69dc4d610131099fa2ae7222');
+	const PriceFeed = await ethers.getContractAt('PriceFeed', '0xf4aef21d906992aFAdde7A9676e1dB4feb6390DD');
 
 
 	let secondsAgo = [];
-	secondsAgo.push(1200); // from (before)
+	secondsAgo.push(300); // from (before)
 	secondsAgo.push(0); // to (now)
 
 	let result;
 	result = await IUniswapV3Pool.observe(secondsAgo);
 	console.log('Result is ' + result[0]);
-	let tick = (result[0][1] - result[0][0])/1200;
+	let tick = (result[0][1] - result[0][0])/300;
 	console.log(tick, 'tick');
 	const expectedRatio = Math.pow(1.0001, tick);
 	console.log('expected ratio', expectedRatio);
 
-	console.log("AELIN", await PriceFeed.rateForCurrency(toBytes32("AELIN")))
+	result = await IUniswapV3Pool.slot0();
+	console.log('Result slot0', result[0].toString());
+
+	console.log("PERP", (await PriceFeed.rateForCurrency(toBytes32("PERP"))).toString());
 }
 
 main()

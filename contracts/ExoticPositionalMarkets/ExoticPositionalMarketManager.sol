@@ -74,6 +74,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     mapping(address => address) public resolverAddress;
     mapping(address => bool) public isChainLinkMarket;
     mapping(address => bool) public cancelledByCreator;
+    uint public maxAmountForOpenBidPosition;
 
     function initialize(
         address _owner
@@ -93,7 +94,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         uint _positionCount,
         uint _positionOfCreator,
         string[] memory _positionPhrases
-    ) external nonReentrant {
+    ) external nonReentrant whenNotPaused {
         require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low.");
         require(!creationRestrictedToOwner || msg.sender == owner, "Creation is restricted. ");
         require(
@@ -248,7 +249,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         );
     }
 
-    function resolveMarket(address _marketAddress, uint _outcomePosition) external {
+    function resolveMarket(address _marketAddress, uint _outcomePosition) external whenNotPaused {
         require(isActiveMarket(_marketAddress), "NotActive");
         if (isChainLinkMarket[_marketAddress]) {
             require(msg.sender == theRundownConsumerAddress, "Only theRundownConsumer");
@@ -293,7 +294,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit MarketResolved(_marketAddress, _outcomePosition);
     }
 
-    function cancelMarket(address _marketAddress) external {
+    function cancelMarket(address _marketAddress) external whenNotPaused {
         require(isActiveMarket(_marketAddress), "NotActive");
         require(
             msg.sender == oracleCouncilAddress || msg.sender == owner || msg.sender == creatorAddress[_marketAddress],
@@ -334,7 +335,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         address _market,
         address _disputorAddress,
         uint _amount
-    ) external onlyOracleCouncilAndOwner {
+    ) external onlyOracleCouncilAndOwner whenNotPaused {
         require(isActiveMarket(_market), "NotActive");
         IExoticRewards(exoticRewards).sendRewardToDisputoraddress(_market, _disputorAddress, _amount);
         // emit RewardSentToDisputorForMarket(_market, _disputorAddress, _amount);
@@ -346,15 +347,13 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             IExoticPositionalMarket(_marketAddress).canUsersClaim() || cancelledByCreator[_marketAddress],
             "Not claimable"
         );
-        require(
-            IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
-                IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0,
-            "Bonds already claimed"
-        );
-        IThalesBonds(thalesBonds).issueBondsBackToCreatorAndResolver(_marketAddress);
+        if(IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
+        IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0) {
+            IThalesBonds(thalesBonds).issueBondsBackToCreatorAndResolver(_marketAddress);
+        }
     }
 
-    function disputeMarket(address _marketAddress, address _disputor) external onlyOracleCouncil {
+    function disputeMarket(address _marketAddress, address _disputor) external onlyOracleCouncil whenNotPaused {
         require(isActiveMarket(_marketAddress), "NotActive");
         IThalesBonds(thalesBonds).sendDisputorBondToMarket(
             _marketAddress,
@@ -367,7 +366,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         }
     }
 
-    function closeDispute(address _marketAddress) external onlyOracleCouncilAndOwner {
+    function closeDispute(address _marketAddress) external onlyOracleCouncilAndOwner whenNotPaused {
         require(isActiveMarket(_marketAddress), "NotActive");
         if (IExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "Only pDAO");
@@ -603,6 +602,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         tagsAddress = _tagsAddress;
         emit NewTagsAddress(_tagsAddress);
     }
+    
+    function setMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition) external onlyOwner {
+        require(_maxAmountForOpenBidPosition != maxAmountForOpenBidPosition, "Same value");
+        maxAmountForOpenBidPosition = _maxAmountForOpenBidPosition;
+        emit NewMaxAmountForOpenBidPosition(_maxAmountForOpenBidPosition);
+    }
 
     function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
         require(_pauserAddress != address(0), "Invalid address");
@@ -683,6 +688,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event MarketPositionStringLimitChanged(uint marketPositionStringLimit);
     event OpenBidAllowedChanged(bool openBidAllowed);
     event WithdrawalTimePeriodChanged(uint withdrawalTimePeriod);
+    event NewMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition);
 
 
     event MarketCreated(

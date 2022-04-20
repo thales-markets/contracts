@@ -32,16 +32,25 @@ async function main() {
 	
     const ExoticRewardsContract = await ethers.getContractFactory('ExoticRewards');
 	const ExoticRewardsAddress = getTargetAddress("ExoticRewards", network);
+	let ExoticRewardsImplementation;
     
-    await upgrades.upgradeProxy(ExoticRewardsAddress, ExoticRewardsContract);
-    await delay(5000);
+	if (networkObj.chainId == 69) {
+			await upgrades.upgradeProxy(ExoticRewardsAddress, ExoticRewardsContract);
+			await delay(5000);
 
-    console.log('ExoticRewardsAddress upgraded');
-    
-    const ExoticRewardsImplementation = await getImplementationAddress(
-		ethers.provider,
-		ExoticRewardsAddress
-	);
+			console.log('ExoticRewardsAddress upgraded');
+			
+			ExoticRewardsImplementation = await getImplementationAddress(
+				ethers.provider,
+				ExoticRewardsAddress
+				);
+	}
+			
+	if (networkObj.chainId == 10) {
+		ExoticRewardsImplementation = await upgrades.prepareUpgrade(ExoticRewardsAddress, ExoticRewardsContract);
+		await delay(5000);
+		console.log('ExoticRewardsAddress upgraded');
+	}
 
 	console.log('Implementation of ExoticRewards: ', ExoticRewardsImplementation);
 	setTargetAddress('ExoticRewardsImplementation', network, ExoticRewardsImplementation);

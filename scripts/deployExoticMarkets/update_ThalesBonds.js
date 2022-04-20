@@ -29,25 +29,31 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
-	
-    const ThalesBondsContract = await ethers.getContractFactory('ThalesBonds');
+	const ThalesBondsContract = await ethers.getContractFactory('ThalesBonds');
 	const ThalesBondsAddress = getTargetAddress("ThalesBonds", network);
-    
-    await upgrades.upgradeProxy(ThalesBondsAddress, ThalesBondsContract);
-    await delay(5000);
+	let ThalesBondsImplementation;
 
-    console.log('ThalesBondsAddress upgraded');
-    
-    const ThalesBondsImplementation = await getImplementationAddress(
-		ethers.provider,
-		ThalesBondsAddress
-	);
+	if (networkObj.chainId == 69) { 
+		await upgrades.upgradeProxy(ThalesBondsAddress, ThalesBondsContract);
+		await delay(5000);
+		console.log('ThalesBondsAddress upgraded');
+		ThalesBondsImplementation = await getImplementationAddress(
+			ethers.provider,
+			ThalesBondsAddress
+			);
+	}
+			
+	if (networkObj.chainId == 10) {
+		ThalesBondsImplementation = await upgrades.prepareUpgrade(ThalesBondsAddress, ThalesBondsContract);
+		await delay(5000);
+		console.log('ThalesBondsAddress upgraded');
+	}
 
 	console.log('Implementation of ThalesBonds: ', ThalesBondsImplementation);
 	setTargetAddress('ThalesBondsImplementation', network, ThalesBondsImplementation);
-	   
+			
 
-    try {
+	try {
 		await hre.run('verify:verify', {
 			address: ThalesBondsImplementation,
 		});

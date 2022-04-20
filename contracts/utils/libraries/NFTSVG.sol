@@ -19,62 +19,52 @@ library NFTSVG {
         IPassportPosition.Position[] positions;
         bool alive;
         bool seasonFinished;
-        string baseURI;
     }
 
     function generateSVG(SVGParams memory params) internal pure returns (string memory svg) {
         if (!params.alive) {
-            svg = string(abi.encodePacked(generateSVGEliminated(params.baseURI)));
+            svg = string(abi.encodePacked(generateSVGEliminated(params.season, params.tokenId)));
         } else {
             svg = string(
                 abi.encodePacked(
-                    generateSVGBase(params.seasonFinished, params.baseURI),
+                    generateSVGBase(),
                     generateSVGData(params.player, params.tokenId, params.timestamp, params.season, params.seasonFinished),
-                    generateSVGStamps(params.positions, params.baseURI, params.seasonFinished, params.round),
-                    "</svg>"
+                    generateSVGStamps(params.positions, params.round, params.seasonFinished),
+                    generateSVGBackground()
                 )
             );
         }
     }
 
-    function generateSVGBase(bool seasonFinished, string memory baseURI) private pure returns (string memory svg) {
-        // season is finished -> token is winner token
-        if (seasonFinished) {
-            svg = string(
-                abi.encodePacked(
-                    '<?xml version="1.0" encoding="utf-8"?>',
-                    '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 492.2 700" style="enable-background:new 0 0 492.2 700;" xml:space="preserve">',
-                    "<defs><style type=\"text/css\">@import url('https://fonts.googleapis.com/css?family=Special+Elite');</style></defs>",
-                    "<style type=\"text/css\">st0{fill:#F5F0EB;}.st1{fill:#A0482D;}.st2{fill:#299956;}.st3{enable-background:new;}.st4{fill:#7F6F6F;}.st5{font-family:'Special Elite';}.st6{font-size:18px;}</style>",
-                    '<image style="overflow:visible;" width="1984" height="2851" xlink:href="',
-                    baseURI,
-                    '/winner.png"  transform="matrix(0.2486 0 0 0.2486 1.2623 -2.4119)"></image>'
-                )
-            );
-        } else {
-            svg = string(
-                abi.encodePacked(
-                    '<?xml version="1.0" encoding="utf-8"?>',
-                    '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 492.2 700" style="enable-background:new 0 0 492.2 700;" xml:space="preserve">',
-                    "<defs><style type=\"text/css\">@import url('https://fonts.googleapis.com/css?family=Special+Elite');</style></defs>",
-                    "<style type=\"text/css\">st0{fill:#F5F0EB;}.st1{fill:#A0482D;}.st2{fill:#299956;}.st3{enable-background:new;}.st4{fill:#7F6F6F;}.st5{font-family:'Special Elite';}.st6{font-size:19px;}</style>",
-                    '<image style="overflow:visible;" width="1984" height="2851" xlink:href="',
-                    baseURI,
-                    '/main.png"  transform="matrix(0.2484 0 0 0.2484 -1.4276 -4.1244)"></image>'
-                )
-            );
-        }
-    }
-
-    function generateSVGEliminated(string memory baseURI) private pure returns (string memory svg) {
+    function generateSVGBase() private pure returns (string memory svg) {
         svg = string(
             abi.encodePacked(
-                '<?xml version="1.0" encoding="utf-8"?>',
-                '<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 492.2 700" style="enable-background:new 0 0 492.2 700;" xml:space="preserve">',
-                '<g><image style="overflow:visible;" width="1984" height="2851" xlink:href="',
-                baseURI,
-                '/eliminated.png"  transform="matrix(0.2484 0 0 0.2484 -1.4276 -4.1244)"></image>',
-                "</g></svg>"
+                '<svg viewBox="0 0 350 550" fill="none" xmlns="http://www.w3.org/2000/svg">',
+                '<g class="background">',
+                '<path id="gornji" d="M350 0H0V275H350V0Z" fill="url(#paint0_linear_44_340)"/>',
+                '<path id="donji" d="M350 275H0V550H350V275Z" fill="url(#paint1_linear_44_340)"/>',
+                "</g>",
+                '<g class="logoRoyale">',
+                '<rect id="rectangle" x="123.113" y="33.2568" width="27" height="27" stroke="#7F6F6F" stroke-width="3.35159"/>',
+                '<circle id="krug" cx="224.402" cy="47.0822" r="13.4064" stroke="#7F6F6F" stroke-width="3.35159"/>',
+                '<path id="triangle" d="M168.589 59.5459L182.557 35.3516L196.526 59.5459H168.589Z" stroke="#7F6F6F" stroke-width="3.35159"/></g>',
+                '<text x="36" y="85" font-family="Courier New" font-size="21" fill="#7F6F6F">Thales Royale Passport</text>'
+            )
+        );
+    }
+
+    function generateSVGEliminated(uint season, uint tokenId) private pure returns (string memory svg) {
+        svg = string(
+            abi.encodePacked(
+                generateSVGBase(),
+                '<text x="120" y="115" font-family="Helvetica" font-size="24" fill="#7F6F6F">SEASON ',
+                Strings.toString(season),
+                '</text>',
+                '<text x="60" y="240" font-family="Courier New" font-size="38" fill="#D10019" text-decoration="line-through">ELIMINATED</text>',
+                '<text x="50" y="520" font-family="Courier New" font-size="20" fill="#7F6F6F">Passport No: #',
+                Strings.toString(tokenId),
+                '</text>',
+                generateSVGBackground()
             )
         );
     }
@@ -88,57 +78,37 @@ library NFTSVG {
     ) private pure returns (string memory svg) {
         svg = string(
             abi.encodePacked(
-                generateSVGAddress(player, seasonFinished),
-                generateSVGTimestamp(timestamp, seasonFinished),
-                '<text transform="',
-                !seasonFinished ? "matrix(1 0 0 1 15.8619 530.2961)" : "matrix(1 0 0 1 34.7126 571.7894)",
-                '" class="st4 st5 st6">Passport No: ',
-                Strings.toString(tokenId),
-                "</text>",
-                '<text transform="',
-                !seasonFinished ? "matrix(1 0 0 1 15.8619 556.7766)" : "matrix(1 0 0 1 34.7126 596.3534)",
-                '" class="st4 st5 st6">Place of residence: Metaverse</text>'
-            )
-        );
-    }
-
-    function generateSVGAddress(address player, bool seasonFinished) private pure returns (string memory svg) {
-        svg = string(
-            abi.encodePacked(
-                '<text transform="',
-                !seasonFinished ? "matrix(1 0 0 1 15.8619 477.3381)" : "matrix(1 0 0 1 34.7126 522.6644)",
-                '" class="st4 st5 st6">',
-                addressToString(player),
-                "</text>"
-            )
-        );
-    }
-
-    function generateSVGTimestamp(uint timestamp, bool seasonFinished) private pure returns (string memory svg) {
-        svg = string(
-            abi.encodePacked(
-                '<text transform="',
-                !seasonFinished ? "matrix(1 0 0 1 15.8619 503.8186)" : "matrix(1 0 0 1 34.7126 547.2279)",
-                '" class="st4 st5 st6">Issued On: ',
+                '<text x="',
+                seasonFinished ? '63' : '120',
+                '" y="115" font-family="Helvetica" font-size="24" fill="#7F6F6F">',
+                seasonFinished ? 'WINNER SEASON ' : 'SEASON ',
+                Strings.toString(season),
+                '</text>',
+                '<text x="10" y="460" font-family="Courier New" font-size="13" fill="#7F6F6F">',
+                addressToString(player), 
+                '</text>',
+                '<text x="30" y="490" font-family="Courier New" font-size="20" fill="#7F6F6F">Issued On: ',
                 Strings.toString(timestamp),
-                "</text>"
+                '</text>',
+                '<text x="50" y="520" font-family="Courier New" font-size="20" fill="#7F6F6F">Passport No: #',
+                Strings.toString(tokenId),
+                '</text>'
             )
         );
     }
 
-    function generateSVGStamps(
-        IPassportPosition.Position[] memory positions,
-        string memory baseURI,
-        bool seasonFinished,
-        uint currentRound
-    ) private pure returns (string memory stamps) {
+    function generateSVGStamps(IPassportPosition.Position[] memory positions, uint currentRound, bool seasonFinished)
+        private
+        pure
+        returns (string memory stamps)
+    {
         stamps = string(abi.encodePacked(""));
         uint rounds = seasonFinished ? currentRound - 1 : currentRound;
         for (uint i = 0; i < positions.length; i++) {
             uint position = positions[i].position;
             uint round = positions[i].round;
-            if(rounds >= round) {
-                string memory stamp = generateSVGStamp(round, position, baseURI, seasonFinished);
+            if (rounds >= round) {
+                string memory stamp = generateSVGStamp(round, position);
                 stamps = string(abi.encodePacked(stamps, stamp));
             }
         }
@@ -146,38 +116,49 @@ library NFTSVG {
 
     function generateSVGStamp(
         uint round,
-        uint position,
-        string memory baseURI,
-        bool seasonFinished
+        uint position
     ) private pure returns (string memory stamp) {
-        string memory matrix = "";
+        string memory item = "";
         if (round == 1) {
-            matrix = !seasonFinished ? "matrix(1 0 0 1 18.6021 246.25)" : "matrix(1 0 0 1 32 312.7)";
+            item = position == 1
+                ? '<circle cx="72.5005" cy="200.5" r="28" transform="rotate(-9.01508 72.5005 200.5)" stroke="#D10019"/><text x="63" y="215" font-family="Courier New" font-size="40" rotate="-9" fill="#D10019">1</text>'
+                : '<path d="M41.7387 226.599L69.954 167.136L107.343 221.302L41.7387 226.599Z" stroke="#00957E"/><text x="63" y="215" font-family="Courier New" font-size="40" rotate="-9" fill="#00957E">1</text>';
         } else if (round == 2) {
-            matrix = !seasonFinished ? "matrix(1 0 0 1 104 296.9571)" : "matrix(1 0 0 1 115.6 360.4313)";
+            item = position == 1
+                ? '<circle cx="72.9395" cy="288.94" r="28" transform="rotate(12.3593 72.9395 288.94)" stroke="#D10019"/><text x="59" y="299" font-family="Courier New" font-size="40" rotate="13" fill="#D10019">2</text>'
+                : '<path d="M35.7644 295.445L80.2057 246.896L100.029 309.658L35.7644 295.445Z" stroke="#00957E"/><text x="59" y="293" font-family="Courier New" font-size="40" rotate="15" fill="#00957E">2</text>';
         } else if (round == 3) {
-            matrix = !seasonFinished ? "matrix(1 0 0 1 152.6021 233.7428)" : "matrix(1 0 0 1 158.3 298.95)";
+            item = position == 1
+                ? '<circle cx="145.903" cy="304.902" r="28" transform="rotate(-14.9925 145.903 304.902)" stroke="#D10019"/><text x="139" y="322" font-family="Courier New" font-size="40" rotate="-18" fill="#D10019">3</text>'
+                : '<path d="M128.895 330.635L145.93 267.059L192.47 313.6L128.895 330.635Z" stroke="#00957E"/><text x="147" y="319" font-family="Courier New" font-size="40" rotate="-18" fill="#00957E">3</text>';
         } else if (round == 4) {
-            matrix = !seasonFinished ? "matrix(1 0 0 1 244.55 280.5463)" : "matrix(1 0 0 1 249.7 342.502)";
+            item = position == 1
+                ? '<circle cx="175.979" cy="262.979" r="28" transform="rotate(3.05675 175.979 262.979)" stroke="#D10019"/><text x="162" y="276" font-family="Courier New" font-size="40" rotate="3" fill="#D10019">4</text>'
+                : '<path d="M150.739 289.599L178.954 230.136L216.343 284.302L150.739 289.599Z" stroke="#00957E"/><text x="170" y="281" font-family="Courier New" font-size="40" rotate="-7" fill="#00957E">4</text>';
         } else if (round == 5) {
-            matrix = !seasonFinished ? "matrix(1 0 0 1 320.7201 293.2936)" : "matrix(1 0 0 1 320.15 355.3)";
+            item = position == 1
+                ? '<circle cx="279.614" cy="230.614" r="28" transform="rotate(-9.01508 279.614 230.614)" stroke="#D10019"/><text x="271" y="246" font-family="Courier New" font-size="40" rotate="-9" fill="#D10019">5</text>'
+                : '<path d="M233.007 266.845L266.205 210.013L298.824 267.18L233.007 266.845Z" stroke="#00957E"/><text x="255" y="260" font-family="Courier New" font-size="40" fill="#00957E">5</text>';
         } else {
-            matrix = !seasonFinished ? "matrix(1 0 0 1 344.4658 216.4674)" : "matrix(1 0 0 1 342.9762 282.35)";
+            item = position == 1
+                ? '<circle cx="273.833" cy="332.833" r="28" transform="rotate(14.7947 273.833 332.833)" stroke="#D10019"/><text x="258" y="343" font-family="Courier New" font-size="40" rotate="9" fill="#D10019">6</text>'
+                : '<path d="M203.483 347.285L240.321 292.742L269.138 351.916L203.483 347.285Z" stroke="#00957E"/><text x="224" y="342" font-family="Courier New" font-size="40"  fill="#00957E">6</text>';
         }
 
-        stamp = string(
-            abi.encodePacked(
-                '<image style="overflow:visible;" width="130" height="130" xlink:href="',
-                baseURI,
-                "/",
-                Strings.toString(round),
-                "_",
-                Strings.toString(position),
-                '.png"  transform="',
-                matrix,
-                '"></image>'
-            )
-        );
+        stamp = string(abi.encodePacked(item));
+    }
+
+    function generateSVGBackground() internal pure returns (string memory) {
+        return
+            string(
+                abi.encodePacked(
+                    '<defs><linearGradient id="paint0_linear_44_340" x1="174.381" y1="274.968" x2="175.554" y2="36.6047" gradientUnits="userSpaceOnUse">',
+                    '<stop stop-color="#E3D4C7"/><stop offset="0.0547" stop-color="#E6D9CE"/><stop offset="0.2045" stop-color="#ECE2D9"/><stop offset="0.4149" stop-color="#EFE7E0"/>',
+                    '<stop offset="1" stop-color="#F0E8E2"/></linearGradient>',
+                    '<linearGradient id="paint1_linear_44_340" x1="0.00270863" y1="412.497" x2="350.002" y2="412.497" gradientUnits="userSpaceOnUse">'
+                    '<stop stop-color="#EEE4DC"/><stop offset="1" stop-color="#F7F3EF"/></linearGradient></defs></svg>'
+                )
+            );
     }
 
     function addressToString(address _addr) internal pure returns (string memory) {

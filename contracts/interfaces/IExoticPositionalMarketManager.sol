@@ -53,6 +53,7 @@ interface IExoticPositionalMarketManager {
         bool _withdrawalAllowed,
         uint[] memory _tags,
         uint _positionCount,
+        uint[] memory _positionsOfCreator,
         string[] memory _positionPhrases
     ) external;
     

@@ -35,8 +35,14 @@ contract ExoticRewards is Initializable, ProxyOwned, PausableUpgradeable, ProxyR
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner {
         require(marketManager.isActiveMarket(_market), "Not active market.");
-        require(_amount <= IERC20Upgradeable(marketManager.paymentToken()).balanceOf(address(this)), "Amount exceeds balance");
-        require(_amount > 0 && _amount <= IExoticPositionalMarket(_market).arbitraryRewardForDisputor(), "Zero or high amount");
+        require(
+            _amount <= IERC20Upgradeable(marketManager.paymentToken()).balanceOf(address(this)),
+            "Amount exceeds balance"
+        );
+        require(
+            _amount > 0 && _amount <= IExoticPositionalMarket(_market).arbitraryRewardForDisputor(),
+            "Zero or high amount"
+        );
         require(_disputorAddress != address(0), "Invalid disputor");
         marketIssuedReward[_market] = marketIssuedReward[_market].add(_amount);
         IERC20Upgradeable(marketManager.paymentToken()).transfer(_disputorAddress, _amount);

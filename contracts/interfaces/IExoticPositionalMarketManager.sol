@@ -32,6 +32,7 @@ interface IExoticPositionalMarketManager {
     function cancelledByCreator(address _market) external view returns(bool);
     function withdrawalTimePeriod() external view returns(uint);    
     function maxAmountForOpenBidPosition() external view returns(uint);    
+    function maxFinalWithdrawPercentage() external view returns(uint);    
 
     function createExoticMarket(
         string memory _marketQuestion,

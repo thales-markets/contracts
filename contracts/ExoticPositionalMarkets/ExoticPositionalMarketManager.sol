@@ -26,7 +26,7 @@ import "../utils/libraries/AddressSetLib.sol";
 contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
     using AddressSetLib for AddressSetLib.AddressSet;
-    
+
     AddressSetLib.AddressSet private _activeMarkets;
     // AddressSetLib.AddressSet private _maturedMarkets;
 
@@ -75,10 +75,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     mapping(address => bool) public isChainLinkMarket;
     mapping(address => bool) public cancelledByCreator;
     uint public maxAmountForOpenBidPosition;
+    uint public maxFinalWithdrawPercentage;
 
-    function initialize(
-        address _owner
-    ) public initializer {
+    function initialize(address _owner) public initializer {
         setOwner(_owner);
         initNonReentrant();
     }
@@ -337,8 +336,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             IExoticPositionalMarket(_marketAddress).canUsersClaim() || cancelledByCreator[_marketAddress],
             "Not claimable"
         );
-        if(IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
-        IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0) {
+        if (
+            IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
+            IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0
+        ) {
             IThalesBonds(thalesBonds).issueBondsBackToCreatorAndResolver(_marketAddress);
         }
     }
@@ -368,15 +369,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     function isActiveMarket(address _marketAddress) public view returns (bool) {
         return _activeMarkets.contains(_marketAddress);
     }
-    
+
     function numberOfActiveMarkets() external view returns (uint) {
         return _activeMarkets.elements.length;
     }
 
-    function getActiveMarketAddress(uint _index) external view returns(address) {
+    function getActiveMarketAddress(uint _index) external view returns (address) {
         return _activeMarkets.elements[_index];
     }
-
 
     function isPauserAddress(address _pauser) external view returns (bool) {
         return pauserIndex[_pauser] > 0;
@@ -442,7 +442,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         withdrawalPercentage = _withdrawalPercentage;
         emit WithdrawalPercentageChanged(_withdrawalPercentage);
     }
-    
+
     function setWithdrawalTimePeriod(uint _withdrawalTimePeriod) external onlyOwner {
         withdrawalTimePeriod = _withdrawalTimePeriod;
         emit WithdrawalTimePeriodChanged(_withdrawalTimePeriod);
@@ -592,11 +592,15 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         tagsAddress = _tagsAddress;
         emit NewTagsAddress(_tagsAddress);
     }
-    
-    function setMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition) external onlyOwner {
-        require(_maxAmountForOpenBidPosition != maxAmountForOpenBidPosition, "Same value");
+
+    function setMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition, uint _maxFinalWithdrawPercentage)
+        external
+        onlyOwner
+    {
+        // require(_maxAmountForOpenBidPosition != maxAmountForOpenBidPosition, "Same value");
         maxAmountForOpenBidPosition = _maxAmountForOpenBidPosition;
-        emit NewMaxAmountForOpenBidPosition(_maxAmountForOpenBidPosition);
+        maxFinalWithdrawPercentage = _maxFinalWithdrawPercentage;
+        emit NewMaxAmountForOpenBidPosition(_maxAmountForOpenBidPosition, _maxFinalWithdrawPercentage);
     }
 
     function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
@@ -678,8 +682,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event MarketPositionStringLimitChanged(uint marketPositionStringLimit);
     event OpenBidAllowedChanged(bool openBidAllowed);
     event WithdrawalTimePeriodChanged(uint withdrawalTimePeriod);
-    event NewMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition);
-
+    event NewMaxAmountForOpenBidPosition(uint maxAmountForOpenBidPosition, uint maxFinalWithdrawPercentage);
+    // event NewMaxFinalWithdrawPercentage(uint maxFinalWithdrawPercentage);
 
     event MarketCreated(
         address marketAddress,

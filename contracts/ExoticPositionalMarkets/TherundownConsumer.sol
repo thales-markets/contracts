@@ -175,7 +175,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function isSameTeamOrTBD(string memory _teamA, string memory _teamB) public view returns (bool) {
-        return keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked(_teamB)) ||
+        return
+            keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked(_teamB)) ||
             keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked("TBD TBD")) ||
             keccak256(abi.encodePacked(_teamB)) == keccak256(abi.encodePacked("TBD TBD"));
     }
@@ -220,7 +221,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             gameResolved[_game.gameId] = _game;
             queues.enqueueGamesResolved(_game.gameId);
             gameFulfilledResolved[_game.gameId] = true;
-            
+
             emit GameResolved(requestId, _sportId, _game.gameId, _game, queues.lastResolved());
         }
     }

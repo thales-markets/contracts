@@ -39,7 +39,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     uint private constant DISPUTOR_BOND = 103;
     uint private constant CREATOR_AND_DISPUTOR = 104;
     uint private constant RESOLVER_AND_DISPUTOR = 105;
-    
+
     IStakingThales public stakingThales;
 
     function initialize(address _owner) public initializer {

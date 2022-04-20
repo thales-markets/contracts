@@ -418,7 +418,13 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_maxAmountForOpenBidPosition",
+        "name": "maxAmountForOpenBidPosition",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxFinalWithdrawPercentage",
         "type": "uint256"
       }
     ],
@@ -1265,6 +1271,19 @@
   },
   {
     "inputs": [],
+    "name": "maxFinalWithdrawPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maxNumberOfTags",
     "outputs": [
       {
@@ -1865,6 +1884,11 @@
       {
         "internalType": "uint256",
         "name": "_maxAmountForOpenBidPosition",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxFinalWithdrawPercentage",
         "type": "uint256"
       }
     ],

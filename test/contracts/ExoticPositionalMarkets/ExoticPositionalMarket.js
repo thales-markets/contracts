@@ -105,7 +105,8 @@ contract('Exotic Positional market', async accounts => {
 		await ExoticPositionalMarketManager.setClaimTimeoutDefaultPeriod('86400', { from: manager });
 		await ExoticPositionalMarketManager.setDisputePrice(disputePrice, { from: manager });
 		let maxOpenBidPositon = toUnit(1000);
-		await ExoticPositionalMarketManager.setMaxAmountForOpenBidPosition(maxOpenBidPositon, { from: manager });
+		let maxPercentage = "10";
+		await ExoticPositionalMarketManager.setMaxAmountForOpenBidPosition(maxOpenBidPositon,maxPercentage, { from: manager });
 		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
 		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(
 			ExoticPositionalOpenBidMarket.address

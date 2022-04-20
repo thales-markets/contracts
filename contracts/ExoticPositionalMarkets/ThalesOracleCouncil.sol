@@ -218,10 +218,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
                 IExoticPositionalMarket(_market).disputePrice(),
             "No allowance."
         );
-        require(
-            keccak256(abi.encode(_disputeString)) != keccak256(abi.encode("")),
-            "Invalid dispute string"
-        );
+        require(keccak256(abi.encode(_disputeString)) != keccak256(abi.encode("")), "Invalid dispute string");
         require(
             bytes(_disputeString).length < marketManager.disputeStringLengthLimit() || bytes(_disputeString).length < 110,
             "String exceeds length"
@@ -260,10 +257,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
             require(_disputeCodeVote < ACCEPT_RESULT, "Invalid code.");
         } else {
             require(_disputeCodeVote >= ACCEPT_RESULT, "Invalid code in maturity");
-            require(
-                _disputeIndex > allOpenDisputesCancelledToIndexForMarket[_market],
-                "Already cancelled"
-            );
+            require(_disputeIndex > allOpenDisputesCancelledToIndexForMarket[_market], "Already cancelled");
         }
         if (_winningPosition > 0 && _disputeCodeVote == ACCEPT_RESULT) {
             require(
@@ -478,10 +472,7 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
     }
 
     function claimUnclosedDisputeBonds(address _market, uint _disputeIndex) external whenNotPaused {
-        require(
-            canDisputorClaimbackBondFromUnclosedDispute(_market, _disputeIndex, msg.sender),
-            "Unable to claim."
-        );
+        require(canDisputorClaimbackBondFromUnclosedDispute(_market, _disputeIndex, msg.sender), "Unable to claim.");
         IThalesBonds(marketManager.thalesBonds()).sendOpenDisputeBondFromMarketToDisputor(
             _market,
             msg.sender,

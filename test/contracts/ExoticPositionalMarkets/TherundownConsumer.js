@@ -137,7 +137,8 @@ contract('TherundownConsumer', accounts => {
 		await ExoticPositionalMarketManager.setWithdrawalTimePeriod("28800", { from: manager });
 		await ExoticPositionalMarketManager.setClaimTimeoutDefaultPeriod('86400', { from: manager });
 		let maxOpenBidPositon = toUnit(1000);
-		await ExoticPositionalMarketManager.setMaxAmountForOpenBidPosition(maxOpenBidPositon, { from: manager });
+		let maxPercentage = "10";
+		await ExoticPositionalMarketManager.setMaxAmountForOpenBidPosition(maxOpenBidPositon,maxPercentage, { from: manager });
 		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
 		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(
 			ExoticPositionalMarket.address
@@ -1072,7 +1073,7 @@ contract('TherundownConsumer', accounts => {
 			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for two position game');
 			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, { from: third })).to.be.revertedWith('Bad outcome for two position game');
 
-			/*const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(
+			const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(
 				marketAdd, { from: third }
 			);
 
@@ -1088,7 +1089,7 @@ contract('TherundownConsumer', accounts => {
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));*/
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 	});
 });

@@ -199,8 +199,8 @@
 		"ThalesBondsImplementation": "0xc9Ff0Ae91D0adfa04a2a1b93974c61065c1F9402",
 		"ExoticPositionalTags": "0x912e29c66291e10565df22b2857EACC2Ea6A84A1",
 		"ExoticPositionalTagsImplementation": "0xdA5FCCB331227e7fe4805738129aF6337d39CD3a",
-		"ExoticPositionalMarketData": "0x6fb9914E1777f4C034B2813cDc035682eA62Df0c",
-		"ExoticPositionalMarketDataImplementation": "0x231B97DA9dd80F08da9f9546271c52F3ED57EbF2",
+		"ExoticPositionalMarketData": "0xCfe537D5eFb96556a9340BdaDdDEF17526E6223b",
+		"ExoticPositionalMarketDataImplementation": "0xbC51bb09EB3F348048c6d1f7f65994de04e00f3c",
 		"ExoticUSD": "0x762838253A45a9106cc859ec99dF31DF48FCf735",
 		"ExoticMarketOpenBidMastercopy": "0x40B3A9473ab6A682cC0de7C4442605ee449B6f11",
 		"ExoticRewards": "0x18D3f889C45D3EB94dF04020bF4942E98A782C0c",
@@ -213,7 +213,9 @@
 		"ThalesRoyaleImplementation": "0x59477c6d82076EcFfe3C255c208ec8b5ab35254d",
 		"ThalesRoyalePassport": "0x8363a01892dE85BC871005570B481c374f2aB3e6",
 		"ThalesRoyalePassportImplementation": "0xBB842D83403f11f5d232d724358AAD96430f1485",
-		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058"
+		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058",
+		"ExoticManagerData": "0xBb409c6488c4bB2BE9e3BaD7B3C79b553ab6A061",
+		"ExoticManagerDataImplementation": "0xE2A2cF1531bF25Ab9aA31eaf1a1Aa31036e84De2"
 	},
 	"polygonMumbai": {
 		"ProxyUSDC": "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",

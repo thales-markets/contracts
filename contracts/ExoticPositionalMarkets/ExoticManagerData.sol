@@ -1,34 +1,20 @@
 pragma solidity ^0.8.0;
 
 // external
-// import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-// import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
-// import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-
-// import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
-// import "./ExoticPositionalFixedMarket.sol";
-// import "./ExoticPositionalOpenBidMarket.sol";
-// import "../interfaces/IThalesBonds.sol";
-// import "../interfaces/IExoticPositionalTags.sol";
-// import "../interfaces/IThalesOracleCouncil.sol";
-// import "../interfaces/IExoticPositionalMarket.sol";
-// import "../interfaces/IExoticRewards.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 // internal
-// import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-// import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-// import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
-// import "../utils/libraries/AddressSetLib.sol";
 
-contract ExoticManagerData is ProxyOwned {
+contract ExoticManagerData is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
-    // using AddressSetLib for AddressSetLib.AddressSet;
 
-    // AddressSetLib.AddressSet private _activeMarkets;
-    // AddressSetLib.AddressSet private _maturedMarkets;
-    
     uint public fixedBondAmount;
     uint public backstopTimeout;
     uint public minimumPositioningDuration;
@@ -41,9 +27,7 @@ contract ExoticManagerData is ProxyOwned {
     uint public maximumPositionsAllowed;
     uint public disputePrice;
     uint public maxOracleCouncilMembers;
-    uint public pausersCount;
     uint public maxNumberOfTags;
-    uint public backstopTimeoutGeneral;
     uint public safeBoxLowAmount;
     uint public arbitraryRewardForDisputor;
     uint public minFixedTicketPrice;
@@ -52,375 +36,72 @@ contract ExoticManagerData is ProxyOwned {
     uint public marketSourceStringLimit;
     uint public marketPositionStringLimit;
     uint public withdrawalTimePeriod;
+    uint public maxAmountForOpenBidPosition;
+    uint public maxFinalWithdrawPercentage;
+
     bool public creationRestrictedToOwner;
     bool public openBidAllowed;
-
+    
     address public exoticMarketMastercopy;
+    address public exoticMarketOpenBidMastercopy;
     address public oracleCouncilAddress;
     address public safeBoxAddress;
-    address public thalesBonds;
     address public paymentToken;
     address public tagsAddress;
     address public theRundownConsumerAddress;
     address public marketDataAddress;
-    address public exoticMarketOpenBidMastercopy;
     address public exoticRewards;
-    uint public maxAmountForOpenBidPosition;
-    uint public maxFinalWithdrawPercentage;
+    // address public thalesBonds;
 
-    // mapping(uint => address) public pauserAddress;
-    // mapping(address => uint) public pauserIndex;
-
-    // mapping(address => address) public creatorAddress;
-    // mapping(address => address) public resolverAddress;
-    // mapping(address => bool) public isChainLinkMarket;
-    // mapping(address => bool) public cancelledByCreator;
-
+    struct DummyStruct {
+        uint fixedBondAmount;
+        uint backstopTimeout;
+        uint minimumPositioningDuration;
+    }
     
-    function initData(address _owner) public {
-        // dataOwnerSet = true;
-        // setOwner(_owner);
-        // initNonReentrant();
+    struct ManagerData {
+        uint fixedBondAmount;
+        uint backstopTimeout;
+        uint minimumPositioningDuration;
+        uint claimTimeoutDefaultPeriod;
+        uint pDAOResolveTimePeriod;
+        uint safeBoxPercentage;
+        uint creatorPercentage;
+        uint resolverPercentage;
+        uint withdrawalPercentage;
+        uint maximumPositionsAllowed;
+        uint disputePrice;
+        uint maxOracleCouncilMembers;
+        uint maxNumberOfTags;
+        uint safeBoxLowAmount;
+        uint arbitraryRewardForDisputor;
+        uint minFixedTicketPrice;
+        uint disputeStringLengthLimit;
+        uint marketQuestionStringLimit;
+        uint marketSourceStringLimit;
+        uint marketPositionStringLimit;
+        uint withdrawalTimePeriod;
+        uint maxAmountForOpenBidPosition;
+        uint maxFinalWithdrawPercentage;
+        bool creationRestrictedToOwner;
+        bool openBidAllowed;
+        address exoticMarketMastercopy;
+        address exoticMarketOpenBidMastercopy;
+        address oracleCouncilAddress;
+        address safeBoxAddress;
+        // address thalesBonds;
+        address paymentToken;
+        address tagsAddress;
+        address theRundownConsumerAddress;
+        address marketDataAddress;
+        address exoticRewards;
     }
 
-    // // Create Exotic market
-    // function createExoticMarket(
-    //     string memory _marketQuestion,
-    //     string memory _marketSource,
-    //     uint _endOfPositioning,
-    //     uint _fixedTicketPrice,
-    //     bool _withdrawalAllowed,
-    //     uint[] memory _tags,
-    //     uint _positionCount,
-    //     uint _positionOfCreator,
-    //     string[] memory _positionPhrases
-    // ) external nonReentrant whenNotPaused {
-    //     require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low.");
-    //     require(!creationRestrictedToOwner || msg.sender == owner, "Restricted creation");
-    //     require(
-    //         (openBidAllowed && _fixedTicketPrice == 0) || _fixedTicketPrice >= minFixedTicketPrice,
-    //         "Exceeds min tickPrice"
-    //     );
-    //     require(
-    //         IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice),
-    //         "Low amount for creation."
-    //     );
-    //     require(
-    //         IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount.add(_fixedTicketPrice),
-    //         "No allowance."
-    //     );
-    //     require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
-    //     require(_positionOfCreator > 0 && _positionOfCreator <= _positionCount);
-    //     require(keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")), "Invalid question.");
-    //     require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid source");
-    //     require(_positionCount == _positionPhrases.length, "Invalid posCount.");
-    //     require(bytes(_marketQuestion).length < marketQuestionStringLimit, "mQuestion exceeds length");
-    //     require(bytes(_marketSource).length < marketSourceStringLimit, "mSource exceeds length");
-    //     require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
-    //     for (uint i = 0; i < _tags.length; i++) {
-    //         require(IExoticPositionalTags(tagsAddress).isValidTagNumber(_tags[i]), "Invalid tag.");
-    //     }
-
-    //     if (_fixedTicketPrice > 0) {
-    //         ExoticPositionalFixedMarket exoticMarket = ExoticPositionalFixedMarket(Clones.clone(exoticMarketMastercopy));
-
-    //         exoticMarket.initialize(
-    //             _marketQuestion,
-    //             _marketSource,
-    //             _endOfPositioning,
-    //             _fixedTicketPrice,
-    //             _withdrawalAllowed,
-    //             _tags,
-    //             _positionCount,
-    //             _positionPhrases
-    //         );
-    //         creatorAddress[address(exoticMarket)] = msg.sender;
-    //         IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
-    //         _activeMarkets.add(address(exoticMarket));
-    //         exoticMarket.takeCreatorInitialPosition(_positionOfCreator);
-    //         emit MarketCreated(
-    //             address(exoticMarket),
-    //             _marketQuestion,
-    //             _marketSource,
-    //             _endOfPositioning,
-    //             _fixedTicketPrice,
-    //             _withdrawalAllowed,
-    //             _tags,
-    //             _positionCount,
-    //             _positionPhrases,
-    //             msg.sender
-    //         );
-    //     } else {
-    //         ExoticPositionalOpenBidMarket exoticMarket =
-    //             ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
-
-    //         exoticMarket.initialize(
-    //             _marketQuestion,
-    //             _marketSource,
-    //             _endOfPositioning,
-    //             _fixedTicketPrice,
-    //             _withdrawalAllowed,
-    //             _tags,
-    //             _positionCount,
-    //             _positionPhrases
-    //         );
-    //         creatorAddress[address(exoticMarket)] = msg.sender;
-    //         IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
-    //         _activeMarkets.add(address(exoticMarket));
-    //         uint[] memory positions = new uint[](1);
-    //         uint[] memory amounts = new uint[](1);
-    //         positions[0] = _positionOfCreator;
-    //         amounts[0] = minFixedTicketPrice;
-    //         exoticMarket.takeCreatorInitialOpenBidPositions(positions, amounts);
-    //         emit MarketCreated(
-    //             address(exoticMarket),
-    //             _marketQuestion,
-    //             _marketSource,
-    //             _endOfPositioning,
-    //             _fixedTicketPrice,
-    //             _withdrawalAllowed,
-    //             _tags,
-    //             _positionCount,
-    //             _positionPhrases,
-    //             msg.sender
-    //         );
-    //     }
-    // }
-
-    // function createCLMarket(
-    //     string memory _marketQuestion,
-    //     string memory _marketSource,
-    //     uint _endOfPositioning,
-    //     uint _fixedTicketPrice,
-    //     bool _withdrawalAllowed,
-    //     uint[] memory _tags,
-    //     uint _positionCount,
-    //     uint[] memory _positionsOfCreator,
-    //     string[] memory _positionPhrases
-    // ) external nonReentrant whenNotPaused {
-    //     require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low");
-    //     require(theRundownConsumerAddress != address(0), "Invalid theRundownConsumer");
-    //     require(msg.sender == theRundownConsumerAddress, "Invalid creator");
-    //     require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
-    //     require(keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")), "Invalid question");
-    //     require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid source");
-    //     require(_positionCount == _positionPhrases.length, "Invalid posCount");
-    //     require(bytes(_marketQuestion).length < 110, "Q exceeds length");
-    //     require(thereAreNonEqualPositions(_positionPhrases), "Equal pos phrases");
-    //     require(_positionsOfCreator.length == _positionCount, "Creator deposits wrong");
-    //     uint totalCreatorDeposit;
-    //     uint[] memory creatorPositions = new uint[](_positionCount);
-    //     for(uint i=0; i<_positionCount; i++) {
-    //         totalCreatorDeposit = totalCreatorDeposit.add(_positionsOfCreator[i]);
-    //         creatorPositions[i] = i+1;
-    //     }
-    //     require(IERC20(paymentToken).balanceOf(msg.sender) >= totalCreatorDeposit, "Low creation amount");
-    //     require(IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= totalCreatorDeposit, "No allowance.");
-
-
-    //     ExoticPositionalOpenBidMarket exoticMarket =
-    //         ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
-    //     exoticMarket.initialize(
-    //         _marketQuestion,
-    //         _marketSource,
-    //         _endOfPositioning,
-    //         _fixedTicketPrice,
-    //         _withdrawalAllowed,
-    //         _tags,
-    //         _positionCount,
-    //         _positionPhrases
-    //     );
-    //     isChainLinkMarket[address(exoticMarket)] = true;
-    //     creatorAddress[address(exoticMarket)] = msg.sender;
-    //     // IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
-    //     _activeMarkets.add(address(exoticMarket));
-    //     exoticMarket.takeCreatorInitialOpenBidPositions(creatorPositions, _positionsOfCreator);
-    //     emit CLMarketCreated(
-    //         address(exoticMarket),
-    //         _marketQuestion,
-    //         _marketSource,
-    //         _endOfPositioning,
-    //         _fixedTicketPrice,
-    //         _withdrawalAllowed,
-    //         _tags,
-    //         _positionCount,
-    //         _positionPhrases,
-    //         msg.sender
-    //     );
-    // }
-
-    // function resolveMarket(address _marketAddress, uint _outcomePosition) external whenNotPaused {
-    //     require(isActiveMarket(_marketAddress), "NotActive");
-    //     if (isChainLinkMarket[_marketAddress]) {
-    //         require(msg.sender == theRundownConsumerAddress, "Only theRundownConsumer");
-    //     }
-    //     require(!IThalesOracleCouncil(oracleCouncilAddress).isOracleCouncilMember(msg.sender), "OC mem can not resolve");
-    //     if (msg.sender != owner && msg.sender != oracleCouncilAddress) {
-    //         require(IExoticPositionalMarket(_marketAddress).canMarketBeResolved(), "Resolved");
-    //     }
-    //     if (IExoticPositionalMarket(_marketAddress).paused()) {
-    //         require(msg.sender == owner, "Only pDAO while paused");
-    //     }
-    //     if (
-    //         (msg.sender == creatorAddress[_marketAddress] &&
-    //             IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0) ||
-    //         msg.sender == owner ||
-    //         msg.sender == oracleCouncilAddress
-    //     ) {
-    //         require(oracleCouncilAddress != address(0), "Invalid OC");
-    //         require(creatorAddress[_marketAddress] != address(0), "Invalid creator");
-    //         require(owner != address(0), "Invalid owner");
-    //         if (msg.sender == creatorAddress[_marketAddress]) {
-    //             IThalesBonds(thalesBonds).transferCreatorToResolverBonds(_marketAddress);
-    //         }
-    //     } else {
-    //         require(
-    //             IERC20(paymentToken).balanceOf(msg.sender) >= IExoticPositionalMarket(_marketAddress).fixedBondAmount(),
-    //             "Low amount for creation"
-    //         );
-    //         require(
-    //             IERC20(paymentToken).allowance(msg.sender, thalesBonds) >=
-    //                 IExoticPositionalMarket(_marketAddress).fixedBondAmount(),
-    //             "No allowance."
-    //         );
-    //         IThalesBonds(thalesBonds).sendResolverBondToMarket(
-    //             _marketAddress,
-    //             msg.sender,
-    //             IExoticPositionalMarket(_marketAddress).fixedBondAmount()
-    //         );
-    //     }
-    //     resolverAddress[_marketAddress] = msg.sender != oracleCouncilAddress ? msg.sender : safeBoxAddress;
-    //     IExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, resolverAddress[_marketAddress]);
-    //     emit MarketResolved(_marketAddress, _outcomePosition);
-    // }
-
-    // function cancelMarket(address _marketAddress) external whenNotPaused {
-    //     require(isActiveMarket(_marketAddress), "NotActive");
-    //     require(
-    //         msg.sender == oracleCouncilAddress || msg.sender == owner || msg.sender == creatorAddress[_marketAddress],
-    //         "Invalid address"
-    //     );
-    //     if (msg.sender != owner) {
-    //         require(oracleCouncilAddress != address(0), "Invalid address");
-    //     }
-    //     // Creator can cancel if it is the only ticket holder or only one that placed open bid
-    //     if (msg.sender == creatorAddress[_marketAddress]) {
-    //         require(
-    //             IExoticPositionalMarket(_marketAddress).canCreatorCancelMarket(),
-    //             "Market can not be cancelled by creator"
-    //         );
-    //         cancelledByCreator[_marketAddress] = true;
-    //     }
-    //     if (IExoticPositionalMarket(_marketAddress).paused()) {
-    //         require(msg.sender == owner, "only pDAO");
-    //     }
-    //     IExoticPositionalMarket(_marketAddress).cancelMarket();
-    //     resolverAddress[msg.sender] = safeBoxAddress;
-    //     if (cancelledByCreator[_marketAddress]) {
-    //         IExoticPositionalMarket(_marketAddress).claimWinningTicketOnBehalf(creatorAddress[_marketAddress]);
-    //     }
-    //     emit MarketCanceled(_marketAddress);
-    // }
-
-    // function resetMarket(address _marketAddress) external onlyOracleCouncilAndOwner {
-    //     require(isActiveMarket(_marketAddress), "NotActive");
-    //     if (IExoticPositionalMarket(_marketAddress).paused()) {
-    //         require(msg.sender == owner, "only pDAO");
-    //     }
-    //     IExoticPositionalMarket(_marketAddress).resetMarket();
-    //     emit MarketReset(_marketAddress);
-    // }
-
-    // function sendRewardToDisputor(
-    //     address _market,
-    //     address _disputorAddress,
-    //     uint _amount
-    // ) external onlyOracleCouncilAndOwner whenNotPaused {
-    //     require(isActiveMarket(_market), "NotActive");
-    //     IExoticRewards(exoticRewards).sendRewardToDisputoraddress(_market, _disputorAddress, _amount);
-    //     // emit RewardSentToDisputorForMarket(_market, _disputorAddress, _amount);
-    // }
-
-    // function issueBondsBackToCreatorAndResolver(address _marketAddress) external nonReentrant {
-    //     require(isActiveMarket(_marketAddress), "NotActive");
-    //     require(
-    //         IExoticPositionalMarket(_marketAddress).canUsersClaim() || cancelledByCreator[_marketAddress],
-    //         "Not claimable"
-    //     );
-    //     if (
-    //         IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
-    //         IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0
-    //     ) {
-    //         IThalesBonds(thalesBonds).issueBondsBackToCreatorAndResolver(_marketAddress);
-    //     }
-    // }
-
-    // function disputeMarket(address _marketAddress, address _disputor) external onlyOracleCouncil whenNotPaused {
-    //     require(isActiveMarket(_marketAddress), "NotActive");
-    //     IThalesBonds(thalesBonds).sendDisputorBondToMarket(
-    //         _marketAddress,
-    //         _disputor,
-    //         IExoticPositionalMarket(_marketAddress).disputePrice()
-    //     );
-    //     require(!IExoticPositionalMarket(_marketAddress).paused(), "Market paused");
-    //     if (!IExoticPositionalMarket(_marketAddress).disputed()) {
-    //         IExoticPositionalMarket(_marketAddress).openDispute();
-    //     }
-    // }
-
-    // function closeDispute(address _marketAddress) external onlyOracleCouncilAndOwner whenNotPaused {
-    //     require(isActiveMarket(_marketAddress), "NotActive");
-    //     if (IExoticPositionalMarket(_marketAddress).paused()) {
-    //         require(msg.sender == owner, "Only pDAO");
-    //     }
-    //     require(IExoticPositionalMarket(_marketAddress).disputed(), "Market not disputed");
-    //     IExoticPositionalMarket(_marketAddress).closeDispute();
-    // }
-
-    // function isActiveMarket(address _marketAddress) public view returns (bool) {
-    //     return _activeMarkets.contains(_marketAddress);
-    // }
-
-    // function numberOfActiveMarkets() external view returns (uint) {
-    //     return _activeMarkets.elements.length;
-    // }
-
-    // function getActiveMarketAddress(uint _index) external view returns (address) {
-    //     return _activeMarkets.elements[_index];
-    // }
-
-    // function isPauserAddress(address _pauser) external view returns (bool) {
-    //     return pauserIndex[_pauser] > 0;
-    // }
-
-    // SETTERS ///////////////////////////////////////////////////////////////////////////
-
-
-    // function setBackstopTimeout(address _market) external onlyOracleCouncilAndOwner {
-    //     IExoticPositionalMarket(_market).setBackstopTimeout(backstopTimeout);
-    // }
-
-    // function setCustomBackstopTimeout(address _market, uint _timeout) external onlyOracleCouncilAndOwner {
-    //     require(_timeout > 0, "Invalid timeout");
-    //     require(IExoticPositionalMarket(_market).backstopTimeout() != _timeout, "Equal to last");
-    //     IExoticPositionalMarket(_market).setBackstopTimeout(_timeout);
-    // }
-
-    function setSafeBoxAddress1(address _safeBoxAddress) external onlyOwner {
-        require(_safeBoxAddress != address(0), "Invalid address");
-        safeBoxAddress = _safeBoxAddress;
-        emit NewSafeBoxAddress(_safeBoxAddress);
+    function initialize(address _owner) public initializer {
+        setOwner(_owner);
+        initNonReentrant();
     }
-    function setSafeBoxAddress2(address _safeBoxAddress) external onlyOwner {
-        require(_safeBoxAddress != address(0), "Invalid address");
-        safeBoxAddress = _safeBoxAddress;
-        emit NewSafeBoxAddress(_safeBoxAddress);
-    }
-    function setSafeBoxAddress3(address _safeBoxAddress) external onlyOwner {
-        require(_safeBoxAddress != address(0), "Invalid address");
-        safeBoxAddress = _safeBoxAddress;
-        emit NewSafeBoxAddress(_safeBoxAddress);
-    }
+
     function setSafeBoxAddress(address _safeBoxAddress) external onlyOwner {
         require(_safeBoxAddress != address(0), "Invalid address");
         safeBoxAddress = _safeBoxAddress;
@@ -492,7 +173,7 @@ contract ExoticManagerData is ProxyOwned {
 
     function setPDAOResolveTimePeriod(uint _pDAOResolveTimePeriod) external onlyOwner {
         pDAOResolveTimePeriod = _pDAOResolveTimePeriod;
-        emit setPDAOResolveTimePeriodChanged(_pDAOResolveTimePeriod);
+        emit PDAOResolveTimePeriodChanged(_pDAOResolveTimePeriod);
     }
 
     function setOracleCouncilAddress(address _councilAddress) external onlyOwner {
@@ -532,7 +213,7 @@ contract ExoticManagerData is ProxyOwned {
     }
 
     function setDisputePrice(uint _disputePrice) external onlyOwner {
-        // require(_disputePrice > 0, "Invalid price");
+        require(_disputePrice > 0, "Invalid price");
         require(_disputePrice != disputePrice, "Equal to last");
         disputePrice = _disputePrice;
         emit NewDisputePrice(_disputePrice);
@@ -604,15 +285,6 @@ contract ExoticManagerData is ProxyOwned {
         emit NewPaymentToken(_paymentToken);
     }
 
-    // function setThalesBonds(address _thalesBonds) external onlyOwner {
-    //     require(_thalesBonds != address(0), "Invalid address");
-    //     if (thalesBonds != address(0)) {
-    //         IERC20(paymentToken).approve(address(thalesBonds), 0);
-    //     }
-    //     thalesBonds = _thalesBonds;
-    //     IERC20(paymentToken).approve(address(thalesBonds), type(uint256).max);
-    //     emit NewThalesBonds(_thalesBonds);
-    // }
 
     function setTagsAddress(address _tagsAddress) external onlyOwner {
         require(_tagsAddress != address(0), "Invalid address");
@@ -620,134 +292,249 @@ contract ExoticManagerData is ProxyOwned {
         emit NewTagsAddress(_tagsAddress);
     }
 
-    function setMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition, uint _maxFinalWithdrawPercentage)
+    function setMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition)
         external
         onlyOwner
     {
         require(_maxAmountForOpenBidPosition != maxAmountForOpenBidPosition, "Same value");
         maxAmountForOpenBidPosition = _maxAmountForOpenBidPosition;
+        emit NewMaxAmountForOpenBidPosition(_maxAmountForOpenBidPosition);
+    }
+    
+    function setMaxFinalWithdrawPercentage(uint _maxFinalWithdrawPercentage)
+        external
+        onlyOwner
+    {
+        require(maxFinalWithdrawPercentage != _maxFinalWithdrawPercentage, "Same value");
         maxFinalWithdrawPercentage = _maxFinalWithdrawPercentage;
-        emit NewMaxAmountForOpenBidPosition(_maxAmountForOpenBidPosition, _maxFinalWithdrawPercentage);
+        emit NewMaxFinalWithdrawPercentage(_maxFinalWithdrawPercentage);
     }
 
-    // function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
-    //     require(_pauserAddress != address(0), "Invalid address");
-    //     require(pauserIndex[_pauserAddress] == 0, "Exists as pauser");
-    //     pausersCount = pausersCount.add(1);
-    //     pauserIndex[_pauserAddress] = pausersCount;
-    //     pauserAddress[pausersCount] = _pauserAddress;
-    //     emit PauserAddressAdded(_pauserAddress);
-    // }
+    function setManagerDummyData(DummyStruct memory _data) external {
+        if(_data.fixedBondAmount != fixedBondAmount) {
+            fixedBondAmount = _data.fixedBondAmount;
+            emit NewFixedBondAmount(_data.fixedBondAmount);
+        }
+        if(_data.backstopTimeout != backstopTimeout) {
+            backstopTimeout = _data.backstopTimeout;
+            emit NewDefaultBackstopTimeout(_data.backstopTimeout);
+        }
+        
+        if(_data.minimumPositioningDuration != minimumPositioningDuration) {
+            minimumPositioningDuration = _data.minimumPositioningDuration;
+            emit MinimumPositionDurationChanged(_data.minimumPositioningDuration);
+        }
+    }
 
-    // function removePauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
-    //     require(_pauserAddress != address(0), "Invalid address");
-    //     require(pauserIndex[_pauserAddress] != 0, "Not exists");
-    //     pauserAddress[pauserIndex[_pauserAddress]] = pauserAddress[pausersCount];
-    //     pauserIndex[pauserAddress[pausersCount]] = pauserIndex[_pauserAddress];
-    //     pausersCount = pausersCount.sub(1);
-    //     pauserIndex[_pauserAddress] = 0;
-    //     emit PauserAddressRemoved(_pauserAddress);
-    // }
+    function setManagerData(ManagerData memory _data) external {
+        if(_data.fixedBondAmount != fixedBondAmount) {
+            fixedBondAmount = _data.fixedBondAmount;
+            emit NewFixedBondAmount(_data.fixedBondAmount);
+        }
+        if(_data.backstopTimeout != backstopTimeout) {
+            backstopTimeout = _data.backstopTimeout;
+            emit NewDefaultBackstopTimeout(_data.backstopTimeout);
+        }
+        
+        if(_data.minimumPositioningDuration != minimumPositioningDuration) {
+            minimumPositioningDuration = _data.minimumPositioningDuration;
+            emit MinimumPositionDurationChanged(_data.minimumPositioningDuration);
+        }
+       
+        if(_data.claimTimeoutDefaultPeriod != claimTimeoutDefaultPeriod) {
+            claimTimeoutDefaultPeriod = _data.claimTimeoutDefaultPeriod;
+            emit NewClaimTimeoutDefaultPeriod(_data.claimTimeoutDefaultPeriod);
+        }
+        
+        if(_data.pDAOResolveTimePeriod != pDAOResolveTimePeriod) {
+            pDAOResolveTimePeriod = _data.pDAOResolveTimePeriod;
+            emit PDAOResolveTimePeriodChanged(_data.pDAOResolveTimePeriod);
+        }
+        if(_data.safeBoxPercentage != safeBoxPercentage) {
+            safeBoxPercentage = _data.safeBoxPercentage;
+            emit SafeBoxPercentageChanged(_data.safeBoxPercentage);
+        }
+        
+        if(_data.creatorPercentage != creatorPercentage) {
+            creatorPercentage = _data.creatorPercentage;
+            emit CreatorPercentageChanged(_data.creatorPercentage);
+        }
+        
+        if(_data.resolverPercentage != resolverPercentage) {
+            resolverPercentage = _data.resolverPercentage;
+            emit ResolverPercentageChanged(_data.resolverPercentage);
+        }
+        
+        if(_data.withdrawalPercentage != withdrawalPercentage) {
+            withdrawalPercentage = _data.withdrawalPercentage;
+            emit WithdrawalPercentageChanged(_data.withdrawalPercentage);
+        }
+        
+        if(_data.maximumPositionsAllowed != maximumPositionsAllowed) {
+            maximumPositionsAllowed = _data.maximumPositionsAllowed;
+            emit NewMaximumPositionsAllowed(_data.maximumPositionsAllowed);
+        }
+        
+        if(_data.disputePrice != disputePrice) {
+            disputePrice = _data.disputePrice;
+            emit NewDisputePrice(_data.disputePrice);
+        }
+       
+        if(_data.maxOracleCouncilMembers != maxOracleCouncilMembers) {
+            maxOracleCouncilMembers = _data.maxOracleCouncilMembers;
+            emit NewMaxOracleCouncilMembers(_data.maxOracleCouncilMembers);
+        }
+        
+        if(_data.maxNumberOfTags != maxNumberOfTags) {
+            maxNumberOfTags = _data.maxNumberOfTags;
+            emit NewMaxNumberOfTags(_data.maxNumberOfTags);
+        }
+        
+        if(_data.maxNumberOfTags != maxNumberOfTags) {
+            maxNumberOfTags = _data.maxNumberOfTags;
+            emit NewMaxNumberOfTags(_data.maxNumberOfTags);
+        }
+        
+        if(_data.safeBoxLowAmount != safeBoxLowAmount) {
+            safeBoxLowAmount = _data.safeBoxLowAmount;
+            emit NewSafeBoxLowAmount(_data.safeBoxLowAmount);
+        }
+        
+        if(_data.arbitraryRewardForDisputor != arbitraryRewardForDisputor) {
+            arbitraryRewardForDisputor = _data.arbitraryRewardForDisputor;
+            emit NewArbitraryRewardForDisputor(_data.arbitraryRewardForDisputor);
+        }
+        
+        if(_data.minFixedTicketPrice != minFixedTicketPrice) {
+            minFixedTicketPrice = _data.minFixedTicketPrice;
+            emit NewMinimumFixedTicketAmount(_data.minFixedTicketPrice);
+        }
+        
+        if(_data.disputeStringLengthLimit != disputeStringLengthLimit) {
+            disputeStringLengthLimit = _data.disputeStringLengthLimit;
+            emit NewDisputeStringLengthLimit(_data.disputeStringLengthLimit);
+        }
+        
+        if(_data.marketQuestionStringLimit != marketQuestionStringLimit) {
+            marketQuestionStringLimit = _data.marketQuestionStringLimit;
+            emit MarketQuestionStringLimitChanged(_data.marketQuestionStringLimit);
+        }
+        
+        if(_data.marketSourceStringLimit != marketSourceStringLimit) {
+            marketSourceStringLimit = _data.marketSourceStringLimit;
+            emit MarketSourceStringLimitChanged(_data.marketSourceStringLimit);
+        }
+       
+        if(_data.marketPositionStringLimit != marketPositionStringLimit) {
+            marketPositionStringLimit = _data.marketPositionStringLimit;
+            emit MarketPositionStringLimitChanged(_data.marketPositionStringLimit);
+        }
+        
+        if(_data.withdrawalTimePeriod != withdrawalTimePeriod) {
+            withdrawalTimePeriod = _data.withdrawalTimePeriod;
+            emit WithdrawalTimePeriodChanged(_data.withdrawalTimePeriod);
+        }
+       
+        if(_data.maxAmountForOpenBidPosition != maxAmountForOpenBidPosition) {
+            maxAmountForOpenBidPosition = _data.maxAmountForOpenBidPosition;
+            emit NewMaxAmountForOpenBidPosition(_data.maxAmountForOpenBidPosition);
+        }
+        
+        if(_data.maxFinalWithdrawPercentage != maxFinalWithdrawPercentage) {
+            maxFinalWithdrawPercentage = _data.maxFinalWithdrawPercentage;
+            emit NewMaxFinalWithdrawPercentage(_data.maxFinalWithdrawPercentage);
+        }
+        
+        if(_data.creationRestrictedToOwner != creationRestrictedToOwner) {
+            creationRestrictedToOwner = _data.creationRestrictedToOwner;
+            emit CreationRestrictedToOwnerChanged(_data.creationRestrictedToOwner);
+        }
+        
+        if(_data.openBidAllowed != openBidAllowed) {
+            openBidAllowed = _data.openBidAllowed;
+            emit OpenBidAllowedChanged(_data.openBidAllowed);
+        }
+        
+        if(_data.exoticMarketMastercopy != exoticMarketMastercopy && _data.exoticMarketMastercopy != address(0)) {
+            exoticMarketMastercopy = _data.exoticMarketMastercopy;
+            emit ExoticMarketMastercopyChanged(_data.exoticMarketMastercopy);
+        }
+        
+        if(_data.exoticMarketOpenBidMastercopy != exoticMarketOpenBidMastercopy && _data.exoticMarketOpenBidMastercopy != address(0)) {
+            exoticMarketOpenBidMastercopy = _data.exoticMarketOpenBidMastercopy;
+            emit ExoticMarketOpenBidMastercopyChanged(_data.exoticMarketOpenBidMastercopy);
+        }
+        
+        if(_data.oracleCouncilAddress != oracleCouncilAddress && _data.oracleCouncilAddress != address(0)) {
+            oracleCouncilAddress = _data.oracleCouncilAddress;
+            emit NewOracleCouncilAddress(_data.oracleCouncilAddress);
+        }
+        
+        if(_data.paymentToken != paymentToken && _data.paymentToken != address(0)) {
+            paymentToken = _data.paymentToken;
+            emit NewPaymentToken(_data.paymentToken);
+        }
+        
+        if(_data.tagsAddress != tagsAddress && _data.tagsAddress != address(0)) {
+            tagsAddress = _data.tagsAddress;
+            emit NewTagsAddress(_data.tagsAddress);
+        }
+        
+        if(_data.theRundownConsumerAddress != theRundownConsumerAddress && _data.theRundownConsumerAddress != address(0)) {
+            theRundownConsumerAddress = _data.theRundownConsumerAddress;
+            emit NewTheRundownConsumerAddress(_data.theRundownConsumerAddress);
+        }
+        
+        if(_data.exoticRewards != exoticRewards && _data.exoticRewards != address(0)) {
+            exoticRewards = _data.exoticRewards;
+            emit ExoticRewardsChanged(_data.exoticRewards);
+        }
+        
+        if(_data.marketDataAddress != marketDataAddress && _data.marketDataAddress != address(0)) {
+            marketDataAddress = _data.marketDataAddress;
+            emit NewMarketDataAddress(_data.marketDataAddress);
+        }
+    
+    }
 
-    // INTERNAL FUNCTIONS
-
-    // function removeActiveMarket(address _marketAddress) internal {
-    //     _activeMarkets.remove(_marketAddress);
-    //     _maturedMarkets.add(_marketAddress);
-    // }
-
-    // function thereAreNonEqualPositions(string[] memory positionPhrases) internal view returns (bool) {
-    //     for (uint i = 0; i < positionPhrases.length - 1; i++) {
-    //         if (
-    //             keccak256(abi.encode(positionPhrases[i])) == keccak256(abi.encode(positionPhrases[i + 1])) ||
-    //             bytes(positionPhrases[i]).length > marketPositionStringLimit
-    //         ) {
-    //             return false;
-    //         }
-    //     }
-    //     return true;
-    // }
-
-    // event MarketResolved(address marketAddress, uint outcomePosition);
-    // event MarketCanceled(address marketAddress);
-    // event MarketReset(address marketAddress);
+    event NewFixedBondAmount(uint fixedBond);
+    event NewDefaultBackstopTimeout(uint timeout);
     event MinimumPositionDurationChanged(uint duration);
-    event MinimumMarketMaturityDurationChanged(uint duration);
+    event NewClaimTimeoutDefaultPeriod(uint claimTimeout);
+    event PDAOResolveTimePeriodChanged(uint pDAOResolveTimePeriod);
+    event SafeBoxPercentageChanged(uint safeBoxPercentage);
+    event CreatorPercentageChanged(uint creatorPercentage);
+    event ResolverPercentageChanged(uint resolverPercentage);
+    event WithdrawalPercentageChanged(uint withdrawalPercentage);
+    event NewMaximumPositionsAllowed(uint maximumPositionsAllowed);
+    event NewDisputePrice(uint disputePrice);
+    event NewMaxOracleCouncilMembers(uint maxOracleCouncilMembers);
+    event NewMaxNumberOfTags(uint maxNumberOfTags);
+    event NewSafeBoxLowAmount(uint safeBoxLowAmount);
+    event NewArbitraryRewardForDisputor(uint arbitraryRewardForDisputor);
+    event NewMinimumFixedTicketAmount(uint minFixedTicketPrice);
+    event NewDisputeStringLengthLimit(uint disputeStringLengthLimit);
+    event MarketQuestionStringLimitChanged(uint marketQuestionStringLimit);
+    event MarketSourceStringLimitChanged(uint marketSourceStringLimit);
+    event MarketPositionStringLimitChanged(uint marketPositionStringLimit);
+    event WithdrawalTimePeriodChanged(uint withdrawalTimePeriod);
+    event NewMaxAmountForOpenBidPosition(uint maxAmountForOpenBidPosition);
+    event NewMaxFinalWithdrawPercentage(uint maxFinalWithdrawPercentage);
+    event CreationRestrictedToOwnerChanged(bool creationRestrictedToOwner);
+    event OpenBidAllowedChanged(bool openBidAllowed);
     event ExoticMarketMastercopyChanged(address _exoticMastercopy);
     event ExoticMarketOpenBidMastercopyChanged(address exoticOpenBidMastercopy);
     event NewOracleCouncilAddress(address oracleCouncilAddress);
-    event NewFixedBondAmount(uint fixedBond);
     event NewSafeBoxAddress(address safeBox);
     event NewTagsAddress(address tagsAddress);
-    event NewMaximumPositionsAllowed(uint maximumPositionsAllowed);
     event NewPaymentToken(address paymentTokenAddress);
-    event NewThalesBonds(address thalesBondsAddress);
-    event ResolverPercentageChanged(uint resolverPercentage);
-    event CreatorPercentageChanged(uint creatorPercentage);
-    event SafeBoxPercentageChanged(uint safeBoxPercentage);
-    event WithdrawalPercentageChanged(uint withdrawalPercentage);
-    event setPDAOResolveTimePeriodChanged(uint pDAOResolveTimePeriod);
-    event NewMaxOracleCouncilMembers(uint maxOracleCouncilMembers);
-    event PauserAddressAdded(address pauserAddress);
-    event PauserAddressRemoved(address pauserAddress);
-    event MarketPaused(address marketAddress);
-    event NewDisputePrice(uint disputePrice);
-    event NewMaxNumberOfTags(uint maxNumberOfTags);
-    event NewArbitraryRewardForDisputor(uint arbitraryRewardForDisputor);
-    event NewClaimTimeoutDefaultPeriod(uint claimTimeout);
-    event NewDefaultBackstopTimeout(uint timeout);
-    event NewSafeBoxLowAmount(uint safeBoxLowAmount);
-    // event RewardSentToDisputorForMarket(address market, address disputorAddress, uint amount);
     event NewTheRundownConsumerAddress(address theRundownConsumerAddress);
-    event NewMarketDataAddress(address marketDataAddress);
-    event CreationRestrictedToOwnerChanged(bool creationRestrictedToOwner);
-    event NewMinimumFixedTicketAmount(uint minFixedTicketPrice);
-    event NewDisputeStringLengthLimit(uint disputeStringLengthLimit);
     event ExoticRewardsChanged(address exoticRewards);
-    event MarketSourceStringLimitChanged(uint marketSourceStringLimit);
-    event MarketQuestionStringLimitChanged(uint marketQuestionStringLimit);
-    event MarketPositionStringLimitChanged(uint marketPositionStringLimit);
-    event OpenBidAllowedChanged(bool openBidAllowed);
-    event WithdrawalTimePeriodChanged(uint withdrawalTimePeriod);
-    event NewMaxAmountForOpenBidPosition(uint maxAmountForOpenBidPosition, uint maxFinalWithdrawPercentage);
-    // event NewMaxFinalWithdrawPercentage(uint maxFinalWithdrawPercentage);
+    event NewMarketDataAddress(address marketDataAddress);
 
-    // event MarketCreated(
-    //     address marketAddress,
-    //     string marketQuestion,
-    //     string marketSource,
-    //     uint endOfPositioning,
-    //     uint fixedTicketPrice,
-    //     bool withdrawalAllowed,
-    //     uint[] tags,
-    //     uint positionCount,
-    //     string[] positionPhrases,
-    //     address marketOwner
-    // );
-
-    // event CLMarketCreated(
-    //     address marketAddress,
-    //     string marketQuestion,
-    //     string marketSource,
-    //     uint endOfPositioning,
-    //     uint fixedTicketPrice,
-    //     bool withdrawalAllowed,
-    //     uint[] tags,
-    //     uint positionCount,
-    //     string[] positionPhrases,
-    //     address marketOwner
-    // );
-
-    // modifier onlyOracleCouncil() {
-    //     require(msg.sender == oracleCouncilAddress, "Not OracleCouncil address");
-    //     require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
-    //     _;
-    // }
-    // modifier onlyOracleCouncilAndOwner() {
-    //     require(msg.sender == oracleCouncilAddress || msg.sender == owner, "Not OracleCouncil Address or Owner address");
-    //     if (msg.sender != owner) {
-    //         require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
-    //     }
-    //     _;
-    // }
+    // event NewThalesBonds(address thalesBondsAddress);
+    // event PauserAddressAdded(address pauserAddress);
+    // event PauserAddressRemoved(address pauserAddress);
+    // event MarketPaused(address marketAddress);
+    // // event RewardSentToDisputorForMarket(address market, address disputorAddress, uint amount);
 }

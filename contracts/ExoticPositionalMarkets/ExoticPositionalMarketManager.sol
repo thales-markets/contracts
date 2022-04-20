@@ -76,6 +76,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     mapping(address => bool) public cancelledByCreator;
     uint public maxAmountForOpenBidPosition;
     uint public maxFinalWithdrawPercentage;
+    address public managerData;
 
     function initialize(address _owner) public initializer {
         setOwner(_owner);
@@ -613,6 +614,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit NewMaxAmountForOpenBidPosition(_maxAmountForOpenBidPosition, _maxFinalWithdrawPercentage);
     }
 
+    function setManagerData(address _managerData) external onlyOwner {
+        require(_managerData != address(0), "Invalid address");
+        managerData = _managerData;
+        emit NewManagerData(_managerData);
+    }
+
     function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
         require(_pauserAddress != address(0), "Invalid address");
         require(pauserIndex[_pauserAddress] == 0, "Exists as pauser");
@@ -720,6 +727,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         string[] positionPhrases,
         address marketOwner
     );
+
+    event NewManagerData(address managerData);
 
     modifier onlyOracleCouncil() {
         require(msg.sender == oracleCouncilAddress, "Not OracleCouncil address");

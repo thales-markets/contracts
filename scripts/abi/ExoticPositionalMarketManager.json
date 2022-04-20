@@ -405,6 +405,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "managerData",
+        "type": "address"
+      }
+    ],
+    "name": "NewManagerData",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "marketDataAddress",
         "type": "address"
       }
@@ -1211,6 +1224,19 @@
   },
   {
     "inputs": [],
+    "name": "managerData",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "marketDataAddress",
     "outputs": [
       {
@@ -1828,6 +1854,19 @@
       }
     ],
     "name": "setFixedBondAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_managerData",
+        "type": "address"
+      }
+    ],
+    "name": "setManagerData",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

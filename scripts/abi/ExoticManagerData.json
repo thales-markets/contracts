@@ -69,19 +69,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "marketAddress",
-        "type": "address"
-      }
-    ],
-    "name": "MarketPaused",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "marketPositionStringLimit",
         "type": "uint256"
@@ -114,19 +101,6 @@
       }
     ],
     "name": "MarketSourceStringLimitChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "duration",
-        "type": "uint256"
-      }
-    ],
-    "name": "MinimumMarketMaturityDurationChanged",
     "type": "event"
   },
   {
@@ -241,7 +215,14 @@
         "internalType": "uint256",
         "name": "maxAmountForOpenBidPosition",
         "type": "uint256"
-      },
+      }
+    ],
+    "name": "NewMaxAmountForOpenBidPosition",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
       {
         "indexed": false,
         "internalType": "uint256",
@@ -249,7 +230,7 @@
         "type": "uint256"
       }
     ],
-    "name": "NewMaxAmountForOpenBidPosition",
+    "name": "NewMaxFinalWithdrawPercentage",
     "type": "event"
   },
   {
@@ -375,19 +356,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "thalesBondsAddress",
-        "type": "address"
-      }
-    ],
-    "name": "NewThalesBonds",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "theRundownConsumerAddress",
         "type": "address"
       }
@@ -445,12 +413,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "pauserAddress",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "pDAOResolveTimePeriod",
+        "type": "uint256"
       }
     ],
-    "name": "PauserAddressAdded",
+    "name": "PDAOResolveTimePeriodChanged",
     "type": "event"
   },
   {
@@ -459,11 +427,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "pauserAddress",
+        "name": "account",
         "type": "address"
       }
     ],
-    "name": "PauserAddressRemoved",
+    "name": "Paused",
     "type": "event"
   },
   {
@@ -497,6 +465,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "withdrawalPercentage",
         "type": "uint256"
@@ -516,19 +497,6 @@
       }
     ],
     "name": "WithdrawalTimePeriodChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "pDAOResolveTimePeriod",
-        "type": "uint256"
-      }
-    ],
-    "name": "setPDAOResolveTimePeriodChanged",
     "type": "event"
   },
   {
@@ -554,19 +522,6 @@
   {
     "inputs": [],
     "name": "backstopTimeout",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "backstopTimeoutGeneral",
     "outputs": [
       {
         "internalType": "uint256",
@@ -695,6 +650,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "initNonReentrant",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -702,7 +664,7 @@
         "type": "address"
       }
     ],
-    "name": "initData",
+    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -930,12 +892,12 @@
   },
   {
     "inputs": [],
-    "name": "pausersCount",
+    "name": "paused",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1152,6 +1114,221 @@
   {
     "inputs": [
       {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "fixedBondAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "backstopTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumPositioningDuration",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "claimTimeoutDefaultPeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "pDAOResolveTimePeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "safeBoxPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "creatorPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "resolverPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maximumPositionsAllowed",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "disputePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxOracleCouncilMembers",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxNumberOfTags",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "safeBoxLowAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "arbitraryRewardForDisputor",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minFixedTicketPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "disputeStringLengthLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "marketQuestionStringLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "marketSourceStringLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "marketPositionStringLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalTimePeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxAmountForOpenBidPosition",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxFinalWithdrawPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "creationRestrictedToOwner",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "openBidAllowed",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "exoticMarketMastercopy",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "exoticMarketOpenBidMastercopy",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "oracleCouncilAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "safeBoxAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "paymentToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "tagsAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "theRundownConsumerAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "marketDataAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "exoticRewards",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ExoticManagerData.ManagerData",
+        "name": "_data",
+        "type": "tuple"
+      }
+    ],
+    "name": "setManagerData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "fixedBondAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "backstopTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumPositioningDuration",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ExoticManagerData.DummyStruct",
+        "name": "_data",
+        "type": "tuple"
+      }
+    ],
+    "name": "setManagerDummyData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_marketDataAddress",
         "type": "address"
@@ -1207,14 +1384,22 @@
         "internalType": "uint256",
         "name": "_maxAmountForOpenBidPosition",
         "type": "uint256"
-      },
+      }
+    ],
+    "name": "setMaxAmountForOpenBidPosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "uint256",
         "name": "_maxFinalWithdrawPercentage",
         "type": "uint256"
       }
     ],
-    "name": "setMaxAmountForOpenBidPosition",
+    "name": "setMaxFinalWithdrawPercentage",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1378,45 +1563,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_safeBoxAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setSafeBoxAddress1",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_safeBoxAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setSafeBoxAddress2",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_safeBoxAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setSafeBoxAddress3",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_safeBoxLowAmount",
         "type": "uint256"
@@ -1495,19 +1641,6 @@
   {
     "inputs": [],
     "name": "tagsAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "thalesBonds",
     "outputs": [
       {
         "internalType": "address",

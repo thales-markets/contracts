@@ -1,0 +1,38 @@
+pragma solidity ^0.8.0;
+
+interface IExoticPositionalMarketManager {
+    /* ========== VIEWS / VARIABLES ========== */
+    function paused() external view returns (bool);
+    function getActiveMarketAddress(uint _index) external view returns(address);
+    function getActiveMarketIndex(address _marketAddress) external view returns(uint);
+    function isActiveMarket(address _marketAddress) external view returns(bool);
+    function numberOfActiveMarkets() external view returns(uint);
+    function getMarketBondAmount(address _market) external view returns (uint);
+    function maximumPositionsAllowed() external view returns(uint);
+    function paymentToken() external view returns(address);
+    function owner() external view returns(address);
+    // function thalesBonds() external view returns(address);
+    function oracleCouncilAddress() external view returns(address);
+    function safeBoxAddress() external view returns(address);
+    function creatorAddress(address _market) external view returns(address);
+    function resolverAddress(address _market) external view returns(address);
+    function isPauserAddress(address _pauserAddress) external view returns(bool);
+    function safeBoxPercentage() external view returns(uint);
+    function creatorPercentage() external view returns(uint);
+    function resolverPercentage() external view returns(uint);
+    function withdrawalPercentage() external view returns(uint);
+    function pDAOResolveTimePeriod() external view returns(uint);
+    function claimTimeoutDefaultPeriod() external view returns(uint);
+    function maxOracleCouncilMembers() external view returns(uint);
+    function fixedBondAmount() external view returns(uint);
+    function disputePrice() external view returns(uint);
+    function safeBoxLowAmount() external view returns(uint);
+    function arbitraryRewardForDisputor() external view returns(uint);
+    function disputeStringLengthLimit() external view returns(uint);
+    function cancelledByCreator(address _market) external view returns(bool);
+    function withdrawalTimePeriod() external view returns(uint);    
+    function maxAmountForOpenBidPosition() external view returns(uint);    
+    function maxFinalWithdrawPercentage() external view returns(uint);    
+
+
+}   

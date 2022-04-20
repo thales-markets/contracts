@@ -95,7 +95,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         string[] memory _positionPhrases
     ) external nonReentrant whenNotPaused {
         require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low.");
-        require(!creationRestrictedToOwner || msg.sender == owner, "Creation is restricted. ");
+        require(!creationRestrictedToOwner || msg.sender == owner, "Restricted creation");
         require(
             (openBidAllowed && _fixedTicketPrice == 0) || _fixedTicketPrice >= minFixedTicketPrice,
             "Exceeds min tickPrice"
@@ -117,7 +117,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(bytes(_marketSource).length < marketSourceStringLimit, "mSource exceeds length");
         require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
         for (uint i = 0; i < _tags.length; i++) {
-            require(IExoticPositionalTags(tagsAddress).isValidTagNumber(_tags[i]), "Not valid tag.");
+            require(IExoticPositionalTags(tagsAddress).isValidTagNumber(_tags[i]), "Invalid tag.");
         }
 
         if (_fixedTicketPrice > 0) {
@@ -204,16 +204,16 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")), "Invalid question");
         require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid source");
         require(_positionCount == _positionPhrases.length, "Invalid posCount");
-        require(bytes(_marketQuestion).length < 110, "Question exceeds length");
-        require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
-        require(_positionsOfCreator.length == _positionCount, "Creator init deposit wrong");
+        require(bytes(_marketQuestion).length < 110, "Q exceeds length");
+        require(thereAreNonEqualPositions(_positionPhrases), "Equal pos phrases");
+        require(_positionsOfCreator.length == _positionCount, "Creator deposits wrong");
         uint totalCreatorDeposit;
         uint[] memory creatorPositions = new uint[](_positionCount);
         for(uint i=0; i<_positionCount; i++) {
             totalCreatorDeposit = totalCreatorDeposit.add(_positionsOfCreator[i]);
             creatorPositions[i] = i+1;
         }
-        require(IERC20(paymentToken).balanceOf(msg.sender) >= totalCreatorDeposit, "Low amount for creation");
+        require(IERC20(paymentToken).balanceOf(msg.sender) >= totalCreatorDeposit, "Low creation amount");
         require(IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= totalCreatorDeposit, "No allowance.");
 
 
@@ -515,28 +515,28 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function setDisputePrice(uint _disputePrice) external onlyOwner {
-        require(_disputePrice > 0, "Invalid price");
+        // require(_disputePrice > 0, "Invalid price");
         require(_disputePrice != disputePrice, "Equal to last");
         disputePrice = _disputePrice;
         emit NewDisputePrice(_disputePrice);
     }
 
     function setDefaultBackstopTimeout(uint _timeout) external onlyOwner {
-        require(_timeout > 0, "Invalid timeout");
+        // require(_timeout > 0, "Invalid timeout");
         require(_timeout != backstopTimeout, "Equal to last");
         backstopTimeout = _timeout;
         emit NewDefaultBackstopTimeout(_timeout);
     }
 
     function setFixedBondAmount(uint _bond) external onlyOwner {
-        require(_bond > 0, "Invalid bond");
+        // require(_bond > 0, "Invalid bond");
         require(_bond != fixedBondAmount, "Equal to last");
         fixedBondAmount = _bond;
         emit NewFixedBondAmount(_bond);
     }
 
     function setSafeBoxLowAmount(uint _safeBoxLowAmount) external onlyOwner {
-        require(_safeBoxLowAmount > 0, "Invalid amount");
+        // require(_safeBoxLowAmount > 0, "Invalid amount");
         require(_safeBoxLowAmount != safeBoxLowAmount, "Equal to last");
         require(_safeBoxLowAmount < disputePrice, "Higher than dispute price.");
         safeBoxLowAmount = _safeBoxLowAmount;
@@ -544,21 +544,21 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     }
 
     function setDisputeStringLengthLimit(uint _disputeStringLengthLimit) external onlyOwner {
-        require(_disputeStringLengthLimit > 0, "Invalid amount");
+        // require(_disputeStringLengthLimit > 0, "Invalid amount");
         require(_disputeStringLengthLimit != disputeStringLengthLimit, "Equal to last");
         disputeStringLengthLimit = _disputeStringLengthLimit;
         emit NewDisputeStringLengthLimit(_disputeStringLengthLimit);
     }
 
     function setArbitraryRewardForDisputor(uint _arbitraryRewardForDisputor) external onlyOwner {
-        require(_arbitraryRewardForDisputor > 0, "Invalid amount");
+        // require(_arbitraryRewardForDisputor > 0, "Invalid amount");
         require(_arbitraryRewardForDisputor != arbitraryRewardForDisputor, "Equal to last");
         arbitraryRewardForDisputor = _arbitraryRewardForDisputor;
         emit NewArbitraryRewardForDisputor(_arbitraryRewardForDisputor);
     }
 
     function setClaimTimeoutDefaultPeriod(uint _claimTimeout) external onlyOwner {
-        require(_claimTimeout > 0, "Invalid timeout");
+        // require(_claimTimeout > 0, "Invalid timeout");
         require(_claimTimeout != claimTimeoutDefaultPeriod, "Equal to last");
         claimTimeoutDefaultPeriod = _claimTimeout;
         emit NewClaimTimeoutDefaultPeriod(_claimTimeout);

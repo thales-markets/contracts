@@ -12,6 +12,8 @@ require('@nomiclabs/hardhat-etherscan');
 require('hardhat-abi-exporter');
 require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
+require('hardhat-contract-sizer');
+
 
 const {
 	constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },

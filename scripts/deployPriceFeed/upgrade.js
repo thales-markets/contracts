@@ -41,16 +41,17 @@ async function main() {
 	console.log('Found PriceFeed at:', priceFeedAddress);
 
 	const PriceFeed = await ethers.getContractFactory('PriceFeed');
-	await upgrades.upgradeProxy(priceFeedAddress, PriceFeed);
+	const implementation = await upgrades.prepareUpgrade(priceFeedAddress, PriceFeed);
+	if (networkObj.chainId == 69) {
+		await upgrades.upgradeProxy(priceFeedAddress, PriceFeed);
+		console.log('PriceFeed upgraded');
+	}
 
-	console.log('PriceFeed upgraded');
-
-	const priceFeedImplementation = await getImplementationAddress(ethers.provider, priceFeedAddress);
-	setTargetAddress('PriceFeedImplementation', network, priceFeedImplementation);
+	setTargetAddress('PriceFeedImplementation', network, implementation);
 
 	try {
 		await hre.run('verify:verify', {
-			address: priceFeedImplementation,
+			address: implementation,
 		});
 	} catch (e) {
 		console.log(e);

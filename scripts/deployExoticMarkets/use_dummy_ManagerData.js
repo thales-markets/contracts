@@ -58,115 +58,130 @@ async function main() {
 
     
 
-    const items = ethers.utils.AbiCoder.prototype.encode(
-        [
-         'uint', 
-         'uint', 
-         'uint', 
-         'uint',
-         'uint', 
-         'uint',
-         'uint', 
-         'uint', 
-         'uint',
-         'uint', 
-         'uint',
-         'uint', 
-         'uint', 
-         'uint',
-         'uint', 
-         'uint',
-         'uint', 
-         'uint', 
-         'uint',
-         'uint', 
-         'uint',
-         'uint', 
-         'uint',
-         'bool',
-         'bool',
-         'address',
-         'address',
-         'address',
-         'address',
-         'address',
-         'address',
-         'address',
-         'address',
-         'address',
-         'address'
-        ],
-        [
-            w3utils.toWei("2", "ether"), 
-            "300", 
-            "300",
-            '600',
-            '172800', 
-            '1',
-            '1', 
-            '1', 
-            '6',
-            '8', 
-            w3utils.toWei("1.5", "ether"),
-            '5', 
-            '5', 
-            w3utils.toWei("0.1", "ether"),
-            w3utils.toWei("0.2", "ether"), 
-            w3utils.toWei("1", "ether"),
-            '1000', 
-            '220', 
-            '220',
-            '60', 
-            '300',
-            '100', 
-            '10',
-            false,
-            true,
-            FixedBidMastercopy,
-            OpenBidMastercopy,
-            OracleCouncilAddress,
-            SafeBoxAddress,
-            SafeBoxAddress,
-            PaymentTokenAddress,
-            ExoticTagsAddress,
-            SafeBoxAddress,
-            MarketDataAddress,
-            ExoticRewardsAddress
-        ]
-    );
-    
-    tx = await ExoticManagerDataDeployed.setManagerDummyData(
+    const items = 
         {
-            fixedBondAmount: "101110",
-            backstopTimeout: "1",
-            minimumPositioningDuration: "1111"
-        }, 
+            fixedBondAmount : w3utils.toWei("2", "ether"), 
+            backstopTimeout: "300", 
+            minimumPositioningDuration: "300",
+            claimTimeoutDefaultPeriod: '600',
+            pDAOResolveTimePeriod: '172800', 
+            safeBoxPercentage: '1',
+            creatorPercentage: '1', 
+            resolverPercentage: '1', 
+            withdrawalPercentage: '6',
+            maximumPositionsAllowed: '8', 
+            disputePrice: w3utils.toWei("1.5", "ether"),
+            maxOracleCouncilMembers: '5', 
+            maxNumberOfTags: '5', 
+            safeBoxLowAmount: w3utils.toWei("0.1", "ether"),
+            arbitraryRewardForDisputor: w3utils.toWei("0.2", "ether"), 
+            minFixedTicketPrice: w3utils.toWei("1", "ether"),
+            disputeStringLengthLimit: '1000', 
+            marketQuestionStringLimit: '220', 
+            marketSourceStringLimit: '220',
+            marketPositionStringLimit: '60', 
+            withdrawalTimePeriod: '300',
+            maxAmountForOpenBidPosition: '100', 
+            maxFinalWithdrawPercentage: '10',
+            creationRestrictedToOwner: false,
+            openBidAllowed: true,
+            exoticMarketMastercopy: FixedBidMastercopy,
+            exoticMarketOpenBidMastercopy: OpenBidMastercopy,
+            oracleCouncilAddress: OracleCouncilAddress,
+            safeBoxAddress: SafeBoxAddress,
+            // thalesBonds: SafeBoxAddress,
+            paymentToken: PaymentTokenAddress,
+            tagsAddress: ExoticTagsAddress,
+            theRundownConsumerAddress: SafeBoxAddress,
+            marketDataAddress: MarketDataAddress,
+            exoticRewards: ExoticRewardsAddress
+        };
+        
+    // const items = ethers.utils.AbiCoder.prototype.encode(
+    //     [
+    //      'uint', 
+    //      'uint', 
+    //      'uint', 
+    //      'uint',
+    //      'uint', 
+    //      'uint',
+    //      'uint', 
+    //      'uint', 
+    //      'uint',
+    //      'uint', 
+    //      'uint',
+    //      'uint', 
+    //      'uint', 
+    //      'uint',
+    //      'uint', 
+    //      'uint',
+    //      'uint', 
+    //      'uint', 
+    //      'uint',
+    //      'uint', 
+    //      'uint',
+    //      'uint', 
+    //      'uint',
+    //      'bool',
+    //      'bool',
+    //      'address',
+    //      'address',
+    //      'address',
+    //      'address',
+    //      'address',
+    //      'address',
+    //      'address',
+    //      'address',
+    //      'address',
+    //      'address'
+    //     ],
+    //     [
+    //         w3utils.toWei("2", "ether"), 
+    //         "300", 
+    //         "300",
+    //         '600',
+    //         '172800', 
+    //         '1',
+    //         '1', 
+    //         '1', 
+    //         '6',
+    //         '8', 
+    //         w3utils.toWei("1.5", "ether"),
+    //         '5', 
+    //         '5', 
+    //         w3utils.toWei("0.1", "ether"),
+    //         w3utils.toWei("0.2", "ether"), 
+    //         w3utils.toWei("1", "ether"),
+    //         '1000', 
+    //         '220', 
+    //         '220',
+    //         '60', 
+    //         '300',
+    //         '100', 
+    //         '10',
+    //         false,
+    //         true,
+    //         FixedBidMastercopy,
+    //         OpenBidMastercopy,
+    //         OracleCouncilAddress,
+    //         SafeBoxAddress,
+    //         SafeBoxAddress,
+    //         PaymentTokenAddress,
+    //         ExoticTagsAddress,
+    //         SafeBoxAddress,
+    //         MarketDataAddress,
+    //         ExoticRewardsAddress
+    //     ]
+    // );
+    
+    tx = await ExoticManagerDataDeployed.setManagerData(
+        items, 
         {from: owner.address});
         await tx.wait().then(e => {
             console.log('\n setManagerDummyData: success');
         });
-        await delay(1000);
-
-    // const dummyItems = ethers.utils.AbiCoder.prototype.encode(
-    //     [
-    //      'uint', 
-    //      'uint', 
-    //      'uint'
-    //     ],
-    //     [
-    //         '20', 
-    //         '300', 
-    //         '300'
-    //     ]
-    // );
-    // // console.log(items);
-    // tx = await ExoticManagerDataDeployed.setManagerDummyData(dummyItems, {from:owner.address});
-
-    // await tx.wait().then(e => {
-    //     console.log('\n setManagerData: success');
-    // });
-    // await delay(1000);
-
+    await delay(1000);
+    
 
 }
 

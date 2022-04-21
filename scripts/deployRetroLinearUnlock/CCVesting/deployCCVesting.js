@@ -1,0 +1,112 @@
+const { ethers, upgrades } = require('hardhat');
+const w3utils = require('web3-utils');
+const Big = require('big.js');
+const fs = require('fs');
+const {
+	numberExponentToLarge,
+	txLog,
+	getTargetAddress,
+	setTargetAddress,
+} = require('../../helpers.js');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
+
+const { recipients, amounts, startTimes } = require('./recipients');
+const VESTING_PERIOD = 86400 * 7 * 36; // three years
+const TOTAL_AMOUNT = web3.utils.toWei('500000');
+
+async function main() {
+	let accounts = await ethers.getSigners();
+	let owner = accounts[0];
+	let networkObj = await ethers.provider.getNetwork();
+	let network = networkObj.name;
+	let thalesAddress, Thales;
+
+	if (network === 'unknown') {
+		network = 'localhost';
+	}
+
+	if (network == 'homestead') {
+		network = 'mainnet';
+	}
+
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
+	}
+
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
+	}
+
+	console.log('Account is: ' + owner.address);
+	console.log('Network:' + network);
+	console.log('Network id:' + networkObj.chainId);
+
+	if (networkObj.chainId == 10 || networkObj.chainId == 69) {
+		thalesAddress = getTargetAddress('OpThales_L2', network);
+		Thales = await ethers.getContractFactory('OpThales');
+	} else {
+		thalesAddress = getTargetAddress('Thales', network);
+		Thales = await ethers.getContractFactory('Thales');
+	}
+
+	const ThalesDeployed = await Thales.attach(thalesAddress);
+
+	console.log('Thales address:', ThalesDeployed.address);
+
+	const VestingEscrow = await ethers.getContractFactory('VestingEscrowProxy');
+	const vestingEscrow = await upgrades.deployProxy(VestingEscrow, [
+		owner.address,
+		ThalesDeployed.address,
+		VESTING_PERIOD,
+	]);
+	await vestingEscrow.deployed();
+
+	console.log('VestingEscrowProxy deployed to:', vestingEscrow.address);
+	setTargetAddress('VestingEscrowProxy', network, vestingEscrow.address);
+
+	const implementation = await getImplementationAddress(ethers.provider, vestingEscrow.address);
+	console.log('VestingEscrowProxyImplementation: ', implementation);
+	setTargetAddress('VestingEscrowProxyImplementation', network, implementation);
+
+	let tx = await ThalesDeployed.transfer(vestingEscrow.address, TOTAL_AMOUNT);
+	await tx.wait().then(e => {
+		txLog(tx, 'Thales: Transfer tokens');
+	});
+	tx = await ThalesDeployed.approve(vestingEscrow.address, TOTAL_AMOUNT);
+	await tx.wait().then(e => {
+		txLog(tx, 'Thales: Approve tokens');
+	});
+
+	console.log('started funding');
+
+	tx = await vestingEscrow.fund(recipients, amounts, startTimes);
+	await tx.wait().then(e => {
+		txLog(tx, 'VestingEscrow.sol: Fund accounts');
+	});
+
+	try {
+		await hre.run('verify:verify', {
+			address: implementation,
+		});
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+main()
+	.then(() => process.exit(0))
+	.catch(error => {
+		console.error(error);
+		process.exit(1);
+	});

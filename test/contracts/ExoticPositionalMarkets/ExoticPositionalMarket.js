@@ -93,37 +93,62 @@ contract('Exotic Positional market', async accounts => {
 		);
 		fixedBondAmount = toUnit(100);
 		disputePrice = toUnit(10);
-		await ExoticPositionalMarketManager.setPaymentToken(Thales.address);
-		await ExoticPositionalMarketManager.setMaxNumberOfTags('5', { from: manager });
-		await ExoticPositionalMarketManager.setSafeBoxPercentage('1', { from: manager });
-		await ExoticPositionalMarketManager.setCreatorPercentage('1', { from: manager });
-		await ExoticPositionalMarketManager.setResolverPercentage('1', { from: manager });
-		await ExoticPositionalMarketManager.setPDAOResolveTimePeriod('172800', { from: manager });
-		await ExoticPositionalMarketManager.setMaxOracleCouncilMembers('5', { from: manager });
-		await ExoticPositionalMarketManager.setDefaultBackstopTimeout('14400', { from: manager });
-		await ExoticPositionalMarketManager.setWithdrawalPercentage('6', { from: manager });
-		await ExoticPositionalMarketManager.setClaimTimeoutDefaultPeriod('86400', { from: manager });
-		await ExoticPositionalMarketManager.setDisputePrice(disputePrice, { from: manager });
 		let maxOpenBidPositon = toUnit(1000);
-		let maxPercentage = "10";
-		await ExoticPositionalMarketManager.setMaxAmountForOpenBidPosition(maxOpenBidPositon,maxPercentage, { from: manager });
-		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
-		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(
-			ExoticPositionalOpenBidMarket.address
-		);
-		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
+
+		await ExoticPositionalMarketManager.setAddresses(
+			ExoticPositionalMarket.address,
+			ExoticPositionalOpenBidMarket.address,
+			ThalesOracleCouncil.address,
+			Thales.address,
+			ExoticPositionalTags.address,
+			owner,
+			safeBox,
+			owner,
+			owner,
+			{ from: manager });
+		
+		await ExoticPositionalMarketManager.setPercentages(
+			"1",
+			"1",
+			"1",
+			"6",
+			"10",
+			{ from: manager });
+		
+		await ExoticPositionalMarketManager.setDurations(
+			"14400",
+			"0",
+			"28800",
+			"172800",
+			"86400",
+			{ from: manager });
+		
+		await ExoticPositionalMarketManager.setLimits(
+			"1000",
+			"1000",
+			"60",
+			"1000",
+			"5",
+			"5",
+			"5",
+			{ from: manager });
+		
+		await ExoticPositionalMarketManager.setAmounts(
+			"10",
+			disputePrice,
+			fixedBondAmount,
+			disputePrice,
+			disputePrice,
+			maxOpenBidPositon,
+			{ from: manager });
+			
+		await ExoticPositionalMarketManager.setFlags(
+			false,
+			true,
+			{ from: manager });
+			
 		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
-		await ExoticPositionalMarketManager.setTagsAddress(ExoticPositionalTags.address);
 		await ThalesBonds.setMarketManager(ExoticPositionalMarketManager.address, { from: manager });
-		await ExoticPositionalMarketManager.setFixedBondAmount(fixedBondAmount, { from: manager });
-		await ExoticPositionalMarketManager.setSafeBoxAddress(safeBox, { from: manager });
-		await ExoticPositionalMarketManager.setMaximumPositionsAllowed('5', { from: manager });
-		await ExoticPositionalMarketManager.setMinimumFixedTicketAmount('10', { from: manager });
-		await ExoticPositionalMarketManager.setMarketQuestionStringLimit('1000', { from: manager });
-		await ExoticPositionalMarketManager.setMarketSourceStringLimit('1000', { from: manager });
-		await ExoticPositionalMarketManager.setMarketPositionStringLimit('60', { from: manager });
-		await ExoticPositionalMarketManager.setOpenBidAllowed(true, { from: manager });
-		await ExoticPositionalMarketManager.setWithdrawalTimePeriod("28800", { from: manager });
 		await Thales.transfer(userOne, toUnit('1000'), { from: owner });
 		await Thales.transfer(userTwo, toUnit('1000'), { from: owner });
 		await Thales.transfer(userThree, toUnit('1000'), { from: owner });

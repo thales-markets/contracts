@@ -39,13 +39,15 @@ contract('TherundownConsumer', accounts => {
 	const MAX_NUMBER =
 		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
-	const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalOpenBidMarket');
+	const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalFixedMarket');
+	const ExoticPositionalOpenBidMarketContract = artifacts.require('ExoticPositionalOpenBidMarket');
 	const ExoticPositionalMarketManagerContract = artifacts.require('ExoticPositionalMarketManager');
 	const ThalesOracleCouncilContract = artifacts.require('ThalesOracleCouncil');
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 	const ThalesBondsContract = artifacts.require('ThalesBonds');
 	const ExoticPositionalTagsContract = artifacts.require('ExoticPositionalTags');
 	let ExoticPositionalMarket;
+	let ExoticPositionalOpenBidMarket;
 	let ExoticPositionalMarketManager;
 	let ExoticPositionalTags;
 	let ThalesOracleCouncil;
@@ -108,6 +110,7 @@ contract('TherundownConsumer', accounts => {
 
 	beforeEach(async () => {
 		ExoticPositionalMarket = await ExoticPositionalMarketContract.new();
+		ExoticPositionalOpenBidMarket = await ExoticPositionalOpenBidMarketContract.new();
 		ExoticPositionalMarketManager = await ExoticPositionalMarketManagerContract.new();
 		ThalesOracleCouncil = await ThalesOracleCouncilContract.new({ from: owner });
 		Thales = await ThalesContract.new({ from: owner });
@@ -125,35 +128,65 @@ contract('TherundownConsumer', accounts => {
 		);
 
 		fixedBondAmount = toUnit(100);
-		await ExoticPositionalMarketManager.setPaymentToken(Thales.address);
-		await ExoticPositionalMarketManager.setMaxNumberOfTags('5', { from: manager });
-		await ExoticPositionalMarketManager.setSafeBoxPercentage('1', { from: manager });
-		await ExoticPositionalMarketManager.setCreatorPercentage('1', { from: manager });
-		await ExoticPositionalMarketManager.setResolverPercentage('1', { from: manager });
-		await ExoticPositionalMarketManager.setPDAOResolveTimePeriod('172800', { from: manager });
-		await ExoticPositionalMarketManager.setMaxOracleCouncilMembers('5', { from: manager });
-		await ExoticPositionalMarketManager.setDefaultBackstopTimeout('14400', { from: manager });
-		await ExoticPositionalMarketManager.setWithdrawalPercentage('6', { from: manager });
-		await ExoticPositionalMarketManager.setWithdrawalTimePeriod("28800", { from: manager });
-		await ExoticPositionalMarketManager.setClaimTimeoutDefaultPeriod('86400', { from: manager });
+		let disputePrice = toUnit(10);
 		let maxOpenBidPositon = toUnit(1000);
-		let maxPercentage = "10";
-		await ExoticPositionalMarketManager.setMaxAmountForOpenBidPosition(maxOpenBidPositon,maxPercentage, { from: manager });
-		await ExoticPositionalMarketManager.setExoticMarketMastercopy(ExoticPositionalMarket.address);
-		await ExoticPositionalMarketManager.setExoticMarketOpenBidMastercopy(
-			ExoticPositionalMarket.address
-		);
-		await ExoticPositionalMarketManager.setOracleCouncilAddress(ThalesOracleCouncil.address);
-		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
-		await ExoticPositionalMarketManager.setTagsAddress(ExoticPositionalTags.address);
-		await ThalesBonds.setMarketManager(ExoticPositionalMarketManager.address, { from: manager });
-		await ExoticPositionalMarketManager.setFixedBondAmount(fixedBondAmount, { from: manager });
-		await ExoticPositionalMarketManager.setSafeBoxAddress(safeBox, { from: manager });
-		await ExoticPositionalMarketManager.setMaximumPositionsAllowed('5', { from: manager });
-		await ExoticPositionalMarketManager.setMarketQuestionStringLimit('1000', { from: manager });
-		await ExoticPositionalMarketManager.setMarketSourceStringLimit('1000', { from: manager });
-		await ExoticPositionalMarketManager.setMarketPositionStringLimit('60', { from: manager });
 
+		
+		
+		await ExoticPositionalMarketManager.setPercentages(
+			"1",
+			"1",
+			"1",
+			"6",
+			"10",
+			{ from: manager });
+		
+		await ExoticPositionalMarketManager.setDurations(
+			"14400",
+			"0",
+			"28800",
+			"172800",
+			"86400",
+			{ from: manager });
+		
+		await ExoticPositionalMarketManager.setLimits(
+			"1000",
+			"1000",
+			"60",
+			"1000",
+			"5",
+			"5",
+			"5",
+			{ from: manager });
+		
+		await ExoticPositionalMarketManager.setAmounts(
+			"10",
+			disputePrice,
+			fixedBondAmount,
+			disputePrice,
+			disputePrice,
+			maxOpenBidPositon,
+			{ from: manager });
+			
+		await ExoticPositionalMarketManager.setFlags(
+			false,
+			true,
+			{ from: manager });
+			
+		await ExoticPositionalMarketManager.setAddresses(
+			ExoticPositionalMarket.address,
+			ExoticPositionalOpenBidMarket.address,
+			ThalesOracleCouncil.address,
+			Thales.address,
+			ExoticPositionalTags.address,
+			owner,
+			safeBox,
+			owner,
+			owner,
+			{ from: manager });
+		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
+		await ThalesBonds.setMarketManager(ExoticPositionalMarketManager.address, { from: manager });
+	
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });
@@ -213,14 +246,26 @@ contract('TherundownConsumer', accounts => {
 			{ from: owner }
 		);
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
-		await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
-			TherundownConsumerDeployed.address
-		);
+		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
+		// 	TherundownConsumerDeployed.address
+		// );
 		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
 		await TherundownConsumerDeployed.addToWhitelist(third, { from: owner });
 
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
+		await ExoticPositionalMarketManager.setAddresses(
+			ExoticPositionalMarket.address,
+			ExoticPositionalOpenBidMarket.address,
+			ThalesOracleCouncil.address,
+			Thales.address,
+			ExoticPositionalTags.address,
+			TherundownConsumerDeployed.address,
+			safeBox,
+			owner,
+			owner,
+			{ from: manager });
+			
 	});
 
 	describe('Init', () => {

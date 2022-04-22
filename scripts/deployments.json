@@ -227,7 +227,7 @@
 		"PriceFeed": "0xCd9c0E99396627C7746b4363B880939Ac2828d3E",
 		"PriceFeedImplementation": "0x6B33b99E3D3213DF963375E6d94aBa968351f803",
 		"PositionMastercopy": "0xC6e9c95823D7CC98A92D73de89D69548E2774cd8",
-		"PositionalMarketMastercopy": "0xEcA7A1b229BB6Ad5c96FeeCdBF095750A71889ac",
+		"PositionalMarketMastercopy": "0x6B57cc2931346D0121cFD60CB35BD9286250165b",
 		"PositionalMarketManager": "0x85f1B57A1D3Ac7605de3Df8AdA056b3dB9676eCE",
 		"PositionalMarketManagerImplementation": "0xE0B31640B07E4BCFAFc190d7DDE951BA3286Dd63",
 		"PositionalMarketFactory": "0xE5C83ad4bE4D2F78C1B4f30DB86cD14516bbC724",

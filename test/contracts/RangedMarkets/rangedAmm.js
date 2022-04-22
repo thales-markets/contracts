@@ -24,7 +24,13 @@ const {
 } = require('../../utils/helpers');
 
 let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
-let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
+let PositionalMarket,
+	priceFeed,
+	oracle,
+	sUSDSynth,
+	PositionalMarketMastercopy,
+	PositionMastercopy,
+	RangedMarket;
 let market, up, down, position, Synth;
 
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
@@ -226,6 +232,36 @@ contract('ThalesAMM', accounts => {
 
 		console.log('Successfully create rangedMarketsAMM ' + rangedMarketsAMM.address);
 		sUSDSynth.issue(rangedMarketsAMM.address, sUSDQtyAmm);
+
+		[creatorSigner, ownerSigner] = await ethers.getSigners();
+
+		RangedMarket = artifacts.require('RangedMarket');
+
+		console.log('Setting mastercopy 1');
+		let RangedMarketMastercopy = artifacts.require('RangedMarketMastercopy');
+		let rangedMarketMastercopy = await RangedMarketMastercopy.new();
+		console.log('Setting mastercopy 11');
+		await rangedMarketsAMM.setRangedMarketMastercopy(rangedMarketMastercopy.address, {
+			from: owner,
+		});
+
+		console.log('Setting mastercopy 2');
+		let InPositionMastercopy = artifacts.require('InPositionMastercopy');
+		let inPositionMastercopy = await InPositionMastercopy.new();
+		await rangedMarketsAMM.setRangedPositionINMastercopy(inPositionMastercopy.address, {
+			from: owner,
+		});
+
+		console.log('Setting mastercopy 3');
+		let OutPositionMastercopy = artifacts.require('OutPositionMastercopy');
+		let outPositionMastercopy = await OutPositionMastercopy.new();
+		await rangedMarketsAMM.setRangedPositionOUTMastercopy(outPositionMastercopy.address, {
+			from: owner,
+		});
+
+		await rangedMarketsAMM.setMinSupportedPrice(toUnit(0.05), { from: owner });
+		await rangedMarketsAMM.setMaxSupportedPrice(toUnit(0.95), { from: owner });
+		console.log('Setting min prices');
 	});
 
 	const Position = {
@@ -249,6 +285,7 @@ contract('ThalesAMM', accounts => {
 				toUnit(10),
 				creatorSigner
 			);
+			console.log('Left market is ' + leftMarket.address);
 
 			let rightMarket = await createMarket(
 				manager,
@@ -259,52 +296,66 @@ contract('ThalesAMM', accounts => {
 				creatorSigner
 			);
 
-			let minInPrice = await rangedMarketsAMM.minInPrice(leftMarket.address, rightMarket.address);
+			let tx = await rangedMarketsAMM.createRangedMarket(leftMarket.address, rightMarket.address);
+			let createdMarketAddress = tx.receipt.logs[0].args.market;
+			console.log('created market is :' + createdMarketAddress);
+
+			let rangedMarket = await RangedMarket.at(createdMarketAddress);
+
+			console.log('rangedMarket is ' + rangedMarket.address);
+
+			let rangedMarketsAMMAddressFromCreatedMarket = await rangedMarket.rangedMarketsAMM();
+			console.log('rangedMarketsAMM market is ' + rangedMarketsAMMAddressFromCreatedMarket);
+
+			let leftMarketAddressFromCreatedRangedMarket = await rangedMarket.leftMarket();
+			console.log(
+				'leftMarketAddressFromCreatedRangedMarket is ' + leftMarketAddressFromCreatedRangedMarket
+			);
+
+			let minInPrice = await rangedMarketsAMM.minInPrice(rangedMarket.address);
 			console.log('minInPrice is:' + minInPrice / 1e18);
-
-			let availableToBuyFromAMMLeft = await thalesAMM.availableToBuyFromAMM(
-				leftMarket.address,
-				Position.DOWN
-			);
-			console.log('availableToBuyFromAMM leftMarket is:' + availableToBuyFromAMMLeft / 1e18);
-
-			let availableToBuyFromAMMRight = await thalesAMM.availableToBuyFromAMM(
-				rightMarket.address,
-				Position.UP
-			);
-			console.log('availableToBuyFromAMM rightMarket is:' + availableToBuyFromAMMRight / 1e18);
-
-			let availableToBuyFromAMMOut = await rangedMarketsAMM.availableToBuyFromAMM(
-				leftMarket.address,
-				rightMarket.address,
-				RangedPosition.OUT
-			);
-
-			console.log('availableToBuyFromAMMOut is:' + availableToBuyFromAMMOut / 1e18);
-
-			availableToBuyFromAMMLeft = await thalesAMM.availableToBuyFromAMM(
-				leftMarket.address,
-				Position.UP
-			);
-			console.log('availableToBuyFromAMM IN leftMarket  is:' + availableToBuyFromAMMLeft / 1e18);
-
-			availableToBuyFromAMMRight = await thalesAMM.availableToBuyFromAMM(
-				rightMarket.address,
-				Position.DOWN
-			);
-			console.log('availableToBuyFromAMM IN rightMarket is:' + availableToBuyFromAMMRight / 1e18);
-
+			//
+			// let availableToBuyFromAMMLeft = await thalesAMM.availableToBuyFromAMM(
+			// 	leftMarket.address,
+			// 	Position.DOWN
+			// );
+			// console.log('availableToBuyFromAMM leftMarket is:' + availableToBuyFromAMMLeft / 1e18);
+			//
+			// let availableToBuyFromAMMRight = await thalesAMM.availableToBuyFromAMM(
+			// 	rightMarket.address,
+			// 	Position.UP
+			// );
+			// console.log('availableToBuyFromAMM rightMarket is:' + availableToBuyFromAMMRight / 1e18);
+			//
+			// let availableToBuyFromAMMOut = await rangedMarketsAMM.availableToBuyFromAMM(
+			// 	leftMarket.address,
+			// 	rightMarket.address,
+			// 	RangedPosition.OUT
+			// );
+			//
+			// console.log('availableToBuyFromAMMOut is:' + availableToBuyFromAMMOut / 1e18);
+			//
+			// availableToBuyFromAMMLeft = await thalesAMM.availableToBuyFromAMM(
+			// 	leftMarket.address,
+			// 	Position.UP
+			// );
+			// console.log('availableToBuyFromAMM IN leftMarket  is:' + availableToBuyFromAMMLeft / 1e18);
+			//
+			// availableToBuyFromAMMRight = await thalesAMM.availableToBuyFromAMM(
+			// 	rightMarket.address,
+			// 	Position.DOWN
+			// );
+			// console.log('availableToBuyFromAMM IN rightMarket is:' + availableToBuyFromAMMRight / 1e18);
+			//
 			let availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
-				leftMarket.address,
-				rightMarket.address,
+				rangedMarket.address,
 				RangedPosition.IN
 			);
 
 			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
 
 			let buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
-				leftMarket.address,
-				rightMarket.address,
+				rangedMarket.address,
 				RangedPosition.IN,
 				toUnit('1')
 			);
@@ -312,35 +363,7 @@ contract('ThalesAMM', accounts => {
 			console.log('buyInQuote is:' + buyInQuote / 1e18);
 
 			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
-				leftMarket.address,
-				rightMarket.address,
-				RangedPosition.IN,
-				toUnit('2')
-			);
-
-			console.log('buyInQuote 2 is:' + buyInQuote / 1e18);
-
-			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
-				leftMarket.address,
-				rightMarket.address,
-				RangedPosition.IN,
-				toUnit('10')
-			);
-
-			console.log('buyInQuote 10 is :' + buyInQuote / 1e18);
-
-			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
-				leftMarket.address,
-				rightMarket.address,
-				RangedPosition.IN,
-				toUnit('100')
-			);
-
-			console.log('buyInQuote 100 is :' + buyInQuote / 1e18);
-
-			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
-				leftMarket.address,
-				rightMarket.address,
+				rangedMarket.address,
 				RangedPosition.IN,
 				toUnit('1000')
 			);
@@ -348,12 +371,10 @@ contract('ThalesAMM', accounts => {
 			console.log('buyInQuote 1000 is :' + buyInQuote / 1e18);
 
 			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
-				leftMarket.address,
-				rightMarket.address,
+				rangedMarket.address,
 				RangedPosition.IN,
 				toUnit(availableToBuyFromAMMIn / 1e18 + '')
 			);
-
 			console.log('buyInQuote availableToBuyFromAMMIn is :' + buyInQuote / 1e18);
 		});
 	});

@@ -45,6 +45,31 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "leftMarket",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "rightMarket",
+        "type": "address"
+      }
+    ],
+    "name": "RangedMarketCreated",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -54,13 +79,8 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "leftMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "rightMarket",
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
         "type": "address"
       },
       {
@@ -83,13 +103,8 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "leftMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "rightMarket",
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
         "type": "address"
       },
       {
@@ -112,13 +127,8 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "leftMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "rightMarket",
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
         "type": "address"
       },
       {
@@ -150,13 +160,8 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "leftMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "rightMarket",
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
         "type": "address"
       },
       {
@@ -182,6 +187,45 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "enum RangedMarket.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "buyFromAmmQuoteDetailed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "capPerMarket",
     "outputs": [
@@ -192,6 +236,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "leftMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "rightMarket",
+        "type": "address"
+      }
+    ],
+    "name": "createRangedMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -272,19 +334,40 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "maxSupportedPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "leftMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "rightMarket",
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
         "type": "address"
       }
     ],
     "name": "minInPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minSupportedPrice",
     "outputs": [
       {
         "internalType": "uint256",
@@ -415,13 +498,8 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "leftMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "rightMarket",
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
         "type": "address"
       },
       {
@@ -453,13 +531,8 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "leftMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "rightMarket",
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
         "type": "address"
       },
       {
@@ -482,6 +555,71 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "enum RangedMarket.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "sellToAmmQuoteDetailed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxSupportedPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxSupportedPrice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minSupportedPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinSupportedPrice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

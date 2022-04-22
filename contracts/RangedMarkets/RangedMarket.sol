@@ -1,18 +1,8 @@
-//// in position collaterized by 0.5 UP on the left leg and 0.5 DOWN on the right leg
-//
-//// SPDX-License-Identifier: MIT
-//pragma solidity ^0.8.0;
-//
-//// Inheritance
-//import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
-//import "../interfaces/IPosition.sol";
-//
-//// Libraries
-//import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
-//
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
 // Internal references
 import "./InPosition.sol";
@@ -21,7 +11,7 @@ import "./RangedMarketsAMM.sol";
 import "../interfaces/IPositionalMarket.sol";
 
 contract RangedMarket {
-    using SafeERC20Upgradeable for IERC20Upgradeable;
+    using SafeERC20 for IERC20;
 
     enum Position {In, Out}
 
@@ -61,7 +51,7 @@ contract RangedMarket {
         uint value,
         Position _position,
         address minter
-    ) external {
+    ) external onlyAMM {
         if (value == 0) {
             return;
         }
@@ -84,26 +74,31 @@ contract RangedMarket {
         uint value,
         Position _position,
         address claimant
-    ) external {
+    ) external onlyAMM {
         if (value == 0) {
             return;
         }
         if (_position == Position.Out) {
-            (IPosition up, IPosition down) = IPositionalMarket(leftMarket).getOptions();
-            IERC20Upgradeable(address(down)).safeTransfer(msg.sender, value);
+            (, IPosition down) = IPositionalMarket(leftMarket).getOptions();
+            IERC20(address(down)).safeTransfer(msg.sender, value);
 
-            (IPosition up1, IPosition down1) = IPositionalMarket(rightMarket).getOptions();
-            IERC20Upgradeable(address(up1)).safeTransfer(msg.sender, value);
+            (IPosition up1, ) = IPositionalMarket(rightMarket).getOptions();
+            IERC20(address(up1)).safeTransfer(msg.sender, value);
 
             positions.outp.burn(claimant, value);
         } else {
-            (IPosition up, IPosition down) = IPositionalMarket(leftMarket).getOptions();
-            IERC20Upgradeable(address(up)).safeTransfer(msg.sender, value);
+            (IPosition up, ) = IPositionalMarket(leftMarket).getOptions();
+            IERC20(address(up)).safeTransfer(msg.sender, value);
 
-            (IPosition up1, IPosition down1) = IPositionalMarket(rightMarket).getOptions();
-            IERC20Upgradeable(address(down1)).safeTransfer(msg.sender, value);
+            (, IPosition down1) = IPositionalMarket(rightMarket).getOptions();
+            IERC20(address(down1)).safeTransfer(msg.sender, value);
 
             positions.inp.burn(claimant, value);
         }
+    }
+
+    modifier onlyAMM {
+        require(msg.sender == address(rangedMarketsAMM), "only the AMM may perform these methods");
+        _;
     }
 }

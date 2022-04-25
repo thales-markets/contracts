@@ -7,9 +7,22 @@
         "type": "uint256"
       },
       {
-        "internalType": "enum RangedMarket.Position",
-        "name": "_position",
-        "type": "uint8"
+        "internalType": "address",
+        "name": "claimant",
+        "type": "address"
+      }
+    ],
+    "name": "burnIn",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -17,7 +30,14 @@
         "type": "address"
       }
     ],
-    "name": "burn",
+    "name": "burnOut",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "exercisePositions",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -137,6 +157,19 @@
   },
   {
     "inputs": [],
+    "name": "resolved",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "rightMarket",
     "outputs": [
       {
@@ -146,6 +179,13 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

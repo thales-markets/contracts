@@ -28,7 +28,7 @@ contract OutPosition is IERC20 {
     // Enforce a 1 cent minimum amount
     uint internal constant _MINIMUM_AMOUNT = 1e16;
 
-    address public thalesPositionalAMM;
+    address public thalesRangedAMM;
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
@@ -37,7 +37,7 @@ contract OutPosition is IERC20 {
         address market,
         string calldata _name,
         string calldata _symbol,
-        address _thalesPositionalAMM
+        address _thalesRangedAMM
     ) external {
         require(!initialized, "Ranged Market already initialized");
         initialized = true;
@@ -45,12 +45,12 @@ contract OutPosition is IERC20 {
         name = _name;
         symbol = _symbol;
         // add through constructor
-        thalesPositionalAMM = _thalesPositionalAMM;
+        thalesRangedAMM = _thalesRangedAMM;
     }
 
     function allowance(address owner, address spender) external view override returns (uint256) {
-        if (spender == thalesPositionalAMM) {
-            return 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+        if (spender == thalesRangedAMM) {
+            return type(uint256).max;
         } else {
             return allowances[owner][spender];
         }
@@ -94,7 +94,7 @@ contract OutPosition is IERC20 {
         address _to,
         uint _value
     ) external override returns (bool success) {
-        if (msg.sender != thalesPositionalAMM) {
+        if (msg.sender != thalesRangedAMM) {
             uint fromAllowance = allowances[_from][msg.sender];
             require(_value <= fromAllowance, "Insufficient allowance");
             allowances[_from][msg.sender] = fromAllowance - _value;

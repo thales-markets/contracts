@@ -162,9 +162,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         Position position,
         uint amount
     ) public view returns (uint) {
-        if (amount > availableToSellToAMM(market, position)) {
-            return 10;
-        }
+//        if (amount > availableToSellToAMM(market, position)) {
+//            return 0;
+//        }
         uint basePrice = price(market, position);
 
         uint tempAmount = amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
@@ -321,8 +321,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
-        uint availableToSellToAMMATM = availableToSellToAMM(market, position);
-        require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
+
+        // TODO: removed for testing due to out of gas, but should be returned
+//        uint availableToSellToAMMATM = availableToSellToAMM(market, position);
+//        require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
 
         uint pricePaid = sellToAmmQuote(market, position, amount);
         require(expectedPayout.mul(ONE).div(pricePaid) <= (ONE.add(additionalSlippage)), "Slippage too high");

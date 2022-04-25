@@ -731,5 +731,18 @@
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
+        "type": "address"
+      }
+    ],
+    "name": "withdrawCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   }
 ]

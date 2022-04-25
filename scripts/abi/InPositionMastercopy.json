@@ -203,7 +203,7 @@
       },
       {
         "internalType": "address",
-        "name": "_thalesPositionalAMM",
+        "name": "_thalesRangedAMM",
         "type": "address"
       }
     ],
@@ -284,7 +284,7 @@
   },
   {
     "inputs": [],
-    "name": "thalesPositionalAMM",
+    "name": "thalesRangedAMM",
     "outputs": [
       {
         "internalType": "address",

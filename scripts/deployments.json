@@ -146,7 +146,16 @@
 		"ThalesRoyalePass": "0x2F71f4a2D8BAB9703fff3fF5794762bF5b6C7E29",
 		"OptimisticAirdropUnclaimedRetro": "0x3Da91E5eD564eE46d4D734E1F99F395f0969101a",
 		"ThalesRoyalePassport": "0xf534848023ba851c6265e8F99a919c4d5fd05CD0",
-		"ThalesRoyalePassportImplementation": "0xd051b22871f23d12eEdF54d695420F43C9d3C268"
+		"ThalesRoyalePassportImplementation": "0xd051b22871f23d12eEdF54d695420F43C9d3C268",
+		"NewPositionMastercopy": "0x42Af0890d254387110555A46d261B9e4f6E327Ac",
+		"NewPositionalMarketMastercopy": "0x47691Bca9F8F24BAFfD1115FfCdEB137BaDaE1E5",
+		"NewPositionalMarketManager": "0x9227334352A890e51e980BeB7A56Bbdd01499B54",
+		"NewPositionalMarketManagerImplementation": "0x6A4C622c3F3252393C8a819278b925CA58418215",
+		"NewPositionalMarketFactory": "0xdb5a5475002F3A09A033DCF21327c81E5cDD86fb",
+		"NewPositionalMarketFactoryImplementation": "0x7B603f09c9B93DBaa2cF56f233269B6751D74cfF",
+		"NewPositionalMarketData": "0xe840E8e7BEf7783F8F51908eF9e77044C1D4C58c",
+		"NewThalesAMM": "0x27E9d8250D19Ed277A2Fb7Cb3439841E6Fb9f7aB",
+		"NewThalesAMMImplementation": "0xaca11c093Bf6D22528BfCa298aE5AeCfef68f9Ba"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

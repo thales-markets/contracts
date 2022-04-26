@@ -54,12 +54,17 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     uint public minSupportedPrice;
     uint public maxSupportedPrice;
 
+    address public safeBox;
+    uint public safeBoxImpact;
+
     function initialize(
         address _owner,
         IThalesAMM _thalesAmm,
         uint _rangedAmmFee,
         uint _capPerMarket,
-        IERC20Upgradeable _sUSD
+        IERC20Upgradeable _sUSD,
+        address _safeBox,
+        uint _safeBoxImpact
     ) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -67,6 +72,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         capPerMarket = _capPerMarket;
         rangedAmmFee = _rangedAmmFee;
         sUSD = _sUSD;
+        safeBox = _safeBox;
+        safeBoxImpact = _safeBoxImpact;
 
         sUSD.approve(address(thalesAmm), type(uint256).max);
     }
@@ -108,6 +115,19 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit RangedMarketCreated(address(rm), leftMarket, rightMarket);
     }
 
+    function _availableToBuyFromAMMOnlyRanged(RangedMarket rangedMarket, RangedMarket.Position position)
+        internal
+        view
+        knownRangedMarket(address(rangedMarket))
+        returns (uint)
+    {
+        if (position == RangedMarket.Position.Out) {
+            return type(uint256).max;
+        } else {
+            return _availableToBuyFromAMMInOnlyRanged(rangedMarket);
+        }
+    }
+
     function availableToBuyFromAMM(RangedMarket rangedMarket, RangedMarket.Position position)
         public
         view
@@ -132,9 +152,21 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint availableRight = thalesAmm.availableToBuyFromAMM(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down);
         uint availableThalesAMM = (availableLeft < availableRight ? availableLeft : availableRight) * 2;
         uint leftoverOnMarket = capPerMarket - spentOnMarket[address(rangedMarket)];
+        uint minPrice = minInPrice(rangedMarket);
+        if (minPrice <= minSupportedPrice || minPrice >= maxSupportedPrice) {
+            return 0;
+        }
+
         uint rangedAMMRisk = ONE - minInPrice(rangedMarket);
         uint availableRangedAmm = (leftoverOnMarket * ONE) / rangedAMMRisk;
         return availableThalesAMM > availableRangedAmm ? availableRangedAmm : availableThalesAMM;
+    }
+
+    function _availableToBuyFromAMMInOnlyRanged(RangedMarket rangedMarket) internal view returns (uint) {
+        uint leftoverOnMarket = capPerMarket - spentOnMarket[address(rangedMarket)];
+        uint rangedAMMRisk = ONE - minInPrice(rangedMarket);
+        uint availableRangedAmm = (leftoverOnMarket * ONE) / rangedAMMRisk;
+        return availableRangedAmm;
     }
 
     function minInPrice(RangedMarket rangedMarket) public view knownRangedMarket(address(rangedMarket)) returns (uint) {
@@ -153,14 +185,14 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint quoteWithoutFees =
                 (thalesAmm.buyFromAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Down, amount) +
                     thalesAmm.buyFromAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Up, amount));
-            return (quoteWithoutFees * (rangedAmmFee + ONE)) / ONE;
+            return (quoteWithoutFees * (rangedAmmFee + safeBoxImpact + ONE)) / ONE;
         } else {
             uint leftQuote =
                 thalesAmm.buyFromAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Up, amount / 2);
             uint rightQuote =
                 thalesAmm.buyFromAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down, amount / 2);
             uint quoteWithoutFees = ((leftQuote + rightQuote) - ((amount / 2 - leftQuote) + (amount / 2 - rightQuote)));
-            return (quoteWithoutFees * (rangedAmmFee + ONE)) / ONE;
+            return (quoteWithoutFees * (rangedAmmFee + safeBoxImpact + ONE)) / ONE;
         }
     }
 
@@ -182,7 +214,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint leftQuote = thalesAmm.buyFromAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Down, amount);
             uint rightQuote = thalesAmm.buyFromAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Up, amount);
             uint quoteWithoutFees = leftQuote + rightQuote;
-            uint quoteWithFees = (quoteWithoutFees * (rangedAmmFee + ONE)) / ONE;
+            uint quoteWithFees = (quoteWithoutFees * (rangedAmmFee + safeBoxImpact + ONE)) / ONE;
             return (quoteWithFees, leftQuote, rightQuote);
         } else {
             uint leftQuote =
@@ -190,7 +222,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint rightQuote =
                 thalesAmm.buyFromAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down, amount / 2);
             uint quoteWithoutFees = ((leftQuote + rightQuote) - ((amount / 2 - leftQuote) + (amount / 2 - rightQuote)));
-            uint quoteWithFees = (quoteWithoutFees * (rangedAmmFee + ONE)) / ONE;
+            uint quoteWithFees = (quoteWithoutFees * (rangedAmmFee + safeBoxImpact + ONE)) / ONE;
             return (quoteWithFees, leftQuote, rightQuote);
         }
     }
@@ -202,19 +234,11 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint expectedPayout,
         uint additionalSlippage
     ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused {
-        //        require(amount <= availableToBuyFromAMM(rangedMarket, position), "Not enough liquidity in Thales AMM.");
-        // TODO: min price check has to be reintroduced
-        //        uint basePrice = buyFromAmmQuote(rangedMarket, position, ONE);
-        //        if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
-        //            return 0;
-        //        }
+        require(amount <= _availableToBuyFromAMMOnlyRanged(rangedMarket, position), "Not enough liquidity in Thales AMM.");
 
         (uint sUSDPaid, uint leftQuote, uint rightQuote) = buyFromAmmQuoteDetailed(rangedMarket, position, amount);
-        uint spentForThalesAMM = leftQuote + rightQuote;
-        require(
-            (spentOnMarket[address(rangedMarket)] + spentForThalesAMM - sUSDPaid) <= capPerMarket,
-            "Not enough liquidity in Ranged AMM"
-        );
+        uint basePrice = sUSDPaid / amount;
+        require(basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice, "Price out of supported ranged!");
 
         require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
         require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
@@ -222,57 +246,99 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
 
+        address target;
+        (InPosition inp, OutPosition outp) = rangedMarket.positions();
+
         if (position == RangedMarket.Position.Out) {
-            thalesAmm.buyFromAMM(
-                address(rangedMarket.leftMarket()),
-                IThalesAMM.Position.Down,
-                amount,
-                leftQuote,
-                additionalSlippage
-            );
+            target = address(outp);
 
-            thalesAmm.buyFromAMM(
-                address(rangedMarket.rightMarket()),
-                IThalesAMM.Position.Up,
-                amount,
-                rightQuote,
-                additionalSlippage
-            );
-
-            (, IPosition down) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
-            IERC20Upgradeable(address(down)).safeTransfer(address(rangedMarket), amount);
-
-            (IPosition up1, ) = IPositionalMarket(rangedMarket.rightMarket()).getOptions();
-            IERC20Upgradeable(address(up1)).safeTransfer(address(rangedMarket), amount);
+            _buyOUT(rangedMarket, amount, leftQuote, rightQuote, additionalSlippage);
 
             rangedMarket.mint(amount, RangedMarket.Position.Out, msg.sender);
         } else {
-            thalesAmm.buyFromAMM(
-                address(rangedMarket.leftMarket()),
-                IThalesAMM.Position.Up,
-                amount / 2,
-                leftQuote,
-                additionalSlippage
-            );
+            target = address(inp);
 
-            thalesAmm.buyFromAMM(
-                address(rangedMarket.rightMarket()),
-                IThalesAMM.Position.Down,
-                amount / 2,
-                rightQuote,
-                additionalSlippage
-            );
-
-            (IPosition up, ) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
-            IERC20Upgradeable(address(up)).safeTransfer(address(rangedMarket), amount / 2);
-
-            (, IPosition down1) = IPositionalMarket(rangedMarket.rightMarket()).getOptions();
-            IERC20Upgradeable(address(down1)).safeTransfer(address(rangedMarket), amount / 2);
+            _buyIN(rangedMarket, amount, leftQuote, rightQuote, additionalSlippage);
 
             rangedMarket.mint(amount, RangedMarket.Position.In, msg.sender);
+            _updateSpentOnMarketAndSafeBoxOnBuy(address(rangedMarket), amount, sUSDPaid);
         }
-        // TODO:safeBoxFee
-        spentOnMarket[address(rangedMarket)] = spentOnMarket[address(rangedMarket)] + spentForThalesAMM - sUSDPaid;
+        emit BoughtFromAmm(msg.sender, address(rangedMarket), position, amount, sUSDPaid, address(sUSD), target);
+    }
+
+    function _buyOUT(
+        RangedMarket rangedMarket,
+        uint amount,
+        uint leftQuote,
+        uint rightQuote,
+        uint additionalSlippage
+    ) internal {
+        thalesAmm.buyFromAMM(
+            address(rangedMarket.leftMarket()),
+            IThalesAMM.Position.Down,
+            amount,
+            leftQuote,
+            additionalSlippage
+        );
+
+        thalesAmm.buyFromAMM(
+            address(rangedMarket.rightMarket()),
+            IThalesAMM.Position.Up,
+            amount,
+            rightQuote,
+            additionalSlippage
+        );
+        (, IPosition down) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
+        IERC20Upgradeable(address(down)).safeTransfer(address(rangedMarket), amount);
+
+        (IPosition up1, ) = IPositionalMarket(rangedMarket.rightMarket()).getOptions();
+        IERC20Upgradeable(address(up1)).safeTransfer(address(rangedMarket), amount);
+    }
+
+    function _buyIN(
+        RangedMarket rangedMarket,
+        uint amount,
+        uint leftQuote,
+        uint rightQuote,
+        uint additionalSlippage
+    ) internal {
+        thalesAmm.buyFromAMM(
+            address(rangedMarket.leftMarket()),
+            IThalesAMM.Position.Up,
+            amount / 2,
+            leftQuote,
+            additionalSlippage
+        );
+
+        thalesAmm.buyFromAMM(
+            address(rangedMarket.rightMarket()),
+            IThalesAMM.Position.Down,
+            amount / 2,
+            rightQuote,
+            additionalSlippage
+        );
+        (IPosition up, ) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
+        IERC20Upgradeable(address(up)).safeTransfer(address(rangedMarket), amount / 2);
+
+        (, IPosition down1) = IPositionalMarket(rangedMarket.rightMarket()).getOptions();
+        IERC20Upgradeable(address(down1)).safeTransfer(address(rangedMarket), amount / 2);
+    }
+
+    function _updateSpentOnMarketAndSafeBoxOnBuy(
+        address rangedMarket,
+        uint amount,
+        uint sUSDPaid
+    ) internal {
+        require(address(0) != safeBox, "Safe box is not set!");
+
+        uint safeBoxShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + safeBoxImpact));
+        if (safeBoxImpact > 0) {
+            sUSD.transfer(safeBox, safeBoxShare);
+        } else {
+            safeBoxShare = 0;
+        }
+
+        spentOnMarket[rangedMarket] = spentOnMarket[rangedMarket] + amount + safeBoxShare - sUSDPaid;
     }
 
     function availableToSellToAMM(RangedMarket rangedMarket, RangedMarket.Position position)
@@ -281,10 +347,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         knownRangedMarket(address(rangedMarket))
         returns (uint)
     {
-        uint basePrice = sellToAmmQuote(rangedMarket, position, ONE);
-        if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
-            return 0;
-        }
         if (position == RangedMarket.Position.Out) {
             uint availableLeft =
                 thalesAmm.availableToSellToAMM(address(rangedMarket.leftMarket()), IThalesAMM.Position.Down);
@@ -309,14 +371,14 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint leftQuote = thalesAmm.sellToAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Down, amount);
             uint rightQuote = thalesAmm.sellToAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Up, amount);
             uint quoteWithoutFees = leftQuote + rightQuote;
-            return (quoteWithoutFees * (ONE - rangedAmmFee)) / ONE;
+            return (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
         } else {
             uint leftQuote =
                 thalesAmm.sellToAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Up, amount / 2);
             uint rightQuote =
                 thalesAmm.sellToAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down, amount / 2);
             uint quoteWithoutFees = ((leftQuote + rightQuote) - ((amount / 2 - leftQuote) + (amount / 2 - rightQuote)));
-            return (quoteWithoutFees * (ONE - rangedAmmFee)) / ONE;
+            return (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
         }
     }
 
@@ -338,7 +400,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint leftQuote = thalesAmm.sellToAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Down, amount);
             uint rightQuote = thalesAmm.sellToAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Up, amount);
             uint quoteWithoutFees = leftQuote + rightQuote;
-            uint quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee)) / ONE;
+            uint quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
             return (quoteWithFees, leftQuote, rightQuote);
         } else {
             uint leftQuote =
@@ -346,7 +408,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint rightQuote =
                 thalesAmm.sellToAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down, amount / 2);
             uint quoteWithoutFees = ((leftQuote + rightQuote) - ((amount / 2 - leftQuote) + (amount / 2 - rightQuote)));
-            uint quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee)) / ONE;
+            uint quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
             return (quoteWithFees, leftQuote, rightQuote);
         }
     }
@@ -358,16 +420,17 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint expectedPayout,
         uint additionalSlippage
     ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused {
-        // TODO: removed due gas but has to be reintroduced
-        //        uint availableToSellToAMMATM = availableToSellToAMM(rangedMarket, position);
-        //        require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
+        uint availableToSellToAMMATM = availableToSellToAMM(rangedMarket, position);
+        require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
 
         (uint pricePaid, uint leftQuote, uint rightQuote) = sellToAmmQuoteDetailed(rangedMarket, position, amount);
         require((expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "Slippage too high");
 
-        uint gotFromThalesAMM = leftQuote + rightQuote;
+        address target;
+        (InPosition inp, OutPosition outp) = rangedMarket.positions();
 
         if (position == RangedMarket.Position.Out) {
+            target = address(outp);
             rangedMarket.burnOut(amount, msg.sender);
 
             thalesAmm.sellToAMM(
@@ -387,31 +450,63 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             );
             // maybe include left and right quotes as part of buyFromAMMQuote return, or just review the pricing is correct
         } else {
+            target = address(inp);
             rangedMarket.burnIn(amount, msg.sender);
 
-            thalesAmm.sellToAMM(
-                address(rangedMarket.leftMarket()),
-                IThalesAMM.Position.Up,
-                amount / 2,
-                leftQuote,
-                additionalSlippage
-            );
+            _sellIN(rangedMarket, amount, leftQuote, rightQuote, additionalSlippage);
 
-            thalesAmm.sellToAMM(
-                address(rangedMarket.rightMarket()),
-                IThalesAMM.Position.Down,
-                amount / 2,
-                rightQuote,
-                additionalSlippage
-            );
+            _updateSpentOnMarketAndSafeBoxOnSell(amount, rangedMarket, pricePaid);
         }
-        // TODO: update safeBoxFee
-        if (gotFromThalesAMM > (spentOnMarket[address(rangedMarket)] + pricePaid)) {
+
+        emit SoldToAMM(msg.sender, address(rangedMarket), position, amount, pricePaid, address(sUSD), target);
+        sUSD.transfer(msg.sender, pricePaid);
+    }
+
+    function _sellIN(
+        RangedMarket rangedMarket,
+        uint amount,
+        uint leftQuote,
+        uint rightQuote,
+        uint additionalSlippage
+    ) internal {
+        thalesAmm.sellToAMM(
+            address(rangedMarket.leftMarket()),
+            IThalesAMM.Position.Up,
+            amount / 2,
+            leftQuote,
+            additionalSlippage
+        );
+
+        thalesAmm.sellToAMM(
+            address(rangedMarket.rightMarket()),
+            IThalesAMM.Position.Down,
+            amount / 2,
+            rightQuote,
+            additionalSlippage
+        );
+    }
+
+    function _updateSpentOnMarketAndSafeBoxOnSell(
+        uint amount,
+        RangedMarket rangedMarket,
+        uint sUSDPaid
+    ) internal {
+        require(address(0) != safeBox, "Safe box is not set!");
+
+        uint safeBoxShare = ((sUSDPaid * ONE) / (ONE - safeBoxImpact)) - sUSDPaid;
+
+        if (safeBoxImpact > 0) {
+            sUSD.transfer(safeBox, safeBoxShare);
+        } else {
+            safeBoxShare = 0;
+        }
+
+        // consider that amount might be 18 decimals
+        if (amount > (spentOnMarket[address(rangedMarket)] + sUSDPaid + safeBoxShare)) {
             spentOnMarket[address(rangedMarket)] = 0;
         } else {
-            spentOnMarket[address(rangedMarket)] = spentOnMarket[address(rangedMarket)] + pricePaid - gotFromThalesAMM;
+            spentOnMarket[address(rangedMarket)] = spentOnMarket[address(rangedMarket)] + sUSDPaid + safeBoxShare - amount;
         }
-        sUSD.transfer(msg.sender, pricePaid);
     }
 
     function withdrawCollateral(RangedMarket rangedMarket)
@@ -421,8 +516,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         nonReentrant
         notPaused
     {
-        //TODO: send to SafeBox
-        rangedMarket.withdrawCollateral();
+        require(address(0) != safeBox, "Safe box is not set!");
+        rangedMarket.withdrawCollateral(safeBox);
     }
 
     function setRangedMarketMastercopy(address _rangedMarketMastercopy) external onlyOwner {
@@ -450,5 +545,30 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         _;
     }
 
+    event SoldToAMM(
+        address seller,
+        address market,
+        RangedMarket.Position position,
+        uint amount,
+        uint sUSDPaid,
+        address susd,
+        address asset
+    );
+    event BoughtFromAmm(
+        address buyer,
+        address market,
+        RangedMarket.Position position,
+        uint amount,
+        uint sUSDPaid,
+        address susd,
+        address asset
+    );
+
+    event SetAmm(address _manager);
+    event SetSUSD(address sUSD);
     event RangedMarketCreated(address market, address leftMarket, address rightMarket);
+    event SetSafeBoxImpact(uint _safeBoxImpact);
+    event SetSafeBox(address _safeBox);
+    event SetMinSupportedPrice(uint _spread);
+    event SetMaxSupportedPrice(uint _spread);
 }

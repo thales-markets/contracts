@@ -37,6 +37,19 @@
   },
   {
     "inputs": [],
+    "name": "canExercisePositions",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "exercisePositions",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -182,7 +195,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      }
+    ],
     "name": "withdrawCollateral",
     "outputs": [],
     "stateMutability": "nonpayable",

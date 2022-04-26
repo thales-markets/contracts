@@ -63,33 +63,49 @@ async function main() {
 	let safeBoxAddress = getTargetAddress('SafeBox', network);
 	console.log('Found safeBoxAddress at:' + safeBoxAddress);
 
-	const RangedAMM = await ethers.getContractFactory('RangedMarketsAMM');
-	let RangedAMM_deployed = await upgrades.deployProxy(RangedAMM, [
-		owner.address,
-		thalesAMMAddress,
-		w3utils.toWei('0.01'),
-		w3utils.toWei('1000'),
-		ProxyERC20sUSDaddress,
-		safeBoxAddress,
-		w3utils.toWei('0.01'),
-	]);
-	await RangedAMM_deployed.deployed();
+	const OutPositionMastercopy = await ethers.getContractFactory('OutPositionMastercopy');
+	const OutPositionMastercopyDeployed = await OutPositionMastercopy.deploy();
+	await OutPositionMastercopyDeployed.deployed();
 
-	console.log('RangedAMM_deployed proxy:', RangedAMM_deployed.address);
+	console.log('OutPositionMastercopy deployed to:', OutPositionMastercopyDeployed.address);
+	setTargetAddress('OutPositionMastercopy', network, OutPositionMastercopyDeployed.address);
 
-	const RangedAMMImplementation = await getImplementationAddress(
-		ethers.provider,
-		RangedAMM_deployed.address
-	);
+	const InPositionMastercopy = await ethers.getContractFactory('InPositionMastercopy');
+	const InPositionMastercopyDeployed = await InPositionMastercopy.deploy();
+	await InPositionMastercopyDeployed.deployed();
 
-	console.log('Implementation RangedAMM: ', RangedAMMImplementation);
+	console.log('InPositionMastercopy deployed to:', InPositionMastercopyDeployed.address);
+	setTargetAddress('InPositionMastercopy', network, InPositionMastercopyDeployed.address);
 
-	setTargetAddress('RangedAMM', network, RangedAMM_deployed.address);
-	setTargetAddress('RangedAMMImplementation', network, RangedAMMImplementation);
+	const RangedMarketMastercopy = await ethers.getContractFactory('RangedMarketMastercopy');
+	const RangedMarketMastercopyDeployed = await RangedMarketMastercopy.deploy();
+	await RangedMarketMastercopyDeployed.deployed();
 
+	console.log('RangedMarketMastercopy deployed to:', RangedMarketMastercopyDeployed.address);
+	setTargetAddress('RangedMarketMastercopy', network, RangedMarketMastercopyDeployed.address);
 	try {
 		await hre.run('verify:verify', {
-			address: RangedAMMImplementation,
+			address: OutPositionMastercopyDeployed.address,
+			constructorArguments: [],
+			contract: 'contracts/RangedMarkets/OutPositionMastercopy.sol:OutPositionMastercopy',
+		});
+	} catch (e) {
+		console.log(e);
+	}
+	try {
+		await hre.run('verify:verify', {
+			address: InPositionMastercopyDeployed.address,
+			constructorArguments: [],
+			contract: 'contracts/RangedMarkets/InPositionMastercopy.sol:InPositionMastercopy',
+		});
+	} catch (e) {
+		console.log(e);
+	}
+	try {
+		await hre.run('verify:verify', {
+			address: RangedMarketMastercopyDeployed.address,
+			constructorArguments: [],
+			contract: 'contracts/RangedMarkets/RangedMarketMastercopy.sol:RangedMarketMastercopy',
 		});
 	} catch (e) {
 		console.log(e);

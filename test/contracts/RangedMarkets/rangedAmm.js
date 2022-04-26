@@ -234,7 +234,9 @@ contract('RangedAMM', accounts => {
 			thalesAMM.address,
 			toUnit('0.01'),
 			toUnit('1000'),
-			sUSDSynth.address
+			sUSDSynth.address,
+			safeBox,
+			toUnit('0.01')
 		);
 
 		console.log('Successfully create rangedMarketsAMM ' + rangedMarketsAMM.address);
@@ -638,6 +640,8 @@ contract('RangedAMM', accounts => {
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
 			console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
 
+			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
+			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
 		});
 	});
 });

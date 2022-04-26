@@ -160,8 +160,24 @@ contract RangedMarket {
         }
     }
 
-    function withdrawCollateral() external onlyAMM {
-        rangedMarketsAMM.sUSD().transfer(msg.sender, rangedMarketsAMM.sUSD().balanceOf(address(this)));
+    function canExercisePositions() external view returns (bool) {
+        // The markets must be resolved
+        if (!leftMarket.resolved() || !rightMarket.resolved()) {
+            return false;
+        }
+
+        uint inBalance = positions.inp.balanceOf(msg.sender);
+        uint outBalance = positions.outp.balanceOf(msg.sender);
+
+        if (inBalance == 0 && outBalance == 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    function withdrawCollateral(address recipient) external onlyAMM {
+        rangedMarketsAMM.sUSD().transfer(recipient, rangedMarketsAMM.sUSD().balanceOf(address(this)));
     }
 
     modifier onlyAMM {

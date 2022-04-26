@@ -125,6 +125,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "NewStakingThalesAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -638,6 +651,32 @@
     "name": "setOwner",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "setStakingThalesContract",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stakingThales",
+    "outputs": [
+      {
+        "internalType": "contract IStakingThales",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

@@ -37,7 +37,8 @@ contract OraclePausable is ProxyOwned {
     event PauseChanged(bool isPaused);
 
     modifier notPaused {
-        require(!paused, "This action cannot be performed while the contract is paused");
+        require(!IExoticPositionalMarketManager(owner).paused(), "Manager paused.");
+        require(!paused, "Contract is paused");
         _;
     }
 
@@ -46,7 +47,7 @@ contract OraclePausable is ProxyOwned {
             IExoticPositionalMarketManager(owner).isPauserAddress(msg.sender) ||
                 IExoticPositionalMarketManager(owner).owner() == msg.sender ||
                 owner == msg.sender,
-            "This action cannot be performed by non-pauser address"
+            "Non-pauser address"
         );
         _;
     }

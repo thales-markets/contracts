@@ -34,11 +34,18 @@ contract ExoticRewards is Initializable, ProxyOwned, PausableUpgradeable, ProxyR
         address _disputorAddress,
         uint _amount
     ) external onlyOracleCouncilManagerAndOwner {
-        require(_amount > 0, "Zero amount");
-        require(_amount <= paymentToken.balanceOf(address(this)), "Amount exceeds balance");
+        require(marketManager.isActiveMarket(_market), "Not active market.");
+        require(
+            _amount <= IERC20Upgradeable(marketManager.paymentToken()).balanceOf(address(this)),
+            "Amount exceeds balance"
+        );
+        require(
+            _amount > 0 && _amount <= IExoticPositionalMarket(_market).arbitraryRewardForDisputor(),
+            "Zero or high amount"
+        );
         require(_disputorAddress != address(0), "Invalid disputor");
         marketIssuedReward[_market] = marketIssuedReward[_market].add(_amount);
-        paymentToken.transfer(_disputorAddress, _amount);
+        IERC20Upgradeable(marketManager.paymentToken()).transfer(_disputorAddress, _amount);
         emit RewardIssued(_market, _disputorAddress, _amount);
     }
 
@@ -48,11 +55,11 @@ contract ExoticRewards is Initializable, ProxyOwned, PausableUpgradeable, ProxyR
         emit NewManagerAddress(_managerAddress);
     }
 
-    function setPaymentToken(address _paymentToken) external onlyOwner {
-        require(_paymentToken != address(0), "Invalid address");
-        paymentToken = IERC20Upgradeable(_paymentToken);
-        emit NewPaymentToken(_paymentToken);
-    }
+    // function setPaymentToken(address _paymentToken) external onlyOwner {
+    //     require(_paymentToken != address(0), "Invalid address");
+    //     paymentToken = IERC20Upgradeable(_paymentToken);
+    //     emit NewPaymentToken(_paymentToken);
+    // }
 
     modifier onlyOracleCouncilManagerAndOwner() {
         require(

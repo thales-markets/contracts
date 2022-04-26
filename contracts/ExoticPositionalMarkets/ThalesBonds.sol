@@ -14,6 +14,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../interfaces/IExoticPositionalMarketManager.sol";
 import "../interfaces/IExoticPositionalMarket.sol";
+import "../interfaces/IStakingThales.sol";
 
 contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
@@ -38,6 +39,8 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     uint private constant DISPUTOR_BOND = 103;
     uint private constant CREATOR_AND_DISPUTOR = 104;
     uint private constant RESOLVER_AND_DISPUTOR = 105;
+
+    IStakingThales public stakingThales;
 
     function initialize(address _owner) public initializer {
         setOwner(_owner);
@@ -243,6 +246,9 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     function transferToMarket(address _account, uint _amount) external whenNotPaused {
         require(marketManager.isActiveMarket(msg.sender), "Not active market.");
         marketFunds[msg.sender] = marketFunds[msg.sender].add(_amount);
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(_account, _amount);
+        }
         transferToMarketBond(_account, _amount);
     }
 
@@ -267,6 +273,12 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         emit NewManagerAddress(_managerAddress);
     }
 
+    function setStakingThalesContract(address _stakingThales) external onlyOwner {
+        require(_stakingThales != address(0), "Invalid address");
+        stakingThales = IStakingThales(_stakingThales);
+        emit NewStakingThalesAddress(_stakingThales);
+    }
+
     modifier onlyOracleCouncilManagerAndOwner() {
         require(
             msg.sender == marketManager.oracleCouncilAddress() ||
@@ -286,4 +298,5 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     event NewOracleCouncilAddress(address oracleCouncil);
     event NewManagerAddress(address managerAddress);
     event BondTransferredFromCreatorToResolver(address market, uint amount);
+    event NewStakingThalesAddress(address stakingThales);
 }

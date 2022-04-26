@@ -26,21 +26,37 @@ async function main() {
 
 	const owner = new ethers.Wallet(user_key1, ethers.provider);
 
+	let StakingImplementation;
+
 	console.log('Owner is:' + owner.address);
 	console.log('Network name:' + network);
 
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 	}
-	const ProxyStaking = getTargetAddress('StakingThales', network);
-	const NewStaking = await ethers.getContractFactory('StakingThales');
+	const StakingAddress = getTargetAddress('StakingThales', network);
+	const StakingContract = await ethers.getContractFactory('StakingThales');
+	console.log("Address of staking: ",ProxyStaking);
 
-	await upgrades.upgradeProxy(ProxyStaking, NewStaking);
-	await delay(5000);
+	if (networkObj.chainId == 69) { 
+		await upgrades.upgradeProxy(ProxyStaking, NewStaking);
+		await delay(5000);
+	
+		console.log('Escrow upgraded');
+		StakingImplementation = await getImplementationAddress(
+			ethers.provider,
+			StakingAddress
+			);
+	}
+
+	if (networkObj.chainId == 10) {
+		StakingImplementation = await upgrades.prepareUpgrade(StakingAddress, StakingContract);
+		await delay(5000);
+	}
+
 
 	console.log('Staking upgraded');
 
-	const StakingImplementation = await getImplementationAddress(ethers.provider, ProxyStaking);
 	console.log('Implementation Staking: ', StakingImplementation);
 	setTargetAddress('StakingThalesImplementation', network, StakingImplementation);
 

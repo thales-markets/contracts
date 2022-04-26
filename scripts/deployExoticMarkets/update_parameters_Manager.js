@@ -14,6 +14,21 @@ async function main() {
 	let mainnetNetwork = 'mainnet';
     let PaymentTokenAddress;
     let SafeBoxAddress;
+    let OracleCouncilAddress;
+    let ThalesBondsAddress;
+    let ExoticTagsAddress;
+    let MarketDataAddress;
+    let ExoticRewardsAddress;
+    let OpenBidMastercopy;
+    let FixedBidMastercopy;
+    let TheRundownConsumer;
+
+    const OracleCouncilContract = await ethers.getContractFactory('ThalesOracleCouncil');
+    const ThalesBondsContract = await ethers.getContractFactory('ThalesBonds');
+    const ExoticTagsContract = await ethers.getContractFactory('ExoticPositionalTags');
+    const MarketDataContract = await ethers.getContractFactory('ExoticPositionalMarketData');
+    const ExoticRewardsContract = await ethers.getContractFactory('ExoticRewards');
+
 
 	if (network == 'homestead') {
 		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
@@ -31,165 +46,228 @@ async function main() {
 		mainnetNetwork = 'kovan';
         PaymentTokenAddress =  getTargetAddress("ExoticUSD", network);
         SafeBoxAddress = owner.address;
+        OracleCouncilAddress =  getTargetAddress("ThalesOracleCouncil", network);
+        ThalesBondsAddress =  getTargetAddress("ThalesBonds", network);
+        ExoticTagsAddress =  getTargetAddress("ExoticPositionalTags", network);
+        MarketDataAddress =  getTargetAddress("ExoticPositionalMarketData", network);
+        ExoticRewardsAddress =  getTargetAddress("ExoticRewards", network);
+        OpenBidMastercopy =  getTargetAddress("ExoticMarketOpenBidMastercopy", network);
+        FixedBidMastercopy =  getTargetAddress("ExoticMarketMasterCopy", network);
+        TheRundownConsumer =  getTargetAddress("TherundownConsumer", network);
 	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
         PaymentTokenAddress = getTargetAddress("ProxysUSD", network); // sUSD on OP
         SafeBoxAddress =  getTargetAddress("SafeBox", network);
+        OracleCouncilAddress =  getTargetAddress("ThalesOracleCouncil", network);
+        ThalesBondsAddress =  getTargetAddress("ThalesBonds", network);
+        ExoticTagsAddress =  getTargetAddress("ExoticPositionalTags", network);
+        MarketDataAddress =  getTargetAddress("ExoticPositionalMarketData", network);
+        ExoticRewardsAddress =  getTargetAddress("ExoticRewards", network);
+        OpenBidMastercopy =  getTargetAddress("ExoticMarketOpenBidMastercopy", network);
+        FixedBidMastercopy =  getTargetAddress("ExoticMarketMasterCopy", network);
+        TheRundownConsumer =  getTargetAddress("TherundownConsumer", network);
 	}
 	
+
     const ExoticMarketMastercopyAddress = getTargetAddress("ExoticMarketMasterCopy", network);
+    const ExoticMarketOpenBidMastercopyAddress = getTargetAddress("ExoticMarketOpenBidMastercopy", network);
     const ExoticMarketManagerAddress = getTargetAddress("ExoticMarketManager", network);
     const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
+    const OracleCouncil = await OracleCouncilContract.attach(OracleCouncilAddress);
+    const ThalesBonds = await ThalesBondsContract.attach(ThalesBondsAddress);
+    const ExoticTags = await ExoticTagsContract.attach(ExoticTagsAddress);
+    const MarketData = await MarketDataContract.attach(MarketDataAddress);
+    const ExoticRewards = await ExoticRewardsContract.attach(ExoticRewardsAddress);
     
 	let tx;
 	const ExoticManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
+
+    
+    // PERCENTAGES
+    const safeBoxPercentage = '1';
+    const creatorPercentage = '1';
+    const resolverPercentage = '1';
+    const withdrawalPercentage = '6';
+    const maxFinalWithdrawPercentage = '10';
+
+    // DURATIONS 
+	const defaultBackstopTimeout = '14400';
+    const minimumPositioningDuration = '28800';
+    const withdrawalTimePeriod = '28800';
+    const pDAOResolveTimePeriod = '172800';
+    const claimTimeoutDefaultPeriod = '86400';
+   
+    // LIMITS
+	const marketQuestionStringLimit = '220';
+    const marketSourceStringLimit = '220';
+    const marketPositionStringLimit = '60';
+    const disputeStringLengthLimit = '1000';
+    const maximumPositionsAllowed = '8';
+    const maxNumberOfTags = '5';
+    const maxOracleCouncilMembers = '5';
+   
+    // AMOUNTS
+	const minFixedTicketPrice = w3utils.toWei("10", "ether");
+    const maxFixedTicketPrice = w3utils.toWei("1000", "ether");
+    const disputePrice = w3utils.toWei("100", "ether");
+    const fixedBondAmount = w3utils.toWei("100", "ether");
+    const safeBoxLowAmount = w3utils.toWei("10", "ether");
+    const arbitraryRewardForDisputor = w3utils.toWei("10", "ether");
+    const maxAmountForOpenBidPosition = w3utils.toWei("1000", "ether");
+
+    // FLAGS
+	const creationRestrictedToOwner = false;
+    const openBidAllowed = false;
+
+	tx = await ExoticManagerDeployed.setPercentages(
+        safeBoxPercentage, 
+        creatorPercentage,
+        resolverPercentage,
+        withdrawalPercentage,
+        maxFinalWithdrawPercentage,
+        {from: owner.address});
+    await tx.wait().then(e => {
+        console.log('\n setPercentages: \n',
+        'safeBoxPercentage: ',safeBoxPercentage, '\n',
+        'creatorPercentage: ',creatorPercentage, '\n',
+        'resolverPercentage: ',resolverPercentage, '\n',
+        'withdrawalPercentage: ',withdrawalPercentage, '\n',
+        'maxFinalWithdrawPercentage: ',maxFinalWithdrawPercentage, '\n',
+        );
+    });
+    await delay(1000);
+
+    
 	
-	tx = await ExoticManagerDeployed.setArbitraryRewardForDisputor(w3utils.toWei("10", "ether"), {from: owner.address});
+    tx = await ExoticManagerDeployed.setDurations(
+        defaultBackstopTimeout,
+        minimumPositioningDuration,
+        withdrawalTimePeriod,
+        pDAOResolveTimePeriod,
+        claimTimeoutDefaultPeriod,
+        {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setArbitraryRewardForDisputor: 10');
-    });
-    await delay(1000);
-	
-    tx = await ExoticManagerDeployed.setDefaultBackstopTimeout("14400", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setDefaultBackstopTimeout: 14400 (4 hours)');
-    });
-    await delay(1000);
-    
-    tx = await ExoticManagerDeployed.setClaimTimeoutDefaultPeriod("86400", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setClaimTimeoutDefaultPeriod: 86400 (24 hours)');
-    });
-    await delay(1000);
-    
-    tx = await ExoticManagerDeployed.setCreatorPercentage("1", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setCreatorPercentage: 1');
-    });
-    await delay(1000);
-    
-    
-    tx = await ExoticManagerDeployed.setDisputePrice(w3utils.toWei("100", "ether"), {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setDisputePrice: 100');
-    });
-    await delay(1000);
-    
-    tx = await ExoticManagerDeployed.setDisputeStringLengthLimit("1100", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setDisputeStringLengthLimit: 1100');
-    });
-    await delay(1000);
-
-    tx = await ExoticManagerDeployed.setFixedBondAmount(w3utils.toWei("100", "ether"), {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setFixedBondAmount: 100');
+        console.log('\n setDurations: \n',
+        'defaultBackstopTimeout: ', defaultBackstopTimeout, '\n',
+        'minimumPositioningDuration: ', minimumPositioningDuration, '\n',
+        'withdrawalTimePeriod: ', withdrawalTimePeriod, '\n',
+        'pDAOResolveTimePeriod: ', pDAOResolveTimePeriod, '\n',
+        'claimTimeoutDefaultPeriod: ', claimTimeoutDefaultPeriod, '\n',
+        );
     });
     await delay(1000);
    
-    tx = await ExoticManagerDeployed.setMarketPositionStringLimit("60", {from: owner.address});
+    tx = await ExoticManagerDeployed.setLimits(
+        marketQuestionStringLimit,
+        marketSourceStringLimit,
+        marketPositionStringLimit,
+        disputeStringLengthLimit,
+        maximumPositionsAllowed,
+        maxNumberOfTags,
+        maxOracleCouncilMembers,
+        {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setMarketPositionStringLimit: 60');
-    });
-    await delay(1000);
-   
-    tx = await ExoticManagerDeployed.setMarketQuestionStringLimit("220", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setMarketQuestionStringLimit: 220');
-    });
-    await delay(1000);
-   
-    tx = await ExoticManagerDeployed.setMarketSourceStringLimit("220", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setMarketSourceStringLimit: 220');
-    });
-    await delay(1000);
-   
-    tx = await ExoticManagerDeployed.setMaxNumberOfTags("5", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setMaxNumberOfTags: 5');
+        console.log('\n setLimits: \n',
+        'marketQuestionStringLimit: ', marketQuestionStringLimit, '\n',
+        'marketSourceStringLimit: ', marketSourceStringLimit, '\n',
+        'marketPositionStringLimit: ', marketPositionStringLimit, '\n',
+        'disputeStringLengthLimit: ', disputeStringLengthLimit, '\n',
+        'maximumPositionsAllowed: ', maximumPositionsAllowed, '\n',
+        'maxNumberOfTags: ', maxNumberOfTags, '\n',
+        'maxOracleCouncilMembers: ', maxOracleCouncilMembers, '\n',
+        );
     });
     await delay(1000);
     
-    tx = await ExoticManagerDeployed.setMaxOracleCouncilMembers("5", {from: owner.address});
+    tx = await ExoticManagerDeployed.setAmounts(
+        minFixedTicketPrice,
+        maxFixedTicketPrice,
+        disputePrice,
+        fixedBondAmount,
+        safeBoxLowAmount,
+        arbitraryRewardForDisputor,
+        maxAmountForOpenBidPosition,
+        {from: owner.address});
     await tx.wait().then(e => {
-        console.log('\n setMaxOracleCouncilMembers: 5');
+        console.log('\n setAmounts: \n',
+        'minFixedTicketPrice: ', minFixedTicketPrice, '\n',
+        'maxFixedTicketPrice: ', maxFixedTicketPrice, '\n',
+        'disputePrice: ', disputePrice, '\n',
+        'fixedBondAmount: ', fixedBondAmount, '\n',
+        'safeBoxLowAmount: ', safeBoxLowAmount, '\n',
+        'arbitraryRewardForDisputor: ', arbitraryRewardForDisputor, '\n',
+        'maxAmountForOpenBidPosition: ', maxAmountForOpenBidPosition, '\n',
+        );
     });
     await delay(1000);
+    
+    // tx = await ExoticManagerDeployed.setFlags(
+    //     creationRestrictedToOwner,
+    //     openBidAllowed,
+    //     {from: owner.address});
+    // await tx.wait().then(e => {
+    //     console.log('\n setFlags: \n',
+    //     'creationRestrictedToOwner: ', creationRestrictedToOwner, '\n',
+    //     'openBidAllowed: ', openBidAllowed, '\n',
+    //     );
+    // });
+    // await delay(1000);
 
-    tx = await ExoticManagerDeployed.setMaximumPositionsAllowed("8", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setMaximumPositionsAllowed: 8');
-    });
-    await delay(1000);
+    // tx = await ExoticManagerDeployed.setAddresses(
+    //     FixedBidMastercopy,
+    //     OpenBidMastercopy,
+    //     OracleCouncilAddress,
+    //     PaymentTokenAddress,
+    //     ExoticTagsAddress,
+    //     TheRundownConsumer,
+    //     MarketDataAddress,
+    //     ExoticRewardsAddress,
+    //     SafeBoxAddress,
+    //     {from: owner.address});
+    // await tx.wait().then(e => {
+    //     console.log('\n setLimits: \n',
+    //     'marketQuestionStringLimit: ', marketQuestionStringLimit, '\n',
+    //     'marketSourceStringLimit: ', marketSourceStringLimit, '\n',
+    //     'marketPositionStringLimit: ', marketPositionStringLimit, '\n',
+    //     'disputeStringLengthLimit: ', disputeStringLengthLimit, '\n',
+    //     'maximumPositionsAllowed: ', maximumPositionsAllowed, '\n',
+    //     'maxNumberOfTags: ', maxNumberOfTags, '\n',
+    //     'maxOracleCouncilMembers: ', maxOracleCouncilMembers, '\n',
+    //     );
+    // });
+    // await delay(1000);
 
-    tx = await ExoticManagerDeployed.setMinimumFixedTicketAmount(w3utils.toWei("10", "ether"), {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setMinimumFixedTicketAmount: 10');
-    });
-    await delay(1000);
-    
-    tx = await ExoticManagerDeployed.setMinimumPositioningDuration("28800", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setMinimumPositioningDuration: 28800 (8 hours)');
-    });
-    await delay(1000);
-    
-    tx = await ExoticManagerDeployed.setOpenBidAllowed(false, {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setOpenBidAllowed: false');
-    });
-    await delay(1000);
-    
-    tx = await ExoticManagerDeployed.setPDAOResolveTimePeriod("172800", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setPDAOResolveTimePeriod: 172800 (48 hours)');
-    });
-    await delay(1000);    
-    
-    tx = await ExoticManagerDeployed.setPaymentToken(PaymentTokenAddress, {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setPaymentToken: ', PaymentTokenAddress);
-    });
-    await delay(1000);
+    // tx = await ExoticManagerDeployed.setThalesBonds(ThalesBondsAddress, {from: owner.address});
+    // await tx.wait().then(e => {
+    //     console.log('\n setThalesBonds: ', ThalesBondsAddress);
+    // });
+    // await delay(1000);  
 
-    tx = await ExoticManagerDeployed.setResolverPercentage("1", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setResolverPercentage: 1');
-    });
-    await delay(1000);    
+    // tx = await OracleCouncil.setMarketManager(ExoticManagerDeployed.address, {from: owner.address});
+    // await tx.wait().then(e => {
+    //     console.log('\n Council setMarketManager: ', ExoticManagerDeployed.address);
+    // });
+    // await delay(1000);    
     
-    tx = await ExoticManagerDeployed.setSafeBoxAddress(SafeBoxAddress, {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setSafeBoxAddress: ', SafeBoxAddress);
-    });
-    await delay(1000);
-
-    tx = await ExoticManagerDeployed.setSafeBoxLowAmount(w3utils.toWei("10", "ether"), {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setSafeBoxLowAmount: 10');
-    });
-    await delay(1000);
+    // tx = await ThalesBonds.setMarketManager(ExoticManagerDeployed.address, {from: owner.address});
+    // await tx.wait().then(e => {
+    //     console.log('\n Bonds setMarketManager: ', ExoticManagerDeployed.address);
+    // });
+    // await delay(1000);    
     
-    tx = await ExoticManagerDeployed.setSafeBoxPercentage("1", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setSafeBoxPercentage: 1');
-    });
-    await delay(1000);    
+    // tx = await MarketData.setMarketManager(ExoticManagerDeployed.address, {from: owner.address});
+    // await tx.wait().then(e => {
+    //     console.log('\n MarketData setMarketManager: ', ExoticManagerDeployed.address);
+    // });
+    // await delay(1000);    
     
-    tx = await ExoticManagerDeployed.setWithdrawalPercentage("6", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setWithdrawalPercentage: 6');
-    });
-    await delay(1000);    
-   
-    tx = await ExoticManagerDeployed.setWithdrawalTimePeriod("28800", {from: owner.address});
-    await tx.wait().then(e => {
-        console.log('\n setWithdrawalTimePeriod: 28800 - 8h');
-    });
-    await delay(1000);    
+    // tx = await ExoticRewards.setMarketManager(ExoticManagerDeployed.address, {from: owner.address});
+    // await tx.wait().then(e => {
+    //     console.log('\n ExoticRewards setMarketManager: ', ExoticManagerDeployed.address);
+    // });
+    // await delay(1000);    
 	
 	
 }

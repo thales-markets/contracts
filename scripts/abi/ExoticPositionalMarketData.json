@@ -243,6 +243,41 @@
             "internalType": "bool",
             "name": "canCreatorCancelMarket",
             "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalUsersTakenPositions",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "noWinners",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "canIssueFees",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "creatorFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "resolverFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "safeBoxFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalFee",
+            "type": "uint256"
           }
         ],
         "internalType": "struct ExoticPositionalMarketData.MarketData",

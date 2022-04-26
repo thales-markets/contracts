@@ -134,7 +134,8 @@ contract('Exotic Positional market', async accounts => {
 			{ from: manager });
 		
 		await ExoticPositionalMarketManager.setAmounts(
-			"10",
+			toUnit(10),
+			toUnit(1000),
 			disputePrice,
 			fixedBondAmount,
 			disputePrice,

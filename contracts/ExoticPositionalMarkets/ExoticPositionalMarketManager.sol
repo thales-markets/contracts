@@ -76,6 +76,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     mapping(address => bool) public cancelledByCreator;
     uint public maxAmountForOpenBidPosition;
     uint public maxFinalWithdrawPercentage;
+    uint public maxFixedTicketPrice;
 
     function initialize(address _owner) public initializer {
         setOwner(_owner);
@@ -97,8 +98,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low.");
         require(!creationRestrictedToOwner || msg.sender == owner, "Restricted creation");
         require(
-            (openBidAllowed && _fixedTicketPrice == 0) || _fixedTicketPrice >= minFixedTicketPrice,
-            "Exceeds min tickPrice"
+            (openBidAllowed && _fixedTicketPrice == 0) ||
+                (_fixedTicketPrice >= minFixedTicketPrice && _fixedTicketPrice <= maxFixedTicketPrice),
+            "Exc min/max"
         );
         require(
             IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice),
@@ -209,13 +211,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(_positionsOfCreator.length == _positionCount, "Creator deposits wrong");
         uint totalCreatorDeposit;
         uint[] memory creatorPositions = new uint[](_positionCount);
-        for(uint i=0; i<_positionCount; i++) {
+        for (uint i = 0; i < _positionCount; i++) {
             totalCreatorDeposit = totalCreatorDeposit.add(_positionsOfCreator[i]);
-            creatorPositions[i] = i+1;
+            creatorPositions[i] = i + 1;
         }
         require(IERC20(paymentToken).balanceOf(msg.sender) >= totalCreatorDeposit, "Low creation amount");
         require(IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= totalCreatorDeposit, "No allowance.");
-
 
         ExoticPositionalOpenBidMarket exoticMarket =
             ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
@@ -394,14 +395,13 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     // SETTERS ///////////////////////////////////////////////////////////////////////////
 
-
     function setBackstopTimeout(address _market) external onlyOracleCouncilAndOwner {
         IExoticPositionalMarket(_market).setBackstopTimeout(backstopTimeout);
     }
 
     function setCustomBackstopTimeout(address _market, uint _timeout) external onlyOracleCouncilAndOwner {
         require(_timeout > 0, "Invalid timeout");
-        if(IExoticPositionalMarket(_market).backstopTimeout() != _timeout) {
+        if (IExoticPositionalMarket(_market).backstopTimeout() != _timeout) {
             IExoticPositionalMarket(_market).setBackstopTimeout(_timeout);
         }
     }
@@ -417,34 +417,34 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         address _exoticRewards,
         address _safeBoxAddress
     ) external onlyOwner {
-        if(_paymentToken != paymentToken) {
+        if (_paymentToken != paymentToken) {
             paymentToken = _paymentToken;
-        }        
-        if(_exoticMarketMastercopy != exoticMarketMastercopy) {
+        }
+        if (_exoticMarketMastercopy != exoticMarketMastercopy) {
             exoticMarketMastercopy = _exoticMarketMastercopy;
-        }        
-        if(_exoticMarketOpenBidMastercopy != exoticMarketOpenBidMastercopy) {
+        }
+        if (_exoticMarketOpenBidMastercopy != exoticMarketOpenBidMastercopy) {
             exoticMarketOpenBidMastercopy = _exoticMarketOpenBidMastercopy;
-        }        
-        if(_oracleCouncilAddress != oracleCouncilAddress) {
+        }
+        if (_oracleCouncilAddress != oracleCouncilAddress) {
             oracleCouncilAddress = _oracleCouncilAddress;
         }
-        if(_tagsAddress != tagsAddress) {
+        if (_tagsAddress != tagsAddress) {
             tagsAddress = _tagsAddress;
         }
-        
-        if(_theRundownConsumerAddress != theRundownConsumerAddress) {
+
+        if (_theRundownConsumerAddress != theRundownConsumerAddress) {
             theRundownConsumerAddress = _theRundownConsumerAddress;
         }
-        
-        if(_marketDataAddress != marketDataAddress) {
+
+        if (_marketDataAddress != marketDataAddress) {
             marketDataAddress = _marketDataAddress;
         }
-        if(_exoticRewards != exoticRewards) {
+        if (_exoticRewards != exoticRewards) {
             exoticRewards = _exoticRewards;
         }
-        
-        if(_safeBoxAddress != safeBoxAddress) {
+
+        if (_safeBoxAddress != safeBoxAddress) {
             safeBoxAddress = _safeBoxAddress;
         }
         emit AddressesUpdated(
@@ -467,19 +467,19 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         uint _withdrawalPercentage,
         uint _maxFinalWithdrawPercentage
     ) external onlyOwner {
-        if(_safeBoxPercentage != safeBoxPercentage) {
+        if (_safeBoxPercentage != safeBoxPercentage) {
             safeBoxPercentage = _safeBoxPercentage;
-        }        
-        if(_creatorPercentage != creatorPercentage) {
+        }
+        if (_creatorPercentage != creatorPercentage) {
             creatorPercentage = _creatorPercentage;
-        }        
-        if(_resolverPercentage != resolverPercentage) {
+        }
+        if (_resolverPercentage != resolverPercentage) {
             resolverPercentage = _resolverPercentage;
-        }        
-        if(_withdrawalPercentage != withdrawalPercentage) {
+        }
+        if (_withdrawalPercentage != withdrawalPercentage) {
             withdrawalPercentage = _withdrawalPercentage;
         }
-        if(_maxFinalWithdrawPercentage != maxFinalWithdrawPercentage) {
+        if (_maxFinalWithdrawPercentage != maxFinalWithdrawPercentage) {
             maxFinalWithdrawPercentage = _maxFinalWithdrawPercentage;
         }
         emit PercentagesUpdated(
@@ -498,26 +498,26 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         uint _pDAOResolveTimePeriod,
         uint _claimTimeoutDefaultPeriod
     ) external onlyOwner {
-        if(_backstopTimeout != backstopTimeout) {
+        if (_backstopTimeout != backstopTimeout) {
             backstopTimeout = _backstopTimeout;
         }
 
-        if(_minimumPositioningDuration != minimumPositioningDuration) {
+        if (_minimumPositioningDuration != minimumPositioningDuration) {
             minimumPositioningDuration = _minimumPositioningDuration;
         }
-        
-        if(_withdrawalTimePeriod != withdrawalTimePeriod) {
+
+        if (_withdrawalTimePeriod != withdrawalTimePeriod) {
             withdrawalTimePeriod = _withdrawalTimePeriod;
         }
-        
-        if(_pDAOResolveTimePeriod != pDAOResolveTimePeriod) {
+
+        if (_pDAOResolveTimePeriod != pDAOResolveTimePeriod) {
             pDAOResolveTimePeriod = _pDAOResolveTimePeriod;
         }
-        
-        if(_claimTimeoutDefaultPeriod != claimTimeoutDefaultPeriod) {
+
+        if (_claimTimeoutDefaultPeriod != claimTimeoutDefaultPeriod) {
             claimTimeoutDefaultPeriod = _claimTimeoutDefaultPeriod;
         }
-        
+
         emit DurationsUpdated(
             _backstopTimeout,
             _minimumPositioningDuration,
@@ -536,34 +536,34 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         uint _maxNumberOfTags,
         uint _maxOracleCouncilMembers
     ) external onlyOwner {
-        if(_marketQuestionStringLimit != marketQuestionStringLimit) {
+        if (_marketQuestionStringLimit != marketQuestionStringLimit) {
             marketQuestionStringLimit = _marketQuestionStringLimit;
         }
-        
-        if(_marketSourceStringLimit != marketSourceStringLimit) {
+
+        if (_marketSourceStringLimit != marketSourceStringLimit) {
             marketSourceStringLimit = _marketSourceStringLimit;
         }
-        
-        if(_marketPositionStringLimit != marketPositionStringLimit) {
+
+        if (_marketPositionStringLimit != marketPositionStringLimit) {
             marketPositionStringLimit = _marketPositionStringLimit;
         }
-        
-        if(_disputeStringLengthLimit != disputeStringLengthLimit) {
+
+        if (_disputeStringLengthLimit != disputeStringLengthLimit) {
             disputeStringLengthLimit = _disputeStringLengthLimit;
         }
 
-        if(_maximumPositionsAllowed != maximumPositionsAllowed) {
+        if (_maximumPositionsAllowed != maximumPositionsAllowed) {
             maximumPositionsAllowed = _maximumPositionsAllowed;
         }
-        
-        if(_maxNumberOfTags != maxNumberOfTags) {
+
+        if (_maxNumberOfTags != maxNumberOfTags) {
             maxNumberOfTags = _maxNumberOfTags;
         }
-        
-        if(_maxOracleCouncilMembers != maxOracleCouncilMembers) {
+
+        if (_maxOracleCouncilMembers != maxOracleCouncilMembers) {
             maxOracleCouncilMembers = _maxOracleCouncilMembers;
         }
-        
+
         emit LimitsUpdated(
             _marketQuestionStringLimit,
             _marketSourceStringLimit,
@@ -577,38 +577,44 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     function setAmounts(
         uint _minFixedTicketPrice,
+        uint _maxFixedTicketPrice,
         uint _disputePrice,
         uint _fixedBondAmount,
         uint _safeBoxLowAmount,
         uint _arbitraryRewardForDisputor,
         uint _maxAmountForOpenBidPosition
     ) external onlyOwner {
-        if(_minFixedTicketPrice != minFixedTicketPrice) {
+        if (_minFixedTicketPrice != minFixedTicketPrice) {
             minFixedTicketPrice = _minFixedTicketPrice;
         }
         
-        if(_disputePrice != disputePrice) {
+        if (_maxFixedTicketPrice != maxFixedTicketPrice) {
+            maxFixedTicketPrice = _maxFixedTicketPrice;
+        }
+
+        if (_disputePrice != disputePrice) {
             disputePrice = _disputePrice;
         }
-        
-        if(_fixedBondAmount != fixedBondAmount) {
+
+        if (_fixedBondAmount != fixedBondAmount) {
             fixedBondAmount = _fixedBondAmount;
         }
 
-        if(_safeBoxLowAmount != safeBoxLowAmount) {
+        if (_safeBoxLowAmount != safeBoxLowAmount) {
             safeBoxLowAmount = _safeBoxLowAmount;
-        }        
-        
-        if(_arbitraryRewardForDisputor != arbitraryRewardForDisputor) {
+        }
+
+        if (_arbitraryRewardForDisputor != arbitraryRewardForDisputor) {
             arbitraryRewardForDisputor = _arbitraryRewardForDisputor;
         }
-        
-        if(_maxAmountForOpenBidPosition != maxAmountForOpenBidPosition) {
+
+        if (_maxAmountForOpenBidPosition != maxAmountForOpenBidPosition) {
             maxAmountForOpenBidPosition = _maxAmountForOpenBidPosition;
         }
-        
+
         emit AmountsUpdated(
             _minFixedTicketPrice,
+            _maxFixedTicketPrice,
             _disputePrice,
             _fixedBondAmount,
             _safeBoxLowAmount,
@@ -617,25 +623,17 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         );
     }
 
-    function setFlags(
-        bool _creationRestrictedToOwner,
-        bool _openBidAllowed
-    ) external onlyOwner {
-        if(_creationRestrictedToOwner != creationRestrictedToOwner) {
+    function setFlags(bool _creationRestrictedToOwner, bool _openBidAllowed) external onlyOwner {
+        if (_creationRestrictedToOwner != creationRestrictedToOwner) {
             creationRestrictedToOwner = _creationRestrictedToOwner;
         }
-        
-        if(_openBidAllowed != openBidAllowed) {
+
+        if (_openBidAllowed != openBidAllowed) {
             openBidAllowed = _openBidAllowed;
         }
-        
-       
-        emit FlagsUpdated(
-            _creationRestrictedToOwner,
-            _openBidAllowed
-        );
-    } 
 
+        emit FlagsUpdated(_creationRestrictedToOwner, _openBidAllowed);
+    }
 
     function setThalesBonds(address _thalesBonds) external onlyOwner {
         require(_thalesBonds != address(0), "Invalid address");
@@ -646,7 +644,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         IERC20(paymentToken).approve(address(thalesBonds), type(uint256).max);
         emit NewThalesBonds(_thalesBonds);
     }
-    
 
     function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
         require(_pauserAddress != address(0), "Invalid address");
@@ -694,12 +691,12 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     );
 
     event PercentagesUpdated(
-            uint safeBoxPercentage,
-            uint creatorPercentage,
-            uint resolverPercentage,
-            uint withdrawalPercentage,
-            uint maxFinalWithdrawPercentage
-        );
+        uint safeBoxPercentage,
+        uint creatorPercentage,
+        uint resolverPercentage,
+        uint withdrawalPercentage,
+        uint maxFinalWithdrawPercentage
+    );
 
     event DurationsUpdated(
         uint backstopTimeout,
@@ -720,6 +717,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     event AmountsUpdated(
         uint minFixedTicketPrice,
+        uint maxFixedTicketPrice,
         uint disputePrice,
         uint fixedBondAmount,
         uint safeBoxLowAmount,
@@ -727,10 +725,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         uint maxAmountForOpenBidPosition
     );
 
-    event FlagsUpdated(
-        bool _creationRestrictedToOwner,
-        bool _openBidAllowed
-    );
+    event FlagsUpdated(bool _creationRestrictedToOwner, bool _openBidAllowed);
 
     event MarketResolved(address marketAddress, uint outcomePosition);
     event MarketCanceled(address marketAddress);

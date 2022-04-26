@@ -72,6 +72,12 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "maxFixedTicketPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "disputePrice",
         "type": "uint256"
       },
@@ -1074,6 +1080,19 @@
   },
   {
     "inputs": [],
+    "name": "maxFixedTicketPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maxNumberOfTags",
     "outputs": [
       {
@@ -1501,6 +1520,11 @@
       {
         "internalType": "uint256",
         "name": "_minFixedTicketPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxFixedTicketPrice",
         "type": "uint256"
       },
       {

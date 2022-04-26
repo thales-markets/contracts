@@ -156,10 +156,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         require(marketPerGameId[_gameId] != address(0), "No market created for game");
 
-        if(isSportTwoPositionsSport(sportsIdPerGame[_gameId])){
+        if (isSportTwoPositionsSport(sportsIdPerGame[_gameId])) {
             require(_outcome == HOME_WIN || _outcome == AWAY_WIN, "Bad outcome for two position game");
-        }else{
-            require(_outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW, "Bad outcome for three position game");
+        } else {
+            require(
+                _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW,
+                "Bad outcome for three position game"
+            );
         }
 
         _resolveMarketManually(marketPerGameId[_gameId], _outcome);
@@ -169,10 +172,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(!isGameResolvedOrCanceled(gameIdPerMarket[_market]), "Market resoved or canceled");
         require(gameIdPerMarket[_market] != 0, "No market created for game");
 
-        if(isSportTwoPositionsSport(sportsIdPerGame[gameIdPerMarket[_market]])){
+        if (isSportTwoPositionsSport(sportsIdPerGame[gameIdPerMarket[_market]])) {
             require(_outcome == HOME_WIN || _outcome == AWAY_WIN, "Bad outcome for two position game");
-        }else{
-            require(_outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW, "Bad outcome for three position game");
+        } else {
+            require(
+                _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW,
+                "Bad outcome for three position game"
+            );
         }
 
         _resolveMarketManually(_market, _outcome);
@@ -333,7 +339,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(_gameId == queues.unproccessedGames(index), "Invalid Game ID");
 
         if (_isGameStatusResolved(game)) {
-
             uint _outcome = _callulateOutcome(game);
 
             exoticManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
@@ -353,7 +358,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _resolveMarketManually(address _market, uint _outcome) internal {
-
         uint index = queues.unproccessedGamesIndex(gameIdPerMarket[_market]);
 
         // it can return ZERO index, needs checking
@@ -367,7 +371,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _cancelMarketManually(address _market) internal {
-
         uint index = queues.unproccessedGamesIndex(gameIdPerMarket[_market]);
 
         // it can return ZERO index, needs checking

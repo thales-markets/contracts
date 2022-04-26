@@ -41,7 +41,7 @@ contract ExoticManagerData is Initializable, ProxyOwned, PausableUpgradeable, Pr
 
     bool public creationRestrictedToOwner;
     bool public openBidAllowed;
-    
+
     address public exoticMarketMastercopy;
     address public exoticMarketOpenBidMastercopy;
     address public oracleCouncilAddress;
@@ -58,7 +58,7 @@ contract ExoticManagerData is Initializable, ProxyOwned, PausableUpgradeable, Pr
         uint backstopTimeout;
         uint minimumPositioningDuration;
     }
-    
+
     struct ManagerData {
         uint fixedBondAmount;
         uint backstopTimeout;
@@ -285,216 +285,211 @@ contract ExoticManagerData is Initializable, ProxyOwned, PausableUpgradeable, Pr
         emit NewPaymentToken(_paymentToken);
     }
 
-
     function setTagsAddress(address _tagsAddress) external onlyOwner {
         require(_tagsAddress != address(0), "Invalid address");
         tagsAddress = _tagsAddress;
         emit NewTagsAddress(_tagsAddress);
     }
 
-    function setMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition)
-        external
-        onlyOwner
-    {
+    function setMaxAmountForOpenBidPosition(uint _maxAmountForOpenBidPosition) external onlyOwner {
         require(_maxAmountForOpenBidPosition != maxAmountForOpenBidPosition, "Same value");
         maxAmountForOpenBidPosition = _maxAmountForOpenBidPosition;
         emit NewMaxAmountForOpenBidPosition(_maxAmountForOpenBidPosition);
     }
-    
-    function setMaxFinalWithdrawPercentage(uint _maxFinalWithdrawPercentage)
-        external
-        onlyOwner
-    {
+
+    function setMaxFinalWithdrawPercentage(uint _maxFinalWithdrawPercentage) external onlyOwner {
         require(maxFinalWithdrawPercentage != _maxFinalWithdrawPercentage, "Same value");
         maxFinalWithdrawPercentage = _maxFinalWithdrawPercentage;
         emit NewMaxFinalWithdrawPercentage(_maxFinalWithdrawPercentage);
     }
 
     function setManagerDummyData(DummyStruct memory _data) external {
-        if(_data.fixedBondAmount != fixedBondAmount) {
+        if (_data.fixedBondAmount != fixedBondAmount) {
             fixedBondAmount = _data.fixedBondAmount;
             emit NewFixedBondAmount(_data.fixedBondAmount);
         }
-        if(_data.backstopTimeout != backstopTimeout) {
+        if (_data.backstopTimeout != backstopTimeout) {
             backstopTimeout = _data.backstopTimeout;
             emit NewDefaultBackstopTimeout(_data.backstopTimeout);
         }
-        
-        if(_data.minimumPositioningDuration != minimumPositioningDuration) {
+
+        if (_data.minimumPositioningDuration != minimumPositioningDuration) {
             minimumPositioningDuration = _data.minimumPositioningDuration;
             emit MinimumPositionDurationChanged(_data.minimumPositioningDuration);
         }
     }
 
     function setManagerData(ManagerData memory _data) external {
-        if(_data.fixedBondAmount != fixedBondAmount) {
+        if (_data.fixedBondAmount != fixedBondAmount) {
             fixedBondAmount = _data.fixedBondAmount;
             emit NewFixedBondAmount(_data.fixedBondAmount);
         }
-        if(_data.backstopTimeout != backstopTimeout) {
+        if (_data.backstopTimeout != backstopTimeout) {
             backstopTimeout = _data.backstopTimeout;
             emit NewDefaultBackstopTimeout(_data.backstopTimeout);
         }
-        
-        if(_data.minimumPositioningDuration != minimumPositioningDuration) {
+
+        if (_data.minimumPositioningDuration != minimumPositioningDuration) {
             minimumPositioningDuration = _data.minimumPositioningDuration;
             emit MinimumPositionDurationChanged(_data.minimumPositioningDuration);
         }
-       
-        if(_data.claimTimeoutDefaultPeriod != claimTimeoutDefaultPeriod) {
+
+        if (_data.claimTimeoutDefaultPeriod != claimTimeoutDefaultPeriod) {
             claimTimeoutDefaultPeriod = _data.claimTimeoutDefaultPeriod;
             emit NewClaimTimeoutDefaultPeriod(_data.claimTimeoutDefaultPeriod);
         }
-        
-        if(_data.pDAOResolveTimePeriod != pDAOResolveTimePeriod) {
+
+        if (_data.pDAOResolveTimePeriod != pDAOResolveTimePeriod) {
             pDAOResolveTimePeriod = _data.pDAOResolveTimePeriod;
             emit PDAOResolveTimePeriodChanged(_data.pDAOResolveTimePeriod);
         }
-        if(_data.safeBoxPercentage != safeBoxPercentage) {
+        if (_data.safeBoxPercentage != safeBoxPercentage) {
             safeBoxPercentage = _data.safeBoxPercentage;
             emit SafeBoxPercentageChanged(_data.safeBoxPercentage);
         }
-        
-        if(_data.creatorPercentage != creatorPercentage) {
+
+        if (_data.creatorPercentage != creatorPercentage) {
             creatorPercentage = _data.creatorPercentage;
             emit CreatorPercentageChanged(_data.creatorPercentage);
         }
-        
-        if(_data.resolverPercentage != resolverPercentage) {
+
+        if (_data.resolverPercentage != resolverPercentage) {
             resolverPercentage = _data.resolverPercentage;
             emit ResolverPercentageChanged(_data.resolverPercentage);
         }
-        
-        if(_data.withdrawalPercentage != withdrawalPercentage) {
+
+        if (_data.withdrawalPercentage != withdrawalPercentage) {
             withdrawalPercentage = _data.withdrawalPercentage;
             emit WithdrawalPercentageChanged(_data.withdrawalPercentage);
         }
-        
-        if(_data.maximumPositionsAllowed != maximumPositionsAllowed) {
+
+        if (_data.maximumPositionsAllowed != maximumPositionsAllowed) {
             maximumPositionsAllowed = _data.maximumPositionsAllowed;
             emit NewMaximumPositionsAllowed(_data.maximumPositionsAllowed);
         }
-        
-        if(_data.disputePrice != disputePrice) {
+
+        if (_data.disputePrice != disputePrice) {
             disputePrice = _data.disputePrice;
             emit NewDisputePrice(_data.disputePrice);
         }
-       
-        if(_data.maxOracleCouncilMembers != maxOracleCouncilMembers) {
+
+        if (_data.maxOracleCouncilMembers != maxOracleCouncilMembers) {
             maxOracleCouncilMembers = _data.maxOracleCouncilMembers;
             emit NewMaxOracleCouncilMembers(_data.maxOracleCouncilMembers);
         }
-        
-        if(_data.maxNumberOfTags != maxNumberOfTags) {
+
+        if (_data.maxNumberOfTags != maxNumberOfTags) {
             maxNumberOfTags = _data.maxNumberOfTags;
             emit NewMaxNumberOfTags(_data.maxNumberOfTags);
         }
-        
-        if(_data.maxNumberOfTags != maxNumberOfTags) {
+
+        if (_data.maxNumberOfTags != maxNumberOfTags) {
             maxNumberOfTags = _data.maxNumberOfTags;
             emit NewMaxNumberOfTags(_data.maxNumberOfTags);
         }
-        
-        if(_data.safeBoxLowAmount != safeBoxLowAmount) {
+
+        if (_data.safeBoxLowAmount != safeBoxLowAmount) {
             safeBoxLowAmount = _data.safeBoxLowAmount;
             emit NewSafeBoxLowAmount(_data.safeBoxLowAmount);
         }
-        
-        if(_data.arbitraryRewardForDisputor != arbitraryRewardForDisputor) {
+
+        if (_data.arbitraryRewardForDisputor != arbitraryRewardForDisputor) {
             arbitraryRewardForDisputor = _data.arbitraryRewardForDisputor;
             emit NewArbitraryRewardForDisputor(_data.arbitraryRewardForDisputor);
         }
-        
-        if(_data.minFixedTicketPrice != minFixedTicketPrice) {
+
+        if (_data.minFixedTicketPrice != minFixedTicketPrice) {
             minFixedTicketPrice = _data.minFixedTicketPrice;
             emit NewMinimumFixedTicketAmount(_data.minFixedTicketPrice);
         }
-        
-        if(_data.disputeStringLengthLimit != disputeStringLengthLimit) {
+
+        if (_data.disputeStringLengthLimit != disputeStringLengthLimit) {
             disputeStringLengthLimit = _data.disputeStringLengthLimit;
             emit NewDisputeStringLengthLimit(_data.disputeStringLengthLimit);
         }
-        
-        if(_data.marketQuestionStringLimit != marketQuestionStringLimit) {
+
+        if (_data.marketQuestionStringLimit != marketQuestionStringLimit) {
             marketQuestionStringLimit = _data.marketQuestionStringLimit;
             emit MarketQuestionStringLimitChanged(_data.marketQuestionStringLimit);
         }
-        
-        if(_data.marketSourceStringLimit != marketSourceStringLimit) {
+
+        if (_data.marketSourceStringLimit != marketSourceStringLimit) {
             marketSourceStringLimit = _data.marketSourceStringLimit;
             emit MarketSourceStringLimitChanged(_data.marketSourceStringLimit);
         }
-       
-        if(_data.marketPositionStringLimit != marketPositionStringLimit) {
+
+        if (_data.marketPositionStringLimit != marketPositionStringLimit) {
             marketPositionStringLimit = _data.marketPositionStringLimit;
             emit MarketPositionStringLimitChanged(_data.marketPositionStringLimit);
         }
-        
-        if(_data.withdrawalTimePeriod != withdrawalTimePeriod) {
+
+        if (_data.withdrawalTimePeriod != withdrawalTimePeriod) {
             withdrawalTimePeriod = _data.withdrawalTimePeriod;
             emit WithdrawalTimePeriodChanged(_data.withdrawalTimePeriod);
         }
-       
-        if(_data.maxAmountForOpenBidPosition != maxAmountForOpenBidPosition) {
+
+        if (_data.maxAmountForOpenBidPosition != maxAmountForOpenBidPosition) {
             maxAmountForOpenBidPosition = _data.maxAmountForOpenBidPosition;
             emit NewMaxAmountForOpenBidPosition(_data.maxAmountForOpenBidPosition);
         }
-        
-        if(_data.maxFinalWithdrawPercentage != maxFinalWithdrawPercentage) {
+
+        if (_data.maxFinalWithdrawPercentage != maxFinalWithdrawPercentage) {
             maxFinalWithdrawPercentage = _data.maxFinalWithdrawPercentage;
             emit NewMaxFinalWithdrawPercentage(_data.maxFinalWithdrawPercentage);
         }
-        
-        if(_data.creationRestrictedToOwner != creationRestrictedToOwner) {
+
+        if (_data.creationRestrictedToOwner != creationRestrictedToOwner) {
             creationRestrictedToOwner = _data.creationRestrictedToOwner;
             emit CreationRestrictedToOwnerChanged(_data.creationRestrictedToOwner);
         }
-        
-        if(_data.openBidAllowed != openBidAllowed) {
+
+        if (_data.openBidAllowed != openBidAllowed) {
             openBidAllowed = _data.openBidAllowed;
             emit OpenBidAllowedChanged(_data.openBidAllowed);
         }
-        
-        if(_data.exoticMarketMastercopy != exoticMarketMastercopy && _data.exoticMarketMastercopy != address(0)) {
+
+        if (_data.exoticMarketMastercopy != exoticMarketMastercopy && _data.exoticMarketMastercopy != address(0)) {
             exoticMarketMastercopy = _data.exoticMarketMastercopy;
             emit ExoticMarketMastercopyChanged(_data.exoticMarketMastercopy);
         }
-        
-        if(_data.exoticMarketOpenBidMastercopy != exoticMarketOpenBidMastercopy && _data.exoticMarketOpenBidMastercopy != address(0)) {
+
+        if (
+            _data.exoticMarketOpenBidMastercopy != exoticMarketOpenBidMastercopy &&
+            _data.exoticMarketOpenBidMastercopy != address(0)
+        ) {
             exoticMarketOpenBidMastercopy = _data.exoticMarketOpenBidMastercopy;
             emit ExoticMarketOpenBidMastercopyChanged(_data.exoticMarketOpenBidMastercopy);
         }
-        
-        if(_data.oracleCouncilAddress != oracleCouncilAddress && _data.oracleCouncilAddress != address(0)) {
+
+        if (_data.oracleCouncilAddress != oracleCouncilAddress && _data.oracleCouncilAddress != address(0)) {
             oracleCouncilAddress = _data.oracleCouncilAddress;
             emit NewOracleCouncilAddress(_data.oracleCouncilAddress);
         }
-        
-        if(_data.paymentToken != paymentToken && _data.paymentToken != address(0)) {
+
+        if (_data.paymentToken != paymentToken && _data.paymentToken != address(0)) {
             paymentToken = _data.paymentToken;
             emit NewPaymentToken(_data.paymentToken);
         }
-        
-        if(_data.tagsAddress != tagsAddress && _data.tagsAddress != address(0)) {
+
+        if (_data.tagsAddress != tagsAddress && _data.tagsAddress != address(0)) {
             tagsAddress = _data.tagsAddress;
             emit NewTagsAddress(_data.tagsAddress);
         }
-        
-        if(_data.theRundownConsumerAddress != theRundownConsumerAddress && _data.theRundownConsumerAddress != address(0)) {
+
+        if (_data.theRundownConsumerAddress != theRundownConsumerAddress && _data.theRundownConsumerAddress != address(0)) {
             theRundownConsumerAddress = _data.theRundownConsumerAddress;
             emit NewTheRundownConsumerAddress(_data.theRundownConsumerAddress);
         }
-        
-        if(_data.exoticRewards != exoticRewards && _data.exoticRewards != address(0)) {
+
+        if (_data.exoticRewards != exoticRewards && _data.exoticRewards != address(0)) {
             exoticRewards = _data.exoticRewards;
             emit ExoticRewardsChanged(_data.exoticRewards);
         }
-        
-        if(_data.marketDataAddress != marketDataAddress && _data.marketDataAddress != address(0)) {
+
+        if (_data.marketDataAddress != marketDataAddress && _data.marketDataAddress != address(0)) {
             marketDataAddress = _data.marketDataAddress;
             emit NewMarketDataAddress(_data.marketDataAddress);
         }
-    
     }
 
     event NewFixedBondAmount(uint fixedBond);

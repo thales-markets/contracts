@@ -161,6 +161,7 @@ contract('TherundownConsumer', accounts => {
 		
 		await ExoticPositionalMarketManager.setAmounts(
 			"10",
+			"1000",
 			disputePrice,
 			fixedBondAmount,
 			disputePrice,

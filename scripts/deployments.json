@@ -125,7 +125,7 @@
 		"DeciMath": "0x5c779CFAe4b6B7a02c32938dDAbDada8AB60fb14",
 		"PriceFeedImplementation": "0x750dCAdcA8e9e7f9702c85383119ea8034450993",
 		"ThalesAMM": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
-		"ThalesAMMImplementation": "0xb59E9915d505e43f1231cE8F8258B8C6168Ab891",
+		"ThalesAMMImplementation": "0xaca11c093Bf6D22528BfCa298aE5AeCfef68f9Ba",
 		"SafeBox": "0xe853207c30f3c32eda9aeffddc67357d5332978c",
 		"PriceFeedTwap": "0x3Aa0814cD91f33467e6eb5ba58e56AB73699582b",
 		"PriceFeedTwapImplementation": "0xE10A2743A1CE709693D3ad5f06EA47Df3E0b3ec9",
@@ -153,9 +153,7 @@
 		"NewPositionalMarketManagerImplementation": "0x6A4C622c3F3252393C8a819278b925CA58418215",
 		"NewPositionalMarketFactory": "0xdb5a5475002F3A09A033DCF21327c81E5cDD86fb",
 		"NewPositionalMarketFactoryImplementation": "0x7B603f09c9B93DBaa2cF56f233269B6751D74cfF",
-		"NewPositionalMarketData": "0xe840E8e7BEf7783F8F51908eF9e77044C1D4C58c",
-		"NewThalesAMM": "0x27E9d8250D19Ed277A2Fb7Cb3439841E6Fb9f7aB",
-		"NewThalesAMMImplementation": "0xaca11c093Bf6D22528BfCa298aE5AeCfef68f9Ba"
+		"NewPositionalMarketData": "0xe840E8e7BEf7783F8F51908eF9e77044C1D4C58c"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

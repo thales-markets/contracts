@@ -114,7 +114,7 @@ async function main() {
     const disputePrice = w3utils.toWei("100", "ether");
     const fixedBondAmount = w3utils.toWei("100", "ether");
     const safeBoxLowAmount = w3utils.toWei("10", "ether");
-    const arbitraryRewardForDisputor = w3utils.toWei("10", "ether");
+    const arbitraryRewardForDisputor = w3utils.toWei("50", "ether");
     const maxAmountForOpenBidPosition = w3utils.toWei("1000", "ether");
 
     // FLAGS
@@ -203,17 +203,17 @@ async function main() {
     });
     await delay(1000);
     
-    // tx = await ExoticManagerDeployed.setFlags(
-    //     creationRestrictedToOwner,
-    //     openBidAllowed,
-    //     {from: owner.address});
-    // await tx.wait().then(e => {
-    //     console.log('\n setFlags: \n',
-    //     'creationRestrictedToOwner: ', creationRestrictedToOwner, '\n',
-    //     'openBidAllowed: ', openBidAllowed, '\n',
-    //     );
-    // });
-    // await delay(1000);
+    tx = await ExoticManagerDeployed.setFlags(
+        creationRestrictedToOwner,
+        openBidAllowed,
+        {from: owner.address});
+    await tx.wait().then(e => {
+        console.log('\n setFlags: \n',
+        'creationRestrictedToOwner: ', creationRestrictedToOwner, '\n',
+        'openBidAllowed: ', openBidAllowed, '\n',
+        );
+    });
+    await delay(1000);
 
     // tx = await ExoticManagerDeployed.setAddresses(
     //     FixedBidMastercopy,

@@ -36,10 +36,10 @@ async function main() {
 	}
 	const StakingAddress = getTargetAddress('StakingThales', network);
 	const StakingContract = await ethers.getContractFactory('StakingThales');
-	console.log("Address of staking: ",ProxyStaking);
+	console.log("Address of staking: ", StakingAddress);
 
 	if (networkObj.chainId == 69) { 
-		await upgrades.upgradeProxy(ProxyStaking, NewStaking);
+		await upgrades.upgradeProxy(StakingAddress, StakingContract);
 		await delay(5000);
 	
 		console.log('Escrow upgraded');

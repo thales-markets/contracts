@@ -51,6 +51,13 @@ contract ExoticPositionalMarketData is Initializable, ProxyOwned, PausableUpgrad
         uint backstopTimeout;
         uint disputeClosedTime;
         bool canCreatorCancelMarket;
+        uint totalUsersTakenPositions;
+        bool noWinners;
+        bool canIssueFees;
+        uint creatorFee;
+        uint resolverFee;
+        uint safeBoxFee;
+        uint totalFee;
     }
 
     address public marketManagerAddress;
@@ -100,6 +107,10 @@ contract ExoticPositionalMarketData is Initializable, ProxyOwned, PausableUpgrad
         marketData.resolverAddress = IExoticPositionalMarketManager(marketManagerAddress).resolverAddress(_market);
         marketData.canCreatorCancelMarket = market.canCreatorCancelMarket();
         marketData.tags = market.getTags();
+        marketData.totalUsersTakenPositions = market.totalUsersTakenPositions();
+        marketData.noWinners = market.noWinners();
+        (marketData.creatorFee, marketData.resolverFee, marketData.safeBoxFee, marketData.totalFee) = market.getAllFees();
+        marketData.canIssueFees = market.canIssueFees();
 
         string[] memory positionPhrasesList = new string[](positionCount);
         uint[] memory amountsPerPosition = new uint[](positionCount);

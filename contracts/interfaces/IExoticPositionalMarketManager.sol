@@ -2,6 +2,7 @@ pragma solidity ^0.8.0;
 
 interface IExoticPositionalMarketManager {
     /* ========== VIEWS / VARIABLES ========== */
+    function paused() external view returns (bool);
     function getActiveMarketAddress(uint _index) external view returns(address);
     function getActiveMarketIndex(address _marketAddress) external view returns(uint);
     function isActiveMarket(address _marketAddress) external view returns(bool);
@@ -30,6 +31,8 @@ interface IExoticPositionalMarketManager {
     function disputeStringLengthLimit() external view returns(uint);
     function cancelledByCreator(address _market) external view returns(bool);
     function withdrawalTimePeriod() external view returns(uint);    
+    function maxAmountForOpenBidPosition() external view returns(uint);    
+    function maxFinalWithdrawPercentage() external view returns(uint);    
 
     function createExoticMarket(
         string memory _marketQuestion,
@@ -50,6 +53,7 @@ interface IExoticPositionalMarketManager {
         bool _withdrawalAllowed,
         uint[] memory _tags,
         uint _positionCount,
+        uint[] memory _positionsOfCreator,
         string[] memory _positionPhrases
     ) external;
     

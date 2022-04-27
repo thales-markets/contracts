@@ -5,6 +5,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_whitelistAddress",
+        "type": "address"
+      }
+    ],
+    "name": "AddedIntoWhitelist",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_marketAddress",
         "type": "address"
       },
@@ -13,34 +26,6 @@
         "internalType": "bytes32",
         "name": "_id",
         "type": "bytes32"
-      },
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "gameId",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint8",
-            "name": "homeScore",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint8",
-            "name": "awayScore",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint8",
-            "name": "statusId",
-            "type": "uint8"
-          }
-        ],
-        "indexed": false,
-        "internalType": "struct TherundownConsumer.GameResolve",
-        "name": "_game",
-        "type": "tuple"
       }
     ],
     "name": "CancelSportsMarket",
@@ -72,6 +57,21 @@
             "internalType": "uint256",
             "name": "startTime",
             "type": "uint256"
+          },
+          {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
           },
           {
             "internalType": "string",
@@ -125,6 +125,21 @@
             "internalType": "uint256",
             "name": "startTime",
             "type": "uint256"
+          },
+          {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
           },
           {
             "internalType": "string",
@@ -242,6 +257,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_fixedsUSD",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewFixedsUSD",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "contract GamesQueue",
         "name": "_queues",
         "type": "address"
@@ -337,32 +365,10 @@
         "type": "bytes32"
       },
       {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "gameId",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint8",
-            "name": "homeScore",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint8",
-            "name": "awayScore",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint8",
-            "name": "statusId",
-            "type": "uint8"
-          }
-        ],
         "indexed": false,
-        "internalType": "struct TherundownConsumer.GameResolve",
-        "name": "_game",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
       }
     ],
     "name": "ResolveSportsMarket",
@@ -459,37 +465,47 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "teamA",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "teamB",
-        "type": "string"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_numberOfPositions",
-        "type": "uint256"
-      }
-    ],
-    "name": "_createPhrases",
-    "outputs": [
-      {
-        "internalType": "string[]",
-        "name": "",
-        "type": "string[]"
-      }
-    ],
-    "stateMutability": "pure",
+    "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "acceptOwnership",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_whitelistAddress",
+        "type": "address"
+      }
+    ],
+    "name": "addToWhitelist",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "cancelGameManually",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "cancelMarketManually",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -523,6 +539,19 @@
   {
     "inputs": [],
     "name": "fixedTicketPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "fixedsUSD",
     "outputs": [
       {
         "internalType": "uint256",
@@ -600,6 +629,21 @@
         "type": "uint256"
       },
       {
+        "internalType": "int24",
+        "name": "homeOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "awayOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "drawOdds",
+        "type": "int24"
+      },
+      {
         "internalType": "string",
         "name": "homeTeam",
         "type": "string"
@@ -646,6 +690,25 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "gameIdPerMarket",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -708,6 +771,21 @@
             "type": "uint256"
           },
           {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
+          },
+          {
             "internalType": "string",
             "name": "homeTeam",
             "type": "string"
@@ -752,6 +830,21 @@
             "internalType": "uint256",
             "name": "startTime",
             "type": "uint256"
+          },
+          {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
           },
           {
             "internalType": "string",
@@ -881,6 +974,63 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getOddsAwayTeam",
+    "outputs": [
+      {
+        "internalType": "int24",
+        "name": "",
+        "type": "int24"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getOddsDraw",
+    "outputs": [
+      {
+        "internalType": "int24",
+        "name": "",
+        "type": "int24"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getOddsHomeTeam",
+    "outputs": [
+      {
+        "internalType": "int24",
+        "name": "",
+        "type": "int24"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -909,6 +1059,11 @@
         "internalType": "bool",
         "name": "_withdrawalAllowed",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_fixedsUSD",
+        "type": "uint256"
       },
       {
         "internalType": "contract GamesQueue",
@@ -1256,9 +1411,45 @@
         "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      }
+    ],
+    "name": "resolveGameManually",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
       }
     ],
     "name": "resolveMarketForGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      }
+    ],
+    "name": "resolveMarketManually",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1285,6 +1476,19 @@
       }
     ],
     "name": "setFixedTicketPrice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_fixedsUSD",
+        "type": "uint256"
+      }
+    ],
+    "name": "setFixedsUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1450,6 +1654,25 @@
       }
     ],
     "name": "twoPositionSport",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "whitelistedAddresses",
     "outputs": [
       {
         "internalType": "bool",

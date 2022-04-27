@@ -32,15 +32,28 @@ async function main() {
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 	}
-	const ProxyEscrow = getTargetAddress('EscrowThales', network);
+	const EscrowAddress = getTargetAddress('EscrowThales', network);
+	const EscrowThales = await ethers.getContractFactory('EscrowThales');
 
-	const NewEscrow = await ethers.getContractFactory('EscrowThales');
+	let EscrowImplementation;
 
-	await upgrades.upgradeProxy(ProxyEscrow, NewEscrow);
-	await delay(5000);
-	console.log('Escrow upgraded');
+	if (networkObj.chainId == 69) { 
+		await upgrades.upgradeProxy(EscrowAddress, EscrowThales);
+		await delay(5000);
+		console.log('Escrow upgraded');
+		EscrowImplementation = await getImplementationAddress(
+			ethers.provider,
+			EscrowAddress
+			);
+	}
 
-	const EscrowImplementation = await getImplementationAddress(ethers.provider, ProxyEscrow);
+	if (networkObj.chainId == 10) {
+		EscrowImplementation = await upgrades.prepareUpgrade(EscrowAddress, EscrowThales);
+		await delay(5000);
+		console.log('Escrow upgraded');
+	}
+
+	
 	console.log('Implementation Escrow: ', EscrowImplementation);
 	setTargetAddress('EscrowThalesImplementation', network, EscrowImplementation);
 

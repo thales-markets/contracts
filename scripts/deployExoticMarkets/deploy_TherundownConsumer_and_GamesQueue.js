@@ -69,6 +69,7 @@ async function main() {
 	const twoPositionSports = [4];
 	const fixedPrice = w3utils.toWei('10');
 	const withdrawalAllowed = true;
+	const fixedsUSD = w3utils.toWei('100');
 
 	/* ========== DEPLOY CONTRACT ========== */
 
@@ -101,6 +102,7 @@ async function main() {
 		twoPositionSports,
 		fixedPrice,
 		withdrawalAllowed,
+		fixedsUSD,
 		gamesQueue.address,
 	]);
 

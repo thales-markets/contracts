@@ -120,6 +120,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "exoticBonds",
+        "type": "address"
+      }
+    ],
+    "name": "ExoticBondsAddressChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bool",
         "name": "extrarewardsactive",
         "type": "bool"
@@ -654,6 +667,21 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "exoticBonds",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,
@@ -1483,6 +1511,21 @@
       }
     ],
     "name": "setEscrow",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_exoticBonds",
+        "type": "address"
+      }
+    ],
+    "name": "setExoticBonds",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

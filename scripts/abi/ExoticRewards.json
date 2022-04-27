@@ -294,19 +294,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_paymentToken",
-        "type": "address"
-      }
-    ],
-    "name": "setPaymentToken",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "proxyAddress",
         "type": "address"
       }

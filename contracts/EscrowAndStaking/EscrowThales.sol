@@ -120,7 +120,7 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
 
     function vest(uint amount) external nonReentrant notPaused returns (bool) {
         require(amount > 0, "Claimed amount is 0");
-        require(currentVestingPeriod > NUM_PERIODS, "Vesting rewards still not available");
+        require(currentVestingPeriod >= NUM_PERIODS, "Vesting rewards still not available");
 
         uint vestingAmount = 0;
         vestingAmount = totalAccountEscrowedAmount[msg.sender].sub(_getVestingNotAvailable(msg.sender));

@@ -31,32 +31,53 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 	
+	
     const ExoticMarketMastercopyAddress = getTargetAddress("ExoticMarketMasterCopy", network);
     const ExoticMarketManagerAddress = getTargetAddress("ExoticMarketManager", network);
     const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
     
-    await upgrades.upgradeProxy(ExoticMarketManagerAddress, ExoticMarketManager);
-    await delay(5000);
-
-    console.log('ExoticMarketManager upgraded');
-
-  	const ExoticMarketManagerImplementation = await getImplementationAddress(
-		ethers.provider,
-		ExoticMarketManagerAddress
-	);
-
-	console.log('Implementation ExoticMarketManager: ', ExoticMarketManagerImplementation);
-	setTargetAddress('ExoticMarketManagerImplementation', network, ExoticMarketManagerImplementation);
-
+	if (networkObj.chainId == 69) {
+		await upgrades.upgradeProxy(ExoticMarketManagerAddress, ExoticMarketManager);
+		await delay(5000);
 	
-	try {
-		await hre.run('verify:verify', {
-			address: ExoticMarketManagerImplementation,
-		});
-	} catch (e) {
-		console.log(e);
+		console.log('ExoticMarketManager upgraded');
+	
+		  const ExoticMarketManagerImplementation = await getImplementationAddress(
+			ethers.provider,
+			ExoticMarketManagerAddress
+		);
+	
+		console.log('Implementation ExoticMarketManager: ', ExoticMarketManagerImplementation);
+		setTargetAddress('ExoticMarketManagerImplementation', network, ExoticMarketManagerImplementation);
+	
+		
+		try {
+			await hre.run('verify:verify', {
+				address: ExoticMarketManagerImplementation,
+			});
+		} catch (e) {
+			console.log(e);
+		}
 	}
 
+	if (networkObj.chainId == 10) {
+		const implementation = await upgrades.prepareUpgrade(ExoticMarketManagerAddress, ExoticMarketManager);
+		await delay(5000);
+
+		console.log('ExoticMarketManager upgraded');
+
+		console.log('Implementation ExoticMarketManager: ', implementation);
+		setTargetAddress('ExoticMarketManagerImplementation', network, implementation);
+
+		
+		try {
+			await hre.run('verify:verify', {
+				address: implementation,
+			});
+		} catch (e) {
+			console.log(e);
+		}
+	}
 
 }
 

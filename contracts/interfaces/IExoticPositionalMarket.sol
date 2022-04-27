@@ -28,6 +28,7 @@ interface IExoticPositionalMarket {
     function arbitraryRewardForDisputor() external view returns(uint);
     function backstopTimeout() external view returns(uint);
     function disputeClosedTime() external view returns(uint);
+    function totalUsersTakenPositions() external view returns(uint);
     
     function withdrawalAllowed() external view returns(bool);
     function disputed() external view returns(bool);
@@ -41,6 +42,7 @@ interface IExoticPositionalMarket {
     function canCreatorCancelMarket() external view returns (bool);
     function getAllFees() external view returns (uint, uint, uint, uint);
     function canIssueFees() external view returns (bool);
+    function noWinners() external view returns (bool);
 
 
     function transferBondToMarket(address _sender, uint _amount) external;

@@ -38,12 +38,12 @@ async function main() {
 	let EscrowImplementation;
 
 	if (networkObj.chainId == 69) { 
-		await upgrades.upgradeProxy(ProxyEscrow, NewEscrow);
+		await upgrades.upgradeProxy(EscrowAddress, EscrowThales);
 		await delay(5000);
 		console.log('Escrow upgraded');
 		EscrowImplementation = await getImplementationAddress(
 			ethers.provider,
-			ThalesBondsAddress
+			EscrowAddress
 			);
 	}
 

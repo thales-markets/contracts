@@ -26,7 +26,7 @@ import "../utils/libraries/AddressSetLib.sol";
 contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
     using AddressSetLib for AddressSetLib.AddressSet;
-    
+
     AddressSetLib.AddressSet private _activeMarkets;
     // AddressSetLib.AddressSet private _maturedMarkets;
 
@@ -74,10 +74,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     mapping(address => address) public resolverAddress;
     mapping(address => bool) public isChainLinkMarket;
     mapping(address => bool) public cancelledByCreator;
+    uint public maxAmountForOpenBidPosition;
+    uint public maxFinalWithdrawPercentage;
+    uint public maxFixedTicketPrice;
 
-    function initialize(
-        address _owner
-    ) public initializer {
+    function initialize(address _owner) public initializer {
         setOwner(_owner);
         initNonReentrant();
     }
@@ -95,10 +96,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         string[] memory _positionPhrases
     ) external nonReentrant whenNotPaused {
         require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low.");
-        require(!creationRestrictedToOwner || msg.sender == owner, "Creation is restricted. ");
+        require(!creationRestrictedToOwner || msg.sender == owner, "Restricted creation");
         require(
-            (openBidAllowed && _fixedTicketPrice == 0) || _fixedTicketPrice >= minFixedTicketPrice,
-            "Exceeds min tickPrice"
+            (openBidAllowed && _fixedTicketPrice == 0) ||
+                (_fixedTicketPrice >= minFixedTicketPrice && _fixedTicketPrice <= maxFixedTicketPrice),
+            "Exc min/max"
         );
         require(
             IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice),
@@ -117,7 +119,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(bytes(_marketSource).length < marketSourceStringLimit, "mSource exceeds length");
         require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
         for (uint i = 0; i < _tags.length; i++) {
-            require(IExoticPositionalTags(tagsAddress).isValidTagNumber(_tags[i]), "Not valid tag.");
+            require(IExoticPositionalTags(tagsAddress).isValidTagNumber(_tags[i]), "Invalid tag.");
         }
 
         if (_fixedTicketPrice > 0) {
@@ -194,19 +196,27 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         bool _withdrawalAllowed,
         uint[] memory _tags,
         uint _positionCount,
+        uint[] memory _positionsOfCreator,
         string[] memory _positionPhrases
     ) external nonReentrant whenNotPaused {
         require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low");
         require(theRundownConsumerAddress != address(0), "Invalid theRundownConsumer");
         require(msg.sender == theRundownConsumerAddress, "Invalid creator");
         require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
-        require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount, "Low amount for creation");
-        require(IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount, "No allowance.");
         require(keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")), "Invalid question");
         require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid source");
         require(_positionCount == _positionPhrases.length, "Invalid posCount");
-        require(bytes(_marketQuestion).length < 110, "Question exceeds length");
-        require(thereAreNonEqualPositions(_positionPhrases), "Equal positional phrases");
+        require(bytes(_marketQuestion).length < 110, "Q exceeds length");
+        require(thereAreNonEqualPositions(_positionPhrases), "Equal pos phrases");
+        require(_positionsOfCreator.length == _positionCount, "Creator deposits wrong");
+        uint totalCreatorDeposit;
+        uint[] memory creatorPositions = new uint[](_positionCount);
+        for (uint i = 0; i < _positionCount; i++) {
+            totalCreatorDeposit = totalCreatorDeposit.add(_positionsOfCreator[i]);
+            creatorPositions[i] = i + 1;
+        }
+        require(IERC20(paymentToken).balanceOf(msg.sender) >= totalCreatorDeposit, "Low creation amount");
+        require(IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= totalCreatorDeposit, "No allowance.");
 
         ExoticPositionalOpenBidMarket exoticMarket =
             ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
@@ -222,8 +232,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         );
         isChainLinkMarket[address(exoticMarket)] = true;
         creatorAddress[address(exoticMarket)] = msg.sender;
-        IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
+        // IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
         _activeMarkets.add(address(exoticMarket));
+        exoticMarket.takeCreatorInitialOpenBidPositions(creatorPositions, _positionsOfCreator);
         emit CLMarketCreated(
             address(exoticMarket),
             _marketQuestion,
@@ -336,8 +347,10 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             IExoticPositionalMarket(_marketAddress).canUsersClaim() || cancelledByCreator[_marketAddress],
             "Not claimable"
         );
-        if(IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
-        IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0) {
+        if (
+            IThalesBonds(thalesBonds).getCreatorBondForMarket(_marketAddress) > 0 ||
+            IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0
+        ) {
             IThalesBonds(thalesBonds).issueBondsBackToCreatorAndResolver(_marketAddress);
         }
     }
@@ -367,15 +380,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     function isActiveMarket(address _marketAddress) public view returns (bool) {
         return _activeMarkets.contains(_marketAddress);
     }
-    
+
     function numberOfActiveMarkets() external view returns (uint) {
         return _activeMarkets.elements.length;
     }
 
-    function getActiveMarketAddress(uint _index) external view returns(address) {
+    function getActiveMarketAddress(uint _index) external view returns (address) {
         return _activeMarkets.elements[_index];
     }
-
 
     function isPauserAddress(address _pauser) external view returns (bool) {
         return pauserIndex[_pauser] > 0;
@@ -383,197 +395,244 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     // SETTERS ///////////////////////////////////////////////////////////////////////////
 
-    function setSafeBoxAddress(address _safeBoxAddress) external onlyOwner {
-        require(_safeBoxAddress != address(0), "Invalid address");
-        safeBoxAddress = _safeBoxAddress;
-        emit NewSafeBoxAddress(_safeBoxAddress);
-    }
-
     function setBackstopTimeout(address _market) external onlyOracleCouncilAndOwner {
         IExoticPositionalMarket(_market).setBackstopTimeout(backstopTimeout);
     }
 
     function setCustomBackstopTimeout(address _market, uint _timeout) external onlyOracleCouncilAndOwner {
         require(_timeout > 0, "Invalid timeout");
-        require(IExoticPositionalMarket(_market).backstopTimeout() != _timeout, "Equal to last");
-        IExoticPositionalMarket(_market).setBackstopTimeout(_timeout);
+        if (IExoticPositionalMarket(_market).backstopTimeout() != _timeout) {
+            IExoticPositionalMarket(_market).setBackstopTimeout(_timeout);
+        }
     }
 
-    function setExoticMarketMastercopy(address _exoticMastercopy) external onlyOwner {
-        require(_exoticMastercopy != address(0), "Exotic market invalid");
-        exoticMarketMastercopy = _exoticMastercopy;
-        emit ExoticMarketMastercopyChanged(_exoticMastercopy);
+    function setAddresses(
+        address _exoticMarketMastercopy,
+        address _exoticMarketOpenBidMastercopy,
+        address _oracleCouncilAddress,
+        address _paymentToken,
+        address _tagsAddress,
+        address _theRundownConsumerAddress,
+        address _marketDataAddress,
+        address _exoticRewards,
+        address _safeBoxAddress
+    ) external onlyOwner {
+        if (_paymentToken != paymentToken) {
+            paymentToken = _paymentToken;
+        }
+        if (_exoticMarketMastercopy != exoticMarketMastercopy) {
+            exoticMarketMastercopy = _exoticMarketMastercopy;
+        }
+        if (_exoticMarketOpenBidMastercopy != exoticMarketOpenBidMastercopy) {
+            exoticMarketOpenBidMastercopy = _exoticMarketOpenBidMastercopy;
+        }
+        if (_oracleCouncilAddress != oracleCouncilAddress) {
+            oracleCouncilAddress = _oracleCouncilAddress;
+        }
+        if (_tagsAddress != tagsAddress) {
+            tagsAddress = _tagsAddress;
+        }
+
+        if (_theRundownConsumerAddress != theRundownConsumerAddress) {
+            theRundownConsumerAddress = _theRundownConsumerAddress;
+        }
+
+        if (_marketDataAddress != marketDataAddress) {
+            marketDataAddress = _marketDataAddress;
+        }
+        if (_exoticRewards != exoticRewards) {
+            exoticRewards = _exoticRewards;
+        }
+
+        if (_safeBoxAddress != safeBoxAddress) {
+            safeBoxAddress = _safeBoxAddress;
+        }
+        emit AddressesUpdated(
+            _paymentToken,
+            _exoticMarketMastercopy,
+            _exoticMarketOpenBidMastercopy,
+            _oracleCouncilAddress,
+            _tagsAddress,
+            _theRundownConsumerAddress,
+            _marketDataAddress,
+            _exoticRewards,
+            _safeBoxAddress
+        );
     }
 
-    function setExoticMarketOpenBidMastercopy(address _exoticOpenBidMastercopy) external onlyOwner {
-        require(_exoticOpenBidMastercopy != address(0), "Exotic market invalid");
-        exoticMarketOpenBidMastercopy = _exoticOpenBidMastercopy;
-        emit ExoticMarketOpenBidMastercopyChanged(_exoticOpenBidMastercopy);
+    function setPercentages(
+        uint _safeBoxPercentage,
+        uint _creatorPercentage,
+        uint _resolverPercentage,
+        uint _withdrawalPercentage,
+        uint _maxFinalWithdrawPercentage
+    ) external onlyOwner {
+        if (_safeBoxPercentage != safeBoxPercentage) {
+            safeBoxPercentage = _safeBoxPercentage;
+        }
+        if (_creatorPercentage != creatorPercentage) {
+            creatorPercentage = _creatorPercentage;
+        }
+        if (_resolverPercentage != resolverPercentage) {
+            resolverPercentage = _resolverPercentage;
+        }
+        if (_withdrawalPercentage != withdrawalPercentage) {
+            withdrawalPercentage = _withdrawalPercentage;
+        }
+        if (_maxFinalWithdrawPercentage != maxFinalWithdrawPercentage) {
+            maxFinalWithdrawPercentage = _maxFinalWithdrawPercentage;
+        }
+        emit PercentagesUpdated(
+            _safeBoxPercentage,
+            _creatorPercentage,
+            _resolverPercentage,
+            _withdrawalPercentage,
+            _maxFinalWithdrawPercentage
+        );
     }
 
-    function setExoticRewards(address _exoticRewards) external onlyOwner {
-        require(_exoticRewards != address(0), "Exotic rewards invalid");
-        exoticRewards = _exoticRewards;
-        emit ExoticRewardsChanged(_exoticRewards);
+    function setDurations(
+        uint _backstopTimeout,
+        uint _minimumPositioningDuration,
+        uint _withdrawalTimePeriod,
+        uint _pDAOResolveTimePeriod,
+        uint _claimTimeoutDefaultPeriod
+    ) external onlyOwner {
+        if (_backstopTimeout != backstopTimeout) {
+            backstopTimeout = _backstopTimeout;
+        }
+
+        if (_minimumPositioningDuration != minimumPositioningDuration) {
+            minimumPositioningDuration = _minimumPositioningDuration;
+        }
+
+        if (_withdrawalTimePeriod != withdrawalTimePeriod) {
+            withdrawalTimePeriod = _withdrawalTimePeriod;
+        }
+
+        if (_pDAOResolveTimePeriod != pDAOResolveTimePeriod) {
+            pDAOResolveTimePeriod = _pDAOResolveTimePeriod;
+        }
+
+        if (_claimTimeoutDefaultPeriod != claimTimeoutDefaultPeriod) {
+            claimTimeoutDefaultPeriod = _claimTimeoutDefaultPeriod;
+        }
+
+        emit DurationsUpdated(
+            _backstopTimeout,
+            _minimumPositioningDuration,
+            _withdrawalTimePeriod,
+            _pDAOResolveTimePeriod,
+            _claimTimeoutDefaultPeriod
+        );
     }
 
-    function setMinimumPositioningDuration(uint _duration) external onlyOwner {
-        minimumPositioningDuration = _duration;
-        emit MinimumPositionDurationChanged(_duration);
+    function setLimits(
+        uint _marketQuestionStringLimit,
+        uint _marketSourceStringLimit,
+        uint _marketPositionStringLimit,
+        uint _disputeStringLengthLimit,
+        uint _maximumPositionsAllowed,
+        uint _maxNumberOfTags,
+        uint _maxOracleCouncilMembers
+    ) external onlyOwner {
+        if (_marketQuestionStringLimit != marketQuestionStringLimit) {
+            marketQuestionStringLimit = _marketQuestionStringLimit;
+        }
+
+        if (_marketSourceStringLimit != marketSourceStringLimit) {
+            marketSourceStringLimit = _marketSourceStringLimit;
+        }
+
+        if (_marketPositionStringLimit != marketPositionStringLimit) {
+            marketPositionStringLimit = _marketPositionStringLimit;
+        }
+
+        if (_disputeStringLengthLimit != disputeStringLengthLimit) {
+            disputeStringLengthLimit = _disputeStringLengthLimit;
+        }
+
+        if (_maximumPositionsAllowed != maximumPositionsAllowed) {
+            maximumPositionsAllowed = _maximumPositionsAllowed;
+        }
+
+        if (_maxNumberOfTags != maxNumberOfTags) {
+            maxNumberOfTags = _maxNumberOfTags;
+        }
+
+        if (_maxOracleCouncilMembers != maxOracleCouncilMembers) {
+            maxOracleCouncilMembers = _maxOracleCouncilMembers;
+        }
+
+        emit LimitsUpdated(
+            _marketQuestionStringLimit,
+            _marketSourceStringLimit,
+            _marketPositionStringLimit,
+            _disputeStringLengthLimit,
+            _maximumPositionsAllowed,
+            _maxNumberOfTags,
+            _maxOracleCouncilMembers
+        );
     }
 
-    function setSafeBoxPercentage(uint _safeBoxPercentage) external onlyOwner {
-        safeBoxPercentage = _safeBoxPercentage;
-        emit SafeBoxPercentageChanged(_safeBoxPercentage);
+    function setAmounts(
+        uint _minFixedTicketPrice,
+        uint _maxFixedTicketPrice,
+        uint _disputePrice,
+        uint _fixedBondAmount,
+        uint _safeBoxLowAmount,
+        uint _arbitraryRewardForDisputor,
+        uint _maxAmountForOpenBidPosition
+    ) external onlyOwner {
+        if (_minFixedTicketPrice != minFixedTicketPrice) {
+            minFixedTicketPrice = _minFixedTicketPrice;
+        }
+        
+        if (_maxFixedTicketPrice != maxFixedTicketPrice) {
+            maxFixedTicketPrice = _maxFixedTicketPrice;
+        }
+
+        if (_disputePrice != disputePrice) {
+            disputePrice = _disputePrice;
+        }
+
+        if (_fixedBondAmount != fixedBondAmount) {
+            fixedBondAmount = _fixedBondAmount;
+        }
+
+        if (_safeBoxLowAmount != safeBoxLowAmount) {
+            safeBoxLowAmount = _safeBoxLowAmount;
+        }
+
+        if (_arbitraryRewardForDisputor != arbitraryRewardForDisputor) {
+            arbitraryRewardForDisputor = _arbitraryRewardForDisputor;
+        }
+
+        if (_maxAmountForOpenBidPosition != maxAmountForOpenBidPosition) {
+            maxAmountForOpenBidPosition = _maxAmountForOpenBidPosition;
+        }
+
+        emit AmountsUpdated(
+            _minFixedTicketPrice,
+            _maxFixedTicketPrice,
+            _disputePrice,
+            _fixedBondAmount,
+            _safeBoxLowAmount,
+            _arbitraryRewardForDisputor,
+            _maxAmountForOpenBidPosition
+        );
     }
 
-    function setCreatorPercentage(uint _creatorPercentage) external onlyOwner {
-        creatorPercentage = _creatorPercentage;
-        emit CreatorPercentageChanged(_creatorPercentage);
-    }
+    function setFlags(bool _creationRestrictedToOwner, bool _openBidAllowed) external onlyOwner {
+        if (_creationRestrictedToOwner != creationRestrictedToOwner) {
+            creationRestrictedToOwner = _creationRestrictedToOwner;
+        }
 
-    function setResolverPercentage(uint _resolverPercentage) external onlyOwner {
-        resolverPercentage = _resolverPercentage;
-        emit ResolverPercentageChanged(_resolverPercentage);
-    }
+        if (_openBidAllowed != openBidAllowed) {
+            openBidAllowed = _openBidAllowed;
+        }
 
-    function setWithdrawalPercentage(uint _withdrawalPercentage) external onlyOwner {
-        withdrawalPercentage = _withdrawalPercentage;
-        emit WithdrawalPercentageChanged(_withdrawalPercentage);
-    }
-    
-    function setWithdrawalTimePeriod(uint _withdrawalTimePeriod) external onlyOwner {
-        withdrawalTimePeriod = _withdrawalTimePeriod;
-        emit WithdrawalTimePeriodChanged(_withdrawalTimePeriod);
-    }
-
-    function setMarketQuestionStringLimit(uint _marketQuestionStringLimit) external onlyOwner {
-        marketQuestionStringLimit = _marketQuestionStringLimit;
-        emit MarketQuestionStringLimitChanged(_marketQuestionStringLimit);
-    }
-
-    function setMarketSourceStringLimit(uint _marketSourceStringLimit) external onlyOwner {
-        marketSourceStringLimit = _marketSourceStringLimit;
-        emit MarketSourceStringLimitChanged(_marketSourceStringLimit);
-    }
-
-    function setMarketPositionStringLimit(uint _marketPositionStringLimit) external onlyOwner {
-        marketPositionStringLimit = _marketPositionStringLimit;
-        emit MarketSourceStringLimitChanged(_marketPositionStringLimit);
-    }
-
-    function setPDAOResolveTimePeriod(uint _pDAOResolveTimePeriod) external onlyOwner {
-        pDAOResolveTimePeriod = _pDAOResolveTimePeriod;
-        emit setPDAOResolveTimePeriodChanged(_pDAOResolveTimePeriod);
-    }
-
-    function setOracleCouncilAddress(address _councilAddress) external onlyOwner {
-        require(_councilAddress != address(0), "Invalid address");
-        oracleCouncilAddress = _councilAddress;
-        emit NewOracleCouncilAddress(_councilAddress);
-    }
-
-    function setMarketDataAddress(address _marketDataAddress) external onlyOwner {
-        require(_marketDataAddress != address(0), "Invalid address");
-        marketDataAddress = _marketDataAddress;
-        emit NewMarketDataAddress(_marketDataAddress);
-    }
-
-    function setTheRundownConsumerAddress(address _theRundownConsumerAddress) external onlyOwner {
-        require(_theRundownConsumerAddress != address(0), "Invalid address");
-        theRundownConsumerAddress = _theRundownConsumerAddress;
-        emit NewTheRundownConsumerAddress(_theRundownConsumerAddress);
-    }
-
-    function setMaximumPositionsAllowed(uint _maximumPositionsAllowed) external onlyOwner {
-        require(_maximumPositionsAllowed > 2, "Invalid ");
-        maximumPositionsAllowed = _maximumPositionsAllowed;
-        emit NewMaximumPositionsAllowed(_maximumPositionsAllowed);
-    }
-
-    function setMinimumFixedTicketAmount(uint _minFixedTicketPrice) external onlyOwner {
-        require(_minFixedTicketPrice != minFixedTicketPrice, "Invalid");
-        minFixedTicketPrice = _minFixedTicketPrice;
-        emit NewMinimumFixedTicketAmount(_minFixedTicketPrice);
-    }
-
-    function setMaxNumberOfTags(uint _maxNumberOfTags) external onlyOwner {
-        require(_maxNumberOfTags > 2, "Invalid");
-        maxNumberOfTags = _maxNumberOfTags;
-        emit NewMaxNumberOfTags(_maxNumberOfTags);
-    }
-
-    function setDisputePrice(uint _disputePrice) external onlyOwner {
-        require(_disputePrice > 0, "Invalid price");
-        require(_disputePrice != disputePrice, "Equal to last");
-        disputePrice = _disputePrice;
-        emit NewDisputePrice(_disputePrice);
-    }
-
-    function setDefaultBackstopTimeout(uint _timeout) external onlyOwner {
-        require(_timeout > 0, "Invalid timeout");
-        require(_timeout != backstopTimeout, "Equal to last");
-        backstopTimeout = _timeout;
-        emit NewDefaultBackstopTimeout(_timeout);
-    }
-
-    function setFixedBondAmount(uint _bond) external onlyOwner {
-        require(_bond > 0, "Invalid bond");
-        require(_bond != fixedBondAmount, "Equal to last");
-        fixedBondAmount = _bond;
-        emit NewFixedBondAmount(_bond);
-    }
-
-    function setSafeBoxLowAmount(uint _safeBoxLowAmount) external onlyOwner {
-        require(_safeBoxLowAmount > 0, "Invalid amount");
-        require(_safeBoxLowAmount != safeBoxLowAmount, "Equal to last");
-        require(_safeBoxLowAmount < disputePrice, "Higher than dispute price.");
-        safeBoxLowAmount = _safeBoxLowAmount;
-        emit NewSafeBoxLowAmount(_safeBoxLowAmount);
-    }
-
-    function setDisputeStringLengthLimit(uint _disputeStringLengthLimit) external onlyOwner {
-        require(_disputeStringLengthLimit > 0, "Invalid amount");
-        require(_disputeStringLengthLimit != disputeStringLengthLimit, "Equal to last");
-        disputeStringLengthLimit = _disputeStringLengthLimit;
-        emit NewDisputeStringLengthLimit(_disputeStringLengthLimit);
-    }
-
-    function setArbitraryRewardForDisputor(uint _arbitraryRewardForDisputor) external onlyOwner {
-        require(_arbitraryRewardForDisputor > 0, "Invalid amount");
-        require(_arbitraryRewardForDisputor != arbitraryRewardForDisputor, "Equal to last");
-        arbitraryRewardForDisputor = _arbitraryRewardForDisputor;
-        emit NewArbitraryRewardForDisputor(_arbitraryRewardForDisputor);
-    }
-
-    function setClaimTimeoutDefaultPeriod(uint _claimTimeout) external onlyOwner {
-        require(_claimTimeout > 0, "Invalid timeout");
-        require(_claimTimeout != claimTimeoutDefaultPeriod, "Equal to last");
-        claimTimeoutDefaultPeriod = _claimTimeout;
-        emit NewClaimTimeoutDefaultPeriod(_claimTimeout);
-    }
-
-    function setMaxOracleCouncilMembers(uint _maxOracleCouncilMembers) external onlyOwner {
-        require(_maxOracleCouncilMembers > 3, "Number too low");
-        maxOracleCouncilMembers = _maxOracleCouncilMembers;
-        emit NewMaxOracleCouncilMembers(_maxOracleCouncilMembers);
-    }
-
-    function setCreationRestrictedToOwner(bool _creationRestrictedToOwner) external onlyOwner {
-        require(_creationRestrictedToOwner != creationRestrictedToOwner, "Number too low");
-        creationRestrictedToOwner = _creationRestrictedToOwner;
-        emit CreationRestrictedToOwnerChanged(_creationRestrictedToOwner);
-    }
-
-    function setOpenBidAllowed(bool _openBidAllowed) external onlyOwner {
-        openBidAllowed = _openBidAllowed;
-        emit OpenBidAllowedChanged(_openBidAllowed);
-    }
-
-    function setPaymentToken(address _paymentToken) external onlyOwner {
-        require(_paymentToken != address(0), "Invalid address");
-        paymentToken = _paymentToken;
-        emit NewPaymentToken(_paymentToken);
+        emit FlagsUpdated(_creationRestrictedToOwner, _openBidAllowed);
     }
 
     function setThalesBonds(address _thalesBonds) external onlyOwner {
@@ -584,12 +643,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         thalesBonds = _thalesBonds;
         IERC20(paymentToken).approve(address(thalesBonds), type(uint256).max);
         emit NewThalesBonds(_thalesBonds);
-    }
-
-    function setTagsAddress(address _tagsAddress) external onlyOwner {
-        require(_tagsAddress != address(0), "Invalid address");
-        tagsAddress = _tagsAddress;
-        emit NewTagsAddress(_tagsAddress);
     }
 
     function addPauserAddress(address _pauserAddress) external onlyOracleCouncilAndOwner {
@@ -613,11 +666,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
     // INTERNAL FUNCTIONS
 
-    // function removeActiveMarket(address _marketAddress) internal {
-    //     _activeMarkets.remove(_marketAddress);
-    //     _maturedMarkets.add(_marketAddress);
-    // }
-
     function thereAreNonEqualPositions(string[] memory positionPhrases) internal view returns (bool) {
         for (uint i = 0; i < positionPhrases.length - 1; i++) {
             if (
@@ -630,48 +678,61 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         return true;
     }
 
-    event MinimumPositionDurationChanged(uint duration);
-    event MinimumMarketMaturityDurationChanged(uint duration);
-    event ExoticMarketMastercopyChanged(address _exoticMastercopy);
-    event ExoticMarketOpenBidMastercopyChanged(address exoticOpenBidMastercopy);
+    event AddressesUpdated(
+        address _exoticMarketMastercopy,
+        address _exoticMarketOpenBidMastercopy,
+        address _oracleCouncilAddress,
+        address _paymentToken,
+        address _tagsAddress,
+        address _theRundownConsumerAddress,
+        address _marketDataAddress,
+        address _exoticRewards,
+        address _safeBoxAddress
+    );
+
+    event PercentagesUpdated(
+        uint safeBoxPercentage,
+        uint creatorPercentage,
+        uint resolverPercentage,
+        uint withdrawalPercentage,
+        uint maxFinalWithdrawPercentage
+    );
+
+    event DurationsUpdated(
+        uint backstopTimeout,
+        uint minimumPositioningDuration,
+        uint withdrawalTimePeriod,
+        uint pDAOResolveTimePeriod,
+        uint claimTimeoutDefaultPeriod
+    );
+    event LimitsUpdated(
+        uint marketQuestionStringLimit,
+        uint marketSourceStringLimit,
+        uint marketPositionStringLimit,
+        uint disputeStringLengthLimit,
+        uint maximumPositionsAllowed,
+        uint maxNumberOfTags,
+        uint maxOracleCouncilMembers
+    );
+
+    event AmountsUpdated(
+        uint minFixedTicketPrice,
+        uint maxFixedTicketPrice,
+        uint disputePrice,
+        uint fixedBondAmount,
+        uint safeBoxLowAmount,
+        uint arbitraryRewardForDisputor,
+        uint maxAmountForOpenBidPosition
+    );
+
+    event FlagsUpdated(bool _creationRestrictedToOwner, bool _openBidAllowed);
+
     event MarketResolved(address marketAddress, uint outcomePosition);
     event MarketCanceled(address marketAddress);
     event MarketReset(address marketAddress);
-    event NewOracleCouncilAddress(address oracleCouncilAddress);
-    event NewFixedBondAmount(uint fixedBond);
-    event NewSafeBoxAddress(address safeBox);
-    event NewTagsAddress(address tagsAddress);
-    event NewMaximumPositionsAllowed(uint maximumPositionsAllowed);
-    event NewPaymentToken(address paymentTokenAddress);
-    event NewThalesBonds(address thalesBondsAddress);
-    event ResolverPercentageChanged(uint resolverPercentage);
-    event CreatorPercentageChanged(uint creatorPercentage);
-    event SafeBoxPercentageChanged(uint safeBoxPercentage);
-    event WithdrawalPercentageChanged(uint withdrawalPercentage);
-    event setPDAOResolveTimePeriodChanged(uint pDAOResolveTimePeriod);
-    event NewMaxOracleCouncilMembers(uint maxOracleCouncilMembers);
     event PauserAddressAdded(address pauserAddress);
     event PauserAddressRemoved(address pauserAddress);
-    event MarketPaused(address marketAddress);
-    event NewDisputePrice(uint disputePrice);
-    event NewMaxNumberOfTags(uint maxNumberOfTags);
-    event NewArbitraryRewardForDisputor(uint arbitraryRewardForDisputor);
-    event NewClaimTimeoutDefaultPeriod(uint claimTimeout);
-    event NewDefaultBackstopTimeout(uint timeout);
-    event NewSafeBoxLowAmount(uint safeBoxLowAmount);
-    // event RewardSentToDisputorForMarket(address market, address disputorAddress, uint amount);
-    event NewTheRundownConsumerAddress(address theRundownConsumerAddress);
-    event NewMarketDataAddress(address marketDataAddress);
-    event CreationRestrictedToOwnerChanged(bool creationRestrictedToOwner);
-    event NewMinimumFixedTicketAmount(uint minFixedTicketPrice);
-    event NewDisputeStringLengthLimit(uint disputeStringLengthLimit);
-    event ExoticRewardsChanged(address exoticRewards);
-    event MarketSourceStringLimitChanged(uint marketSourceStringLimit);
-    event MarketQuestionStringLimitChanged(uint marketQuestionStringLimit);
-    event MarketPositionStringLimitChanged(uint marketPositionStringLimit);
-    event OpenBidAllowedChanged(bool openBidAllowed);
-    event WithdrawalTimePeriodChanged(uint withdrawalTimePeriod);
-
+    event NewThalesBonds(address thalesBondsAddress);
 
     event MarketCreated(
         address marketAddress,
@@ -700,14 +761,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     );
 
     modifier onlyOracleCouncil() {
-        require(msg.sender == oracleCouncilAddress, "Not OracleCouncil address");
-        require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
+        require(msg.sender == oracleCouncilAddress, "No OC");
+        require(oracleCouncilAddress != address(0), "No OC");
         _;
     }
     modifier onlyOracleCouncilAndOwner() {
-        require(msg.sender == oracleCouncilAddress || msg.sender == owner, "Not OracleCouncil Address or Owner address");
+        require(msg.sender == oracleCouncilAddress || msg.sender == owner, "No OC/owner");
         if (msg.sender != owner) {
-            require(oracleCouncilAddress != address(0), "Not OracleCouncil address. Please update valid Oracle address");
+            require(oracleCouncilAddress != address(0), "No OC/owner");
         }
         _;
     }

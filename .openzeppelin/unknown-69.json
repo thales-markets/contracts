@@ -1524,6 +1524,46 @@
       "address": "0x8417D248274439360CC38Be84CfFDc01226600F8",
       "txHash": "0x7fd2d0d8c570d2ec0cb71a2f5c677c1353df352ecaa0a99c0ecbe3a0f4910dc6",
       "kind": "transparent"
+    },
+    {
+      "address": "0x2dE2eECaeFDD4019fA08eF3E5B1753Ec82a5BEb2",
+      "txHash": "0x4e1a9bbd0055134b449fc574b70a21e79f82cd20c71e679b62325c25b94af554",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x6cEb96ABcAD1078af8D92A628628C75074E9E0b4",
+      "txHash": "0x9c12003045f88ea107f6cfa2dbdd1bc9bcebfc33c94b3e89c9695d9ada76e6dc",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x548BDe30B78a3be015F0407AFf80795B280d4b76",
+      "txHash": "0x261596df6b1fa4275d3657b10d452272df9c98ef39019685c3645f010d45aa50",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCfe537D5eFb96556a9340BdaDdDEF17526E6223b",
+      "txHash": "0xe9f46a9491766273ab960f4d289b9ad5fd58c0258e71176bc88001994e538901",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xf1f42CaFf3dB00D161654de70920898D5cce53D1",
+      "txHash": "0x0a49beeae6d04119c1bbb4b9ef1b4470f76ad6a86a880c221e707cdaf6f8abe1",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xd807051a19D3e91837586b491690Eb9B665ee753",
+      "txHash": "0xa1c20e79c1628b4d5877cd37d04dde5caff19fc03e81144f803bd17e134638d4",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCa62CE72D3aA9eB103B4022A5bbd94A967638D78",
+      "txHash": "0x2787d696ddda388d91fe6aa8b0dbd95ba1d1659cf35478afedcb6b1546ebc299",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xBb409c6488c4bB2BE9e3BaD7B3C79b553ab6A061",
+      "txHash": "0x2cb2d8de1cc8141bbc8117edbaaccc7fdc7c28c5d5dd3db698e09fc60be4c9e4",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -40837,6 +40877,1754 @@
         }
       }
     },
+    "7280550ba459da0f6b36560f117219a4a6e8bc02b08f9927ac13bc9f79651173": {
+      "address": "0x95EfD0401c33f4Db6Ef88eC71b1ED4F483372b8a",
+      "txHash": "0x0549292b6189e0680fb54a3872d247ec78fdd5c85b517a77871643763d986ea9",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "_activeMarkets",
+            "type": "t_struct(AddressSet)43646_storage",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:30"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "fixedBondAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:33"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "backstopTimeout",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:34"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "minimumPositioningDuration",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:35"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "claimTimeoutDefaultPeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:36"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pDAOResolveTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:37"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:38"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creatorPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:39"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "resolverPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:40"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "withdrawalPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:41"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maximumPositionsAllowed",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:42"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "disputePrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:43"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxOracleCouncilMembers",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:44"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pausersCount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:45"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxNumberOfTags",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:46"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "backstopTimeoutGeneral",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:47"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxLowAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:48"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "arbitraryRewardForDisputor",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:49"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "minFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:50"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "disputeStringLengthLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:51"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketQuestionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:52"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketSourceStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:53"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketPositionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:54"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "withdrawalTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:55"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creationRestrictedToOwner",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:56"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "openBidAllowed",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:57"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticMarketMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:59"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "oracleCouncilAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:60"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:61"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "thalesBonds",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:62"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "paymentToken",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:63"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "tagsAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:64"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "theRundownConsumerAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:65"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketDataAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:66"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticMarketOpenBidMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:67"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticRewards",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:68"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pauserAddress",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:70"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pauserIndex",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:71"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creatorAddress",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:73"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "resolverAddress",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:74"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "isChainLinkMarket",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:75"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "cancelledByCreator",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:76"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxAmountForOpenBidPosition",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:77"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxFinalWithdrawPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:78"
+          }
+        ],
+        "types": {
+          "t_struct(AddressSet)43646_storage": {
+            "label": "struct AddressSetLib.AddressSet",
+            "members": [
+              {
+                "label": "elements",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "indices",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "2aa0f1d4035970e130870d5ccae3f62cf034454eca94ed68097315fc2d2cf485": {
+      "address": "0xDF1967a16f161B96b9551a0E3BBe30BA68e09D56",
+      "txHash": "0xf1ab33a98c206a37963609e6ab875fcbb3c8b461e8672daeed90730a9e6af1da",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "fixedBondAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:18"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "backstopTimeout",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:19"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "minimumPositioningDuration",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:20"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "claimTimeoutDefaultPeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:21"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "pDAOResolveTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:22"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:23"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "creatorPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:24"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "resolverPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:25"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "withdrawalPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:26"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maximumPositionsAllowed",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:27"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "disputePrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:28"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxOracleCouncilMembers",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:29"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxNumberOfTags",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:30"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "safeBoxLowAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:31"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "arbitraryRewardForDisputor",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:32"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "minFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:33"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "disputeStringLengthLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:34"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketQuestionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:35"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketSourceStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:36"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketPositionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:37"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "withdrawalTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:38"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxAmountForOpenBidPosition",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:39"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxFinalWithdrawPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:40"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "creationRestrictedToOwner",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:42"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "openBidAllowed",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:43"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "exoticMarketMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:45"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "exoticMarketOpenBidMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:46"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "oracleCouncilAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:47"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "safeBoxAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:48"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "paymentToken",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:49"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "tagsAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:50"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "theRundownConsumerAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:51"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketDataAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:52"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "exoticRewards",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:53"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "66d34003337a272ea386eabab215aa7c55ec4fb96d67efe9a1400adc3405d92e": {
+      "address": "0xbC51bb09EB3F348048c6d1f7f65994de04e00f3c",
+      "txHash": "0xe306ca2c1dfb15d479885bb14d7d485e30eba31a29dcd7fdc0e03e7fb62e6348",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ExoticPositionalMarketData",
+            "label": "marketManagerAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketData.sol:63"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "c5e47eff73050fb6489df9af3a7d095d8f2cddc720cef5ac8b3759ae7d6bd940": {
+      "address": "0x9805B50DA687c3DE5c6A1D157997079399a091C6",
+      "txHash": "0xea0eb8af247ceff5cdb83b70fef35443814b06468574bf133750a37e7a39ebc3",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "fixedBondAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:18"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "backstopTimeout",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:19"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "minimumPositioningDuration",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:20"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "claimTimeoutDefaultPeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:21"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "pDAOResolveTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:22"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:23"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "creatorPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:24"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "resolverPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:25"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "withdrawalPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:26"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maximumPositionsAllowed",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:27"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "disputePrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:28"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxOracleCouncilMembers",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:29"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxNumberOfTags",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:30"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "safeBoxLowAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:31"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "arbitraryRewardForDisputor",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:32"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "minFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:33"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "disputeStringLengthLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:34"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketQuestionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:35"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketSourceStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:36"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketPositionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:37"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "withdrawalTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:38"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxAmountForOpenBidPosition",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:39"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxFinalWithdrawPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:40"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "creationRestrictedToOwner",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:42"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "openBidAllowed",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:43"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "exoticMarketMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:45"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "exoticMarketOpenBidMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:46"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "oracleCouncilAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:47"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "safeBoxAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:48"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "paymentToken",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:49"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "tagsAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:50"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "theRundownConsumerAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:51"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketDataAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:52"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "exoticRewards",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:53"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "89c0d5de599e9005c8dc939d7fc87bbb61de573e816029e3db067cbd52f256b7": {
+      "address": "0xE2A2cF1531bF25Ab9aA31eaf1a1Aa31036e84De2",
+      "txHash": "0x293e6071f60bd11754f66a5631b2e45a992ae785643ddf22bcd84a66032d3baf",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "fixedBondAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:18"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "backstopTimeout",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:19"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "minimumPositioningDuration",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:20"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "claimTimeoutDefaultPeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:21"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "pDAOResolveTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:22"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:23"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "creatorPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:24"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "resolverPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:25"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "withdrawalPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:26"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maximumPositionsAllowed",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:27"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "disputePrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:28"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxOracleCouncilMembers",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:29"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxNumberOfTags",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:30"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "safeBoxLowAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:31"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "arbitraryRewardForDisputor",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:32"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "minFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:33"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "disputeStringLengthLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:34"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketQuestionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:35"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketSourceStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:36"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketPositionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:37"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "withdrawalTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:38"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxAmountForOpenBidPosition",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:39"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "maxFinalWithdrawPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:40"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "creationRestrictedToOwner",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:42"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "openBidAllowed",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:43"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "exoticMarketMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:45"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "exoticMarketOpenBidMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:46"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "oracleCouncilAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:47"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "safeBoxAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:48"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "paymentToken",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:49"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "tagsAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:50"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "theRundownConsumerAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:51"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "marketDataAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:52"
+          },
+          {
+            "contract": "ExoticManagerData",
+            "label": "exoticRewards",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticManagerData.sol:53"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "750ab524f01d02945eeb86d1f9d1fe8111629ea48c5f1a39c7371f5a38504f11": {
+      "address": "0x292B053CC0a4dF0026e81f254f0B2E7C26e3e52e",
+      "txHash": "0x3216df4a03cda3629d528b42027808a4500e34aac6375c3e2ce3e01ff7f30b86",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "_activeMarkets",
+            "type": "t_struct(AddressSet)10549_storage",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:30"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "fixedBondAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:33"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "backstopTimeout",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:34"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "minimumPositioningDuration",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:35"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "claimTimeoutDefaultPeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:36"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pDAOResolveTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:37"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:38"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creatorPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:39"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "resolverPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:40"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "withdrawalPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:41"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maximumPositionsAllowed",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:42"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "disputePrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:43"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxOracleCouncilMembers",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:44"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pausersCount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:45"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxNumberOfTags",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:46"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "backstopTimeoutGeneral",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:47"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxLowAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:48"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "arbitraryRewardForDisputor",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:49"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "minFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:50"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "disputeStringLengthLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:51"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketQuestionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:52"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketSourceStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:53"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketPositionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:54"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "withdrawalTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:55"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creationRestrictedToOwner",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:56"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "openBidAllowed",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:57"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticMarketMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:59"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "oracleCouncilAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:60"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:61"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "thalesBonds",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:62"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "paymentToken",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:63"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "tagsAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:64"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "theRundownConsumerAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:65"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketDataAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:66"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticMarketOpenBidMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:67"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticRewards",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:68"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pauserAddress",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:70"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pauserIndex",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:71"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creatorAddress",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:73"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "resolverAddress",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:74"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "isChainLinkMarket",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:75"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "cancelledByCreator",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:76"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxAmountForOpenBidPosition",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:77"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxFinalWithdrawPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:78"
+          }
+        ],
+        "types": {
+          "t_struct(AddressSet)10549_storage": {
+            "label": "struct AddressSetLib.AddressSet",
+            "members": [
+              {
+                "label": "elements",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "indices",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
     "12abb950022cbba702468231bf199da779da2455f7ad2fac62f964c904fb2f29": {
       "address": "0xF898B6e58b16d6fFB87E39A5Dbb4900aE5AE24E4",
       "txHash": "0x579621553a5e93487b32dea1c16989703ba7fa2fb70b79c207e6a15dfbe503f6",
@@ -41081,6 +42869,395 @@
           },
           "t_array(t_uint256)44_storage": {
             "label": "uint256[44]"
+          }
+        }
+      }
+    },
+    "fcbcd7f3930123eba03f7f685ecff0276e1be0411cc62b2dab8765d530e066ba": {
+      "address": "0x124ca8f8b3662174fE63EBC56b317a7D80977c54",
+      "txHash": "0x8ebfa7e8eb4946b572e6d1f385d87602b63bb22625a33c2a6fe94d6a291d6d35",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "_activeMarkets",
+            "type": "t_struct(AddressSet)45124_storage",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:30"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "fixedBondAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:33"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "backstopTimeout",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:34"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "minimumPositioningDuration",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:35"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "claimTimeoutDefaultPeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:36"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pDAOResolveTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:37"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:38"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creatorPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:39"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "resolverPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:40"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "withdrawalPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:41"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maximumPositionsAllowed",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:42"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "disputePrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:43"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxOracleCouncilMembers",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:44"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pausersCount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:45"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxNumberOfTags",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:46"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "backstopTimeoutGeneral",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:47"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxLowAmount",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:48"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "arbitraryRewardForDisputor",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:49"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "minFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:50"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "disputeStringLengthLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:51"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketQuestionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:52"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketSourceStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:53"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketPositionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:54"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "withdrawalTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:55"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creationRestrictedToOwner",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:56"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "openBidAllowed",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:57"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticMarketMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:59"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "oracleCouncilAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:60"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:61"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "thalesBonds",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:62"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "paymentToken",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:63"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "tagsAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:64"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "theRundownConsumerAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:65"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketDataAddress",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:66"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticMarketOpenBidMastercopy",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:67"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticRewards",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:68"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pauserAddress",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:70"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pauserIndex",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:71"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creatorAddress",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:73"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "resolverAddress",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:74"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "isChainLinkMarket",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:75"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "cancelledByCreator",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:76"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxAmountForOpenBidPosition",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:77"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxFinalWithdrawPercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:78"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ExoticPositionalMarketManager.sol:79"
+          }
+        ],
+        "types": {
+          "t_struct(AddressSet)45124_storage": {
+            "label": "struct AddressSetLib.AddressSet",
+            "members": [
+              {
+                "label": "elements",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "indices",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
           }
         }
       }

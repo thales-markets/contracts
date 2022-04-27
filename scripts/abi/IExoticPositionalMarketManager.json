@@ -121,6 +121,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256[]",
+        "name": "_positionsOfCreator",
+        "type": "uint256[]"
+      },
+      {
         "internalType": "string[]",
         "name": "_positionPhrases",
         "type": "string[]"
@@ -374,6 +379,32 @@
     "name": "issueBondsBackToCreatorAndResolver",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxAmountForOpenBidPosition",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxFinalWithdrawPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

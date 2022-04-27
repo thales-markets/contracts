@@ -68,6 +68,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bytes32",
+        "name": "currencyKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "LastTickForTWAPChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -131,6 +144,19 @@
       }
     ],
     "name": "PoolRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "int56",
+        "name": "twapInterval",
+        "type": "int56"
+      }
+    ],
+    "name": "TwapIntervalChanged",
     "type": "event"
   },
   {
@@ -465,6 +491,19 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_currencyKey",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setLastTickForTWAP",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -529,6 +568,25 @@
         "internalType": "int56",
         "name": "",
         "type": "int56"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "useLastTickForTWAP",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

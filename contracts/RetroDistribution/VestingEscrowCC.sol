@@ -48,7 +48,6 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
         uint _amount,
         uint _startTime
     ) external onlyOwner {
-        require(_startTime >= block.timestamp, "Start time must be in future");
         require(_recipient != address(0), "Invalid address");
 
         if (initialLocked[_recipient] == 0) {
@@ -119,7 +118,7 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
 
     function claim() external nonReentrant notPaused {
         require(disabled[msg.sender] == false, "Account disabled");
-        
+
         uint timestamp = pausedAt[msg.sender];
         if (timestamp == 0) {
             timestamp = block.timestamp;
@@ -153,23 +152,23 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
         emit ClaimEnabled(_recipient);
     }
 
-    function changeWallet(address _recipient, address _newAddress) external onlyOwner {
-        require(initialLocked[_recipient] > 0, "Invalid recipient");
+    function changeWallet(address _oldAddress, address _newAddress) external onlyOwner {
+        require(initialLocked[_oldAddress] > 0, "Invalid recipient");
         require(initialLocked[_newAddress] == 0, "Address is already a recipient");
 
-        startTime[_newAddress] = startTime[_recipient];
-        startTime[_recipient] = 0;
+        startTime[_newAddress] = startTime[_oldAddress];
+        startTime[_oldAddress] = 0;
 
-        endTime[_newAddress] = endTime[_recipient];
-        endTime[_recipient] = 0;
+        endTime[_newAddress] = endTime[_oldAddress];
+        endTime[_oldAddress] = 0;
 
-        initialLocked[_newAddress] = initialLocked[_recipient];
-        initialLocked[_recipient] = 0;
+        initialLocked[_newAddress] = initialLocked[_oldAddress];
+        initialLocked[_oldAddress] = 0;
 
-        totalClaimed[_newAddress] = totalClaimed[_recipient];
-        totalClaimed[_recipient] = 0;
+        totalClaimed[_newAddress] = totalClaimed[_oldAddress];
+        totalClaimed[_oldAddress] = 0;
 
-        emit WalletChanged(_recipient, _newAddress);
+        emit WalletChanged(_oldAddress, _newAddress);
     }
 
     function setStartTime(address _recipient, uint _startTime) external onlyOwner {
@@ -201,5 +200,5 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
     event ClaimEnabled(address _recipient);
     event ClaimPaused(address _recipient);
     event ClaimUnpaused(address _recipient);
-    event WalletChanged(address _recipient, address _newAddress);
+    event WalletChanged(address _oldAddress, address _newAddress);
 }

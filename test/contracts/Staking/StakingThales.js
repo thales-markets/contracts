@@ -699,12 +699,12 @@ contract('StakingThales', accounts => {
 			await fastForward(DAY + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			answer = await EscrowThalesDeployed.claimable(first);
-			assert.bnEqual(answer, 0);
+			assert.bnEqual(answer, deposit);
 			// 11th week
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			answer = await EscrowThalesDeployed.claimable(first);
-			assert.bnEqual(answer, deposit);
+			assert.bnEqual(answer, deposit.mul(toBN(2)));
 		});
 
 		it('Vest first user', async () => {
@@ -737,7 +737,7 @@ contract('StakingThales', accounts => {
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			let answer = await EscrowThalesDeployed.claimable(first);
-			assert.bnEqual(answer, deposit);
+			assert.bnEqual(answer, deposit.mul(toBN(2)));
 			await EscrowThalesDeployed.vest(deposit, { from: first });
 			answer = await ThalesDeployed.balanceOf(first);
 			assert.bnEqual(answer, deposit);
@@ -779,7 +779,7 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.closePeriod({ from: second });
 			for (let i = 0; i < users.length; i++) {
 				let answer = await EscrowThalesDeployed.claimable(users[i]);
-				assert.bnEqual(answer, deposit.div(toBN(users.length)));
+				assert.bnEqual(answer, deposit);
 				await EscrowThalesDeployed.vest(deposit.div(toBN(users.length)), { from: users[i] });
 				answer = await ThalesDeployed.balanceOf(users[i]);
 				assert.bnEqual(answer, deposit.div(toBN(users.length)));
@@ -822,7 +822,7 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.closePeriod({ from: second });
 			for (let i = 0; i < users.length; i++) {
 				let answer = await EscrowThalesDeployed.claimable(users[i]);
-				assert.bnEqual(answer, deposit.div(toBN(users.length)));
+				assert.bnEqual(answer, deposit.mul(toBN(2)).div(toBN(users.length)));
 				await EscrowThalesDeployed.vest(deposit.div(toBN(users.length)), { from: users[i] });
 				answer = await ThalesDeployed.balanceOf(users[i]);
 				assert.bnEqual(answer, deposit.div(toBN(users.length)));
@@ -861,7 +861,7 @@ contract('StakingThales', accounts => {
 				period++;
 			}
 			answer = await EscrowThalesDeployed.claimable(first);
-			assert.bnEqual(answer, deposit);
+			assert.bnEqual(answer, deposit.mul(toBN(2)));
 			await EscrowThalesDeployed.vest(deposit, { from: first });
 			answer = await ThalesDeployed.balanceOf(first);
 			assert.bnEqual(answer, deposit);

@@ -661,7 +661,7 @@ contract('StakingThales', accounts => {
 					assert.bnEqual(answer, period);
 					for (let i = 0; i < users.length; i++) {
 						answer = await EscrowThalesDeployed.claimable(users[i], { from: second });
-						assert.bnEqual(answer, 0);
+						assert.bnEqual(answer, claimableFirstWeek[i]);
 					}
 					//11th WEEK:
 					await fastForward(WEEK + SECOND);
@@ -672,7 +672,7 @@ contract('StakingThales', accounts => {
 					let vested = [toUnit(0), toUnit(0), toUnit(0)];
 					for (let i = 0; i < users.length; i++) {
 						answer = await EscrowThalesDeployed.claimable(users[i], { from: second });
-						assert.bnEqual(answer, claimableFirstWeek[i]);
+						assert.bnEqual(answer, claimableFirstWeek[i].mul(toBN(2)));
 						await EscrowThalesDeployed.vest(answer, { from: users[i] });
 						let answer2 = await ThalesDeployed.balanceOf.call(users[i], { from: second });
 						assert.bnEqual(answer, answer2);

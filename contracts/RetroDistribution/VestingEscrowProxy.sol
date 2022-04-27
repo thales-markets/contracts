@@ -16,129 +16,105 @@ contract VestingEscrowProxy is Initializable, ProxyReentrancyGuard, ProxyOwned, 
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     address public token;
-    mapping(address => uint) public startTime;
-    mapping(address => uint) public endTime;
-    mapping(address => uint) public initialLocked;
-    mapping(address => uint) public totalClaimed;
-    mapping(address => uint) public disabledAt;
+    uint256 public startTime;
+    uint256 public endTime;
+    mapping(address => uint256) public initialLocked;
+    mapping(address => uint256) public totalClaimed;
 
-    uint public initialLockedSupply;
-    uint public vestingPeriod;
-    address[] public recipients;
+    uint256 public initialLockedSupply;
 
-    function initialize(address _owner, address _token, uint _vestingPeriod) public initializer {
+    function initialize(
+        address _owner,
+        address _token,
+        uint256 _startTime,
+        uint256 _endTime
+    ) public initializer {
         setOwner(_owner);
         initNonReentrant();
+        require(_startTime >= block.timestamp, "Start time must be in future");
+        require(_endTime > _startTime, "End time must be greater than start time");
         token = _token;
-        vestingPeriod = _vestingPeriod;
+        startTime = _startTime;
+        endTime = _endTime;
     }
 
-    function fund(
-        address[] memory _recipients,
-        uint[] memory _amounts,
-        uint[] memory _startTimes
-    ) external onlyOwner {
-        uint _totalAmount = 0;
-        for (uint index = 0; index < _recipients.length; index++) {
-            require(_startTimes[index] >= block.timestamp, "Start time must be in future");
-            uint amount = _amounts[index];
+    function fund(address[] calldata _recipients, uint256[] calldata _amounts) external onlyOwner {
+        uint256 _totalAmount = 0;
+        for (uint256 index = 0; index < _recipients.length; index++) {
+            uint256 amount = _amounts[index];
             address recipient = _recipients[index];
             if (recipient == address(0)) {
                 break;
             }
-            _totalAmount = _totalAmount + amount;
-            if(initialLocked[recipient] == 0) {
-                recipients.push(recipient);
-                startTime[recipient] = _startTimes[index];
-                endTime[recipient] = _startTimes[index] + vestingPeriod;
-            }
-            initialLocked[recipient] = initialLocked[recipient] + amount;
-
+            _totalAmount = _totalAmount.add(amount);
+            initialLocked[recipient] = initialLocked[recipient].add(amount);
             emit Fund(recipient, amount);
         }
 
-        initialLockedSupply = initialLockedSupply + _totalAmount;
+        initialLockedSupply = initialLockedSupply.add(_totalAmount);
     }
 
-    function _totalVestedOf(address _recipient, uint _time) internal view returns (uint) {
-        uint start = startTime[_recipient];
-        uint end = endTime[_recipient];
-        uint locked = initialLocked[_recipient];
+    function _totalVestedOf(address _recipient, uint256 _time) internal view returns (uint256) {
+        uint256 start = startTime;
+        uint256 end = endTime;
+        uint256 locked = initialLocked[_recipient];
 
         if (_time < start) return 0;
         return MathUpgradeable.min(locked.mul(_time.sub(start)).div(end.sub(start)), locked);
     }
 
-    function _totalVested() internal view returns (uint totalVested) {
-        for(uint i = 0; i < recipients.length; i++) {
-            totalVested += _totalVestedOf(recipients[i], block.timestamp);
+    function _totalVested() internal view returns (uint256) {
+        uint256 start = startTime;
+        uint256 end = endTime;
+        uint256 locked = initialLockedSupply;
+
+        if (block.timestamp < start) {
+            return 0;
         }
+
+        return MathUpgradeable.min(locked.mul(block.timestamp.sub(start)).div(end.sub(start)), locked);
     }
 
-    function vestedSupply() public view returns (uint) {
+    function vestedSupply() public view returns (uint256) {
         return _totalVested();
     }
 
-    function vestedOf(address _recipient) public view returns (uint) {
+    function vestedOf(address _recipient) public view returns (uint256) {
         return _totalVestedOf(_recipient, block.timestamp);
     }
 
-    function lockedSupply() public view returns (uint) {
+    function lockedSupply() public view returns (uint256) {
         return initialLockedSupply.sub(_totalVested());
     }
 
-    function balanceOf(address _recipient) public view returns (uint) {
+    function balanceOf(address _recipient) public view returns (uint256) {
         return _totalVestedOf(_recipient, block.timestamp).sub(totalClaimed[_recipient]);
     }
 
-    function lockedOf(address _recipient) public view returns (uint) {
+    function lockedOf(address _recipient) public view returns (uint256) {
         return initialLocked[_recipient].sub(_totalVestedOf(_recipient, block.timestamp));
     }
 
     function claim() external nonReentrant notPaused {
-        uint timestamp = disabledAt[msg.sender];
-        if(timestamp == 0) {
-            timestamp = block.timestamp;
-        }
-        uint claimable = _totalVestedOf(msg.sender, timestamp) - totalClaimed[msg.sender];
+        uint256 claimable = balanceOf(msg.sender);
         require(claimable > 0, "nothing to claim");
-        
+        totalClaimed[msg.sender] = totalClaimed[msg.sender].add(claimable);
         IERC20Upgradeable(token).safeTransfer(msg.sender, claimable);
-
-        totalClaimed[msg.sender] = totalClaimed[msg.sender] + claimable;
         emit Claim(msg.sender, claimable);
     }
 
-    function disableClaim(address _recipient) external onlyOwner {
-        disabledAt[_recipient] = block.timestamp;
-        emit DisableClaim(_recipient);
+    function setStartTime(uint256 _startTime) external onlyOwner {
+        startTime = _startTime;
     }
 
-    function enableClaim(address _recipient) external onlyOwner {
-        disabledAt[_recipient] = 0;
-        emit EnableClaim(_recipient);
-    }
-
-    function setStartTime(address _recipient, uint _startTime) external onlyOwner {
-        startTime[_recipient] = _startTime;
-        emit StartTimeChanged(_recipient, _startTime);
-    }
-
-    function setEndTime(address _recipient, uint _endTime) external onlyOwner {
-        endTime[_recipient] = _endTime;
-        emit EndTimeChanged(_recipient, _endTime);
+    function setEndTime(uint256 _endTime) external onlyOwner {
+        endTime = _endTime;
     }
 
     function setToken(address _token) external onlyOwner {
         token = _token;
-        emit TokenChanged(_token);
     }
 
-    event Fund(address _recipient, uint _amount);
-    event Claim(address _address, uint _amount);
-    event StartTimeChanged(address _recipient, uint _startTime);
-    event EndTimeChanged(address _recipient, uint _endTime);
-    event TokenChanged(address _token);
-    event DisableClaim(address _recipient);
-    event EnableClaim(address _recipient);
+    event Fund(address indexed _recipient, uint256 _amount);
+    event Claim(address indexed _address, uint256 _amount);
 }

@@ -1504,6 +1504,11 @@
       "address": "0x18D3f889C45D3EB94dF04020bF4942E98A782C0c",
       "txHash": "0xed50cfb00fbfc139fef54d3c5cb2d1c6452c6ad75cfab9b31cbff9155d430ff2",
       "kind": "transparent"
+    },
+    {
+      "address": "0x3812E7C520eCAa39E0bEF4C0ea5a20387453751b",
+      "txHash": "0x7e907204fea51a03b8d936b141374542cb1d6d17c23e8508800c72ca74b75363",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -39473,6 +39478,145 @@
           },
           "t_array(t_uint256)44_storage": {
             "label": "uint256[44]"
+          }
+        }
+      }
+    },
+    "2ccb7137a83f8da803d6be610f990012bbe46669b4497f3bd51faca0c0af71c3": {
+      "address": "0x094EdDef54A7B123544eA54467C5eA4D2880E5b9",
+      "txHash": "0x54751fc672c123ef25c65b51959dd54610b4526a8666f232f2bfcb5d4f11751a",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "token",
+            "type": "t_address",
+            "src": "contracts/RetroDistribution/VestingEscrowProxy.sol:18"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "startTime",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/RetroDistribution/VestingEscrowProxy.sol:19"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "endTime",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/RetroDistribution/VestingEscrowProxy.sol:20"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "initialLocked",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/RetroDistribution/VestingEscrowProxy.sol:21"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "totalClaimed",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/RetroDistribution/VestingEscrowProxy.sol:22"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "disabledAt",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/RetroDistribution/VestingEscrowProxy.sol:23"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "initialLockedSupply",
+            "type": "t_uint256",
+            "src": "contracts/RetroDistribution/VestingEscrowProxy.sol:25"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "vestingPeriod",
+            "type": "t_uint256",
+            "src": "contracts/RetroDistribution/VestingEscrowProxy.sol:26"
+          },
+          {
+            "contract": "VestingEscrowProxy",
+            "label": "recipients",
+            "type": "t_array(t_address)dyn_storage",
+            "src": "contracts/RetroDistribution/VestingEscrowProxy.sol:27"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_bool": {
+            "label": "bool"
           }
         }
       }

@@ -64,7 +64,7 @@ async function main() {
 
 	console.log('Thales address:', ThalesDeployed.address);
 
-	const VestingEscrow = await ethers.getContractFactory('VestingEscrowProxy');
+	const VestingEscrow = await ethers.getContractFactory('VestingEscrowCC');
 	const vestingEscrow = await upgrades.deployProxy(VestingEscrow, [
 		owner.address,
 		ThalesDeployed.address,
@@ -72,12 +72,12 @@ async function main() {
 	]);
 	await vestingEscrow.deployed();
 
-	console.log('VestingEscrowProxy deployed to:', vestingEscrow.address);
-	setTargetAddress('VestingEscrowProxy', network, vestingEscrow.address);
+	console.log('VestingEscrowCC deployed to:', vestingEscrow.address);
+	setTargetAddress('VestingEscrowCC', network, vestingEscrow.address);
 
 	const implementation = await getImplementationAddress(ethers.provider, vestingEscrow.address);
-	console.log('VestingEscrowProxyImplementation: ', implementation);
-	setTargetAddress('VestingEscrowProxyImplementation', network, implementation);
+	console.log('VestingEscrowCCImplementation: ', implementation);
+	setTargetAddress('VestingEscrowCCImplementation', network, implementation);
 
 	let tx = await ThalesDeployed.transfer(vestingEscrow.address, TOTAL_AMOUNT);
 	await tx.wait().then(e => {
@@ -90,10 +90,12 @@ async function main() {
 
 	console.log('started funding');
 
-	tx = await vestingEscrow.fund(recipients, amounts, startTimes);
-	await tx.wait().then(e => {
-		txLog(tx, 'VestingEscrow.sol: Fund accounts');
-	});
+	for(let i = 0; i < recipients.length; i++) {
+		tx = await vestingEscrow.fund(recipients[i], amounts[i], startTimes[i]);
+		await tx.wait().then(e => {
+			txLog(tx, 'VestingEscrow.sol: Fund accounts');
+		});
+	}
 
 	try {
 		await hre.run('verify:verify', {

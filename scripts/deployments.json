@@ -147,8 +147,8 @@
 		"OptimisticAirdropUnclaimedRetro": "0x3Da91E5eD564eE46d4D734E1F99F395f0969101a",
 		"ThalesRoyalePassport": "0xf534848023ba851c6265e8F99a919c4d5fd05CD0",
 		"ThalesRoyalePassportImplementation": "0xd051b22871f23d12eEdF54d695420F43C9d3C268",
-		"VestingEscrowProxy": "",
-		"VestingEscrowProxyImplementation": ""
+		"VestingEscrowCC": "",
+		"VestingEscrowCCImplementation": ""
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",
@@ -203,8 +203,8 @@
 		"ThalesRoyalePassport": "0x8363a01892dE85BC871005570B481c374f2aB3e6",
 		"ThalesRoyalePassportImplementation": "0xF898B6e58b16d6fFB87E39A5Dbb4900aE5AE24E4",
 		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058",
-		"VestingEscrowProxy": "",
-		"VestingEscrowProxyImplementation": ""
+		"VestingEscrowCC": "0x3812E7C520eCAa39E0bEF4C0ea5a20387453751b",
+		"VestingEscrowCCImplementation": "0x094EdDef54A7B123544eA54467C5eA4D2880E5b9"
 	},
 	"polygonMumbai": {
 		"ProxyUSDC": "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",
@@ -263,7 +263,7 @@
 		"ThalesExchanger": "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
 		"OwnedUpgradeabilityProxy": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
 		"ProxyThalesExchanger": "0x59b670e9fA9D0A427751Af201D676719a970857b",
-		"VestingEscrowProxy": "0xdB05A386810c809aD5a77422eb189D36c7f24402",
-		"VestingEscrowProxyImplementation": "0xa779C1D17bC5230c07afdC51376CAC1cb3Dd5314"
+		"VestingEscrowCC": "0xdB05A386810c809aD5a77422eb189D36c7f24402",
+		"VestingEscrowCCImplementation": "0xa779C1D17bC5230c07afdC51376CAC1cb3Dd5314"
 	}
 }

@@ -39,19 +39,24 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vestingEscrowProxyAddress = getTargetAddress('VestingEscrowProxy', network);
-	console.log('Found VestingEscrowProxy at:', vestingEscrowProxyAddress);
+	const vestingEscrowProxyAddress = getTargetAddress('VestingEscrowCC', network);
+	console.log('Found VestingEscrowCC at:', vestingEscrowProxyAddress);
 
-	const VestingEscrowProxy = await ethers.getContractFactory('VestingEscrowProxy');
-	const implementation = await upgrades.prepareUpgrade(vestingEscrowProxyAddress, VestingEscrowProxy);
+	const VestingEscrowProxy = await ethers.getContractFactory('VestingEscrowCC');
+	let implementation = await upgrades.prepareUpgrade(vestingEscrowProxyAddress, VestingEscrowProxy);
 
 	if(networkObj.chainId == 69) {
 		await upgrades.upgradeProxy(vestingEscrowProxyAddress, VestingEscrowProxy);
-        console.log('VestingEscrowProxy upgraded');
+		implementation = await getImplementationAddress(
+			ethers.provider,
+			vestingEscrowProxyAddress
+		);
+        console.log('VestingEscrowCC upgraded');
+
 	}
 
-	console.log('VestingEscrowImplementation: ', implementation);
-    setTargetAddress('VestingEscrowImplementation', network, implementation);
+	console.log('VestingEscrowCCImplementation:', implementation);
+    setTargetAddress('VestingEscrowCCImplementation', network, implementation);
 
     await hre.run('verify:verify', {
         address: implementation

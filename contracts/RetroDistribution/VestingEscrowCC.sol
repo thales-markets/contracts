@@ -189,6 +189,11 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
         emit TokenChanged(_token);
     }
 
+    function setVestingPeriod(uint _vestingPeriod) external onlyOwner {
+       vestingPeriod = _vestingPeriod;
+       emit VestingPeriodChanged(_vestingPeriod);
+    }
+
     event Fund(address _recipient, uint _amount);
     event AllocationIncreased(address _recipient, uint _amount);
     event AllocationDecreased(address _recipient, uint _amount);
@@ -201,4 +206,5 @@ contract VestingEscrowCC is Initializable, ProxyReentrancyGuard, ProxyOwned, Pro
     event ClaimPaused(address _recipient);
     event ClaimUnpaused(address _recipient);
     event WalletChanged(address _oldAddress, address _newAddress);
+    event VestingPeriodChanged(uint _vestingPeriod);
 }

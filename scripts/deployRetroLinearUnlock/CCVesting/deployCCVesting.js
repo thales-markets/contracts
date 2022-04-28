@@ -1,18 +1,13 @@
 const { ethers, upgrades } = require('hardhat');
-const w3utils = require('web3-utils');
-const Big = require('big.js');
-const fs = require('fs');
 const {
-	numberExponentToLarge,
 	txLog,
 	getTargetAddress,
 	setTargetAddress,
 } = require('../../helpers.js');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
-const { recipients, amounts, startTimes } = require('./recipients');
-const VESTING_PERIOD = 86400 * 7 * 36; // three years
-const TOTAL_AMOUNT = web3.utils.toWei('500000');
+const { recipients, amounts, startTimes, TOTAL_AMOUNT } = require('./recipients');
+const VESTING_PERIOD = 86400 * 365 * 3; // three years
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -71,8 +66,10 @@ async function main() {
 		VESTING_PERIOD,
 	]);
 	await vestingEscrow.deployed();
+	await delay(3000);
 
 	console.log('VestingEscrowCC deployed to:', vestingEscrow.address);
+
 	setTargetAddress('VestingEscrowCC', network, vestingEscrow.address);
 
 	const implementation = await getImplementationAddress(ethers.provider, vestingEscrow.address);
@@ -93,7 +90,7 @@ async function main() {
 	for(let i = 0; i < recipients.length; i++) {
 		tx = await vestingEscrow.fund(recipients[i], amounts[i], startTimes[i]);
 		await tx.wait().then(e => {
-			txLog(tx, 'VestingEscrow.sol: Fund accounts');
+			txLog(tx, 'Fund account: ' + recipients[i]);
 		});
 	}
 
@@ -112,3 +109,9 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
+
+function delay(time) {
+	return new Promise(function(resolve) {
+		setTimeout(resolve, time);
+	});
+}

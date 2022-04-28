@@ -147,6 +147,8 @@
 		"OptimisticAirdropUnclaimedRetro": "0x3Da91E5eD564eE46d4D734E1F99F395f0969101a",
 		"ThalesRoyalePassport": "0xf534848023ba851c6265e8F99a919c4d5fd05CD0",
 		"ThalesRoyalePassportImplementation": "0xd051b22871f23d12eEdF54d695420F43C9d3C268",
+		"VestingEscrowCC": "0x5179A757a3B29d2665a0638651F2D3C6C945d062",
+		"VestingEscrowCCImplementation": "0x2d385352674cBb8468723Bc01efC00998c10fc96",
 		"NewPositionMastercopy": "0x42Af0890d254387110555A46d261B9e4f6E327Ac",
 		"NewPositionalMarketMastercopy": "0x47691Bca9F8F24BAFfD1115FfCdEB137BaDaE1E5",
 		"NewPositionalMarketManager": "0x9227334352A890e51e980BeB7A56Bbdd01499B54",
@@ -219,7 +221,9 @@
 		"ThalesRoyale": "0x5De27390C8280Db5732Ee6aA7f7aBC4e2a476B30",
 		"ThalesRoyaleImplementation": "0x59477c6d82076EcFfe3C255c208ec8b5ab35254d",
 		"ThalesRoyalePassport": "0x8363a01892dE85BC871005570B481c374f2aB3e6",
-		"ThalesRoyalePassportImplementation": "0xBB842D83403f11f5d232d724358AAD96430f1485",
+		"ThalesRoyalePassportImplementation": "0xF898B6e58b16d6fFB87E39A5Dbb4900aE5AE24E4",
+		"VestingEscrowCC": "0xB15a705640A428a20331fDE3E50Ac5Eb10B93633",
+		"VestingEscrowCCImplementation": "0xD55c1d7250695343Bf81593e3eDBb6063F014C9d",
 		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058",
 		"ExoticManagerData": "0xBb409c6488c4bB2BE9e3BaD7B3C79b553ab6A061",
 		"ExoticManagerDataImplementation": "0xE2A2cF1531bF25Ab9aA31eaf1a1Aa31036e84De2"
@@ -280,6 +284,8 @@
 		"OpThales_L1": "0x4A679253410272dd5232B3Ff7cF5dbB88f295319",
 		"ThalesExchanger": "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
 		"OwnedUpgradeabilityProxy": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
-		"ProxyThalesExchanger": "0x59b670e9fA9D0A427751Af201D676719a970857b"
+		"ProxyThalesExchanger": "0x59b670e9fA9D0A427751Af201D676719a970857b",
+		"VestingEscrowCC": "0xdB05A386810c809aD5a77422eb189D36c7f24402",
+		"VestingEscrowCCImplementation": "0xa779C1D17bC5230c07afdC51376CAC1cb3Dd5314"
 	}
 }

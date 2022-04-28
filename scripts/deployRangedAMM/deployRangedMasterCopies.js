@@ -63,19 +63,12 @@ async function main() {
 	let safeBoxAddress = getTargetAddress('SafeBox', network);
 	console.log('Found safeBoxAddress at:' + safeBoxAddress);
 
-	const OutPositionMastercopy = await ethers.getContractFactory('OutPositionMastercopy');
-	const OutPositionMastercopyDeployed = await OutPositionMastercopy.deploy();
-	await OutPositionMastercopyDeployed.deployed();
+	const RangedPositionMastercopy = await ethers.getContractFactory('RangedPositionMastercopy');
+	const RangedPositionMastercopyDeployed = await RangedPositionMastercopy.deploy();
+	await RangedPositionMastercopyDeployed.deployed();
 
-	console.log('OutPositionMastercopy deployed to:', OutPositionMastercopyDeployed.address);
-	setTargetAddress('OutPositionMastercopy', network, OutPositionMastercopyDeployed.address);
-
-	const InPositionMastercopy = await ethers.getContractFactory('InPositionMastercopy');
-	const InPositionMastercopyDeployed = await InPositionMastercopy.deploy();
-	await InPositionMastercopyDeployed.deployed();
-
-	console.log('InPositionMastercopy deployed to:', InPositionMastercopyDeployed.address);
-	setTargetAddress('InPositionMastercopy', network, InPositionMastercopyDeployed.address);
+	console.log('RangedPositionMastercopy deployed to:', RangedPositionMastercopyDeployed.address);
+	setTargetAddress('RangedPositionMastercopy', network, RangedPositionMastercopyDeployed.address);
 
 	const RangedMarketMastercopy = await ethers.getContractFactory('RangedMarketMastercopy');
 	const RangedMarketMastercopyDeployed = await RangedMarketMastercopy.deploy();
@@ -85,18 +78,9 @@ async function main() {
 	setTargetAddress('RangedMarketMastercopy', network, RangedMarketMastercopyDeployed.address);
 	try {
 		await hre.run('verify:verify', {
-			address: OutPositionMastercopyDeployed.address,
+			address: RangedPositionMastercopyDeployed.address,
 			constructorArguments: [],
-			contract: 'contracts/RangedMarkets/OutPositionMastercopy.sol:OutPositionMastercopy',
-		});
-	} catch (e) {
-		console.log(e);
-	}
-	try {
-		await hre.run('verify:verify', {
-			address: InPositionMastercopyDeployed.address,
-			constructorArguments: [],
-			contract: 'contracts/RangedMarkets/InPositionMastercopy.sol:InPositionMastercopy',
+			contract: 'contracts/RangedMarkets/RangedPositionMastercopy.sol:RangedPositionMastercopy',
 		});
 	} catch (e) {
 		console.log(e);

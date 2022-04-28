@@ -21,8 +21,8 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../utils/libraries/AddressSetLib.sol";
 
-import "./InPosition.sol";
-import "./OutPosition.sol";
+import "./RangedPosition.sol";
+import "./RangedPosition.sol";
 import "./RangedMarket.sol";
 import "../interfaces/IPositionalMarket.sol";
 
@@ -41,8 +41,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     AddressSetLib.AddressSet internal _knownMarkets;
 
     address public rangedMarketMastercopy;
-    address public rangedPositionINMastercopy;
-    address public rangedPositionOUTMastercopy;
+    address public rangedPositionMastercopy;
 
     IERC20Upgradeable public sUSD;
 
@@ -95,17 +94,16 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         require(createdRangedMarkets[leftMarket][rightMarket] == address(0), "Ranged market already exists");
 
-        require(address(rangedMarketMastercopy) != address(0), "Mastercopy not set");
-        require(address(rangedPositionINMastercopy) != address(0), "In Mastercopy not set");
-        require(address(rangedPositionOUTMastercopy) != address(0), "Out Mastercopy not set");
+        require(address(rangedMarketMastercopy) != address(0), "Ranged Market Mastercopy not set");
+        require(address(rangedPositionMastercopy) != address(0), "Ranged Position Mastercopy not set");
 
         RangedMarket rm = RangedMarket(Clones.clone(rangedMarketMastercopy));
         createdRangedMarkets[leftMarket][rightMarket] = address(rm);
 
-        InPosition inp = InPosition(Clones.clone(rangedPositionINMastercopy));
+        RangedPosition inp = RangedPosition(Clones.clone(rangedPositionMastercopy));
         inp.initialize(address(rm), "Position IN", "IN", address(this));
 
-        OutPosition outp = OutPosition(Clones.clone(rangedPositionOUTMastercopy));
+        RangedPosition outp = RangedPosition(Clones.clone(rangedPositionMastercopy));
         outp.initialize(address(rm), "Position OUT", "OUT", address(this));
 
         rm.initialize(leftMarket, rightMarket, address(inp), address(outp), address(this));
@@ -143,11 +141,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             return false;
         }
 
-        if (
-            address(rangedMarketMastercopy) == address(0) ||
-            address(rangedPositionINMastercopy) == address(0) ||
-            address(rangedPositionOUTMastercopy) == address(0)
-        ) {
+        if (address(rangedMarketMastercopy) == address(0) || address(rangedPositionMastercopy) == address(0)) {
             return false;
         }
         return true;
@@ -285,7 +279,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
 
         address target;
-        (InPosition inp, OutPosition outp) = rangedMarket.positions();
+        (RangedPosition inp, RangedPosition outp) = rangedMarket.positions();
 
         if (position == RangedMarket.Position.Out) {
             target = address(outp);
@@ -465,7 +459,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require((expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "Slippage too high");
 
         address target;
-        (InPosition inp, OutPosition outp) = rangedMarket.positions();
+        (RangedPosition inp, RangedPosition outp) = rangedMarket.positions();
 
         if (position == RangedMarket.Position.Out) {
             target = address(outp);
@@ -562,19 +556,12 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         rangedMarketMastercopy = _rangedMarketMastercopy;
     }
 
-    function setRangedPositionINMastercopy(address _rangedPositionINMastercopy) external onlyOwner {
-        rangedPositionINMastercopy = _rangedPositionINMastercopy;
+    function setRangedPositionMastercopy(address _rangedPositionMastercopy) external onlyOwner {
+        rangedPositionMastercopy = _rangedPositionMastercopy;
     }
 
-    function setRangedPositionOUTMastercopy(address _rangedPositionOUTMastercopy) external onlyOwner {
-        rangedPositionOUTMastercopy = _rangedPositionOUTMastercopy;
-    }
-
-    function setMinSupportedPrice(uint _minSupportedPrice) public onlyOwner {
+    function setMinMaxSupportedPrice(uint _minSupportedPrice, uint _maxSupportedPrice) public onlyOwner {
         minSupportedPrice = _minSupportedPrice;
-    }
-
-    function setMaxSupportedPrice(uint _maxSupportedPrice) public onlyOwner {
         maxSupportedPrice = _maxSupportedPrice;
     }
 
@@ -602,7 +589,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address asset
     );
 
-    event SetAmm(address _manager);
+    event SetAmm(address amm);
     event SetSUSD(address sUSD);
     event RangedMarketCreated(address market, address leftMarket, address rightMarket);
     event SetSafeBoxImpact(uint _safeBoxImpact);

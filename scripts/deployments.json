@@ -201,11 +201,10 @@
 		"ThalesRoyalePassport": "0x8363a01892dE85BC871005570B481c374f2aB3e6",
 		"ThalesRoyalePassportImplementation": "0xF898B6e58b16d6fFB87E39A5Dbb4900aE5AE24E4",
 		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058",
-		"RangedAMM": "0x5C024Dc8aD40918cf2587673b90f214a41D3Cb92",
-		"RangedAMMImplementation": "0xd28E51b616E6aCb1240bee600ABf25099b2c6a5b",
-		"OutPositionMastercopy": "0x4e09411C841127336847920039eC9b4fE126AcEa",
-		"InPositionMastercopy": "0xF8D625EE8aa2AA47C4BA8fe0d74950da9585D725",
-		"RangedMarketMastercopy": "0xD65d65E2F9E9068eEb3407293d2345525cdc9375"
+		"RangedAMM": "0x0690F410FB54d76268e4fa97486CBD605e68dC62",
+		"RangedAMMImplementation": "0x676319F965956940a768ee2Fad8a256aD5d236EB",
+		"RangedMarketMastercopy": "0x586EdA83fC6D4ae5E2795BE053C903e5bE69694D",
+		"RangedPositionMastercopy": "0xaEb7C99fE13023E8d9a54F19e677d26091b013af"
 	},
 	"polygonMumbai": {
 		"ProxyUSDC": "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",

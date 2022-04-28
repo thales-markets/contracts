@@ -124,7 +124,7 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_manager",
+        "name": "amm",
         "type": "address"
       }
     ],
@@ -668,20 +668,7 @@
   },
   {
     "inputs": [],
-    "name": "rangedPositionINMastercopy",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "rangedPositionOUTMastercopy",
+    "name": "rangedPositionMastercopy",
     "outputs": [
       {
         "internalType": "address",
@@ -836,24 +823,16 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_minSupportedPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "_maxSupportedPrice",
         "type": "uint256"
       }
     ],
-    "name": "setMaxSupportedPrice",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_minSupportedPrice",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMinSupportedPrice",
+    "name": "setMinMaxSupportedPrice",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -901,24 +880,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_rangedPositionINMastercopy",
+        "name": "_rangedPositionMastercopy",
         "type": "address"
       }
     ],
-    "name": "setRangedPositionINMastercopy",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_rangedPositionOUTMastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "setRangedPositionOUTMastercopy",
+    "name": "setRangedPositionMastercopy",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

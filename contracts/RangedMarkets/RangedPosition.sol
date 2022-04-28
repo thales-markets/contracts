@@ -1,4 +1,4 @@
-// 1 Out position is collateraize by 1 DOWN left leg option and one UP right leg option
+// in position collaterized by 0.5 UP on the left leg and 0.5 DOWN on the right leg
 
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
@@ -10,7 +10,7 @@ import "../interfaces/IPosition.sol";
 // Internal references
 import "./RangedMarket.sol";
 
-contract OutPosition is IERC20 {
+contract RangedPosition is IERC20 {
     /* ========== STATE VARIABLES ========== */
 
     string public name;
@@ -56,14 +56,17 @@ contract OutPosition is IERC20 {
         }
     }
 
-    function burn(address claimant, uint amount) external {
+    function burn(address claimant, uint amount) external onlyRangedMarket {
         balanceOf[claimant] = balanceOf[claimant] - amount;
         totalSupply = totalSupply - amount;
+        emit Burn(claimant, amount);
     }
 
-    function mint(address minter, uint amount) external {
+    function mint(address minter, uint amount) external onlyRangedMarket {
+        _requireMinimumAmount(amount);
         totalSupply = totalSupply + amount;
         balanceOf[minter] = balanceOf[minter] + amount; // Increment rather than assigning since a transfer may have occurred.
+        emit Mint(minter, amount);
     }
 
     /* ---------- ERC20 Functions ---------- */
@@ -79,7 +82,7 @@ contract OutPosition is IERC20 {
         require(_value <= fromBalance, "Insufficient balance");
 
         balanceOf[_from] = fromBalance - _value;
-        balanceOf[_to] = balanceOf[_to] - _value;
+        balanceOf[_to] = balanceOf[_to] + _value;
 
         emit Transfer(_from, _to, _value);
         return true;
@@ -116,4 +119,17 @@ contract OutPosition is IERC20 {
     function getTotalSupply() external view returns (uint) {
         return totalSupply;
     }
+
+    modifier onlyRangedMarket {
+        require(msg.sender == address(rangedMarket), "only the Ranged Market may perform these methods");
+        _;
+    }
+
+    function _requireMinimumAmount(uint amount) internal pure returns (uint) {
+        require(amount >= _MINIMUM_AMOUNT || amount == 0, "Balance < $0.01");
+        return amount;
+    }
+
+    event Mint(address minter, uint amount);
+    event Burn(address burner, uint amount);
 }

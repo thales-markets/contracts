@@ -4,6 +4,8 @@ pragma solidity >=0.5.16;
 interface IThalesAMM {
     enum Position {Up, Down}
 
+    function manager() external view returns (address);
+
     function availableToBuyFromAMM(address market, Position position) external view returns (uint);
 
     function buyFromAmmQuote(

@@ -246,7 +246,6 @@ contract('RangedAMM', accounts => {
 
 		RangedMarket = artifacts.require('RangedMarket');
 
-		console.log('Setting mastercopy 1');
 		let RangedMarketMastercopy = artifacts.require('RangedMarketMastercopy');
 		let rangedMarketMastercopy = await RangedMarketMastercopy.new();
 		console.log('Setting mastercopy 11');
@@ -254,22 +253,13 @@ contract('RangedAMM', accounts => {
 			from: owner,
 		});
 
-		console.log('Setting mastercopy 2');
-		let InPositionMastercopy = artifacts.require('InPositionMastercopy');
-		let inPositionMastercopy = await InPositionMastercopy.new();
-		await rangedMarketsAMM.setRangedPositionINMastercopy(inPositionMastercopy.address, {
+		let RangedPositionMastercopy = artifacts.require('RangedPositionMastercopy');
+		let rangedPositionMastercopy = await RangedPositionMastercopy.new();
+		await rangedMarketsAMM.setRangedPositionMastercopy(rangedPositionMastercopy.address, {
 			from: owner,
 		});
 
-		console.log('Setting mastercopy 3');
-		let OutPositionMastercopy = artifacts.require('OutPositionMastercopy');
-		let outPositionMastercopy = await OutPositionMastercopy.new();
-		await rangedMarketsAMM.setRangedPositionOUTMastercopy(outPositionMastercopy.address, {
-			from: owner,
-		});
-
-		await rangedMarketsAMM.setMinSupportedPrice(toUnit(0.05), { from: owner });
-		await rangedMarketsAMM.setMaxSupportedPrice(toUnit(0.95), { from: owner });
+		await rangedMarketsAMM.setMinMaxSupportedPrice(toUnit(0.05), toUnit(0.95), { from: owner });
 		console.log('Setting min prices');
 
 		await sUSDSynth.approve(rangedMarketsAMM.address, sUSDQty, { from: minter });
@@ -407,8 +397,8 @@ contract('RangedAMM', accounts => {
 				{ from: minter }
 			);
 
-			let inposition = artifacts.require('InPosition');
-			let outposition = artifacts.require('OutPosition');
+			let inposition = artifacts.require('RangedPosition');
+			let outposition = artifacts.require('RangedPosition');
 
 			let positions = await rangedMarket.positions();
 			let inPosition = await inposition.at(positions.inp);
@@ -625,23 +615,108 @@ contract('RangedAMM', accounts => {
 			minterBalance = await outPosition.balanceOf(minter);
 			console.log('minter out tokens balance:' + minterBalance / 1e18);
 
-			await fastForward(day * 20);
+			console.log('DONE SELLING OUT POSITIONS!!!!!');
 
-			await manager.resolveMarket(leftMarket.address);
-			await manager.resolveMarket(rightMarket.address);
+			console.log('BREAK BUY MAXIMUM IN!!!!!!!!!');
+			availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
+				rangedMarket.address,
+				RangedPosition.IN
+			);
 
-			await rangedMarket.exercisePositions({ from: minter });
+			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
+
+			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
+				rangedMarket.address,
+				RangedPosition.IN,
+				toUnit(availableToBuyFromAMMIn / 1e18 - 1)
+			);
+
+			console.log('buyInQuote is:' + buyInQuote / 1e18);
+
+			await expect(
+				rangedMarketsAMM.buyFromAMM(
+					rangedMarket.address,
+					RangedPosition.IN,
+					toUnit(availableToBuyFromAMMIn / 1e18 + 1),
+					buyInQuote,
+					additionalSlippage,
+					{ from: minter }
+				)
+			).to.be.revertedWith('Not enough liquidity in Thales AMM.');
+
+			console.log('BUY MAXIMUM IN!!!!!!!!!');
+			availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
+				rangedMarket.address,
+				RangedPosition.IN
+			);
+
+			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
+
+			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
+				rangedMarket.address,
+				RangedPosition.IN,
+				toUnit(availableToBuyFromAMMIn / 1e18 - 1)
+			);
+
+			console.log('buyInQuote is:' + buyInQuote / 1e18);
+
+			await rangedMarketsAMM.buyFromAMM(
+				rangedMarket.address,
+				RangedPosition.IN,
+				toUnit(availableToBuyFromAMMIn / 1e18 - 1),
+				buyInQuote,
+				additionalSlippage,
+				{ from: minter }
+			);
+
 			minterBalance = await inPosition.balanceOf(minter);
-			console.log('minter in tokens balance:' + minterBalance / 1e18);
-
-			minterBalance = await outPosition.balanceOf(minter);
-			console.log('minter out tokens balance:' + minterBalance / 1e18);
+			console.log('minter In tokens balance:' + minterBalance / 1e18);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
 
-			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
-			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
+			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
+
+			rangedPositionLeftMarketUPBalance = await up.balanceOf(rangedMarket.address);
+			console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
+
+			rangedPositionLeftMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
+			console.log(
+				'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
+			);
+
+			rangedPositionRightMarketUPBalance = await up.balanceOf(rangedMarket.address);
+			console.log(
+				'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
+			);
+
+			rangedPositionRightMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
+			console.log(
+				'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
+			);
+
+			console.log('DONE BUYING MAXIMUM IN!!!');
+
+			// console.log('TESTING EXERCISING!!!');
+			//
+			// await fastForward(day * 20);
+			//
+			// await manager.resolveMarket(leftMarket.address);
+			// await manager.resolveMarket(rightMarket.address);
+			//
+			// await rangedMarket.exercisePositions({ from: minter });
+			// minterBalance = await inPosition.balanceOf(minter);
+			// console.log('minter in tokens balance:' + minterBalance / 1e18);
+			//
+			// minterBalance = await outPosition.balanceOf(minter);
+			// console.log('minter out tokens balance:' + minterBalance / 1e18);
+			//
+			// minterSusdBalance = await sUSDSynth.balanceOf(minter);
+			// console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
+			//
+			// let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
+			// console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
 		});
 	});
 });

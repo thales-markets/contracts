@@ -5,10 +5,10 @@ import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
 // Internal references
-import "./InPosition.sol";
-import "./OutPosition.sol";
+import "./RangedPosition.sol";
 import "./RangedMarketsAMM.sol";
 import "../interfaces/IPositionalMarket.sol";
+import "../interfaces/IPositionalMarketManager.sol";
 
 contract RangedMarket {
     using SafeERC20 for IERC20;
@@ -19,19 +19,19 @@ contract RangedMarket {
     IPositionalMarket public rightMarket;
 
     struct Positions {
-        InPosition inp;
-        OutPosition outp;
+        RangedPosition inp;
+        RangedPosition outp;
     }
 
     Positions public positions;
 
     RangedMarketsAMM public rangedMarketsAMM;
 
+    bool public resolved = false;
+
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
-
-    bool public resolved = false;
 
     function initialize(
         address _leftMarket,
@@ -44,8 +44,8 @@ contract RangedMarket {
         initialized = true;
         leftMarket = IPositionalMarket(_leftMarket);
         rightMarket = IPositionalMarket(_rightMarket);
-        positions.inp = InPosition(_in);
-        positions.outp = OutPosition(_out);
+        positions.inp = RangedPosition(_in);
+        positions.outp = RangedPosition(_out);
         rangedMarketsAMM = RangedMarketsAMM(_rangedMarketsAMM);
     }
 
@@ -70,6 +70,7 @@ contract RangedMarket {
         } else {
             positions.outp.mint(minter, amount);
         }
+        emit Mint(minter, amount, _position);
     }
 
     function burnIn(uint value, address claimant) external onlyAMM {
@@ -123,10 +124,17 @@ contract RangedMarket {
 
             positions.inp.burn(claimant, value);
         }
+        emit Burn(claimant, value, _position);
     }
 
     function exercisePositions() external {
         // The markets must be resolved
+        if (leftMarket.canResolve()) {
+            IPositionalMarketManager(rangedMarketsAMM.thalesAmm().manager()).resolveMarket(address(leftMarket));
+        }
+        if (rightMarket.canResolve()) {
+            IPositionalMarketManager(rangedMarketsAMM.thalesAmm().manager()).resolveMarket(address(rightMarket));
+        }
         require(leftMarket.resolved() && rightMarket.resolved(), "Left or Right market not resolved yet!");
 
         uint inBalance = positions.inp.balanceOf(msg.sender);
@@ -142,15 +150,16 @@ contract RangedMarket {
             positions.outp.burn(msg.sender, outBalance);
         }
 
+        Position result = Position.Out;
+        if ((leftMarket.result() == IPositionalMarket.Side.Up) && (rightMarket.result() == IPositionalMarket.Side.Down)) {
+            result = Position.In;
+        }
+
         if (!resolved) {
             leftMarket.exerciseOptions();
             rightMarket.exerciseOptions();
             resolved = true;
-        }
-
-        Position result = Position.Out;
-        if ((leftMarket.result() == IPositionalMarket.Side.Up) && (rightMarket.result() == IPositionalMarket.Side.Down)) {
-            result = Position.In;
+            emit Resolved(result);
         }
 
         // Only pay out the side that won.
@@ -158,11 +167,15 @@ contract RangedMarket {
         if (payout != 0) {
             rangedMarketsAMM.sUSD().transfer(msg.sender, payout);
         }
+        emit Exercised(msg.sender, payout);
     }
 
     function canExercisePositions() external view returns (bool) {
         // The markets must be resolved
-        if (!leftMarket.resolved() || !rightMarket.resolved()) {
+        if (!leftMarket.resolved() && !leftMarket.canResolve()) {
+            return false;
+        }
+        if (!rightMarket.resolved() && !rightMarket.canResolve()) {
             return false;
         }
 
@@ -176,6 +189,14 @@ contract RangedMarket {
         return true;
     }
 
+    function result() external view returns (Position) {
+        Position result = Position.Out;
+        if ((leftMarket.result() == IPositionalMarket.Side.Up) && (rightMarket.result() == IPositionalMarket.Side.Down)) {
+            result = Position.In;
+        }
+        return result;
+    }
+
     function withdrawCollateral(address recipient) external onlyAMM {
         rangedMarketsAMM.sUSD().transfer(recipient, rangedMarketsAMM.sUSD().balanceOf(address(this)));
     }
@@ -184,4 +205,9 @@ contract RangedMarket {
         require(msg.sender == address(rangedMarketsAMM), "only the AMM may perform these methods");
         _;
     }
+
+    event Mint(address minter, uint amount, Position _position);
+    event Burn(address burner, uint amount, Position _position);
+    event Exercised(address exerciser, uint amount);
+    event Resolved(Position winningPosition);
 }

@@ -52,27 +52,11 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		StakingImplementation = await upgrades.prepareUpgrade(StakingAddress, StakingContract);
 		await delay(5000);
-	}
-
-
-	if (networkObj.chainId == 10) {
-		network = 'optimisticEthereum';
-		StakingImplementation = await upgrades.prepareUpgrade(ExoticRewardsAddress, ExoticRewardsContract);
-		await delay(5000);
 		console.log('Staking upgraded');
 	}
 
 	console.log('Implementation Staking: ', StakingImplementation);
 	setTargetAddress('StakingThalesImplementation', network, StakingImplementation);
-
-	const StakingThales = await NewStaking.attach(ProxyStaking);
-    console.log("StakingThales attached on: ", StakingThales.address);
-
-	tx = await StakingThales.setAddressResolver(AddressResolverAddress, {from:owner.address});
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setAddressResolver ', AddressResolverAddress);
-	});
-	delay(1000);
 
 	try {
 		await hre.run('verify:verify', {

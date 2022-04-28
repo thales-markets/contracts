@@ -115,6 +115,44 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit RangedMarketCreated(address(rm), leftMarket, rightMarket);
     }
 
+    function canCreateRangedMarket(address leftMarket, address rightMarket) external view returns (bool) {
+        if (!thalesAmm.isMarketInAMMTrading(leftMarket) || !thalesAmm.isMarketInAMMTrading(rightMarket)) {
+            return false;
+        }
+        (uint maturityLeft, ) = IPositionalMarket(leftMarket).times();
+        (uint maturityRight, ) = IPositionalMarket(rightMarket).times();
+        if (maturityLeft != maturityRight) {
+            return false;
+        }
+
+        (bytes32 leftkey, uint leftstrikePrice, ) = IPositionalMarket(leftMarket).getOracleDetails();
+        (bytes32 rightkey, uint rightstrikePrice, ) = IPositionalMarket(rightMarket).getOracleDetails();
+        if (leftkey != rightkey) {
+            return false;
+        }
+        if (leftstrikePrice >= rightstrikePrice) {
+            return false;
+        }
+
+        // strike prices need to be at least 5% apart
+        if (!(((ONE + 5 * ONE_PERCENT) * leftstrikePrice) / ONE < rightstrikePrice)) {
+            return false;
+        }
+
+        if (createdRangedMarkets[leftMarket][rightMarket] != address(0)) {
+            return false;
+        }
+
+        if (
+            address(rangedMarketMastercopy) == address(0) ||
+            address(rangedPositionINMastercopy) == address(0) ||
+            address(rangedPositionOUTMastercopy) == address(0)
+        ) {
+            return false;
+        }
+        return true;
+    }
+
     function _availableToBuyFromAMMOnlyRanged(RangedMarket rangedMarket, RangedMarket.Position position)
         internal
         view

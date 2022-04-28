@@ -39550,7 +39550,7 @@
           {
             "contract": "RangedMarketsAMM",
             "label": "thalesAmm",
-            "type": "t_contract(IThalesAMM)43502",
+            "type": "t_contract(IThalesAMM)6230",
             "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:36"
           },
           {
@@ -39568,7 +39568,201 @@
           {
             "contract": "RangedMarketsAMM",
             "label": "_knownMarkets",
-            "type": "t_struct(AddressSet)46721_storage",
+            "type": "t_struct(AddressSet)6240_storage",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:41"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "rangedMarketMastercopy",
+            "type": "t_address",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:43"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "rangedPositionINMastercopy",
+            "type": "t_address",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:44"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "rangedPositionOUTMastercopy",
+            "type": "t_address",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:45"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)1069",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:47"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "spentOnMarket",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:49"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "capPerMarket",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:52"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "minSupportedPrice",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:54"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "maxSupportedPrice",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:55"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "safeBox",
+            "type": "t_address",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:57"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "safeBoxImpact",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:58"
+          }
+        ],
+        "types": {
+          "t_contract(IThalesAMM)6230": {
+            "label": "contract IThalesAMM"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_address))": {
+            "label": "mapping(address => mapping(address => address))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_struct(AddressSet)6240_storage": {
+            "label": "struct AddressSetLib.AddressSet",
+            "members": [
+              {
+                "label": "elements",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "indices",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_contract(IERC20Upgradeable)1069": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "c9a8210688c22eafbd2e0bafce7dee4f7f50e07cdf9a0cb4d6a7426d0bd52f9d": {
+      "address": "0xd28E51b616E6aCb1240bee600ABf25099b2c6a5b",
+      "txHash": "0x9c373d4058dd2bb8492fad1787d4302461052f610ea44cf82ca155e15021e895",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "thalesAmm",
+            "type": "t_contract(IThalesAMM)43652",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:36"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "rangedAmmFee",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:38"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "createdRangedMarkets",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_address))",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:40"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "_knownMarkets",
+            "type": "t_struct(AddressSet)46871_storage",
             "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:41"
           },
           {
@@ -39633,7 +39827,7 @@
           }
         ],
         "types": {
-          "t_contract(IThalesAMM)43502": {
+          "t_contract(IThalesAMM)43652": {
             "label": "contract IThalesAMM"
           },
           "t_uint256": {
@@ -39648,7 +39842,7 @@
           "t_mapping(t_address,t_address)": {
             "label": "mapping(address => address)"
           },
-          "t_struct(AddressSet)46721_storage": {
+          "t_struct(AddressSet)46871_storage": {
             "label": "struct AddressSetLib.AddressSet",
             "members": [
               {

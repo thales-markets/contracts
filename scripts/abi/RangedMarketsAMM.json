@@ -402,6 +402,30 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "leftMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "rightMarket",
+        "type": "address"
+      }
+    ],
+    "name": "canCreateRangedMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "capPerMarket",
     "outputs": [

@@ -48,15 +48,24 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint8 statusId;
     }
 
+    struct GameOdds {
+        bytes32 gameId;
+        int24 homeOdds;
+        int24 awayOdds;
+        int24 drawOdds;
+    }
+
     /* ========== STATE VARIABLES ========== */
 
     // Maps <RequestId, Result>
     mapping(bytes32 => bytes[]) public requestIdGamesCreated;
     mapping(bytes32 => bytes[]) public requestIdGamesResolved;
+    mapping(bytes32 => bytes[]) public requestIdGamesOdds;
 
     // Maps <GameId, Game>
     mapping(bytes32 => GameCreate) public gameCreated;
     mapping(bytes32 => GameResolve) public gameResolved;
+    mapping(bytes32 => GameOdds) public gameOdds;
     mapping(bytes32 => uint) public sportsIdPerGame;
     mapping(bytes32 => bool) public gameFulfilledCreated;
     mapping(bytes32 => bool) public gameFulfilledResolved;
@@ -139,6 +148,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    function fulfillGamesOdds(
+        bytes32 _requestId,
+        bytes[] memory _games
+    ) external onlyWrapper {
+        requestIdGamesOdds[_requestId] = _games;
+        for (uint i = 0; i < _games.length; i++) {
+            GameOdds memory game = abi.decode(_games[i], (GameOdds));
+            _oddsGameFulfill(_requestId, game);
+        }
+    }
+
     function createMarketForGame(bytes32 _gameId) external {
         require(marketPerGameId[_gameId] == address(0), "Market for game already exists");
         require(gameFulfilledCreated[_gameId], "No such game fulfilled, created");
@@ -218,16 +238,28 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return gameCreated[_gameId].startTime;
     }
 
-    function getOddsHomeTeam(bytes32 _gameId) public view returns (int24) {
+    function getInitialOddsHomeTeam(bytes32 _gameId) public view returns (int24) {
         return gameCreated[_gameId].homeOdds;
     }
 
-    function getOddsAwayTeam(bytes32 _gameId) public view returns (int24) {
+    function getInitialOddsAwayTeam(bytes32 _gameId) public view returns (int24) {
         return gameCreated[_gameId].awayOdds;
     }
 
-    function getOddsDraw(bytes32 _gameId) public view returns (int24) {
+    function getInitialOddsDraw(bytes32 _gameId) public view returns (int24) {
         return gameCreated[_gameId].drawOdds;
+    }
+
+    function getOddsHomeTeam(bytes32 _gameId) public view returns (int24) {
+        return gameOdds[_gameId].homeOdds;
+    }
+
+    function getOddsAwayTeam(bytes32 _gameId) public view returns (int24) {
+        return gameOdds[_gameId].awayOdds;
+    }
+
+    function getOddsDraw(bytes32 _gameId) public view returns (int24) {
+        return gameOdds[_gameId].drawOdds;
     }
 
     function getGameResolvedById(bytes32 _gameId) public view returns (GameResolve memory) {
@@ -290,6 +322,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             emit GameResolved(requestId, _sportId, _game.gameId, _game, queues.lastResolved());
         }
+    }
+
+    function _oddsGameFulfill(
+        bytes32 requestId,
+        GameOdds memory _game
+    ) internal {
+        gameOdds[_game.gameId] = _game;
+        emit GameOddsAdded(requestId, _game.gameId, _game);
     }
 
     function _populateSports(uint[] memory _supportedSportIds) internal {
@@ -562,6 +602,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     event GameCreted(bytes32 _requestId, uint _sportId, bytes32 _id, GameCreate _game, uint _queueIndex);
     event GameResolved(bytes32 _requestId, uint _sportId, bytes32 _id, GameResolve _game, uint _queueIndex);
+    event GameOddsAdded(bytes32 _requestId, bytes32 _id, GameOdds _game);
     event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game);
     event ResolveSportsMarket(address _marketAddress, bytes32 _id, uint _outcome);
     event CancelSportsMarket(address _marketAddress, bytes32 _id);

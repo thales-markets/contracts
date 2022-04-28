@@ -10,4 +10,5 @@ interface ITherundownConsumer {
     // write functions
     function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games, uint _sportsId) external;
     function fulfillGamesResolved(bytes32 _requestId, bytes[] memory _games, uint _sportsId) external;
+    function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external;
 }

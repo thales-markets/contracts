@@ -84,6 +84,10 @@ contract('TherundownConsumer', accounts => {
 	let game_1_create;
 	let game_1_resolve;
 	let gameid1;
+	let oddsid;
+	let oddsResult;
+	let oddsResultArray;
+	let reqIdOdds;
 	let gameid2;
 	let game_2_create;
 	let game_2_resolve;
@@ -232,6 +236,11 @@ contract('TherundownConsumer', accounts => {
 		reqIdResolveFoodball = '0xff8887a8535b7a8030962e6f6b1eba61c0f1cb82f706e77d834f15c781e47697';
 		gamesResolvedFootball = [game_1_football_resolve, game_2_football_resolve];
 
+		oddsid = '0x6135363061373861363135353239363137366237393232353866616336613532';
+		oddsResult = '0x6135363061373861363135353239363137366237393232353866616336613532000000000000000000000000000000000000000000000000000000000000283cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3dc0000000000000000000000000000000000000000000000000000000000000000';
+		oddsResultArray = [oddsResult];
+		reqIdOdds = '0x5bf0ea636f9515e1e1060e5a21e11ef8a628fa99b1effb8aa18624b02c6f36de';
+
 		TherundownConsumer = artifacts.require('TherundownConsumer');
 		TherundownConsumerDeployed = await TherundownConsumer.new();
 
@@ -317,8 +326,8 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
 
-			assert.bnEqual(-20700, await TherundownConsumerDeployed.getOddsHomeTeam(gameid1));
-			assert.bnEqual(17700, await TherundownConsumerDeployed.getOddsAwayTeam(gameid1));
+			assert.bnEqual(-20700, await TherundownConsumerDeployed.getInitialOddsHomeTeam(gameid1));
+			assert.bnEqual(17700, await TherundownConsumerDeployed.getInitialOddsAwayTeam(gameid1));
 
 			assert.equal(
 				game_1_create,
@@ -394,9 +403,9 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
 			);
 
-			assert.bnEqual(40000, await TherundownConsumerDeployed.getOddsHomeTeam(gameFootballid1));
-			assert.bnEqual(-12500, await TherundownConsumerDeployed.getOddsAwayTeam(gameFootballid1));
-			assert.bnEqual(27200, await TherundownConsumerDeployed.getOddsDraw(gameFootballid1));
+			assert.bnEqual(40000, await TherundownConsumerDeployed.getInitialOddsHomeTeam(gameFootballid1));
+			assert.bnEqual(-12500, await TherundownConsumerDeployed.getInitialOddsAwayTeam(gameFootballid1));
+			assert.bnEqual(27200, await TherundownConsumerDeployed.getInitialOddsDraw(gameFootballid1));
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
 			assert.equal('Atletico Madrid Atletico Madrid', game.homeTeam);
@@ -1136,6 +1145,23 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
+		});
+	});
+
+	describe('Odds for game', () => {
+		it('Get odds per game, check results', async () => {
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesOdds(
+				reqIdOdds,
+				oddsResultArray,
+				{ from: wrapper }
+			);
+
+			assert.bnEqual(10300, await TherundownConsumerDeployed.getOddsHomeTeam(oddsid));
+			assert.bnEqual(-11300, await TherundownConsumerDeployed.getOddsAwayTeam(oddsid));
+			assert.bnEqual(0, await TherundownConsumerDeployed.getOddsDraw(oddsid));
+
 		});
 	});
 });

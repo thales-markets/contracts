@@ -52,10 +52,8 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		StakingImplementation = await upgrades.prepareUpgrade(StakingAddress, StakingContract);
 		await delay(5000);
+		console.log('Staking upgraded');
 	}
-
-
-	console.log('Staking upgraded');
 
 	console.log('Implementation Staking: ', StakingImplementation);
 	setTargetAddress('StakingThalesImplementation', network, StakingImplementation);

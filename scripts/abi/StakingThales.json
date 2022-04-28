@@ -37,6 +37,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "addressResolver",
+        "type": "address"
+      }
+    ],
+    "name": "AddressResolverChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "account",
         "type": "address"
       }
@@ -559,6 +572,21 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "addressResolver",
+    "outputs": [
+      {
+        "internalType": "contract IAddressResolver",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "canClosePeriod",
     "outputs": [
       {
@@ -1053,6 +1081,21 @@
   },
   {
     "constant": true,
+    "inputs": [],
+    "name": "getSNXRewardsAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [
       {
         "internalType": "address",
@@ -1451,6 +1494,21 @@
       }
     ],
     "name": "setAMMVolumeRewardsMultiplier",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_addressResolver",
+        "type": "address"
+      }
+    ],
+    "name": "setAddressResolver",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

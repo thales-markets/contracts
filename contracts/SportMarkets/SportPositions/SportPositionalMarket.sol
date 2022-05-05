@@ -2,16 +2,16 @@
 pragma solidity ^0.8.0;
 
 // Inheritance
-import "../OwnedWithInit.sol";
-import "../interfaces/IPositionalMarket.sol";
-import "../interfaces/IOracleInstance.sol";
+import "../../OwnedWithInit.sol";
+import "../../interfaces/IPositionalMarket.sol";
+import "../../interfaces/IOracleInstance.sol";
 
 // Libraries
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 
 // Internal references
-import "./PositionalMarketManager.sol";
-import "./Position.sol";
+import "./SportPositionalMarketManager.sol";
+import "./SportPosition.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 
 contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {

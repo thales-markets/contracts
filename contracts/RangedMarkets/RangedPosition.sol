@@ -59,7 +59,8 @@ contract RangedPosition is IERC20 {
     function burn(address claimant, uint amount) external onlyRangedMarket {
         balanceOf[claimant] = balanceOf[claimant] - amount;
         totalSupply = totalSupply - amount;
-        emit Burn(claimant, amount);
+        emit Burned(claimant, amount);
+        emit Transfer(claimant, address(0), amount);
     }
 
     function mint(address minter, uint amount) external onlyRangedMarket {
@@ -67,6 +68,7 @@ contract RangedPosition is IERC20 {
         totalSupply = totalSupply + amount;
         balanceOf[minter] = balanceOf[minter] + amount; // Increment rather than assigning since a transfer may have occurred.
         emit Mint(minter, amount);
+        emit Transfer(address(0), minter, amount);
     }
 
     /* ---------- ERC20 Functions ---------- */
@@ -131,5 +133,5 @@ contract RangedPosition is IERC20 {
     }
 
     event Mint(address minter, uint amount);
-    event Burn(address burner, uint amount);
+    event Burned(address burner, uint amount);
 }

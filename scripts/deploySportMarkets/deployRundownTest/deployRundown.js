@@ -5,7 +5,7 @@ const { artifacts, contract, web3 } = require('hardhat');
 
 const { toBN } = web3.utils;
 
-const { toBytes32 } = require('../../index');
+const { toBytes32 } = require('../../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -44,7 +44,8 @@ async function main() {
 			'0xa36085F69e2889c224210F603D836748e7dC0088',
 			'0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd',
 		],
-		contract: 'contracts/rundown/TherundownConsumerTest.sol:TherundownConsumerTest',
+		contract: 'contracts/SportMarkets/RundownTest/TherundownConsumerTest.sol:TherundownConsumerTest',
+		
 	});
 }
 

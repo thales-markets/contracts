@@ -87,7 +87,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     // wrapper
     address public wrapperAddress;
 
+    // game
     GamesQueue public queues;
+    mapping(bytes32 => uint) public oddsLastPulledForGame;
 
     mapping(address => bool) public whitelistedAddresses;
 
@@ -329,6 +331,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         GameOdds memory _game
     ) internal {
         gameOdds[_game.gameId] = _game;
+        oddsLastPulledForGame[_game.gameId] = block.timestamp;
         emit GameOddsAdded(requestId, _game.gameId, _game);
     }
 
@@ -365,6 +368,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         address marketAddress = exoticManager.getActiveMarketAddress(exoticManager.numberOfActiveMarkets() - 1);
         marketPerGameId[game.gameId] = marketAddress;
         gameIdPerMarket[marketAddress] = game.gameId;
+        oddsLastPulledForGame[game.gameId] = block.timestamp;
 
         queues.dequeueGamesCreated();
 

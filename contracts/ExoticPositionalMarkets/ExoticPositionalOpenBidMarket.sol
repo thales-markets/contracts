@@ -112,13 +112,14 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
-            require(_amounts[i] > 0, "Zero amount");
-            totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
-            totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
-            userOpenBidPosition[creatorAddress][_positions[i]] = userOpenBidPosition[creatorAddress][_positions[i]].add(
-                _amounts[i]
-            );
-            totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
+            if(_amounts[i] > 0) { 
+                totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
+                totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
+                userOpenBidPosition[creatorAddress][_positions[i]] = userOpenBidPosition[creatorAddress][_positions[i]].add(
+                    _amounts[i]
+                );
+                totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
+            }
         }
         require(
             totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) <= maxAmountForOpenBidPosition,
@@ -140,14 +141,15 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
-            require(_amounts[i] > 0, "Zero amount");
-            totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
-            totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
-            if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
-                firstTime = false;
+            if(_amounts[i] > 0) {
+                totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
+                totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
+                if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
+                    firstTime = false;
+                }
+                userOpenBidPosition[msg.sender][_positions[i]] = userOpenBidPosition[msg.sender][_positions[i]].add(_amounts[i]);
+                totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
             }
-            userOpenBidPosition[msg.sender][_positions[i]] = userOpenBidPosition[msg.sender][_positions[i]].add(_amounts[i]);
-            totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
         }
         require(
             totalUserPlacedAmount[msg.sender].add(totalDepositedAmount) <= maxAmountForOpenBidPosition,

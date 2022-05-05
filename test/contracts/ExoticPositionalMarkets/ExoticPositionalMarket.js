@@ -197,7 +197,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				'1',
+				['1'],
 				phrases,
 				{ from: owner }
 			);
@@ -238,7 +238,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				'1',
+				['1', '0', '0'],
 				phrases,
 				{ from: owner }
 			);
@@ -282,7 +282,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				'1',
+				['1', '0', '0'],
 				phrases,
 				{ from: owner }
 			);
@@ -747,7 +747,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				'1',
+				['1'],
 				phrases,
 				{ from: owner }
 			);

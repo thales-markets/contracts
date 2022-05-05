@@ -131,33 +131,37 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit NewOpenBidsForPositions(creatorAddress, _positions, _amounts);
     }
 
-    function takeOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external notPaused nonReentrant {
+    function takeOpenBidPositions(uint[] memory _positions, uint[] memory _amounts, uint _depositedAmount) external notPaused nonReentrant {
         require(_positions.length > 0, "Invalid posNum");
         require(_positions.length <= positionCount, "Exceeds count");
         require(canUsersPlacePosition(), "Market resolved");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
+        require(_depositedAmount >= totalUserPlacedAmount[msg.sender], "Bellow init amounts");
         uint totalDepositedAmount = 0;
         bool firstTime = true;
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
-            if(_amounts[i] > 0) {
-                totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
-                totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
-                if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
+            if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
+                    totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].sub(userOpenBidPosition[msg.sender][_positions[i]]);
                     firstTime = false;
-                }
-                userOpenBidPosition[msg.sender][_positions[i]] = userOpenBidPosition[msg.sender][_positions[i]].add(_amounts[i]);
-                totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
             }
+            totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
+            userOpenBidPosition[msg.sender][_positions[i]] = _amounts[i];
+            totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
         }
+        require(totalDepositedAmount >= totalUserPlacedAmount[msg.sender], "Bellow init amounts");
+        uint amountToBeAdded = totalDepositedAmount.sub(totalUserPlacedAmount[msg.sender]);
         require(
-            totalUserPlacedAmount[msg.sender].add(totalDepositedAmount) <= maxAmountForOpenBidPosition,
+            amountToBeAdded <= maxAmountForOpenBidPosition,
             "Amounts exceed"
         );
-        totalUserPlacedAmount[msg.sender] = totalUserPlacedAmount[msg.sender].add(totalDepositedAmount);
-        totalUsersTakenPositions = firstTime ? totalUsersTakenPositions.add(1) : totalUsersTakenPositions;
-        transferToMarket(msg.sender, totalDepositedAmount);
+        if(amountToBeAdded > 0) {
+            totalOpenBidAmount = totalOpenBidAmount.add(amountToBeAdded);
+            totalUserPlacedAmount[msg.sender] = totalUserPlacedAmount[msg.sender].add(amountToBeAdded);
+            totalUsersTakenPositions = firstTime ? totalUsersTakenPositions.add(1) : totalUsersTakenPositions;
+            transferToMarket(msg.sender, amountToBeAdded);
+        }
         emit NewOpenBidsForPositions(msg.sender, _positions, _amounts);
     }
 

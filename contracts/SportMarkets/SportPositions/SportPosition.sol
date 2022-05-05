@@ -9,7 +9,7 @@ import "../../interfaces/IPosition.sol";
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 
 // Internal references
-import "./PositionalMarket.sol";
+import "./SportPositionalMarket.sol";
 
 contract Position is IERC20, IPosition {
     /* ========== LIBRARIES ========== */

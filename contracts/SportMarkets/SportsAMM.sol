@@ -15,7 +15,7 @@ import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
-import "./DeciMath.sol";
+import "../AMM/DeciMath.sol";
 
 contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
     using SafeMath for uint;

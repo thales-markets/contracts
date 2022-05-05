@@ -7,12 +7,12 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 // internal
-import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "./GamesQueue.sol";
 
 // interface
-import "../interfaces/IExoticPositionalMarketManager.sol";
+import "../../interfaces/IExoticPositionalMarketManager.sol";
 
 /** 
     Link to docs: https://market.link/nodes/098c3c5e-811d-4b8a-b2e3-d1806909c7d7/integrations

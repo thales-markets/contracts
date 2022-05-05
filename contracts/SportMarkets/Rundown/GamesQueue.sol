@@ -4,8 +4,8 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 // internal
-import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
 /* 
     Storage for games (created or resolved)

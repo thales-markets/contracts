@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-4.4.1/security/Pausable.sol";
 import "@openzeppelin/contracts-4.4.1/access/Ownable.sol";
 
 // internal
-import "../interfaces/ITherundownConsumer.sol";
+import "../../interfaces/ITherundownConsumer.sol";
 
 contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     using Chainlink for Chainlink.Request;

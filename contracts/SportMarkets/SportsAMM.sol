@@ -204,19 +204,7 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             uint oraclePrice = marketContract.oraclePrice();
 
             (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.getOracleDetails();
-
-            if (position == Position.Home) {
-                return
-                    obtainOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
-                        1e2
-                    );
-            } else {
-                return
-                    ONE.sub(
-                        obtainOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
-                            .div(1e2)
-                    );
-            }
+            return obtainOdds(gameId, position);
         } else return 0;
     }
 

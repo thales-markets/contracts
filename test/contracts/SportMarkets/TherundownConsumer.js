@@ -249,10 +249,9 @@ contract('TherundownConsumer', accounts => {
 			[sportId_4, sportId_16],
 			ExoticPositionalMarketManager.address,
 			[sportId_4],
-			toUnit(0),
-			true,
-			toUnit(100),
 			gamesQueue.address,
+			[8, 12], // resolved statuses 
+			[1, 2], // cancel statuses
 			{ from: owner }
 		);
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
@@ -297,6 +296,13 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(true, await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'TBD TBD'));
 			assert.equal(true, await TherundownConsumerDeployed.isSameTeamOrTBD('TBD TBD', 'Liverpool FC'));
 			assert.equal(false, await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'Liverpool FC'));
+
+
+			assert.equal(true, await TherundownConsumerDeployed.suportResolveGameStatuses(8));
+			assert.equal(false, await TherundownConsumerDeployed.suportResolveGameStatuses(1));
+
+			assert.equal(false, await TherundownConsumerDeployed.cancelGameStatuses(8));
+			assert.equal(true, await TherundownConsumerDeployed.cancelGameStatuses(1));
 		});
 	});
 
@@ -326,8 +332,8 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
 
-			assert.bnEqual(-20700, await TherundownConsumerDeployed.getInitialOddsHomeTeam(gameid1));
-			assert.bnEqual(17700, await TherundownConsumerDeployed.getInitialOddsAwayTeam(gameid1));
+			assert.bnEqual(-20700, await TherundownConsumerDeployed.getOddsHomeTeam(gameid1));
+			assert.bnEqual(17700, await TherundownConsumerDeployed.getOddsAwayTeam(gameid1));
 
 			assert.equal(
 				game_1_create,
@@ -403,9 +409,9 @@ contract('TherundownConsumer', accounts => {
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
 			);
 
-			assert.bnEqual(40000, await TherundownConsumerDeployed.getInitialOddsHomeTeam(gameFootballid1));
-			assert.bnEqual(-12500, await TherundownConsumerDeployed.getInitialOddsAwayTeam(gameFootballid1));
-			assert.bnEqual(27200, await TherundownConsumerDeployed.getInitialOddsDraw(gameFootballid1));
+			assert.bnEqual(40000, await TherundownConsumerDeployed.getOddsHomeTeam(gameFootballid1));
+			assert.bnEqual(-12500, await TherundownConsumerDeployed.getOddsAwayTeam(gameFootballid1));
+			assert.bnEqual(27200, await TherundownConsumerDeployed.getOddsDraw(gameFootballid1));
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
 			assert.equal('Atletico Madrid Atletico Madrid', game.homeTeam);

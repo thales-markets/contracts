@@ -67,9 +67,9 @@ async function main() {
 	const allowedSports = [4, 11, 16];
 
 	const twoPositionSports = [4];
-	const fixedPrice = w3utils.toWei('10');
-	const withdrawalAllowed = true;
-	const fixedsUSD = w3utils.toWei('100');
+
+	const allowedResolvedStatuses = [8, 12];
+	const allowedCancelStatuses = [1, 2];
 
 	/* ========== DEPLOY CONTRACT ========== */
 
@@ -100,10 +100,9 @@ async function main() {
 		allowedSports,
 		exoticManagerAddress,
 		twoPositionSports,
-		fixedPrice,
-		withdrawalAllowed,
-		fixedsUSD,
 		gamesQueue.address,
+		allowedResolvedStatuses,
+		allowedCancelStatuses
 	]);
 
 	await therundown.deployed();

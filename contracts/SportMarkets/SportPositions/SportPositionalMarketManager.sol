@@ -16,10 +16,11 @@ import "./SportPositionalMarket.sol";
 import "./SportPosition.sol";
 import "../../interfaces/IPositionalMarket.sol";
 import "../../interfaces/IPriceFeed.sol";
+import "../../interfaces/ISportPositionalMarketManager.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IPositionalMarketManager {
+contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, ISportPositionalMarketManager {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
@@ -53,7 +54,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     AddressSetLib.AddressSet internal _activeMarkets;
     AddressSetLib.AddressSet internal _maturedMarkets;
 
-    PositionalMarketManager internal _migratingManager;
+    SportPositionalMarketManager internal _migratingManager;
 
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
@@ -140,9 +141,19 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         return _maturedMarkets.elements.length;
     }
 
+    function getActiveMarketAddress(uint _index) external view override returns (address) {
+        if(_index < _activeMarkets.elements.length) {
+            return _activeMarkets.elements[_index];
+        }
+        else {
+            return address(0);
+        }
+    }
+
     function maturedMarkets(uint index, uint pageSize) external view override returns (address[] memory) {
         return _maturedMarkets.getPage(index, pageSize);
     }
+
 
     function _isValidKey(bytes32 oracleKey) internal view returns (bool) {
         // If it has a rate, then it's possibly a valid key
@@ -240,8 +251,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
         require(capitalRequirement <= initialMint, "Insufficient capital");
 
-        PositionalMarket market = PositionalMarketFactory(positionalMarketFactory).createMarket(
-            PositionalMarketFactory.PositionCreationMarketParameters(
+        SportPositionalMarket market = SportPositionalMarketFactory(positionalMarketFactory).createMarket(
+            SportPositionalMarketFactory.SportPositionCreationMarketParameters(
                 msg.sender,
                 sUSD,
                 priceFeed,
@@ -293,7 +304,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     function resolveMarket(address market) external override {
         require(_activeMarkets.contains(market), "Not an active market");
-        PositionalMarket(market).resolve();
+        SportPositionalMarket(market).resolve();
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
     }
@@ -305,7 +316,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             require(isKnownMarket(address(market)), "Market unknown.");
 
             // The market itself handles decrementing the total deposits.
-            PositionalMarket(market).expire(payable(msg.sender));
+            SportPositionalMarket(market).expire(payable(msg.sender));
 
             // Note that we required that the market is known, which guarantees
             // its index is defined and that the list of markets is not empty.
@@ -327,15 +338,15 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit SetCustomMarketCreationEnabled(enabled);
     }
 
-    function setMigratingManager(PositionalMarketManager manager) external onlyOwner {
+    function setMigratingManager(SportPositionalMarketManager manager) external onlyOwner {
         _migratingManager = manager;
         emit SetMigratingManager(address(manager));
     }
 
     function migrateMarkets(
-        PositionalMarketManager receivingManager,
+        SportPositionalMarketManager receivingManager,
         bool active,
-        PositionalMarket[] calldata marketsToMigrate
+        SportPositionalMarket[] calldata marketsToMigrate
     ) external onlyOwner {
         require(address(receivingManager) != address(this), "Can't migrate to self");
 
@@ -347,7 +358,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
         uint runningDepositTotal;
         for (uint i; i < _numMarkets; i++) {
-            PositionalMarket market = marketsToMigrate[i];
+            SportPositionalMarket market = marketsToMigrate[i];
             require(isKnownMarket(address(market)), "Market unknown.");
 
             // Remove it from our list and deposit total.
@@ -365,7 +376,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         receivingManager.receiveMarkets(active, marketsToMigrate);
     }
 
-    function receiveMarkets(bool active, PositionalMarket[] calldata marketsToReceive) external {
+    function receiveMarkets(bool active, SportPositionalMarket[] calldata marketsToReceive) external {
         require(msg.sender == address(_migratingManager), "Only permitted for migrating manager.");
 
         uint _numMarkets = marketsToReceive.length;
@@ -376,7 +387,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
         uint runningDepositTotal;
         for (uint i; i < _numMarkets; i++) {
-            PositionalMarket market = marketsToReceive[i];
+            SportPositionalMarket market = marketsToReceive[i];
             require(!isKnownMarket(address(market)), "Market already known.");
 
             market.acceptOwnership();
@@ -415,8 +426,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         address customOracle
     );
     event MarketExpired(address market);
-    event MarketsMigrated(PositionalMarketManager receivingManager, PositionalMarket[] markets);
-    event MarketsReceived(PositionalMarketManager migratingManager, PositionalMarket[] markets);
+    event MarketsMigrated(SportPositionalMarketManager receivingManager, SportPositionalMarket[] markets);
+    event MarketsReceived(SportPositionalMarketManager migratingManager, SportPositionalMarket[] markets);
     event MarketCreationEnabledUpdated(bool enabled);
     event ExpiryDurationUpdated(uint duration);
     event MaxTimeToMaturityUpdated(uint duration);

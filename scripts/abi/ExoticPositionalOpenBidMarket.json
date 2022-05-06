@@ -1409,11 +1409,6 @@
         "internalType": "uint256[]",
         "name": "_amounts",
         "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_depositedAmount",
-        "type": "uint256"
       }
     ],
     "name": "takeOpenBidPositions",

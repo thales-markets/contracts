@@ -131,12 +131,11 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit NewOpenBidsForPositions(creatorAddress, _positions, _amounts);
     }
 
-    function takeOpenBidPositions(uint[] memory _positions, uint[] memory _amounts, uint _depositedAmount) external notPaused nonReentrant {
+    function takeOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external notPaused nonReentrant {
         require(_positions.length > 0, "Invalid posNum");
         require(_positions.length <= positionCount, "Exceeds count");
         require(canUsersPlacePosition(), "Market resolved");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
-        require(_depositedAmount >= totalUserPlacedAmount[msg.sender], "Bellow init amounts");
         uint totalDepositedAmount = 0;
         bool firstTime = true;
         for (uint i = 0; i < _positions.length; i++) {

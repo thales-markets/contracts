@@ -297,6 +297,19 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return _isGameStatusResolved(getGameResolvedById(_gameId));
     }
 
+    function getNormalizedOddsForTwoPosition(bytes32 _gameId) external view returns(uint[] memory) {
+        if(gameOdds[_gameId].drawOdds == 0) {
+            int[] memory odds = new int[](2);
+            odds[0] = int256(gameOdds[_gameId].homeOdds);
+            odds[1] = int256(gameOdds[_gameId].awayOdds);
+            return _calculateAndNormalizeOdds(odds);
+        }
+        else {
+            uint[] memory empty = new uint[](1);
+            return empty;
+        }
+    }
+
     /* ========== INTERNALS ========== */
 
     function _createGameFulfill(
@@ -507,7 +520,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return _game.homeScore > _game.awayScore ? HOME_WIN : AWAY_WIN;
     }
 
-    function _calculateAndNormalizeOdds(int[] memory _americanOdds) internal view returns (uint[] memory) {
+    function _calculateAndNormalizeOdds(int[] memory _americanOdds) internal pure returns (uint[] memory) {
         uint[] memory normalizedOdds = new uint[](_americanOdds.length);
         uint totalOdds;
         for (uint i = 0; i < _americanOdds.length; i++) {

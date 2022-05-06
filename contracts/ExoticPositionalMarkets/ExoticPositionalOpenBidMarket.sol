@@ -102,7 +102,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         disputePrice = marketManager.disputePrice();
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
-        withdrawalPeriod = block.timestamp.add(marketManager.withdrawalTimePeriod());
+        withdrawalPeriod = block.timestamp.add(_endOfPositioning).sub(marketManager.withdrawalTimePeriod());
         minPosAmount = marketManager.minFixedTicketPrice();
     }
 
@@ -127,6 +127,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) <= maxAmountForOpenBidPosition,
             "Amounts exceed"
         );
+        totalOpenBidAmount = totalOpenBidAmount.add(totalDepositedAmount);
         totalUserPlacedAmount[creatorAddress] = totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount);
         totalUsersTakenPositions = totalUsersTakenPositions.add(1);
         transferToMarket(creatorAddress, totalDepositedAmount);
@@ -138,6 +139,15 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         require(_positions.length <= positionCount, "Exceeds count");
         require(canUsersPlacePosition(), "Market resolved");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
+        if(block.timestamp.add(1 days) > endOfPositioning) {
+            if(totalUserPlacedAmount[msg.sender] > 0) {
+                require(
+                    totalUserPlacedAmount[msg.sender] <=
+                    totalOpenBidAmount.mul(maxWithdrawPercentage.mul(ONE_PERCENT)).div(HUNDRED_PERCENT),
+                    "Exceeds reposition"
+                );
+            }
+        }
         uint totalDepositedAmount = 0;
         bool firstTime = true;
         for (uint i = 0; i < _positions.length; i++) {
@@ -193,6 +203,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
                     totalUserPlacedAmount[msg.sender].mul(maxWithdrawPercentage.mul(ONE_PERCENT)).div(HUNDRED_PERCENT),
                 "Exceeds withdraw limit"
             );
+            withrawalRestrictedForUser[msg.sender] = true;
         }
         if (getUserOpenBidTotalPlacedAmount(msg.sender) == 0) {
             totalUsersTakenPositions = totalUsersTakenPositions.sub(1);

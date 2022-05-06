@@ -94,7 +94,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         disputePrice = marketManager.disputePrice();
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
-        withdrawalPeriod = block.timestamp.add(marketManager.withdrawalTimePeriod());
+        withdrawalPeriod = block.timestamp.add(_endOfPositioning).sub(marketManager.withdrawalTimePeriod());
     }
 
     function takeCreatorInitialPosition(uint _position) external onlyOwner {

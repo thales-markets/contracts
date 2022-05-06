@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
 // Inheritance
-import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
 // Internal references
 import "./SportPosition.sol";

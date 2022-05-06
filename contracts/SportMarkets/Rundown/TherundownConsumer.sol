@@ -7,12 +7,12 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 // internal
-import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "./GamesQueue.sol";
 
 // interface
-import "../interfaces/IExoticPositionalMarketManager.sol";
+import "../../interfaces/IExoticPositionalMarketManager.sol";
 
 /** 
     Link to docs: https://market.link/nodes/098c3c5e-811d-4b8a-b2e3-d1806909c7d7/integrations
@@ -87,7 +87,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     // wrapper
     address public wrapperAddress;
 
+    // game
     GamesQueue public queues;
+    mapping(bytes32 => uint) public oddsLastPulledForGame;
 
     mapping(address => bool) public whitelistedAddresses;
 
@@ -329,6 +331,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         GameOdds memory _game
     ) internal {
         gameOdds[_game.gameId] = _game;
+        oddsLastPulledForGame[_game.gameId] = block.timestamp;
         emit GameOddsAdded(requestId, _game.gameId, _game);
     }
 
@@ -365,6 +368,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         address marketAddress = exoticManager.getActiveMarketAddress(exoticManager.numberOfActiveMarkets() - 1);
         marketPerGameId[game.gameId] = marketAddress;
         gameIdPerMarket[marketAddress] = game.gameId;
+        oddsLastPulledForGame[game.gameId] = block.timestamp;
 
         queues.dequeueGamesCreated();
 

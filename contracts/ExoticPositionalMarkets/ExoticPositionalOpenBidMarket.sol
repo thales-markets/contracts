@@ -39,6 +39,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     uint public withdrawalPeriod;
     uint public maxAmountForOpenBidPosition;
     uint public maxWithdrawPercentage;
+    uint public minPosAmount;
 
     bool public noWinners;
     bool public disputed;
@@ -102,6 +103,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
         withdrawalPeriod = block.timestamp.add(marketManager.withdrawalTimePeriod());
+        minPosAmount = marketManager.minFixedTicketPrice();
     }
 
     function takeCreatorInitialOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external onlyOwner {
@@ -112,7 +114,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
-            if(_amounts[i] > 0) { 
+            if(_amounts[i] == 0 || _amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition) { 
                 totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
                 totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
                 userOpenBidPosition[creatorAddress][_positions[i]] = userOpenBidPosition[creatorAddress][_positions[i]].add(
@@ -121,7 +123,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
                 totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
             }
         }
-        require(
+        require(totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) >= minPosAmount &&
             totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) <= maxAmountForOpenBidPosition,
             "Amounts exceed"
         );
@@ -141,15 +143,17 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
-            if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
-                    totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].sub(userOpenBidPosition[msg.sender][_positions[i]]);
-                    firstTime = false;
+            if(_amounts[i] == 0 || _amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition) {
+                if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
+                        totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].sub(userOpenBidPosition[msg.sender][_positions[i]]);
+                        firstTime = false;
+                }
+                totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
+                userOpenBidPosition[msg.sender][_positions[i]] = _amounts[i];
+                totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
             }
-            totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
-            userOpenBidPosition[msg.sender][_positions[i]] = _amounts[i];
-            totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
         }
-        require(totalDepositedAmount >= totalUserPlacedAmount[msg.sender], "Bellow init amounts");
+        require(totalDepositedAmount >= minPosAmount && totalDepositedAmount >= totalUserPlacedAmount[msg.sender], "Bellow init amounts");
         uint amountToBeAdded = totalDepositedAmount.sub(totalUserPlacedAmount[msg.sender]);
         require(
             amountToBeAdded <= maxAmountForOpenBidPosition,

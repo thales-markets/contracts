@@ -15,13 +15,21 @@ import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
-import "../AMM/DeciMath.sol";
+import "../interfaces/ITherundownConsumer.sol";
+// import "../AMM/DeciMath.sol";
 
 contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
     using SafeMath for uint;
     using SafeERC20 for IERC20;
+    
+    struct GameOdds {
+        bytes32 gameId;
+        int24 homeOdds;
+        int24 awayOdds;
+        int24 drawOdds;
+    }
 
-    DeciMath public deciMath;
+    // DeciMath public deciMath;
 
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
@@ -46,11 +54,12 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint downs;
     }
 
-    enum Position {Up, Down}
+    enum Position {Home, Away}
 
     mapping(address => uint) public spentOnMarket;
 
     address public safeBox;
+    address public theRundownConsumer;
     uint public safeBoxImpact;
 
     IStakingThales public stakingThales;
@@ -63,7 +72,7 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         IPriceFeed _priceFeed,
         IERC20 _sUSD,
         uint _capPerMarket,
-        DeciMath _deciMath,
+        // DeciMath _deciMath,
         uint _min_spread,
         uint _max_spread,
         uint _minimalTimeLeftToMaturity
@@ -73,7 +82,7 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         priceFeed = _priceFeed;
         sUSD = _sUSD;
         capPerMarket = _capPerMarket;
-        deciMath = _deciMath;
+        // deciMath = _deciMath;
         min_spread = _min_spread;
         max_spread = _max_spread;
         minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
@@ -141,9 +150,9 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
                 return 0;
             }
 
-            (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+            (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
             uint balanceOfTheOtherSide =
-                position == Position.Up ? down.getBalanceOf(address(this)) : up.getBalanceOf(address(this));
+                position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
 
             uint sell_max_price = basePrice.mul(ONE.sub(max_spread.add(min_spread).div(2))).div(ONE);
             require(sell_max_price > 0, "div by zero sell_max_price");
@@ -196,44 +205,43 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
             (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.getOracleDetails();
 
-            if (position == Position.Up) {
+            if (position == Position.Home) {
                 return
-                    calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
+                    obtainOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
                         1e2
                     );
             } else {
                 return
                     ONE.sub(
-                        calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
+                        obtainOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
                             .div(1e2)
                     );
             }
         } else return 0;
     }
 
-    function calculateOdds(
-        uint price,
-        uint strike,
-        uint timeLeftInDays,
-        uint volatility
+    function obtainOdds(
+        bytes32 gameId,
+        uint position
     ) public view returns (uint) {
-        uint vt = volatility.div(100).mul(sqrt(timeLeftInDays.div(365))).div(1e9);
-        bool direction = strike >= price;
-        uint lnBase = strike >= price ? strike.mul(ONE).div(price) : price.mul(ONE).div(strike);
-        uint d1 = deciMath.ln(lnBase, 99).mul(ONE).div(vt);
-        uint y = ONE.mul(ONE).div(ONE.add(d1.mul(2316419).div(1e7)));
-        uint d2 = d1.mul(d1).div(2).div(ONE);
-        uint z = _expneg(d2).mul(3989423).div(1e7);
+        
+        // uint vt = volatility.div(100).mul(sqrt(timeLeftInDays.div(365))).div(1e9);
+        // bool direction = strike >= price;
+        // uint lnBase = strike >= price ? strike.mul(ONE).div(price) : price.mul(ONE).div(strike);
+        // uint d1 = deciMath.ln(lnBase, 99).mul(ONE).div(vt);
+        // uint y = ONE.mul(ONE).div(ONE.add(d1.mul(2316419).div(1e7)));
+        // uint d2 = d1.mul(d1).div(2).div(ONE);
+        // uint z = _expneg(d2).mul(3989423).div(1e7);
 
-        uint y5 = deciMath.pow(y, 5 * ONE).mul(1330274).div(1e6);
-        uint y4 = deciMath.pow(y, 4 * ONE).mul(1821256).div(1e6);
-        uint y3 = deciMath.pow(y, 3 * ONE).mul(1781478).div(1e6);
-        uint y2 = deciMath.pow(y, 2 * ONE).mul(356538).div(1e6);
-        uint y1 = y.mul(3193815).div(1e7);
-        uint x1 = y5.add(y3).add(y1).sub(y4).sub(y2);
-        uint x = ONE.sub(z.mul(x1).div(ONE));
-        uint result = ONE.mul(1e2).sub(x.mul(1e2));
-        if (direction) {
+        // uint y5 = deciMath.pow(y, 5 * ONE).mul(1330274).div(1e6);
+        // uint y4 = deciMath.pow(y, 4 * ONE).mul(1821256).div(1e6);
+        // uint y3 = deciMath.pow(y, 3 * ONE).mul(1781478).div(1e6);
+        // uint y2 = deciMath.pow(y, 2 * ONE).mul(356538).div(1e6);
+        // uint y1 = y.mul(3193815).div(1e7);
+        // uint x1 = y5.add(y3).add(y1).sub(y4).sub(y2);
+        // uint x = ONE.sub(z.mul(x1).div(ONE));
+        // uint result = ONE.mul(1e2).sub(x.mul(1e2));
+        // if (direction) {
             return result;
         } else {
             return ONE.mul(1e2).sub(result);
@@ -263,8 +271,8 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             IPositionalMarketManager(manager).isKnownMarket(market) &&
             (IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity)
         ) {
-            (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
-            if ((up.getBalanceOf(address(this)) > 0) || (down.getBalanceOf(address(this)) > 0)) {
+            (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
+            if ((home.getBalanceOf(address(this)) > 0) || (away.getBalanceOf(address(this)) > 0)) {
                 return true;
             }
         }
@@ -299,8 +307,8 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             spentOnMarket[market] = spentOnMarket[market].add(toMint);
         }
 
-        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
-        IPosition target = position == Position.Up ? up : down;
+        (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
+        IPosition target = position == Position.Home ? home : away;
         IERC20(address(target)).transfer(msg.sender, amount);
 
         if (address(stakingThales) != address(0)) {
@@ -326,8 +334,8 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint pricePaid = sellToAmmQuote(market, position, amount);
         require(expectedPayout.mul(ONE).div(pricePaid) <= (ONE.add(additionalSlippage)), "Slippage too high");
 
-        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
-        IPosition target = position == Position.Up ? up : down;
+        (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
+        IPosition target = position == Position.Home ? home : away;
 
         require(target.getBalanceOf(msg.sender) >= amount, "You dont have enough options.");
         require(IERC20(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
@@ -609,39 +617,39 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint) {
-        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
-        uint balance = position == Position.Up ? up.getBalanceOf(address(this)) : down.getBalanceOf(address(this));
+        (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
+        uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
         return balance;
     }
 
     function _balanceOfPositionsOnMarket(address market, Position position) internal view returns (uint, uint) {
-        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
-        uint balance = position == Position.Up ? up.getBalanceOf(address(this)) : down.getBalanceOf(address(this));
-        uint balanceOtherSide = position == Position.Up ? down.getBalanceOf(address(this)) : up.getBalanceOf(address(this));
+        (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
+        uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
+        uint balanceOtherSide = position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
         return (balance, balanceOtherSide);
     }
 
-    function _expneg(uint x) internal view returns (uint result) {
-        result = (ONE * ONE) / _expNegPow(x);
-    }
+    // function _expneg(uint x) internal view returns (uint result) {
+    //     result = (ONE * ONE) / _expNegPow(x);
+    // }
 
-    function _expNegPow(uint x) internal view returns (uint result) {
-        uint e = 2718280000000000000;
-        result = deciMath.pow(e, x);
-    }
+    // function _expNegPow(uint x) internal view returns (uint result) {
+    //     uint e = 2718280000000000000;
+    //     result = deciMath.pow(e, x);
+    // }
 
-    function sqrt(uint y) internal pure returns (uint z) {
-        if (y > 3) {
-            z = y;
-            uint x = y / 2 + 1;
-            while (x < z) {
-                z = x;
-                x = (y / x + x) / 2;
-            }
-        } else if (y != 0) {
-            z = 1;
-        }
-    }
+    // function sqrt(uint y) internal pure returns (uint z) {
+    //     if (y > 3) {
+    //         z = y;
+    //         uint x = y / 2 + 1;
+    //         while (x < z) {
+    //             z = x;
+    //             x = (y / x + x) / 2;
+    //         }
+    //     } else if (y != 0) {
+    //         z = 1;
+    //     }
+    // }
 
     function retrieveSUSD(address payable account) external onlyOwner {
         sUSD.transfer(account, sUSD.balanceOf(address(this)));

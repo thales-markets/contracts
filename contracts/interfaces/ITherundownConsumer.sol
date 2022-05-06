@@ -6,6 +6,8 @@ interface ITherundownConsumer {
     // view functions
     function isSupportedSport(uint _sportId) external view returns (bool);
     function isSupportedMarketType(string memory _market) external view returns (bool);
+    function getNormalizedOddsForTwoPosition(bytes32 _gameId) external view returns(uint[] memory);
+
 
     // write functions
     function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games, uint _sportsId) external;

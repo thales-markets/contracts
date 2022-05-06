@@ -31,7 +31,7 @@ async function main() {
 			'0xa36085F69e2889c224210F603D836748e7dC0088',
 			'0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd',
 		],
-		contract: 'contracts/SportMarkets/RundownTest/TherundownConsumerTest.sol:TherundownConsumerTest',
+		contract: 'contracts/test-helpers/RundownTest/TherundownConsumerTest.sol:TherundownConsumerTest',
 	});
 }
 

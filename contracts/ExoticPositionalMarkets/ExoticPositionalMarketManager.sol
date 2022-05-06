@@ -92,7 +92,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         bool _withdrawalAllowed,
         uint[] memory _tags,
         uint _positionCount,
-        uint _positionOfCreator,
+        uint[] memory _positionsOfCreator,
         string[] memory _positionPhrases
     ) external nonReentrant whenNotPaused {
         require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low.");
@@ -102,16 +102,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 (_fixedTicketPrice >= minFixedTicketPrice && _fixedTicketPrice <= maxFixedTicketPrice),
             "Exc min/max"
         );
-        require(
-            IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice),
-            "Low amount for creation."
-        );
-        require(
-            IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount.add(_fixedTicketPrice),
-            "No allowance."
-        );
         require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
-        require(_positionOfCreator > 0 && _positionOfCreator <= _positionCount);
         require(keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")), "Invalid question.");
         require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid source");
         require(_positionCount == _positionPhrases.length, "Invalid posCount.");
@@ -123,6 +114,14 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         }
 
         if (_fixedTicketPrice > 0) {
+            require(
+            IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice),
+            "Low amount for creation."
+            );
+            require(
+                IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount.add(_fixedTicketPrice),
+                "No allowance."
+            );
             ExoticPositionalFixedMarket exoticMarket = ExoticPositionalFixedMarket(Clones.clone(exoticMarketMastercopy));
 
             exoticMarket.initialize(
@@ -138,7 +137,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             creatorAddress[address(exoticMarket)] = msg.sender;
             IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
             _activeMarkets.add(address(exoticMarket));
-            exoticMarket.takeCreatorInitialPosition(_positionOfCreator);
+            exoticMarket.takeCreatorInitialPosition(_positionsOfCreator[0]);
             emit MarketCreated(
                 address(exoticMarket),
                 _marketQuestion,
@@ -152,6 +151,22 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 msg.sender
             );
         } else {
+            require(_positionsOfCreator.length == _positionCount, "Creator init pos invalid");
+            uint totalCreatorDeposit;
+            uint[] memory creatorPositions = new uint[](_positionCount);
+            for (uint i = 0; i < _positionCount; i++) {
+                totalCreatorDeposit = totalCreatorDeposit.add(_positionsOfCreator[i]);
+                creatorPositions[i] = i + 1;
+            }
+             require(
+            IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(totalCreatorDeposit),
+            "Low amount"
+            );
+            require(
+                IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount.add(totalCreatorDeposit),
+                "No allowance."
+            );
+
             ExoticPositionalOpenBidMarket exoticMarket =
                 ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
 
@@ -168,11 +183,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             creatorAddress[address(exoticMarket)] = msg.sender;
             IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
             _activeMarkets.add(address(exoticMarket));
-            uint[] memory positions = new uint[](1);
-            uint[] memory amounts = new uint[](1);
-            positions[0] = _positionOfCreator;
-            amounts[0] = minFixedTicketPrice;
-            exoticMarket.takeCreatorInitialOpenBidPositions(positions, amounts);
+            exoticMarket.takeCreatorInitialOpenBidPositions(creatorPositions, _positionsOfCreator);
             emit MarketCreated(
                 address(exoticMarket),
                 _marketQuestion,

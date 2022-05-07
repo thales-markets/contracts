@@ -369,14 +369,19 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     }
 
     function canCreatorCancelMarket() external view returns (bool) {
-        if (totalUsersTakenPositions != 1) {
+        if (disputed) {
+            return false;
+        }
+        else if (totalUsersTakenPositions != 1) {
             return totalUsersTakenPositions > 1 ? false : true;
         }
-        return
-            (fixedTicketPrice == 0 &&
-                totalOpenBidAmount == getUserOpenBidTotalPlacedAmount(marketManager.creatorAddress(address(this))))
-                ? true
-                : false;
+        else {
+            return
+                (fixedTicketPrice == 0 &&
+                    totalOpenBidAmount == getUserOpenBidTotalPlacedAmount(marketManager.creatorAddress(address(this))))
+                    ? true
+                    : false;
+        }
     }
 
     function canUsersClaim() public view returns (bool) {

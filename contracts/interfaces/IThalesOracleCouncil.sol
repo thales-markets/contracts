@@ -5,4 +5,5 @@ interface IThalesOracleCouncil {
     function isOracleCouncilMember(address _councilMember) external view returns (bool);
     function isMarketClosedForDisputes(address _market) external view returns (bool);
 
+    function closeMarketForDisputes(address _market) external;
 }   

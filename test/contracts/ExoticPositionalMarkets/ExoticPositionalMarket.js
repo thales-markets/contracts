@@ -242,7 +242,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				['1', '0', '0'],
+				[toUnit('10'), '0', '0'],
 				phrases,
 				{ from: owner }
 			);
@@ -290,7 +290,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				['1', '0', '0'],
+				[toUnit('10'), '0', '0'],
 				phrases,
 				{ from: owner }
 			);
@@ -380,7 +380,6 @@ contract('Exotic Positional market', async accounts => {
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition],
 						[positionAmount1],
-						positionAmount1,
 						{ from: userOne }
 					);
 				});
@@ -489,7 +488,6 @@ contract('Exotic Positional market', async accounts => {
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition, outcomePosition2],
 						[positionAmount1, positionAmount2],
-						totalAmount12,
 						{ from: userOne }
 					);
 				});
@@ -598,13 +596,11 @@ contract('Exotic Positional market', async accounts => {
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition, outcomePosition2],
 						[positionAmount1, positionAmount2], 
-						totalAmount12,
 						{ from: userOne }
 					);
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition2, outcomePosition3],
 						[positionAmount2, positionAmount3],
-						totalAmount23,
 						{ from: userTwo }
 					);
 				});

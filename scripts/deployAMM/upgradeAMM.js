@@ -33,8 +33,7 @@ async function main() {
 
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
 	const implementation = await upgrades.prepareUpgrade(thalesAmmAddress, ThalesAMM);
-	//upgrades.prepareUpgrade
-	//await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
+	await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
 
 	console.log('ThalesAMM upgraded');
 

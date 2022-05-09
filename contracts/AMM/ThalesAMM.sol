@@ -658,6 +658,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         sUSD.transfer(account, sUSD.balanceOf(address(this)));
     }
 
+    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        sUSD.transfer(account, amount);
+    }
+
     // events
     event SoldToAMM(
         address seller,

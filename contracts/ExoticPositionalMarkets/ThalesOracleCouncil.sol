@@ -462,6 +462,12 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
 
     function claimUnclosedDisputeBonds(address _market, uint _disputeIndex) external whenNotPaused {
         require(canDisputorClaimbackBondFromUnclosedDispute(_market, _disputeIndex, msg.sender), "Unable to claim.");
+        
+        if(marketManager.cancelledByCreator(_market)) {
+            marketOpenDisputesCount[_market] = 0;
+            marketLastClosedDispute[_market] = _disputeIndex;
+            emit DisputeClosed(_market, _disputeIndex, REFUSE_MATURE);
+        }
         IThalesBonds(marketManager.thalesBonds()).sendOpenDisputeBondFromMarketToDisputor(
             _market,
             msg.sender,

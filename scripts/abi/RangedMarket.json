@@ -76,6 +76,12 @@
         "internalType": "enum RangedMarket.Position",
         "name": "winningPosition",
         "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "finalPrice",
+        "type": "uint256"
       }
     ],
     "name": "Resolved",
@@ -120,6 +126,19 @@
   {
     "inputs": [],
     "name": "canExercisePositions",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "canResolve",
     "outputs": [
       {
         "internalType": "bool",
@@ -248,6 +267,13 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "resolveMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

@@ -29,6 +29,8 @@ contract RangedMarket {
 
     bool public resolved = false;
 
+    uint finalPrice;
+
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
@@ -127,51 +129,7 @@ contract RangedMarket {
         emit Burn(claimant, value, _position);
     }
 
-    function exercisePositions() external {
-        // The markets must be resolved
-        if (leftMarket.canResolve()) {
-            IPositionalMarketManager(rangedMarketsAMM.thalesAmm().manager()).resolveMarket(address(leftMarket));
-        }
-        if (rightMarket.canResolve()) {
-            IPositionalMarketManager(rangedMarketsAMM.thalesAmm().manager()).resolveMarket(address(rightMarket));
-        }
-        require(leftMarket.resolved() && rightMarket.resolved(), "Left or Right market not resolved yet!");
-
-        uint inBalance = positions.inp.balanceOf(msg.sender);
-        uint outBalance = positions.outp.balanceOf(msg.sender);
-
-        require(inBalance != 0 || outBalance != 0, "Nothing to exercise");
-
-        // Each option only needs to be exercised if the account holds any of it.
-        if (inBalance != 0) {
-            positions.inp.burn(msg.sender, inBalance);
-        }
-        if (outBalance != 0) {
-            positions.outp.burn(msg.sender, outBalance);
-        }
-
-        Position result = Position.Out;
-        if ((leftMarket.result() == IPositionalMarket.Side.Up) && (rightMarket.result() == IPositionalMarket.Side.Down)) {
-            result = Position.In;
-        }
-
-        if (!resolved) {
-            leftMarket.exerciseOptions();
-            rightMarket.exerciseOptions();
-            resolved = true;
-            emit Resolved(result);
-        }
-
-        // Only pay out the side that won.
-        uint payout = (result == Position.In) ? inBalance : outBalance;
-        if (payout != 0) {
-            rangedMarketsAMM.sUSD().transfer(msg.sender, payout);
-        }
-        emit Exercised(msg.sender, payout);
-    }
-
     function canExercisePositions() external view returns (bool) {
-        // The markets must be resolved
         if (!leftMarket.resolved() && !leftMarket.canResolve()) {
             return false;
         }
@@ -189,7 +147,78 @@ contract RangedMarket {
         return true;
     }
 
-    function result() external view returns (Position) {
+    function exercisePositions() external {
+        if (leftMarket.canResolve()) {
+            IPositionalMarketManager(rangedMarketsAMM.thalesAmm().manager()).resolveMarket(address(leftMarket));
+        }
+        if (rightMarket.canResolve()) {
+            IPositionalMarketManager(rangedMarketsAMM.thalesAmm().manager()).resolveMarket(address(rightMarket));
+        }
+        require(leftMarket.resolved() && rightMarket.resolved(), "Left or Right market not resolved yet!");
+
+        uint inBalance = positions.inp.balanceOf(msg.sender);
+        uint outBalance = positions.outp.balanceOf(msg.sender);
+
+        require(inBalance != 0 || outBalance != 0, "Nothing to exercise");
+
+        if (!resolved) {
+            resolveMarket();
+        }
+
+        // Each option only needs to be exercised if the account holds any of it.
+        if (inBalance != 0) {
+            positions.inp.burn(msg.sender, inBalance);
+        }
+        if (outBalance != 0) {
+            positions.outp.burn(msg.sender, outBalance);
+        }
+
+        Position result = Position.Out;
+        if ((leftMarket.result() == IPositionalMarket.Side.Up) && (rightMarket.result() == IPositionalMarket.Side.Down)) {
+            result = Position.In;
+        }
+
+        // Only pay out the side that won.
+        uint payout = (result == Position.In) ? inBalance : outBalance;
+        if (payout != 0) {
+            rangedMarketsAMM.sUSD().transfer(msg.sender, payout);
+        }
+        emit Exercised(msg.sender, payout);
+    }
+
+    function canResolve() external view returns (bool) {
+        // The markets must be resolved
+        if (!leftMarket.resolved() && !leftMarket.canResolve()) {
+            return false;
+        }
+        if (!rightMarket.resolved() && !rightMarket.canResolve()) {
+            return false;
+        }
+
+        return !resolved;
+    }
+
+    function resolveMarket() public {
+        // The markets must be resolved
+        if (leftMarket.canResolve()) {
+            IPositionalMarketManager(rangedMarketsAMM.thalesAmm().manager()).resolveMarket(address(leftMarket));
+        }
+        if (rightMarket.canResolve()) {
+            IPositionalMarketManager(rangedMarketsAMM.thalesAmm().manager()).resolveMarket(address(rightMarket));
+        }
+        require(leftMarket.resolved() && rightMarket.resolved(), "Left or Right market not resolved yet!");
+        require(!resolved, "Already resolved!");
+
+        leftMarket.exerciseOptions();
+        rightMarket.exerciseOptions();
+        resolved = true;
+
+        (, , uint _finalPrice) = leftMarket.getOracleDetails();
+        finalPrice = _finalPrice;
+        emit Resolved(result(), finalPrice);
+    }
+
+    function result() public view returns (Position) {
         Position result = Position.Out;
         if ((leftMarket.result() == IPositionalMarket.Side.Up) && (rightMarket.result() == IPositionalMarket.Side.Down)) {
             result = Position.In;
@@ -209,5 +238,5 @@ contract RangedMarket {
     event Mint(address minter, uint amount, Position _position);
     event Burn(address burner, uint amount, Position _position);
     event Exercised(address exerciser, uint amount);
-    event Resolved(Position winningPosition);
+    event Resolved(Position winningPosition, uint finalPrice);
 }

@@ -32,7 +32,6 @@ async function main() {
 	console.log('Found RangedMarketsAMM at:', rangedAmmAddress);
 
 	const RangedMarketsAMM = await ethers.getContractFactory('RangedMarketsAMM');
-	upgrades.prepareUpgrade;
 	await upgrades.upgradeProxy(rangedAmmAddress, RangedMarketsAMM);
 
 	console.log('RangedMarketsAMM upgraded');

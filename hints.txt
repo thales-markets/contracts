@@ -32,6 +32,7 @@ npx hardhat run --network optimisticKovan scripts/deployAMM/deployAMM.js
 npx hardhat run --network optimisticKovan scripts/deployAMM/upgradeAMM.js
 npx hardhat run --network optimisticKovan scripts/l2_deployments/createMarket.js
 npx hardhat run --network optimisticKovan scripts/deployThalesRoyale/thalesRoyalePass/mintPasses.js
+npx hardhat run --network optimisticKovan scripts/deployRangedAMM/deployRangedMasterCopies.js
 
 optimisticEthereum:
 npx hardhat run --network optimisticEthereum scripts/deployAMM/deployAMM.js

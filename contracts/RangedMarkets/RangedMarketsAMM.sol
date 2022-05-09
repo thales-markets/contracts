@@ -56,6 +56,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     address public safeBox;
     uint public safeBoxImpact;
 
+    uint public minimalDifBetweenStrikes;
+
     function initialize(
         address _owner,
         IThalesAMM _thalesAmm,
@@ -78,24 +80,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function createRangedMarket(address leftMarket, address rightMarket) external {
-        require(thalesAmm.isMarketInAMMTrading(leftMarket), "Unsupported left market!");
-        require(thalesAmm.isMarketInAMMTrading(rightMarket), "Unsupported right market!");
-        (uint maturityLeft, ) = IPositionalMarket(leftMarket).times();
-        (uint maturityRight, ) = IPositionalMarket(rightMarket).times();
-        require(maturityLeft == maturityRight, "Markets do not mature at the same time!");
-
-        (bytes32 leftkey, uint leftstrikePrice, ) = IPositionalMarket(leftMarket).getOracleDetails();
-        (bytes32 rightkey, uint rightstrikePrice, ) = IPositionalMarket(rightMarket).getOracleDetails();
-        require(leftkey == rightkey, "Markets do not have the same asset!");
-        require(leftstrikePrice < rightstrikePrice, "Left market's strike is not lower than the one of right market!");
-
-        // strike prices need to be at least 5% apart
-        require(((ONE + 5 * ONE_PERCENT) * leftstrikePrice) / ONE < rightstrikePrice, "Range of strikes too low!");
-
-        require(createdRangedMarkets[leftMarket][rightMarket] == address(0), "Ranged market already exists");
-
-        require(address(rangedMarketMastercopy) != address(0), "Ranged Market Mastercopy not set");
-        require(address(rangedPositionMastercopy) != address(0), "Ranged Position Mastercopy not set");
+        require(canCreateRangedMarket(leftMarket, rightMarket), "Can't create such a ranged market!");
 
         RangedMarket rm = RangedMarket(Clones.clone(rangedMarketMastercopy));
         createdRangedMarkets[leftMarket][rightMarket] = address(rm);
@@ -113,7 +98,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit RangedMarketCreated(address(rm), leftMarket, rightMarket);
     }
 
-    function canCreateRangedMarket(address leftMarket, address rightMarket) external view returns (bool) {
+    function canCreateRangedMarket(address leftMarket, address rightMarket) public view returns (bool) {
         if (!thalesAmm.isMarketInAMMTrading(leftMarket) || !thalesAmm.isMarketInAMMTrading(rightMarket)) {
             return false;
         }
@@ -132,8 +117,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             return false;
         }
 
-        // strike prices need to be at least 5% apart
-        if (!(((ONE + 5 * ONE_PERCENT) * leftstrikePrice) / ONE < rightstrikePrice)) {
+        if (!(((ONE + minimalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE < rightstrikePrice)) {
             return false;
         }
 
@@ -141,9 +125,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             return false;
         }
 
-        if (address(rangedMarketMastercopy) == address(0) || address(rangedPositionMastercopy) == address(0)) {
-            return false;
-        }
         return true;
     }
 
@@ -272,8 +253,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint basePrice = sUSDPaid / amount;
         require(basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice, "Price out of supported ranged!");
 
-        require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
-        require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
         require((sUSDPaid * ONE) / expectedPayout <= (ONE + additionalSlippage), "Slippage too high");
 
         sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
@@ -361,8 +340,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint amount,
         uint sUSDPaid
     ) internal {
-        require(address(0) != safeBox, "Safe box is not set!");
-
         uint safeBoxShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + safeBoxImpact));
         if (safeBoxImpact > 0) {
             sUSD.transfer(safeBox, safeBoxShare);
@@ -480,7 +457,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 rightQuote,
                 additionalSlippage
             );
-            // maybe include left and right quotes as part of buyFromAMMQuote return, or just review the pricing is correct
         } else {
             target = address(inp);
             rangedMarket.burnIn(amount, msg.sender);
@@ -491,7 +467,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         emit SoldToAMM(msg.sender, address(rangedMarket), position, amount, pricePaid, address(sUSD), target);
-        sUSD.transfer(msg.sender, pricePaid);
+        sUSD.safeTransfer(msg.sender, pricePaid);
     }
 
     function _sellIN(
@@ -523,8 +499,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         RangedMarket rangedMarket,
         uint sUSDPaid
     ) internal {
-        require(address(0) != safeBox, "Safe box is not set!");
-
         uint safeBoxShare = ((sUSDPaid * ONE) / (ONE - safeBoxImpact)) - sUSDPaid;
 
         if (safeBoxImpact > 0) {
@@ -548,7 +522,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         nonReentrant
         notPaused
     {
-        require(address(0) != safeBox, "Safe box is not set!");
         rangedMarket.withdrawCollateral(safeBox);
     }
 
@@ -560,9 +533,31 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         rangedPositionMastercopy = _rangedPositionMastercopy;
     }
 
-    function setMinMaxSupportedPrice(uint _minSupportedPrice, uint _maxSupportedPrice) public onlyOwner {
+    function setMinMaxSupportedPrice(
+        uint _minSupportedPrice,
+        uint _maxSupportedPrice,
+        uint _minDiffBetweenStrikes
+    ) public onlyOwner {
         minSupportedPrice = _minSupportedPrice;
         maxSupportedPrice = _maxSupportedPrice;
+        minimalDifBetweenStrikes = _minDiffBetweenStrikes;
+        emit SetMinSupportedPrice(minSupportedPrice);
+        emit SetMaxSupportedPrice(maxSupportedPrice);
+        emit SetMinimalDifBetweenStrikes(minimalDifBetweenStrikes);
+    }
+
+    function setSafeBoxData(address _safeBox, uint _safeBoxImpact) public onlyOwner {
+        safeBoxImpact = _safeBoxImpact;
+        safeBox = _safeBox;
+        emit SetSafeBoxImpact(_safeBoxImpact);
+        emit SetSafeBox(_safeBox);
+    }
+
+    function setCapPerMarketAndRangedAMMFee(uint _capPerMarket, uint _rangedAMMFee) public onlyOwner {
+        capPerMarket = _capPerMarket;
+        rangedAmmFee = _rangedAMMFee;
+        emit SetCapPerMarket(capPerMarket);
+        emit SetRangedAmmFee(rangedAmmFee);
     }
 
     modifier knownRangedMarket(address market) {
@@ -596,4 +591,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event SetSafeBox(address _safeBox);
     event SetMinSupportedPrice(uint _spread);
     event SetMaxSupportedPrice(uint _spread);
+    event SetMinimalDifBetweenStrikes(uint _spread);
+    event SetCapPerMarket(uint capPerMarket);
+    event SetRangedAmmFee(uint rangedAmmFee);
 }

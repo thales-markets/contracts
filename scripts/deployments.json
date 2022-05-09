@@ -203,8 +203,8 @@
 		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058",
 		"RangedAMM": "0x0690F410FB54d76268e4fa97486CBD605e68dC62",
 		"RangedAMMImplementation": "0x676319F965956940a768ee2Fad8a256aD5d236EB",
-		"RangedMarketMastercopy": "0x8d10A2Ba77f417696c00a7E60E9dF9ACC48F226b",
-		"RangedPositionMastercopy": "0x3629F18f4897De1a222Cbbc789F05C60dc5831Df"
+		"RangedMarketMastercopy": "0x98F8D136BFB5e787fdF55D59128B8EFC5f8cfE39",
+		"RangedPositionMastercopy": "0x003afFE82496b35117C6755320FE77F3A0557371"
 	},
 	"polygonMumbai": {
 		"ProxyUSDC": "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",

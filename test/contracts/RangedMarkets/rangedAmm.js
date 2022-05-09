@@ -259,7 +259,7 @@ contract('RangedAMM', accounts => {
 			from: owner,
 		});
 
-		await rangedMarketsAMM.setMinMaxSupportedPrice(toUnit(0.05), toUnit(0.95), { from: owner });
+		await rangedMarketsAMM.setMinMaxSupportedPrice(toUnit(0.05), toUnit(0.95), 5, { from: owner });
 		console.log('Setting min prices');
 
 		await sUSDSynth.approve(rangedMarketsAMM.address, sUSDQty, { from: minter });

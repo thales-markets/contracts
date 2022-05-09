@@ -54,15 +54,6 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	priceFeedAddress = getTargetAddress('PriceFeed', network);
-	console.log('Found PriceFeed at:' + priceFeedAddress);
-
-	let thalesAMMAddress = getTargetAddress('ThalesAMM', network);
-	console.log('Found ThalesAMM at:' + thalesAMMAddress);
-
-	let safeBoxAddress = getTargetAddress('SafeBox', network);
-	console.log('Found safeBoxAddress at:' + safeBoxAddress);
-
 	const RangedPositionMastercopy = await ethers.getContractFactory('RangedPositionMastercopy');
 	const RangedPositionMastercopyDeployed = await RangedPositionMastercopy.deploy();
 	await RangedPositionMastercopyDeployed.deployed();
@@ -76,6 +67,26 @@ async function main() {
 
 	console.log('RangedMarketMastercopy deployed to:', RangedMarketMastercopyDeployed.address);
 	setTargetAddress('RangedMarketMastercopy', network, RangedMarketMastercopyDeployed.address);
+
+	const RangedMarketAMM = await ethers.getContractFactory('RangedMarketsAMM');
+	let RangedMarketAMMAddress = getTargetAddress('RangedAMM', network);
+	const RangedMarketAMMDeployer = await RangedMarketAMM.attach(RangedMarketAMMAddress);
+
+	await delay(10000);
+	let tx = await RangedMarketAMMDeployer.setRangedMarketMastercopy(
+		RangedMarketMastercopyDeployed.address
+	);
+	await tx.wait().then(e => {
+		console.log('RangedMarketAMMDeployer: setRangedMarketMastercopy');
+	});
+	await delay(10000);
+	tx = await RangedMarketAMMDeployer.setRangedPositionMastercopy(
+		RangedPositionMastercopyDeployed.address
+	);
+	await tx.wait().then(e => {
+		console.log('RangedMarketAMMDeployer: setRangedPositionMastercopy');
+	});
+
 	try {
 		await hre.run('verify:verify', {
 			address: RangedPositionMastercopyDeployed.address,

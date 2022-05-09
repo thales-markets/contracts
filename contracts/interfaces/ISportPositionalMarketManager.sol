@@ -26,6 +26,9 @@ interface ISportPositionalMarketManager {
 
     function isKnownMarket(address candidate) external view returns (bool);
 
+    function getActiveMarketAddress(uint _index) external view returns (address);
+
+
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function createMarket(

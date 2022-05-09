@@ -11,7 +11,7 @@ import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 // Internal references
 import "./SportPositionalMarket.sol";
 
-contract Position is IERC20, IPosition {
+contract SportPosition is IERC20, IPosition {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
@@ -22,7 +22,7 @@ contract Position is IERC20, IPosition {
     string public symbol;
     uint8 public constant decimals = 18;
 
-    PositionalMarket public market;
+    SportPositionalMarket public market;
 
     mapping(address => uint) public override balanceOf;
     uint public override totalSupply;
@@ -49,7 +49,7 @@ contract Position is IERC20, IPosition {
         initialized = true;
         name = _name;
         symbol = _symbol;
-        market = PositionalMarket(msg.sender);
+        market = SportPositionalMarket(msg.sender);
         // add through constructor
         limitOrderProvider = _limitOrderProvider;
         thalesAMM = _thalesAMM;

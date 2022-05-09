@@ -278,19 +278,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_exoticManager",
-        "type": "address"
-      }
-    ],
-    "name": "NewExoticPositionalMarketManager",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "_fixedTicketPrice",
         "type": "uint256"
@@ -323,6 +310,19 @@
       }
     ],
     "name": "NewQueueAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_sportsManager",
+        "type": "address"
+      }
+    ],
+    "name": "NewSportsMarketManager",
     "type": "event"
   },
   {
@@ -568,19 +568,6 @@
     "name": "createMarketForGame",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "exoticManager",
-    "outputs": [
-      {
-        "internalType": "contract IExoticPositionalMarketManager",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1135,6 +1122,25 @@
         "type": "bytes32"
       }
     ],
+    "name": "getNormalizedOddsForTwoPosition",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
     "name": "getOddsAwayTeam",
     "outputs": [
       {
@@ -1198,7 +1204,7 @@
       },
       {
         "internalType": "address",
-        "name": "_exoticManager",
+        "name": "_sportsManager",
         "type": "address"
       },
       {
@@ -1448,6 +1454,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "oddsLastPulledForGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -1637,19 +1662,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_exoticManager",
-        "type": "address"
-      }
-    ],
-    "name": "setExoticManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_fixedTicketPrice",
         "type": "uint256"
@@ -1708,6 +1720,19 @@
       }
     ],
     "name": "setQueueAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportsManager",
+        "type": "address"
+      }
+    ],
+    "name": "setSportsManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1788,6 +1813,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sportsManager",
+    "outputs": [
+      {
+        "internalType": "contract ISportPositionalMarketManager",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

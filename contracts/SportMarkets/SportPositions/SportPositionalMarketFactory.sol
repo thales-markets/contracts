@@ -23,7 +23,7 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
     address public limitOrderProvider;
     address public thalesAMM;
 
-    struct PositionCreationMarketParameters {
+    struct SportPositionCreationMarketParameters {
         address creator;
         IERC20 _sUSD;
         IPriceFeed _priceFeed;
@@ -43,17 +43,17 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
-    function createMarket(PositionCreationMarketParameters calldata _parameters) external returns (PositionalMarket) {
+    function createMarket(SportPositionCreationMarketParameters calldata _parameters) external returns (SportPositionalMarket) {
         require(positionalMarketManager == msg.sender, "Only permitted by the manager.");
 
-        PositionalMarket pom =
-            PositionalMarket(
+        SportPositionalMarket pom =
+            SportPositionalMarket(
                 Clones.clone(positionalMarketMastercopy)
             );
-        Position up = Position(Clones.clone(positionMastercopy));
-        Position down = Position(Clones.clone(positionMastercopy));
+        SportPosition up = SportPosition(Clones.clone(positionMastercopy));
+        SportPosition down = SportPosition(Clones.clone(positionMastercopy));
         pom.initialize(
-            PositionalMarket.PositionalMarketParameters(
+            SportPositionalMarket.PositionalMarketParameters(
                 positionalMarketManager,
                 _parameters._sUSD,
                 _parameters._priceFeed,

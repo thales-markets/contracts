@@ -1,14 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.5.16;
+pragma solidity ^0.8.0;
 
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-import "../utils/proxy/ProxyReentrancyGuard.sol";
-import "../utils/proxy/ProxyOwned.sol";
-import "../utils/proxy/ProxyPausable.sol";
+// import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
+// import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+// import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
+// import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+
+import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IPositionalMarket.sol";
@@ -18,9 +25,9 @@ import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
 // import "../AMM/DeciMath.sol";
 
-contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
-    using SafeMath for uint;
-    using SafeERC20 for IERC20;
+contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard  {
+    using SafeMathUpgradeable for uint;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
     
     struct GameOdds {
         bytes32 gameId;
@@ -30,6 +37,12 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     // DeciMath public deciMath;
+    mapping(bytes32 => uint) public impliedVolatilityPerAsset;
+
+    struct MarketSkew {
+        uint ups;
+        uint downs;
+    }
 
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
@@ -38,21 +51,15 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     uint private constant MAX_SUPPORTED_PRICE = 90e16;
 
     IPriceFeed public priceFeed;
-    IERC20 public sUSD;
+    IERC20Upgradeable public sUSD;
     address public manager;
 
     uint public capPerMarket;
     uint public min_spread;
     uint public max_spread;
 
-    mapping(bytes32 => uint) public impliedVolatilityPerAsset;
 
     uint public minimalTimeLeftToMaturity;
-
-    struct MarketSkew {
-        uint ups;
-        uint downs;
-    }
 
     enum Position {Home, Away}
 
@@ -70,7 +77,7 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     function initialize(
         address _owner,
         IPriceFeed _priceFeed,
-        IERC20 _sUSD,
+        IERC20Upgradeable _sUSD,
         uint _capPerMarket,
         // DeciMath _deciMath,
         uint _min_spread,
@@ -204,36 +211,19 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             uint oraclePrice = marketContract.oraclePrice();
 
             (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.getOracleDetails();
+            bytes32 gameId = ITherundownConsumer(theRundownConsumer).getGameId(market);
             return obtainOdds(gameId, position);
         } else return 0;
     }
 
     function obtainOdds(
-        bytes32 gameId,
-        uint position
+        bytes32 _gameId,
+        Position _position
     ) public view returns (uint) {
-        
-        // uint vt = volatility.div(100).mul(sqrt(timeLeftInDays.div(365))).div(1e9);
-        // bool direction = strike >= price;
-        // uint lnBase = strike >= price ? strike.mul(ONE).div(price) : price.mul(ONE).div(strike);
-        // uint d1 = deciMath.ln(lnBase, 99).mul(ONE).div(vt);
-        // uint y = ONE.mul(ONE).div(ONE.add(d1.mul(2316419).div(1e7)));
-        // uint d2 = d1.mul(d1).div(2).div(ONE);
-        // uint z = _expneg(d2).mul(3989423).div(1e7);
-
-        // uint y5 = deciMath.pow(y, 5 * ONE).mul(1330274).div(1e6);
-        // uint y4 = deciMath.pow(y, 4 * ONE).mul(1821256).div(1e6);
-        // uint y3 = deciMath.pow(y, 3 * ONE).mul(1781478).div(1e6);
-        // uint y2 = deciMath.pow(y, 2 * ONE).mul(356538).div(1e6);
-        // uint y1 = y.mul(3193815).div(1e7);
-        // uint x1 = y5.add(y3).add(y1).sub(y4).sub(y2);
-        // uint x = ONE.sub(z.mul(x1).div(ONE));
-        // uint result = ONE.mul(1e2).sub(x.mul(1e2));
-        // if (direction) {
-            return result;
-        } else {
-            return ONE.mul(1e2).sub(result);
-        }
+        uint[] memory odds = new uint[](2);
+        odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForTwoPosition(_gameId);
+        (uint positionHome, uint positionAway) = (odds[0], odds[1]);
+        return _position == Position.Home ? positionHome : positionAway;
     }
 
     function isMarketInAMMTrading(address market) public view returns (bool) {
@@ -275,7 +265,7 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
-    ) public nonReentrant notPaused {
+    ) public nonReentrant whenNotPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         uint availableToBuyFromAMMatm = availableToBuyFromAMM(market, position);
@@ -297,7 +287,7 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
         IPosition target = position == Position.Home ? home : away;
-        IERC20(address(target)).transfer(msg.sender, amount);
+        IERC20Upgradeable(address(target)).transfer(msg.sender, amount);
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, sUSDPaid);
@@ -313,7 +303,7 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
-    ) public nonReentrant notPaused {
+    ) public nonReentrant whenNotPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         uint availableToSellToAMMATM = availableToSellToAMM(market, position);
@@ -326,10 +316,10 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         IPosition target = position == Position.Home ? home : away;
 
         require(target.getBalanceOf(msg.sender) >= amount, "You dont have enough options.");
-        require(IERC20(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
+        require(IERC20Upgradeable(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
 
         //transfer options first to have max burn available
-        IERC20(address(target)).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20Upgradeable(address(target)).safeTransferFrom(msg.sender, address(this), amount);
         uint sUSDFromBurning = IPositionalMarket(market).getMaximumBurnable(address(this));
         if (sUSDFromBurning > 0) {
             IPositionalMarket(market).burnOptionsMaximum();
@@ -405,7 +395,7 @@ contract SportsAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         emit SetPriceFeed(address(_priceFeed));
     }
 
-    function setSUSD(IERC20 _sUSD) public onlyOwner {
+    function setSUSD(IERC20Upgradeable _sUSD) public onlyOwner {
         sUSD = _sUSD;
         emit SetSUSD(address(sUSD));
     }

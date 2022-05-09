@@ -22,8 +22,8 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ========== TYPES ========== */
 
     struct Options {
-        Position up;
-        Position down;
+        SportPosition up;
+        SportPosition down;
     }
 
     struct Times {
@@ -61,7 +61,7 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     Options public options;
     Times public override times;
     OracleDetails public oracleDetails;
-    PositionalMarketManager.Fees public override fees;
+    SportPositionalMarketManager.Fees public override fees;
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
 
@@ -103,8 +103,8 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         initialMint = _parameters.deposit;
 
         // Instantiate the options themselves
-        options.up = Position(_parameters.up);
-        options.down = Position(_parameters.down);
+        options.up = SportPosition(_parameters.up);
+        options.down = SportPosition(_parameters.down);
         // abi.encodePacked("sUP: ", _oracleKey)
         // consider naming the option: sUpBTC>50@2021.12.31
         options.up.initialize("Position Up", "UP", _parameters.limitOrderProvider, _parameters.thalesAMM);
@@ -121,8 +121,8 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         return priceFeed;
     }
 
-    function _manager() internal view returns (PositionalMarketManager) {
-        return PositionalMarketManager(owner);
+    function _manager() internal view returns (SportPositionalMarketManager) {
+        return SportPositionalMarketManager(owner);
     }
 
     /* ---------- Phases ---------- */

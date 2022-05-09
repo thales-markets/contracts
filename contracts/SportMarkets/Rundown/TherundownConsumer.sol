@@ -374,7 +374,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         );*/
 
         // TODO needs to retrieve market address
-        address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numberOfActiveMarkets() - 1);
+        address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
         marketPerGameId[game.gameId] = marketAddress;
         gameIdPerMarket[marketAddress] = game.gameId;
         oddsLastPulledForGame[game.gameId] = block.timestamp;

@@ -298,7 +298,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 IExoticPositionalMarket(_marketAddress).fixedBondAmount()
             );
         }
-        resolverAddress[_marketAddress] = msg.sender != oracleCouncilAddress ? msg.sender : safeBoxAddress;
+        resolverAddress[_marketAddress] = (msg.sender == oracleCouncilAddress || msg.sender == owner) ? safeBoxAddress : msg.sender;
         IExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, resolverAddress[_marketAddress]);
         emit MarketResolved(_marketAddress, _outcomePosition);
     }
@@ -338,6 +338,15 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(isActiveMarket(_marketAddress), "NotActive");
         if (IExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "only pDAO");
+            if(IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0) {
+                IThalesBonds(thalesBonds).sendBondFromMarketToUser(
+                    _marketAddress,
+                    safeBoxAddress,
+                    IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress),
+                    102,
+                    safeBoxAddress
+                );
+            }
         }
         IExoticPositionalMarket(_marketAddress).resetMarket();
         emit MarketReset(_marketAddress);

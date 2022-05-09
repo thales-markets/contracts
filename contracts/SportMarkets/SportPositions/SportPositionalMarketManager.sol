@@ -19,7 +19,7 @@ import "../../interfaces/IPriceFeed.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IPositionalMarketManager {
+contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, ISportPositionalMarketManager {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;

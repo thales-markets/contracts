@@ -12,7 +12,7 @@ import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "./GamesQueue.sol";
 
 // interface
-import "../../interfaces/IExoticPositionalMarketManager.sol";
+import "../../interfaces/ISportPositionalMarketManager.sol";
 
 /** 
     Link to docs: https://market.link/nodes/098c3c5e-811d-4b8a-b2e3-d1806909c7d7/integrations
@@ -75,7 +75,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(uint => bool) public twoPositionSport;
 
     // market props
-    IExoticPositionalMarketManager public exoticManager;
+    ISportPositionalMarketManager public sportsManager;
     mapping(bytes32 => address) public marketPerGameId;
     mapping(address => bytes32) public gameIdPerMarket;
     mapping(address => bool) public marketResolved;
@@ -84,13 +84,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     bool public withdrawalAllowed;
     uint public fixedsUSD;
 
-    // wrapper
-    address public wrapperAddress;
-
     // game
     GamesQueue public queues;
     mapping(bytes32 => uint) public oddsLastPulledForGame;
 
+    // global params
+    address public wrapperAddress;
     mapping(address => bool) public whitelistedAddresses;
 
     /* ========== CONSTRUCTOR ========== */
@@ -98,7 +97,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function initialize(
         address _owner,
         uint[] memory _supportedSportIds,
-        address _exoticManager,
+        address _sportsManager,
         uint[] memory _twoPositionSports,
         uint _fixedTicketPrice,
         bool _withdrawalAllowed,
@@ -108,16 +107,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         setOwner(_owner);
         _populateSports(_supportedSportIds);
         _populateTwoPositionSports(_twoPositionSports);
-        exoticManager = IExoticPositionalMarketManager(_exoticManager);
+        sportsManager = ISportPositionalMarketManager(_sportsManager);
         fixedTicketPrice = _fixedTicketPrice;
         withdrawalAllowed = _withdrawalAllowed;
         queues = _queues;
         fixedsUSD = _fixedsUSD;
-        //approve
-        IERC20Upgradeable(exoticManager.paymentToken()).approve(
-            exoticManager.thalesBonds(),
-            0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-        );
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -366,7 +360,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(sportId);
 
         // create
-        exoticManager.createCLMarket(
+        // TODO ADD external call to create market
+        /*sportsManager.createCLMarket(
             _append(game.homeTeam, game.awayTeam),
             "chainlink_sports_data",
             game.startTime,
@@ -376,9 +371,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             numberOfPositions,
             _positionsOfCreator(game, numberOfPositions),
             _createPhrases(game.homeTeam, game.awayTeam, numberOfPositions)
-        );
+        );*/
 
-        address marketAddress = exoticManager.getActiveMarketAddress(exoticManager.numberOfActiveMarkets() - 1);
+        // TODO needs to retrieve market address
+        address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numberOfActiveMarkets() - 1);
         marketPerGameId[game.gameId] = marketAddress;
         gameIdPerMarket[marketAddress] = game.gameId;
         oddsLastPulledForGame[game.gameId] = block.timestamp;
@@ -398,14 +394,16 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         if (_isGameStatusResolved(game)) {
             uint _outcome = _callulateOutcome(game);
 
-            exoticManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
+            // TODO add external call to resolve market
+            //sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
             marketResolved[marketPerGameId[game.gameId]] = true;
 
             _cleanStorageQueue(index);
 
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
         } else if (_isGameStatusCanceled(game)) {
-            exoticManager.cancelMarket(marketPerGameId[game.gameId]);
+             // TODO add external call to camcel market
+            //sportsManager.cancelMarket(marketPerGameId[game.gameId]);
             marketCanceled[marketPerGameId[game.gameId]] = true;
 
             _cleanStorageQueue(index);
@@ -420,7 +418,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // it can return ZERO index, needs checking
         require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "Invalid Game ID");
 
-        exoticManager.resolveMarket(_market, _outcome);
+        // TODO add external call to resolve market
+        //sportsManager.resolveMarket(_market, _outcome);
         marketResolved[_market] = true;
         queues.removeItemUnproccessedGames(index);
 
@@ -433,7 +432,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // it can return ZERO index, needs checking
         require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "Invalid Game ID");
 
-        exoticManager.cancelMarket(_market);
+        // TODO add external call to cancel market
+        //sportsManager.cancelMarket(_market);
         marketCanceled[_market] = true;
         queues.removeItemUnproccessedGames(index);
 
@@ -566,9 +566,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit TwoPositionSportChanged(_sportId, _isTwoPosition);
     }
 
-    function setExoticManager(address _exoticManager) external onlyOwner {
-        exoticManager = IExoticPositionalMarketManager(_exoticManager);
-        emit NewExoticPositionalMarketManager(_exoticManager);
+    function setSportsManager(address _sportsManager) external onlyOwner {
+        sportsManager = ISportPositionalMarketManager(_sportsManager);
+        emit NewSportsMarketManager(_sportsManager);
     }
 
     function setFixedTicketPrice(uint _fixedTicketPrice) external onlyOwner {
@@ -627,7 +627,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event TwoPositionSportChanged(uint _sportId, bool _isTwoPosition);
     event NewFixedTicketPrice(uint _fixedTicketPrice);
     event NewWithdrawalAllowed(bool _withdrawalAllowed);
-    event NewExoticPositionalMarketManager(address _exoticManager);
+    event NewSportsMarketManager(address _sportsManager);
     event NewWrapperAddress(address _wrapperAddress);
     event NewQueueAddress(GamesQueue _queues);
     event NewFixedsUSD(uint _fixedsUSD);

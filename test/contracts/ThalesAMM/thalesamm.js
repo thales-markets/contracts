@@ -580,14 +580,14 @@ contract('ThalesAMM', accounts => {
 			let ammDownBalance = await down.balanceOf(thalesAMM.address);
 			console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
 
-			await newMarket.mint(toUnit(6000), {
+			await newMarket.mint(toUnit(10000), {
 				from: minter,
 			});
 
 			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.UP,
-				toUnit(availableToSellToAMM / 1e18)
+				toUnit(availableToSellToAMM / 1e18 - 1)
 			);
 			console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e18);
 
@@ -596,7 +596,7 @@ contract('ThalesAMM', accounts => {
 			await thalesAMM.sellToAMM(
 				newMarket.address,
 				Position.UP,
-				toUnit(availableToSellToAMM / 1e18),
+				toUnit(availableToSellToAMM / 1e18 - 1),
 				sellToAmmQuote,
 				additionalSlippage,
 				{ from: minter }

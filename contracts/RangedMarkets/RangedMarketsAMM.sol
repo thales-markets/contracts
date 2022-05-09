@@ -560,6 +560,12 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit SetRangedAmmFee(rangedAmmFee);
     }
 
+    function setThalesAMM(address _thalesAMM) public onlyOwner {
+        thalesAmm = IThalesAMM(_thalesAMM);
+        sUSD.approve(address(thalesAmm), type(uint256).max);
+        emit SetThalesAMM(_thalesAMM);
+    }
+
     modifier knownRangedMarket(address market) {
         require(_knownMarkets.contains(market), "Not a known ranged market");
         _;
@@ -586,6 +592,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     event SetAmm(address amm);
     event SetSUSD(address sUSD);
+    event SetThalesAMM(address amm);
     event RangedMarketCreated(address market, address leftMarket, address rightMarket);
     event SetSafeBoxImpact(uint _safeBoxImpact);
     event SetSafeBox(address _safeBox);

@@ -241,6 +241,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "amm",
+        "type": "address"
+      }
+    ],
+    "name": "SetThalesAMM",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "seller",
         "type": "address"
       },
@@ -978,6 +991,19 @@
       }
     ],
     "name": "setSafeBoxData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_thalesAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setThalesAMM",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

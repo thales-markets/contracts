@@ -52,6 +52,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     mapping(bytes32 => uint) private _capPerAsset;
 
+    mapping(address => bool) public whitelistedAddresses;
+
     function initialize(
         address _owner,
         IPriceFeed _priceFeed,
@@ -397,7 +399,13 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         emit SetMaxSupportedPrice(_maxSupportedPrice);
     }
 
-    function setImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility) public onlyOwner {
+    function setImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility) public {
+        require(
+            whitelistedAddresses[msg.sender] || owner == msg.sender,
+            "Only whitelisted addresses or owner can change IV!"
+        );
+        require(_impliedVolatility > ONE.mul(70) && _impliedVolatility < ONE.mul(240), "IV outside min/max range!");
+        require(priceFeed.rateForCurrency(asset) != 0, "Asset has no price!");
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
         emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);
     }
@@ -660,6 +668,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
         sUSD.transfer(account, amount);
+    }
+
+    function setWhitelistedAddress(address _address, bool enabled) external onlyOwner {
+        whitelistedAddresses[_address] = enabled;
     }
 
     // events

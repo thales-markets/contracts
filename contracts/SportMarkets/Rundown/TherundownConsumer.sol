@@ -3,8 +3,6 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 // internal
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
@@ -18,9 +16,6 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
     Link to docs: https://market.link/nodes/098c3c5e-811d-4b8a-b2e3-d1806909c7d7/integrations
  */
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
-    /* ========== LIBRARIES ========== */
-
-    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /* ========== CONSTANTS =========== */
 
@@ -73,6 +68,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     // sports props
     mapping(uint => bool) public supportedSport;
     mapping(uint => bool) public twoPositionSport;
+    mapping(uint => bool) public suportResolveGameStatuses;
+    mapping(uint => bool) public cancelGameStatuses;
 
     // market props
     ISportPositionalMarketManager public sportsManager;
@@ -80,9 +77,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bytes32) public gameIdPerMarket;
     mapping(address => bool) public marketResolved;
     mapping(address => bool) public marketCanceled;
-    uint public fixedTicketPrice;
-    bool public withdrawalAllowed;
-    uint public fixedsUSD;
 
     // game
     GamesQueue public queues;
@@ -99,19 +93,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint[] memory _supportedSportIds,
         address _sportsManager,
         uint[] memory _twoPositionSports,
-        uint _fixedTicketPrice,
-        bool _withdrawalAllowed,
-        uint _fixedsUSD,
-        GamesQueue _queues
+        GamesQueue _queues,
+        uint[] memory _resolvedStatuses,
+        uint[] memory _cancelGameStatuses
     ) external initializer {
         setOwner(_owner);
         _populateSports(_supportedSportIds);
         _populateTwoPositionSports(_twoPositionSports);
+        _populateSupportedStatuses(_resolvedStatuses);
+        _populateCancelGameStatuses(_cancelGameStatuses);
         sportsManager = ISportPositionalMarketManager(_sportsManager);
-        fixedTicketPrice = _fixedTicketPrice;
-        withdrawalAllowed = _withdrawalAllowed;
         queues = _queues;
-        fixedsUSD = _fixedsUSD;
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -234,18 +226,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return gameCreated[_gameId].startTime;
     }
 
-    function getInitialOddsHomeTeam(bytes32 _gameId) public view returns (int24) {
-        return gameCreated[_gameId].homeOdds;
-    }
-
-    function getInitialOddsAwayTeam(bytes32 _gameId) public view returns (int24) {
-        return gameCreated[_gameId].awayOdds;
-    }
-
-    function getInitialOddsDraw(bytes32 _gameId) public view returns (int24) {
-        return gameCreated[_gameId].drawOdds;
-    }
-
     function getOddsHomeTeam(bytes32 _gameId) public view returns (int24) {
         return gameOdds[_gameId].homeOdds;
     }
@@ -315,6 +295,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         sportsIdPerGame[_game.gameId] = _sportId;
         queues.enqueueGamesCreated(_game.gameId, _game.startTime, _sportId);
         gameFulfilledCreated[_game.gameId] = true;
+        gameOdds[_game.gameId] = GameOdds(_game.gameId, _game.homeOdds, _game.awayOdds, _game.drawOdds);
+        oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
         emit GameCreted(requestId, _sportId, _game.gameId, _game, queues.lastCreated());
     }
@@ -353,6 +335,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             twoPositionSport[_twoPositionSports[i]] = true;
         }
     }
+    
+    function _populateSupportedStatuses(uint[] memory _supportedStatuses) internal {
+        for (uint i; i < _supportedStatuses.length; i++) {
+            suportResolveGameStatuses[_supportedStatuses[i]] = true;
+        }
+    }
+
+    function _populateCancelGameStatuses(uint[] memory _cancelStatuses) internal {
+        for (uint i; i < _cancelStatuses.length; i++) {
+            cancelGameStatuses[_cancelStatuses[i]] = true;
+        }
+    }
 
     function _createMarket(bytes32 _gameId) internal {
         GameCreate memory game = getGameCreatedById(_gameId);
@@ -373,7 +367,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             _createPhrases(game.homeTeam, game.awayTeam, numberOfPositions)
         );*/
 
-        // TODO needs to retrieve market address
         address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
         marketPerGameId[game.gameId] = marketAddress;
         gameIdPerMarket[marketAddress] = game.gameId;
@@ -465,26 +458,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return result;
     }
 
-    function _positionsOfCreator(GameCreate memory _game, uint _numberOfPositions) internal view returns (uint[] memory) {
-        uint[] memory position = new uint[](_numberOfPositions);
-        int[] memory usOdds = new int[](_numberOfPositions);
-
-        usOdds[0] = _game.homeOdds;
-        usOdds[1] = _game.awayOdds;
-
-        if (_numberOfPositions > 2) {
-            usOdds[2] = _game.drawOdds;
-        }
-
-        uint[] memory normalizeOdds = _calculateAndNormalizeOdds(usOdds);
-
-        for (uint i = 0; i < normalizeOdds.length; i++) {
-            position[i] = (normalizeOdds[i] * fixedsUSD) / 1e16;
-        }
-
-        return position;
-    }
-
     function _calculateNumberOfPositionsBasedOnSport(uint _sportsId) internal returns (uint) {
         return isSportTwoPositionsSport(_sportsId) ? 2 : 3;
     }
@@ -495,22 +468,16 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return result;
     }
 
-    function _isGameReadyToBeResolved(GameResolve memory _game) internal pure returns (bool) {
+    function _isGameReadyToBeResolved(GameResolve memory _game) internal view returns (bool) {
         return _isGameStatusResolved(_game) || _isGameStatusCanceled(_game);
     }
 
-    function _isGameStatusResolved(GameResolve memory _game) internal pure returns (bool) {
-        // TODO
-        // 8 : STATUS_FINAL - NBA
-        // 11 : STATUS_FULL_TIME - Champions league 90 min
-        // penalties, extra time ???
-        return _game.statusId == 8 || _game.statusId == 11;
+    function _isGameStatusResolved(GameResolve memory _game) internal view returns (bool) {
+        return suportResolveGameStatuses[_game.statusId];
     }
 
-    function _isGameStatusCanceled(GameResolve memory _game) internal pure returns (bool) {
-        // 1 : STATUS_CANCELED
-        // 2 : STATUS_DELAYED
-        return _game.statusId == 1 || _game.statusId == 2;
+    function _isGameStatusCanceled(GameResolve memory _game) internal view returns (bool) {
+        return cancelGameStatuses[_game.statusId];
     }
 
     function _callulateOutcome(GameResolve memory _game) internal pure returns (uint) {
@@ -561,6 +528,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit SupportedSportsChanged(_sportId, _isSuported);
     }
 
+    function setSupportedResolvedStatuses(uint _status, bool _isSuported) external onlyOwner {
+        suportResolveGameStatuses[_status] = _isSuported;
+        emit SupportedResolvedStatusChanged(_status, _isSuported);
+    }
+
+    function setSupportedCancelStatuses(uint _status, bool _isSuported) external onlyOwner {
+        cancelGameStatuses[_status] = _isSuported;
+        emit SupportedCancelStatusChanged(_status, _isSuported);
+    }
+
+
     function setwoPositionSport(uint _sportId, bool _isTwoPosition) external onlyOwner {
         twoPositionSport[_sportId] = _isTwoPosition;
         emit TwoPositionSportChanged(_sportId, _isTwoPosition);
@@ -569,16 +547,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function setSportsManager(address _sportsManager) external onlyOwner {
         sportsManager = ISportPositionalMarketManager(_sportsManager);
         emit NewSportsMarketManager(_sportsManager);
-    }
-
-    function setFixedTicketPrice(uint _fixedTicketPrice) external onlyOwner {
-        fixedTicketPrice = _fixedTicketPrice;
-        emit NewFixedTicketPrice(_fixedTicketPrice);
-    }
-
-    function setWithdrawalAllowed(bool _withdrawalAllowed) external onlyOwner {
-        withdrawalAllowed = _withdrawalAllowed;
-        emit NewWithdrawalAllowed(_withdrawalAllowed);
     }
 
     function setWrapperAddress(address _wrapperAddress) external onlyOwner {
@@ -590,11 +558,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function setQueueAddress(GamesQueue _queues) external onlyOwner {
         queues = _queues;
         emit NewQueueAddress(_queues);
-    }
-
-    function setFixedsUSD(uint _fixedsUSD) external onlyOwner {
-        fixedsUSD = _fixedsUSD;
-        emit NewFixedsUSD(_fixedsUSD);
     }
 
     function addToWhitelist(address _whitelistAddress) external onlyOwner {
@@ -624,12 +587,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event ResolveSportsMarket(address _marketAddress, bytes32 _id, uint _outcome);
     event CancelSportsMarket(address _marketAddress, bytes32 _id);
     event SupportedSportsChanged(uint _sportId, bool _isSupported);
+    event SupportedResolvedStatusChanged(uint _status, bool _isSupported);
+    event SupportedCancelStatusChanged(uint _status, bool _isSupported);
     event TwoPositionSportChanged(uint _sportId, bool _isTwoPosition);
-    event NewFixedTicketPrice(uint _fixedTicketPrice);
-    event NewWithdrawalAllowed(bool _withdrawalAllowed);
     event NewSportsMarketManager(address _sportsManager);
     event NewWrapperAddress(address _wrapperAddress);
     event NewQueueAddress(GamesQueue _queues);
-    event NewFixedsUSD(uint _fixedsUSD);
     event AddedIntoWhitelist(address _whitelistAddress);
 }

@@ -32,6 +32,15 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         uint expiry;
     }
 
+    struct OracleDetails {
+        bytes32 key;
+        uint strikePrice;
+        uint finalPrice;
+        bool customMarket;
+        address iOracleInstanceAddress;
+    }
+    
+
     struct GameDetails {
         bytes32 gameId;
         bytes32 homeTeam;
@@ -43,9 +52,8 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         IERC20 sUSD;
         IPriceFeed priceFeed;
         address creator;
-        bytes32 gameId;
-        bytes32 homeTeam;
-        bytes32 awayTeam;
+        bytes32 oracleKey;
+        uint strikePrice;
         uint[2] times; // [maturity, expiry]
         uint deposit; // sUSD deposit
         bool customMarket;
@@ -63,6 +71,7 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     GameDetails public gameDetails;
     ITherundownConsumer public theRundownConsumer;
 
+     OracleDetails public oracleDetails;
     SportPositionalMarketManager.Fees public override fees;
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
@@ -90,9 +99,9 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         creator = _parameters.creator;
 
         gameDetails = GameDetails(
-            _parameters.gameId,
-            _parameters.homeTeam,
-            _parameters.awayTeam
+            _parameters.oracleKey,
+            "",
+            ""
         );
        
         customMarket = _parameters.customMarket;
@@ -148,32 +157,43 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
 
     /* ---------- Market Resolution ---------- */
 
-    // function _oraclePrice() internal view returns (uint price) {
-    //     return _priceFeed().rateForCurrency(oracleDetails.key);
-    // }
+    function _oraclePrice() internal view returns (uint price) {
+        // return _priceFeed().rateForCurrency(oracleDetails.key);
+        return 0;
+    }
 
-    // function _oraclePriceAndTimestamp() internal view returns (uint price, uint updatedAt) {
-    //     return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
-    // }
+    function _oraclePriceAndTimestamp() internal view returns (uint price, uint updatedAt) {
+        // return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
+        return (0,0);
+    }
 
-    // function oraclePriceAndTimestamp() external view override returns (uint price, uint updatedAt) {
-    //     return _oraclePriceAndTimestamp();
-    // }
+    function oraclePriceAndTimestamp() external view override returns (uint price, uint updatedAt) {
+        return _oraclePriceAndTimestamp();
+    }
 
-    // function oraclePrice() external view override returns (uint price) {
-    //     return _oraclePrice();
-    // }
+    function oraclePrice() external view override returns (uint price) {
+        return _oraclePrice();
+    }
 
-    // function canResolve() public view override returns (bool) {
-    //     if (customMarket) {
-    //         return !resolved && _matured() && iOracleInstance.resolvable();
-    //     } else {
-    //         return !resolved && _matured();
-    //     }
-    // }
+    function canResolve() public view override returns (bool) {
+        if (customMarket) {
+            // return !resolved && _matured() && iOracleInstance.resolvable();
+            return !resolved && _matured();
+        } else {
+            return !resolved && _matured();
+        }
+    }
+
+    function getOracleDetails() external view override returns (
+            bytes32 key,
+            uint strikePrice,
+            uint finalPrice
+        ) {
+            return("", 0,0);
+        }
 
     function _result() internal view returns (Side) {
-        return theRundownConsumer.getResult(gameDetails.gameId) == 1 ? Side.Home : Side.Away;
+        return theRundownConsumer.getResult(gameDetails.gameId) == 1 ? Side.Up : Side.Down;
     }
 
     function result() external view override returns (Side) {
@@ -201,21 +221,6 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     function getOptions() external view override returns (IPosition home, IPosition away) {
         home = options.home;
         away = options.away;
-    }
-
-    function getOracleDetails()
-        external
-        view
-        override
-        returns (
-            bytes32 key,
-            uint strikePrice,
-            uint finalPrice
-        )
-    {
-        key = oracleDetails.key;
-        strikePrice = oracleDetails.strikePrice;
-        finalPrice = oracleDetails.finalPrice;
     }
 
     function _getMaximumBurnable(address account) internal view returns (uint amount) {
@@ -295,9 +300,9 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     }
 
     /* ---------- Custom oracle configuration ---------- */
-    function setIOracleInstance(address _address) external onlyOwner {
-        iOracleInstance = IOracleInstance(_address);
-        emit SetIOracleInstance(_address);
+    function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
+        theRundownConsumer = ITherundownConsumer(_theRundownConsumer);
+        emit SetTherundownConsumer(_theRundownConsumer);
     }
 
     function setPriceFeed(address _address) external onlyOwner {
@@ -313,16 +318,16 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ---------- Market Resolution ---------- */
 
     function resolve() external onlyOwner afterMaturity managerNotPaused {
-        require(canResolve(), "Can not resolve market");
-        uint price;
-        uint updatedAt;
-        if (!customMarket) {
-            (price, updatedAt) = _oraclePriceAndTimestamp();
-            oracleDetails.finalPrice = price;
-        }
-        resolved = true;
+        // require(canResolve(), "Can not resolve market");
+        // uint price;
+        // uint updatedAt;
+        // if (!customMarket) {
+        //     (price, updatedAt) = _oraclePriceAndTimestamp();
+        //     oracleDetails.finalPrice = price;
+        // }
+        // resolved = true;
 
-        emit MarketResolved(_result(), price, updatedAt, deposited, 0, 0);
+        // emit MarketResolved(_result(), price, updatedAt, deposited, 0, 0);
     }
 
     /* ---------- Claiming and Exercising Options ---------- */
@@ -418,6 +423,6 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     event SetZeroExAddressAtInit(address _zeroExAddress);
     event SetsUSD(address _address);
     event SetPriceFeed(address _address);
-    event SetIOracleInstance(address _address);
+    event SetTherundownConsumer(address _address);
     event Expired(address beneficiary);
 }

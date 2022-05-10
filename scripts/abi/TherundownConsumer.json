@@ -1076,25 +1076,6 @@
         "type": "bytes32"
       }
     ],
-    "name": "getNormalizedOddsForTwoPosition",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
     "name": "getOddsAwayTeam",
     "outputs": [
       {
@@ -1139,6 +1120,25 @@
         "internalType": "int24",
         "name": "",
         "type": "int24"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getResult",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1674,19 +1674,6 @@
       }
     ],
     "name": "setSupportedCancelStatuses",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_sportsManager",
-        "type": "address"
-      }
-    ],
-    "name": "setSportsManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

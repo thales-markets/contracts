@@ -157,12 +157,12 @@
             "components": [
               {
                 "internalType": "contract SportPosition",
-                "name": "up",
+                "name": "home",
                 "type": "address"
               },
               {
                 "internalType": "contract SportPosition",
-                "name": "down",
+                "name": "away",
                 "type": "address"
               }
             ],

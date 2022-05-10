@@ -114,7 +114,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         // add 2% to the price increase to avoid edge cases on the extremes
         impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
         uint tempAmount = amount.mul(basePrice.add(impactPriceIncrease)).div(ONE);
-        return tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
+        uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
+        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
 
     function buyPriceImpact(
@@ -171,7 +172,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         uint tempAmount = amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
 
-        return tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
+        uint returnQuote = tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
+        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
 
     function sellPriceImpact(
@@ -299,7 +301,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         uint toMint = _getMintableAmount(market, position, amount);
         if (toMint > 0) {
-            require(sUSD.balanceOf(address(this)) >= toMint, "Not enough sUSD in contract.");
+            require(
+                sUSD.balanceOf(address(this)) >= IPositionalMarketManager(manager).transformCollateral(toMint),
+                "Not enough sUSD in contract."
+            );
             IPositionalMarket(market).mint(toMint);
             spentOnMarket[market] = spentOnMarket[market].add(toMint);
         }
@@ -339,7 +344,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         //transfer options first to have max burn available
         IERC20(address(target)).safeTransferFrom(msg.sender, address(this), amount);
-        uint sUSDFromBurning = IPositionalMarket(market).getMaximumBurnable(address(this));
+        uint sUSDFromBurning =
+            IPositionalMarketManager(manager).transformCollateral(
+                IPositionalMarket(market).getMaximumBurnable(address(this))
+            );
         if (sUSDFromBurning > 0) {
             IPositionalMarket(market).burnOptionsMaximum();
         }
@@ -471,11 +479,15 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             safeBoxShare = 0;
         }
 
-        spentOnMarket[market] = spentOnMarket[market].add(sUSDPaid.add(safeBoxShare));
-        if (spentOnMarket[market] <= sUSDFromBurning) {
+        spentOnMarket[market] = spentOnMarket[market].add(
+            IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.add(safeBoxShare))
+        );
+        if (spentOnMarket[market] <= IPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning)) {
             spentOnMarket[market] = 0;
         } else {
-            spentOnMarket[market] = spentOnMarket[market].sub(sUSDFromBurning);
+            spentOnMarket[market] = spentOnMarket[market].sub(
+                IPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning)
+            );
         }
     }
 
@@ -492,10 +504,14 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             safeBoxShare = 0;
         }
 
-        if (spentOnMarket[market] <= sUSDPaid.sub(safeBoxShare)) {
+        if (
+            spentOnMarket[market] <= IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.sub(safeBoxShare))
+        ) {
             spentOnMarket[market] = 0;
         } else {
-            spentOnMarket[market] = spentOnMarket[market].sub(sUSDPaid.sub(safeBoxShare));
+            spentOnMarket[market] = spentOnMarket[market].sub(
+                IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.sub(safeBoxShare))
+            );
         }
     }
 

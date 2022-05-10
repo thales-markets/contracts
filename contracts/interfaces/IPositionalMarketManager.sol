@@ -12,6 +12,10 @@ interface IPositionalMarketManager {
 
     function marketCreationEnabled() external view returns (bool);
 
+    function transformCollateral(uint value) external view returns (uint);
+
+    function reverseTransformCollateral(uint value) external view returns (uint);
+
     function totalDeposited() external view returns (uint);
 
     function numActiveMarkets() external view returns (uint);

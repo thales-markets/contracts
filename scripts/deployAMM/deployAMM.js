@@ -64,6 +64,8 @@ async function main() {
 	console.log('DeciMath deployed to:', deciMath.address);
 	setTargetAddress('DeciMath', network, deciMath.address);
 
+	await delay(5000);
+
 	const hour = 60 * 60;
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
 	let ThalesAMM_deployed = await upgrades.deployProxy(ThalesAMM, [
@@ -96,6 +98,8 @@ async function main() {
 	let factoryAddress = getTargetAddress('PositionalMarketFactory', network);
 	const PositionalMarketFactoryInstance = await PositionalMarketFactory.attach(factoryAddress);
 
+	await delay(5000);
+
 	let tx = await ThalesAMM_deployed.setPositionalMarketManager(managerAddress);
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setPositionalMarketManager');
@@ -109,6 +113,8 @@ async function main() {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(ETH, 120)');
 	});
 
+	await delay(5000);
+
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
 		toBytes32('BTC'),
 		w3utils.toWei('120')
@@ -116,6 +122,8 @@ async function main() {
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BTC, 120)');
 	});
+
+	await delay(5000);
 
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
 		toBytes32('LINK'),
@@ -125,6 +133,8 @@ async function main() {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(LINK, 120)');
 	});
 
+	await delay(5000);
+
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
 		toBytes32('SNX'),
 		w3utils.toWei('120')
@@ -132,6 +142,8 @@ async function main() {
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(SNX, 120)');
 	});
+
+	await delay(5000);
 
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
 		toBytes32('MATIC'),
@@ -141,37 +153,51 @@ async function main() {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(MATIC, 120)');
 	});
 
+	await delay(5000);
+
 	tx = await PositionalMarketFactoryInstance.setThalesAMM(ThalesAMM_deployed.address);
 	await tx.wait().then(e => {
 		console.log('PositionalMarketFactoryInstance: setThalesAMM');
 	});
 
+	await delay(5000);
 	//setLookupTables
 	tx = await deciMath.setLUT1();
 	await tx.wait().then(e => {
 		console.log('deciMath: setLUT1');
 	});
+
+	await delay(5000);
 	tx = await deciMath.setLUT2();
 	await tx.wait().then(e => {
 		console.log('deciMath: setLUT2');
 	});
+
+	await delay(5000);
 	tx = await deciMath.setLUT3_1();
 	await tx.wait().then(e => {
 		console.log('deciMath: setLUT3_1');
 	});
+
+	await delay(5000);
 	tx = await deciMath.setLUT3_2();
 	await tx.wait().then(e => {
 		console.log('deciMath: setLUT3_2');
 	});
+
+	await delay(5000);
 	tx = await deciMath.setLUT3_3();
 	await tx.wait().then(e => {
 		console.log('deciMath: setLUT3_3');
 	});
+
+	await delay(5000);
 	tx = await deciMath.setLUT3_4();
 	await tx.wait().then(e => {
 		console.log('deciMath: setLUT3_4');
 	});
 
+	await delay(5000);
 	const stakingThales = getTargetAddress('StakingThales', network);
 	if (stakingThales) {
 		tx = await ThalesAMM_deployed.setStakingThales(stakingThales);
@@ -179,19 +205,20 @@ async function main() {
 			console.log('ThalesAMM: setStakingThales()');
 		});
 	}
-
+	await delay(5000);
 	const safeBox = getTargetAddress('SafeBox', network);
 	tx = await ThalesAMM_deployed.setSafeBox(safeBox);
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setSafeBox()');
 	});
 
+	await delay(5000);
 	const safeBoxImpact = w3utils.toWei('0.01');
 	tx = await ThalesAMM_deployed.setSafeBoxImpact(safeBoxImpact);
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setSafeBoxImpact()');
 	});
-
+	await delay(5000);
 	await hre.run('verify:verify', {
 		address: deciMath.address,
 	});

@@ -267,7 +267,7 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         _mint(msg.sender, value);
 
         _incrementDeposited(value);
-        _manager().transferSusdTo(msg.sender, address(this), value);
+        _manager().transferSusdTo(msg.sender, address(this), _manager().transformCollateral(value));
     }
 
     function _mint(address minter, uint amount) internal {
@@ -298,7 +298,7 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         options.down.exerciseWithAmount(account, amount);
 
         // transfer balance
-        sUSD.transfer(account, amount);
+        sUSD.transfer(account, _manager().transformCollateral(amount));
 
         // emit events
         emit OptionsBurned(account, amount);
@@ -361,7 +361,7 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);
-            sUSD.transfer(msg.sender, payout);
+            sUSD.transfer(msg.sender, _manager().transformCollateral(payout));
         }
         return payout;
     }

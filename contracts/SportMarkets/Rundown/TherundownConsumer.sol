@@ -284,6 +284,15 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    function getResult(bytes32 _gameId) external view returns(uint) {
+        if(isGameInResolvedStatus(_gameId)) {
+            return _calculateOutcome(getGameResolvedById(_gameId));
+        }
+        else {
+            return 0;
+        }
+    }
+
     /* ========== INTERNALS ========== */
 
     function _createGameFulfill(
@@ -385,7 +394,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(_gameId == queues.unproccessedGames(index), "Invalid Game ID");
 
         if (_isGameStatusResolved(game)) {
-            uint _outcome = _callulateOutcome(game);
+            uint _outcome = _calculateOutcome(game);
 
             // TODO add external call to resolve market
             //sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
@@ -480,7 +489,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return cancelGameStatuses[_game.statusId];
     }
 
-    function _callulateOutcome(GameResolve memory _game) internal pure returns (uint) {
+    function _calculateOutcome(GameResolve memory _game) internal pure returns (uint) {
         if (_game.homeScore == _game.awayScore) {
             return RESULT_DRAW;
         }

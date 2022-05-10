@@ -69,7 +69,7 @@
 		"SafeBoxImplementation": "0x5cf3b1882357BB66Cf3cd2c85b81AbBc85553962",
 		"DeciMath": "0x134Cc78D89061B87d8db3Fc90a24D61f65794088",
 		"ThalesAMM": "0x9b6d76B1C6140FbB0ABc9C4a348BFf4e4e8a1213",
-		"ThalesAMMImplementation": "0x8Fc9310EC4c6d090Bd6Ad90025B47927399aDad6"
+		"ThalesAMMImplementation": "0x5F8b6a881C7f97a73Ba21a64F36CB4E5eCa6bbA6"
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",

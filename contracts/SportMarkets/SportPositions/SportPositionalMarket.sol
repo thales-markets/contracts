@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "../../OwnedWithInit.sol";
 import "../../interfaces/IPositionalMarket.sol";
 import "../../interfaces/IOracleInstance.sol";
+import "../../interfaces/ITherundownConsumer.sol";
 
 // Libraries
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
@@ -22,8 +23,8 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ========== TYPES ========== */
 
     struct Options {
-        SportPosition up;
-        SportPosition down;
+        SportPosition home;
+        SportPosition away;
     }
 
     struct Times {
@@ -38,6 +39,13 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         bool customMarket;
         address iOracleInstanceAddress;
     }
+    
+
+    struct GameDetails {
+        bytes32 gameId;
+        bytes32 homeTeam;
+        bytes32 awayTeam;
+    }
 
     struct PositionalMarketParameters {
         address owner;
@@ -49,9 +57,9 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         uint[2] times; // [maturity, expiry]
         uint deposit; // sUSD deposit
         bool customMarket;
-        address iOracleInstanceAddress;
-        address up;
-        address down;
+        address theRundownConsumer;
+        address home;
+        address away;
         address limitOrderProvider;
         address thalesAMM;
     }
@@ -60,12 +68,14 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
 
     Options public options;
     Times public override times;
-    OracleDetails public oracleDetails;
+    GameDetails public gameDetails;
+    ITherundownConsumer public theRundownConsumer;
+
+     OracleDetails public oracleDetails;
     SportPositionalMarketManager.Fees public override fees;
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
 
-    IOracleInstance public iOracleInstance;
     bool public customMarket;
 
     // `deposited` tracks the sum of all deposits.
@@ -84,18 +94,18 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         initialized = true;
         initOwner(_parameters.owner);
         sUSD = _parameters.sUSD;
+        
         priceFeed = _parameters.priceFeed;
         creator = _parameters.creator;
 
-        oracleDetails = OracleDetails(
+        gameDetails = GameDetails(
             _parameters.oracleKey,
-            _parameters.strikePrice,
-            0,
-            _parameters.customMarket,
-            _parameters.iOracleInstanceAddress
+            "",
+            ""
         );
+       
         customMarket = _parameters.customMarket;
-        iOracleInstance = IOracleInstance(_parameters.iOracleInstanceAddress);
+        theRundownConsumer = ITherundownConsumer(_parameters.theRundownConsumer);
 
         times = Times(_parameters.times[0], _parameters.times[1]);
 
@@ -103,12 +113,12 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         initialMint = _parameters.deposit;
 
         // Instantiate the options themselves
-        options.up = SportPosition(_parameters.up);
-        options.down = SportPosition(_parameters.down);
+        options.home = SportPosition(_parameters.home);
+        options.away = SportPosition(_parameters.away);
         // abi.encodePacked("sUP: ", _oracleKey)
         // consider naming the option: sUpBTC>50@2021.12.31
-        options.up.initialize("Position Up", "UP", _parameters.limitOrderProvider, _parameters.thalesAMM);
-        options.down.initialize("Position Down", "DOWN", _parameters.limitOrderProvider, _parameters.thalesAMM);
+        options.home.initialize("Position Home", "HOME", _parameters.limitOrderProvider, _parameters.thalesAMM);
+        options.away.initialize("Position Away", "AWAY", _parameters.limitOrderProvider, _parameters.thalesAMM);
         _mint(creator, initialMint);
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
@@ -117,9 +127,9 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
 
     /* ---------- External Contracts ---------- */
 
-    function _priceFeed() internal view returns (IPriceFeed) {
-        return priceFeed;
-    }
+    // function _priceFeed() internal view returns (IPriceFeed) {
+    //     return priceFeed;
+    // }
 
     function _manager() internal view returns (SportPositionalMarketManager) {
         return SportPositionalMarketManager(owner);
@@ -148,11 +158,13 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ---------- Market Resolution ---------- */
 
     function _oraclePrice() internal view returns (uint price) {
-        return _priceFeed().rateForCurrency(oracleDetails.key);
+        // return _priceFeed().rateForCurrency(oracleDetails.key);
+        return 0;
     }
 
     function _oraclePriceAndTimestamp() internal view returns (uint price, uint updatedAt) {
-        return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
+        // return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
+        return (0,0);
     }
 
     function oraclePriceAndTimestamp() external view override returns (uint price, uint updatedAt) {
@@ -165,25 +177,23 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
 
     function canResolve() public view override returns (bool) {
         if (customMarket) {
-            return !resolved && _matured() && iOracleInstance.resolvable();
+            // return !resolved && _matured() && iOracleInstance.resolvable();
+            return !resolved && _matured();
         } else {
             return !resolved && _matured();
         }
     }
 
-    function _result() internal view returns (Side) {
-        if (customMarket) {
-            return iOracleInstance.getOutcome() ? Side.Up : Side.Down;
-        } else {
-            uint price;
-            if (resolved) {
-                price = oracleDetails.finalPrice;
-            } else {
-                price = _oraclePrice();
-            }
-
-            return oracleDetails.strikePrice <= price ? Side.Up : Side.Down;
+    function getOracleDetails() external view override returns (
+            bytes32 key,
+            uint strikePrice,
+            uint finalPrice
+        ) {
+            return("", 0,0);
         }
+
+    function _result() internal view returns (Side) {
+        return theRundownConsumer.getResult(gameDetails.gameId) == 1 ? Side.Up : Side.Down;
     }
 
     function result() external view override returns (Side) {
@@ -192,45 +202,30 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
 
     /* ---------- Option Balances and Mints ---------- */
 
-    function _balancesOf(address account) internal view returns (uint up, uint down) {
-        return (options.up.getBalanceOf(account), options.down.getBalanceOf(account));
+    function _balancesOf(address account) internal view returns (uint home, uint away) {
+        return (options.home.getBalanceOf(account), options.away.getBalanceOf(account));
     }
 
-    function balancesOf(address account) external view override returns (uint up, uint down) {
+    function balancesOf(address account) external view override returns (uint home, uint away) {
         return _balancesOf(account);
     }
 
-    function totalSupplies() external view override returns (uint up, uint down) {
-        return (options.up.totalSupply(), options.down.totalSupply());
+    function totalSupplies() external view override returns (uint home, uint away) {
+        return (options.home.totalSupply(), options.away.totalSupply());
     }
 
     function getMaximumBurnable(address account) external view override returns (uint amount) {
         return _getMaximumBurnable(account);
     }
 
-    function getOptions() external view override returns (IPosition up, IPosition down) {
-        up = options.up;
-        down = options.down;
-    }
-
-    function getOracleDetails()
-        external
-        view
-        override
-        returns (
-            bytes32 key,
-            uint strikePrice,
-            uint finalPrice
-        )
-    {
-        key = oracleDetails.key;
-        strikePrice = oracleDetails.strikePrice;
-        finalPrice = oracleDetails.finalPrice;
+    function getOptions() external view override returns (IPosition home, IPosition away) {
+        home = options.home;
+        away = options.away;
     }
 
     function _getMaximumBurnable(address account) internal view returns (uint amount) {
-        (uint upBalance, uint downBalance) = _balancesOf(account);
-        return (upBalance > downBalance) ? downBalance : upBalance;
+        (uint homeBalance, uint awayBalance) = _balancesOf(account);
+        return (homeBalance > awayBalance) ? awayBalance : homeBalance;
     }
 
     /* ---------- Utilities ---------- */
@@ -271,8 +266,8 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     }
 
     function _mint(address minter, uint amount) internal {
-        options.up.mint(minter, amount);
-        options.down.mint(minter, amount);
+        options.home.mint(minter, amount);
+        options.away.mint(minter, amount);
 
         emit Mint(Side.Up, minter, amount);
         emit Mint(Side.Down, minter, amount);
@@ -293,9 +288,9 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         // decrease deposit
         _decrementDeposited(amount);
 
-        // decrease up and down options
-        options.up.exerciseWithAmount(account, amount);
-        options.down.exerciseWithAmount(account, amount);
+        // decrease home and away options
+        options.home.exerciseWithAmount(account, amount);
+        options.away.exerciseWithAmount(account, amount);
 
         // transfer balance
         sUSD.transfer(account, amount);
@@ -305,9 +300,9 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     }
 
     /* ---------- Custom oracle configuration ---------- */
-    function setIOracleInstance(address _address) external onlyOwner {
-        iOracleInstance = IOracleInstance(_address);
-        emit SetIOracleInstance(_address);
+    function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
+        theRundownConsumer = ITherundownConsumer(_theRundownConsumer);
+        emit SetTherundownConsumer(_theRundownConsumer);
     }
 
     function setPriceFeed(address _address) external onlyOwner {
@@ -323,41 +318,41 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ---------- Market Resolution ---------- */
 
     function resolve() external onlyOwner afterMaturity managerNotPaused {
-        require(canResolve(), "Can not resolve market");
-        uint price;
-        uint updatedAt;
-        if (!customMarket) {
-            (price, updatedAt) = _oraclePriceAndTimestamp();
-            oracleDetails.finalPrice = price;
-        }
-        resolved = true;
+        // require(canResolve(), "Can not resolve market");
+        // uint price;
+        // uint updatedAt;
+        // if (!customMarket) {
+        //     (price, updatedAt) = _oraclePriceAndTimestamp();
+        //     oracleDetails.finalPrice = price;
+        // }
+        // resolved = true;
 
-        emit MarketResolved(_result(), price, updatedAt, deposited, 0, 0);
+        // emit MarketResolved(_result(), price, updatedAt, deposited, 0, 0);
     }
 
     /* ---------- Claiming and Exercising Options ---------- */
 
     function exerciseOptions() external override afterMaturity returns (uint) {
         // The market must be resolved if it has not been.
-        // the first one to exercise pays the gas fees. Might be worth splitting it up.
+        // the first one to exercise pays the gas fees. Might be worth splitting it home.
         if (!resolved) {
             _manager().resolveMarket(address(this));
         }
 
         // If the account holds no options, revert.
-        (uint upBalance, uint downBalance) = _balancesOf(msg.sender);
-        require(upBalance != 0 || downBalance != 0, "Nothing to exercise");
+        (uint homeBalance, uint awayBalance) = _balancesOf(msg.sender);
+        require(homeBalance != 0 || awayBalance != 0, "Nothing to exercise");
 
         // Each option only needs to be exercised if the account holds any of it.
-        if (upBalance != 0) {
-            options.up.exercise(msg.sender);
+        if (homeBalance != 0) {
+            options.home.exercise(msg.sender);
         }
-        if (downBalance != 0) {
-            options.down.exercise(msg.sender);
+        if (awayBalance != 0) {
+            options.away.exercise(msg.sender);
         }
 
         // Only pay out the side that won.
-        uint payout = (_result() == Side.Up) ? upBalance : downBalance;
+        uint payout = (_result() == Side.Up) ? homeBalance : awayBalance;
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);
@@ -382,8 +377,8 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         }
 
         // Destroy the option tokens before destroying the market itself.
-        options.up.expire(beneficiary);
-        options.down.expire(beneficiary);
+        options.home.expire(beneficiary);
+        options.away.expire(beneficiary);
         selfdestruct(beneficiary);
     }
 
@@ -428,6 +423,6 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     event SetZeroExAddressAtInit(address _zeroExAddress);
     event SetsUSD(address _address);
     event SetPriceFeed(address _address);
-    event SetIOracleInstance(address _address);
+    event SetTherundownConsumer(address _address);
     event Expired(address beneficiary);
 }

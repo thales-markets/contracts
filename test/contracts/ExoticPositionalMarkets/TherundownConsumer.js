@@ -1119,23 +1119,23 @@ contract('TherundownConsumer', accounts => {
 			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for two position game');
 			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, { from: third })).to.be.revertedWith('Bad outcome for two position game');
 
-			const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(
-				marketAdd, { from: third }
-			);
+			// const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(
+			// 	marketAdd, { from: third }
+			// );
 
-			// check if event is emited
-			assert.eventEqual(tx_2.logs[0], 'CancelSportsMarket', {
-				_marketAddress: marketAdd,
-				_id: gameid1
-			});
+			// // check if event is emited
+			// assert.eventEqual(tx_2.logs[0], 'CancelSportsMarket', {
+			// 	_marketAddress: marketAdd,
+			// 	_id: gameid1
+			// });
 
-			await expect(TherundownConsumerDeployed.resolveGameManually(gameid1, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
-			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
-			await expect(TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: third })).to.be.revertedWith('Market resoved or canceled');
+			// await expect(TherundownConsumerDeployed.resolveGameManually(gameid1, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
+			// await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
+			// await expect(TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: third })).to.be.revertedWith('Market resoved or canceled');
 
-			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
+			// assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+			// assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			// assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 	});
 });

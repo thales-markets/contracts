@@ -41,16 +41,16 @@ async function main() {
 	console.log('Found ThalesAMM at:', thalesAmmAddress);
 
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
-	const implementation = await upgrades.prepareUpgrade(thalesAmmAddress, ThalesAMM);
+	// const implementation = await upgrades.prepareUpgrade(thalesAmmAddress, ThalesAMM);
+	await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
 	console.log('ThalesAMM upgraded');
-	// await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
 	await delay(10000);
 
 	const ThalesAMMImplementation = await getImplementationAddress(ethers.provider, thalesAmmAddress);
 
-	console.log('Implementation ThalesAMM: ', implementation);
+	console.log('Implementation ThalesAMM: ', ThalesAMMImplementation);
 
-	setTargetAddress('ThalesAMMImplementation', network, implementation);
+	setTargetAddress('ThalesAMMImplementation', network, ThalesAMMImplementation);
 
 	/*let ThalesAMM_deployed = ThalesAMM.attach(thalesAmmAddress);
 

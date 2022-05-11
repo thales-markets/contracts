@@ -139,7 +139,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             return 0;
         }
         uint basePrice = price(market, position).add(min_spread);
-        return _buyFromAmmQuoteWithBasePrice(market, position, amount);
+        return _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
     }
 
     function _buyFromAmmQuoteWithBasePrice(
@@ -234,11 +234,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         Position position,
         uint amount
     ) public view returns (uint) {
-        uint basePrice = price(market, position);
-
-        uint tempAmount = amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
-
-        return tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
+        uint basePrice = price(market, position).sub(min_spread);
+        return _sellToAmmQuoteWithBasePrice(market, position, amount, basePrice);
     }
 
     function _sellToAmmQuoteWithBasePrice(
@@ -365,7 +362,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
-        uint basePrice = price(market, position);
+        uint basePrice = price(market, position).add(min_spread);
 
         uint availableToBuyFromAMMatm = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
         require(amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
@@ -408,7 +405,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) public nonReentrant notPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
-        uint basePrice = price(market, position);
+        uint basePrice = price(market, position).sub(min_spread);
 
         uint availableToSellToAMMATM = _availableToSellToAMMWithBasePrice(market, position, basePrice);
         require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");

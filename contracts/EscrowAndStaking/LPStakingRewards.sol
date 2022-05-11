@@ -162,10 +162,9 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
         uint balanceSecondReward = secondRewardsToken.balanceOf(address(this));
         require(secondRewardRate <= balanceSecondReward.div(rewardsDuration), "Provided reward too high");
 
-
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(rewardsDuration);
-        emit RewardAdded(reward);
+        emit BothRewardsAdded(reward, secondReward);
     }
 
     function addReward(uint256 reward) external onlyOwner updateReward(address(0)) {
@@ -226,7 +225,6 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
 
         lastUpdateTime = block.timestamp;
         emit BothRewardsAdded(reward, secondReward);
-        
     }
 
     function recoverERC20(address tokenAddress, uint256 tokenAmount) external onlyOwner {
@@ -253,7 +251,7 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
 
     modifier updateReward(address account) {
         (rewardPerTokenStored, rewardPerSecondTokenStored) = rewardPerToken();
-        
+
         lastUpdateTime = lastTimeRewardApplicable();
         if (account != address(0)) {
             (rewards[account], secondRewards[account]) = earned(account);

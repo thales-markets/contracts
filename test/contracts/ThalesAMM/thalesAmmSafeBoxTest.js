@@ -248,7 +248,7 @@ contract('ThalesAMM', accounts => {
 			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18)
+				toUnit(availableToBuyFromAMM / 1e18 - 1)
 			);
 			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
@@ -256,7 +256,7 @@ contract('ThalesAMM', accounts => {
 			await thalesAMM.buyFromAMM(
 				newMarket.address,
 				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18),
+				toUnit(availableToBuyFromAMM / 1e18 - 1),
 				buyFromAmmQuote,
 				additionalSlippage,
 				{ from: minter }
@@ -372,7 +372,7 @@ contract('ThalesAMM', accounts => {
 			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18)
+				toUnit(availableToBuyFromAMM / 1e18-1)
 			);
 			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
@@ -380,7 +380,7 @@ contract('ThalesAMM', accounts => {
 			await thalesAMM.buyFromAMM(
 				newMarket.address,
 				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18),
+				toUnit(availableToBuyFromAMM / 1e18-1),
 				buyFromAmmQuote,
 				additionalSlippage,
 				{ from: minter }

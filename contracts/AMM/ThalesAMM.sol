@@ -139,12 +139,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             return 0;
         }
         uint basePrice = price(market, position).add(min_spread);
-        uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount)).div(ONE);
-        // add 2% to the price increase to avoid edge cases on the extremes
-        impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
-        uint tempAmount = amount.mul(basePrice.add(impactPriceIncrease)).div(ONE);
-        uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
-        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
+        return _buyFromAmmQuoteWithBasePrice(market, position, amount);
     }
 
     function _buyFromAmmQuoteWithBasePrice(
@@ -160,7 +155,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         // add 2% to the price increase to avoid edge cases on the extremes
         impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
         uint tempAmount = amount.mul(basePrice.add(impactPriceIncrease)).div(ONE);
-        return tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
+        uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
+        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
 
     function buyPriceImpact(
@@ -193,6 +189,16 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             uint usdAvailable = _capOnMarket(market).add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
             return usdAvailable.div(sell_max_price).mul(ONE).add(balanceOfTheOtherSide);
         } else return 0;
+    }
+
+    function _getSellMaxPrice(address market, Position position) internal view returns (uint) {
+        uint basePrice = price(market, position);
+        // ignore extremes
+        if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
+            return 0;
+        }
+        uint sell_max_price = basePrice.sub(min_spread).mul(ONE.sub(max_spread.div(2))).div(ONE);
+        return sell_max_price;
     }
 
     function _availableToSellToAMMWithBasePrice(
@@ -241,7 +247,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint amount,
         uint basePrice
     ) internal view returns (uint) {
-
         uint tempAmount = amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
 
         uint returnQuote = tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);

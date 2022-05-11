@@ -96,8 +96,6 @@
 		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
 		"PriceFeedImplementation": "0xCD015F11f6eD310089B4E36525dd8b939d8D2410",
 		"DeciMath": "0x12C6276bb5258180C50C87F88e29116255d9454e",
-		"ThalesAMMImplementation": "0xF7d913F47C83a7E447e7d13f899D4be7BBb2A399",
-		"ThalesAMM": "0xfed727f37e921Faac22e36E0bbaA8504B45F6e3f",
 		"StakingThales": "0x8417D248274439360CC38Be84CfFDc01226600F8",
 		"EscrowThales": "0xEeDe0f1D1d70009348f3D9a66Fe03BA3CA0Aeef7",
 		"StakingThalesImplementation": "0x24259BF812Bb303bEE512Ac9960b8949828E827A",
@@ -135,7 +133,14 @@
 		"VestingEscrowCCImplementation": "0xD55c1d7250695343Bf81593e3eDBb6063F014C9d",
 		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058",
 		"ExoticManagerData": "0xBb409c6488c4bB2BE9e3BaD7B3C79b553ab6A061",
-		"ExoticManagerDataImplementation": "0xE2A2cF1531bF25Ab9aA31eaf1a1Aa31036e84De2"
+		"ExoticManagerDataImplementation": "0xE2A2cF1531bF25Ab9aA31eaf1a1Aa31036e84De2",
+		"ThalesAMMImplementation": "0xF7d913F47C83a7E447e7d13f899D4be7BBb2A399",
+		"ThalesAMM": "0xfed727f37e921Faac22e36E0bbaA8504B45F6e3f",
+		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058",
+		"RangedAMM": "0x0690F410FB54d76268e4fa97486CBD605e68dC62",
+		"RangedAMMImplementation": "0x58B2B4B503db717b624EbcBc58459CC21AAF5813",
+		"RangedMarketMastercopy": "0x98F8D136BFB5e787fdF55D59128B8EFC5f8cfE39",
+		"RangedPositionMastercopy": "0x003afFE82496b35117C6755320FE77F3A0557371"
 	},
 	"polygonMumbai": {
 		"ProxyUSDC": "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",
@@ -226,29 +231,6 @@
 		"ExoticPositionalTags": "0x0d9fEC177281bb276265Afa66710401392A13173",
 		"ExoticPositionalTagsImplementation": "0x17f63D216626fE4315d24cDc22141FBcb0356066"
 	},
-	"goerli": {
-		"Airdrop": "",
-		"OngoingAirdrop": "",
-		"VestingEscrow": "",
-		"EscrowThales": "",
-		"StakingThales": "",
-		"Thales": "",
-		"PriceFeed": "",
-		"PositionMastercopy": "",
-		"PositionalMarketMastercopy": "",
-		"PositionalMarketFactory": "",
-		"PositionalMarketFactoryImplementation": "",
-		"PositionalMarketManager": "",
-		"PositionalMarketManagerImplementation": "",
-		"PositionalMarketData": ""
-	},
-		"ThalesAMMImplementation": "0xF7d913F47C83a7E447e7d13f899D4be7BBb2A399",
-		"ThalesAMM": "0xfed727f37e921Faac22e36E0bbaA8504B45F6e3f",
-		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058",
-		"RangedAMM": "0x0690F410FB54d76268e4fa97486CBD605e68dC62",
-		"RangedAMMImplementation": "0x58B2B4B503db717b624EbcBc58459CC21AAF5813",
-		"RangedMarketMastercopy": "0x98F8D136BFB5e787fdF55D59128B8EFC5f8cfE39",
-		"RangedPositionMastercopy": "0x003afFE82496b35117C6755320FE77F3A0557371"
 	"localhost": {
 		"Airdrop": "",
 		"OngoingAirdrop": "0xB74DD224F1652672Fc5d18404Fe5AF120e1e0991",

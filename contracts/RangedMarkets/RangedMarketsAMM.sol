@@ -475,7 +475,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         sUSD.safeTransfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
-            stakingThales.updateVolume(msg.sender, sUSDPaid);
+            stakingThales.updateVolume(msg.sender, pricePaid);
         }
 
         emit SoldToAMM(msg.sender, address(rangedMarket), position, amount, pricePaid, address(sUSD), target);

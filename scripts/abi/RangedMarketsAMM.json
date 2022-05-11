@@ -241,6 +241,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "SetStakingThales",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "amm",
         "type": "address"
       }
@@ -998,6 +1011,19 @@
   {
     "inputs": [
       {
+        "internalType": "contract IStakingThales",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "setStakingThales",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_thalesAMM",
         "type": "address"
@@ -1022,6 +1048,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stakingThales",
+    "outputs": [
+      {
+        "internalType": "contract IStakingThales",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

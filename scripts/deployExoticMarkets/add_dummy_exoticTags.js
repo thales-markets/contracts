@@ -26,8 +26,8 @@ async function main() {
 		mainnetNetwork = 'kovan';
 	}
 	if (networkObj.chainId == 10) {
-		networkObj.name = 'optimistic';
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 	
     const ExoticTagsContract = await ethers.getContractFactory('ExoticPositionalTags');
@@ -37,16 +37,24 @@ async function main() {
 	console.log("Adding tags to Exotic tags");
 
 
-	let labels = ["Sport", "Crypto", "Politics", "Pop-culture", 
-	"Esports", "Football", "Basketball", "Bitcoin", "Ethereum", "Finance", "TradFi", 
-	"NCAA Men's Football", "NFL", "MLB", "NBA", "NCAA Men's Basketball", "NHL", "WNBA", "MLS",
-	"EPL", "Ligue 1", "Bundesliga", "La Liga", "Serie A", "UEFA Champions League"
+	let labels = [
+		"Sport",
+		"Crypto",
+		"Political-Elections",
+		"Pop-culture",
+		"Esports",
+		"Macro-Economics",
+		"Finance",
+		"Web3"
 	];
+	// "NCAA Men's Football", "NFL", "MLB", "NBA", "NCAA Men's Basketball", "NHL", "WNBA", "MLS",
+	// "EPL", "Ligue 1", "Bundesliga", "La Liga", "Serie A", "UEFA Champions League"
 	
-	let tagNumbers = ["1", "2", "3", "4", "5", "101", "102", "201", "202", "6", "601", 
-						"9001", "9002", "9003", "9004", "9005", "9006", "9008", "9010",
-						"9011", "9012", "9013", "9014", "9015", "9016"
+	let tagNumbers = [
+						"1", "2", "3", "4", "5", "7", "6", "8"
 					]
+	// "9001", "9002", "9003", "9004", "9005", "9006", "9008", "9010",
+	// "9011", "9012", "9013", "9014", "9015", "9016"
 	let checkTag;
 	// Add tags
 	for(let i=0;i < labels.length; i++) {

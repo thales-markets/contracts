@@ -1,0 +1,1706 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "creationRestrictedToOwner",
+        "type": "bool"
+      }
+    ],
+    "name": "CreationRestrictedToOwnerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "creatorPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "CreatorPercentageChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_exoticMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "ExoticMarketMastercopyChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exoticOpenBidMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "ExoticMarketOpenBidMastercopyChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exoticRewards",
+        "type": "address"
+      }
+    ],
+    "name": "ExoticRewardsChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "marketPositionStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MarketPositionStringLimitChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "marketQuestionStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MarketQuestionStringLimitChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "marketSourceStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MarketSourceStringLimitChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "duration",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinimumPositionDurationChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "arbitraryRewardForDisputor",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewArbitraryRewardForDisputor",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "claimTimeout",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewClaimTimeoutDefaultPeriod",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timeout",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewDefaultBackstopTimeout",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "disputePrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewDisputePrice",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "disputeStringLengthLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewDisputeStringLengthLimit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "fixedBond",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewFixedBondAmount",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "marketDataAddress",
+        "type": "address"
+      }
+    ],
+    "name": "NewMarketDataAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxAmountForOpenBidPosition",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMaxAmountForOpenBidPosition",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxFinalWithdrawPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMaxFinalWithdrawPercentage",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxNumberOfTags",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMaxNumberOfTags",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxOracleCouncilMembers",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMaxOracleCouncilMembers",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maximumPositionsAllowed",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMaximumPositionsAllowed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minFixedTicketPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewMinimumFixedTicketAmount",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oracleCouncilAddress",
+        "type": "address"
+      }
+    ],
+    "name": "NewOracleCouncilAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "paymentTokenAddress",
+        "type": "address"
+      }
+    ],
+    "name": "NewPaymentToken",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "safeBox",
+        "type": "address"
+      }
+    ],
+    "name": "NewSafeBoxAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxLowAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewSafeBoxLowAmount",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "tagsAddress",
+        "type": "address"
+      }
+    ],
+    "name": "NewTagsAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "theRundownConsumerAddress",
+        "type": "address"
+      }
+    ],
+    "name": "NewTheRundownConsumerAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "openBidAllowed",
+        "type": "bool"
+      }
+    ],
+    "name": "OpenBidAllowedChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oldOwner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerNominated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "pDAOResolveTimePeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "PDAOResolveTimePeriodChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Paused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "resolverPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "ResolverPercentageChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "safeBoxPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "SafeBoxPercentageChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "withdrawalPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawalPercentageChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "withdrawalTimePeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawalTimePeriodChanged",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "arbitraryRewardForDisputor",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "backstopTimeout",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claimTimeoutDefaultPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "creationRestrictedToOwner",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "creatorPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "disputePrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "disputeStringLengthLimit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "exoticMarketMastercopy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "exoticMarketOpenBidMastercopy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "exoticRewards",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "fixedBondAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "initNonReentrant",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketDataAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketPositionStringLimit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketQuestionStringLimit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "marketSourceStringLimit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxAmountForOpenBidPosition",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxFinalWithdrawPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxNumberOfTags",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxOracleCouncilMembers",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maximumPositionsAllowed",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minFixedTicketPrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minimumPositioningDuration",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "nominateNewOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nominatedOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "openBidAllowed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "oracleCouncilAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pDAOResolveTimePeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paymentToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "resolverPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "safeBoxAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "safeBoxLowAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "safeBoxPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_arbitraryRewardForDisputor",
+        "type": "uint256"
+      }
+    ],
+    "name": "setArbitraryRewardForDisputor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_claimTimeout",
+        "type": "uint256"
+      }
+    ],
+    "name": "setClaimTimeoutDefaultPeriod",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_creationRestrictedToOwner",
+        "type": "bool"
+      }
+    ],
+    "name": "setCreationRestrictedToOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_creatorPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCreatorPercentage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_timeout",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDefaultBackstopTimeout",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_disputePrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDisputePrice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_disputeStringLengthLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDisputeStringLengthLimit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_exoticMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "setExoticMarketMastercopy",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_exoticOpenBidMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "setExoticMarketOpenBidMastercopy",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_exoticRewards",
+        "type": "address"
+      }
+    ],
+    "name": "setExoticRewards",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_bond",
+        "type": "uint256"
+      }
+    ],
+    "name": "setFixedBondAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "fixedBondAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "backstopTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumPositioningDuration",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "claimTimeoutDefaultPeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "pDAOResolveTimePeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "safeBoxPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "creatorPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "resolverPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maximumPositionsAllowed",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "disputePrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxOracleCouncilMembers",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxNumberOfTags",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "safeBoxLowAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "arbitraryRewardForDisputor",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minFixedTicketPrice",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "disputeStringLengthLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "marketQuestionStringLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "marketSourceStringLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "marketPositionStringLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "withdrawalTimePeriod",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxAmountForOpenBidPosition",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxFinalWithdrawPercentage",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "creationRestrictedToOwner",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "openBidAllowed",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "exoticMarketMastercopy",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "exoticMarketOpenBidMastercopy",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "oracleCouncilAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "safeBoxAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "paymentToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "tagsAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "theRundownConsumerAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "marketDataAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "exoticRewards",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ExoticManagerData.ManagerData",
+        "name": "_data",
+        "type": "tuple"
+      }
+    ],
+    "name": "setManagerData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "fixedBondAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "backstopTimeout",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minimumPositioningDuration",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct ExoticManagerData.DummyStruct",
+        "name": "_data",
+        "type": "tuple"
+      }
+    ],
+    "name": "setManagerDummyData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_marketDataAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setMarketDataAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_marketPositionStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMarketPositionStringLimit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_marketQuestionStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMarketQuestionStringLimit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_marketSourceStringLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMarketSourceStringLimit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxAmountForOpenBidPosition",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxAmountForOpenBidPosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxFinalWithdrawPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxFinalWithdrawPercentage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxNumberOfTags",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxNumberOfTags",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxOracleCouncilMembers",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxOracleCouncilMembers",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maximumPositionsAllowed",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaximumPositionsAllowed",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minFixedTicketPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinimumFixedTicketAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_duration",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinimumPositioningDuration",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_openBidAllowed",
+        "type": "bool"
+      }
+    ],
+    "name": "setOpenBidAllowed",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_councilAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setOracleCouncilAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_pDAOResolveTimePeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPDAOResolveTimePeriod",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
+      }
+    ],
+    "name": "setPaymentToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_resolverPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setResolverPercentage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_safeBoxAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setSafeBoxAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_safeBoxLowAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "setSafeBoxLowAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_safeBoxPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setSafeBoxPercentage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_tagsAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setTagsAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_theRundownConsumerAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setTheRundownConsumerAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_withdrawalPercentage",
+        "type": "uint256"
+      }
+    ],
+    "name": "setWithdrawalPercentage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_withdrawalTimePeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "setWithdrawalTimePeriod",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "tagsAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "theRundownConsumerAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawalPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawalTimePeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

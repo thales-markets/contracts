@@ -37,6 +37,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "addressResolver",
+        "type": "address"
+      }
+    ],
+    "name": "AddressResolverChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "account",
         "type": "address"
       }
@@ -113,6 +126,19 @@
       }
     ],
     "name": "EscrowChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exoticBonds",
+        "type": "address"
+      }
+    ],
+    "name": "ExoticBondsAddressChanged",
     "type": "event"
   },
   {
@@ -546,6 +572,21 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "addressResolver",
+    "outputs": [
+      {
+        "internalType": "contract IAddressResolver",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "canClosePeriod",
     "outputs": [
       {
@@ -654,6 +695,21 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "exoticBonds",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,
@@ -1017,6 +1073,21 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "getSNXRewardsAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,
@@ -1432,6 +1503,21 @@
     "constant": false,
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_addressResolver",
+        "type": "address"
+      }
+    ],
+    "name": "setAddressResolver",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "internalType": "bool",
         "name": "_claimEnabled",
         "type": "bool"
@@ -1483,6 +1569,21 @@
       }
     ],
     "name": "setEscrow",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_exoticBonds",
+        "type": "address"
+      }
+    ],
+    "name": "setExoticBonds",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

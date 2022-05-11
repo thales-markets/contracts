@@ -39,6 +39,8 @@ contract PriceFeed is Initializable, ProxyOwned {
     address public _ETH;
     address public _wETH;
 
+    mapping(bytes32 => bool) public useLastTickForTWAP;
+
     function initialize(address _owner) external initializer {
         setOwner(_owner);
         twapInterval = 300;
@@ -143,6 +145,12 @@ contract PriceFeed is Initializable, ProxyOwned {
 
     function setTwapInterval(int56 _twapInterval) external onlyOwner {
         twapInterval = _twapInterval;
+        emit TwapIntervalChanged(_twapInterval);
+    }
+
+    function setLastTickForTWAP(bytes32 _currencyKey) external onlyOwner {
+        useLastTickForTWAP[_currencyKey] = !useLastTickForTWAP[_currencyKey];
+        emit LastTickForTWAPChanged(_currencyKey);
     }
 
     function setWETH(address token) external onlyOwner {
@@ -173,7 +181,7 @@ contract PriceFeed is Initializable, ProxyOwned {
             return _getAggregatorRate(address(aggregator), currencyKey);
         } else {
             require(address(aggregators["ETH"]) != address(0), "Price for ETH does not exist");
-            uint256 ratio = _getPriceFromSqrtPrice(_getTwap(address(pool)));
+            uint256 ratio = _getPriceFromSqrtPrice(_getTwap(address(pool), currencyKey));
             uint256 ethPrice = _getAggregatorRate(address(aggregators["ETH"]), "ETH").rate * 10**18; 
             address token0 = pool.token0();
             uint answer;
@@ -207,9 +215,9 @@ contract PriceFeed is Initializable, ProxyOwned {
         }
     }
 
-    function _getTwap(address pool) internal view returns (uint160 sqrtPriceX96) {
-        if (twapInterval == 0) {
-            // return the current price if twapInterval == 0
+    function _getTwap(address pool, bytes32 currencyKey) internal view returns (uint160 sqrtPriceX96) {
+        if (twapInterval == 0 || useLastTickForTWAP[currencyKey]) {
+            // return the current price
             (sqrtPriceX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         } else {
             uint32[] memory secondsAgos = new uint32[](2);
@@ -241,4 +249,6 @@ contract PriceFeed is Initializable, ProxyOwned {
     event PoolRemoved(bytes32 currencyKey, address pool);
     event AddressChangedETH(address token);
     event AddressChangedwETH(address token);
+    event LastTickForTWAPChanged(bytes32 currencyKey);
+    event TwapIntervalChanged(int56 twapInterval);
 }

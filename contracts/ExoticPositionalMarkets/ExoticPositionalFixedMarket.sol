@@ -44,7 +44,6 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     bool public feesAndBondsClaimed;
     bool public withdrawalAllowed;
 
-
     address public resolverAddress;
     TicketType public ticketType;
     IExoticPositionalMarketManager public marketManager;
@@ -238,8 +237,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         ) {
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
             feesAndBondsClaimed = true;
-        }
-        else if (!feesAndBondsClaimed) {
+        } else if (!feesAndBondsClaimed) {
             if (winningPosition != CANCELED) {
                 thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
                 thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());
@@ -339,16 +337,22 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         return canUsersClaim() && getUserClaimableAmount(_user) > 0;
     }
 
-    function canIssueFees() external view returns(bool) {
-        return !feesAndBondsClaimed && (thalesBonds.getCreatorBondForMarket(address(this)) > 0 ||
+    function canIssueFees() external view returns (bool) {
+        return
+            !feesAndBondsClaimed &&
+            (thalesBonds.getCreatorBondForMarket(address(this)) > 0 ||
                 thalesBonds.getResolverBondForMarket(address(this)) > 0);
     }
-    
+
     function canUserWithdraw(address _account) public view returns (bool) {
         if (_account == marketManager.creatorAddress(address(this))) {
             return false;
         }
-        return withdrawalAllowed && canUsersPlacePosition() && userPosition[_account] > 0 && block.timestamp <= withdrawalPeriod;
+        return
+            withdrawalAllowed &&
+            canUsersPlacePosition() &&
+            userPosition[_account] > 0 &&
+            block.timestamp <= withdrawalPeriod;
     }
 
     function getPositionPhrase(uint index) public view returns (string memory) {

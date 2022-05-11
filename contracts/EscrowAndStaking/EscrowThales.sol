@@ -191,7 +191,7 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
     function _getVestingNotAvailable(address account) internal view returns (uint) {
         uint vesting_not_available = 0;
         for (uint i = 0; i < NUM_PERIODS; i++) {
-            if (vestingEntries[account][i].vesting_period >= currentVestingPeriod) {
+            if (vestingEntries[account][i].vesting_period > currentVestingPeriod) {
                 vesting_not_available = vesting_not_available.add(vestingEntries[account][i].amount);
             }
         }

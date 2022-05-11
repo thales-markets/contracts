@@ -24,6 +24,15 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
@@ -33,10 +42,9 @@ async function main() {
 
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
 	const implementation = await upgrades.prepareUpgrade(thalesAmmAddress, ThalesAMM);
-	//upgrades.prepareUpgrade
-	//await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
-
 	console.log('ThalesAMM upgraded');
+	// await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
+	await delay(10000);
 
 	const ThalesAMMImplementation = await getImplementationAddress(ethers.provider, thalesAmmAddress);
 
@@ -98,3 +106,8 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
+function delay(time) {
+	return new Promise(function(resolve) {
+		setTimeout(resolve, time);
+	});
+}

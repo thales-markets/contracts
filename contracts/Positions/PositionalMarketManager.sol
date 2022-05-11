@@ -60,6 +60,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
     address public positionalMarketFactory;
 
+    bool public needsTransformingCollateral;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -90,6 +92,10 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     function setPositionalMarketFactory(address _positionalMarketFactory) external onlyOwner {
         positionalMarketFactory = _positionalMarketFactory;
         emit SetPositionalMarketFactory(_positionalMarketFactory);
+    }
+
+    function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
+        needsTransformingCollateral = _needsTransformingCollateral;
     }
 
     function setWhitelistedAddresses(address[] calldata _whitelistedAddresses) external onlyOwner {
@@ -240,26 +246,27 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
         require(capitalRequirement <= initialMint, "Insufficient capital");
 
-        PositionalMarket market = PositionalMarketFactory(positionalMarketFactory).createMarket(
-            PositionalMarketFactory.PositionCreationMarketParameters(
-                msg.sender,
-                sUSD,
-                priceFeed,
-                oracleKey,
-                strikePrice,
-                [maturity, expiry],
-                initialMint,
-                customMarket,
-                customOracle
-            )
-        );
+        PositionalMarket market =
+            PositionalMarketFactory(positionalMarketFactory).createMarket(
+                PositionalMarketFactory.PositionCreationMarketParameters(
+                    msg.sender,
+                    sUSD,
+                    priceFeed,
+                    oracleKey,
+                    strikePrice,
+                    [maturity, expiry],
+                    initialMint,
+                    customMarket,
+                    customOracle
+                )
+            );
 
         _activeMarkets.add(address(market));
 
         // The debt can't be incremented in the new market's constructor because until construction is complete,
         // the manager doesn't know its address in order to grant it permission.
         totalDeposited = totalDeposited.add(initialMint);
-        sUSD.transferFrom(msg.sender, address(market), initialMint);
+        sUSD.transferFrom(msg.sender, address(market), _transformCollateral(initialMint));
 
         (IPosition up, IPosition down) = market.getOptions();
 
@@ -386,6 +393,27 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
         totalDeposited = totalDeposited.add(runningDepositTotal);
         emit MarketsReceived(_migratingManager, marketsToReceive);
+    }
+
+    // support USDC with 6 decimals
+    function transformCollateral(uint value) external view override returns (uint) {
+        return _transformCollateral(value);
+    }
+
+    function _transformCollateral(uint value) internal view returns (uint) {
+        if (needsTransformingCollateral) {
+            return value / 1e12;
+        } else {
+            return value;
+        }
+    }
+
+    function reverseTransformCollateral(uint value) external view override returns (uint) {
+        if (needsTransformingCollateral) {
+            return value * 1e12;
+        } else {
+            return value;
+        }
     }
 
     /* ========== MODIFIERS ========== */

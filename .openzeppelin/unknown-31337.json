@@ -7,7 +7,7 @@
       "hash": "0x5282a6e3fdb1e61533114c19fab5aa6613bd267f70e29f9b286788c37d5acf31",
       "type": 0,
       "accessList": null,
-      "blockHash": "0xe68b3ad9ef450e726b79867e88546cb61342acf993204efe7f517b0829f585fb",
+      "blockHash": "0x6ff352d8ca55d500aae0befe91897c71288694f984c43fdddf0a8330ea0a65c2",
       "blockNumber": 10,
       "transactionIndex": 0,
       "confirmations": 1,
@@ -14782,7 +14782,7 @@
     },
     {
       "address": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
-      "txHash": "0x59d501f69a66b2f56d85e292817cd61708f21d469039e3433ceb685082efdb45",
+      "txHash": "0x2aa749f1657ce5eb7fbfa4042515a300d20e6017d432fa5108611ae004f88f41",
       "kind": "transparent"
     },
     {
@@ -19248,74 +19248,74 @@
     },
     "a44c89a3ac1e66195fd1e178c00242921bc5e034d24d68a671b8f166bea66a13": {
       "address": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
-      "txHash": "0xc6234145d0ffd602e9434a62fc1722da237ba29b9f1d282d88f3b85e570dd498",
+      "txHash": "0x93f0d3de8f50cb054a94ec1388418aeb242ef91ce0de0737e22321f7c921d3c4",
       "layout": {
         "storage": [
           {
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
           },
           {
             "contract": "ProxyOwned",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:6"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
           },
           {
             "contract": "ProxyOwned",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
           },
           {
             "contract": "ProxyOwned",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
           },
           {
             "contract": "ProxyOwned",
             "label": "_transferredAtInit",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
           },
           {
             "contract": "PositionalMarketFactory",
             "label": "positionalMarketManager",
             "type": "t_address",
-            "src": "contracts\\Positions\\PositionalMarketFactory.sol:18"
+            "src": "contracts/Positions/PositionalMarketFactory.sol:18"
           },
           {
             "contract": "PositionalMarketFactory",
             "label": "positionalMarketMastercopy",
             "type": "t_address",
-            "src": "contracts\\Positions\\PositionalMarketFactory.sol:20"
+            "src": "contracts/Positions/PositionalMarketFactory.sol:20"
           },
           {
             "contract": "PositionalMarketFactory",
             "label": "positionMastercopy",
             "type": "t_address",
-            "src": "contracts\\Positions\\PositionalMarketFactory.sol:21"
+            "src": "contracts/Positions/PositionalMarketFactory.sol:21"
           },
           {
             "contract": "PositionalMarketFactory",
             "label": "limitOrderProvider",
             "type": "t_address",
-            "src": "contracts\\Positions\\PositionalMarketFactory.sol:23"
+            "src": "contracts/Positions/PositionalMarketFactory.sol:23"
           },
           {
             "contract": "PositionalMarketFactory",
             "label": "thalesAMM",
             "type": "t_address",
-            "src": "contracts\\Positions\\PositionalMarketFactory.sol:24"
+            "src": "contracts/Positions/PositionalMarketFactory.sol:24"
           }
         ],
         "types": {
@@ -19330,138 +19330,138 @@
     },
     "ee4261b973ec232044b72b7155d44078cf0117922383316202ab135f29036ca7": {
       "address": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
-      "txHash": "0x2e1fbe4e2db61ee26bfdbe89c828cf72abb913e76f4106fd40bba41da6942db5",
+      "txHash": "0xe8e8c9a1c3932b321bfb84d0f3f58858a4f6231ab7c56ac71853fdc284aee7fd",
       "layout": {
         "storage": [
           {
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
           },
           {
             "contract": "ProxyOwned",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:6"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
           },
           {
             "contract": "ProxyOwned",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
           },
           {
             "contract": "ProxyOwned",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
           },
           {
             "contract": "ProxyOwned",
             "label": "_transferredAtInit",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
           },
           {
             "contract": "ProxyPausable",
             "label": "lastPauseTime",
             "type": "t_uint256",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:10"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:10"
           },
           {
             "contract": "ProxyPausable",
             "label": "paused",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "durations",
-            "type": "t_struct(Durations)28676_storage",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:42"
+            "type": "t_struct(Durations)31025_storage",
+            "src": "contracts/Positions/PositionalMarketManager.sol:42"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "capitalRequirement",
             "type": "t_uint256",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:43"
+            "src": "contracts/Positions/PositionalMarketManager.sol:43"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "marketCreationEnabled",
             "type": "t_bool",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:45"
+            "src": "contracts/Positions/PositionalMarketManager.sol:45"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "customMarketCreationEnabled",
             "type": "t_bool",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:46"
+            "src": "contracts/Positions/PositionalMarketManager.sol:46"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "onlyWhitelistedAddressesCanCreateMarkets",
             "type": "t_bool",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:48"
+            "src": "contracts/Positions/PositionalMarketManager.sol:48"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "whitelistedAddresses",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:49"
+            "src": "contracts/Positions/PositionalMarketManager.sol:49"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "totalDeposited",
             "type": "t_uint256",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:51"
+            "src": "contracts/Positions/PositionalMarketManager.sol:51"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "_activeMarkets",
-            "type": "t_struct(AddressSet)46673_storage",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:53"
+            "type": "t_struct(AddressSet)45168_storage",
+            "src": "contracts/Positions/PositionalMarketManager.sol:53"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "_maturedMarkets",
-            "type": "t_struct(AddressSet)46673_storage",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:54"
+            "type": "t_struct(AddressSet)45168_storage",
+            "src": "contracts/Positions/PositionalMarketManager.sol:54"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "_migratingManager",
-            "type": "t_contract(PositionalMarketManager)29849",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:56"
+            "type": "t_contract(PositionalMarketManager)32198",
+            "src": "contracts/Positions/PositionalMarketManager.sol:56"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "priceFeed",
-            "type": "t_contract(IPriceFeed)43249",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:58"
+            "type": "t_contract(IPriceFeed)41834",
+            "src": "contracts/Positions/PositionalMarketManager.sol:58"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "sUSD",
             "type": "t_contract(IERC20)3430",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:59"
+            "src": "contracts/Positions/PositionalMarketManager.sol:59"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "positionalMarketFactory",
             "type": "t_address",
-            "src": "contracts\\Positions\\PositionalMarketManager.sol:61"
+            "src": "contracts/Positions/PositionalMarketManager.sol:61"
           }
         ],
         "types": {
-          "t_struct(Durations)28676_storage": {
+          "t_struct(Durations)31025_storage": {
             "label": "struct PositionalMarketManager.Durations",
             "members": [
               {
@@ -19486,7 +19486,7 @@
           "t_address": {
             "label": "address"
           },
-          "t_struct(AddressSet)46673_storage": {
+          "t_struct(AddressSet)45168_storage": {
             "label": "struct AddressSetLib.AddressSet",
             "members": [
               {
@@ -19505,10 +19505,10 @@
           "t_mapping(t_address,t_uint256)": {
             "label": "mapping(address => uint256)"
           },
-          "t_contract(PositionalMarketManager)29849": {
+          "t_contract(PositionalMarketManager)32198": {
             "label": "contract PositionalMarketManager"
           },
-          "t_contract(IPriceFeed)43249": {
+          "t_contract(IPriceFeed)41834": {
             "label": "contract IPriceFeed"
           },
           "t_contract(IERC20)3430": {
@@ -19518,93 +19518,226 @@
       }
     },
     "94e7e51aa1a79972274cf2e055e8be50f10d1f03a879ae7aa2d3767fe32a4f7d": {
-      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0x6a31ffa1c25b6c0195250f1add541f5c6a29cf7c538c03a2e6ce06f8ff914197",
+      "address": "0x121976DDD956FA16a0Ad74A45eFf40BBCD267D00",
+      "txHash": "0x8e377ccde13864e868dd11716e251102f5c0d4c13a990c725f1df797a71fe9d2",
       "layout": {
         "storage": [
           {
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
           },
           {
             "contract": "ProxyOwned",
             "label": "owner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:6"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
           },
           {
             "contract": "ProxyOwned",
             "label": "nominatedOwner",
             "type": "t_address",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
           },
           {
             "contract": "ProxyOwned",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
           },
           {
             "contract": "ProxyOwned",
             "label": "_transferredAtInit",
             "type": "t_bool",
-            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
           },
           {
             "contract": "PriceFeed",
             "label": "aggregators",
             "type": "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)141)",
-            "src": "contracts\\PriceFeed\\PriceFeed.sol:22"
+            "src": "contracts/PriceFeed/PriceFeed.sol:22"
           },
           {
             "contract": "PriceFeed",
             "label": "currencyKeyDecimals",
             "type": "t_mapping(t_bytes32,t_uint8)",
-            "src": "contracts\\PriceFeed\\PriceFeed.sol:24"
+            "src": "contracts/PriceFeed/PriceFeed.sol:24"
           },
           {
             "contract": "PriceFeed",
             "label": "aggregatorKeys",
             "type": "t_array(t_bytes32)dyn_storage",
-            "src": "contracts\\PriceFeed\\PriceFeed.sol:26"
+            "src": "contracts/PriceFeed/PriceFeed.sol:26"
           },
           {
             "contract": "PriceFeed",
             "label": "currencyKeys",
             "type": "t_array(t_bytes32)dyn_storage",
-            "src": "contracts\\PriceFeed\\PriceFeed.sol:29"
+            "src": "contracts/PriceFeed/PriceFeed.sol:29"
           },
           {
             "contract": "PriceFeed",
             "label": "pools",
-            "type": "t_mapping(t_bytes32,t_contract(IUniswapV3Pool)9622)",
-            "src": "contracts\\PriceFeed\\PriceFeed.sol:30"
+            "type": "t_mapping(t_bytes32,t_contract(IUniswapV3Pool)7434)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:30"
           },
           {
             "contract": "PriceFeed",
             "label": "twapInterval",
             "type": "t_int56",
-            "src": "contracts\\PriceFeed\\PriceFeed.sol:32"
+            "src": "contracts/PriceFeed/PriceFeed.sol:32"
           },
           {
             "contract": "PriceFeed",
             "label": "_ETH",
             "type": "t_address",
-            "src": "contracts\\PriceFeed\\PriceFeed.sol:39"
+            "src": "contracts/PriceFeed/PriceFeed.sol:39"
           },
           {
             "contract": "PriceFeed",
             "label": "_wETH",
             "type": "t_address",
-            "src": "contracts\\PriceFeed\\PriceFeed.sol:40"
+            "src": "contracts/PriceFeed/PriceFeed.sol:40"
+          }
+        ],
+        "types": {
+          "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)141)": {
+            "label": "mapping(bytes32 => contract AggregatorV2V3Interface)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_contract(AggregatorV2V3Interface)141": {
+            "label": "contract AggregatorV2V3Interface"
+          },
+          "t_mapping(t_bytes32,t_uint8)": {
+            "label": "mapping(bytes32 => uint8)"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_mapping(t_bytes32,t_contract(IUniswapV3Pool)7434)": {
+            "label": "mapping(bytes32 => contract IUniswapV3Pool)"
+          },
+          "t_contract(IUniswapV3Pool)7434": {
+            "label": "contract IUniswapV3Pool"
+          },
+          "t_int56": {
+            "label": "int56"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "a859d184c69b8e24ac683db3537b73aa3c79cd9ebf7d51429889676d55f048a8": {
+      "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      "txHash": "0x6fcffa618ac6fa88f24c131174d84b2ea3ecf1095272d409e5d4a538e58af42b",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "aggregators",
+            "type": "t_mapping(t_bytes32,t_contract(AggregatorV2V3Interface)141)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:22"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "currencyKeyDecimals",
+            "type": "t_mapping(t_bytes32,t_uint8)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:24"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "aggregatorKeys",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts/PriceFeed/PriceFeed.sol:26"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "currencyKeys",
+            "type": "t_array(t_bytes32)dyn_storage",
+            "src": "contracts/PriceFeed/PriceFeed.sol:29"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "pools",
+            "type": "t_mapping(t_bytes32,t_contract(IUniswapV3Pool)9622)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:30"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "twapInterval",
+            "type": "t_int56",
+            "src": "contracts/PriceFeed/PriceFeed.sol:32"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "_ETH",
+            "type": "t_address",
+            "src": "contracts/PriceFeed/PriceFeed.sol:39"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "_wETH",
+            "type": "t_address",
+            "src": "contracts/PriceFeed/PriceFeed.sol:40"
+          },
+          {
+            "contract": "PriceFeed",
+            "label": "useLastTickForTWAP",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts/PriceFeed/PriceFeed.sol:42"
           }
         ],
         "types": {
@@ -19637,6 +19770,9 @@
           },
           "t_address": {
             "label": "address"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
           },
           "t_bool": {
             "label": "bool"

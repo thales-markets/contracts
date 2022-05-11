@@ -15,6 +15,8 @@ import "./SportPositionalMarketManager.sol";
 import "./SportPosition.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 
+error PositionCountMissmatch();
+
 contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ========== LIBRARIES ========== */
 
@@ -25,58 +27,45 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     struct Options {
         SportPosition home;
         SportPosition away;
+        SportPosition draw;
+        SportPosition cancelled;
     }
 
     struct Times {
         uint maturity;
         uint expiry;
     }
-
-    struct OracleDetails {
-        bytes32 key;
-        uint strikePrice;
-        uint finalPrice;
-        bool customMarket;
-        address iOracleInstanceAddress;
-    }
-    
+ 
 
     struct GameDetails {
         bytes32 gameId;
-        bytes32 homeTeam;
-        bytes32 awayTeam;
+        string gameLabel;
     }
 
-    struct PositionalMarketParameters {
+    struct SportPositionalMarketParameters {
         address owner;
         IERC20 sUSD;
-        IPriceFeed priceFeed;
         address creator;
-        bytes32 oracleKey;
-        uint strikePrice;
+        bytes32 gameId;
+        string gameLabel;
         uint[2] times; // [maturity, expiry]
         uint deposit; // sUSD deposit
-        bool customMarket;
         address theRundownConsumer;
-        address home;
-        address away;
         address limitOrderProvider;
         address thalesAMM;
+        uint positionCount;
+        address[] positions;
     }
 
     /* ========== STATE VARIABLES ========== */
 
     Options public options;
+    uint public optionsCount;
     Times public override times;
     GameDetails public gameDetails;
     ITherundownConsumer public theRundownConsumer;
-
-     OracleDetails public oracleDetails;
     SportPositionalMarketManager.Fees public override fees;
-    IPriceFeed public priceFeed;
     IERC20 public sUSD;
-
-    bool public customMarket;
 
     // `deposited` tracks the sum of all deposits.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
@@ -89,37 +78,44 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
 
     bool public initialized = false;
 
-    function initialize(PositionalMarketParameters calldata _parameters) external {
+    function initialize(SportPositionalMarketParameters calldata _parameters) external {
         require(!initialized, "Positional Market already initialized");
         initialized = true;
         initOwner(_parameters.owner);
         sUSD = _parameters.sUSD;
-        
-        priceFeed = _parameters.priceFeed;
         creator = _parameters.creator;
-
+        theRundownConsumer = ITherundownConsumer(_parameters.theRundownConsumer);
+        
         gameDetails = GameDetails(
-            _parameters.oracleKey,
-            "",
-            ""
+            _parameters.gameId,
+            _parameters.gameLabel
         );
        
-        customMarket = _parameters.customMarket;
-        theRundownConsumer = ITherundownConsumer(_parameters.theRundownConsumer);
-
         times = Times(_parameters.times[0], _parameters.times[1]);
 
         deposited = _parameters.deposit;
         initialMint = _parameters.deposit;
-
+        optionsCount = _parameters.positionCount;
+        if(optionsCount != _parameters.positions.length) {
+            revert PositionCountMissmatch();
+        }
         // Instantiate the options themselves
-        options.home = SportPosition(_parameters.home);
-        options.away = SportPosition(_parameters.away);
+        options.home = SportPosition(_parameters.positions[0]);
+        options.away = SportPosition(_parameters.positions[1]);
         // abi.encodePacked("sUP: ", _oracleKey)
         // consider naming the option: sUpBTC>50@2021.12.31
-        options.home.initialize("Position Home", "HOME", _parameters.limitOrderProvider, _parameters.thalesAMM);
-        options.away.initialize("Position Away", "AWAY", _parameters.limitOrderProvider, _parameters.thalesAMM);
-        _mint(creator, initialMint);
+        options.home.initialize(gameDetails.gameLabel, "HOME", _parameters.limitOrderProvider, _parameters.thalesAMM);
+        options.away.initialize(gameDetails.gameLabel, "AWAY", _parameters.limitOrderProvider, _parameters.thalesAMM);
+        
+        if(optionsCount > 2){
+            options.draw = SportPosition(_parameters.positions[2]);
+            if(optionsCount > 3){
+                options.cancelled = SportPosition(_parameters.positions[3]);
+            }
+        }
+        if(initialMint > 0) {
+            _mint(creator, initialMint);
+        }
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
         // about initializing its state separately
@@ -176,12 +172,7 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     }
 
     function canResolve() public view override returns (bool) {
-        if (customMarket) {
-            // return !resolved && _matured() && iOracleInstance.resolvable();
             return !resolved && _matured();
-        } else {
-            return !resolved && _matured();
-        }
     }
 
     function getOracleDetails() external view override returns (
@@ -303,11 +294,6 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
         theRundownConsumer = ITherundownConsumer(_theRundownConsumer);
         emit SetTherundownConsumer(_theRundownConsumer);
-    }
-
-    function setPriceFeed(address _address) external onlyOwner {
-        priceFeed = IPriceFeed(_address);
-        emit SetPriceFeed(_address);
     }
 
     function setsUSD(address _address) external onlyOwner {

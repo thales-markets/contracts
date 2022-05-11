@@ -32,12 +32,11 @@ interface ISportPositionalMarketManager {
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function createMarket(
-        bytes32 oracleKey,
-        uint strikePrice,
+        bytes32 gameId,
+        string memory gameLabel,
         uint maturity,
         uint initialMint, // initial sUSD to mint options for,
-        bool customMarket,
-        address customOracle
+        uint positionCount
     ) external returns (IPositionalMarket);
 
     function resolveMarket(address market) external;

@@ -363,18 +363,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(sportId);
 
         // create
-        // TODO ADD external call to create market
-        /*sportsManager.createCLMarket(
-            _append(game.homeTeam, game.awayTeam),
-            "chainlink_sports_data",
-            game.startTime,
-            fixedTicketPrice,
-            withdrawalAllowed,
-            _calculateTags(sportId),
-            numberOfPositions,
-            _positionsOfCreator(game, numberOfPositions),
-            _createPhrases(game.homeTeam, game.awayTeam, numberOfPositions)
-        );*/
+        sportsManager.createMarket(
+            _gameId, 
+            _append(game.homeTeam, game.awayTeam),  // gameLabel
+            game.startTime, //maturity 
+            0, //initialMint
+            numberOfPositions
+        );
 
         address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
         marketPerGameId[game.gameId] = marketAddress;

@@ -25,6 +25,7 @@ import "./RangedPosition.sol";
 import "./RangedPosition.sol";
 import "./RangedMarket.sol";
 import "../interfaces/IPositionalMarket.sol";
+import "../interfaces/IStakingThales.sol";
 
 contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -57,6 +58,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     uint public safeBoxImpact;
 
     uint public minimalDifBetweenStrikes;
+
+    IStakingThales public stakingThales;
 
     function initialize(
         address _owner,
@@ -274,6 +277,9 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             rangedMarket.mint(amount, RangedMarket.Position.In, msg.sender);
             _updateSpentOnMarketAndSafeBoxOnBuy(address(rangedMarket), amount, sUSDPaid);
         }
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(msg.sender, sUSDPaid);
+        }
         emit BoughtFromAmm(msg.sender, address(rangedMarket), position, amount, sUSDPaid, address(sUSD), target);
     }
 
@@ -466,8 +472,13 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _updateSpentOnMarketAndSafeBoxOnSell(amount, rangedMarket, pricePaid);
         }
 
-        emit SoldToAMM(msg.sender, address(rangedMarket), position, amount, pricePaid, address(sUSD), target);
         sUSD.safeTransfer(msg.sender, pricePaid);
+
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(msg.sender, sUSDPaid);
+        }
+
+        emit SoldToAMM(msg.sender, address(rangedMarket), position, amount, pricePaid, address(sUSD), target);
     }
 
     function _sellIN(
@@ -566,6 +577,11 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit SetThalesAMM(_thalesAMM);
     }
 
+    function setStakingThales(IStakingThales _stakingThales) public onlyOwner {
+        stakingThales = _stakingThales;
+        emit SetStakingThales(address(_stakingThales));
+    }
+
     modifier knownRangedMarket(address market) {
         require(_knownMarkets.contains(market), "Not a known ranged market");
         _;
@@ -601,4 +617,5 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event SetMinimalDifBetweenStrikes(uint _spread);
     event SetCapPerMarket(uint capPerMarket);
     event SetRangedAmmFee(uint rangedAmmFee);
+    event SetStakingThales(address _stakingThales);
 }

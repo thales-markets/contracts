@@ -29,9 +29,7 @@ contract SportPositionalMarketData {
     // used for things that don't change over the lifetime of the contract
     struct MarketParameters {
         address creator;
-        SportPositionalMarket.Options options;
         SportPositionalMarket.Times times;
-        SportPositionalMarket.OracleDetails oracleDetails;
         SportPositionalMarketManager.Fees fees;
     }
 
@@ -49,17 +47,13 @@ contract SportPositionalMarketData {
     }
 
     function getMarketParameters(SportPositionalMarket market) external view returns (MarketParameters memory) {
-        (SportPosition up, SportPosition down) = market.options();
+        // (SportPosition up, SportPosition down) = market.options();
         (uint maturityDate, uint expiryDate) = market.times();
-        (bytes32 key, uint strikePrice, uint finalPrice, bool customMarket, address iOracleInstanceAddress) = market
-            .oracleDetails();
         (uint poolFee, uint creatorFee) = market.fees();
 
         MarketParameters memory data = MarketParameters(
             market.creator(),
-            SportPositionalMarket.Options(up, down),
             SportPositionalMarket.Times(maturityDate, expiryDate),
-            SportPositionalMarket.OracleDetails(key, strikePrice, finalPrice, customMarket, iOracleInstanceAddress),
             SportPositionalMarketManager.Fees(poolFee, creatorFee)
         );
 

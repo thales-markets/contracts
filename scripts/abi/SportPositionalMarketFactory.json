@@ -11,14 +11,14 @@
       {
         "indexed": true,
         "internalType": "bytes32",
-        "name": "oracleKey",
+        "name": "gameId",
         "type": "bytes32"
       },
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "strikePrice",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "gameLabel",
+        "type": "string"
       },
       {
         "indexed": false,
@@ -40,15 +40,9 @@
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "customMarket",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "customOracle",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "positionCount",
+        "type": "uint256"
       }
     ],
     "name": "MarketCreated",
@@ -173,19 +167,14 @@
             "type": "address"
           },
           {
-            "internalType": "contract IPriceFeed",
-            "name": "_priceFeed",
-            "type": "address"
-          },
-          {
             "internalType": "bytes32",
-            "name": "oracleKey",
+            "name": "gameId",
             "type": "bytes32"
           },
           {
-            "internalType": "uint256",
-            "name": "strikePrice",
-            "type": "uint256"
+            "internalType": "string",
+            "name": "gameLabel",
+            "type": "string"
           },
           {
             "internalType": "uint256[2]",
@@ -198,13 +187,13 @@
             "type": "uint256"
           },
           {
-            "internalType": "bool",
-            "name": "customMarket",
-            "type": "bool"
+            "internalType": "uint256",
+            "name": "positionCount",
+            "type": "uint256"
           },
           {
             "internalType": "address",
-            "name": "customOracle",
+            "name": "theRundownConsumer",
             "type": "address"
           }
         ],

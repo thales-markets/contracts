@@ -156,23 +156,6 @@
           {
             "components": [
               {
-                "internalType": "contract SportPosition",
-                "name": "home",
-                "type": "address"
-              },
-              {
-                "internalType": "contract SportPosition",
-                "name": "away",
-                "type": "address"
-              }
-            ],
-            "internalType": "struct SportPositionalMarket.Options",
-            "name": "options",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
                 "internalType": "uint256",
                 "name": "maturity",
                 "type": "uint256"
@@ -185,38 +168,6 @@
             ],
             "internalType": "struct SportPositionalMarket.Times",
             "name": "times",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "internalType": "bytes32",
-                "name": "key",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "uint256",
-                "name": "strikePrice",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "finalPrice",
-                "type": "uint256"
-              },
-              {
-                "internalType": "bool",
-                "name": "customMarket",
-                "type": "bool"
-              },
-              {
-                "internalType": "address",
-                "name": "iOracleInstanceAddress",
-                "type": "address"
-              }
-            ],
-            "internalType": "struct SportPositionalMarket.OracleDetails",
-            "name": "oracleDetails",
             "type": "tuple"
           },
           {

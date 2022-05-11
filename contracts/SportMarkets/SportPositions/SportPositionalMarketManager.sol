@@ -214,12 +214,11 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     /* ---------- Market Lifecycle ---------- */
 
     function createMarket(
-        bytes32 oracleKey,
-        uint strikePrice,
+        bytes32 gameId,
+        string memory gameLabel,
         uint maturity,
         uint initialMint, // initial sUSD to mint options for,
-        bool customMarket,
-        address customOracle
+        uint positionCount
     )
         external
         override
@@ -229,14 +228,14 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-        if (!customMarket) {
-            require(_isValidKey(oracleKey), "Invalid key");
-        } else {
-            if (!customMarketCreationEnabled) {
-                require(owner == msg.sender, "Only owner can create custom markets");
-            }
-            require(address(0) != customOracle, "Invalid custom oracle");
-        }
+        // if (!customMarket) {
+        //     require(_isValidKey(oracleKey), "Invalid key");
+        // } else {
+        //     if (!customMarketCreationEnabled) {
+        //         require(owner == msg.sender, "Only owner can create custom markets");
+        //     }
+        //     require(address(0) != customOracle, "Invalid custom oracle");
+        // }
 
         if (onlyWhitelistedAddressesCanCreateMarkets) {
             require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
@@ -255,13 +254,12 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             SportPositionalMarketFactory.SportPositionCreationMarketParameters(
                 msg.sender,
                 sUSD,
-                priceFeed,
-                oracleKey,
-                strikePrice,
+                gameId,
+                gameLabel,
                 [maturity, expiry],
                 initialMint,
-                customMarket,
-                customOracle
+                positionCount,
+                msg.sender
             )
         );
 
@@ -277,14 +275,12 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit MarketCreated(
             address(market),
             msg.sender,
-            oracleKey,
-            strikePrice,
+            gameId,
+            gameLabel,
             maturity,
             expiry,
             address(up),
-            address(down),
-            customMarket,
-            customOracle
+            address(down)
         );
         return market;
     }
@@ -416,14 +412,12 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event MarketCreated(
         address market,
         address indexed creator,
-        bytes32 indexed oracleKey,
-        uint strikePrice,
+        bytes32 indexed gameId,
+        string gameLabel,
         uint maturityDate,
         uint expiryDate,
         address up,
-        address down,
-        bool customMarket,
-        address customOracle
+        address down
     );
     event MarketExpired(address market);
     event MarketsMigrated(SportPositionalMarketManager receivingManager, SportPositionalMarket[] markets);

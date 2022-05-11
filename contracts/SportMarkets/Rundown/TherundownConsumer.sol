@@ -363,18 +363,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(sportId);
 
         // create
-        // TODO ADD external call to create market
-        /*sportsManager.createCLMarket(
-            _append(game.homeTeam, game.awayTeam),
-            "chainlink_sports_data",
-            game.startTime,
-            fixedTicketPrice,
-            withdrawalAllowed,
-            _calculateTags(sportId),
-            numberOfPositions,
-            _positionsOfCreator(game, numberOfPositions),
-            _createPhrases(game.homeTeam, game.awayTeam, numberOfPositions)
-        );*/
+        sportsManager.createMarket(
+            _gameId, 
+            _append(game.homeTeam, game.awayTeam),  // gameLabel
+            game.startTime, //maturity 
+            0, //initialMint
+            numberOfPositions
+        );
 
         address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
         marketPerGameId[game.gameId] = marketAddress;
@@ -449,22 +444,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _append(string memory teamA, string memory teamB) internal pure returns (string memory) {
         return string(abi.encodePacked(teamA, " vs ", teamB));
-    }
-
-    function _createPhrases(
-        string memory teamA,
-        string memory teamB,
-        uint _numberOfPositions
-    ) internal pure returns (string[] memory) {
-        string[] memory result = new string[](_numberOfPositions);
-
-        result[0] = teamA;
-        result[1] = teamB;
-        if (_numberOfPositions > 2) {
-            result[2] = "It will be a draw";
-        }
-
-        return result;
     }
 
     function _calculateNumberOfPositionsBasedOnSport(uint _sportsId) internal returns (uint) {

@@ -26,13 +26,12 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
     struct SportPositionCreationMarketParameters {
         address creator;
         IERC20 _sUSD;
-        IPriceFeed _priceFeed;
-        bytes32 oracleKey;
-        uint strikePrice;
+        bytes32 gameId;
+        string gameLabel;
         uint[2] times; // [maturity, expiry]
         uint initialMint;
-        bool customMarket;
-        address customOracle;
+        uint positionCount;
+        address theRundownConsumer;
     }
 
     /* ========== INITIALIZER ========== */
@@ -50,35 +49,35 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
             SportPositionalMarket(
                 Clones.clone(positionalMarketMastercopy)
             );
-        SportPosition up = SportPosition(Clones.clone(positionMastercopy));
-        SportPosition down = SportPosition(Clones.clone(positionMastercopy));
+        address[] memory positions = new address[](_parameters.positionCount);
+        for(uint i=0; i < _parameters.positionCount; i++) {
+            positions[i] = address(SportPosition(Clones.clone(positionMastercopy)));
+        }
+        
         pom.initialize(
-            SportPositionalMarket.PositionalMarketParameters(
+            SportPositionalMarket.SportPositionalMarketParameters(
                 positionalMarketManager,
                 _parameters._sUSD,
-                _parameters._priceFeed,
                 _parameters.creator,
-                _parameters.oracleKey,
-                _parameters.strikePrice,
+                _parameters.gameId,
+                _parameters.gameLabel,
                 _parameters.times,
                 _parameters.initialMint,
-                _parameters.customMarket,
-                _parameters.customOracle,
-                address(up),
-                address(down),
+                _parameters.theRundownConsumer,
                 limitOrderProvider,
-                thalesAMM
+                thalesAMM,
+                _parameters.positionCount,
+                positions
             )
         );
         emit MarketCreated(
             address(pom),
-            _parameters.oracleKey,
-            _parameters.strikePrice,
+            _parameters.gameId,
+            _parameters.gameLabel,
             _parameters.times[0],
             _parameters.times[1],
             _parameters.initialMint,
-            _parameters.customMarket,
-            _parameters.customOracle
+            _parameters.positionCount
         );
         return pom;
     }
@@ -116,12 +115,11 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
     event SetLimitOrderProvider(address _limitOrderProvider);
     event MarketCreated(
         address market,
-        bytes32 indexed oracleKey,
-        uint strikePrice,
+        bytes32 indexed gameId,
+        string gameLabel,
         uint maturityDate,
         uint expiryDate,
         uint initialMint,
-        bool customMarket,
-        address customOracle
+        uint positionCount
     );
 }

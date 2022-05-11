@@ -70,6 +70,7 @@ contract('LPStakingRewards', accounts => {
 
 	describe('Function permissions', () => {
 		const rewardValue = toUnit(1.0);
+		const secondRewardValue = toUnit(2.0);
 
 		before(async () => {
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, rewardValue, { from: owner });
@@ -78,7 +79,7 @@ contract('LPStakingRewards', accounts => {
 		it('only owner can call notifyRewardAmount', async () => {
 			let REVERT = 'Only the contract owner may perform this action';
 			await assert.revert(
-				LPStakingRewardsDeployed.notifyRewardAmount(rewardValue, {
+				LPStakingRewardsDeployed.notifyRewardAmount(rewardValue, secondRewardValue, {
 					from: mockRewardsDistributionAddress,
 				}),
 				REVERT
@@ -112,9 +113,11 @@ contract('LPStakingRewards', accounts => {
 		describe('when updated', () => {
 			it('should equal current timestamp', async () => {
 				const rewardValue = toUnit(5000.0);
+				const secondRewardValue = toUnit(1000.0);
 				await rewardsToken.transfer(LPStakingRewardsDeployed.address, rewardValue, { from: owner });
+				await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, secondRewardValue, { from: owner });
 
-				await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(1.0), {
+				await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(1.0), toUnit(2.0), {
 					from: owner,
 				});
 
@@ -151,12 +154,10 @@ contract('LPStakingRewards', accounts => {
 			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, secondRewardValue, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifySecondRewardAmount(toUnit(1), {
-				from: owner,
-			});
+		
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
 
@@ -213,12 +214,10 @@ contract('LPStakingRewards', accounts => {
 			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, secondRewardValue, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifySecondRewardAmount(toUnit(1), {
-				from: owner,
-			});
+			
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
 
@@ -237,14 +236,10 @@ contract('LPStakingRewards', accounts => {
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistribute, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+            await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
 				from: owner,
 			});
-
-			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
-				from: owner,
-			});
-			await LPStakingRewardsDeployed.notifySecondRewardAmount(toUnit(1), {
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
 
@@ -257,19 +252,16 @@ contract('LPStakingRewards', accounts => {
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistribute, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+            await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
 				from: owner,
 			});
 
-			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
-				from: owner,
-			});
-			await LPStakingRewardsDeployed.notifySecondRewardAmount(toUnit(1), {
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
 
-			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
-			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
+
+			await LPStakingRewardsDeployed.addBothRewards(toUnit(5), toUnit(1), { from: owner });
 
 			const rewardRateLater = await LPStakingRewardsDeployed.rewardRate();
 			const secondRewardRateLater = await LPStakingRewardsDeployed.secondRewardRate();
@@ -294,17 +286,13 @@ contract('LPStakingRewards', accounts => {
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistribute, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+            await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
+				from: owner,
+			});
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
-
-			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
-				from: owner,
-			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(1), {
-				from: owner,
-			});
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
 
 			await fastForward(DAY);
@@ -350,17 +338,13 @@ contract('LPStakingRewards', accounts => {
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistribute, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+            await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
+				from: owner,
+			});
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
-
-			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
-				from: owner,
-			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(1), {
-				from: owner,
-			});
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
 
 			await fastForward(DAY);
@@ -381,33 +365,25 @@ contract('LPStakingRewards', accounts => {
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistribute, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+            await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
+				from: owner,
+			});
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
-
-			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
-				from: owner,
-			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(1), {
-				from: owner,
-			});
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
 
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistribute, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+            await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
+				from: owner,
+			});
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
-
-			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
-				from: owner,
-			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(1), {
-				from: owner,
-			});
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
 
 			await fastForward(DAY * 8);
@@ -425,17 +401,13 @@ contract('LPStakingRewards', accounts => {
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistribute, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+            await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
+				from: owner,
+			});
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
-
-			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
-				from: owner,
-			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(1), {
-				from: owner,
-			});
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
 		});
 
@@ -450,17 +422,13 @@ contract('LPStakingRewards', accounts => {
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistribute, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+            await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
+				from: owner,
+			});
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
-
-			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
-				from: owner,
-			});
-			await LPStakingRewardsDeployed.notifySecondRewardAmount(toUnit(1), {
-				from: owner,
-			});
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
 
 			await fastForward(DAY * 4);
@@ -484,13 +452,10 @@ contract('LPStakingRewards', accounts => {
 			const newDuration = await LPStakingRewardsDeployed.rewardsDuration();
 			assert.bnEqual(newDuration, seventyDays);
 
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(1), {
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(1), toUnit(5), {
 				from: owner,
 			});
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
-				from: owner,
-			});
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
 
 			await fastForward(DAY * 71);
@@ -505,17 +470,13 @@ contract('LPStakingRewards', accounts => {
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistribute, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+            await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
+				from: owner,
+			});
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
-
-			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
-				from: owner,
-			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(1), {
-				from: owner,
-			});
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
 
 			const rewardForDuration = await LPStakingRewardsDeployed.getRewardForDuration();
@@ -567,17 +528,13 @@ contract('LPStakingRewards', accounts => {
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistribute, {
 				from: owner,
 			});
-			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), {
+            await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
+				from: owner,
+			});
+			await LPStakingRewardsDeployed.notifyRewardAmount(toUnit(5), toUnit(1), {
 				from: owner,
 			});
 			await LPStakingRewardsDeployed.addReward(toUnit(5), { from: owner });
-
-			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, totalToDistributeSecond, {
-				from: owner,
-			});
-			await LPStakingRewardsDeployed.notifySecondRewardAmount(toUnit(1), {
-				from: owner,
-			});
 			await LPStakingRewardsDeployed.addSecondReward(toUnit(1), { from: owner });
 
 			await fastForward(DAY);
@@ -602,8 +559,9 @@ contract('LPStakingRewards', accounts => {
 		it('Reverts if the provided reward is greater than the balance.', async () => {
 			const rewardValue = toUnit(1000);
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, rewardValue, { from: owner });
+			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, rewardValue, { from: owner });
 			await assert.revert(
-				LPStakingRewardsDeployed.notifyRewardAmount(rewardValue.add(toUnit(0.1)), {
+				LPStakingRewardsDeployed.notifyRewardAmount(rewardValue.add(toUnit(0.1)), rewardValue.add(toUnit(0.2)), {
 					from: owner,
 				}),
 				'Provided reward too high'
@@ -613,13 +571,15 @@ contract('LPStakingRewards', accounts => {
 		it('Reverts if the provided reward is greater than the balance, plus rolled-over balance.', async () => {
 			const rewardValue = toUnit(1000);
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, rewardValue, { from: owner });
-			await LPStakingRewardsDeployed.notifyRewardAmount(rewardValue, {
+			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, rewardValue, { from: owner });
+			await LPStakingRewardsDeployed.notifyRewardAmount(rewardValue, rewardValue, {
 				from: owner,
 			});
 			await rewardsToken.transfer(LPStakingRewardsDeployed.address, rewardValue, { from: owner });
+			await secondRewardsToken.transfer(LPStakingRewardsDeployed.address, rewardValue, { from: owner });
 			// Now take into account any leftover quantity.
 			await assert.revert(
-				LPStakingRewardsDeployed.notifyRewardAmount(rewardValue.add(toUnit(0.1)), {
+				LPStakingRewardsDeployed.notifyRewardAmount(rewardValue.add(toUnit(0.1)), rewardValue.add(toUnit(0.2)), {
 					from: owner,
 				}),
 				'Provided reward too high'

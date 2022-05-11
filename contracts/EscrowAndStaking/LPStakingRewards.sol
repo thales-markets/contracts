@@ -139,46 +139,33 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
 
     /* ========== RESTRICTED FUNCTIONS ========== */
 
-    function notifyRewardAmount(uint256 reward) external onlyOwner updateReward(address(0)) {
+    function notifyRewardAmount(uint256 reward, uint256 secondReward) external onlyOwner updateReward(address(0)) {
         if (block.timestamp >= periodFinish) {
             rewardRate = reward.div(rewardsDuration);
+            secondRewardRate = secondReward.div(rewardsDuration);
         } else {
             uint256 remaining = periodFinish.sub(block.timestamp);
             uint256 leftover = remaining.mul(rewardRate);
+            uint256 secondLeftover = remaining.mul(secondRewardRate);
+
             rewardRate = reward.add(leftover).div(rewardsDuration);
+            secondRewardRate = secondReward.add(secondLeftover).div(rewardsDuration);
         }
 
         // Ensure the provided reward amount is not more than the balance in the contract.
         // This keeps the reward rate in the right range, preventing overflows due to
-        // very high values of rewardRate in the earned and rewardsPerToken functions;
+        // very high values of rewardRate/secondRewardRate in the earned and rewardsPerToken functions;
         // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
         uint balance = rewardsToken.balanceOf(address(this));
         require(rewardRate <= balance.div(rewardsDuration), "Provided reward too high");
 
+        uint balanceSecondReward = secondRewardsToken.balanceOf(address(this));
+        require(secondRewardRate <= balanceSecondReward.div(rewardsDuration), "Provided reward too high");
+
+
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(rewardsDuration);
         emit RewardAdded(reward);
-    }
-
-    function notifySecondRewardAmount(uint256 reward) external onlyOwner updateReward(address(0)) {
-        if (block.timestamp >= periodFinish) {
-            secondRewardRate = reward.div(rewardsDuration);
-        } else {
-            uint256 remaining = periodFinish.sub(block.timestamp);
-            uint256 leftover = remaining.mul(secondRewardRate);
-            secondRewardRate = reward.add(leftover).div(rewardsDuration);
-        }
-
-        // Ensure the provided reward amount is not more than the balance in the contract.
-        // This keeps the reward rate in the right range, preventing overflows due to
-        // very high values of rewardRate in the earned and rewardsPerToken functions;
-        // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
-        uint balance = secondRewardsToken.balanceOf(address(this));
-        require(secondRewardRate <= balance.div(rewardsDuration), "Provided reward too high");
-
-        lastUpdateTime = block.timestamp;
-        periodFinish = block.timestamp.add(rewardsDuration);
-        emit SecondRewardAdded(reward);
     }
 
     function addReward(uint256 reward) external onlyOwner updateReward(address(0)) {
@@ -215,6 +202,31 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
 
         lastUpdateTime = block.timestamp;
         emit SecondRewardAdded(reward);
+    }
+
+    function addBothRewards(uint256 reward, uint256 secondReward) external onlyOwner updateReward(address(0)) {
+        require(block.timestamp < periodFinish, "Rewards must be active");
+
+        uint256 remaining = periodFinish.sub(block.timestamp);
+        uint256 leftover = remaining.mul(rewardRate);
+        rewardRate = reward.add(leftover).div(remaining);
+
+        uint256 secondLeftover = remaining.mul(secondRewardRate);
+        secondRewardRate = secondReward.add(secondLeftover).div(remaining);
+
+        // Ensure the provided reward amount is not more than the balance in the contract.
+        // This keeps the reward rate in the right range, preventing overflows due to
+        // very high values of rewardRate/secondRewardRate in the earned and rewardsPerToken functions;
+        // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
+        uint balance = rewardsToken.balanceOf(address(this));
+        require(rewardRate <= balance.div(remaining), "Provided reward too high");
+
+        uint secondBalance = secondRewardsToken.balanceOf(address(this));
+        require(secondRewardRate <= secondBalance.div(remaining), "Provided reward too high");
+
+        lastUpdateTime = block.timestamp;
+        emit BothRewardsAdded(reward, secondReward);
+        
     }
 
     function recoverERC20(address tokenAddress, uint256 tokenAmount) external onlyOwner {
@@ -256,6 +268,7 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
 
     event RewardAdded(uint256 reward);
     event SecondRewardAdded(uint256 reward);
+    event BothRewardsAdded(uint256 reward, uint256 secondReward);
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed user, uint256 reward);

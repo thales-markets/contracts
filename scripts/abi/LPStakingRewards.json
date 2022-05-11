@@ -4,6 +4,25 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "secondReward",
+        "type": "uint256"
+      }
+    ],
+    "name": "BothRewardsAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -176,6 +195,26 @@
     "constant": false,
     "inputs": [],
     "name": "acceptOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "reward",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "secondReward",
+        "type": "uint256"
+      }
+    ],
+    "name": "addBothRewards",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -427,24 +466,14 @@
         "internalType": "uint256",
         "name": "reward",
         "type": "uint256"
-      }
-    ],
-    "name": "notifyRewardAmount",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
+      },
       {
         "internalType": "uint256",
-        "name": "reward",
+        "name": "secondReward",
         "type": "uint256"
       }
     ],
-    "name": "notifySecondRewardAmount",
+    "name": "notifyRewardAmount",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

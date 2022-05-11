@@ -74,6 +74,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint public minSupportedPrice;
     uint public maxSupportedPrice;
 
+    mapping(address => bool) public whitelistedAddresses;
+    mapping(bytes32 => uint) private _capPerAsset;
+
     function initialize(
         address _owner,
         IPriceFeed _priceFeed,
@@ -102,19 +105,18 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
                 return 0;
             }
+            basePrice = basePrice.add(min_spread);
             uint balance = _balanceOfPositionOnMarket(market, position);
-            uint midImpactPriceIncrease = ONE.sub(basePrice).mul(min_spread.add(max_spread).div(2)).div(ONE);
-            uint buy_mid_price = basePrice.add(midImpactPriceIncrease);
+            uint midImpactPriceIncrease = ONE.sub(basePrice).mul(max_spread.div(2)).div(ONE);
 
-            uint divider_price = ONE.sub(buy_mid_price);
+            uint divider_price = ONE.sub(basePrice.add(midImpactPriceIncrease));
 
-            uint minImpactPriceIncrease = ONE.sub(basePrice).mul(min_spread).div(ONE);
-            uint buy_min_price = basePrice.add(minImpactPriceIncrease);
-            uint additionalBufferFromSelling = balance.mul(buy_min_price).div(ONE);
-            if (capPerMarket.add(additionalBufferFromSelling) <= spentOnMarket[market]) {
+            uint additionalBufferFromSelling = balance.mul(basePrice).div(ONE);
+
+            if (_capOnMarket(market).add(additionalBufferFromSelling) <= spentOnMarket[market]) {
                 return 0;
             }
-            uint availableUntilCapSUSD = capPerMarket.add(additionalBufferFromSelling).sub(spentOnMarket[market]);
+            uint availableUntilCapSUSD = _capOnMarket(market).add(additionalBufferFromSelling).sub(spentOnMarket[market]);
 
             return balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
         } else {
@@ -130,12 +132,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
             return 0;
         }
-        uint basePrice = price(market, position);
+        uint basePrice = price(market, position).add(min_spread);
         uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount)).div(ONE);
         // add 2% to the price increase to avoid edge cases on the extremes
         impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
         uint tempAmount = amount.mul(basePrice.add(impactPriceIncrease)).div(ONE);
-        return tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
+        uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
+        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
 
     function buyPriceImpact(
@@ -151,9 +154,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function availableToSellToAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
-            uint basePrice = price(market, position);
-            // ignore extremes
-            if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
+            uint sell_max_price = _getSellMaxPrice(market, position);
+            if (sell_max_price == 0) {
                 return 0;
             }
 
@@ -161,17 +163,24 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             uint balanceOfTheOtherSide =
                 position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
 
-            uint sell_max_price = basePrice.mul(ONE.sub(max_spread.add(min_spread).div(2))).div(ONE);
-            require(sell_max_price > 0, "div by zero sell_max_price");
-
             // can burn straight away balanceOfTheOtherSide
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
-            if (capPerMarket.add(balanceOfTheOtherSide) < spentOnMarket[market].add(willPay)) {
+            if (_capOnMarket(market).add(balanceOfTheOtherSide) < spentOnMarket[market].add(willPay)) {
                 return 0;
             }
-            uint usdAvailable = capPerMarket.add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
+            uint usdAvailable = _capOnMarket(market).add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
             return usdAvailable.div(sell_max_price).mul(ONE).add(balanceOfTheOtherSide);
         } else return 0;
+    }
+
+    function _getSellMaxPrice(address market, Position position) internal view returns (uint) {
+        uint basePrice = price(market, position);
+        // ignore extremes
+        if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
+            return 0;
+        }
+        uint sell_max_price = basePrice.sub(min_spread).mul(ONE.sub(max_spread.div(2))).div(ONE);
+        return sell_max_price;
     }
 
     function sellToAmmQuote(
@@ -182,11 +191,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (amount > availableToSellToAMM(market, position)) {
             return 10;
         }
-        uint basePrice = price(market, position);
+        uint basePrice = price(market, position).sub(min_spread);
 
         uint tempAmount = amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
 
-        return tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
+        uint returnQuote = tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
+        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
 
     function sellPriceImpact(
@@ -226,6 +236,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return _position == Position.Home ? positionHome : positionAway;
     }
 
+    
+
     function isMarketInAMMTrading(address market) public view returns (bool) {
         if (IPositionalMarketManager(manager).isActiveMarket(market)) {
             IPositionalMarket marketContract = IPositionalMarket(market);
@@ -235,7 +247,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 return false;
             }
             // add price calculation
-            (uint maturity, uint destructino) = marketContract.times();
+            (uint maturity, ) = marketContract.times();
+
+            if (maturity < block.timestamp) {
+                return false;
+            }
 
             uint timeLeftToMaturity = maturity - block.timestamp;
             return timeLeftToMaturity > minimalTimeLeftToMaturity;
@@ -249,8 +265,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             IPositionalMarketManager(manager).isKnownMarket(market) &&
             (IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity)
         ) {
-            (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
-            if ((home.getBalanceOf(address(this)) > 0) || (away.getBalanceOf(address(this)) > 0)) {
+            (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+            if ((up.getBalanceOf(address(this)) > 0) || (down.getBalanceOf(address(this)) > 0)) {
                 return true;
             }
         }
@@ -280,13 +296,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         uint toMint = _getMintableAmount(market, position, amount);
         if (toMint > 0) {
-            require(sUSD.balanceOf(address(this)) >= toMint, "Not enough sUSD in contract.");
+            require(
+                sUSD.balanceOf(address(this)) >= IPositionalMarketManager(manager).transformCollateral(toMint),
+                "Not enough sUSD in contract."
+            );
             IPositionalMarket(market).mint(toMint);
             spentOnMarket[market] = spentOnMarket[market].add(toMint);
         }
 
-        (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
-        IPosition target = position == Position.Home ? home : away;
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        IPosition target = position == Position.Home ? up : down;
         IERC20Upgradeable(address(target)).transfer(msg.sender, amount);
 
         if (address(stakingThales) != address(0)) {
@@ -312,15 +331,18 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint pricePaid = sellToAmmQuote(market, position, amount);
         require(expectedPayout.mul(ONE).div(pricePaid) <= (ONE.add(additionalSlippage)), "Slippage too high");
 
-        (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
-        IPosition target = position == Position.Home ? home : away;
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        IPosition target = position == Position.Home ? up : down;
 
         require(target.getBalanceOf(msg.sender) >= amount, "You dont have enough options.");
         require(IERC20Upgradeable(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
 
         //transfer options first to have max burn available
         IERC20Upgradeable(address(target)).safeTransferFrom(msg.sender, address(this), amount);
-        uint sUSDFromBurning = IPositionalMarket(market).getMaximumBurnable(address(this));
+        uint sUSDFromBurning =
+            IPositionalMarketManager(manager).transformCollateral(
+                IPositionalMarket(market).getMaximumBurnable(address(this))
+            );
         if (sUSDFromBurning > 0) {
             IPositionalMarket(market).burnOptionsMaximum();
         }
@@ -380,7 +402,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetMaxSupportedPrice(_maxSupportedPrice);
     }
 
-    function setImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility) public onlyOwner {
+    function setImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility) public {
+        require(
+            whitelistedAddresses[msg.sender] || owner == msg.sender,
+            "Only whitelisted addresses or owner can change IV!"
+        );
+        require(_impliedVolatility > ONE.mul(70) && _impliedVolatility < ONE.mul(240), "IV outside min/max range!");
+        require(priceFeed.rateForCurrency(asset) != 0, "Asset has no price!");
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
         emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);
     }
@@ -414,6 +442,21 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetPositionalMarketManager(_manager);
     }
 
+    function setCapPerAsset(bytes32 asset, uint _cap) public onlyOwner {
+        _capPerAsset[asset] = _cap;
+        emit SetCapPerAsset(asset, _cap);
+    }
+
+    function getCapPerAsset(bytes32 asset) public view returns (uint) {
+        if (priceFeed.rateForCurrency(asset) == 0) {
+            return 0;
+        }
+        if (_capPerAsset[asset] == 0) {
+            return capPerMarket;
+        }
+        return _capPerAsset[asset];
+    }
+
     // Internal
 
     function _updateSpentOnMarketOnSell(
@@ -431,11 +474,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             safeBoxShare = 0;
         }
 
-        spentOnMarket[market] = spentOnMarket[market].add(sUSDPaid.add(safeBoxShare));
-        if (spentOnMarket[market] <= sUSDFromBurning) {
+        spentOnMarket[market] = spentOnMarket[market].add(
+            IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.add(safeBoxShare))
+        );
+        if (spentOnMarket[market] <= IPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning)) {
             spentOnMarket[market] = 0;
         } else {
-            spentOnMarket[market] = spentOnMarket[market].sub(sUSDFromBurning);
+            spentOnMarket[market] = spentOnMarket[market].sub(
+                IPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning)
+            );
         }
     }
 
@@ -452,10 +499,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             safeBoxShare = 0;
         }
 
-        if (spentOnMarket[market] <= sUSDPaid.sub(safeBoxShare)) {
+        if (
+            spentOnMarket[market] <= IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.sub(safeBoxShare))
+        ) {
             spentOnMarket[market] = 0;
         } else {
-            spentOnMarket[market] = spentOnMarket[market].sub(sUSDPaid.sub(safeBoxShare));
+            spentOnMarket[market] = spentOnMarket[market].sub(
+                IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.sub(safeBoxShare))
+            );
         }
     }
 
@@ -470,7 +521,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
         if (balancePositionAfter >= balanceOtherSideAfter) {
             //minimal price impact as it will balance the AMM exposure
-            return min_spread;
+            return 0;
         } else {
             return
                 _buyPriceImpactElse(
@@ -496,16 +547,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal view returns (uint) {
         uint maxPossibleSkew = balanceOtherSide.add(availableToBuyFromAMM(market, position)).sub(balancePosition);
         uint skew = balanceOtherSideAfter.sub(balancePositionAfter);
-        uint newImpact = min_spread.add(max_spread.sub(min_spread).mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE));
+        uint newImpact = max_spread.mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE);
         if (balancePosition > 0) {
-            uint newPriceForMintedOnes = min_spread.add(newImpact).div(2);
-            uint tempMultiplier =
-                balancePosition.mul(min_spread).add(amount.sub(balancePosition).mul(newPriceForMintedOnes));
+            uint newPriceForMintedOnes = newImpact.div(2);
+            uint tempMultiplier = amount.sub(balancePosition).mul(newPriceForMintedOnes);
             return tempMultiplier.div(amount);
         } else {
             uint previousSkew = balanceOtherSide;
-            uint previousImpact =
-                min_spread.add(max_spread.sub(min_spread).mul(previousSkew.mul(ONE).div(maxPossibleSkew)).div(ONE));
+            uint previousImpact = max_spread.mul(previousSkew.mul(ONE).div(maxPossibleSkew)).div(ONE);
             return newImpact.add(previousImpact).div(2);
         }
     }
@@ -533,7 +582,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide.sub(amount) : 0;
         if (balancePositionAfter < balanceOtherSideAfter) {
             //minimal price impact as it will balance the AMM exposure
-            return min_spread;
+            return 0;
         } else {
             return
                 _sellPriceImpactElse(
@@ -559,17 +608,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal view returns (uint) {
         uint maxPossibleSkew = balancePosition.add(availableToSellToAMM(market, position)).sub(balanceOtherSide);
         uint skew = balancePositionAfter.sub(balanceOtherSideAfter);
-        uint newImpact = min_spread.add(max_spread.sub(min_spread).mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE));
+        uint newImpact = max_spread.mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE);
 
         if (balanceOtherSide > 0) {
-            uint newPriceForMintedOnes = min_spread.add(newImpact).div(2);
-            uint tempMultiplier =
-                balancePosition.mul(min_spread).add(amount.sub(balancePosition).mul(newPriceForMintedOnes));
+            uint newPriceForMintedOnes = newImpact.div(2);
+            uint tempMultiplier = amount.sub(balancePosition).mul(newPriceForMintedOnes);
             return tempMultiplier.div(amount);
         } else {
             uint previousSkew = balancePosition;
-            uint previousImpact =
-                min_spread.add(max_spread.sub(min_spread).mul(previousSkew.mul(ONE).div(maxPossibleSkew)).div(ONE));
+            uint previousImpact = max_spread.mul(previousSkew.mul(ONE).div(maxPossibleSkew)).div(ONE);
             return newImpact.add(previousImpact).div(2);
         }
     }
@@ -586,51 +633,57 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
-    function _minimalBuyPrice(address market, Position position) internal view returns (uint) {
-        return price(market, position).mul(ONE.add(min_spread)).div(ONE);
-    }
-
-    function _minimalSellPrice(address market, Position position) internal view returns (uint) {
-        return price(market, position).mul(ONE.sub(min_spread)).div(ONE);
-    }
-
     function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint) {
-        (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
-        uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        uint balance = position == Position.Home ? up.getBalanceOf(address(this)) : down.getBalanceOf(address(this));
         return balance;
     }
 
     function _balanceOfPositionsOnMarket(address market, Position position) internal view returns (uint, uint) {
-        (IPosition home, IPosition away) = IPositionalMarket(market).getOptions();
-        uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
-        uint balanceOtherSide = position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        uint balance = position == Position.Home ? up.getBalanceOf(address(this)) : down.getBalanceOf(address(this));
+        uint balanceOtherSide = position == Position.Home ? down.getBalanceOf(address(this)) : up.getBalanceOf(address(this));
         return (balance, balanceOtherSide);
     }
 
-    // function _expneg(uint x) internal view returns (uint result) {
-    //     result = (ONE * ONE) / _expNegPow(x);
-    // }
+    function _capOnMarket(address market) internal view returns (uint) {
+        (bytes32 key, , ) = IPositionalMarket(market).getOracleDetails();
+        return getCapPerAsset(key);
+    }
 
-    // function _expNegPow(uint x) internal view returns (uint result) {
-    //     uint e = 2718280000000000000;
-    //     result = deciMath.pow(e, x);
-    // }
+    function _expneg(uint x) internal view returns (uint result) {
+        result = (ONE * ONE) / _expNegPow(x);
+    }
 
-    // function sqrt(uint y) internal pure returns (uint z) {
-    //     if (y > 3) {
-    //         z = y;
-    //         uint x = y / 2 + 1;
-    //         while (x < z) {
-    //             z = x;
-    //             x = (y / x + x) / 2;
-    //         }
-    //     } else if (y != 0) {
-    //         z = 1;
-    //     }
-    // }
+    function _expNegPow(uint x) internal view returns (uint result) {
+        uint e = 2718280000000000000;
+        // result = deciMath.pow(e, x);
+        return 0;
+    }
+
+    function sqrt(uint y) internal pure returns (uint z) {
+        if (y > 3) {
+            z = y;
+            uint x = y / 2 + 1;
+            while (x < z) {
+                z = x;
+                x = (y / x + x) / 2;
+            }
+        } else if (y != 0) {
+            z = 1;
+        }
+    }
 
     function retrieveSUSD(address payable account) external onlyOwner {
         sUSD.transfer(account, sUSD.balanceOf(address(this)));
+    }
+
+    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        sUSD.transfer(account, amount);
+    }
+
+    function setWhitelistedAddress(address _address, bool enabled) external onlyOwner {
+        whitelistedAddresses[_address] = enabled;
     }
 
     // events
@@ -658,6 +711,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetPriceFeed(address _priceFeed);
     event SetCapPerMarket(uint _capPerMarket);
     event SetImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility);
+    event SetCapPerAsset(bytes32 asset, uint _cap);
     event SetMaxSpread(uint _spread);
     event SetMinSpread(uint _spread);
     event SetSafeBoxImpact(uint _safeBoxImpact);

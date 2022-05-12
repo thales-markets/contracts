@@ -513,6 +513,11 @@
             "internalType": "address[]",
             "name": "positions",
             "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "tags",
+            "type": "uint256[]"
           }
         ],
         "internalType": "struct SportPositionalMarket.SportPositionalMarketParameters",
@@ -747,6 +752,25 @@
     "name": "setsUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "tags",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

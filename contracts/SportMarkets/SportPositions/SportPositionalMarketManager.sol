@@ -218,7 +218,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         string memory gameLabel,
         uint maturity,
         uint initialMint, // initial sUSD to mint options for,
-        uint positionCount
+        uint positionCount, 
+        uint[] memory tags
     )
         external
         override
@@ -259,7 +260,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
                 [maturity, expiry],
                 initialMint,
                 positionCount,
-                msg.sender
+                msg.sender,
+                tags
             )
         );
 

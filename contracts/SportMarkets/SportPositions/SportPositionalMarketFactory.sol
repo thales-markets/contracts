@@ -32,6 +32,7 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
         uint initialMint;
         uint positionCount;
         address theRundownConsumer;
+        uint[] tags;
     }
 
     /* ========== INITIALIZER ========== */
@@ -67,7 +68,8 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
                 limitOrderProvider,
                 thalesAMM,
                 _parameters.positionCount,
-                positions
+                positions,
+                _parameters.tags
             )
         );
         emit MarketCreated(
@@ -77,7 +79,8 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
             _parameters.times[0],
             _parameters.times[1],
             _parameters.initialMint,
-            _parameters.positionCount
+            _parameters.positionCount,
+            _parameters.tags
         );
         return pom;
     }
@@ -120,6 +123,7 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
         uint maturityDate,
         uint expiryDate,
         uint initialMint,
-        uint positionCount
+        uint positionCount,
+        uint[] tags
     );
 }

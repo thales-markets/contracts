@@ -54,6 +54,7 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         address thalesAMM;
         uint positionCount;
         address[] positions;
+        uint[] tags;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -65,6 +66,7 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     ITherundownConsumer public theRundownConsumer;
     SportPositionalMarketManager.Fees public override fees;
     IERC20 public sUSD;
+    uint[] public tags;
 
     // `deposited` tracks the sum of all deposits.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
@@ -89,7 +91,8 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
             _parameters.gameId,
             _parameters.gameLabel
         );
-       
+
+        tags = _parameters.tags;       
         times = Times(_parameters.times[0], _parameters.times[1]);
 
         deposited = _parameters.deposit;

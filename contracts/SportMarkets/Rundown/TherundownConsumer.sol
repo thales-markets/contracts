@@ -357,6 +357,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _createMarket(bytes32 _gameId) internal {
+
         GameCreate memory game = getGameCreatedById(_gameId);
         uint sportId = sportsIdPerGame[_gameId];
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(sportId);
@@ -367,7 +368,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             _append(game.homeTeam, game.awayTeam), // gameLabel
             game.startTime, //maturity
             0, //initialMint
-            numberOfPositions
+            numberOfPositions,
+            _calculateTags(sportId) //tags
         );
 
         address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);

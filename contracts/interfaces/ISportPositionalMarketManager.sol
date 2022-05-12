@@ -36,7 +36,8 @@ interface ISportPositionalMarketManager {
         string memory gameLabel,
         uint maturity,
         uint initialMint, // initial sUSD to mint options for,
-        uint positionCount
+        uint positionCount,
+        uint[] memory tags
     ) external returns (IPositionalMarket);
 
     function resolveMarket(address market) external;

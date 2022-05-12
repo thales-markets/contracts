@@ -16,7 +16,6 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
     Link to docs: https://market.link/nodes/098c3c5e-811d-4b8a-b2e3-d1806909c7d7/integrations
  */
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
-
     /* ========== CONSTANTS =========== */
 
     uint public constant HOME_WIN = 1;
@@ -136,10 +135,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function fulfillGamesOdds(
-        bytes32 _requestId,
-        bytes[] memory _games
-    ) external onlyWrapper {
+    function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external onlyWrapper {
         requestIdGamesOdds[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
             GameOdds memory game = abi.decode(_games[i], (GameOdds));
@@ -271,32 +267,30 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return _isGameStatusResolved(getGameResolvedById(_gameId));
     }
 
-    function getNormalizedOdds(bytes32 _gameId) external view returns(uint[] memory) {
+    function getNormalizedOdds(bytes32 _gameId) external view returns (uint[] memory) {
         int[] memory odds = new int[](3);
-        odds[0] =  gameOdds[_gameId].homeOdds;
-        odds[1] =  gameOdds[_gameId].awayOdds;
-        odds[2] =  gameOdds[_gameId].drawOdds;
+        odds[0] = gameOdds[_gameId].homeOdds;
+        odds[1] = gameOdds[_gameId].awayOdds;
+        odds[2] = gameOdds[_gameId].drawOdds;
         return _calculateAndNormalizeOdds(odds);
     }
 
-    function getNormalizedOddsForTwoPosition(bytes32 _gameId) external view returns(uint[] memory) {
-        if(gameOdds[_gameId].drawOdds == 0) {
+    function getNormalizedOddsForTwoPosition(bytes32 _gameId) external view returns (uint[] memory) {
+        if (gameOdds[_gameId].drawOdds == 0) {
             int[] memory odds = new int[](2);
             odds[0] = int256(gameOdds[_gameId].homeOdds);
             odds[1] = int256(gameOdds[_gameId].awayOdds);
             return _calculateAndNormalizeOdds(odds);
-        }
-        else {
+        } else {
             uint[] memory empty = new uint[](1);
             return empty;
         }
     }
 
-    function getResult(bytes32 _gameId) external view returns(uint) {
-        if(isGameInResolvedStatus(_gameId)) {
+    function getResult(bytes32 _gameId) external view returns (uint) {
+        if (isGameInResolvedStatus(_gameId)) {
             return _calculateOutcome(getGameResolvedById(_gameId));
-        }
-        else {
+        } else {
             return 0;
         }
     }
@@ -332,10 +326,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _oddsGameFulfill(
-        bytes32 requestId,
-        GameOdds memory _game
-    ) internal {
+    function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
         gameOdds[_game.gameId] = _game;
         oddsLastPulledForGame[_game.gameId] = block.timestamp;
         emit GameOddsAdded(requestId, _game.gameId, _game);
@@ -352,7 +343,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             twoPositionSport[_twoPositionSports[i]] = true;
         }
     }
-    
+
     function _populateSupportedStatuses(uint[] memory _supportedStatuses) internal {
         for (uint i; i < _supportedStatuses.length; i++) {
             suportResolveGameStatuses[_supportedStatuses[i]] = true;
@@ -372,9 +363,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         // create
         sportsManager.createMarket(
-            _gameId, 
-            _append(game.homeTeam, game.awayTeam),  // gameLabel
-            game.startTime, //maturity 
+            _gameId,
+            _append(game.homeTeam, game.awayTeam), // gameLabel
+            game.startTime, //maturity
             0, //initialMint
             numberOfPositions
         );
@@ -407,7 +398,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
         } else if (_isGameStatusCanceled(game)) {
-             // TODO add external call to camcel market
+            // TODO add external call to camcel market
             //sportsManager.cancelMarket(marketPerGameId[game.gameId]);
             marketCanceled[marketPerGameId[game.gameId]] = true;
 
@@ -488,7 +479,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint totalOdds;
         for (uint i = 0; i < _americanOdds.length; i++) {
             uint odd;
-            if (_americanOdds[i] >= 0) {
+            if (_americanOdds[i] == 0) {
+                normalizedOdds[i] = 0;
+            } else if (_americanOdds[i] > 0) {
                 odd = uint(_americanOdds[i]) / 100; // two decimal places from CL
                 normalizedOdds[i] = ((100 * 1e16) / (odd + 100)) * 100;
             } else if (_americanOdds[i] < 0) {
@@ -533,7 +526,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         cancelGameStatuses[_status] = _isSuported;
         emit SupportedCancelStatusChanged(_status, _isSuported);
     }
-
 
     function setwoPositionSport(uint _sportId, bool _isTwoPosition) external onlyOwner {
         twoPositionSport[_sportId] = _isTwoPosition;

@@ -446,22 +446,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return string(abi.encodePacked(teamA, " vs ", teamB));
     }
 
-    function _createPhrases(
-        string memory teamA,
-        string memory teamB,
-        uint _numberOfPositions
-    ) internal pure returns (string[] memory) {
-        string[] memory result = new string[](_numberOfPositions);
-
-        result[0] = teamA;
-        result[1] = teamB;
-        if (_numberOfPositions > 2) {
-            result[2] = "It will be a draw";
-        }
-
-        return result;
-    }
-
     function _calculateNumberOfPositionsBasedOnSport(uint _sportsId) internal returns (uint) {
         return isSportTwoPositionsSport(_sportsId) ? 2 : 3;
     }

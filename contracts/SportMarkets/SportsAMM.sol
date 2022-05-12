@@ -19,6 +19,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IPositionalMarket.sol";
+import "../interfaces/ISportPositionalMarket.sol";
 import "../interfaces/IPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
@@ -221,19 +222,24 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             uint oraclePrice = marketContract.oraclePrice();
 
             (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.getOracleDetails();
-            bytes32 gameId = ITherundownConsumer(theRundownConsumer).getGameId(market);
-            return obtainOdds(gameId, position);
+            return obtainOdds(market, position);
         } else return 0;
     }
 
     function obtainOdds(
-        bytes32 _gameId,
+        address _market,
         Position _position
     ) public view returns (uint) {
-        uint[] memory odds = new uint[](2);
-        odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForTwoPosition(_gameId);
-        (uint positionHome, uint positionAway) = (odds[0], odds[1]);
-        return _position == Position.Home ? positionHome : positionAway;
+        bytes32 gameId = ITherundownConsumer(theRundownConsumer).getGameId(_market);
+        if(ISportPositionalMarket(_market).optionsCount() >= uint(_position)) {
+            uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
+            odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(ITherundownConsumer(theRundownConsumer).getGameId(_market));
+            // (uint positionHome, uint positionAway) = (odds[0], odds[1]);
+            return odds[uint(_position)];
+        }
+        else {
+            return uint(0);
+        }
     }
 
     

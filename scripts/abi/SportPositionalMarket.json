@@ -590,11 +590,6 @@
         "internalType": "contract SportPosition",
         "name": "draw",
         "type": "address"
-      },
-      {
-        "internalType": "contract SportPosition",
-        "name": "cancelled",
-        "type": "address"
       }
     ],
     "stateMutability": "view",

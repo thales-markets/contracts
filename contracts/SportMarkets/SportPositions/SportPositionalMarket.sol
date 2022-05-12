@@ -28,7 +28,6 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         SportPosition home;
         SportPosition away;
         SportPosition draw;
-        SportPosition cancelled;
     }
 
     struct Times {
@@ -109,9 +108,6 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         
         if(optionsCount > 2){
             options.draw = SportPosition(_parameters.positions[2]);
-            if(optionsCount > 3){
-                options.cancelled = SportPosition(_parameters.positions[3]);
-            }
         }
         if(initialMint > 0) {
             _mint(creator, initialMint);

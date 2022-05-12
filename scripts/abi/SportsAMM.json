@@ -783,9 +783,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
       },
       {
         "internalType": "enum SportsAMM.Position",

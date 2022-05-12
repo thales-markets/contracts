@@ -271,6 +271,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return _isGameStatusResolved(getGameResolvedById(_gameId));
     }
 
+    function getNormalizedOdds(bytes32 _gameId) external view returns(uint[] memory) {
+        int[] memory odds = new int[](3);
+        odds[0] =  gameOdds[_gameId].homeOdds;
+        odds[1] =  gameOdds[_gameId].awayOdds;
+        odds[2] =  gameOdds[_gameId].drawOdds;
+        return _calculateAndNormalizeOdds(odds);
+    }
+
     function getNormalizedOddsForTwoPosition(bytes32 _gameId) external view returns(uint[] memory) {
         if(gameOdds[_gameId].drawOdds == 0) {
             int[] memory odds = new int[](2);

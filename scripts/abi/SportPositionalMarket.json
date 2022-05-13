@@ -22,21 +22,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "enum IPositionalMarket.Side",
+        "internalType": "enum ISportPositionalMarket.Side",
         "name": "result",
         "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oraclePrice",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oracleTimestamp",
-        "type": "uint256"
       },
       {
         "indexed": false,
@@ -65,7 +53,7 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "enum IPositionalMarket.Side",
+        "internalType": "enum ISportPositionalMarket.Side",
         "name": "side",
         "type": "uint8"
       },
@@ -348,6 +336,19 @@
       {
         "internalType": "uint256",
         "name": "creatorFee",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "finalResult",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -662,7 +663,7 @@
     "name": "phase",
     "outputs": [
       {
-        "internalType": "enum IPositionalMarket.Phase",
+        "internalType": "enum ISportPositionalMarket.Phase",
         "name": "",
         "type": "uint8"
       }
@@ -702,7 +703,7 @@
     "name": "result",
     "outputs": [
       {
-        "internalType": "enum IPositionalMarket.Side",
+        "internalType": "enum ISportPositionalMarket.Side",
         "name": "",
         "type": "uint8"
       }

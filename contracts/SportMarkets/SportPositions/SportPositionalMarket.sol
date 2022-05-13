@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 // Inheritance
 import "../../OwnedWithInit.sol";
-import "../../interfaces/IPositionalMarket.sol";
+import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/IOracleInstance.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 
@@ -17,7 +17,7 @@ import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 
 error PositionCountMissmatch();
 
-contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
+contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ========== LIBRARIES ========== */
 
     using SafeMath for uint;
@@ -60,13 +60,14 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ========== STATE VARIABLES ========== */
 
     Options public options;
-    uint public optionsCount;
+    uint public override optionsCount;
     Times public override times;
     GameDetails public gameDetails;
     ITherundownConsumer public theRundownConsumer;
     SportPositionalMarketManager.Fees public override fees;
     IERC20 public sUSD;
     uint[] public tags;
+    uint public finalResult;
 
     // `deposited` tracks the sum of all deposits.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
@@ -183,7 +184,12 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         }
 
     function _result() internal view returns (Side) {
-        return theRundownConsumer.getResult(gameDetails.gameId) == 1 ? Side.Up : Side.Down;
+        if (theRundownConsumer.getResult(gameDetails.gameId) == 0) {
+            return Side.Draw;
+        }
+        else {
+            return theRundownConsumer.getResult(gameDetails.gameId) == 1 ? Side.Home : Side.Away;
+        }
     }
 
     function result() external view override returns (Side) {
@@ -258,9 +264,12 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     function _mint(address minter, uint amount) internal {
         options.home.mint(minter, amount);
         options.away.mint(minter, amount);
-
-        emit Mint(Side.Up, minter, amount);
-        emit Mint(Side.Down, minter, amount);
+        emit Mint(Side.Home, minter, amount);
+        emit Mint(Side.Away, minter, amount);
+        if(optionsCount > 2) {
+            options.draw.mint(minter, amount);
+            emit Mint(Side.Draw, minter, amount);
+        }
     }
 
     function burnOptionsMaximum() external override {
@@ -281,6 +290,9 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         // decrease home and away options
         options.home.exerciseWithAmount(account, amount);
         options.away.exerciseWithAmount(account, amount);
+        if(optionsCount > 2) {
+            options.draw.exerciseWithAmount(account, amount);
+        }
 
         // transfer balance
         sUSD.transfer(account, amount);
@@ -303,16 +315,14 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     /* ---------- Market Resolution ---------- */
 
     function resolve() external onlyOwner afterMaturity managerNotPaused {
-        // require(canResolve(), "Can not resolve market");
-        // uint price;
-        // uint updatedAt;
-        // if (!customMarket) {
-        //     (price, updatedAt) = _oraclePriceAndTimestamp();
-        //     oracleDetails.finalPrice = price;
-        // }
-        // resolved = true;
+        require(canResolve(), "Can not resolve market");
+        if(theRundownConsumer.getResult(gameDetails.gameId) ==0 ){
+            return;
+        }
+        finalResult = theRundownConsumer.getResult(gameDetails.gameId);
+        resolved = true;
 
-        // emit MarketResolved(_result(), price, updatedAt, deposited, 0, 0);
+        emit MarketResolved(_result(), deposited, 0, 0);
     }
 
     /* ---------- Claiming and Exercising Options ---------- */
@@ -337,7 +347,7 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
         }
 
         // Only pay out the side that won.
-        uint payout = (_result() == Side.Up) ? homeBalance : awayBalance;
+        uint payout = (_result() == Side.Home) ? homeBalance : awayBalance;
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);
@@ -395,8 +405,6 @@ contract SportPositionalMarket is OwnedWithInit, IPositionalMarket {
     event Mint(Side side, address indexed account, uint value);
     event MarketResolved(
         Side result,
-        uint oraclePrice,
-        uint oracleTimestamp,
         uint deposited,
         uint poolFees,
         uint creatorFees

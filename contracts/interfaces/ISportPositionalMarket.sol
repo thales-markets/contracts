@@ -9,7 +9,7 @@ interface ISportPositionalMarket {
     /* ========== TYPES ========== */
 
     enum Phase {Trading, Maturity, Expiry}
-    enum Side {Up, Down}
+    enum Side {Home, Away, Draw}
 
     /* ========== VIEWS / VARIABLES ========== */
 

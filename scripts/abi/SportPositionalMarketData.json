@@ -101,12 +101,12 @@
             "type": "tuple"
           },
           {
-            "internalType": "enum IPositionalMarket.Phase",
+            "internalType": "enum ISportPositionalMarket.Phase",
             "name": "phase",
             "type": "uint8"
           },
           {
-            "internalType": "enum IPositionalMarket.Side",
+            "internalType": "enum ISportPositionalMarket.Side",
             "name": "result",
             "type": "uint8"
           },

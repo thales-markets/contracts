@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "../interfaces/IPositionalMarket.sol";
+import "../interfaces/ISportPositionalMarket.sol";
 
 interface ISportPositionalMarketManager {
     /* ========== VIEWS / VARIABLES ========== */
@@ -43,7 +43,7 @@ interface ISportPositionalMarketManager {
         uint initialMint, // initial sUSD to mint options for,
         uint positionCount,
         uint[] memory tags
-    ) external returns (IPositionalMarket);
+    ) external returns (ISportPositionalMarket);
 
     function resolveMarket(address market) external;
 

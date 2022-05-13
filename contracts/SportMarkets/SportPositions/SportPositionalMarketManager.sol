@@ -14,9 +14,10 @@ import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "./SportPositionalMarketFactory.sol";
 import "./SportPositionalMarket.sol";
 import "./SportPosition.sol";
-import "../../interfaces/IPositionalMarket.sol";
+// import "../../interfaces/IPositionalMarket.sol";
 import "../../interfaces/IPriceFeed.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
+import "../../interfaces/ISportPositionalMarket.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
@@ -226,7 +227,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         override
         notPaused
         returns (
-            IPositionalMarket // no support for returning PositionalMarket polymorphically given the interface
+            ISportPositionalMarket // no support for returning PositionalMarket polymorphically given the interface
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");

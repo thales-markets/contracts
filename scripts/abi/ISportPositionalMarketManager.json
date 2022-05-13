@@ -72,7 +72,7 @@
     "name": "createMarket",
     "outputs": [
       {
-        "internalType": "contract IPositionalMarket",
+        "internalType": "contract ISportPositionalMarket",
         "name": "",
         "type": "address"
       }

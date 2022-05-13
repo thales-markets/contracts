@@ -379,6 +379,24 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getGameDetails",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "gameLabel",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -410,29 +428,11 @@
         "internalType": "contract IPosition",
         "name": "away",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getOracleDetails",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "key",
-        "type": "bytes32"
       },
       {
-        "internalType": "uint256",
-        "name": "strikePrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "finalPrice",
-        "type": "uint256"
+        "internalType": "contract IPosition",
+        "name": "draw",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

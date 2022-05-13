@@ -175,12 +175,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             return !resolved && _matured();
     }
 
-    function getOracleDetails() external view override returns (
-            bytes32 key,
-            uint strikePrice,
-            uint finalPrice
+    function getGameDetails() external view override returns (
+            bytes32 gameId,
+            string memory gameLabel
         ) {
-            return("", 0,0);
+            return(gameDetails.gameId, gameDetails.gameLabel);
         }
 
     function _result() internal view returns (Side) {
@@ -214,9 +213,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         return _getMaximumBurnable(account);
     }
 
-    function getOptions() external view override returns (IPosition home, IPosition away) {
+    function getOptions() external view override returns (IPosition home, IPosition away, IPosition draw) {
         home = options.home;
         away = options.away;
+        away = options.draw;
     }
 
     function _getMaximumBurnable(address account) internal view returns (uint amount) {

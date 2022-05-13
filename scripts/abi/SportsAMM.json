@@ -228,19 +228,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_priceFeed",
-        "type": "address"
-      }
-    ],
-    "name": "SetPriceFeed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "sUSD",
         "type": "address"
       }
@@ -622,11 +609,6 @@
         "type": "address"
       },
       {
-        "internalType": "contract IPriceFeed",
-        "name": "_priceFeed",
-        "type": "address"
-      },
-      {
         "internalType": "contract IERC20Upgradeable",
         "name": "_sUSD",
         "type": "address"
@@ -849,19 +831,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "priceFeed",
-    "outputs": [
-      {
-        "internalType": "contract IPriceFeed",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1164,19 +1133,6 @@
       }
     ],
     "name": "setPositionalMarketManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IPriceFeed",
-        "name": "_priceFeed",
-        "type": "address"
-      }
-    ],
-    "name": "setPriceFeed",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

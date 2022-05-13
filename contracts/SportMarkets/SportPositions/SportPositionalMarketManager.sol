@@ -231,15 +231,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-        // if (!customMarket) {
-        //     require(_isValidKey(oracleKey), "Invalid key");
-        // } else {
-        //     if (!customMarketCreationEnabled) {
-        //         require(owner == msg.sender, "Only owner can create custom markets");
-        //     }
-        //     require(address(0) != customOracle, "Invalid custom oracle");
-        // }
-
+       
         if (onlyWhitelistedAddressesCanCreateMarkets) {
             require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
         }
@@ -274,7 +266,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         totalDeposited = totalDeposited.add(initialMint);
         sUSD.transferFrom(msg.sender, address(market), initialMint);
 
-        (IPosition up, IPosition down) = market.getOptions();
+        (IPosition up, IPosition down, IPosition draw) = market.getOptions();
 
         emit MarketCreated(
             address(market),
@@ -284,7 +276,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             maturity,
             expiry,
             address(up),
-            address(down)
+            address(down), 
+            address(draw)
         );
         return market;
     }
@@ -442,7 +435,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         uint maturityDate,
         uint expiryDate,
         address up,
-        address down
+        address down,
+        address draw
     );
     event MarketExpired(address market);
     event MarketsMigrated(SportPositionalMarketManager receivingManager, SportPositionalMarket[] markets);

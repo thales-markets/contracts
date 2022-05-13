@@ -188,11 +188,13 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             for (uint i = 1; i <= positionCount; i++) {
                 if (userOpenBidPosition[msg.sender][i] > 0) {
                     totalToWithdraw = totalToWithdraw.add(userOpenBidPosition[msg.sender][i]);
+                    totalOpenBidAmountPerPosition[i] = totalOpenBidAmountPerPosition[i].sub(userOpenBidPosition[msg.sender][i]);
                     userOpenBidPosition[msg.sender][i] = 0;
                 }
             }
         } else {
             require(userOpenBidPosition[msg.sender][_openBidPosition] > 0, "No amount for position");
+            totalOpenBidAmountPerPosition[_openBidPosition] = totalOpenBidAmountPerPosition[_openBidPosition].sub(userOpenBidPosition[msg.sender][_openBidPosition]);
             totalToWithdraw = userOpenBidPosition[msg.sender][_openBidPosition];
             userOpenBidPosition[msg.sender][_openBidPosition] = 0;
         }

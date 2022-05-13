@@ -20,7 +20,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/ISportPositionalMarket.sol";
-import "../interfaces/IPositionalMarketManager.sol";
+import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
@@ -139,7 +139,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
         uint tempAmount = amount.mul(basePrice.add(impactPriceIncrease)).div(ONE);
         uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
-        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
+        return ISportPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
 
     function buyPriceImpact(
@@ -197,7 +197,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint tempAmount = amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
 
         uint returnQuote = tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
-        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
+        return ISportPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
 
     function sellPriceImpact(
@@ -245,13 +245,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     
 
     function isMarketInAMMTrading(address market) public view returns (bool) {
-        if (IPositionalMarketManager(manager).isActiveMarket(market)) {
+        if (ISportPositionalMarketManager(manager).isActiveMarket(market)) {
             IPositionalMarket marketContract = IPositionalMarket(market);
-            (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.getOracleDetails();
-            //check if asset is supported
-            if (impliedVolatilityPerAsset[key] == 0) {
-                return false;
-            }
+            // (bytes32 key, uint strikePrice, uint finalPrice) = marketContract.getOracleDetails();
+            // //check if asset is supported
+            // if (impliedVolatilityPerAsset[key] == 0) {
+            //     return false;
+            // }
             // add price calculation
             (uint maturity, ) = marketContract.times();
 
@@ -268,7 +268,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function canExerciseMaturedMarket(address market) public view returns (bool) {
         if (
-            IPositionalMarketManager(manager).isKnownMarket(market) &&
+            ISportPositionalMarketManager(manager).isKnownMarket(market) &&
             (IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity)
         ) {
             (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
@@ -303,7 +303,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint toMint = _getMintableAmount(market, position, amount);
         if (toMint > 0) {
             require(
-                sUSD.balanceOf(address(this)) >= IPositionalMarketManager(manager).transformCollateral(toMint),
+                sUSD.balanceOf(address(this)) >= ISportPositionalMarketManager(manager).transformCollateral(toMint),
                 "Not enough sUSD in contract."
             );
             IPositionalMarket(market).mint(toMint);
@@ -346,7 +346,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         //transfer options first to have max burn available
         IERC20Upgradeable(address(target)).safeTransferFrom(msg.sender, address(this), amount);
         uint sUSDFromBurning =
-            IPositionalMarketManager(manager).transformCollateral(
+            ISportPositionalMarketManager(manager).transformCollateral(
                 IPositionalMarket(market).getMaximumBurnable(address(this))
             );
         if (sUSDFromBurning > 0) {
@@ -367,7 +367,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function exerciseMaturedMarket(address market) external {
         require(IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity, "Market is not in Maturity phase");
-        require(IPositionalMarketManager(manager).isKnownMarket(market), "Unknown market");
+        require(ISportPositionalMarketManager(manager).isKnownMarket(market), "Unknown market");
         require(canExerciseMaturedMarket(market), "No options to exercise");
         IPositionalMarket(market).exerciseOptions();
     }
@@ -481,13 +481,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
 
         spentOnMarket[market] = spentOnMarket[market].add(
-            IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.add(safeBoxShare))
+            ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.add(safeBoxShare))
         );
-        if (spentOnMarket[market] <= IPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning)) {
+        if (spentOnMarket[market] <= ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning)) {
             spentOnMarket[market] = 0;
         } else {
             spentOnMarket[market] = spentOnMarket[market].sub(
-                IPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning)
+                ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDFromBurning)
             );
         }
     }
@@ -506,12 +506,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
 
         if (
-            spentOnMarket[market] <= IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.sub(safeBoxShare))
+            spentOnMarket[market] <= ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.sub(safeBoxShare))
         ) {
             spentOnMarket[market] = 0;
         } else {
             spentOnMarket[market] = spentOnMarket[market].sub(
-                IPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.sub(safeBoxShare))
+                ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.sub(safeBoxShare))
             );
         }
     }

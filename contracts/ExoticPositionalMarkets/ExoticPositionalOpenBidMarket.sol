@@ -196,7 +196,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             totalToWithdraw = userOpenBidPosition[msg.sender][_openBidPosition];
             userOpenBidPosition[msg.sender][_openBidPosition] = 0;
         }
-        if (block.timestamp.add(1 days) <= endOfPositioning) {
+        if (block.timestamp.add(1 days) > endOfPositioning && block.timestamp <= endOfPositioning) {
             require(!withrawalRestrictedForUser[msg.sender], "Already withdrawn");
             require(
                 totalToWithdraw <=
@@ -406,6 +406,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             withdrawalAllowed &&
             canUsersPlacePosition() &&
             getUserOpenBidTotalPlacedAmount(_account) > 0 &&
+            !withrawalRestrictedForUser[_account] &&
             block.timestamp <= withdrawalPeriod;
     }
 

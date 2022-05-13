@@ -233,7 +233,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bytes32 gameId = ITherundownConsumer(theRundownConsumer).getGameId(_market);
         if(ISportPositionalMarket(_market).optionsCount() >= uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-            odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(ITherundownConsumer(theRundownConsumer).getGameId(_market));
+            odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
             // (uint positionHome, uint positionAway) = (odds[0], odds[1]);
             return odds[uint(_position)];
         }

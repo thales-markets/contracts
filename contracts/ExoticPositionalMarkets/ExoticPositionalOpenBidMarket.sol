@@ -116,7 +116,6 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             require(_positions[i] <= positionCount, "Value invalid");
             if(_amounts[i] == 0 || _amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition) { 
                 totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
-                totalOpenBidAmount = totalOpenBidAmount.add(_amounts[i]);
                 userOpenBidPosition[creatorAddress][_positions[i]] = userOpenBidPosition[creatorAddress][_positions[i]].add(
                     _amounts[i]
                 );

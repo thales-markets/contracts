@@ -68,7 +68,7 @@ async function main() {
 		owner.address,
 		thalesAMMAddress,
 		w3utils.toWei('0.01'),
-		w3utils.toWei('1000'),
+		w3utils.toWei('100'),
 		ProxyERC20sUSDaddress,
 		safeBoxAddress,
 		w3utils.toWei('0.01'),

@@ -51,7 +51,11 @@
 		"ExoticPositionalMarketData": "0x7B3241C61889185188E3B444abEf7298fAe6B1E1",
 		"ExoticPositionalMarketDataImplementation": "0x648200a8d65E477b7222b89019bb877209d1B0cF",
 		"ExoticPositionalTags": "0xd550bD32B434bA870642F94710eb220f542Ed3F3",
-		"ExoticPositionalTagsImplementation": "0x7a911614e0a916FB59A14EBd5c186dD076d1eDBc"
+		"ExoticPositionalTagsImplementation": "0x7a911614e0a916FB59A14EBd5c186dD076d1eDBc",
+		"RangedAMM": "0x64cb6EF981e5E432d4362F6A561A31B22E328cC5",
+		"RangedAMMImplementation": "0x236057f9f13Faa625Da73cD1cb1e838f15D6c6D2",
+		"RangedPositionMastercopy": "0x34eD3D919ad7f533bfAfe9295363d9f37c0C5658",
+		"RangedMarketMastercopy": "0x6Fe6EC1c8d435b7B8596C983ee72358A2F5436fC"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

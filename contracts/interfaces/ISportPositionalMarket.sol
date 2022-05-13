@@ -9,21 +9,20 @@ interface ISportPositionalMarket {
     /* ========== TYPES ========== */
 
     enum Phase {Trading, Maturity, Expiry}
-    enum Side {Up, Down}
+    enum Side {Home, Away, Draw}
 
     /* ========== VIEWS / VARIABLES ========== */
 
-    function getOptions() external view returns (IPosition up, IPosition down);
+    function getOptions() external view returns (IPosition up, IPosition down, IPosition draw);
 
     function times() external view returns (uint maturity, uint destructino);
 
-    function getOracleDetails()
+    function getGameDetails()
         external
         view
         returns (
-            bytes32 key,
-            uint strikePrice,
-            uint finalPrice
+            bytes32 gameId,
+            string memory gameLabel
         );
 
     function fees() external view returns (uint poolFee, uint creatorFee);

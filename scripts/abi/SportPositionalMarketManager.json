@@ -75,6 +75,12 @@
         "internalType": "address",
         "name": "down",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "draw",
+        "type": "address"
       }
     ],
     "name": "MarketCreated",
@@ -373,7 +379,7 @@
     "name": "createMarket",
     "outputs": [
       {
-        "internalType": "contract IPositionalMarket",
+        "internalType": "contract ISportPositionalMarket",
         "name": "",
         "type": "address"
       }
@@ -634,6 +640,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "needsTransformingCollateral",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -792,6 +811,25 @@
     "name": "resolveMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "reverseTransformCollateral",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1010,6 +1048,25 @@
     "name": "transferSusdTo",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "transformCollateral",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

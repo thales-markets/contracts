@@ -22,21 +22,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "enum IPositionalMarket.Side",
+        "internalType": "enum ISportPositionalMarket.Side",
         "name": "result",
         "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oraclePrice",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "oracleTimestamp",
-        "type": "uint256"
       },
       {
         "indexed": false,
@@ -65,7 +53,7 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "enum IPositionalMarket.Side",
+        "internalType": "enum ISportPositionalMarket.Side",
         "name": "side",
         "type": "uint8"
       },
@@ -356,7 +344,38 @@
   },
   {
     "inputs": [],
+    "name": "finalResult",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "gameDetails",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "gameLabel",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getGameDetails",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -404,29 +423,11 @@
         "internalType": "contract IPosition",
         "name": "away",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getOracleDetails",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "key",
-        "type": "bytes32"
       },
       {
-        "internalType": "uint256",
-        "name": "strikePrice",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "finalPrice",
-        "type": "uint256"
+        "internalType": "contract IPosition",
+        "name": "draw",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -662,7 +663,7 @@
     "name": "phase",
     "outputs": [
       {
-        "internalType": "enum IPositionalMarket.Phase",
+        "internalType": "enum ISportPositionalMarket.Phase",
         "name": "",
         "type": "uint8"
       }
@@ -702,7 +703,7 @@
     "name": "result",
     "outputs": [
       {
-        "internalType": "enum IPositionalMarket.Side",
+        "internalType": "enum ISportPositionalMarket.Side",
         "name": "",
         "type": "uint8"
       }

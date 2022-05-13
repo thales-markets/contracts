@@ -28,6 +28,11 @@ interface ISportPositionalMarketManager {
 
     function getActiveMarketAddress(uint _index) external view returns (address);
 
+    function transformCollateral(uint value) external view returns (uint);
+
+    function reverseTransformCollateral(uint value) external view returns (uint);
+
+
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 

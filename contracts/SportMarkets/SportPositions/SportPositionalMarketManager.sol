@@ -60,6 +60,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     IERC20 public sUSD;
 
     address public positionalMarketFactory;
+    bool public needsTransformingCollateral;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -395,6 +396,27 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         }
         totalDeposited = totalDeposited.add(runningDepositTotal);
         emit MarketsReceived(_migratingManager, marketsToReceive);
+    }
+
+    // support USDC with 6 decimals
+    function transformCollateral(uint value) external view override returns (uint) {
+        return _transformCollateral(value);
+    }
+
+    function _transformCollateral(uint value) internal view returns (uint) {
+        if (needsTransformingCollateral) {
+            return value / 1e12;
+        } else {
+            return value;
+        }
+    }
+
+    function reverseTransformCollateral(uint value) external view override returns (uint) {
+        if (needsTransformingCollateral) {
+            return value * 1e12;
+        } else {
+            return value;
+        }
     }
 
     /* ========== MODIFIERS ========== */

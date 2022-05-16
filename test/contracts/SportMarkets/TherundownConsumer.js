@@ -311,20 +311,16 @@ contract('TheRundownConsumer', accounts => {
 				_game: game,
 			});
 
-			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
-			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 
-			assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.marketQuestion());
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			/*
+			assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.getGameDetails());
 			assert.equal(2, await deployedMarket.positionCount());
-
-			assert.bnEqual(gameTime, await deployedMarket.endOfPositioning());
-			assert.notEqual(0, await deployedMarket.creationTime());
-			assert.equal(false, await deployedMarket.disputed());
-			assert.equal(false, await deployedMarket.resolved());
-			assert.equal(false, await deployedMarket.canMarketBeResolved());
-			assert.equal('Atlanta Hawks', await deployedMarket.positionPhrase(1));
-			assert.equal('Charlotte Hornets', await deployedMarket.positionPhrase(2));
-			assert.equal(9004, await deployedMarket.tags(0));*/
+			*/
 
 		});
 
@@ -379,18 +375,12 @@ contract('TheRundownConsumer', accounts => {
 				_game: game,
 			});
 
-			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
-			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 
-			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
-			assert.notEqual(0, await deployedMarket.creationTime());
-			assert.equal(false, await deployedMarket.disputed());
-			assert.equal(false, await deployedMarket.resolved());
-			assert.equal(false, await deployedMarket.canMarketBeResolved());
-			assert.equal('Atletico Madrid Atletico Madrid', await deployedMarket.positionPhrase(1));
-			assert.equal('Manchester City Manchester City', await deployedMarket.positionPhrase(2));
-			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));*/
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9016, await deployedMarket.tags(0));
+
 		});
 
 		it('Fulfill Games Created - Champions League Game 2, create market, check results', async () => {
@@ -443,18 +433,11 @@ contract('TheRundownConsumer', accounts => {
 				_game: game,
 			});
 
-			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
-			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('1');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 
-			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
-			assert.notEqual(0, await deployedMarket.creationTime());
-			assert.equal(false, await deployedMarket.disputed());
-			assert.equal(false, await deployedMarket.resolved());
-			assert.equal(false, await deployedMarket.canMarketBeResolved());
-			assert.equal('Liverpool Liverpool', await deployedMarket.positionPhrase(1));
-			assert.equal('Benfica Benfica', await deployedMarket.positionPhrase(2));
-			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));*/
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9016, await deployedMarket.tags(0));
 		});
 	});
 
@@ -521,24 +504,21 @@ contract('TheRundownConsumer', accounts => {
 				_game: game,
 			});
 
-			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
-			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			/*
 			assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.marketQuestion());
 			assert.equal(2, await deployedMarket.positionCount());
-
-			assert.bnEqual(gameTime, await deployedMarket.endOfPositioning());
-			assert.notEqual(0, await deployedMarket.creationTime());
-			assert.equal(false, await deployedMarket.disputed());
-			assert.equal(false, await deployedMarket.resolved());
-			assert.equal(false, await deployedMarket.canMarketBeResolved());
-			assert.equal('Atlanta Hawks', await deployedMarket.positionPhrase(1));
-			assert.equal('Charlotte Hornets', await deployedMarket.positionPhrase(2));
-			assert.equal(9004, await deployedMarket.tags(0));*/
+			*/
 
 			await fastForward(await currentTime());
 
-			//assert.equal(true, await deployedMarket.canMarketBeResolved());
+			assert.equal(true, await deployedMarket.canResolve());
 
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdResolve,
@@ -630,22 +610,15 @@ contract('TheRundownConsumer', accounts => {
 				_game: game,
 			});
 
-			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
-			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 
-			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
-			assert.notEqual(0, await deployedMarket.creationTime());
-			assert.equal(false, await deployedMarket.disputed());
-			assert.equal(false, await deployedMarket.resolved());
-			assert.equal(false, await deployedMarket.canMarketBeResolved());
-			assert.equal('Atletico Madrid Atletico Madrid', await deployedMarket.positionPhrase(1));
-			assert.equal('Manchester City Manchester City', await deployedMarket.positionPhrase(2));
-			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));*/
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9016, await deployedMarket.tags(0));
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
-			//assert.equal(true, await deployedMarket.canMarketBeResolved());
+			assert.equal(true, await deployedMarket.canResolve());
 
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdResolveFoodball,
@@ -740,18 +713,11 @@ contract('TheRundownConsumer', accounts => {
 				_game: game,
 			});
 
-			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
-			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('1');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 
-			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
-			assert.notEqual(0, await deployedMarket.creationTime());
-			assert.equal(false, await deployedMarket.disputed());
-			assert.equal(false, await deployedMarket.resolved());
-			assert.equal(false, await deployedMarket.canMarketBeResolved());
-			assert.equal('Liverpool Liverpool', await deployedMarket.positionPhrase(1));
-			assert.equal('Benfica Benfica', await deployedMarket.positionPhrase(2));
-			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));*/
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9016, await deployedMarket.tags(0));
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
@@ -759,7 +725,7 @@ contract('TheRundownConsumer', accounts => {
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
-			//assert.equal(true, await deployedMarket.canMarketBeResolved());
+			assert.equal(true, await deployedMarket.canResolve());
 
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdResolveFoodball,
@@ -857,18 +823,11 @@ contract('TheRundownConsumer', accounts => {
 				_game: game,
 			});
 
-			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
-			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 
-			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
-			assert.notEqual(0, await deployedMarket.creationTime());
-			assert.equal(false, await deployedMarket.disputed());
-			assert.equal(false, await deployedMarket.resolved());
-			assert.equal(false, await deployedMarket.canMarketBeResolved());
-			assert.equal('Atletico Madrid Atletico Madrid', await deployedMarket.positionPhrase(1));
-			assert.equal('Manchester City Manchester City', await deployedMarket.positionPhrase(2));
-			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));*/
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9016, await deployedMarket.tags(0));
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
@@ -951,18 +910,11 @@ contract('TheRundownConsumer', accounts => {
 				_game: game,
 			});
 
-			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
-			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('1');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 
-			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
-			assert.notEqual(0, await deployedMarket.creationTime());
-			assert.equal(false, await deployedMarket.disputed());
-			assert.equal(false, await deployedMarket.resolved());
-			assert.equal(false, await deployedMarket.canMarketBeResolved());
-			assert.equal('Liverpool Liverpool', await deployedMarket.positionPhrase(1));
-			assert.equal('Benfica Benfica', await deployedMarket.positionPhrase(2));
-			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));*/
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9016, await deployedMarket.tags(0));
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
@@ -1052,20 +1004,16 @@ contract('TheRundownConsumer', accounts => {
 				_game: game,
 			});
 
-			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
-			deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			/*
 			assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.marketQuestion());
 			assert.equal(2, await deployedMarket.positionCount());
-
-			assert.bnEqual(gameTime, await deployedMarket.endOfPositioning());
-			assert.notEqual(0, await deployedMarket.creationTime());
-			assert.equal(false, await deployedMarket.disputed());
-			assert.equal(false, await deployedMarket.resolved());
-			assert.equal(false, await deployedMarket.canMarketBeResolved());
-			assert.equal('Atlanta Hawks', await deployedMarket.positionPhrase(1));
-			assert.equal('Charlotte Hornets', await deployedMarket.positionPhrase(2));
-			assert.equal(9004, await deployedMarket.tags(0));*/
+			*/
 
 			await fastForward(await currentTime());
 

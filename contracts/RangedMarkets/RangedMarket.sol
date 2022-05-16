@@ -183,7 +183,7 @@ contract RangedMarket {
         if (payout != 0) {
             rangedMarketsAMM.sUSD().transfer(msg.sender, payout);
         }
-        emit Exercised(msg.sender, payout);
+        emit Exercised(msg.sender, payout, result);
     }
 
     function canResolve() external view returns (bool) {
@@ -237,6 +237,6 @@ contract RangedMarket {
 
     event Mint(address minter, uint amount, Position _position);
     event Burn(address burner, uint amount, Position _position);
-    event Exercised(address exerciser, uint amount);
+    event Exercised(address exerciser, uint amount, Position _position);
     event Resolved(Position winningPosition, uint finalPrice);
 }

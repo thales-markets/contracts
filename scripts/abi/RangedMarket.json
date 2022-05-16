@@ -38,6 +38,12 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum RangedMarket.Position",
+        "name": "_position",
+        "type": "uint8"
       }
     ],
     "name": "Exercised",

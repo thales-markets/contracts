@@ -30,12 +30,6 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
 
-    uint256 public secondRewardRate;
-    IERC20 public secondRewardsToken;
-    uint256 public rewardPerSecondTokenStored;
-    mapping(address => uint256) public userRewardPerSecondTokenPaid;
-    mapping(address => uint256) public secondRewards;
-
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -65,37 +59,22 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
         return block.timestamp < periodFinish ? block.timestamp : periodFinish;
     }
 
-    function rewardPerToken() public view returns (uint256 reward, uint256 secondReward) {
+    function rewardPerToken() public view returns (uint256) {
         if (_totalSupply == 0) {
-            reward = rewardPerTokenStored;
-            secondReward = rewardPerSecondTokenStored;
-        } else {
-            reward = rewardPerTokenStored.add(
+            return rewardPerTokenStored;
+        }
+        return
+            rewardPerTokenStored.add(
                 lastTimeRewardApplicable().sub(lastUpdateTime).mul(rewardRate).mul(1e18).div(_totalSupply)
             );
-            secondReward = rewardPerSecondTokenStored.add(
-                lastTimeRewardApplicable().sub(lastUpdateTime).mul(secondRewardRate).mul(1e18).div(_totalSupply)
-            );
-        }
     }
 
-    function earned(address account) public view returns (uint256 earnedFirstToken, uint256 earnedSecondToken) {
-        (uint256 firstReward, uint256 secondReward) = rewardPerToken();
-        earnedFirstToken = _balances[account].mul(firstReward.sub(userRewardPerTokenPaid[account])).div(1e18).add(
-            rewards[account]
-        );
-
-        earnedSecondToken = _balances[account].mul(secondReward.sub(userRewardPerSecondTokenPaid[account])).div(1e18).add(
-            secondRewards[account]
-        );
+    function earned(address account) public view returns (uint256) {
+        return _balances[account].mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18).add(rewards[account]);
     }
 
     function getRewardForDuration() external view returns (uint256) {
         return rewardRate.mul(rewardsDuration);
-    }
-
-    function getSecondRewardForDuration() external view returns (uint256) {
-        return secondRewardRate.mul(rewardsDuration);
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
@@ -118,17 +97,10 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
 
     function getReward() public nonReentrant updateReward(msg.sender) {
         uint256 reward = rewards[msg.sender];
-        uint256 secondReward = secondRewards[msg.sender];
         if (reward > 0) {
             rewards[msg.sender] = 0;
             rewardsToken.safeTransfer(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
-        }
-
-        if (secondReward > 0) {
-            secondRewards[msg.sender] = 0;
-            secondRewardsToken.safeTransfer(msg.sender, secondReward);
-            emit SecondRewardTokenPaid(msg.sender, secondReward);
         }
     }
 
@@ -139,32 +111,25 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
 
     /* ========== RESTRICTED FUNCTIONS ========== */
 
-    function notifyRewardAmount(uint256 reward, uint256 secondReward) external onlyOwner updateReward(address(0)) {
+    function notifyRewardAmount(uint256 reward) external onlyOwner updateReward(address(0)) {
         if (block.timestamp >= periodFinish) {
             rewardRate = reward.div(rewardsDuration);
-            secondRewardRate = secondReward.div(rewardsDuration);
         } else {
             uint256 remaining = periodFinish.sub(block.timestamp);
             uint256 leftover = remaining.mul(rewardRate);
-            uint256 secondLeftover = remaining.mul(secondRewardRate);
-
             rewardRate = reward.add(leftover).div(rewardsDuration);
-            secondRewardRate = secondReward.add(secondLeftover).div(rewardsDuration);
         }
 
         // Ensure the provided reward amount is not more than the balance in the contract.
         // This keeps the reward rate in the right range, preventing overflows due to
-        // very high values of rewardRate/secondRewardRate in the earned and rewardsPerToken functions;
+        // very high values of rewardRate in the earned and rewardsPerToken functions;
         // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
         uint balance = rewardsToken.balanceOf(address(this));
         require(rewardRate <= balance.div(rewardsDuration), "Provided reward too high");
 
-        uint balanceSecondReward = secondRewardsToken.balanceOf(address(this));
-        require(secondRewardRate <= balanceSecondReward.div(rewardsDuration), "Provided reward too high");
-
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(rewardsDuration);
-        emit BothRewardsAdded(reward, secondReward);
+        emit RewardAdded(reward);
     }
 
     function addReward(uint256 reward) external onlyOwner updateReward(address(0)) {
@@ -185,48 +150,6 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
         emit RewardAdded(reward);
     }
 
-    function addSecondReward(uint256 reward) external onlyOwner updateReward(address(0)) {
-        require(block.timestamp < periodFinish, "Rewards must be active");
-
-        uint256 remaining = periodFinish.sub(block.timestamp);
-        uint256 leftover = remaining.mul(secondRewardRate);
-        secondRewardRate = reward.add(leftover).div(remaining);
-
-        // Ensure the provided reward amount is not more than the balance in the contract.
-        // This keeps the reward rate in the right range, preventing overflows due to
-        // very high values of secondRewardRate in the earned and rewardsPerOpToken functions;
-        // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
-        uint balance = secondRewardsToken.balanceOf(address(this));
-        require(secondRewardRate <= balance.div(remaining), "Provided reward too high");
-
-        lastUpdateTime = block.timestamp;
-        emit SecondRewardAdded(reward);
-    }
-
-    function addBothRewards(uint256 reward, uint256 secondReward) external onlyOwner updateReward(address(0)) {
-        require(block.timestamp < periodFinish, "Rewards must be active");
-
-        uint256 remaining = periodFinish.sub(block.timestamp);
-        uint256 leftover = remaining.mul(rewardRate);
-        rewardRate = reward.add(leftover).div(remaining);
-
-        uint256 secondLeftover = remaining.mul(secondRewardRate);
-        secondRewardRate = secondReward.add(secondLeftover).div(remaining);
-
-        // Ensure the provided reward amount is not more than the balance in the contract.
-        // This keeps the reward rate in the right range, preventing overflows due to
-        // very high values of rewardRate/secondRewardRate in the earned and rewardsPerToken functions;
-        // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
-        uint balance = rewardsToken.balanceOf(address(this));
-        require(rewardRate <= balance.div(remaining), "Provided reward too high");
-
-        uint secondBalance = secondRewardsToken.balanceOf(address(this));
-        require(secondRewardRate <= secondBalance.div(remaining), "Provided reward too high");
-
-        lastUpdateTime = block.timestamp;
-        emit BothRewardsAdded(reward, secondReward);
-    }
-
     function recoverERC20(address tokenAddress, uint256 tokenAmount) external onlyOwner {
         require(tokenAddress != address(stakingToken), "Cannot withdraw the staking token");
         IERC20(tokenAddress).safeTransfer(owner, tokenAmount);
@@ -241,23 +164,14 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
         emit RewardsDurationUpdated(rewardsDuration);
     }
 
-    function setSecondRewardsToken(address tokenAddress) external onlyOwner {
-        require(tokenAddress != address(0), "Invalid address");
-        secondRewardsToken = IERC20(tokenAddress);
-        emit SecondRewardsTokenChanged(tokenAddress);
-    }
-
     /* ========== MODIFIERS ========== */
 
     modifier updateReward(address account) {
-        (rewardPerTokenStored, rewardPerSecondTokenStored) = rewardPerToken();
-
+        rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
         if (account != address(0)) {
-            (rewards[account], secondRewards[account]) = earned(account);
-
+            rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
-            userRewardPerSecondTokenPaid[account] = rewardPerSecondTokenStored;
         }
         _;
     }
@@ -265,12 +179,8 @@ contract LPStakingRewards is Initializable, ProxyOwned, ProxyReentrancyGuard, Pr
     /* ========== EVENTS ========== */
 
     event RewardAdded(uint256 reward);
-    event SecondRewardAdded(uint256 reward);
-    event BothRewardsAdded(uint256 reward, uint256 secondReward);
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
     event RewardPaid(address indexed user, uint256 reward);
-    event SecondRewardTokenPaid(address indexed user, uint256 reward);
     event RewardsDurationUpdated(uint256 newDuration);
-    event SecondRewardsTokenChanged(address tokenAddress);
 }

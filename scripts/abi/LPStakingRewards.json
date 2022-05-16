@@ -4,25 +4,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "reward",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "secondReward",
-        "type": "uint256"
-      }
-    ],
-    "name": "BothRewardsAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -112,51 +93,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "reward",
-        "type": "uint256"
-      }
-    ],
-    "name": "SecondRewardAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "reward",
-        "type": "uint256"
-      }
-    ],
-    "name": "SecondRewardTokenPaid",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "tokenAddress",
-        "type": "address"
-      }
-    ],
-    "name": "SecondRewardsTokenChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
         "internalType": "address",
         "name": "user",
@@ -207,44 +143,9 @@
         "internalType": "uint256",
         "name": "reward",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "secondReward",
-        "type": "uint256"
-      }
-    ],
-    "name": "addBothRewards",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "reward",
-        "type": "uint256"
       }
     ],
     "name": "addReward",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "reward",
-        "type": "uint256"
-      }
-    ],
-    "name": "addSecondReward",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -284,12 +185,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "earnedFirstToken",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "earnedSecondToken",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -319,21 +215,6 @@
     "constant": true,
     "inputs": [],
     "name": "getRewardForDuration",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "getSecondRewardForDuration",
     "outputs": [
       {
         "internalType": "uint256",
@@ -466,11 +347,6 @@
         "internalType": "uint256",
         "name": "reward",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "secondReward",
-        "type": "uint256"
       }
     ],
     "name": "notifyRewardAmount",
@@ -547,31 +423,11 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "rewardPerSecondTokenStored",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "rewardPerToken",
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "reward",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "secondReward",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -661,57 +517,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "secondRewardRate",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "secondRewards",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "secondRewardsToken",
-    "outputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
@@ -751,21 +556,6 @@
       }
     ],
     "name": "setRewardsDuration",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "tokenAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setSecondRewardsToken",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -844,27 +634,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "userRewardPerSecondTokenPaid",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {

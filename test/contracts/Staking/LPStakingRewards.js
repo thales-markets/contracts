@@ -9,7 +9,7 @@ const { fastForward, toUnit, currentTime } = require('../../utils')();
 
 const { onlyGivenAddressCanInvoke, encodeCall } = require('../../utils/helpers');
 
-contract('LPStakingRewards', accounts => {
+contract('LPStakingDoubleRewards', accounts => {
 	const [owner, initialCreator, mockRewardsDistributionAddress] = accounts;
 	let rewardsToken,
 		secondRewardsToken,
@@ -26,7 +26,7 @@ contract('LPStakingRewards', accounts => {
 	beforeEach(async () => {
 		let Thales = artifacts.require('Thales');
 		let StakingToken = artifacts.require('MockSafeThales');
-		let LPStakingRewards = artifacts.require('LPStakingRewards');
+		let LPStakingRewards = artifacts.require('LPStakingDoubleRewards');
 		let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 
 		rewardsToken = await Thales.new({ from: owner });
@@ -40,8 +40,8 @@ contract('LPStakingRewards', accounts => {
 
 		initializeLPData = encodeCall(
 			'initialize',
-			['address', 'address', 'address', 'uint'],
-			[owner, rewardsToken.address, stakingToken.address, DAY * 7]
+			['address', 'address', 'address', 'address', 'uint'],
+			[owner, rewardsToken.address, secondRewardsToken.address, stakingToken.address, DAY * 7]
 		);
 		await ProxyLPStakingRewardsDeployed.upgradeToAndCall(
 			LPStakingRewardsImplementation.address,

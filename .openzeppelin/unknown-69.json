@@ -45602,6 +45602,209 @@
           {
             "contract": "RangedMarketsAMM",
             "label": "thalesAmm",
+            "type": "t_contract(IThalesAMM)6163",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:37"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "rangedAmmFee",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:39"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "createdRangedMarkets",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_address))",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:41"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "_knownMarkets",
+            "type": "t_struct(AddressSet)6173_storage",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:42"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "rangedMarketMastercopy",
+            "type": "t_address",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:44"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "rangedPositionMastercopy",
+            "type": "t_address",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:45"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)1069",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:47"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "spentOnMarket",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:49"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "capPerMarket",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:52"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "minSupportedPrice",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:54"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "maxSupportedPrice",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:55"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "safeBox",
+            "type": "t_address",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:57"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "safeBoxImpact",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:58"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "minimalDifBetweenStrikes",
+            "type": "t_uint256",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:60"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "stakingThales",
+            "type": "t_contract(IStakingThales)6073",
+            "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:62"
+          }
+        ],
+        "types": {
+          "t_contract(IThalesAMM)6163": {
+            "label": "contract IThalesAMM"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_address))": {
+            "label": "mapping(address => mapping(address => address))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_struct(AddressSet)6173_storage": {
+            "label": "struct AddressSetLib.AddressSet",
+            "members": [
+              {
+                "label": "elements",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "indices",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_contract(IERC20Upgradeable)1069": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(IStakingThales)6073": {
+            "label": "contract IStakingThales"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "6f230f54d1d7b817c8791e02a9628c5fc272530efd8cad4b7f2a4345a71ba100": {
+      "address": "0xE5F074EBf844f5d9E9E956C4f79DA89F003C11A0",
+      "txHash": "0xeb718f991cb7728625f50fdd8e6ed7fef48965c2a5055e68329e6085cd14c800",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:6"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:18"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "RangedMarketsAMM",
+            "label": "thalesAmm",
             "type": "t_contract(IThalesAMM)46672",
             "src": "contracts\\RangedMarkets\\RangedMarketsAMM.sol:37"
           },

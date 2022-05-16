@@ -642,7 +642,7 @@ contract('RangedAMM', accounts => {
 					additionalSlippage,
 					{ from: minter }
 				)
-			).to.be.revertedWith('Not enough liquidity in Thales AMM.');
+			).to.be.revertedWith('Not enough liquidity');
 
 			console.log('BUY MAXIMUM IN!!!!!!!!!');
 			availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(

@@ -53,7 +53,7 @@
 		"ExoticPositionalTags": "0xd550bD32B434bA870642F94710eb220f542Ed3F3",
 		"ExoticPositionalTagsImplementation": "0x7a911614e0a916FB59A14EBd5c186dD076d1eDBc",
 		"RangedAMM": "0x64cb6EF981e5E432d4362F6A561A31B22E328cC5",
-		"RangedAMMImplementation": "0x236057f9f13Faa625Da73cD1cb1e838f15D6c6D2",
+		"RangedAMMImplementation": "0x3898b385a644AF75b826338446369e4e7Ff2F47d",
 		"RangedPositionMastercopy": "0x897563772ce3aC574412F18eC04581aC377c814a",
 		"RangedMarketMastercopy": "0x6d53c852FE7E0B60d54C70e454CbBccBCE2C39c4"
 	},
@@ -141,7 +141,7 @@
 		"ThalesAMMImplementation": "0x107Ae181C7D0efE5df18cA232Ec1241E5CBB253B",
 		"ThalesAMM": "0xfed727f37e921Faac22e36E0bbaA8504B45F6e3f",
 		"RangedAMM": "0x0690F410FB54d76268e4fa97486CBD605e68dC62",
-		"RangedAMMImplementation": "0x6A40da0e4D05362c8630Ca4e2500D7babC95F8Df",
+		"RangedAMMImplementation": "0xE5F074EBf844f5d9E9E956C4f79DA89F003C11A0",
 		"RangedMarketMastercopy": "0xD50fF1fcB365952deaCc40C4259c8c448314567B",
 		"RangedPositionMastercopy": "0x94Db4617900d8f6cA9633D8937950da75C8264fF"
 	},

@@ -57,7 +57,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     SportPositionalMarketManager internal _migratingManager;
 
-    IPriceFeed public priceFeed;
     IERC20 public sUSD;
 
     address public positionalMarketFactory;
@@ -67,14 +66,9 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     function initialize(
         address _owner,
-        IERC20 _sUSD,
-        IPriceFeed _priceFeed,
-        uint _expiryDuration,
-        uint _maxTimeToMaturity,
-        uint _creatorCapitalRequirement
+        IERC20 _sUSD
     ) external initializer {
         setOwner(_owner);
-        priceFeed = _priceFeed;
         sUSD = _sUSD;
 
         // Temporarily change the owner so that the setters don't revert.
@@ -84,9 +78,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         customMarketCreationEnabled = false;
         onlyWhitelistedAddressesCanCreateMarkets = false;
 
-        setExpiryDuration(_expiryDuration);
-        setMaxTimeToMaturity(_maxTimeToMaturity);
-        setCreatorCapitalRequirement(_creatorCapitalRequirement);
     }
 
     /* ========== SETTERS ========== */
@@ -157,20 +148,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
 
-    function _isValidKey(bytes32 oracleKey) internal view returns (bool) {
-        // If it has a rate, then it's possibly a valid key
-        if (priceFeed.rateForCurrency(oracleKey) != 0) {
-            // But not sUSD
-            if (oracleKey == "sUSD") {
-                return false;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     /* ---------- Setters ---------- */
@@ -188,11 +165,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setCreatorCapitalRequirement(uint _creatorCapitalRequirement) public onlyOwner {
         capitalRequirement = _creatorCapitalRequirement;
         emit CreatorCapitalRequirementUpdated(_creatorCapitalRequirement);
-    }
-
-    function setPriceFeed(address _address) external onlyOwner {
-        priceFeed = IPriceFeed(_address);
-        emit SetPriceFeed(_address);
     }
 
     function setsUSD(address _address) external onlyOwner {
@@ -236,14 +208,13 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
         }
 
-        require(maturity <= block.timestamp + durations.maxTimeToMaturity, "Maturity too far in the future");
+        // require(maturity <= block.timestamp + durations.maxTimeToMaturity, "Maturity too far in the future");
         uint expiry = maturity.add(durations.expiryDuration);
 
         require(block.timestamp < maturity, "Maturity has to be in the future");
         // We also require maturity < expiry. But there is no need to check this.
         // The market itself validates the capital and skew requirements.
 
-        require(capitalRequirement <= initialMint, "Insufficient capital");
 
         SportPositionalMarket market = SportPositionalMarketFactory(positionalMarketFactory).createMarket(
             SportPositionalMarketFactory.SportPositionCreationMarketParameters(

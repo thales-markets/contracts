@@ -9,7 +9,6 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../interfaces/IExoticPositionalMarketManager.sol";
 import "../interfaces/IThalesBonds.sol";
 
-error BreaksAmountLimit(uint,uint,uint);
 
 contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausable, ProxyReentrancyGuard {
     using SafeMath for uint;
@@ -116,16 +115,12 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
-            if(_amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition)) { 
+            require(_amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition),"Amounts exceed");
                 totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
                 userOpenBidPosition[creatorAddress][_positions[i]] = userOpenBidPosition[creatorAddress][_positions[i]].add(
                     _amounts[i]
                 );
                 totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
-            }
-            else {
-                revert BreaksAmountLimit(_amounts[i], minPosAmount, maxAmountForOpenBidPosition);
-            }
         }
         require(totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) >= minPosAmount &&
             totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) <= maxAmountForOpenBidPosition,
@@ -157,7 +152,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
-            if(_amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition)) {
+            require(_amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition), "Amounts exceed");
                 if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
                         totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].sub(userOpenBidPosition[msg.sender][_positions[i]]);
                         firstTime = false;
@@ -165,10 +160,6 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
                 totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
                 userOpenBidPosition[msg.sender][_positions[i]] = _amounts[i];
                 totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
-            }
-            else {
-                revert BreaksAmountLimit(_amounts[i], minPosAmount, maxAmountForOpenBidPosition);
-            }
         }
         require(totalDepositedAmount >= minPosAmount && totalDepositedAmount >= totalUserPlacedAmount[msg.sender], "Bellow init amounts");
         uint amountToBeAdded = totalDepositedAmount.sub(totalUserPlacedAmount[msg.sender]);

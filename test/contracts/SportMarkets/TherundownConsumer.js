@@ -32,17 +32,19 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
-contract('TherundownConsumer', accounts => {
+contract('TheRundownConsumer', accounts => {
 	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
 		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
-	const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalFixedMarket');
-	const ExoticPositionalOpenBidMarketContract = artifacts.require('ExoticPositionalOpenBidMarket');
-	const ExoticPositionalMarketManagerContract = artifacts.require('ExoticPositionalMarketManager');
-	const ThalesOracleCouncilContract = artifacts.require('ThalesOracleCouncil');
+	const SportPositionContract = artifacts.require('SportPosition');
+	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
+	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
+	const SportPositionalMarketManagerContract = artifacts.require('SportPositionalMarketManager');
+	const SportPositionalMarketFactoryContract = artifacts.require('SportPositionalMarketFactory');
+    const SportsAMMContract = artifacts.require('SportsAMM');
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 	const ThalesBondsContract = artifacts.require('ThalesBonds');
 	const ExoticPositionalTagsContract = artifacts.require('ExoticPositionalTags');
@@ -106,6 +108,14 @@ contract('TherundownConsumer', accounts => {
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
 
+    let SportPositionalMarketManager,
+        SportPositionalMarketFactory,
+        SportPositionalMarketData,
+        SportPositionalMarket,
+        SportPositionalMarketMastercopy,
+        SportPositionMastercopy,
+        SportsAMM;
+
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
 
@@ -113,85 +123,31 @@ contract('TherundownConsumer', accounts => {
 	const sportId_16 = 16; // CHL
 
 	beforeEach(async () => {
-		ExoticPositionalMarket = await ExoticPositionalMarketContract.new();
-		ExoticPositionalOpenBidMarket = await ExoticPositionalOpenBidMarketContract.new();
-		ExoticPositionalMarketManager = await ExoticPositionalMarketManagerContract.new();
-		ThalesOracleCouncil = await ThalesOracleCouncilContract.new({ from: owner });
+
+        SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({from:manager});
+        SportPositionalMarketFactory = await SportPositionalMarketFactoryContract.new({from:manager});
+        SportPositionalMarketMastercopy = await SportPositionalMarketContract.new({from:manager});
+        SportPositionMastercopy = await SportPositionContract.new({from:manager});
+        SportPositionalMarketData = await SportPositionalMarketDataContract.new({from:manager});
+        SportsAMM = await SportsAMMContract.new({from:manager});
+
 		Thales = await ThalesContract.new({ from: owner });
-		ThalesBonds = await ThalesBondsContract.new();
 		ExoticPositionalTags = await ExoticPositionalTagsContract.new();
 		await ExoticPositionalTags.initialize(manager, { from: manager });
-		await ThalesBonds.initialize(manager, { from: manager });
 		let GamesQueue = artifacts.require('GamesQueue');
 		gamesQueue = await GamesQueue.new({from:owner});
 		await gamesQueue.initialize(owner, { from: owner });
 
-		await ExoticPositionalMarketManager.initialize(
-			manager,
-			{ from: manager }
-		);
-
-		fixedBondAmount = toUnit(100);
-		let disputePrice = toUnit(10);
-		let maxOpenBidPositon = toUnit(1000);
-
-		
-		
-		await ExoticPositionalMarketManager.setPercentages(
-			"1",
-			"1",
-			"1",
-			"6",
-			"10",
-			{ from: manager });
-		
-		await ExoticPositionalMarketManager.setDurations(
-			"14400",
-			"0",
-			"28800",
-			"172800",
-			"86400",
-			{ from: manager });
-		
-		await ExoticPositionalMarketManager.setLimits(
-			"1000",
-			"1000",
-			"60",
-			"1000",
-			"5",
-			"5",
-			"5",
-			{ from: manager });
-		
-		await ExoticPositionalMarketManager.setAmounts(
-			"10",
-			"1000",
-			disputePrice,
-			fixedBondAmount,
-			disputePrice,
-			disputePrice,
-			maxOpenBidPositon,
-			{ from: manager });
+		await SportPositionalMarketManager.initialize(manager, Thales.address, {from: manager});
+		await SportPositionalMarketFactory.initialize(manager, {from: manager});
+        
+        await SportPositionalMarketFactory.setPositionalMarketManager(SportPositionalMarketManager.address, {from:manager});
+        await SportPositionalMarketFactory.setPositionalMarketMastercopy(SportPositionalMarketMastercopy.address, {from:manager});
+        await SportPositionalMarketFactory.setPositionMastercopy(SportPositionMastercopy.address, {from:manager});
+        await SportPositionalMarketFactory.setLimitOrderProvider(SportsAMM.address, {from:manager});
+        await SportPositionalMarketFactory.setThalesAMM(SportsAMM.address, {from:manager});
+        await SportPositionalMarketManager.setPositionalMarketFactory(SportPositionalMarketFactory.address, {from:manager});
 			
-		await ExoticPositionalMarketManager.setFlags(
-			false,
-			true,
-			{ from: manager });
-			
-		await ExoticPositionalMarketManager.setAddresses(
-			ExoticPositionalMarket.address,
-			ExoticPositionalOpenBidMarket.address,
-			ThalesOracleCouncil.address,
-			Thales.address,
-			ExoticPositionalTags.address,
-			owner,
-			safeBox,
-			owner,
-			owner,
-			{ from: manager });
-		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
-		await ThalesBonds.setMarketManager(ExoticPositionalMarketManager.address, { from: manager });
-	
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });
@@ -247,34 +203,20 @@ contract('TherundownConsumer', accounts => {
 		await TherundownConsumerDeployed.initialize(
 			owner,
 			[sportId_4, sportId_16],
-			ExoticPositionalMarketManager.address,
+			SportPositionalMarketManager.address,
 			[sportId_4],
 			gamesQueue.address,
-			[8, 12], // resolved statuses 
+			[8, 11, 12], // resolved statuses 
 			[1, 2], // cancel statuses
 			{ from: owner }
 		);
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
-		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
-		// 	TherundownConsumerDeployed.address
-		// );
+
 		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
 		await TherundownConsumerDeployed.addToWhitelist(third, { from: owner });
 
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
-
-		await ExoticPositionalMarketManager.setAddresses(
-			ExoticPositionalMarket.address,
-			ExoticPositionalOpenBidMarket.address,
-			ThalesOracleCouncil.address,
-			Thales.address,
-			ExoticPositionalTags.address,
-			TherundownConsumerDeployed.address,
-			safeBox,
-			owner,
-			owner,
-			{ from: manager });
-			
+		
 	});
 
 	describe('Init', () => {
@@ -369,7 +311,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.marketQuestion());
@@ -382,7 +324,7 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(false, await deployedMarket.canMarketBeResolved());
 			assert.equal('Atlanta Hawks', await deployedMarket.positionPhrase(1));
 			assert.equal('Charlotte Hornets', await deployedMarket.positionPhrase(2));
-			assert.equal(9004, await deployedMarket.tags(0));
+			assert.equal(9004, await deployedMarket.tags(0));*/
 
 		});
 
@@ -437,7 +379,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
@@ -448,7 +390,7 @@ contract('TherundownConsumer', accounts => {
 			assert.equal('Atletico Madrid Atletico Madrid', await deployedMarket.positionPhrase(1));
 			assert.equal('Manchester City Manchester City', await deployedMarket.positionPhrase(2));
 			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));
+			assert.equal(9016, await deployedMarket.tags(0));*/
 		});
 
 		it('Fulfill Games Created - Champions League Game 2, create market, check results', async () => {
@@ -501,7 +443,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
+			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
@@ -512,7 +454,7 @@ contract('TherundownConsumer', accounts => {
 			assert.equal('Liverpool Liverpool', await deployedMarket.positionPhrase(1));
 			assert.equal('Benfica Benfica', await deployedMarket.positionPhrase(2));
 			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));
+			assert.equal(9016, await deployedMarket.tags(0));*/
 		});
 	});
 
@@ -579,7 +521,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.marketQuestion());
@@ -592,11 +534,11 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(false, await deployedMarket.canMarketBeResolved());
 			assert.equal('Atlanta Hawks', await deployedMarket.positionPhrase(1));
 			assert.equal('Charlotte Hornets', await deployedMarket.positionPhrase(2));
-			assert.equal(9004, await deployedMarket.tags(0));
+			assert.equal(9004, await deployedMarket.tags(0));*/
 
 			await fastForward(await currentTime());
 
-			assert.equal(true, await deployedMarket.canMarketBeResolved());
+			//assert.equal(true, await deployedMarket.canMarketBeResolved());
 
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdResolve,
@@ -688,7 +630,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
@@ -699,11 +641,11 @@ contract('TherundownConsumer', accounts => {
 			assert.equal('Atletico Madrid Atletico Madrid', await deployedMarket.positionPhrase(1));
 			assert.equal('Manchester City Manchester City', await deployedMarket.positionPhrase(2));
 			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));
+			assert.equal(9016, await deployedMarket.tags(0));*/
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
-			assert.equal(true, await deployedMarket.canMarketBeResolved());
+			//assert.equal(true, await deployedMarket.canMarketBeResolved());
 
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdResolveFoodball,
@@ -722,9 +664,9 @@ contract('TherundownConsumer', accounts => {
 			);
 
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameFootballid1);
-			assert.equal(0, gameR.homeScore);
-			assert.equal(1, gameR.awayScore);
-			assert.equal(11, gameR.statusId);
+			assert.bnEqual(0, gameR.homeScore);
+			assert.bnEqual(1, gameR.awayScore);
+			assert.bnEqual(11, gameR.statusId);
 
 			assert.eventEqual(tx_2.logs[0], 'GameResolved', {
 				_requestId: reqIdResolveFoodball,
@@ -798,7 +740,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
+			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
@@ -809,7 +751,7 @@ contract('TherundownConsumer', accounts => {
 			assert.equal('Liverpool Liverpool', await deployedMarket.positionPhrase(1));
 			assert.equal('Benfica Benfica', await deployedMarket.positionPhrase(2));
 			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));
+			assert.equal(9016, await deployedMarket.tags(0));*/
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
@@ -817,7 +759,7 @@ contract('TherundownConsumer', accounts => {
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
-			assert.equal(true, await deployedMarket.canMarketBeResolved());
+			//assert.equal(true, await deployedMarket.canMarketBeResolved());
 
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdResolveFoodball,
@@ -915,7 +857,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
@@ -926,7 +868,7 @@ contract('TherundownConsumer', accounts => {
 			assert.equal('Atletico Madrid Atletico Madrid', await deployedMarket.positionPhrase(1));
 			assert.equal('Manchester City Manchester City', await deployedMarket.positionPhrase(2));
 			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));
+			assert.equal(9016, await deployedMarket.tags(0));*/
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
@@ -1009,7 +951,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
+			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('1');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.bnEqual(gameFootballTime, await deployedMarket.endOfPositioning());
@@ -1020,7 +962,7 @@ contract('TherundownConsumer', accounts => {
 			assert.equal('Liverpool Liverpool', await deployedMarket.positionPhrase(1));
 			assert.equal('Benfica Benfica', await deployedMarket.positionPhrase(2));
 			assert.equal('It will be a draw', await deployedMarket.positionPhrase(3));
-			assert.equal(9016, await deployedMarket.tags(0));
+			assert.equal(9016, await deployedMarket.tags(0));*/
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
@@ -1110,7 +1052,7 @@ contract('TherundownConsumer', accounts => {
 				_game: game,
 			});
 
-			let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
+			/*let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
 			deployedMarket = await ExoticPositionalMarketContract.at(answer);
 
 			assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.marketQuestion());
@@ -1123,7 +1065,7 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(false, await deployedMarket.canMarketBeResolved());
 			assert.equal('Atlanta Hawks', await deployedMarket.positionPhrase(1));
 			assert.equal('Charlotte Hornets', await deployedMarket.positionPhrase(2));
-			assert.equal(9004, await deployedMarket.tags(0));
+			assert.equal(9004, await deployedMarket.tags(0));*/
 
 			//await fastForward(await currentTime());
 

@@ -214,7 +214,7 @@ contract('TheRundownConsumer', accounts => {
 
 		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
 		await TherundownConsumerDeployed.addToWhitelist(third, { from: owner });
-
+		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {from:manager});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 		
 	});
@@ -1067,7 +1067,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Charlotte Hornets', await deployedMarket.positionPhrase(2));
 			assert.equal(9004, await deployedMarket.tags(0));*/
 
-			//await fastForward(await currentTime());
+			await fastForward(await currentTime());
 
 			await expect(TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: second })).to.be.revertedWith('Address not supported');
 			await expect(TherundownConsumerDeployed.cancelMarketManually(second, { from: third })).to.be.revertedWith('No market created for game');

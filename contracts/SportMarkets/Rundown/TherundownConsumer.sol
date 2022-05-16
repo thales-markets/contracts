@@ -393,16 +393,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         if (_isGameStatusResolved(game)) {
             uint _outcome = _calculateOutcome(game);
 
-            // TODO add external call to resolve market
-            //sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
+            sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
             marketResolved[marketPerGameId[game.gameId]] = true;
 
             _cleanStorageQueue(index);
 
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
         } else if (_isGameStatusCanceled(game)) {
-            // TODO add external call to camcel market
-            //sportsManager.cancelMarket(marketPerGameId[game.gameId]);
+            sportsManager.resolveMarket(marketPerGameId[game.gameId], 0);
             marketCanceled[marketPerGameId[game.gameId]] = true;
 
             _cleanStorageQueue(index);
@@ -417,8 +415,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // it can return ZERO index, needs checking
         require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "Invalid Game ID");
 
-        // TODO add external call to resolve market
-        //sportsManager.resolveMarket(_market, _outcome);
+        sportsManager.resolveMarket(_market, _outcome);
         marketResolved[_market] = true;
         queues.removeItemUnproccessedGames(index);
 
@@ -431,8 +428,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // it can return ZERO index, needs checking
         require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "Invalid Game ID");
 
-        // TODO add external call to cancel market
-        //sportsManager.cancelMarket(_market);
+        sportsManager.resolveMarket(_market, 0);
         marketCanceled[_market] = true;
         queues.removeItemUnproccessedGames(index);
 

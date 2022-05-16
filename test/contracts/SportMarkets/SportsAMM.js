@@ -147,7 +147,7 @@ contract('SportsAMM', accounts => {
         await SportPositionalMarketFactory.setLimitOrderProvider(SportsAMM.address, {from:manager});
         await SportPositionalMarketFactory.setThalesAMM(SportsAMM.address, {from:manager});
         await SportPositionalMarketManager.setPositionalMarketFactory(SportPositionalMarketFactory.address, {from:manager});
-			
+        
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });
@@ -171,11 +171,11 @@ contract('SportsAMM', accounts => {
 		// resolve game props
 		reqIdResolve = '0x30250573c4b099aeaf06273ef9fbdfe32ab2d6b8e33420de988be5d6886c92a7';
 		game_1_resolve =
-			'0x6536306366613738303834366166363839373862343935373965356366333936000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000810000000000000000000000000000000000000000000000000000000000000008';
+        '0x6536306366613738303834366166363839373862343935373965356366333936000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000810000000000000000000000000000000000000000000000000000000000000008';
 		game_2_resolve =
-			'0x3937346533663036386233333764313239656435633133646632376133326662000000000000000000000000000000000000000000000000000000000000006600000000000000000000000000000000000000000000000000000000000000710000000000000000000000000000000000000000000000000000000000000008';
+        '0x3937346533663036386233333764313239656435633133646632376133326662000000000000000000000000000000000000000000000000000000000000006600000000000000000000000000000000000000000000000000000000000000710000000000000000000000000000000000000000000000000000000000000008';
 		gamesResolved = [game_1_resolve, game_2_resolve];
-
+        
 		// football matches
 		reqIdFootballCreate = '0x61d7dd698383c58c7217cf366764a1e92a1f059b1b6ea799dce4030a942302f4';
 		gameFootballid1 = '0x3163626162623163303138373465363263313661316462333164363164353333';
@@ -188,7 +188,7 @@ contract('SportsAMM', accounts => {
 		game_1_football_resolve =
 			'0x316362616262316330313837346536326331366131646233316436316435333300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b';
 		game_2_football_resolve =
-			'0x366264643731373131633739383764333664346533353864393739323735623400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b';
+        '0x366264643731373131633739383764333664346533353864393739323735623400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b';
 		reqIdResolveFoodball = '0xff8887a8535b7a8030962e6f6b1eba61c0f1cb82f706e77d834f15c781e47697';
 		gamesResolvedFootball = [game_1_football_resolve, game_2_football_resolve];
 
@@ -196,12 +196,12 @@ contract('SportsAMM', accounts => {
 		oddsResult = '0x6135363061373861363135353239363137366237393232353866616336613532000000000000000000000000000000000000000000000000000000000000283cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3dc0000000000000000000000000000000000000000000000000000000000000000';
 		oddsResultArray = [oddsResult];
 		reqIdOdds = '0x5bf0ea636f9515e1e1060e5a21e11ef8a628fa99b1effb8aa18624b02c6f36de';
-
+        
 		TherundownConsumer = artifacts.require('TherundownConsumer');
 		TherundownConsumerDeployed = await TherundownConsumer.new();
-
+        
 		await TherundownConsumerDeployed.initialize(
-			owner,
+            owner,
 			[sportId_4, sportId_16],
 			SportPositionalMarketManager.address,
 			[sportId_4],
@@ -209,14 +209,16 @@ contract('SportsAMM', accounts => {
 			[8, 12], // resolved statuses 
 			[1, 2], // cancel statuses
 			{ from: owner }
-		);
-		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
-		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
-		// 	TherundownConsumerDeployed.address
-		// );
-		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
-		await TherundownConsumerDeployed.addToWhitelist(third, { from: owner });
+            );
 
+        await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
+            // await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
+                // 	TherundownConsumerDeployed.address
+        // );
+        await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
+        await TherundownConsumerDeployed.addToWhitelist(third, { from: owner });
+        
+        await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {from:manager});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
 		
@@ -224,7 +226,7 @@ contract('SportsAMM', accounts => {
 	});
 
 	describe('Init', () => {
-		it('Check init', async () => {
+		it('Check init Therundown consumer', async () => {
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
 			assert.equal(false, await TherundownConsumerDeployed.isSupportedSport(0));
@@ -252,7 +254,7 @@ contract('SportsAMM', accounts => {
 		});
 	});
 
-	describe('Fulfill Games Created', () => {
+	describe('Create games markets', () => {
 		it('Fulfill Games Created - NBA, create market, check results', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 
@@ -315,20 +317,59 @@ contract('SportsAMM', accounts => {
 				_game: game,
 			});
 
-			// let answer = await ExoticPositionalMarketManager.getActiveMarketAddress('0');
-			// deployedMarket = await ExoticPositionalMarketContract.at(answer);
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+            deployedMarket = await SportPositionalMarketContract.at(answer);
 
-			// assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.marketQuestion());
-			// assert.equal(2, await deployedMarket.positionCount());
+            assert.equal(false, await deployedMarket.canResolve());
+            assert.equal(9004, await deployedMarket.tags(0));
 
-			// assert.bnEqual(gameTime, await deployedMarket.endOfPositioning());
-			// assert.notEqual(0, await deployedMarket.creationTime());
-			// assert.equal(false, await deployedMarket.disputed());
-			// assert.equal(false, await deployedMarket.resolved());
-			// assert.equal(false, await deployedMarket.canMarketBeResolved());
-			// assert.equal('Atlanta Hawks', await deployedMarket.positionPhrase(1));
-			// assert.equal('Charlotte Hornets', await deployedMarket.positionPhrase(2));
-			// assert.equal(9004, await deployedMarket.tags(0));
+            assert.equal(2, await deployedMarket.optionsCount());
+
+            await fastForward(await currentTime());
+
+			assert.equal(true, await deployedMarket.canResolve());
+            
+            const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolve,
+				gamesResolved,
+				sportId_4,
+				{ from: wrapper }
+			);
+
+			assert.equal(
+				game_1_resolve,
+				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 0)
+			);
+			assert.equal(
+				game_2_resolve,
+				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 1)
+			);
+
+			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
+			assert.equal(100, gameR.homeScore);
+			assert.equal(129, gameR.awayScore);
+			assert.equal(8, gameR.statusId);
+
+			assert.eventEqual(tx_2.logs[0], 'GameResolved', {
+				_requestId: reqIdResolve,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: gameR,
+			});
+
+			// resolve markets
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_outcome: 2,
+			});
+
+			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 
 		});
 

@@ -361,8 +361,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         GameCreate memory game = getGameCreatedById(_gameId);
         uint sportId = sportsIdPerGame[_gameId];
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(sportId);
-        uint[] memory tags = new uint[](1); //temporary tag
-        tags[0] = 9001;
+        
         // create
         sportsManager.createMarket(
             _gameId,

@@ -54,7 +54,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit EnqueueGamesCreated(data, sportsId, lastCreated);
     }
 
-    function dequeueGamesCreated() public returns (bytes32 data) {
+    function dequeueGamesCreated() public onlyConsumer returns (bytes32 data) {
         require(lastCreated >= firstCreated, "No more elements in a queue");
 
         data = gamesCreateQueue[firstCreated];

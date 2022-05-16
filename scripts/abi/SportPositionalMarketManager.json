@@ -266,6 +266,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "theRundownConsumer",
+        "type": "address"
+      }
+    ],
+    "name": "SetTherundownConsumer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_zeroExAddress",
         "type": "address"
       }
@@ -773,6 +786,11 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
       }
     ],
     "name": "resolveMarket",
@@ -932,6 +950,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_theRundownConsumer",
+        "type": "address"
+      }
+    ],
+    "name": "setTherundownConsumer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "_whitelistedAddresses",
         "type": "address[]"
@@ -953,6 +984,19 @@
     "name": "setsUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "theRundownConsumer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

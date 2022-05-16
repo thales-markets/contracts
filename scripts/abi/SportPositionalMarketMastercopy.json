@@ -306,13 +306,7 @@
   {
     "inputs": [],
     "name": "exerciseOptions",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -684,7 +678,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      }
+    ],
     "name": "resolve",
     "outputs": [],
     "stateMutability": "nonpayable",

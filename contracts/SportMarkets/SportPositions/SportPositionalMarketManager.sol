@@ -59,6 +59,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     IERC20 public sUSD;
 
+    address public theRundownConsumer;
     address public positionalMarketFactory;
     bool public needsTransformingCollateral;
 
@@ -84,6 +85,11 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setPositionalMarketFactory(address _positionalMarketFactory) external onlyOwner {
         positionalMarketFactory = _positionalMarketFactory;
         emit SetPositionalMarketFactory(_positionalMarketFactory);
+    }
+    
+    function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
+        theRundownConsumer = _theRundownConsumer;
+        emit SetTherundownConsumer(_theRundownConsumer);
     }
 
     function setWhitelistedAddresses(address[] calldata _whitelistedAddresses) external onlyOwner {
@@ -266,9 +272,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         }
     }
 
-    function resolveMarket(address market) external override {
+    function resolveMarket(address market, uint _outcome) external override {
+        require(msg.sender == theRundownConsumer || msg.sender == owner, "Invalid resolver");
         require(_activeMarkets.contains(market), "Not an active market");
-        SportPositionalMarket(market).resolve();
+        SportPositionalMarket(market).resolve(_outcome);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
     }
@@ -422,4 +429,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event SetsUSD(address _address);
     event SetCustomMarketCreationEnabled(bool enabled);
     event SetMigratingManager(address manager);
+    event SetTherundownConsumer(address theRundownConsumer);
+
 }

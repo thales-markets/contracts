@@ -55,7 +55,7 @@ interface ISportPositionalMarket {
 
     function mint(uint value) external;
 
-    function exerciseOptions() external returns (uint);
+    function exerciseOptions() external;
 
     function burnOptions(uint amount) external;
 

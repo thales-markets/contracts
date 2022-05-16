@@ -45,7 +45,7 @@ interface ISportPositionalMarketManager {
         uint[] memory tags
     ) external returns (ISportPositionalMarket);
 
-    function resolveMarket(address market) external;
+    function resolveMarket(address market, uint outcome) external;
 
     function expireMarkets(address[] calldata market) external;
 

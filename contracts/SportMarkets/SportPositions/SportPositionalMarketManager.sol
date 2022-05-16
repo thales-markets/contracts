@@ -266,9 +266,9 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         }
     }
 
-    function resolveMarket(address market) external override {
+    function resolveMarket(address market, uint _outcome) external override onlyOwner {
         require(_activeMarkets.contains(market), "Not an active market");
-        SportPositionalMarket(market).resolve();
+        SportPositionalMarket(market).resolve(_outcome);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
     }

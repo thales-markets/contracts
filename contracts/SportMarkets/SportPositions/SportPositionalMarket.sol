@@ -314,26 +314,20 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     /* ---------- Market Resolution ---------- */
 
-    function resolve() external onlyOwner afterMaturity managerNotPaused {
+    function resolve(uint _outcome) external onlyOwner afterMaturity managerNotPaused {
         require(canResolve(), "Can not resolve market");
-        if(theRundownConsumer.getResult(gameDetails.gameId) ==0 ){
-            return;
-        }
-        finalResult = theRundownConsumer.getResult(gameDetails.gameId);
+        require(_outcome > 0 && _outcome <= optionsCount, "Invalid outcome");
+        finalResult = _outcome;
         resolved = true;
-
         emit MarketResolved(_result(), deposited, 0, 0);
     }
 
     /* ---------- Claiming and Exercising Options ---------- */
 
-    function exerciseOptions() external override afterMaturity returns (uint) {
+    function exerciseOptions() external override afterMaturity {
         // The market must be resolved if it has not been.
         // the first one to exercise pays the gas fees. Might be worth splitting it home.
-        if (!resolved) {
-            _manager().resolveMarket(address(this));
-        }
-
+        require(resolved, "Unresolved");
         // If the account holds no options, revert.
         (uint homeBalance, uint awayBalance) = _balancesOf(msg.sender);
         require(homeBalance != 0 || awayBalance != 0, "Nothing to exercise");
@@ -353,7 +347,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             _decrementDeposited(payout);
             sUSD.transfer(msg.sender, payout);
         }
-        return payout;
     }
 
     /* ---------- Market Expiry ---------- */

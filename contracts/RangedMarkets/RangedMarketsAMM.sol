@@ -426,22 +426,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (position == RangedMarket.Position.Out) {
             target = address(outp);
             rangedMarket.burnOut(amount, msg.sender);
-
-            thalesAmm.sellToAMM(
-                address(rangedMarket.leftMarket()),
-                IThalesAMM.Position.Down,
-                amount,
-                leftQuote,
-                additionalSlippage
-            );
-
-            thalesAmm.sellToAMM(
-                address(rangedMarket.rightMarket()),
-                IThalesAMM.Position.Up,
-                amount,
-                rightQuote,
-                additionalSlippage
-            );
+            _sellOUT(rangedMarket, amount, leftQuote, rightQuote, additionalSlippage);
         } else {
             target = address(inp);
             rangedMarket.burnIn(amount, msg.sender);
@@ -460,6 +445,37 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit SoldToAMM(msg.sender, address(rangedMarket), position, amount, pricePaid, address(sUSD), target);
     }
 
+    function _sellOUT(
+        RangedMarket rangedMarket,
+        uint amount,
+        uint leftQuote,
+        uint rightQuote,
+        uint additionalSlippage
+    ) internal {
+        //TODO: remove this after Positional Market have the correct AMM address
+        (, IPosition down) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
+        (IPosition up, ) = IPositionalMarket(rangedMarket.rightMarket()).getOptions();
+        IERC20Upgradeable(address(down)).approve(address(thalesAmm), type(uint256).max);
+        IERC20Upgradeable(address(up)).approve(address(thalesAmm), type(uint256).max);
+        //TODO: to here
+
+        thalesAmm.sellToAMM(
+            address(rangedMarket.leftMarket()),
+            IThalesAMM.Position.Down,
+            amount,
+            leftQuote,
+            additionalSlippage
+        );
+
+        thalesAmm.sellToAMM(
+            address(rangedMarket.rightMarket()),
+            IThalesAMM.Position.Up,
+            amount,
+            rightQuote,
+            additionalSlippage
+        );
+    }
+
     function _sellIN(
         RangedMarket rangedMarket,
         uint amount,
@@ -467,6 +483,12 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint rightQuote,
         uint additionalSlippage
     ) internal {
+        //TODO: remove this after Positional Market have the correct AMM address
+        (IPosition up, ) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
+        (, IPosition down) = IPositionalMarket(rangedMarket.rightMarket()).getOptions();
+        IERC20Upgradeable(address(down)).approve(address(thalesAmm), type(uint256).max);
+        IERC20Upgradeable(address(up)).approve(address(thalesAmm), type(uint256).max);
+        //TODO: to here
         thalesAmm.sellToAMM(
             address(rangedMarket.leftMarket()),
             IThalesAMM.Position.Up,

@@ -20815,13 +20815,13 @@
           {
             "contract": "PositionalMarketManager",
             "label": "_activeMarkets",
-            "type": "t_struct(AddressSet)49891_storage",
+            "type": "t_struct(AddressSet)50030_storage",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:53"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "_maturedMarkets",
-            "type": "t_struct(AddressSet)49891_storage",
+            "type": "t_struct(AddressSet)50030_storage",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:54"
           },
           {
@@ -20833,7 +20833,7 @@
           {
             "contract": "PositionalMarketManager",
             "label": "priceFeed",
-            "type": "t_contract(IPriceFeed)46467",
+            "type": "t_contract(IPriceFeed)46606",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:58"
           },
           {
@@ -20881,7 +20881,7 @@
           "t_address": {
             "label": "address"
           },
-          "t_struct(AddressSet)49891_storage": {
+          "t_struct(AddressSet)50030_storage": {
             "label": "struct AddressSetLib.AddressSet",
             "members": [
               {
@@ -20903,7 +20903,7 @@
           "t_contract(PositionalMarketManager)32276": {
             "label": "contract PositionalMarketManager"
           },
-          "t_contract(IPriceFeed)46467": {
+          "t_contract(IPriceFeed)46606": {
             "label": "contract IPriceFeed"
           },
           "t_contract(IERC20)3430": {

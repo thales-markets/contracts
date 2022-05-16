@@ -316,7 +316,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     function resolve(uint _outcome) external onlyOwner afterMaturity managerNotPaused {
         require(canResolve(), "Can not resolve market");
-        require(_outcome > 0 && _outcome <= optionsCount, "Invalid outcome");
+        require(_outcome <= optionsCount, "Invalid outcome");
         finalResult = _outcome;
         resolved = true;
         emit MarketResolved(_result(), deposited, 0, 0);

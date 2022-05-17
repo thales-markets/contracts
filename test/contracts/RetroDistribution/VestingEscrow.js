@@ -12,7 +12,7 @@ const VESTING_PERIOD = 86400 * 365;
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const TOTAL_AMOUNT = web3.utils.toWei('15000000');
 
-const { testAccounts } = require('../Token/test-accounts');
+const { testRecipients } = require('./testRecipients');
 const { numberExponentToLarge } = require('../../../scripts/helpers');
 
 contract('VestingEscrow', accounts => {
@@ -35,7 +35,7 @@ contract('VestingEscrow', accounts => {
 				(now + YEAR).toString(),
 			]);
 
-			const recipients = [beneficiary.address, ...testAccounts];
+			const recipients = [beneficiary.address, ...testRecipients];
 			amounts = new Array(100).fill(web3.utils.toWei('150000'));
 
 			await Thales.approve(VestingEscrow.address, TOTAL_AMOUNT);
@@ -128,7 +128,7 @@ contract('VestingEscrow', accounts => {
 				(now + YEAR).toString(),
 			]);
 
-			recipients = [beneficiary.address, ...testAccounts];
+			recipients = [beneficiary.address, ...testRecipients];
 			amounts = new Array(100);
 			for (let i = 1; i < 101; i++) {
 				amounts[i - 1] = (i * 10 ** 17).toString();

@@ -3,95 +3,44 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
+const { assert } = require('../../utils/common');
 const {
 	fastForward,
 	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
+	currentTime
 } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupContract, setupAllContracts } = require('../../utils/setup');
 
 const {
-	ensureOnlyExpectedMutativeFunctions,
-	onlyGivenAddressCanInvoke,
 	getEventByName,
-	getDecodedLogs,
-	decodedEventEqual,
 	convertToDecimals,
 } = require('../../utils/helpers');
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
+let factory, manager, addressResolver;
 let PositionalMarket,
 	priceFeed,
-	oracle,
 	sUSDSynth,
+	Synth,
 	PositionalMarketMastercopy,
 	PositionMastercopy;
-let market, up, down, Position, Synth;
+let market, Position;
 let aggregator_sAUD;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
-const Phase = {
-	Trading: toBN(0),
-	Maturity: toBN(1),
-	Expiry: toBN(2),
-};
-
-async function createMarketAndMintMore(
-	sAUDKey,
-	initialStrikePrice,
-	now,
-	initialCreator,
-	timeToMaturityParam
-) {
-	const result = await manager.createMarket(
-		sAUDKey,
-		initialStrikePrice,
-		now + timeToMaturityParam,
-		toUnit(2),
-		false,
-		ZERO_ADDRESS,
-		{
-			from: initialCreator,
-		}
-	);
-	market = await PositionalMarket.at(
-		getEventByName({ tx: result, name: 'MarketCreated' }).args.market
-	);
-	await market.mint(toUnit(1), {
-		from: initialCreator,
-	});
-}
-
 contract('PositionalMarketManager', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator, ,] = accounts;
-	let creator, owner, minterSigner, dummySigner;
+	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator] = accounts;
+	let creator, owner, minterSigner, exerciserSigner, dummySigner;
 
 	const sUSDQty = toUnit(10000);
 
-	const capitalRequirement = toUnit(2);
-	const skewLimit = toUnit(0.05);
-	const maxOraclePriceAge = toBN(60 * 61);
 	const expiryDuration = toBN(26 * 7 * 24 * 60 * 60);
-	const maxTimeToMaturity = toBN(365 * 24 * 60 * 60);
-
-	const initialStrikePrice = toUnit(100);
-
 	const sAUDKey = toBytes32('sAUD');
-	const iAUDKey = toBytes32('iAUD');
 
 	let timeToMaturity = 200;
-
-	const Side = {
-		Up: toBN(0),
-		Down: toBN(1),
-	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man

@@ -1,19 +1,11 @@
 const { ethers } = require('hardhat');
-const w3utils = require('web3-utils');
-const Big = require('big.js');
 const fs = require('fs');
 const {
 	numberExponentToLarge,
 	txLog,
 	getTargetAddress,
-	setTargetAddress,
 } = require('../helpers.js');
 
-// only one fund admin
-const BLACKLIST = [
-	'0x000000000000000000000000000000000000dead',
-	'0x7Cd5E2d0056a7A7F09CBb86e540Ef4f6dCcc97dd', // XSNX PROXY ADMIN ADDRESS
-];
 
 const INPUT_SIZE = 100;
 
@@ -60,19 +52,6 @@ async function vestTokens(admin, fundingAdmins, token, confs, network) {
 		}
 	);
 
-	// redistribution after flooring
-	//
-	// const TOTAL_AMOUNT = w3utils.toWei('81620');
-	// tx = await token.approve(VestingEscrowDeployed.address, TOTAL_AMOUNT);
-	// await tx.wait().then(e => {
-	// 	txLog(tx, 'Thales.sol: Approve tokens');
-	// });
-	//
-	// tx = await VestingEscrowDeployed.addTokens(TOTAL_AMOUNT);
-	// await tx.wait().then(e => {
-	// 	txLog(tx, 'VestingEscrow.sol: Add tokens');
-	// });
-
 	let accounts = [],
 		values = [];
 	for (let [key, value] of Object.entries(vestedAmounts)) {
@@ -90,7 +69,6 @@ async function vestTokens(admin, fundingAdmins, token, confs, network) {
 	console.log('started funding');
 
 	await _fundAccounts(admin, VestingEscrowDeployed, fundArguments, 1);
-
 }
 
 async function _fundAccounts(account, vestingEscrowContract, fundArguments, confs) {
@@ -101,24 +79,6 @@ async function _fundAccounts(account, vestingEscrowContract, fundArguments, conf
 			txLog(tx, 'VestingEscrow.sol: Fund accounts');
 		});
 	}
-}
-
-function sortAmounts(amounts) {
-	const accountsValues = [];
-	for (let [key, value] of Object.entries(amounts)) {
-		accountsValues.push({ address: key, amount: value });
-	}
-
-	accountsValues.sort(function(a, b) {
-		return a['amount'].minus(b['amount']);
-	});
-
-	amounts = {};
-	for (let key of Object.keys(accountsValues)) {
-		amounts[accountsValues[key]['address']] = accountsValues[key]['amount'];
-	}
-
-	return amounts;
 }
 
 main()

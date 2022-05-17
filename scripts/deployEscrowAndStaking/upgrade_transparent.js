@@ -1,25 +1,14 @@
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
 
-const THALES_AMOUNT = web3.utils.toWei('200');
-const SECOND = 1000;
 const MINUTE = 60;
-const HOUR = 3600;
-const DAY = 86400;
 const WEEK = 604800;
-const YEAR = 31556926;
 
-const fs = require('fs');
-const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 const user_key1 = process.env.PRIVATE_KEY;
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	// let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	if (networkObj.chainId == 10) {
@@ -64,12 +53,9 @@ async function main() {
 		thalesAddress = getTargetAddress('Thales', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
 	}
-	// const thalesAddress = getTargetAddress('OpThales_L2', network);
 	console.log('Thales address: ', thalesAddress);
 
-	// const ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
 	console.log('ProxyERC20sUSD address: ', ProxyERC20sUSD_address);
-	// const ProxyEscrowThalesAddress = getTargetAddress('ProxyEscrowThales', network);
 	const ProxyStaking = getTargetAddress('StakingThales', network);
 	const ProxyEscrow = getTargetAddress('EscrowThales', network);
 
@@ -111,9 +97,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function(resolve) {
-		setTimeout(resolve, time);
-	});
-}

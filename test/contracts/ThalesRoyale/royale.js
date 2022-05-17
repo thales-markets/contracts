@@ -6,11 +6,9 @@ const { assert } = require('../../utils/common');
 
 const { toBytes32 } = require('../../../index');
 
-const SECOND = 1000;
 const HOUR = 3600;
 const DAY = 86400;
 const WEEK = 604800;
-const YEAR = 31556926;
 
 const { fastForward, toUnit } = require('../../utils')();
 
@@ -29,7 +27,6 @@ contract('ThalesRoyale', accounts => {
 	let priceFeedAddress;
 	let MockPriceFeedDeployed;
 	let ThalesDeployed;
-	let thales;
 	let ThalesRoyale;
 	let ThalesRoyaleDeployed;
 	let ThalesRoyalePassport;
@@ -38,14 +35,11 @@ contract('ThalesRoyale', accounts => {
 	let initializeRoyaleData;
 	let ThalesRoyaleImplementation;
 	let ThalesRoyalePass;
-	let ThalesRoyalePassDeployed;
 	let voucher;
 
 	beforeEach(async () => {
-		const thalesQty_0 = toUnit(0);
 		const thalesQty = toUnit(20000);
 		const thalesQty_2500 = toUnit(2500);
-		const thalesQty_5000 = toUnit(5000);
 		const uri = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/0';
 		const passportURI = 'https://thales-ajlyy.s3.eu-central-1.amazonaws.com';
 

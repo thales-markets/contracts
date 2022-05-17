@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.5.16;
 
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
@@ -93,6 +94,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     address public exoticBonds;
 
     IAddressResolver public addressResolver;
+
+    address public thalesRangedAMM;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -232,6 +235,12 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(_thalesAMM != address(0), "Invalid address");
         thalesAMM = _thalesAMM;
         emit ThalesAMMAddressChanged(_thalesAMM);
+    }
+
+    function setThalesRangedAMM(address _thalesRangedAMM) public onlyOwner {
+        require(_thalesRangedAMM != address(0), "Invalid address");
+        thalesRangedAMM = _thalesRangedAMM;
+        emit ThalesRangedAMMAddressChanged(_thalesRangedAMM);
     }
     
     function setExoticBonds(address _exoticBonds) public onlyOwner {
@@ -572,7 +581,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function updateVolume(address account, uint amount) external {
-        require(msg.sender == address(thalesAMM) || msg.sender == exoticBonds, "Invalid address");
+        require(msg.sender == thalesAMM || msg.sender == exoticBonds || msg.sender == thalesRangedAMM, "Invalid address");
         require(msg.sender != address(0), "Invalid address");
         if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
@@ -689,6 +698,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event SNXRewardsAddressChanged(address snxRewards);
     event ThalesRoyaleAddressChanged(address royale);
     event ThalesAMMAddressChanged(address amm);
+    event ThalesRangedAMMAddressChanged(address amm);
     event AMMVolumeUpdated(address account, uint amount);
     event ExtraRewardsChanged(bool extrarewardsactive);
     event PriceFeedAddressChanged(address pricefeed);

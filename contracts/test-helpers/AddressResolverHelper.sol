@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.5.16;
 
 import "../interfaces/IAddressResolver.sol";
@@ -9,6 +11,8 @@ contract AddressResolverHelper is IAddressResolver {
     constructor() public {}
     /* ========== VIEWS / VARIABLES ========== */
     function getAddress(bytes32 name) external view returns (address){
+        // to silence compiler warning
+        name = name;
         return snxAddress;
     }
     

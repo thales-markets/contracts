@@ -3,33 +3,21 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
+const { assert } = require('../../utils/common');
 
 const { toBytes32 } = require('../../../index');
 
-var ethers2 = require('ethers');
-var crypto = require('crypto');
-
-const SECOND = 1;
 const MINUTES = 60;
 const HOUR = 3600;
 const DAY = 86400;
-const WEEK = 604800;
-const YEAR = 31556926;
 
 const {
 	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
+	toUnit
 } = require('../../utils')();
 
 const {
-	onlyGivenAddressCanInvoke,
-	convertToDecimals,
-	encodeCall,
-	assertRevert,
+	encodeCall
 } = require('../../utils/helpers');
 
 const GameType = {
@@ -46,10 +34,8 @@ contract('ThalesRoyalePrivateRoom', accounts => {
 	
 	const [first, owner, second, third, fourth] = accounts;
 	let priceFeedAddress;
-	let rewardTokenAddress;
 	let MockPriceFeedDeployed;
 	let ThalesDeployed;
-	let thales;  
 	let ThalesRoyalePrivateRoom;
 	let ThalesRoyalePrivateRoomDeployed;
 	let royale;  

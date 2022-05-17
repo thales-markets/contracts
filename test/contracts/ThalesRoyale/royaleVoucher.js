@@ -1,44 +1,21 @@
 'use strict';
 
-const { artifacts, contract, web3 } = require('hardhat');
-const { toBN } = web3.utils;
+const { artifacts, contract } = require('hardhat');
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
-
-const { toBytes32 } = require('../../../index');
-
-var ethers2 = require('ethers');
-var crypto = require('crypto');
-
-const SECOND = 1000;
-const HOUR = 3600;
-const DAY = 86400;
-const WEEK = 604800;
-const YEAR = 31556926;
+const { assert } = require('../../utils/common');
 
 const {
 	toUnit
 } = require('../../utils')();
 
-const {
-	onlyGivenAddressCanInvoke,
-	convertToDecimals,
-	encodeCall,
-	assertRevert,
-} = require('../../utils/helpers');
-
 contract('ThalesRoyalePass', accounts => {
-	const [first, owner, second, third, fourth] = accounts;
+	const [first, owner, second, third] = accounts;
 	let ThalesDeployed;
-	let thales;
 	let ThalesRoyalePass;
 	let ThalesRoyaleDeployed;
-	let ThalesRoyalePassDeployed;
 	let voucher;
 	const price = toUnit(30);
 	const priceDouble = toUnit(60);
-	const priceUnder = toUnit(20);
-	const priceUpper = toUnit(200);
 	const uri = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/0';
 
 	beforeEach(async () => {
@@ -132,31 +109,6 @@ contract('ThalesRoyalePass', accounts => {
 			assert.equal(second, await voucher.ownerOf(id_1));
 
 			await expect(voucher.burnWithTransfer(first, id_1, { from: first })).to.be.revertedWith('Sender must be thales royale contract');
-			/*await ThalesRoyaleDeployed.setBuyInAmount(priceDouble);
-			await expect(voucher.burnWithTransfer(first, id_1, { from: ThalesRoyaleDeployed.address })).to.be.revertedWith('Not enough sUSD allocated in the pass');
-			await expect(voucher.burnWithTransfer(first, id_2, { from: ThalesRoyaleDeployed.address })).to.be.revertedWith('Not existing pass');
-
-			await voucher.burnWithTransfer(second, id_1, { from: second });
-			await expect(voucher.burnWithTransfer(second, id_1, { from: ThalesRoyaleDeployed.address })).to.be.revertedWith('Not existing pass');
-
-			await ThalesDeployed.transfer(voucher.address, price, { from: owner });
-			await ThalesDeployed.approve(voucher.address, price, { from: owner });
-
-			await ThalesDeployed.transfer(first, price, { from: owner });
-			await ThalesDeployed.approve(voucher.address, price, { from: first });
-
-			await voucher.mint(second);
-
-			assert.bnEqual(1, await voucher.balanceOf(second));
-			assert.equal(second, await voucher.ownerOf(id_2));
-			assert.bnEqual(price, await voucher.pricePaidForPass(id_2));
-
-			await expect(voucher.burnWithTransfer(first, id_2, { from: ThalesRoyaleDeployed.address })).to.be.revertedWith('Must be owner or approver');
-			await voucher.approve(first, id_2, { from: second });
-
-			await voucher.burnWithTransfer(first, id_2, { from: ThalesRoyaleDeployed.address });
-			await expect(voucher.burnWithTransfer(second, id_2, { from: ThalesRoyaleDeployed.address })).to.be.revertedWith('Not existing pass');*/
-
 		});
 	});
 });

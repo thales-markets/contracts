@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.0;
 
 // external
@@ -22,7 +23,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         address _link,
         address _oracle,
         address _consumer
-    ) public {
+    ) {
         setChainlinkToken(_link);
         setChainlinkOracle(_oracle);
         consumer = ITherundownConsumer(_consumer);

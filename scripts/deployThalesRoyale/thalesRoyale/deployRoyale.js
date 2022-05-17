@@ -3,7 +3,6 @@ const { toBytes32 } = require('../../../index');
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
 const w3utils = require('web3-utils');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const snx = require('synthetix-2.50.4-ovm');
 
 async function main() {
     
@@ -57,7 +56,6 @@ async function main() {
 
 	console.log('Found ProxyERC20sUSD at:' + rewardTokenAddress);
 
-	const min = 60;
 	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
 	const week = 7 * 24 * 60 * 60;

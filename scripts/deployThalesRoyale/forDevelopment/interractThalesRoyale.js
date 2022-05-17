@@ -1,10 +1,5 @@
 const { ethers } = require('hardhat');
-
-const w3utils = require('web3-utils');
-
-const { toBytes32 } = require('../../../index');
-
-const { getTargetAddress, setTargetAddress } = require('../../helpers');
+const { getTargetAddress } = require('../../helpers');
 
 var ethers2 = require('ethers');
 var crypto = require('crypto');
@@ -33,9 +28,6 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const priceFeed = await ethers.getContractFactory('PriceFeed');
-	let priceFeedAddress = getTargetAddress('PriceFeed', network);
-
 	// Dev env - deploy Thales.sol; Live env - use Thales.sol contract address
 	const ThalesRoyale = await ethers.getContractFactory('ThalesRoyale');
 	const ThalesRoyaleDeployed = await ThalesRoyale.attach(
@@ -52,26 +44,6 @@ async function main() {
 			console.log('signed up : ' + wallet.address);
 		});
 	}
-
-	// let tx = await ThalesRoyaleDeployed.signUp();
-	// let alivePlayers = await ThalesRoyaleDeployed.getAlivePlayers();
-	// console.log('Alive Players are: ' + alivePlayers);
-
-	// const day = 1;
-	// let tx = await ThalesRoyaleDeployed.setSignUpPeriod(day);
-	// await tx.wait().then(e => {
-	// 	console.log('ThalesRoyaleDeployed: setSignUpPeriod');
-	// });
-	//
-	// let creationTime = await ThalesRoyaleDeployed.creationTime();
-	// console.log('CreationTime' + creationTime);
-	// let signUpPeriod = await ThalesRoyaleDeployed.signUpPeriod();
-	// console.log('signUpPeriod' + signUpPeriod);
-	//
-	// tx = await ThalesRoyaleDeployed.startRoyale();
-	// await tx.wait().then(e => {
-	// 	console.log('ThalesRoyaleDeployed: startRoyale');
-	// });
 }
 
 main()

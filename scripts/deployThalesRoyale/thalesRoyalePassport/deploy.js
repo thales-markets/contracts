@@ -1,6 +1,5 @@
 const { ethers, upgrades } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
-const w3utils = require('web3-utils');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
 async function main() {
@@ -8,8 +7,6 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let sUSDAddress;
-	let royaleAddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';

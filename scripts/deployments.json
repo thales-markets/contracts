@@ -25,6 +25,9 @@
 		"ThalesRoyaleImplementation": "0xaAF0caE140A7DEaf14C97F5c410201FBe30E33f5",
 		"LPStakingRewards": "0x31a20E5b7b1b067705419D57Ab4F72E81cC1F6Bf",
 		"LPStakingRewardsImplementation": "0xa143E04a0090Cc55c13a8280D52192A2d008DD6F",
+		"LPStakingDoubleRewards": "",
+		"LPStakingDoubleRewardsImplementation": "",
+		"OpToken": "",
 		"OptimisticAirdrop": "0x42B6e9b5Bb96a02E02e651d3104Fc3546E1313F2",
 		"OngoingAirdrop": "0x8D47b12ce25E2dc6866e8aAC0DbD823Da09fADd6",
 		"GUniLPToken": "0xac6705bc7f6a35eb194bdb89066049d6f1b0b1b5",
@@ -51,7 +54,11 @@
 		"ExoticPositionalMarketData": "0x7B3241C61889185188E3B444abEf7298fAe6B1E1",
 		"ExoticPositionalMarketDataImplementation": "0x648200a8d65E477b7222b89019bb877209d1B0cF",
 		"ExoticPositionalTags": "0xd550bD32B434bA870642F94710eb220f542Ed3F3",
-		"ExoticPositionalTagsImplementation": "0x7a911614e0a916FB59A14EBd5c186dD076d1eDBc"
+		"ExoticPositionalTagsImplementation": "0x7a911614e0a916FB59A14EBd5c186dD076d1eDBc",
+		"RangedAMM": "0x64cb6EF981e5E432d4362F6A561A31B22E328cC5",
+		"RangedAMMImplementation": "0x9530C16d2A169DAa38ee73748661999f2b2f0c1d",
+		"RangedPositionMastercopy": "0x897563772ce3aC574412F18eC04581aC377c814a",
+		"RangedMarketMastercopy": "0x6d53c852FE7E0B60d54C70e454CbBccBCE2C39c4"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -88,7 +95,7 @@
 		"PositionalMarketFactory": "0x6414b4C282FF5D031347970425Bd798a478Db5a1",
 		"PositionalMarketFactoryImplementation": "0x32b5558A8e4D16b86BbCdD29b9B370fE8ED185E4",
 		"PositionalMarketManager": "0xAfBA2e76B4580Ab88c07Beb2Ca884ca733fD4dD4",
-		"PositionalMarketManagerImplementation": "0x65356ce88811bfc18e40DD158e84F31422948e80",
+		"PositionalMarketManagerImplementation": "0x08F4D298e10e23726E6f7999858760Df9eadA235",
 		"PositionalMarketData": "0x836dBB0251FBA7C2651ed2B353c9d4795c73225c",
 		"PriceFeed": "0x3c93711B7D3EA867cF271f9F49b6D96201596E17",
 		"ThalesRoyalePrivateRoom": "0x9EE65877dE8658e95f5c893581a76CCd5bc6d35B",
@@ -96,8 +103,6 @@
 		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
 		"PriceFeedImplementation": "0xCD015F11f6eD310089B4E36525dd8b939d8D2410",
 		"DeciMath": "0x12C6276bb5258180C50C87F88e29116255d9454e",
-		"ThalesAMMImplementation": "0xF7d913F47C83a7E447e7d13f899D4be7BBb2A399",
-		"ThalesAMM": "0xfed727f37e921Faac22e36E0bbaA8504B45F6e3f",
 		"StakingThales": "0x8417D248274439360CC38Be84CfFDc01226600F8",
 		"EscrowThales": "0xEeDe0f1D1d70009348f3D9a66Fe03BA3CA0Aeef7",
 		"StakingThalesImplementation": "0x24259BF812Bb303bEE512Ac9960b8949828E827A",
@@ -127,6 +132,9 @@
 		"GUniLPToken": "0xaA5068dC2B3AADE533d3e52C6eeaadC6a8154c57",
 		"LPStakingRewards": "0x44d55a58211b2120Dc9f280ae68B99ffcaC03c7C",
 		"LPStakingRewardsImplementation": "0x40b8F4852eB5394c1EcABc1bEf09016a868f90FC",
+		"LPStakingDoubleRewards": "",
+		"LPStakingDoubleRewardsImplementation": "",
+		"OpToken": "",
 		"ThalesRoyale": "0x5De27390C8280Db5732Ee6aA7f7aBC4e2a476B30",
 		"ThalesRoyaleImplementation": "0x59477c6d82076EcFfe3C255c208ec8b5ab35254d",
 		"ThalesRoyalePassport": "0x8363a01892dE85BC871005570B481c374f2aB3e6",
@@ -135,7 +143,13 @@
 		"VestingEscrowCCImplementation": "0xD55c1d7250695343Bf81593e3eDBb6063F014C9d",
 		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058",
 		"ExoticManagerData": "0xBb409c6488c4bB2BE9e3BaD7B3C79b553ab6A061",
-		"ExoticManagerDataImplementation": "0xE2A2cF1531bF25Ab9aA31eaf1a1Aa31036e84De2"
+		"ExoticManagerDataImplementation": "0xE2A2cF1531bF25Ab9aA31eaf1a1Aa31036e84De2",
+		"ThalesAMMImplementation": "0x107Ae181C7D0efE5df18cA232Ec1241E5CBB253B",
+		"ThalesAMM": "0xfed727f37e921Faac22e36E0bbaA8504B45F6e3f",
+		"RangedAMM": "0x0690F410FB54d76268e4fa97486CBD605e68dC62",
+		"RangedAMMImplementation": "0xE5F074EBf844f5d9E9E956C4f79DA89F003C11A0",
+		"RangedMarketMastercopy": "0xD50fF1fcB365952deaCc40C4259c8c448314567B",
+		"RangedPositionMastercopy": "0x94Db4617900d8f6cA9633D8937950da75C8264fF"
 	},
 	"polygonMumbai": {
 		"ProxyUSDC": "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",
@@ -232,22 +246,6 @@
 		"SportPositionalMarketFactoryImplementation": "0x422c55b4935Da9E86137C535E983fF2C610A970E",
 		"SportPositionalMarketMastercopy": "0xc55C111DC4b609bcFb98c898F7D9c4B3B867F66f",
 		"SportPositionMastercopy": "0x5F62bceB94a2ca9A4C921832B1B5025DeEA7830e"
-	},
-	"goerli": {
-		"Airdrop": "",
-		"OngoingAirdrop": "",
-		"VestingEscrow": "",
-		"EscrowThales": "",
-		"StakingThales": "",
-		"Thales": "",
-		"PriceFeed": "",
-		"PositionMastercopy": "",
-		"PositionalMarketMastercopy": "",
-		"PositionalMarketFactory": "",
-		"PositionalMarketFactoryImplementation": "",
-		"PositionalMarketManager": "",
-		"PositionalMarketManagerImplementation": "",
-		"PositionalMarketData": ""
 	},
 	"localhost": {
 		"Airdrop": "",

@@ -1,28 +1,16 @@
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
 
-const THALES_AMOUNT = web3.utils.toWei('200');
-const SECOND = 1000;
 const MINUTE = 60;
-const HOUR = 3600;
-const DAY = 86400;
 const WEEK = 604800;
-const YEAR = 31556926;
 
-const fs = require('fs');
-const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 const user_key1 = process.env.PRIVATE_KEY;
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	// let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let IssuerAddress;
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
@@ -109,17 +97,13 @@ async function main() {
 	setTargetAddress('EscrowThalesImplementation', network, EscrowImplementation);
 
 	let ThalesAMMAddress = getTargetAddress('ThalesAMM', network);
-	// let ThalesRoyaleAddress =  getTargetAddress('ThalesRoyaleDeployed', network);
 	let PriceFeedAddress = getTargetAddress('PriceFeed', network);
 
 	tx = await ProxyStaking_deployed.setThalesAMM(ThalesAMMAddress, { from: owner.address });
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
 	});
-	// tx = await ProxyStaking_deployed.setThalesRoyale(ThalesRoyaleAddress, {from:owner.address});
-	// await tx.wait().then(e => {
-	// 	console.log('Staking Thales: setThalesRoyale ', ThalesRoyaleAddress);
-	// });
+	
 	tx = await ProxyStaking_deployed.setPriceFeed(PriceFeedAddress, { from: owner.address });
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setPriceFeed ', PriceFeedAddress);

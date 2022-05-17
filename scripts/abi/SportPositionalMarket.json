@@ -234,6 +234,11 @@
         "internalType": "uint256",
         "name": "away",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "draw",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -610,37 +615,6 @@
   },
   {
     "inputs": [],
-    "name": "oraclePrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "price",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "oraclePriceAndTimestamp",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "price",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "updatedAt",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -812,6 +786,11 @@
       {
         "internalType": "uint256",
         "name": "away",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "draw",
         "type": "uint256"
       }
     ],

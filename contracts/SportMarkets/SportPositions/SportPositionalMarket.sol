@@ -153,24 +153,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     /* ---------- Market Resolution ---------- */
 
-    function _oraclePrice() internal view returns (uint price) {
-        // return _priceFeed().rateForCurrency(oracleDetails.key);
-        return 0;
-    }
-
-    function _oraclePriceAndTimestamp() internal view returns (uint price, uint updatedAt) {
-        // return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
-        return (0,0);
-    }
-
-    function oraclePriceAndTimestamp() external view override returns (uint price, uint updatedAt) {
-        return _oraclePriceAndTimestamp();
-    }
-
-    function oraclePrice() external view override returns (uint price) {
-        return _oraclePrice();
-    }
-
     function canResolve() public view override returns (bool) {
             return !resolved && _matured();
     }
@@ -183,7 +165,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         }
 
     function _result() internal view returns (Side) {
-        if (theRundownConsumer.getResult(gameDetails.gameId) == 0) {
+        if (theRundownConsumer.getResult(gameDetails.gameId) == 3) {
             return Side.Draw;
         }
         else {
@@ -197,16 +179,16 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     /* ---------- Option Balances and Mints ---------- */
 
-    function _balancesOf(address account) internal view returns (uint home, uint away) {
-        return (options.home.getBalanceOf(account), options.away.getBalanceOf(account));
+    function _balancesOf(address account) internal view returns (uint home, uint away, uint draw) {
+        return (options.home.getBalanceOf(account), options.away.getBalanceOf(account), options.draw.getBalanceOf(account));
     }
 
-    function balancesOf(address account) external view override returns (uint home, uint away) {
+    function balancesOf(address account) external view override returns (uint home, uint away, uint draw) {
         return _balancesOf(account);
     }
 
-    function totalSupplies() external view override returns (uint home, uint away) {
-        return (options.home.totalSupply(), options.away.totalSupply());
+    function totalSupplies() external view override returns (uint home, uint away, uint draw) {
+        return (options.home.totalSupply(), options.away.totalSupply(), options.draw.totalSupply());
     }
 
     function getMaximumBurnable(address account) external view override returns (uint amount) {
@@ -220,8 +202,20 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _getMaximumBurnable(address account) internal view returns (uint amount) {
-        (uint homeBalance, uint awayBalance) = _balancesOf(account);
-        return (homeBalance > awayBalance) ? awayBalance : homeBalance;
+        (uint homeBalance, uint awayBalance, uint drawBalance) = _balancesOf(account);
+        uint min = homeBalance;
+        if(min > awayBalance) {
+            min = awayBalance;
+            if(optionsCount > 2 && drawBalance < min) {
+                min = drawBalance;
+            }
+        }
+        else {
+            if(optionsCount > 2 && drawBalance < min) {
+                min = drawBalance;
+            }
+        }
+        return min;
     }
 
     /* ---------- Utilities ---------- */
@@ -329,8 +323,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         // the first one to exercise pays the gas fees. Might be worth splitting it home.
         require(resolved, "Unresolved");
         // If the account holds no options, revert.
-        (uint homeBalance, uint awayBalance) = _balancesOf(msg.sender);
-        require(homeBalance != 0 || awayBalance != 0, "Nothing to exercise");
+        (uint homeBalance, uint awayBalance, uint drawBalance) = _balancesOf(msg.sender);
+        require(homeBalance != 0 || awayBalance != 0 || drawBalance !=0, "Nothing to exercise");
 
         // Each option only needs to be exercised if the account holds any of it.
         if (homeBalance != 0) {
@@ -339,9 +333,15 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         if (awayBalance != 0) {
             options.away.exercise(msg.sender);
         }
+        if (optionsCount > 2 && drawBalance != 0) {
+            options.draw.exercise(msg.sender);
+        }
 
         // Only pay out the side that won.
         uint payout = (_result() == Side.Home) ? homeBalance : awayBalance;
+        if(optionsCount > 2 && _result() != Side.Home) {
+            payout = _result() == Side.Away ? awayBalance : drawBalance;
+        }
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);

@@ -20,12 +20,17 @@
             "components": [
               {
                 "internalType": "uint256",
-                "name": "up",
+                "name": "home",
                 "type": "uint256"
               },
               {
                 "internalType": "uint256",
-                "name": "down",
+                "name": "away",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "draw",
                 "type": "uint256"
               }
             ],
@@ -54,23 +59,6 @@
     "outputs": [
       {
         "components": [
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "updatedAt",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct SportPositionalMarketData.OraclePriceAndTimestamp",
-            "name": "oraclePriceAndTimestamp",
-            "type": "tuple"
-          },
           {
             "components": [
               {
@@ -114,12 +102,17 @@
             "components": [
               {
                 "internalType": "uint256",
-                "name": "up",
+                "name": "home",
                 "type": "uint256"
               },
               {
                 "internalType": "uint256",
-                "name": "down",
+                "name": "away",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "draw",
                 "type": "uint256"
               }
             ],

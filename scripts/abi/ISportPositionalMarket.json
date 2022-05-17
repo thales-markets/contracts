@@ -11,12 +11,17 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "up",
+        "name": "home",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "down",
+        "name": "away",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "draw",
         "type": "uint256"
       }
     ],
@@ -150,12 +155,12 @@
     "outputs": [
       {
         "internalType": "contract IPosition",
-        "name": "up",
+        "name": "home",
         "type": "address"
       },
       {
         "internalType": "contract IPosition",
-        "name": "down",
+        "name": "away",
         "type": "address"
       },
       {
@@ -187,37 +192,6 @@
       {
         "internalType": "uint256",
         "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "oraclePrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "oraclePriceAndTimestamp",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "price",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "updatedAt",
         "type": "uint256"
       }
     ],
@@ -287,12 +261,17 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "up",
+        "name": "home",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "down",
+        "name": "away",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "draw",
         "type": "uint256"
       }
     ],

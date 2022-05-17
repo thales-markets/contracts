@@ -8,8 +8,9 @@ import "./SportPositionalMarketManager.sol";
 
 contract SportPositionalMarketData {
     struct OptionValues {
-        uint up;
-        uint down;
+        uint home;
+        uint away;
+        uint draw;
     }
 
     struct Deposits {
@@ -21,11 +22,6 @@ contract SportPositionalMarketData {
         bool canResolve;
     }
 
-    struct OraclePriceAndTimestamp {
-        uint price;
-        uint updatedAt;
-    }
-
     // used for things that don't change over the lifetime of the contract
     struct MarketParameters {
         address creator;
@@ -34,7 +30,6 @@ contract SportPositionalMarketData {
     }
 
     struct MarketData {
-        OraclePriceAndTimestamp oraclePriceAndTimestamp;
         Deposits deposits;
         Resolution resolution;
         SportPositionalMarket.Phase phase;
@@ -61,23 +56,20 @@ contract SportPositionalMarketData {
     }
 
     function getMarketData(SportPositionalMarket market) external view returns (MarketData memory) {
-        (uint price, uint updatedAt) = market.oraclePriceAndTimestamp();
-        (uint upSupply, uint downSupply) = market.totalSupplies();
-
+        (uint homeSupply, uint awaySupply, uint drawSupply) = market.totalSupplies();
         return
             MarketData(
-                OraclePriceAndTimestamp(price, updatedAt),
                 Deposits(market.deposited()),
                 Resolution(market.resolved(), market.canResolve()),
                 market.phase(),
                 market.result(),
-                OptionValues(upSupply, downSupply)
+                OptionValues(homeSupply, awaySupply, drawSupply)
             );
     }
 
     function getAccountMarketData(SportPositionalMarket market, address account) external view returns (AccountData memory) {
-        (uint upBalance, uint downBalance) = market.balancesOf(account);
+        (uint upBalance, uint downBalance, uint drawBalances) = market.balancesOf(account);
 
-        return AccountData(OptionValues(upBalance, downBalance));
+        return AccountData(OptionValues(upBalance, downBalance, drawBalances));
     }
 }

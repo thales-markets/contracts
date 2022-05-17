@@ -13,7 +13,7 @@ interface ISportPositionalMarket {
 
     /* ========== VIEWS / VARIABLES ========== */
 
-    function getOptions() external view returns (IPosition up, IPosition down, IPosition draw);
+    function getOptions() external view returns (IPosition home, IPosition away, IPosition draw);
 
     function times() external view returns (uint maturity, uint destructino);
 
@@ -37,17 +37,13 @@ interface ISportPositionalMarket {
 
     function phase() external view returns (Phase);
 
-    function oraclePrice() external view returns (uint);
-
-    function oraclePriceAndTimestamp() external view returns (uint price, uint updatedAt);
-
     function canResolve() external view returns (bool);
 
     function result() external view returns (Side);
 
-    function balancesOf(address account) external view returns (uint up, uint down);
+    function balancesOf(address account) external view returns (uint home, uint away, uint draw);
 
-    function totalSupplies() external view returns (uint up, uint down);
+    function totalSupplies() external view returns (uint home, uint away, uint draw);
 
     function getMaximumBurnable(address account) external view returns (uint amount);
 

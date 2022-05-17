@@ -155,17 +155,23 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             if (sell_max_price == 0) {
                 return 0;
             }
-
-            (IPosition home, IPosition away, ) = ISportPositionalMarket(market).getOptions();
+            (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
             uint balanceOfTheOtherSide =
                 position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
 
+            // Balancing with three positions needs to be elaborated
+            if(ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
+                balanceOfTheOtherSide =
+                position == Position.Away ? draw.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
+            }
+
             // can burn straight away balanceOfTheOtherSide
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
-            if (_capOnMarket(market).add(balanceOfTheOtherSide) < spentOnMarket[market].add(willPay)) {
+            uint capPlusBalance = _capOnMarket(market).add(balanceOfTheOtherSide);
+            if (capPlusBalance < spentOnMarket[market].add(willPay)) {
                 return 0;
             }
-            uint usdAvailable = _capOnMarket(market).add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
+            uint usdAvailable = capPlusBalance.sub(spentOnMarket[market]).sub(willPay);
             return usdAvailable.div(sell_max_price).mul(ONE).add(balanceOfTheOtherSide);
         } else return 0;
     }
@@ -621,6 +627,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint) {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
+        if(ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
+            balance =
+            position == Position.Away ? away.getBalanceOf(address(this)) : draw.getBalanceOf(address(this));
+        }
         return balance;
     }
 
@@ -628,35 +638,18 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
         uint balanceOtherSide = position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
+        if(ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
+            balance =
+            position == Position.Away ? away.getBalanceOf(address(this)) : draw.getBalanceOf(address(this));
+            balanceOtherSide = 
+            position == Position.Away ? draw.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
+        }
         return (balance, balanceOtherSide);
     }
 
     function _capOnMarket(address market) internal view returns (uint) {
         (bytes32 gameId, ) = ISportPositionalMarket(market).getGameDetails();
         return getCapPerAsset(gameId);
-    }
-
-    function _expneg(uint x) internal view returns (uint result) {
-        result = (ONE * ONE) / _expNegPow(x);
-    }
-
-    function _expNegPow(uint x) internal view returns (uint result) {
-        uint e = 2718280000000000000;
-        // result = deciMath.pow(e, x);
-        return 0;
-    }
-
-    function sqrt(uint y) internal pure returns (uint z) {
-        if (y > 3) {
-            z = y;
-            uint x = y / 2 + 1;
-            while (x < z) {
-                z = x;
-                x = (y / x + x) / 2;
-            }
-        } else if (y != 0) {
-            z = 1;
-        }
     }
 
     function retrieveSUSD(address payable account) external onlyOwner {

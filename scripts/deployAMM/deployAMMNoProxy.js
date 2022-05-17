@@ -1,8 +1,5 @@
-const { ethers, upgrades } = require('hardhat');
-const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
-const w3utils = require('web3-utils');
+const { ethers } = require('hardhat');
+const { setTargetAddress } = require('../helpers');
 
 async function main() {
 
@@ -10,7 +7,6 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let priceFeedAddress, ProxyERC20sUSDaddress;
 
 	if (network == 'homestead') {
 		network = 'mainnet';
@@ -52,9 +48,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function(resolve) {
-		setTimeout(resolve, time);
-	});
-}

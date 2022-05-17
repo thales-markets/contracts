@@ -1,24 +1,9 @@
-const path = require('path');
-const { ethers, upgrades } = require('hardhat');
-const w3utils = require('web3-utils');
-const { artifacts, contract, web3 } = require('hardhat');
+const { ethers } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
-const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
-
-
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../test/utils/index')();
-
+const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
     let network = networkObj.name;
 	let net_optimistic = '';
@@ -39,7 +24,6 @@ async function main() {
 		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
 		return 0;
 	}
-
 
 	const ProxyThalesExchanger_deployed = getTargetAddress('ProxyThalesExchanger', network);
 	const ProxyThalesExchangerImplementation = await getImplementationAddress(ethers.provider, ProxyThalesExchanger_deployed);

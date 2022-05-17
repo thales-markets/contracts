@@ -1,18 +1,7 @@
-const path = require('path');
 const { ethers, upgrades } = require('hardhat');
-const w3utils = require('web3-utils');
-const { artifacts, contract, web3 } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
-const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
-
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../test/utils/index')();
+const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -112,9 +101,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function(resolve) {
-		setTimeout(resolve, time);
-	});
-}

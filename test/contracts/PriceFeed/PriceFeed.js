@@ -8,7 +8,6 @@ const { assert } = require('../../utils/common');
 const { currentTime, toUnit, bytesToString, fastForward } = require('../../utils')();
 
 const {
-	onlyGivenAddressCanInvoke,
 	convertToDecimals,
 	encodePriceSqrt,
 } = require('../../utils/helpers');
@@ -20,12 +19,11 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 const MockUniswapV3Factory = artifacts.require('MockUniswapV3Factory');
-let deployerSigner, ownerSigner, oracleSigner, accountOneSigner;
+let ownerSigner, accountOneSigner, deployerSigner, oracleSigner;
 
 contract('Price Feed', async accounts => {
-	const [deployerAccount, owner, oracle, accountOne, accountTwo] = accounts;
-	const [SNX, JPY, XTZ, BNB, AELIN, EUR, ETH, LYRA, fastGasPrice] = [
-		'SNX',
+	const [owner] = accounts;
+	const [JPY, XTZ, BNB, AELIN, EUR, ETH, LYRA, fastGasPrice] = [
 		'JPY',
 		'XTZ',
 		'BNB',

@@ -1,33 +1,15 @@
 'use strict';
 
-const { artifacts, contract, web3, ethers } = require('hardhat');
-const { toBN, fromBN } = web3.utils;
-
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
+const { artifacts, contract, ethers } = require('hardhat');
+const { assert } = require('../../utils/common');
 
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
-const { toDecimal } = require('web3-utils');
-// const { ethers } = require('ethers');
-const { setupContract, setupAllContracts } = require('../../utils/setup');
+const { setupAllContracts } = require('../../utils/setup');
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
-const {
-	fastForward,
-	toUnit,
-	fromUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../utils')();
-
-const {
-	onlyGivenAddressCanInvoke,
-	convertToDecimals,
-	encodeCall,
-	assertRevert,
-} = require('../../utils/helpers');
+const { toUnit } = require('../../utils')();
 
 contract('StakingThales', accounts => {
 	const [first, second, third] = accounts;
@@ -36,32 +18,14 @@ contract('StakingThales', accounts => {
 	let owner, firstSigner;
 	let ThalesDeployed,
 		ThalesFeeDeployed,
+		OngoingAirdropDeployed,
 		StakingThalesDeployed,
 		EscrowThalesDeployed,
-		OngoingAirdropDeployed,
 		SNXRewardsDeployed,
-		AddressResolverDeployed,
-		ProxyEscrowDeployed,
-		ProxyStakingDeployed;
-
-	let initializeStalkingData, initializeEscrowData;
-
-	let EscrowImplementation, StakingImplementation;
-
-	let EscrowImplementationV2, StakingImplementationV2;
-	let StakingThalesDeployedV2, EscrowThalesDeployedV2;
+		AddressResolverDeployed;
 
 	const sUSDQty = toUnit(5555);
-	const sUSD = 5555;
-	const sAUDKey = toBytes32('sAUD');
-	const SECOND = 1000;
-	const DAY = 86400;
 	const WEEK = 604800;
-	const YEAR = 31556926;
-
-	let PositionalMarket = artifacts.require('PositionalMarket');
-	let Synth = artifacts.require('Synth');
-	let Position = artifacts.require('Position');
 	let manager, factory, addressResolver;
 	let sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 	before(async () => {
@@ -88,7 +52,9 @@ contract('StakingThales', accounts => {
 		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
 		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
-		await factory.connect(ownerSigner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
+		await factory
+			.connect(ownerSigner)
+			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
 		await Promise.all([
@@ -110,7 +76,6 @@ contract('StakingThales', accounts => {
 		let StakingThales = await ethers.getContractFactory('StakingThales');
 		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
 		let SNXRewards = artifacts.require('SNXRewards');
-		let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 		ThalesDeployed = await Thales.new({ from: owner.address });
 		ThalesFeeDeployed = await Thales.new({ from: owner.address });
 		SNXRewardsDeployed = await SNXRewards.new();
@@ -193,51 +158,6 @@ contract('StakingThales', accounts => {
 			);
 		});
 	});
-
-	// describe('Upgrade Implementation:', () => {
-	// 	it('reverts the call of new function at old implementation', async function() {
-	// 		try {
-	// 			await expect(StakingThalesDeployed.getVersion()).to.be.reverted;
-	// 		} catch (error) {}
-	// 	});
-	// 	beforeEach(async () => {
-	// 		const signers = await ethers.getSigners();
-	// 		owner = signers[0];
-	// 		firstSigner = signers[1];
-	// 		let EscrowThalesV2 = await ethers.getContractFactory('ProxyEscrowThales_V2');
-	// 		let StakingThalesV2 = await ethers.getContractFactory('ProxyStakingThales_V2');
-	//
-	// 		EscrowThalesDeployedV2 = await upgrades.upgradeProxy(
-	// 			EscrowThalesDeployed.address,
-	// 			EscrowThalesV2
-	// 		);
-	//
-	// 		StakingThalesDeployedV2 = await upgrades.upgradeProxy(
-	// 			StakingThalesDeployed.address,
-	// 			StakingThalesV2
-	// 		);
-	// 	});
-	//
-	// 	it('calls new function of new implementation', async function() {
-	// 		let tx = await StakingThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '0');
-	// 		tx = await EscrowThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '0');
-	// 	});
-	// 	it('set new value in new function of new implementation', async function() {
-	// 		let tx = await StakingThalesDeployedV2.connect(owner).setVersion(1);
-	// 		tx = await StakingThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '1');
-	// 		tx = await EscrowThalesDeployedV2.connect(owner).setVersion(10);
-	// 		tx = await EscrowThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '10');
-	// 	});
-	//
-	// 	it('set new value in new function of new implementation different owner', async function() {
-	// 		await expect(StakingThalesDeployedV2.connect(firstSigner).setVersion(1)).to.be.reverted;
-	// 		await expect(EscrowThalesDeployedV2.connect(firstSigner).setVersion(10)).to.be.reverted;
-	// 	});
-	// });
 
 	describe('Change ownership:', () => {
 		beforeEach(async () => {

@@ -4,14 +4,10 @@ const Big = require('big.js');
 const fs = require('fs');
 const {
 	numberExponentToLarge,
-	txLog,
 	getTargetAddress,
-	setTargetAddress,
 } = require('../helpers.js');
 
 const TOTAL_AMOUNT = w3utils.toWei('15000000'); //15m
-const VESTING_PERIOD = 86400 * 7 * 100; //100 weeks
-const INPUT_SIZE = 100;
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const FLOOR_VALUE = w3utils.toWei('24');
 

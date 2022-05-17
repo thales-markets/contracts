@@ -1,16 +1,9 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
-const Big = require('big.js');
-const fs = require('fs');
-const { numberExponentToLarge, txLog } = require('../helpers.js');
+const { txLog } = require('../helpers.js');
 
 const TOTAL_AMOUNT = w3utils.toWei('60000');
 const VESTING_PERIOD = 86400 * 365; //one year
-const INPUT_SIZE = 100;
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-
-// TODO - put correct addresses here
-const fundingAdmins = [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS];
 
 async function main() {
 	let accounts = await ethers.getSigners();

@@ -409,11 +409,6 @@
         "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
       }
     ],
     "name": "balancePosition",
@@ -530,7 +525,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "price",
+        "name": "_price",
         "type": "uint256"
       },
       {

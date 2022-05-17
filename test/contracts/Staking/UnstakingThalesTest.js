@@ -1,63 +1,39 @@
 'use strict';
 
 const { artifacts, contract, web3 } = require('hardhat');
-const { toBN, fromBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
+const { assert } = require('../../utils/common');
 
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
-const { toDecimal } = require('web3-utils');
-const { setupContract, setupAllContracts } = require('../../utils/setup');
+const { setupAllContracts } = require('../../utils/setup');
 
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const { fastForward, toUnit } = require('../../utils')();
 
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../utils')();
-
-const {
-	onlyGivenAddressCanInvoke,
-	convertToDecimals,
-	encodeCall,
-	assertRevert,
-} = require('../../utils/helpers');
+const { encodeCall } = require('../../utils/helpers');
 
 contract('StakingThales', accounts => {
 	const [first, second, third, owner] = accounts;
-	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
+	const [initialCreator, managerOwner, minter, dummy] = accounts;
 	let ThalesDeployed,
 		ThalesFeeDeployed,
 		StakingThalesDeployed,
 		EscrowThalesDeployed,
 		SNXRewardsDeployed,
 		AddressResolverDeployed,
-		OngoingAirdropDeployed,
-        ProxyEscrowDeployed,
+		ProxyEscrowDeployed,
 		ProxyStakingDeployed,
+		OngoingAirdropDeployed,
 		ThalesStakingRewardsPoolDeployed;
 	let ThalesStakingRewardsPool;
 
-    let initializeStalkingData,
-        initializeEscrowData;
+	let initializeStalkingData, initializeEscrowData;
 
-    let EscrowImplementation,
-        StakingImplementation;
+	let EscrowImplementation, StakingImplementation;
 	const sUSDQty = toUnit(5555);
-	const sUSD = 5555;
-	const sAUDKey = toBytes32('sAUD');
 	const SECOND = 1000;
 	const DAY = 86400;
 	const WEEK = 604800;
-	const YEAR = 31556926;
-
-	let PositionalMarket = artifacts.require('PositionalMarket');
-	let Synth = artifacts.require('Synth');
-	let Position = artifacts.require('Position');
 	let manager, factory, addressResolver;
 	let sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 
@@ -85,7 +61,9 @@ contract('StakingThales', accounts => {
 		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
 		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
-		await factory.connect(ownerSigner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
+		await factory
+			.connect(ownerSigner)
+			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
 		await Promise.all([
@@ -103,7 +81,7 @@ contract('StakingThales', accounts => {
 		let EscrowThales = artifacts.require('EscrowThales');
 		let StakingThales = artifacts.require('StakingThales');
 		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
-        let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
+		let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 		let SNXRewards = artifacts.require('SNXRewards');
 		SNXRewardsDeployed = await SNXRewards.new();
 		let AddressResolver = artifacts.require('AddressResolverHelper');
@@ -117,68 +95,72 @@ contract('StakingThales', accounts => {
 			toBytes32('random'),
 			{ from: owner }
 		);
-        
-        ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
-        ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
-        EscrowImplementation = await EscrowThales.new({from:owner});
-        StakingImplementation = await StakingThales.new({from:owner});
-        EscrowThalesDeployed = await EscrowThales.at(ProxyEscrowDeployed.address);
-        StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
 
-        initializeEscrowData = encodeCall(
+		ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
+		ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
+		EscrowImplementation = await EscrowThales.new({ from: owner });
+		StakingImplementation = await StakingThales.new({ from: owner });
+		EscrowThalesDeployed = await EscrowThales.at(ProxyEscrowDeployed.address);
+		StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
+
+		initializeEscrowData = encodeCall(
 			'initialize',
 			['address', 'address'],
-			[
-				owner,
-				ThalesDeployed.address
-			]
+			[owner, ThalesDeployed.address]
 		);
-        await ProxyEscrowDeployed.upgradeToAndCall(EscrowImplementation.address, initializeEscrowData, {
-            from: initialCreator,
-        });
+		await ProxyEscrowDeployed.upgradeToAndCall(EscrowImplementation.address, initializeEscrowData, {
+			from: initialCreator,
+		});
 
-	
-        initializeStalkingData = encodeCall(
+		initializeStalkingData = encodeCall(
 			'initialize',
 			['address', 'address', 'address', 'address', 'uint256', 'uint256', 'address'],
 			[
 				owner,
-                EscrowThalesDeployed.address,
-                ThalesDeployed.address,
-                sUSDSynth.address,
-                WEEK,
-                WEEK,
-				SNXRewardsDeployed.address
+				EscrowThalesDeployed.address,
+				ThalesDeployed.address,
+				sUSDSynth.address,
+				WEEK,
+				WEEK,
+				SNXRewardsDeployed.address,
 			]
 		);
 
-        await ProxyStakingDeployed.upgradeToAndCall(StakingImplementation.address, initializeStalkingData, {
-            from: initialCreator,
-        });
+		await ProxyStakingDeployed.upgradeToAndCall(
+			StakingImplementation.address,
+			initializeStalkingData,
+			{
+				from: initialCreator,
+			}
+		);
 
 		ThalesStakingRewardsPool = artifacts.require('ThalesStakingRewardsPool');
-		ThalesStakingRewardsPoolDeployed = await ThalesStakingRewardsPool.new({from:owner});
+		ThalesStakingRewardsPoolDeployed = await ThalesStakingRewardsPool.new({ from: owner });
 		await ThalesStakingRewardsPoolDeployed.initialize(
-				owner, 
-				ProxyStakingDeployed.address,
-				ThalesDeployed.address,
-				EscrowThalesDeployed.address);
-		await StakingThalesDeployed.setThalesStakingRewardsPool(ThalesStakingRewardsPoolDeployed.address, { from: owner });
-		await EscrowThalesDeployed.setThalesStakingRewardsPool(ThalesStakingRewardsPoolDeployed.address, { from: owner });
-		
+			owner,
+			ProxyStakingDeployed.address,
+			ThalesDeployed.address,
+			EscrowThalesDeployed.address
+		);
+		await StakingThalesDeployed.setThalesStakingRewardsPool(
+			ThalesStakingRewardsPoolDeployed.address,
+			{ from: owner }
+		);
+		await EscrowThalesDeployed.setThalesStakingRewardsPool(
+			ThalesStakingRewardsPoolDeployed.address,
+			{ from: owner }
+		);
 
 		await StakingThalesDeployed.setDistributeFeesEnabled(true, { from: owner });
 		await StakingThalesDeployed.setClaimEnabled(true, { from: owner });
 		await StakingThalesDeployed.setFixedPeriodReward(100000, { from: owner });
-		await StakingThalesDeployed.setAddressResolver(AddressResolverDeployed.address, { from: owner });
+		await StakingThalesDeployed.setAddressResolver(AddressResolverDeployed.address, {
+			from: owner,
+		});
 	});
 
 	describe('ProxyUnstaking', () => {
 		it('User cant unstake if the cooldown period did not pass', async () => {
-			// await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
-			// 	'Staking period has not started'
-			// );
-
 			await ThalesDeployed.transfer(first, 1500, { from: owner });
 			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.transfer(StakingThalesDeployed.address, 5500000, {
@@ -223,15 +205,9 @@ contract('StakingThales', accounts => {
 
 			fastForward(WEEK);
 			await StakingThalesDeployed.unstake({ from: first });
-
-
 		});
 
 		it('Proper escrow calculation', async () => {
-			// await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
-			// 	'Staking period has not started'
-			// );
-
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -290,8 +266,8 @@ contract('StakingThales', accounts => {
 
 			let answerRewards = await StakingThalesDeployed.getRewardsAvailable(first);
 			let answerRewardsthird = await StakingThalesDeployed.getRewardsAvailable(third);
-			console.log("answerRewards" + answerRewards);
-			console.log("answerRewardsthird" + answerRewardsthird);
+			console.log('answerRewards' + answerRewards);
+			console.log('answerRewardsthird' + answerRewardsthird);
 
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			let claimable = web3.utils.toDecimal(answer2);

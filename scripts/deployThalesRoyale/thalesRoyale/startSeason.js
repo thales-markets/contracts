@@ -1,7 +1,5 @@
 const { ethers } = require('hardhat');
 const { getTargetAddress} = require('../../helpers');
-const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
 
 async function main() {
     
@@ -9,7 +7,6 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let ProxyERC20sUSDaddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -59,12 +56,6 @@ async function main() {
 		console.log('New season started');
 	});
 
-}
-
-function delay(time) {
-	return new Promise(function (resolve) {
-		setTimeout(resolve, time);
-	});
 }
 
 main()

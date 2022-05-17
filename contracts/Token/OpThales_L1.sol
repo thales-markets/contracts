@@ -18,11 +18,11 @@ contract OpThales is ERC20, Ownable {
         return __symbol;
     }
 
-    function decimals() public view override returns (uint8) {
+    function decimals() public pure override returns (uint8) {
         return __decimals;
     }
 
-    constructor() public ERC20(__name, __symbol) {
+    constructor() ERC20(__name, __symbol) {
         _mint(msg.sender, INITIAL_TOTAL_SUPPLY * 1e18);
     }
 

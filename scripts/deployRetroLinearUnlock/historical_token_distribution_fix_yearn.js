@@ -1,12 +1,10 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
-const Big = require('big.js');
 const fs = require('fs');
 const {
 	numberExponentToLarge,
 	txLog,
 	getTargetAddress,
-	setTargetAddress,
 } = require('../helpers.js');
 
 // only one fund admin
@@ -100,24 +98,6 @@ async function _fundAccounts(account, vestingEscrowContract, fundArguments, conf
 			txLog(tx, 'VestingEscrow.sol: Fund accounts');
 		});
 	}
-}
-
-function sortAmounts(amounts) {
-	const accountsValues = [];
-	for (let [key, value] of Object.entries(amounts)) {
-		accountsValues.push({ address: key, amount: value });
-	}
-
-	accountsValues.sort(function(a, b) {
-		return a['amount'].minus(b['amount']);
-	});
-
-	amounts = {};
-	for (let key of Object.keys(accountsValues)) {
-		amounts[accountsValues[key]['address']] = accountsValues[key]['amount'];
-	}
-
-	return amounts;
 }
 
 main()

@@ -7,9 +7,7 @@ const { getAllClaimers } = require('../snx-data/L2/ongoingClaims');
 
 const {
 	numberExponentToLarge,
-	txLog,
-	getTargetAddress,
-	setTargetAddress,
+	getTargetAddress
 } = require('../helpers.js');
 
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');

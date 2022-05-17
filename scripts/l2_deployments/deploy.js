@@ -1,11 +1,7 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
 
 const { getTargetAddress, setTargetAddress } = require('../helpers');
-
-const { toBytes32 } = require('../../index');
 
 const aggregators = {
 	AUD: '0x5813A90f826e16dB392abd2aF7966313fc1fd5B8',
@@ -82,10 +78,8 @@ async function main() {
 	let safeDecimalMath = await safeDecimalMathContract.attach(safeDecimalMathAddress);
 	let proxysUSD = await proxysUSDContract.attach(proxysUSDAddress);
 
-	// const addressResolver = snx.getTarget({ useOvm: true, contract: 'AddressResolver' });
 	console.log('Found address resolver at:' + addressResolver.address);
 
-	// const safeDecimalMath = snx.getTarget({ useOvm: true, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 	console.log('Found proxysUSD at:' + proxysUSD.address);
 
@@ -102,12 +96,6 @@ async function main() {
 		await PriceFeedDeployed.setPricetoReturn(1000);
 	}
 	else {
-		
-		// PriceFeedDeployed = await priceFeed.deploy(owner.address);
-		// await PriceFeedDeployed.deployed();
-		// setTargetAddress('PriceFeed', network, PriceFeedDeployed.address);
-		// console.log('PriceFeed deployed to:', PriceFeedDeployed.address);
-
 		priceFeedAddress = getTargetAddress('PriceFeed', network);
 		console.log('Found PriceFeed at:' + priceFeedAddress);
 	}
@@ -154,11 +142,6 @@ async function main() {
 	if (network == 'mainnet') {
 		creatorCapitalRequirement = w3utils.toWei('1000');
 	}
-	// const poolFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the pool in the end.
-	// const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
-	// const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
-
-	// const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
 	
 	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
 	const PositionalMarketManagerDeployed = await PositionalMarketManager.deploy(
@@ -171,14 +154,8 @@ async function main() {
 	);
 	await PositionalMarketManagerDeployed.deployed();
 
-	
-
-
 	setTargetAddress('PositionalMarketManager', network, PositionalMarketManagerDeployed.address);
 	console.log('PositionalMarketManager deployed to:', PositionalMarketManagerDeployed.address);
-
-	
-	
 	
 	console.log('Done setting Position Market Manager');
 	const PositionalMarketData = await ethers.getContractFactory('PositionalMarketData');

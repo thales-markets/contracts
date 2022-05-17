@@ -1,43 +1,21 @@
 'use strict';
 
-const { artifacts, contract, web3 } = require('hardhat');
-const { toBN } = web3.utils;
+const { artifacts, contract } = require('hardhat');
+const { assert } = require('../../utils/common');
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
-
-const { toBytes32 } = require('../../../index');
-
-var ethers2 = require('ethers');
-var crypto = require('crypto');
 
 const SECOND = 1000;
 const HOUR = 3600;
-const DAY = 86400;
-const WEEK = 604800;
-const YEAR = 31556926;
 
 const {
 	fastForward,
 	toUnit,
-	currentTime,
-	bytesToString,
-	multiplyDecimalRound,
-	divideDecimalRound,
+	currentTime
 } = require('../../utils')();
 
-const {
-	onlyGivenAddressCanInvoke,
-	convertToDecimals,
-	encodeCall,
-	assertRevert,
-} = require('../../utils/helpers');
 
 contract('TherundownConsumer', accounts => {
 	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
-
-	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
-	const MAX_NUMBER =
-		'115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
 	const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalFixedMarket');
 	const ExoticPositionalOpenBidMarketContract = artifacts.require('ExoticPositionalOpenBidMarket');
@@ -53,33 +31,12 @@ contract('TherundownConsumer', accounts => {
 	let ThalesOracleCouncil;
 	let Thales;
 	let ThalesBonds;
-	let answer;
-	let minimumPositioningDuration = 0;
-	let minimumMarketMaturityDuration = 0;
 
-	let marketQuestion,
-		marketSource,
-		endOfPositioning,
-		fixedTicketPrice,
-		positionAmount1,
-		positionAmount2,
-		positionAmount3,
-		withdrawalAllowed,
-		tag,
-		paymentToken,
-		phrases = [],
-		deployedMarket,
-		fixedBondAmount,
-		outcomePosition,
-		outcomePosition2;
+	let deployedMarket,
+		fixedBondAmount;
 
-	let consumer;
 	let TherundownConsumer;
-	let TherundownConsumerImplementation;
 	let TherundownConsumerDeployed;
-	let MockExoticMarket;
-	let MockTherundownConsumerWrapper;
-	let initializeConsumerData;
 	let gamesQueue;
 	let game_1_create;
 	let game_1_resolve;
@@ -247,9 +204,6 @@ contract('TherundownConsumer', accounts => {
 			{ from: owner }
 		);
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
-		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
-		// 	TherundownConsumerDeployed.address
-		// );
 		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
 		await TherundownConsumerDeployed.addToWhitelist(third, { from: owner });
 

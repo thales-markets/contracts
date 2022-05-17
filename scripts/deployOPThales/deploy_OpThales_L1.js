@@ -1,13 +1,9 @@
-const path = require('path');
 const { ethers } = require('hardhat');
-
 const user_key = process.env.PRIVATE_KEY;
 
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { setTargetAddress } = require('../helpers');
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 
@@ -33,7 +29,7 @@ async function main() {
 
 	const OP_Thales_L1_deployed = await OP_Thales_L1_connected.deploy();
 	
-	let tx = await OP_Thales_L1_deployed.deployed();
+	await OP_Thales_L1_deployed.deployed();
 	console.log("Optimistic Thales L1 deployed on: ",OP_Thales_L1_deployed.address);
 	setTargetAddress('OpThales_L1', network, OP_Thales_L1_deployed.address);
 	

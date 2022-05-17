@@ -3,25 +3,11 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../utils')();
+const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
-const { setupContract, setupAllContracts } = require('../../utils/setup');
+const { setupAllContracts } = require('../../utils/setup');
 
-const {
-	ensureOnlyExpectedMutativeFunctions,
-	onlyGivenAddressCanInvoke,
-	getEventByName,
-	getDecodedLogs,
-	decodedEventEqual,
-	convertToDecimals,
-} = require('../../utils/helpers');
+const { convertToDecimals } = require('../../utils/helpers');
 
 let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
 let PositionalMarket,
@@ -39,44 +25,19 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-const Phase = {
-	Trading: toBN(0),
-	Maturity: toBN(1),
-	Expiry: toBN(2),
-};
-
 contract('ThalesAMM', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
 	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
 
 	const sUSDQty = toUnit(100000);
-	const sUSDQtyAmm = toUnit(1000);
 
-	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
-
-	const capitalRequirement = toUnit(2);
-	const skewLimit = toUnit(0.05);
-	const maxOraclePriceAge = toBN(60 * 61);
-	const expiryDuration = toBN(26 * 7 * 24 * 60 * 60);
-	const maxTimeToMaturity = toBN(365 * 24 * 60 * 60);
-
-	const initialStrikePrice = toUnit(100);
-	const initialStrikePriceValue = 100;
 
 	const sAUDKey = toBytes32('sAUD');
 	const sUSDKey = toBytes32('sUSD');
 	const sETHKey = toBytes32('sETH');
 	const nonRate = toBytes32('nonExistent');
-
-	let timeToMaturity = 200;
-	let totalDeposited;
-
-	const Side = {
-		Up: toBN(0),
-		Down: toBN(1),
-	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
@@ -311,7 +272,6 @@ contract('ThalesAMM', accounts => {
 			console.log('sUSDBalance thalesAMM before:' + sUSDBalance / 1e6);
 			sUSDBalance = await testUSDC.balanceOf(safeBox);
 			console.log('sUSDBalance safeBox before:' + sUSDBalance / 1e6);
-
 
 			//slippage test
 			await thalesAMM.buyFromAMM(

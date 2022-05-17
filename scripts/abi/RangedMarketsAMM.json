@@ -167,6 +167,19 @@
         "type": "uint256"
       }
     ],
+    "name": "SetMaxinalDifBetweenStrikes",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_spread",
+        "type": "uint256"
+      }
+    ],
     "name": "SetMinSupportedPrice",
     "type": "event"
   },
@@ -622,6 +635,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "maximalDifBetweenStrikes",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "contract RangedMarket",
@@ -930,6 +956,11 @@
       {
         "internalType": "uint256",
         "name": "_minDiffBetweenStrikes",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxDiffBetweenStrikes",
         "type": "uint256"
       }
     ],

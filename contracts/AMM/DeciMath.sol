@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.5.16;
 
 contract DeciMath {
@@ -137,7 +138,7 @@ contract DeciMath {
         return num;
     }
 
-    function countDigits(uint num) public view returns (uint) {
+    function countDigits(uint num) public pure returns (uint) {
         uint digits = 0;
 
         while (num != 0) {
@@ -295,7 +296,6 @@ contract DeciMath {
     function ln(uint x, uint accuracy) public view returns (uint) {
         require(x >= TEN18, "input must be >= 1");
         uint count = 0; // track
-        uint TWO = mul(TEN18, 2);
 
         /* Calculate q. Use branches to divide by powers-of-two, until output is in range [1,2[. Branch approach is more performant
         than simple successive division by 2. As max input of ln(x) is ~= 2^132, starting division at 2^30 yields sufficiently few operations for large x. */

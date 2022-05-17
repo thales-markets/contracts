@@ -3,35 +3,30 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
+const { assert } = require('../../utils/common');
 const {
 	fastForward,
 	toUnit,
 	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
+	multiplyDecimalRound
 } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
-const { setupContract, setupAllContracts } = require('../../utils/setup');
-const { expect } = require('chai');
+const { setupAllContracts } = require('../../utils/setup');
 
 const {
-	ensureOnlyExpectedMutativeFunctions,
 	onlyGivenAddressCanInvoke,
-	getEventByName,
 	getDecodedLogs,
 	decodedEventEqual,
 	convertToDecimals,
 } = require('../../utils/helpers');
 
-let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
+let factory, manager;
 let PositionalMarket,
 	priceFeed,
-	oracle,
 	sUSDSynth,
 	positionalMarketMastercopy,
 	PositionMastercopy;
-let market, up, down, Position, Synth;
+let market, up, down, Position, Synth, addressResolver;
 
 let aggregator_sAUD, aggregator_iAUD, aggregator_sUSD, aggregator_nonRate;
 
@@ -80,12 +75,9 @@ async function createMarketAndMintMore(
 
 contract('Position', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
-	let creator, owner, minterSigner, dummySigner, exerciserSigner, secondCreatorSigner;
+	let creator, owner, minterSigner, secondCreatorSigner, dummySigner, exerciserSigner;
 
 	const sUSDQty = toUnit(10000);
-
-	const capitalRequirement = toUnit(2);
-	const skewLimit = toUnit(0.05);
 	const maxOraclePriceAge = toBN(60 * 61);
 	const expiryDuration = toBN(26 * 7 * 24 * 60 * 60);
 	const maxTimeToMaturity = toBN(365 * 24 * 60 * 60);
@@ -270,23 +262,6 @@ contract('Position', accounts => {
 	});
 
 	describe('PositionalMarketFactory', () => {
-		// it('createMarket cannot be invoked except by the manager.', async () => {
-		// 	const now = await currentTime();
-		// 	await expect(
-		// 		factory.createMarket({
-		// 			creator: initialCreator,
-		// 			_sUSD: addressResolver.address,
-		// 			_priceFeed: priceFeed.address,
-		// 			oracleKey: sAUDKey,
-		// 			strikePrice: toUnit(1),
-		// 			times: [toBN(now + 200), toBN(now + 500)],
-		// 			initialMint: toUnit(2),
-		// 			customMarket: false,
-		// 			customOracle: ZERO_ADDRESS,
-		// 		})
-		// 	).to.be.revertedWith('Only permitted by the manager.');
-		// });
-
 		it('Can create a market', async () => {
 			const now = await currentTime();
 

@@ -1,29 +1,16 @@
 'use strict';
 
-const { artifacts, contract, web3 } = require('hardhat');
+const { artifacts, contract } = require('hardhat');
 
 const { assert } = require('../../utils/common');
 
-const { currentTime, toUnit, fastForward, bytesToString } = require('../../utils')();
-
-const {
-	onlyGivenAddressCanInvoke,
-	convertToDecimals,
-	encodeCall,
-	assertRevert,
-} = require('../../utils/helpers');
-
-const { expect } = require('chai');
-const { toBN } = require('web3-utils');
+const { currentTime, toUnit, fastForward } = require('../../utils')();
 
 const SECOND = 1;
 const HOUR = 3600;
 const DAY = 86400;
-const WEEK = 604800;
-const YEAR = 31556926;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
-const MAX_NUMBER = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
 // contracts
 const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalFixedMarket');
@@ -41,9 +28,6 @@ let ThalesOracleCouncil;
 let Thales;
 let ThalesBonds;
 let answer;
-let minimumPositioningDuration = 0;
-let minimumMarketMaturityDuration = 0;
-
 let marketQuestion,
 	marketSource,
 	endOfPositioning,
@@ -52,8 +36,8 @@ let marketQuestion,
 	positionAmount2,
 	positionAmount3,
 	withdrawalAllowed,
-	tag,
 	paymentToken,
+	tag,
 	phrases = [],
 	deployedMarket,
 	deployedOpenBidMarket,
@@ -75,7 +59,6 @@ contract('Exotic Positional market', async accounts => {
 		councilThree,
 		safeBox,
 	] = accounts;
-	let initializeData;
 	beforeEach(async () => {
 		ExoticPositionalMarket = await ExoticPositionalMarketContract.new();
 		ExoticPositionalOpenBidMarket = await ExoticPositionalOpenBidMarketContract.new();

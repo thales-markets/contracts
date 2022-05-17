@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.0;
 
 // Inheritance
@@ -213,6 +214,9 @@ contract PriceFeed is Initializable, ProxyOwned {
             );
             return RateAndUpdatedTime({rate: uint216(_formatAnswer(currencyKey, answer)), time: uint40(updatedAt)});
         }
+
+        // must return assigned value
+        return RateAndUpdatedTime({rate: 0, time: 0});
     }
 
     function _getTwap(address pool, bytes32 currencyKey) internal view returns (uint160 sqrtPriceX96) {

@@ -1,36 +1,24 @@
 'use strict';
 
 const { artifacts, contract, web3 } = require('hardhat');
-const { toBN, fromBN } = web3.utils;
+const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
+const { assert } = require('../../utils/common');
 
 const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { toDecimal } = require('web3-utils');
-const { setupContract, setupAllContracts } = require('../../utils/setup');
+const { setupAllContracts } = require('../../utils/setup');
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
-const {
-	fastForward,
-	toUnit,
-	fromUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../utils')();
+const { fastForward, toUnit, fromUnit } = require('../../utils')();
 
-const {
-	onlyGivenAddressCanInvoke,
-	convertToDecimals,
-	encodeCall,
-	assertRevert,
-} = require('../../utils/helpers');
+const { encodeCall } = require('../../utils/helpers');
 
 contract('StakingThales', accounts => {
 	const [first, second, third, owner] = accounts;
-	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
+	const [initialCreator, managerOwner, minter, dummy] = accounts;
 	let ThalesDeployed,
 		ThalesFeeDeployed,
 		StakingThalesDeployed,
@@ -38,103 +26,91 @@ contract('StakingThales', accounts => {
 		OngoingAirdropDeployed,
 		SNXRewardsDeployed,
 		AddressResolverDeployed,
-        ProxyEscrowDeployed,
-        ProxyStakingDeployed,
+		ProxyEscrowDeployed,
+		ProxyStakingDeployed,
 		ThalesStakingRewardsPoolDeployed;
 	let ThalesStakingRewardsPool;
 
-    let initializeStalkingData,
-        initializeEscrowData;
+	let initializeStalkingData, initializeEscrowData;
 
-	
-    let EscrowImplementation,
-        StakingImplementation;
-    
-	let EscrowImplementationV2,
-        StakingImplementationV2;
-	let StakingThalesDeployedV2,
-		EscrowThalesDeployedV2;
+	let EscrowImplementation, StakingImplementation;
 
 	const sUSDQty = toUnit(5555);
-	const sUSD = 5555;
-	const sAUDKey = toBytes32('sAUD');
 	const SECOND = 1000;
 	const DAY = 86400;
 	const WEEK = 604800;
-	const YEAR = 31556926;
-
-	let PositionalMarket = artifacts.require('PositionalMarket');
-	let Synth = artifacts.require('Synth');
-	let Position = artifacts.require('Position');
-	let manager, factory, addressResolver;
-	let sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
+	let manager, factory;
+	let sUSDSynth, PositionalMarketMastercopy, PositionMastercopy, addressResolver;
 
 	describe('Deploy ProxyStaking Thales', () => {
 		it('deploy all Contracts', async () => {
 			let Thales = artifacts.require('Thales');
-            let EscrowThales = artifacts.require('EscrowThales');
-            let StakingThales = artifacts.require('StakingThales');
-            let OngoingAirdrop = artifacts.require('OngoingAirdrop');
-            let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
+			let EscrowThales = artifacts.require('EscrowThales');
+			let StakingThales = artifacts.require('StakingThales');
+			let OngoingAirdrop = artifacts.require('OngoingAirdrop');
+			let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 			let SNXRewards = artifacts.require('SNXRewards');
 			SNXRewardsDeployed = await SNXRewards.new();
-            ThalesDeployed = await Thales.new({ from: owner });
-            ThalesFeeDeployed = await Thales.new({ from: owner });
-            OngoingAirdropDeployed = await OngoingAirdrop.new(
-                owner,
-                ThalesDeployed.address,
-                toBytes32('random'),
-                { from: owner }
-            );
-            
-            ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
-            ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
-            EscrowImplementation = await EscrowThales.new({from:owner});
-            StakingImplementation = await StakingThales.new({from:owner});
-            EscrowThalesDeployed = await EscrowThales.at(ProxyEscrowDeployed.address);
-            StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
+			ThalesDeployed = await Thales.new({ from: owner });
+			ThalesFeeDeployed = await Thales.new({ from: owner });
+			OngoingAirdropDeployed = await OngoingAirdrop.new(
+				owner,
+				ThalesDeployed.address,
+				toBytes32('random'),
+				{ from: owner }
+			);
 
-            initializeEscrowData = encodeCall(
-                'initialize',
-                ['address', 'address'],
-                [
-                    owner,
-                    ThalesDeployed.address
-                ]
-            );
-            await ProxyEscrowDeployed.upgradeToAndCall(EscrowImplementation.address, initializeEscrowData, {
-                from: initialCreator,
-            });
+			ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
+			ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
+			EscrowImplementation = await EscrowThales.new({ from: owner });
+			StakingImplementation = await StakingThales.new({ from: owner });
+			EscrowThalesDeployed = await EscrowThales.at(ProxyEscrowDeployed.address);
+			StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
 
-            
-            initializeStalkingData = encodeCall(
-                'initialize',
-                ['address', 'address', 'address', 'address', 'uint256', 'uint256', 'address'],
-                [
-                    owner,
-                    EscrowThalesDeployed.address,
-                    ThalesDeployed.address,
-                    sUSDSynth.address,
-                    WEEK,
-                    WEEK,
-					SNXRewardsDeployed.address
-                ]
-            );
+			initializeEscrowData = encodeCall(
+				'initialize',
+				['address', 'address'],
+				[owner, ThalesDeployed.address]
+			);
+			await ProxyEscrowDeployed.upgradeToAndCall(
+				EscrowImplementation.address,
+				initializeEscrowData,
+				{
+					from: initialCreator,
+				}
+			);
 
-            await ProxyStakingDeployed.upgradeToAndCall(StakingImplementation.address, initializeStalkingData, {
-                from: initialCreator,
-            });
+			initializeStalkingData = encodeCall(
+				'initialize',
+				['address', 'address', 'address', 'address', 'uint256', 'uint256', 'address'],
+				[
+					owner,
+					EscrowThalesDeployed.address,
+					ThalesDeployed.address,
+					sUSDSynth.address,
+					WEEK,
+					WEEK,
+					SNXRewardsDeployed.address,
+				]
+			);
+
+			await ProxyStakingDeployed.upgradeToAndCall(
+				StakingImplementation.address,
+				initializeStalkingData,
+				{
+					from: initialCreator,
+				}
+			);
 
 			ThalesStakingRewardsPool = artifacts.require('ThalesStakingRewardsPool');
-			ThalesStakingRewardsPoolDeployed = await ThalesStakingRewardsPool.new({from:owner});
+			ThalesStakingRewardsPoolDeployed = await ThalesStakingRewardsPool.new({ from: owner });
 			await ThalesStakingRewardsPoolDeployed.initialize(
-				owner, 
+				owner,
 				ProxyStakingDeployed.address,
 				ThalesDeployed.address,
 				EscrowThalesDeployed.address,
-				{from:owner});
-
-
+				{ from: owner }
+			);
 		});
 	});
 
@@ -162,7 +138,9 @@ contract('StakingThales', accounts => {
 		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
 		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
-		await factory.connect(ownerSigner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
+		await factory
+			.connect(ownerSigner)
+			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
 		await Promise.all([
@@ -194,60 +172,68 @@ contract('StakingThales', accounts => {
 			toBytes32('random'),
 			{ from: owner }
 		);
-        
-        ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
-        ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
-        EscrowImplementation = await EscrowThales.new({from:owner});
-        StakingImplementation = await StakingThales.new({from:owner});
-        EscrowThalesDeployed = await EscrowThales.at(ProxyEscrowDeployed.address);
-        StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
 
-        initializeEscrowData = encodeCall(
+		ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
+		ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
+		EscrowImplementation = await EscrowThales.new({ from: owner });
+		StakingImplementation = await StakingThales.new({ from: owner });
+		EscrowThalesDeployed = await EscrowThales.at(ProxyEscrowDeployed.address);
+		StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
+
+		initializeEscrowData = encodeCall(
 			'initialize',
 			['address', 'address'],
-			[
-				owner,
-				ThalesDeployed.address
-			]
+			[owner, ThalesDeployed.address]
 		);
-        await ProxyEscrowDeployed.upgradeToAndCall(EscrowImplementation.address, initializeEscrowData, {
-            from: initialCreator,
-        });
+		await ProxyEscrowDeployed.upgradeToAndCall(EscrowImplementation.address, initializeEscrowData, {
+			from: initialCreator,
+		});
 
-		
-        initializeStalkingData = encodeCall(
+		initializeStalkingData = encodeCall(
 			'initialize',
 			['address', 'address', 'address', 'address', 'uint256', 'uint256', 'address'],
 			[
 				owner,
-                EscrowThalesDeployed.address,
-                ThalesDeployed.address,
-                sUSDSynth.address,
-                WEEK,
-                WEEK,
-				SNXRewardsDeployed.address
+				EscrowThalesDeployed.address,
+				ThalesDeployed.address,
+				sUSDSynth.address,
+				WEEK,
+				WEEK,
+				SNXRewardsDeployed.address,
 			]
 		);
 
-        await ProxyStakingDeployed.upgradeToAndCall(StakingImplementation.address, initializeStalkingData, {
-            from: initialCreator,
-        });
+		await ProxyStakingDeployed.upgradeToAndCall(
+			StakingImplementation.address,
+			initializeStalkingData,
+			{
+				from: initialCreator,
+			}
+		);
 
 		ThalesStakingRewardsPool = artifacts.require('ThalesStakingRewardsPool');
-		ThalesStakingRewardsPoolDeployed = await ThalesStakingRewardsPool.new({from:owner});
+		ThalesStakingRewardsPoolDeployed = await ThalesStakingRewardsPool.new({ from: owner });
 		await ThalesStakingRewardsPoolDeployed.initialize(
-				owner, 
-				ProxyStakingDeployed.address,
-				ThalesDeployed.address,
-				EscrowThalesDeployed.address);
-		
+			owner,
+			ProxyStakingDeployed.address,
+			ThalesDeployed.address,
+			EscrowThalesDeployed.address
+		);
+
 		await StakingThalesDeployed.setDistributeFeesEnabled(true, { from: owner });
 		await StakingThalesDeployed.setClaimEnabled(true, { from: owner });
 		await StakingThalesDeployed.setFixedPeriodReward(100000, { from: owner });
-		await StakingThalesDeployed.setThalesStakingRewardsPool(ThalesStakingRewardsPoolDeployed.address, { from: owner });
-		await EscrowThalesDeployed.setThalesStakingRewardsPool(ThalesStakingRewardsPoolDeployed.address, { from: owner });
-		await StakingThalesDeployed.setAddressResolver(AddressResolverDeployed.address, { from: owner });
-
+		await StakingThalesDeployed.setThalesStakingRewardsPool(
+			ThalesStakingRewardsPoolDeployed.address,
+			{ from: owner }
+		);
+		await EscrowThalesDeployed.setThalesStakingRewardsPool(
+			ThalesStakingRewardsPoolDeployed.address,
+			{ from: owner }
+		);
+		await StakingThalesDeployed.setAddressResolver(AddressResolverDeployed.address, {
+			from: owner,
+		});
 	});
 
 	describe('EscrowThales basic check', () => {
@@ -274,13 +260,13 @@ contract('StakingThales', accounts => {
 			assert.equal(0, stakingPeriod);
 		});
 		it('set CurrentStakingPeriod to 1 and check', async () => {
-			let setStakingAddress = await EscrowThalesDeployed.setStakingThalesContract(first, {
+			await EscrowThalesDeployed.setStakingThalesContract(first, {
 				from: owner,
 			});
 			let getStakingAddress = await EscrowThalesDeployed.iStakingThales();
 			assert.equal(first, getStakingAddress);
 
-			let setPeriod = await EscrowThalesDeployed.updateCurrentPeriod({ from: first });
+			await EscrowThalesDeployed.updateCurrentPeriod({ from: first });
 			let stakingPeriod = await EscrowThalesDeployed.currentVestingPeriod.call();
 			assert.equal(1, stakingPeriod);
 		});
@@ -297,8 +283,6 @@ contract('StakingThales', accounts => {
 			await expect(EscrowThalesDeployed.addToEscrow(ZERO_ADDRESS, 0)).to.be.revertedWith(
 				'Invalid address'
 			);
-			// await expect(EscrowThalesDeployed.vest(0,{from:ZERO_ADDRESS})).to.be.revertedWith("Invalid address");
-			// await expect(EscrowThalesDeployed.moveToStakerSilo(ZERO_ADDRESS, 10, 11)).to.be.revertedWith("Invalid address");
 		});
 	});
 
@@ -323,9 +307,10 @@ contract('StakingThales', accounts => {
 		});
 
 		it('Deposit funds to the StakingThales', async () => {
-			// await StakingThalesDeployed.depositRewards(10, { from: owner });
 			let deposit = toUnit(10);
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, { from: owner });
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
 			await ThalesFeeDeployed.transfer(StakingThalesDeployed.address, deposit, {
 				from: owner,
 			});
@@ -339,7 +324,7 @@ contract('StakingThales', accounts => {
 
 		it('Start staking period', async () => {
 			assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
-			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
 			assert.equal(
 				toDecimal(await StakingThalesDeployed.startTimeStamp.call()),
@@ -351,7 +336,7 @@ contract('StakingThales', accounts => {
 			await expect(StakingThalesDeployed.closePeriod({ from: owner })).to.be.revertedWith(
 				'Staking period has not started'
 			);
-			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await fastForward(3 * DAY);
 			await expect(StakingThalesDeployed.closePeriod({ from: owner })).to.be.revertedWith(
 				'A full period has not passed since the last closed period'
@@ -384,13 +369,15 @@ contract('StakingThales', accounts => {
 			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
 				'Staking period has not started'
 			);
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, lowerDeposit, { from: owner });
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, lowerDeposit, {
+				from: owner,
+			});
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, toUnit(1), { from: first });
 			await StakingThalesDeployed.stake(toUnit(1), { from: first });
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
-			let answer = await StakingThalesDeployed.getRewardsAvailable(first);
+			await StakingThalesDeployed.getRewardsAvailable(first);
 			expect(StakingThalesDeployed.claimReward({ from: first })).to.be.revertedWith(
 				'SafeERC20: low-level call failed'
 			);
@@ -398,7 +385,6 @@ contract('StakingThales', accounts => {
 
 		it('Close staking period with enough funds (100,000) in StakingThales and claim single user', async () => {
 			let deposit = toUnit(100000);
-			let lowerDeposit = toUnit(500);
 			await ThalesDeployed.transfer(first, toUnit(2), { from: owner });
 			await StakingThalesDeployed.setFixedPeriodReward(deposit, { from: owner });
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
@@ -409,8 +395,9 @@ contract('StakingThales', accounts => {
 			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
 				'Staking period has not started'
 			);
-			// await ThalesDeployed.transfer(StakingThalesDeployed.address, deposit, { from: owner });
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, { from: owner });
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, toUnit(1), { from: first });
 			await StakingThalesDeployed.stake(toUnit(1), { from: first });
@@ -422,9 +409,6 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.closePeriod({ from: second });
 			let answer2 = await EscrowThalesDeployed.getStakedEscrowedBalanceForRewards(first);
 			assert.bnEqual(answer, answer2);
-			// expect(StakingThalesDeployed.claimReward({from:first})).to.be.revertedWith(
-			// 	"SafeERC20: low-level call failed"
-			// );
 		});
 
 		it('Close staking period after period with funds (100001) in StakingThales', async () => {
@@ -435,7 +419,6 @@ contract('StakingThales', accounts => {
 				'Staking period has not started'
 			);
 			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
-			// await StakingThalesDeployed.depositRewards(70001, { from: owner });
 			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, 100001, {
 				from: owner,
 			});
@@ -443,19 +426,13 @@ contract('StakingThales', accounts => {
 				from: owner,
 			});
 
-			// await sUSDSynth.approve(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
 			await sUSDSynth.issue(initialCreator, sUSDQty);
 			await sUSDSynth.transfer(StakingThalesDeployed.address, sUSDQty, { from: initialCreator });
 
-			// await StakingThalesDeployed.depositFees(10000, { from: owner });
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
 			answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 			assert.equal(web3.utils.toDecimal(answer), 100001);
-			// let answer = await StakingThalesDeployed.startStakingPeriod({from:owner});
-			// assert.isAbove(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), 0);
-			// assert.equal(toDecimal(await StakingThalesDeployed.startTimeStamp.call()), toDecimal(await StakingThalesDeployed.lastPeriodTimeStamp.call()));
-			// console.log(toDecimal(await StakingThalesDeployed.startTimeStamp.call()));
 		});
 
 		it('Stake with first account with NO THALES funds and fees', async () => {
@@ -465,12 +442,8 @@ contract('StakingThales', accounts => {
 			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
 				'Staking period has not started'
 			);
-
-			// await ThalesDeployed.transfer(first, 1500, {from:owner});
-			// let answer = await ThalesDeployed.balanceOf.call(first);
-			// assert.equal(answer, 1500);
-			let answer = await StakingThalesDeployed.startStakingPeriod({ from: owner });
-			// await StakingThalesDeployed.depositRewards(70001, { from: owner });
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			
 			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, 70001, {
 				from: owner,
 			});
@@ -496,7 +469,7 @@ contract('StakingThales', accounts => {
 			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, fixedReward, {
 				from: owner,
 			});
-			// await StakingThalesDeployed.depositRewards(70001, { from: owner });
+		
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
@@ -505,21 +478,20 @@ contract('StakingThales', accounts => {
 
 		it('Stake with first account and claim reward (but no fees available)', async () => {
 			let deposit = toUnit(100000);
-			let lowerDeposit = toUnit(500);
 			let stake = toUnit(1500);
 			await ThalesDeployed.transfer(first, stake, { from: owner });
 			await StakingThalesDeployed.setFixedPeriodReward(deposit, { from: owner });
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
-			// await sUSDSynth.issue(initialCreator, deposit);
-			// await sUSDSynth.transfer(StakingThalesDeployed.address, deposit, { from: initialCreator });
 			let answer = await StakingThalesDeployed.getContractFeeFunds();
 			assert.bnEqual(answer, 0);
 			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
 				'Staking period has not started'
 			);
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, { from: owner });
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
@@ -535,7 +507,6 @@ contract('StakingThales', accounts => {
 
 		it('Stake with first account and claim reward', async () => {
 			let deposit = toUnit(100000);
-			let lowerDeposit = toUnit(500);
 			let stake = toUnit(1500);
 			await ThalesDeployed.transfer(first, stake, { from: owner });
 			await StakingThalesDeployed.setFixedPeriodReward(deposit, { from: owner });
@@ -549,7 +520,9 @@ contract('StakingThales', accounts => {
 			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
 				'Staking period has not started'
 			);
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, { from: owner });
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
@@ -579,7 +552,9 @@ contract('StakingThales', accounts => {
 			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
 				'Staking period has not started'
 			);
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, { from: owner });
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
@@ -596,15 +571,14 @@ contract('StakingThales', accounts => {
 			expect(StakingThalesDeployed.startUnstake(stake, { from: first })).to.be.revertedWith(
 				'SafeERC20: low-level call failed'
 			);
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, { from: owner });
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.bnEqual(answer, stake);
 			answer = await StakingThalesDeployed.startUnstake(stake, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.bnEqual(answer, 0);
-
-			// answer = await ThalesDeployed.balanceOf.call(first);
-			// console.log('First account Thales balance: ' + web3.utils.toDecimal(answer));
 		});
 		it('Stake, claim reward twice, then (claim at) unstake', async () => {
 			let deposit = toUnit(100000);
@@ -622,7 +596,9 @@ contract('StakingThales', accounts => {
 			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
 				'Staking period has not started'
 			);
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, { from: owner });
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
@@ -640,7 +616,9 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.closePeriod({ from: second });
 			answer = await StakingThalesDeployed.getRewardsAvailable(first);
 			// CLAIM 2
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, { from: owner });
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
 			await StakingThalesDeployed.claimReward({ from: first });
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
@@ -650,7 +628,9 @@ contract('StakingThales', accounts => {
 			expect(StakingThalesDeployed.startUnstake(stake, { from: first })).to.be.revertedWith(
 				'SafeERC20: low-level call failed'
 			);
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, { from: owner });
+			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit, {
+				from: owner,
+			});
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.bnEqual(answer, stake);
 			answer = await StakingThalesDeployed.startUnstake(stake, { from: first });
@@ -661,7 +641,6 @@ contract('StakingThales', accounts => {
 	describe('Vesting:', () => {
 		it('Claimable', async () => {
 			let deposit = toUnit(100000);
-			let lowerDeposit = toUnit(500);
 			let stake = toUnit(1500);
 			let weeks = 10;
 			await ThalesDeployed.transfer(first, stake, { from: owner });
@@ -678,9 +657,13 @@ contract('StakingThales', accounts => {
 			await expect(StakingThalesDeployed.closePeriod({ from: first })).to.be.revertedWith(
 				'Staking period has not started'
 			);
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit.mul(toBN(weeks + 1)), {
-				from: owner,
-			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks + 1)),
+				{
+					from: owner,
+				}
+			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
@@ -709,7 +692,6 @@ contract('StakingThales', accounts => {
 
 		it('Vest first user', async () => {
 			let deposit = toUnit(100000);
-			let lowerDeposit = toUnit(500);
 			let stake = toUnit(1500);
 			let weeks = 11;
 			await ThalesDeployed.transfer(first, stake, { from: owner });
@@ -721,9 +703,13 @@ contract('StakingThales', accounts => {
 			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
 				from: initialCreator,
 			});
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit.mul(toBN(weeks)), {
-				from: owner,
-			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
@@ -757,9 +743,13 @@ contract('StakingThales', accounts => {
 			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
 				from: initialCreator,
 			});
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit.mul(toBN(weeks)), {
-				from: owner,
-			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			for (let i = 0; i < users.length; i++) {
 				await ThalesDeployed.transfer(users[i], stake[i], { from: owner });
@@ -800,9 +790,13 @@ contract('StakingThales', accounts => {
 			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
 				from: initialCreator,
 			});
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit.mul(toBN(weeks)), {
-				from: owner,
-			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			for (let i = 0; i < users.length; i++) {
 				await ThalesDeployed.transfer(users[i], stake[i], { from: owner });
@@ -832,7 +826,6 @@ contract('StakingThales', accounts => {
 		it('Vesting at 19th week, after claiming first user in weeks: 5, 9, 13', async () => {
 			let periods = [5, 9, 13];
 			let deposit = toUnit(100000);
-			let lowerDeposit = toUnit(500);
 			let stake = toUnit(1500);
 			let weeks = 20;
 			await ThalesDeployed.transfer(first, stake, { from: owner });
@@ -844,9 +837,13 @@ contract('StakingThales', accounts => {
 			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
 				from: initialCreator,
 			});
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit.mul(toBN(weeks)), {
-				from: owner,
-			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
@@ -870,7 +867,6 @@ contract('StakingThales', accounts => {
 		it('Vesting at 20th week, after claiming first user in weeks: 5, 9, 13', async () => {
 			let periods = [5, 9, 13];
 			let deposit = toUnit(100000);
-			let lowerDeposit = toUnit(500);
 			let stake = toUnit(1500);
 			let weeks = 21;
 			await ThalesDeployed.transfer(first, stake, { from: owner });
@@ -882,9 +878,13 @@ contract('StakingThales', accounts => {
 			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
 				from: initialCreator,
 			});
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit.mul(toBN(weeks)), {
-				from: owner,
-			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
@@ -908,7 +908,6 @@ contract('StakingThales', accounts => {
 		it('Continous vesting trial for 35 weeks; first user claims rewards in 2, 21, 31 weeks', async () => {
 			let periods = [1, 20, 30];
 			let deposit = toUnit(100000);
-			let lowerDeposit = toUnit(500);
 			let stake = toUnit(1500);
 			let weeks = 35;
 			await ThalesDeployed.transfer(first, stake, { from: owner });
@@ -920,9 +919,13 @@ contract('StakingThales', accounts => {
 			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
 				from: initialCreator,
 			});
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit.mul(toBN(weeks)), {
-				from: owner,
-			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
@@ -971,9 +974,13 @@ contract('StakingThales', accounts => {
 			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
 				from: initialCreator,
 			});
-			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, deposit.mul(toBN(weeks)), {
-				from: owner,
-			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
 			for (let i = 0; i < users.length; i++) {
 				await ThalesDeployed.transfer(users[i], stake[i], { from: owner });
@@ -1073,64 +1080,4 @@ contract('StakingThales', accounts => {
 			// }
 		});
 	});
-
-	// describe('Upgrade Implementation:', () => {
-		
-	// 	it('reverts the call of new function at old implementation', async function() {
-	// 		try{
-	// 			await expect(StakingThalesDeployed.getVersion()).to.be.reverted;
-
-	// 		}
-	// 		catch(error) {
-	// 			// console.log("Error function does not exist");
-	// 		}
-		
-	// 	});
-	// 	beforeEach(async () => {
-			
-	// 		let EscrowThalesV2 = artifacts.require('ProxyEscrowThales_V2');
-	// 		let StakingThalesV2 = artifacts.require('ProxyStakingThales_V2');
-			
-			
-			
-	// 		EscrowImplementationV2 = await EscrowThalesV2.new({from:owner});
-	// 		StakingImplementationV2 = await StakingThalesV2.new({from:owner});
-			
-	// 		EscrowThalesDeployedV2 = await EscrowThalesV2.at(ProxyEscrowDeployed.address);
-	// 		StakingThalesDeployedV2 = await StakingThalesV2.at(ProxyStakingDeployed.address);
-	
-			
-	
-	// 		await ProxyStakingDeployed.upgradeTo(StakingImplementationV2.address,{
-	// 			from: initialCreator,
-	// 		});
-	
-	// 		await ProxyEscrowDeployed.upgradeTo(EscrowImplementationV2.address, {
-	// 			from: initialCreator,
-	// 		});
-
-	// 	});
-
-	// 	it('calls new function of new implementation', async function() {
-	// 		let tx = await StakingThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '0');
-	// 		tx = await EscrowThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '0');
-	// 	});
-	// 	it('set new value in new function of new implementation', async function() {
-	// 		let tx = await StakingThalesDeployedV2.setVersion(1, {from:owner});
-	// 		tx = await StakingThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '1');
-	// 		tx = await EscrowThalesDeployedV2.setVersion(10, {from:owner});
-	// 		tx = await EscrowThalesDeployedV2.getVersion();
-	// 		assert.equal(tx.toString(), '10');
-	// 	});
-		
-	// 	it('set new value in new function of new implementation different owner', async function() {
-	// 		await expect(StakingThalesDeployedV2.setVersion(1, {from:initialCreator})).to.be.reverted;
-	// 		await expect(EscrowThalesDeployedV2.setVersion(10, {from:initialCreator})).to.be.reverted;
-			
-	// 	});
-	
-	// });
 });

@@ -1,22 +1,14 @@
 'use strict';
 
-const { artifacts, contract, web3 } = require('hardhat');
+const { artifacts, contract } = require('hardhat');
 
 const { assert } = require('../../../utils/common');
 
-const { currentTime, toUnit, bytesToString } = require('../../../utils')();
+const { toUnit } = require('../../../utils')();
 
-const {
-	onlyGivenAddressCanInvoke,
-	convertToDecimals,
-	encodeCall,
-	assertRevert,
-} = require('../../../utils/helpers');
+const { encodeCall } = require('../../../utils/helpers');
 
-const { toBytes32 } = require('../../../../index');
-const { setupAllContracts } = require('../../../utils/setup');
 const { expect } = require('chai');
-const { toWei } = require('web3-utils');
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const MAX_NUMBER = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
 
@@ -380,14 +372,8 @@ contract('Proxy Exhanger L1 <=> L2', async accounts => {
 
 		describe('exchange Thales to OpThales', function() {
 			beforeEach(async () => {
-				// let balance = await ThalesToken.balanceOf(owner);
-				// console.log("Owner balance:", balance.toString());
 				await ThalesToken.transfer(userOne, toUnit(100), { from: owner });
 				await ThalesToken.transfer(userTwo, toUnit(100), { from: owner });
-				// balance = await ThalesToken.balanceOf(userOne);
-				// console.log("User 1 balance:", balance.toString());
-				// balance = await ThalesToken.balanceOf(userTwo);
-				// console.log("User 2 balance:", balance.toString());
 			});
 
 			it('insufficient Optimistic Thales in Proxy Exchanger', async function() {
@@ -449,9 +435,6 @@ contract('Proxy Exhanger L1 <=> L2', async accounts => {
 					await OpThalesTokenL2.mint(StandardBridgeL1.address, toUnit(100), {
 						from: dummyContractAddress,
 					});
-					// let balance = await OpThalesTokenL2.balanceOf(StandardBridgeL1.address);
-					// console.log("Owner balance:", balance.toString());
-					// await OpThalesTokenL2.transfer(StandardBridgeL1.address, toUnit(100), {from:owner});
 				});
 
 				it('allowance not granted for User, funds not exchanged', async function() {
@@ -478,8 +461,6 @@ contract('Proxy Exhanger L1 <=> L2', async accounts => {
 
 		describe('exchange OpThales to Thales', function() {
 			beforeEach(async () => {
-				// let balance = await ThalesToken.balanceOf(owner);
-				// console.log("Owner balance:", balance.toString());
 				await OpThalesToken.transfer(userOne, toUnit(100), { from: owner });
 				await OpThalesToken.transfer(userTwo, toUnit(100), { from: owner });
 			});

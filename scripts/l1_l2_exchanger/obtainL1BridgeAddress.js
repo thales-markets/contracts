@@ -1,19 +1,13 @@
-const path = require('path');
 const { ethers } = require('hardhat');
-
 const user_key = process.env.PRIVATE_KEY;
-
-
 const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
 
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { setTargetAddress } = require('../helpers');
 
 const L2StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol/OVM_L2StandardBridge');
 const L1StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L1StandardBridge.sol/OVM_L1StandardBridge');
 
-async function main() {
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
+async function main() {	
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	let mainnet_provider;
@@ -38,8 +32,6 @@ async function main() {
 	const l1Wallet = new ethers.Wallet(user_key, mainnet_provider);
 	const l2Wallet = new ethers.Wallet(user_key, ethers.provider);
 
-		
-	// const L2StandardBridge = await ethers.getContractFactory('../../node_modules/@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol:OVM_L2StandardBridge');
 	const L2StandardBridge = new ethers.ContractFactory(L2StandardBridgeArtifacts.abi, L2StandardBridgeArtifacts.bytecode);
 	const L1StandardBridge = new ethers.ContractFactory(L1StandardBridgeArtifacts.abi, L1StandardBridgeArtifacts.bytecode);
 
@@ -53,8 +45,6 @@ async function main() {
 	console.log("L1 Bridge on Mainnet at: ", L1StandardBridge_deployed.address);
 	
 	setTargetAddress('L1StandardBridge', 'mainnet', L1StandardBridge_deployed.address);
-
-
 }
 
 main()
@@ -63,9 +53,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function (resolve) {
-		setTimeout(resolve, time);
-	});
-}

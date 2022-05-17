@@ -9,7 +9,6 @@ const { time } = require('@openzeppelin/test-helpers');
 const { assert } = require('../../utils/common');
 
 const VESTING_PERIOD = 86400 * 365;
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const TOTAL_AMOUNT = web3.utils.toWei('4500000');
 const SINGLE_AMOUNT = web3.utils.toWei('150000');
 

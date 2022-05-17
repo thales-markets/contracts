@@ -1,7 +1,6 @@
-const { ethers, upgrades } = require('hardhat');
+const { ethers } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const w3utils = require('web3-utils');
 
 async function main() {
 	let accounts = await ethers.getSigners();

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.7.0;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -19,7 +20,7 @@ contract OpThales is IL2StandardERC20, ERC20, Ownable {
         return __symbol;
     }
 
-    function decimals() public view override returns (uint8) {
+    function decimals() public pure override returns (uint8) {
         return __decimals;
     }
 
@@ -37,7 +38,7 @@ contract OpThales is IL2StandardERC20, ERC20, Ownable {
         address _l1Token,
         string memory _name,
         string memory _symbol
-    ) public ERC20(_name, _symbol) {
+    ) ERC20(_name, _symbol) {
         l1Token = _l1Token;
         l2Bridge = _l2Bridge;
         __name = _name;

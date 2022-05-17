@@ -214,7 +214,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2));
         thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), withdrawalFee.div(2));
         thalesBonds.transferFromMarket(msg.sender, totalToWithdraw.sub(withdrawalFee));
-        emit OpenBidUserWithdrawn(msg.sender, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
+        emit OpenBidUserWithdrawn(msg.sender, _openBidPosition, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
     }
 
     function resolveMarket(uint _outcomePosition, address _resolverAddress) external onlyOwner {
@@ -272,7 +272,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         thalesBonds.transferFromMarket(msg.sender, amount);
         _issueFees();
         userAlreadyClaimed[msg.sender] = userAlreadyClaimed[msg.sender].add(amount);
-        emit WinningTicketClaimed(msg.sender, amount);
+        emit WinningOpenBidAmountClaimed(msg.sender, amount);
     }
 
     function claimWinningTicketOnBehalf(address _user) external onlyOwner {
@@ -284,7 +284,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         thalesBonds.transferFromMarket(_user, amount);
         _issueFees();
         userAlreadyClaimed[msg.sender] = userAlreadyClaimed[msg.sender].add(amount);
-        emit WinningTicketClaimed(_user, amount);
+        emit WinningOpenBidAmountClaimed(_user, amount);
     }
 
     function issueFees() external notPaused nonReentrant {
@@ -653,12 +653,12 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     event MarketCreated(uint creationTime, uint positionCount, bytes32 phrase);
     event MarketResolved(uint winningPosition, address resolverAddress, bool noWinner);
     event MarketReset();
-    event WinningTicketClaimed(address account, uint amount);
+    event WinningOpenBidAmountClaimed(address account, uint amount);
     event BackstopTimeoutPeriodChanged(uint timeoutPeriod);
     event TicketWithdrawn(address account, uint amount);
     event BondIncreased(uint amount, uint totalAmount);
     event BondDecreased(uint amount, uint totalAmount);
     event NewOpenBidsForPositions(address account, uint[] openBidPositions, uint[] openBidAmounts);
-    event OpenBidUserWithdrawn(address account, uint withdrawnAmount, uint totalOpenBidAmountLeft);
+    event OpenBidUserWithdrawn(address account, uint position, uint withdrawnAmount, uint totalOpenBidAmountLeft);
     event FeesIssued(uint totalFees);
 }

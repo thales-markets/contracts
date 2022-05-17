@@ -16,7 +16,7 @@
       },
       {
         "indexed": false,
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -304,7 +304,7 @@
       },
       {
         "indexed": false,
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -354,7 +354,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       }
@@ -380,7 +380,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       }
@@ -406,7 +406,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -437,7 +437,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -472,7 +472,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -503,7 +503,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -923,7 +923,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       }
@@ -1044,7 +1044,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -1075,7 +1075,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -1110,7 +1110,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum IThalesAMM.Position",
+        "internalType": "enum ThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },

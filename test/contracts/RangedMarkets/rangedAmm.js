@@ -703,6 +703,8 @@ contract('RangedAMM', accounts => {
 			console.log('TESTING EXERCISING!!!');
 
 			await fastForward(day * 20);
+			const timestamp = await currentTime();
+			await aggregator_sETH.setLatestAnswer(convertToDecimals(5000, 8), timestamp);
 
 			await manager.resolveMarket(leftMarket.address);
 			await manager.resolveMarket(rightMarket.address);
@@ -716,6 +718,9 @@ contract('RangedAMM', accounts => {
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
 			console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
+
+			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
+			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);

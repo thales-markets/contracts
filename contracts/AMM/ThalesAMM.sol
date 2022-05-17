@@ -138,7 +138,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
             (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
             uint balanceOfTheOtherSide =
-            position == Position.Up ? down.getBalanceOf(address(this)) : up.getBalanceOf(address(this));
+                position == Position.Up ? down.getBalanceOf(address(this)) : up.getBalanceOf(address(this));
 
             // can burn straight away balanceOfTheOtherSide
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
@@ -201,15 +201,15 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
             if (position == Position.Up) {
                 return
-                calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
-                    1e2
-                );
+                    calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
+                        1e2
+                    );
             } else {
                 return
-                ONE.sub(
-                    calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
-                    .div(1e2)
-                );
+                    ONE.sub(
+                        calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
+                            .div(1e2)
+                    );
             }
         } else return 0;
     }
@@ -345,9 +345,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         //transfer options first to have max burn available
         IERC20(address(target)).safeTransferFrom(msg.sender, address(this), amount);
         uint sUSDFromBurning =
-        IPositionalMarketManager(manager).transformCollateral(
-            IPositionalMarket(market).getMaximumBurnable(address(this))
-        );
+            IPositionalMarketManager(manager).transformCollateral(
+                IPositionalMarket(market).getMaximumBurnable(address(this))
+            );
         if (sUSDFromBurning > 0) {
             IPositionalMarket(market).burnOptionsMaximum();
         }
@@ -523,21 +523,21 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
         uint balanceOtherSideAfter =
-        balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
+            balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
         if (balancePositionAfter >= balanceOtherSideAfter) {
             //minimal price impact as it will balance the AMM exposure
             return 0;
         } else {
             return
-            _buyPriceImpactElse(
-                market,
-                position,
-                amount,
-                balanceOtherSide,
-                balancePosition,
-                balanceOtherSideAfter,
-                balancePositionAfter
-            );
+                _buyPriceImpactElse(
+                    market,
+                    position,
+                    amount,
+                    balanceOtherSide,
+                    balancePosition,
+                    balanceOtherSideAfter,
+                    balancePositionAfter
+                );
         }
     }
 
@@ -572,7 +572,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
         uint balanceOtherSideAfter =
-        balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
+            balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
         return balancePosition;
     }
 
@@ -583,22 +583,22 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) internal view returns (uint) {
         (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter =
-        balancePosition > 0 ? balancePosition.add(amount) : balanceOtherSide > amount ? 0 : amount.sub(balanceOtherSide);
+            balancePosition > 0 ? balancePosition.add(amount) : balanceOtherSide > amount ? 0 : amount.sub(balanceOtherSide);
         uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide.sub(amount) : 0;
         if (balancePositionAfter < balanceOtherSideAfter) {
             //minimal price impact as it will balance the AMM exposure
             return 0;
         } else {
             return
-            _sellPriceImpactElse(
-                market,
-                position,
-                amount,
-                balanceOtherSide,
-                balancePosition,
-                balanceOtherSideAfter,
-                balancePositionAfter
-            );
+                _sellPriceImpactElse(
+                    market,
+                    position,
+                    amount,
+                    balanceOtherSide,
+                    balancePosition,
+                    balanceOtherSideAfter,
+                    balancePositionAfter
+                );
         }
     }
 

@@ -167,6 +167,19 @@
         "type": "uint256"
       }
     ],
+    "name": "SetMaxinalDifBetweenStrikes",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_spread",
+        "type": "uint256"
+      }
+    ],
     "name": "SetMinSupportedPrice",
     "type": "event"
   },
@@ -622,6 +635,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "maximalDifBetweenStrikes",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "contract RangedMarket",
@@ -755,6 +781,37 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "retrieveSUSD",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "retrieveSUSDAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -931,6 +988,11 @@
         "internalType": "uint256",
         "name": "_minDiffBetweenStrikes",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxDiffBetweenStrikes",
+        "type": "uint256"
       }
     ],
     "name": "setMinMaxSupportedPrice",
@@ -1095,12 +1157,17 @@
   {
     "inputs": [
       {
-        "internalType": "contract RangedMarket",
-        "name": "rangedMarket",
+        "internalType": "address",
+        "name": "receiver",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "withdrawCollateral",
+    "name": "transferSusdTo",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

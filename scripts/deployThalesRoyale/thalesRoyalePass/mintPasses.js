@@ -1,7 +1,6 @@
 const { ethers } = require('hardhat');
 const { getTargetAddress, txLog } = require('../../helpers');
 const w3utils = require('web3-utils');
-var crypto = require('crypto');
 
 async function main() {
 	let accounts = await ethers.getSigners();

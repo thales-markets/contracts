@@ -1,22 +1,9 @@
-const path = require('path');
 const { ethers, upgrades } = require('hardhat');
-const w3utils = require('web3-utils');
-const { artifacts, contract, web3 } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
-const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
-
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../test/utils/index')();
+const { getTargetAddress } = require('../helpers');
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	let net_optimistic = '';

@@ -1,7 +1,6 @@
 const { ethers } = require('hardhat');
 const { getTargetAddress} = require('../../helpers');
 const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
 
 async function main() {
     

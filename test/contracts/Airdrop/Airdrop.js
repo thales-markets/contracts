@@ -1,10 +1,10 @@
 const { deploymentFixture, getReward } = require('./airdropFixture');
 const { assert } = require('../../utils/common');
-const { currentTime, fastForward } = require('../../utils')();
+const { fastForward } = require('../../utils')();
 const YEAR = 31556926;
 // Airdrop tests
 describe('Contract: Airdrop', async () => {
-	let acc1, acc2, airdrop, merkleTree, snapshot, snapshotHashes;
+	let acc1, airdrop, merkleTree, snapshot, snapshotHashes;
 
 	beforeEach(async () => {
 		({

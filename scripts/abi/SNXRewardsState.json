@@ -53,12 +53,12 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "debtPercentage",
+        "name": "_debtPercentage",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "debtEntryIndex",
+        "name": "_debtEntryIndex",
         "type": "uint256"
       }
     ],

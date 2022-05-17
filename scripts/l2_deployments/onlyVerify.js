@@ -1,8 +1,7 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -68,14 +67,6 @@ async function main() {
 	if (network == 'mainnet') {
 		creatorCapitalRequirement = w3utils.toWei('1000');
 	}
-	const poolFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the pool in the end.
-	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
-	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
-
-	// await hre.run('verify:verify', {
-	// 	address: priceFeedAddress,
-	// 	constructorArguments: [owner.address],
-	// });
 
 	await hre.run('verify:verify', {
 		address: PositionalMarketFactoryAddress,
@@ -122,9 +113,6 @@ async function main() {
 			7,
 		],
 	});
-
-
-	
 }
 
 main()
@@ -133,9 +121,4 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function(resolve) {
-		setTimeout(resolve, time);
-	});
-}
+	

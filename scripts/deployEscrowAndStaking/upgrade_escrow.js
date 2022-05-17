@@ -1,17 +1,10 @@
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
-
-const fs = require('fs');
-const { getTargetAddress, setTargetAddress, encodeCall } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 const user_key1 = process.env.PRIVATE_KEY;
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	// let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	if (networkObj.chainId == 10) {

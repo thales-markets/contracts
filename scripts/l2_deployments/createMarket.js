@@ -1,19 +1,11 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
 
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../test/utils/index')();
+const { currentTime } = require('../../test/utils/index')();
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress } = require('../helpers');
 
 const { toBytes32 } = require('../../index');
 
@@ -59,10 +51,8 @@ async function main() {
 	let safeDecimalMath = await safeDecimalMathContract.attach(safeDecimalMathAddress);
 	let proxysUSD = await proxysUSDContract.attach(proxysUSDAddress);
 
-	// const addressResolver = snx.getTarget({ useOvm: true, contract: 'AddressResolver' });
 	console.log('Found address resolver at:' + addressResolver.address);
 
-	// const safeDecimalMath = snx.getTarget({ useOvm: true, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 	console.log('Found proxysUSD at:' + proxysUSD.address);
 
@@ -93,7 +83,7 @@ async function main() {
 	const result = await PositionalMarketManagerDeployed.createMarket(
 		ETHKey,
 		w3utils.toWei('3400'),
-		now + hour*72,
+		now + hour * 72,
 		initialMint,
 		false,
 		ZERO_ADDRESS
@@ -118,10 +108,10 @@ async function main() {
 		constructorArguments: [
 			ETHKey,
 			w3utils.toWei('4000'),
-			now + hour*72,
+			now + hour * 72,
 			initialMint,
 			false,
-			ZERO_ADDRESS
+			ZERO_ADDRESS,
 		],
 		contract: 'contracts/Positions/PositionalMarket.sol:PositionalMarket',
 	});
@@ -133,9 +123,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function(resolve) {
-		setTimeout(resolve, time);
-	});
-}

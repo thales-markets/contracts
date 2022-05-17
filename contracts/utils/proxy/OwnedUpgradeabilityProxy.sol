@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.4.21;
 
 import "./UpgradeabilityProxy.sol";
@@ -80,6 +82,6 @@ contract OwnedUpgradeabilityProxy is UpgradeabilityProxy {
    */
   function upgradeToAndCall(address implementation, bytes data) payable public onlyProxyOwner {
     upgradeTo(implementation);
-    require(this.call.value(msg.value)(data));
+    require(address(this).call.value(msg.value)(data));
   }
 }

@@ -1,15 +1,8 @@
-const { ethers, upgrades } = require('hardhat');
-const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
-const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { ethers } = require('hardhat');
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-	let priceFeedAddress, ProxyERC20sUSDaddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -40,12 +33,6 @@ async function main() {
 		constructorArguments: [],
 		contract: 'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
 	});
-
-	function delay(time) {
-		return new Promise(function(resolve) {
-			setTimeout(resolve, time);
-		});
-	}
 }
 
 main()

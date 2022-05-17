@@ -1,16 +1,4 @@
-// First deployment of OngoingAirdrop.sol
-
-const { MerkleTree } = require('merkletreejs');
-const keccak256 = require('keccak256');
-const { web3 } = require('hardhat');
-const Big = require('big.js');
-const { deployArgs } = require('../snx-data/xsnx-snapshot/helpers');
-const { numberExponentToLarge, getTargetAddress, setTargetAddress } = require('../helpers.js');
-
-const ongoingRewards = require('../snx-data/ongoing_distribution.json');
-const TOTAL_AMOUNT = web3.utils.toWei('125000');
-
-const fs = require('fs');
+const { getTargetAddress } = require('../helpers.js');
 
 async function deploy_ongoing_airdrop() {
 	let accounts = await ethers.getSigners();
@@ -60,14 +48,6 @@ async function deploy_ongoing_airdrop() {
 	await tx.wait().then(e => {
 		console.log('EscrowThales: setAirdropContract');
 	});
-
-	// tx = await thales.transfer(
-	// 	ongoingAirdrop.address,
-	// 	numberExponentToLarge(totalBalance.toString())
-	// );
-	// await tx.wait().then(e => {
-	// 	console.log('Thales: transfer');
-	// });
 
 	// set EscrowThales address
 	await ongoingAirdrop.setEscrow(escrowThales.address, {from:owner.address});

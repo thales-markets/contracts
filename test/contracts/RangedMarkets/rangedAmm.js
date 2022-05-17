@@ -700,25 +700,25 @@ contract('RangedAMM', accounts => {
 
 			console.log('DONE BUYING MAXIMUM IN!!!');
 
-			// console.log('TESTING EXERCISING!!!');
-			//
-			// await fastForward(day * 20);
-			//
-			// await manager.resolveMarket(leftMarket.address);
-			// await manager.resolveMarket(rightMarket.address);
-			//
-			// await rangedMarket.exercisePositions({ from: minter });
-			// minterBalance = await inPosition.balanceOf(minter);
-			// console.log('minter in tokens balance:' + minterBalance / 1e18);
-			//
-			// minterBalance = await outPosition.balanceOf(minter);
-			// console.log('minter out tokens balance:' + minterBalance / 1e18);
-			//
-			// minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			// console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
-			//
-			// let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
-			// console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			console.log('TESTING EXERCISING!!!');
+
+			await fastForward(day * 20);
+
+			await manager.resolveMarket(leftMarket.address);
+			await manager.resolveMarket(rightMarket.address);
+
+			await rangedMarket.exercisePositions({ from: minter });
+			minterBalance = await inPosition.balanceOf(minter);
+			console.log('minter in tokens balance:' + minterBalance / 1e18);
+
+			minterBalance = await outPosition.balanceOf(minter);
+			console.log('minter out tokens balance:' + minterBalance / 1e18);
+
+			minterSusdBalance = await sUSDSynth.balanceOf(minter);
+			console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
+
+			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
+			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
 		});
 	});
 });

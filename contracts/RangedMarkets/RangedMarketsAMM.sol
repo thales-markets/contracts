@@ -533,14 +533,17 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function withdrawCollateral(RangedMarket rangedMarket)
-        external
-        onlyOwner
-        knownRangedMarket(address(rangedMarket))
-        nonReentrant
-        notPaused
-    {
-        rangedMarket.withdrawCollateral(safeBox);
+    function transferSusdTo(address receiver, uint amount) external {
+        require(_knownMarkets.contains(msg.sender), "Not a known ranged market");
+        sUSD.safeTransfer(receiver, amount);
+    }
+
+    function retrieveSUSD(address payable account) external onlyOwner {
+        sUSD.transfer(account, sUSD.balanceOf(address(this)));
+    }
+
+    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        sUSD.transfer(account, amount);
     }
 
     function setRangedMarketMastercopy(address _rangedMarketMastercopy) external onlyOwner {

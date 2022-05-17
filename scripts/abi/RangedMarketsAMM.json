@@ -784,6 +784,37 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "retrieveSUSD",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "retrieveSUSDAmount",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "sUSD",
     "outputs": [
@@ -1126,12 +1157,17 @@
   {
     "inputs": [
       {
-        "internalType": "contract RangedMarket",
-        "name": "rangedMarket",
+        "internalType": "address",
+        "name": "receiver",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "withdrawCollateral",
+    "name": "transferSusdTo",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

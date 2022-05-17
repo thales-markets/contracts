@@ -181,7 +181,7 @@ contract RangedMarket {
         // Only pay out the side that won.
         uint payout = (result == Position.In) ? inBalance : outBalance;
         if (payout != 0) {
-            rangedMarketsAMM.sUSD().transfer(msg.sender, payout);
+            rangedMarketsAMM.transferSusdTo(msg.sender, payout);
         }
         emit Exercised(msg.sender, payout, result);
     }
@@ -209,9 +209,15 @@ contract RangedMarket {
         require(leftMarket.resolved() && rightMarket.resolved(), "Left or Right market not resolved yet!");
         require(!resolved, "Already resolved!");
 
-        leftMarket.exerciseOptions();
-        rightMarket.exerciseOptions();
+        if (positions.inp.totalSupply() > 0 || positions.outp.totalSupply() > 0) {
+            leftMarket.exerciseOptions();
+            rightMarket.exerciseOptions();
+        }
         resolved = true;
+
+        if (rangedMarketsAMM.sUSD().balanceOf(address(this)) > 0) {
+            rangedMarketsAMM.sUSD().transfer(address(rangedMarketsAMM), rangedMarketsAMM.sUSD().balanceOf(address(this)));
+        }
 
         (, , uint _finalPrice) = leftMarket.getOracleDetails();
         finalPrice = _finalPrice;

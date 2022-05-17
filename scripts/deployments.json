@@ -224,7 +224,14 @@
 		"ThalesOracleCouncil": "0xB003F181303F5CFee75222DA8FD410A08B1613F8",
 		"ThalesOracleCouncilImplementation": "0xd0bb5bF2df1df4C047F79Faf599d2ACAcAEA64CF",
 		"ExoticPositionalTags": "0x0d9fEC177281bb276265Afa66710401392A13173",
-		"ExoticPositionalTagsImplementation": "0x17f63D216626fE4315d24cDc22141FBcb0356066"
+		"ExoticPositionalTagsImplementation": "0x17f63D216626fE4315d24cDc22141FBcb0356066",
+		"ExoticUSD": "0x5d7e13023a6f2245D7Af1eaE97dFF2EF1057F5b9",
+		"SportPositionalMarketManager": "0x9bb5430261Cfb68cf0b65bF891C30d73Fc779Fe5",
+		"SportPositionalMarketManagerImplementation": "0xab33973d7e248075b808DBfD8b6314b1B07CC144",
+		"SportPositionalMarketFactory": "0x9839BEa51BBaD32Af0de41bEB74b637f188FfC2D",
+		"SportPositionalMarketFactoryImplementation": "0x422c55b4935Da9E86137C535E983fF2C610A970E",
+		"SportPositionalMarketMastercopy": "0xc55C111DC4b609bcFb98c898F7D9c4B3B867F66f",
+		"SportPositionMastercopy": "0x5F62bceB94a2ca9A4C921832B1B5025DeEA7830e"
 	},
 	"goerli": {
 		"Airdrop": "",

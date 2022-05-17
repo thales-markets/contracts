@@ -339,7 +339,6 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
 
     function exerciseOptions() external override afterMaturity returns (uint) {
         // The market must be resolved if it has not been.
-        // the first one to exercise pays the gas fees. Might be worth splitting it up.
         if (!resolved) {
             _manager().resolveMarket(address(this));
         }

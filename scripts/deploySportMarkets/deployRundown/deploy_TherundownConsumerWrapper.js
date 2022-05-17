@@ -2,11 +2,11 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
-const { setTargetAddress, getTargetAddress } = require('../helpers');
+const { setTargetAddress, getTargetAddress } = require('../../helpers');
 
 const { toBN } = web3.utils;
 
-const { toBytes32 } = require('../../index');
+const { toBytes32 } = require('../../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();

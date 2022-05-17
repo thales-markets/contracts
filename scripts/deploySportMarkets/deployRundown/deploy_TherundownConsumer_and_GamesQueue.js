@@ -51,10 +51,10 @@ async function main() {
 
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
-	const exoticManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
-	let exoticManagerAddress = getTargetAddress('ExoticMarketManager', network);
+	const sportsManager = await ethers.getContractFactory('SportPositionalMarketManager');
+	let sportsManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
 
-	console.log('ExoticMarketManager address: ', exoticManagerAddress);
+	console.log('SportPositionalMarketManager address: ', sportsManagerAddress);
 
 	const chainlink = require(`./chainlink/${network}.json`);
 
@@ -98,7 +98,7 @@ async function main() {
 	const therundown = await upgrades.deployProxy(TherundownConsumer, [
 		owner.address,
 		allowedSports,
-		exoticManagerAddress,
+		sportsManagerAddress,
 		twoPositionSports,
 		gamesQueue.address,
 		allowedResolvedStatuses,

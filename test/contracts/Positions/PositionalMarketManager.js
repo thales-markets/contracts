@@ -433,7 +433,7 @@ contract('PositionalMarketManager', accounts => {
 
 			await newManager.connect(creator).setMigratingManager(manager.address);
 		});
-		it('Migrating manager can be set', async () => {
+		it('Migrating manager can be set [ @cov-skip ]', async () => {
 			await manager.connect(creator).setMigratingManager(initialCreator);
 		});
 

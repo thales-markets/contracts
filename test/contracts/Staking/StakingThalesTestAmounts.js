@@ -176,7 +176,7 @@ contract('StakingThales', accounts => {
 				', ' +
 				weeksOfStakingToTest +
 				' weeks of claiming, fixed reward: ' +
-				fixedReward,
+				fixedReward + ' [ @cov-skip ] ',
 			async () => {
 				let period = 0;
 
@@ -266,7 +266,7 @@ contract('StakingThales', accounts => {
 				' weeks of claiming, fixed reward: ' +
 				fixedReward +
 				', ustakes: ' +
-				partialUnstake,
+				partialUnstake + ' [ @cov-skip ]',
 			async () => {
 				let period = 0;
 
@@ -382,7 +382,7 @@ contract('StakingThales', accounts => {
 				fixedReward +
 				', ustakes: [' +
 				partialUnstakes +
-				']',
+				'] [ @cov-skip ]',
 			async () => {
 				let period = 0;
 
@@ -524,7 +524,7 @@ contract('StakingThales', accounts => {
 				' vesting 1st week, ' +
 				'unstakes: [' +
 				partialUnstakes +
-				']',
+				'] [ @cov-skip ]',
 			async () => {
 				let period = 0;
 				if (weeksOfStakingToTest < 10) {

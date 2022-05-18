@@ -179,7 +179,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('additional slippage test on buy', async () => {
+		it('additional slippage test on buy [ @cov-skip ]', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -248,7 +248,7 @@ contract('ThalesAMM', accounts => {
 		});
 	});
 
-	it('additional slippage test on sell', async () => {
+	it('additional slippage test on sell [ @cov-skip ]', async () => {
 		let now = await currentTime();
 		let newMarket = await createMarket(
 			manager,

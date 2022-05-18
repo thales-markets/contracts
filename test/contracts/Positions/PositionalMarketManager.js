@@ -392,7 +392,7 @@ contract('PositionalMarketManager', accounts => {
 		});
 	});
 
-	describe('Market migration', () => {
+	describe('Market migration [ @cov-skip ]', () => {
 		let markets, newManager, newerManager, now;
 
 		before(async () => {
@@ -433,7 +433,7 @@ contract('PositionalMarketManager', accounts => {
 
 			await newManager.connect(creator).setMigratingManager(manager.address);
 		});
-		it('Migrating manager can be set [ @cov-skip ]', async () => {
+		it('Migrating manager can be set', async () => {
 			await manager.connect(creator).setMigratingManager(initialCreator);
 		});
 

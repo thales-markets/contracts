@@ -233,7 +233,6 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             }
         }
         resolved = true;
-        noWinners = false;
         resolvedTime = block.timestamp;
         resolverAddress = _resolverAddress;
         emit MarketResolved(_outcomePosition, _resolverAddress, noWinners);

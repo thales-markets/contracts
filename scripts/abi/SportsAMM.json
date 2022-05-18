@@ -576,25 +576,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "impliedVolatilityPerAsset",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "initNonReentrant",
     "outputs": [],
@@ -609,7 +590,7 @@
         "type": "address"
       },
       {
-        "internalType": "contract IERC20Upgradeable",
+        "internalType": "contract IERC20",
         "name": "_sUSD",
         "type": "address"
       },
@@ -872,7 +853,7 @@
     "name": "sUSD",
     "outputs": [
       {
-        "internalType": "contract IERC20Upgradeable",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }
@@ -1031,24 +1012,6 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_impliedVolatility",
-        "type": "uint256"
-      }
-    ],
-    "name": "setImpliedVolatilityPerAsset",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_spread",
         "type": "uint256"
@@ -1140,7 +1103,7 @@
   {
     "inputs": [
       {
-        "internalType": "contract IERC20Upgradeable",
+        "internalType": "contract IERC20",
         "name": "_sUSD",
         "type": "address"
       }

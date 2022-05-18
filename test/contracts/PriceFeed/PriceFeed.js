@@ -110,15 +110,6 @@ contract('Price Feed', async accounts => {
 		price_AELIN_ETH = BigNumber.from(encodePriceSqrt(1, 4));
 		await pool_AELIN_ETH.initialize(price_AELIN_ETH);
 
-		const { sqrtPriceX96, observationIndex } = await pool_LYRA_ETH.slot0();
-		console.log(sqrtPriceX96.toString(), observationIndex);
-		console.log('tick spacing', await pool_LYRA_ETH.tickSpacing());
-		console.log('token0 pool_LYRA_ETH', await pool_LYRA_ETH.token0());
-		console.log('token1 pool_LYRA_ETH', await pool_LYRA_ETH.token1());
-
-		console.log('token0 pool_AELIN_ETH', await pool_AELIN_ETH.token0());
-		console.log('token1 pool_AELIN_ETH', await pool_AELIN_ETH.token1());
-
 	});
 
 	beforeEach(async () => {
@@ -327,7 +318,6 @@ contract('Price Feed', async accounts => {
 
 					assert.equal(await instance.useLastTickForTWAP(LYRA), true);
 
-					console.log((await pool_LYRA_ETH.slot0()).toString());
 					const result = await instance.connect(accountOneSigner).rateForCurrency(LYRA);
 					const resultDecimal = parseFloat(result.toString())/10**18;
 
@@ -348,7 +338,7 @@ contract('Price Feed', async accounts => {
 			
 					await instance.connect(ownerSigner).addPool(LYRA, tokens[0], pool_LYRA_ETH.address);
 					await instance.connect(ownerSigner).setTwapInterval(0);
-					console.log((await pool_LYRA_ETH.slot0()).toString());
+
 					const result = await instance.connect(accountOneSigner).rateForCurrency(LYRA);
 					const resultDecimal = parseFloat(result.toString())/10**18;
 
@@ -372,20 +362,16 @@ contract('Price Feed', async accounts => {
 					const observeResult = await pool_LYRA_ETH.observe([1200, 0]);
 					const tickCumulatives = observeResult.tickCumulatives;
 					const ratioAtTick = parseInt((tickCumulatives[1].sub(tickCumulatives[0])).div(1200).toString());
-					console.log('ratio at tick', ratioAtTick.toString());
 
 					// ratio = 1.0001^tick
 					const expectedRatio = Math.pow(1.0001, ratioAtTick);
-					console.log('expected ratio', expectedRatio);
+
 
 					// initial ratio ETH/LYRA = 2.4
 					const price = newRate/2.4;
 				
 					const result = await instance.connect(accountOneSigner).rateForCurrency(LYRA);
 					const resultDecimal = parseFloat(result.toString())/10**18;
-
-					console.log("result", resultDecimal);
-					console.log("price", price);
 
 					expect(expectedRatio).to.be.approximately(expectedRatio, 0.00000000001);
 					expect(resultDecimal).to.be.approximately(price, 0.1);
@@ -401,7 +387,6 @@ contract('Price Feed', async accounts => {
 			
 					await instance.connect(ownerSigner).addPool(AELIN, tokens[1], pool_AELIN_ETH.address);
 					await instance.connect(ownerSigner).setTwapInterval(0);
-					console.log((await pool_AELIN_ETH.slot0()).toString());
 					const result = await instance.connect(accountOneSigner).rateForCurrency(AELIN);
 					const resultDecimal = parseFloat(result.toString())/10**18;
 
@@ -425,20 +410,15 @@ contract('Price Feed', async accounts => {
 					const observeResult = await pool_AELIN_ETH.observe([1200, 0]);
 					const tickCumulatives = observeResult.tickCumulatives;
 					const ratioAtTick = parseInt((tickCumulatives[1].sub(tickCumulatives[0])).div(1200).toString());
-					console.log('ratio at tick', ratioAtTick.toString());
-
+			
 					// ratio = 1.0001^tick
 					const expectedRatio = Math.pow(1.0001, ratioAtTick);
-					console.log('expected ratio', expectedRatio);
 
 					// initial ratio ETH/AELIN = 0.25;
 					const price = newRate/0.25;
 				
 					const result = await instance.connect(accountOneSigner).rateForCurrency(AELIN);
 					const resultDecimal = parseFloat(result.toString())/10**18;
-
-					console.log("result", resultDecimal);
-					console.log("price", price);
 
 					expect(expectedRatio).to.be.approximately(expectedRatio, 0.00000000001);
 					expect(resultDecimal).to.be.approximately(price, 1);

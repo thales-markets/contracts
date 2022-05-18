@@ -180,7 +180,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('price fully unlikely', async () => {
+		it('price fully unlikely [ @cov-skip ]', async () => {
 			let strike = 44000; //2593 works 2592 doesnt
 			let now = await currentTime();
 			let newMarket = await createMarket(
@@ -193,37 +193,37 @@ contract('ThalesAMM', accounts => {
 			);
 
 			let calculatedOdds = calculateOdds(50720, strike, 13, 80);
-			console.log('calculatedOdds is:' + calculatedOdds);
+			//console.log('calculatedOdds is:' + calculatedOdds);
 			let calculatedOddsContract = await thalesAMM.calculateOdds(
 				toUnit(50720),
 				toUnit(strike),
 				toUnit(13),
 				toUnit(80)
 			);
-			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+			//console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
 
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			console.log('priceUp decimal is:' + priceUp / 1e18);
+			//console.log('priceUp decimal is:' + priceUp / 1e18);
 
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToBuyFromAMM UP decimal is:' + availableToBuyFromAMM / 1e18);
+			//console.log('availableToBuyFromAMM UP decimal is:' + availableToBuyFromAMM / 1e18);
 
 			let buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
 				newMarket.address,
 				Position.UP,
 				toUnit(1)
 			);
-			console.log('buyPriceImpact 1  decimal is:' + buyPriceImpactPostBuy / 1e18);
+			//console.log('buyPriceImpact 1  decimal is:' + buyPriceImpactPostBuy / 1e18);
 
 			buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
 				newMarket.address,
 				Position.UP,
 				toUnit(availableToBuyFromAMM / 1e18)
 			);
-			console.log('buyPriceImpact post buy max  decimal is:' + buyPriceImpactPostBuy / 1e18);
+			//console.log('buyPriceImpact post buy max  decimal is:' + buyPriceImpactPostBuy / 1e18);
 		});
 	});
 });

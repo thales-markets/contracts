@@ -188,7 +188,7 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.unstake({ from: first });
 
 			let balanceAfterFirstUnstake = await StakingThalesDeployed.stakedBalanceOf(first);
-			console.log('Balance after first unstake is ' + balanceAfterFirstUnstake);
+			//console.log('Balance after first unstake is ' + balanceAfterFirstUnstake);
 
 			assert.equal(balanceAfterFirstUnstake, 500);
 
@@ -227,20 +227,20 @@ contract('StakingThales', accounts => {
 			await StakingThalesDeployed.closePeriod({ from: first });
 
 			let rewardsAvailable = await StakingThalesDeployed.getRewardsAvailable(first);
-			console.log('rewards available:' + rewardsAvailable);
+			//console.log('rewards available:' + rewardsAvailable);
 			await StakingThalesDeployed.stake(500, { from: first });
 			answer = await StakingThalesDeployed.claimReward({ from: first });
 
 			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
-			console.log('totalAccountEscrowedAmount' + totalAccountEscrowedAmount);
+			//console.log('totalAccountEscrowedAmount' + totalAccountEscrowedAmount);
 
 			let totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
-			console.log(
-				'totalEscrowBalanceNotIncludedInStaking ' + totalEscrowBalanceNotIncludedInStaking
-			);
+			// console.log(
+			// 	'totalEscrowBalanceNotIncludedInStaking ' + totalEscrowBalanceNotIncludedInStaking
+			// );
 
 			let stakedBalanceOf = await StakingThalesDeployed.stakedBalanceOf(first);
-			console.log('stakedBalanceOf before' + stakedBalanceOf);
+			//console.log('stakedBalanceOf before' + stakedBalanceOf);
 
 			answer = await StakingThalesDeployed.startUnstake(
 				await StakingThalesDeployed.stakedBalanceOf(first),
@@ -248,12 +248,12 @@ contract('StakingThales', accounts => {
 			);
 
 			stakedBalanceOf = await StakingThalesDeployed.stakedBalanceOf(first);
-			console.log('stakedBalanceOf after ' + stakedBalanceOf);
+			//console.log('stakedBalanceOf after ' + stakedBalanceOf);
 
 			totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
-			console.log(
-				'totalEscrowBalanceNotIncludedInStaking ' + totalEscrowBalanceNotIncludedInStaking
-			);
+			// console.log(
+			// 	'totalEscrowBalanceNotIncludedInStaking ' + totalEscrowBalanceNotIncludedInStaking
+			// );
 
 			await fastForward(WEEK + 5 * SECOND);
 
@@ -266,15 +266,15 @@ contract('StakingThales', accounts => {
 
 			let answerRewards = await StakingThalesDeployed.getRewardsAvailable(first);
 			let answerRewardsthird = await StakingThalesDeployed.getRewardsAvailable(third);
-			console.log('answerRewards' + answerRewards);
-			console.log('answerRewardsthird' + answerRewardsthird);
+			//console.log('answerRewards' + answerRewards);
+			//console.log('answerRewardsthird' + answerRewardsthird);
 
 			let answer2 = await EscrowThalesDeployed.claimable.call(first);
 			let claimable = web3.utils.toDecimal(answer2);
-			console.log('claimable available:' + claimable);
+			//console.log('claimable available:' + claimable);
 
 			totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
-			console.log('totalAccountEscrowedAmount' + totalAccountEscrowedAmount);
+			//console.log('totalAccountEscrowedAmount' + totalAccountEscrowedAmount);
 
 			answer = await EscrowThalesDeployed.vest(claimable, { from: first });
 		});

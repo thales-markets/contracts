@@ -204,29 +204,29 @@ contract('ThalesAMM', accounts => {
 			});
 
 			let spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
-			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
+			//console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			console.log('priceUp decimal is:' + priceUp / 1e18);
+			//console.log('priceUp decimal is:' + priceUp / 1e18);
 
 			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
+			//console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
 
 			let sellPriceImpact = await thalesAMM.sellPriceImpact(
 				newMarket.address,
 				Position.UP,
 				toUnit(availableToSellToAMM / 1e18)
 			);
-			console.log('sellPriceImpact decimal is:' + sellPriceImpact / 1e18);
+			//console.log('sellPriceImpact decimal is:' + sellPriceImpact / 1e18);
 
 			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.UP,
 				toUnit(availableToSellToAMM / 1e18)
 			);
-			console.log('sellToAmmQuote is ' + sellToAmmQuote / 1e18);
+			//console.log('sellToAmmQuote is ' + sellToAmmQuote / 1e18);
 			await thalesAMM.sellToAMM(
 				newMarket.address,
 				Position.UP,
@@ -237,33 +237,33 @@ contract('ThalesAMM', accounts => {
 			);
 
 			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
-			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			//console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
 
 			availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
-			console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
+			//console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
 
 			sellPriceImpact = await thalesAMM.sellPriceImpact(newMarket.address, Position.UP, toUnit(1));
-			console.log('sellPriceImpact decimal is:' + sellPriceImpact / 1e18);
+			//console.log('sellPriceImpact decimal is:' + sellPriceImpact / 1e18);
 
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
-			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
+			//console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
 			availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.DOWN);
-			console.log('availableToSellToAMM down decimal is:' + availableToSellToAMM / 1e18);
+			//console.log('availableToSellToAMM down decimal is:' + availableToSellToAMM / 1e18);
 
 			sellPriceImpact = await thalesAMM.sellPriceImpact(
 				newMarket.address,
 				Position.DOWN,
 				toUnit(availableToSellToAMM / 1e18)
 			);
-			console.log('sellPriceImpact down decimal is:' + sellPriceImpact / 1e18);
+			//console.log('sellPriceImpact down decimal is:' + sellPriceImpact / 1e18);
 
 			sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.DOWN,
 				toUnit(availableToSellToAMM / 1e18)
 			);
-			console.log('sellToAmmQuote is ' + sellToAmmQuote / 1e18);
+			//console.log('sellToAmmQuote is ' + sellToAmmQuote / 1e18);
 			await thalesAMM.sellToAMM(
 				newMarket.address,
 				Position.DOWN,
@@ -274,16 +274,16 @@ contract('ThalesAMM', accounts => {
 			);
 
 			sellPriceImpact = await thalesAMM.sellPriceImpact(newMarket.address, Position.UP, toUnit(1));
-			console.log('sellPriceImpact decimal is:' + sellPriceImpact / 1e18);
+			//console.log('sellPriceImpact decimal is:' + sellPriceImpact / 1e18);
 
 			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
-			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
+			//console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
 			availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.DOWN);
-			console.log('availableToSellToAMM down decimal is:' + availableToSellToAMM / 1e18);
+			//console.log('availableToSellToAMM down decimal is:' + availableToSellToAMM / 1e18);
 
 			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
-			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			//console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
 		});
 	});
 });

@@ -94,8 +94,6 @@ contract('PositionalMarketManager', accounts => {
 		}));
 		[creator, owner, minterSigner, dummySigner] = await ethers.getSigners();
 
-		console.log('proxy', sUSDSynth.address);
-
 		await manager.connect(creator).setPositionalMarketFactory(factory.address);
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
 		await factory
@@ -139,10 +137,8 @@ contract('PositionalMarketManager', accounts => {
 			let afterDeposit = toUnit(5);
 
 			assert.bnEqual(await manager.totalDeposited(), afterDeposit);
-			console.log('current', await currentTime());
 
 			await fastForward(expiryDuration + 1000);
-			console.log('current', await currentTime());
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), await currentTime());
 
 			await Promise.all(

@@ -465,7 +465,6 @@ contract('VestingEscrow', accounts => {
 			}
 
 			const balanceOfAccount = await ThalesDeployed.balanceOf(beneficiary.address);
-			console.log(balanceOfAccount.toString());
 			assert.equal(balanceOfAccount, SINGLE_AMOUNT);
 		});
 

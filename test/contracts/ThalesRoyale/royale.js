@@ -376,7 +376,7 @@ contract('ThalesRoyale', accounts => {
 
 			assert.equal(false, isTokenFirstAlive);
 
-			console.log('eliminated', await passport.tokenURI(firstPassportId));
+			//console.log('eliminated', await passport.tokenURI(firstPassportId));
 
 			await expect(royale.takeAPosition(firstPassportId, 2, { from: first })).to.be.revertedWith(
 				'Token no longer valid'
@@ -1872,10 +1872,10 @@ contract('ThalesRoyale', accounts => {
 		await royale.closeRound();
 
 		const positions = await royale.getTokenPositions(sixthPassportIdSeason2);
-		console.log('positions', positions[0]);
+		//console.log('positions', positions[0]);
 		// fetch token uri
 		const tokenURI1 = await passport.tokenURI(sixthPassportIdSeason2);
-		console.log(tokenURI1);
+		//console.log(tokenURI1);
 		
 
 		//#2
@@ -2047,11 +2047,11 @@ contract('ThalesRoyale', accounts => {
 			royale.claimRewardForSeason(season_2, secondPassportIdSeason2, { from: second })
 		).to.be.revertedWith('Token is not alive');
 
-		console.log('finished', await royale.seasonFinished(season_2));
+		//console.log('finished', await royale.seasonFinished(season_2));
 
 		// fetch token uri
 		const tokenURI = await passport.tokenURI(sixthPassportIdSeason2);
-		console.log(tokenURI);
+		//console.log(tokenURI);
 		const metadata = extractJSONFromURI(tokenURI);
 
 		assert.equal(metadata.name, 'Thales Royale Passport');

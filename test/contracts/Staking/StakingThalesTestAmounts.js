@@ -528,7 +528,7 @@ contract('StakingThales', accounts => {
 			async () => {
 				let period = 0;
 				if (weeksOfStakingToTest < 10) {
-					console.log('Please put at least 10 weeks of staking for testing');
+					//console.log('Please put at least 10 weeks of staking for testing');
 				} else {
 					await ThalesDeployed.transfer(
 						ThalesStakingRewardsPoolDeployed.address,

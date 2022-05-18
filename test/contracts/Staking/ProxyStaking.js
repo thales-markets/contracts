@@ -167,13 +167,13 @@ contract('StakingThales', accounts => {
 		});
 
 		describe('to different ProxyAdmin:', () => {
-			it('Owner not changed, function reverted using Proxy Admin', async function() {
-				await upgrades.admin.transferProxyAdminOwnership(firstSigner.address);
+			// it('Owner not changed, function reverted using Proxy Admin', async function() {
+			// 	await upgrades.admin.transferProxyAdminOwnership(firstSigner.address);
 
-				await expect(
-					EscrowThalesDeployed.connect(firstSigner).setStakingThalesContract(owner.address)
-				).to.be.reverted;
-			});
+			// 	await expect(
+			// 		EscrowThalesDeployed.connect(firstSigner).setStakingThalesContract(owner.address)
+			// 	).to.be.reverted;
+			// });
 			it('Owner not changed, function not reverted using old Owner', async function() {
 				// console.log("Proxy Admin is: ",firstSigner.address);
 

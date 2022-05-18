@@ -192,46 +192,46 @@ contract('ThalesAMM', accounts => {
 			);
 
 			let calculatedOdds = calculateOdds(3950, 4000, 0.25, 120);
-			console.log('calculatedOdds is:' + calculatedOdds);
+			//console.log('calculatedOdds is:' + calculatedOdds);
 			let calculatedOddsContract = await thalesAMM.calculateOdds(
 				toUnit(3950),
 				toUnit(4000),
 				toUnit(0.25),
 				toUnit(120)
 			);
-			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+			//console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
 
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			console.log('priceUp decimal is:' + priceUp / 1e18);
+			//console.log('priceUp decimal is:' + priceUp / 1e18);
 
 			let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-			console.log('priceDown decimal is:' + priceDown / 1e18);
+			//console.log('priceDown decimal is:' + priceDown / 1e18);
 
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+			//console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
 
 			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
+			//console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
 
 			let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.DOWN
 			);
-			console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
+			//console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
 
 			let availableToSellToAMMDown = await thalesAMM.availableToSellToAMM(
 				newMarket.address,
 				Position.DOWN
 			);
-			console.log(
-				'availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18
-			);
+			// console.log(
+			// 	'availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18
+			// );
 		});
 	});
 
@@ -247,41 +247,41 @@ contract('ThalesAMM', accounts => {
 		);
 
 		let calculatedOdds = calculateOdds(3950, 3900, 0.25, 120);
-		console.log('calculatedOdds is:' + calculatedOdds);
+		//console.log('calculatedOdds is:' + calculatedOdds);
 		let calculatedOddsContract = await thalesAMM.calculateOdds(
 			toUnit(3950),
 			toUnit(3900),
 			toUnit(0.25),
 			toUnit(120)
 		);
-		console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+		//console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
 
 		let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-		console.log('priceUp decimal is:' + priceUp / 1e18);
+		//console.log('priceUp decimal is:' + priceUp / 1e18);
 
 		let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-		console.log('priceDown decimal is:' + priceDown / 1e18);
+		//console.log('priceDown decimal is:' + priceDown / 1e18);
 
 		let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 			newMarket.address,
 			Position.UP
 		);
-		console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+		//console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
 
 		let availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
-		console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
+		//console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
 
 		let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
 			newMarket.address,
 			Position.DOWN
 		);
-		console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
+		//console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
 
 		let availableToSellToAMMDown = await thalesAMM.availableToSellToAMM(
 			newMarket.address,
 			Position.DOWN
 		);
-		console.log('availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18);
+		//console.log('availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18);
 	});
 });
 

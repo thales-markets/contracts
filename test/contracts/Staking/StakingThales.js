@@ -1055,14 +1055,14 @@ contract('StakingThales', accounts => {
 
 			answer = await EscrowThalesDeployed.claimable(users[0]);
 			answer2 = await EscrowThalesDeployed.claimable(users[1]);
-			console.log(
-				'period:',
-				period,
-				'| claimable U1:',
-				answer.toString(),
-				'| claimable U2:',
-				answer2.toString()
-			);
+			// console.log(
+			// 	'period:',
+			// 	period,
+			// 	'| claimable U1:',
+			// 	answer.toString(),
+			// 	'| claimable U2:',
+			// 	answer2.toString()
+			// );
 			// for (let i = 0; i < users.length; i++) {
 			answer = await EscrowThalesDeployed.claimable(users[0]);
 			assert.bnEqual(

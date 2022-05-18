@@ -1,12 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
+
+// import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
+// import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+// import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
+// import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
@@ -17,21 +23,17 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
+// import "../AMM/DeciMath.sol";
 
 contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard  {
     using SafeMathUpgradeable for uint;
-    using SafeERC20 for IERC20;
-
+    using SafeERC20Upgradeable for IERC20Upgradeable;
+    
     struct GameOdds {
         bytes32 gameId;
         int24 homeOdds;
         int24 awayOdds;
         int24 drawOdds;
-    }
-
-    struct MarketSkew {
-        uint ups;
-        uint downs;
     }
 
     uint private constant ONE = 1e18;
@@ -40,7 +42,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint private constant MIN_SUPPORTED_PRICE = 10e16;
     uint private constant MAX_SUPPORTED_PRICE = 90e16;
 
-    IERC20 public sUSD;
+    IERC20Upgradeable public sUSD;
     address public manager;
 
     uint public capPerMarket;
@@ -68,7 +70,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function initialize(
         address _owner,
-        IERC20 _sUSD,
+        IERC20Upgradeable _sUSD,
         uint _capPerMarket,
         // DeciMath _deciMath,
         uint _min_spread,
@@ -221,7 +223,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             return odds[uint(_position)];
         }
         else {
-            return uint(0);
+            return 0;
         }
     }
 
@@ -292,7 +294,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             target = position == Position.Away ? away : draw;
         }
 
-        IERC20(address(target)).transfer(msg.sender, amount);
+        IERC20Upgradeable(address(target)).transfer(msg.sender, amount);
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, sUSDPaid);
@@ -324,10 +326,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
 
         require(target.getBalanceOf(msg.sender) >= amount, "You dont have enough options.");
-        require(IERC20(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
+        require(IERC20Upgradeable(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
 
         //transfer options first to have max burn available
-        IERC20(address(target)).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20Upgradeable(address(target)).safeTransferFrom(msg.sender, address(this), amount);
         uint sUSDFromBurning =
             ISportPositionalMarketManager(manager).transformCollateral(
                 ISportPositionalMarket(market).getMaximumBurnable(address(this))
@@ -396,7 +398,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetCapPerMarket(_capPerMarket);
     }
 
-    function setSUSD(IERC20 _sUSD) public onlyOwner {
+    function setSUSD(IERC20Upgradeable _sUSD) public onlyOwner {
         sUSD = _sUSD;
         emit SetSUSD(address(sUSD));
     }

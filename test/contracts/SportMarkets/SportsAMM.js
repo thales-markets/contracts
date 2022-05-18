@@ -376,5 +376,28 @@ contract('SportsAMM', accounts => {
 		
 	});
 
+	describe('Test SportsAMM', () => {
+		beforeEach(async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				{ from: wrapper }
+			);
+
+			
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			await TherundownConsumerDeployed.createMarketForGame(gameid1);
+			await TherundownConsumerDeployed.marketPerGameId(gameid1);
+		});
+		
+		it('Fulfill Games Created - NBA, create market, check results', async () => {
+			
+		});
+	});
+
 	
 });

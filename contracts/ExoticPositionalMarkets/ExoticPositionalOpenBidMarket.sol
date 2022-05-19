@@ -535,15 +535,15 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             return 0;
         }
         if (totalOpenBidAmountPerPosition[_position] == 0) {
-            return forNewUserView ? applyDeduction(totalOpenBidAmount.add(1e18)) : applyDeduction(totalOpenBidAmount);
+            return forNewUserView ? applyDeduction(totalOpenBidAmount.add(minPosAmount)) : applyDeduction(totalOpenBidAmount);
         } else {
             if (forNewUserView) {
-                return applyDeduction(totalOpenBidAmount.add(1e18)).div(totalOpenBidAmountPerPosition[_position].add(1e18));
+                return applyDeduction(totalOpenBidAmount.add(minPosAmount)).div(totalOpenBidAmountPerPosition[_position].add(minPosAmount));
             } else {
                 uint calculatedPositions =
                     userHasAlreadyTakenThisPosition && totalOpenBidAmountPerPosition[_position] > 0
                         ? totalOpenBidAmountPerPosition[_position]
-                        : totalOpenBidAmountPerPosition[_position].add(1e18);
+                        : totalOpenBidAmountPerPosition[_position].add(minPosAmount);
                 return applyDeduction(totalOpenBidAmount).div(calculatedPositions);
             }
         }

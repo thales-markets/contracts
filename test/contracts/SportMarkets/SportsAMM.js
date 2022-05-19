@@ -148,6 +148,15 @@ contract('SportsAMM', accounts => {
         await SportPositionalMarketFactory.setThalesAMM(SportsAMM.address, {from:manager});
         await SportPositionalMarketManager.setPositionalMarketFactory(SportPositionalMarketFactory.address, {from:manager});
         
+		await SportsAMM.initialize(
+			owner,
+			Thales.address,
+			toUnit('5000'),
+			toUnit('0.02'),
+			toUnit('0.2'),
+			DAY,
+			{from:owner});
+
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });
@@ -394,8 +403,11 @@ contract('SportsAMM', accounts => {
 			await TherundownConsumerDeployed.marketPerGameId(gameid1);
 		});
 		
-		it('Fulfill Games Created - NBA, create market, check results', async () => {
-			
+		it('Checking SportsAMM variables', async () => {
+			assert.bnEqual(await SportsAMM.min_spread(), toUnit('0.02'));
+			assert.bnEqual(await SportsAMM.max_spread(), toUnit('0.2'));
+			assert.bnEqual(await SportsAMM.capPerMarket(), toUnit('5000'));
+			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
 		});
 	});
 

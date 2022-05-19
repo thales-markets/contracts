@@ -563,7 +563,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 
-		it('Fulfill Games Resolved - Champions League Game 1, resolve market, check results', async () => {
+		it('Fulfill Games Resolved - Champions League Game 1, resolve market, check results [ @cov-skip ]', async () => {
 			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
 
 			// req. games

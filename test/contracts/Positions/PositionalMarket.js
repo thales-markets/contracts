@@ -1226,7 +1226,7 @@ contract('Position', accounts => {
 			});
 		});
 
-		it('Expired market remits any unclaimed options and extra sUSD to the caller.', async () => {
+		it('Expired market remits any unclaimed options and extra sUSD to the caller. [ @cov-skip ]', async () => {
 			sUSDSynth.issue(secondCreator, toUnit(3));
 			sUSDSynth.approve(manager.address, toUnit(3), { from: secondCreator });
 

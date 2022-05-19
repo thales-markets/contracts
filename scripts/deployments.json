@@ -17,7 +17,7 @@
 		"SNXIssuer": "0xA2412e0654CdD40F5677Aaad1a0c572e75dF246C",
 		"StakingThales": "0xC392133eEa695603B51a5d5de73655d571c2CE51",
 		"EscrowThales": "0xa25816b9605009aa446d4d597F0AA46FD828f056",
-		"StakingThalesImplementation": "0xF1b35FAC306cd6fB0008c229f056314c139a3c66",
+		"StakingThalesImplementation": "0x369fd489391115Bea7082A524d13bE09E6922Fa5",
 		"EscrowThalesImplementation": "0x627907c5Cc27c755c0860450eCe6b4480615a45F",
 		"ThalesStakingRewardsPool": "0xc44DfC6ffaf195E2535fc13D75a79D9238459782",
 		"ThalesStakingRewardsPoolImplementation": "0x0AbC94987F6b98bFE6fD40F749e445a2857a4Ee3",
@@ -55,10 +55,10 @@
 		"ExoticPositionalMarketDataImplementation": "0x648200a8d65E477b7222b89019bb877209d1B0cF",
 		"ExoticPositionalTags": "0xd550bD32B434bA870642F94710eb220f542Ed3F3",
 		"ExoticPositionalTagsImplementation": "0x7a911614e0a916FB59A14EBd5c186dD076d1eDBc",
-		"RangedAMM": "0x64cb6EF981e5E432d4362F6A561A31B22E328cC5",
-		"RangedAMMImplementation": "0x9530C16d2A169DAa38ee73748661999f2b2f0c1d",
-		"RangedPositionMastercopy": "0x897563772ce3aC574412F18eC04581aC377c814a",
-		"RangedMarketMastercopy": "0x6d53c852FE7E0B60d54C70e454CbBccBCE2C39c4"
+		"RangedAMM": "0x2d356b114cbCA8DEFf2d8783EAc2a5A5324fE1dF",
+		"RangedAMMImplementation": "0x8B2e97C18D8ebE2CaDb173DB3827376633bdeAd7",
+		"RangedPositionMastercopy": "0x7801Efa8E30606D2d4c9848852b56ff03efDAd5c",
+		"RangedMarketMastercopy": "0xe5109CC91F2c236Fbee3752AF06dC92d4BDddC84"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -105,7 +105,7 @@
 		"DeciMath": "0x12C6276bb5258180C50C87F88e29116255d9454e",
 		"StakingThales": "0x8417D248274439360CC38Be84CfFDc01226600F8",
 		"EscrowThales": "0xEeDe0f1D1d70009348f3D9a66Fe03BA3CA0Aeef7",
-		"StakingThalesImplementation": "0x24259BF812Bb303bEE512Ac9960b8949828E827A",
+		"StakingThalesImplementation": "0xD0477D8fD3CF6af44944939aD2BAA1b7Bcea7b9F",
 		"EscrowThalesImplementation": "0x070eFA5F0f92052c92A86B39e933e1dDa7F0102D",
 		"SafeBox": "0x8314125c8b68af2afd0d151eb4a551e88128a2ae",
 		"SNXIssuer": "0x42d9ac3ebebb9479f24360847350b4F7EADECE50",

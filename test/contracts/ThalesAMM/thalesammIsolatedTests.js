@@ -179,7 +179,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('additional slippage test on buy', async () => {
+		it('additional slippage test on buy [ @cov-skip ]', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -191,21 +191,21 @@ contract('ThalesAMM', accounts => {
 			);
 
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			console.log('priceUp decimal is:' + priceUp / 1e18);
+			//console.log('priceUp decimal is:' + priceUp / 1e18);
 
 			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.UP,
 				toUnit(10)
 			);
-			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+			//console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
 			let options = await newMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			let ammDownBalance = await down.balanceOf(thalesAMM.address);
-			console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
+			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);
@@ -219,7 +219,7 @@ contract('ThalesAMM', accounts => {
 			);
 
 			ammDownBalance = await down.balanceOf(thalesAMM.address);
-			console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
+			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 
 			additionalSlippage = toUnit(0.01);
 			await expect(
@@ -244,11 +244,11 @@ contract('ThalesAMM', accounts => {
 			);
 
 			ammDownBalance = await down.balanceOf(thalesAMM.address);
-			console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
+			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 		});
 	});
 
-	it('additional slippage test on sell', async () => {
+	it('additional slippage test on sell [ @cov-skip ]', async () => {
 		let now = await currentTime();
 		let newMarket = await createMarket(
 			manager,
@@ -264,17 +264,17 @@ contract('ThalesAMM', accounts => {
 		down = await position.at(options.down);
 
 		let ammUpBalance = await up.balanceOf(thalesAMM.address);
-		console.log('amm UpBalance pre buy decimal is:' + ammUpBalance / 1e18);
+		//console.log('amm UpBalance pre buy decimal is:' + ammUpBalance / 1e18);
 
 		let ammDownBalance = await down.balanceOf(thalesAMM.address);
-		console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
+		//console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
 
 		await newMarket.mint(toUnit(6000), {
 			from: minter,
 		});
 
 		let sellToAmmQuote = await thalesAMM.sellToAmmQuote(newMarket.address, Position.UP, toUnit(10));
-		console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e18);
+		//console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e18);
 
 		await up.approve(thalesAMM.address, toUnit(1000), {
 			from: minter,

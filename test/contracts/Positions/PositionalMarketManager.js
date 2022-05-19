@@ -94,8 +94,6 @@ contract('PositionalMarketManager', accounts => {
 		}));
 		[creator, owner, minterSigner, dummySigner] = await ethers.getSigners();
 
-		console.log('proxy', sUSDSynth.address);
-
 		await manager.connect(creator).setPositionalMarketFactory(factory.address);
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
 		await factory
@@ -122,7 +120,7 @@ contract('PositionalMarketManager', accounts => {
 	});
 
 	describe('Market tracking', () => {
-		it('Multiple markets can exist simultaneously, and debt is tracked properly across them.', async () => {
+		it('Multiple markets can exist simultaneously, and debt is tracked properly across them. [ @cov-skip ]', async () => {
 			const newValue = toUnit(1);
 			const tx = await manager.connect(creator).setCreatorCapitalRequirement(newValue.toString());
 
@@ -139,10 +137,8 @@ contract('PositionalMarketManager', accounts => {
 			let afterDeposit = toUnit(5);
 
 			assert.bnEqual(await manager.totalDeposited(), afterDeposit);
-			console.log('current', await currentTime());
 
 			await fastForward(expiryDuration + 1000);
-			console.log('current', await currentTime());
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), await currentTime());
 
 			await Promise.all(
@@ -166,7 +162,7 @@ contract('PositionalMarketManager', accounts => {
 			await assert.revert(manager.resolveMarket(initialCreator), 'Not an active market');
 		});
 
-		it('Adding, resolving, and expiring markets properly updates market lists', async () => {
+		it('Adding, resolving, and expiring markets properly updates market lists [ @cov-skip ]', async () => {
 			const numMarkets = 8;
 			assert.bnEqual(await manager.numActiveMarkets(), toBN(0));
 			assert.equal((await manager.activeMarkets(0, 100)).length, 0);
@@ -241,7 +237,7 @@ contract('PositionalMarketManager', accounts => {
 			assert.equal((await manager.maturedMarkets(0, 100)).length, 0);
 		});
 
-		it('Pagination works properly', async () => {
+		it('Pagination works properly [ @cov-skip ]', async () => {
 			const numMarkets = 8;
 			const now = await currentTime();
 			const markets = [];
@@ -396,7 +392,7 @@ contract('PositionalMarketManager', accounts => {
 		});
 	});
 
-	describe('Market migration', () => {
+	describe('Market migration [ @cov-skip ]', () => {
 		let markets, newManager, newerManager, now;
 
 		before(async () => {

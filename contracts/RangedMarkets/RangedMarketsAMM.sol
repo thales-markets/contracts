@@ -61,6 +61,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     IStakingThales public stakingThales;
 
+    uint public maximalDifBetweenStrikes;
+
     function initialize(
         address _owner,
         IThalesAMM _thalesAmm,
@@ -121,6 +123,10 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         if (!(((ONE + minimalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE < rightstrikePrice)) {
+            return false;
+        }
+
+        if (!(((ONE + maximalDifBetweenStrikes * ONE_PERCENT) * leftstrikePrice) / ONE > rightstrikePrice)) {
             return false;
         }
 
@@ -527,14 +533,17 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function withdrawCollateral(RangedMarket rangedMarket)
-        external
-        onlyOwner
-        knownRangedMarket(address(rangedMarket))
-        nonReentrant
-        notPaused
-    {
-        rangedMarket.withdrawCollateral(safeBox);
+    function transferSusdTo(address receiver, uint amount) external {
+        require(_knownMarkets.contains(msg.sender), "Not a known ranged market");
+        sUSD.safeTransfer(receiver, amount);
+    }
+
+    function retrieveSUSD(address payable account) external onlyOwner {
+        sUSD.transfer(account, sUSD.balanceOf(address(this)));
+    }
+
+    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        sUSD.transfer(account, amount);
     }
 
     function setRangedMarketMastercopy(address _rangedMarketMastercopy) external onlyOwner {
@@ -548,14 +557,17 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function setMinMaxSupportedPrice(
         uint _minSupportedPrice,
         uint _maxSupportedPrice,
-        uint _minDiffBetweenStrikes
+        uint _minDiffBetweenStrikes,
+        uint _maxDiffBetweenStrikes
     ) public onlyOwner {
         minSupportedPrice = _minSupportedPrice;
         maxSupportedPrice = _maxSupportedPrice;
         minimalDifBetweenStrikes = _minDiffBetweenStrikes;
+        maximalDifBetweenStrikes = _maxDiffBetweenStrikes;
         emit SetMinSupportedPrice(minSupportedPrice);
         emit SetMaxSupportedPrice(maxSupportedPrice);
         emit SetMinimalDifBetweenStrikes(minimalDifBetweenStrikes);
+        emit SetMaxinalDifBetweenStrikes(maximalDifBetweenStrikes);
     }
 
     function setSafeBoxData(address _safeBox, uint _safeBoxImpact) external onlyOwner {
@@ -616,6 +628,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event SetMinSupportedPrice(uint _spread);
     event SetMaxSupportedPrice(uint _spread);
     event SetMinimalDifBetweenStrikes(uint _spread);
+    event SetMaxinalDifBetweenStrikes(uint _spread);
     event SetCapPerMarket(uint capPerMarket);
     event SetRangedAmmFee(uint rangedAmmFee);
     event SetStakingThales(address _stakingThales);

@@ -711,19 +711,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "forNewUserView",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "userAlreadyTakenPosition",
-        "type": "uint256"
-      }
-    ],
-    "name": "getPotentialWinningAmountForAllPosition",
+    "inputs": [],
+    "name": "getPotentialOpenBidWinningForAllPositions",
     "outputs": [
       {
         "internalType": "uint256[]",
@@ -907,25 +896,6 @@
       }
     ],
     "name": "getUserOpenBidTotalPlacedAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      }
-    ],
-    "name": "getUserPotentialWinningAmount",
     "outputs": [
       {
         "internalType": "uint256",

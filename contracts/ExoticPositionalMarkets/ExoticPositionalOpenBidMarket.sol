@@ -469,6 +469,18 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         }
         return userAllPositions;
     }
+    function getPotentialOpenBidWinningForAllPositions() external view returns (uint[] memory) {
+        uint[] memory potentialWinning = new uint[](positionCount);
+        if (totalUsersTakenPositions == 0 || totalOpenBidAmount == 0) {
+            return potentialWinning;
+        }
+        for (uint i = 1; i <= positionCount; i++) {
+            if(totalOpenBidAmountPerPosition[i] > 0) {
+                potentialWinning[i - 1] = applyDeduction(totalOpenBidAmount).mul(HUNDRED_PERCENT).div(totalOpenBidAmountPerPosition[i]);
+            }
+        }
+        return potentialWinning;
+    }
 
     function getUserOpenBidPotentialWinningForPosition(address _account, uint _position) public view returns (uint) {
         if (_position == CANCELED) {
@@ -488,66 +500,17 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         }
         return getUserOpenBidPotentialWinningForPosition(_account, winningPosition);
     }
+   
 
-    function getPotentialWinningAmountForAllPosition(bool forNewUserView, uint userAlreadyTakenPosition)
-        external
-        view
-        returns (uint[] memory)
-    {
-        uint[] memory potentialWinning = new uint[](positionCount);
-        for (uint i = 1; i <= positionCount; i++) {
-            potentialWinning[i - 1] = getPotentialWinningAmountForPosition(i, forNewUserView, userAlreadyTakenPosition == i);
-        }
-        return potentialWinning;
-    }
-
+    
     function getUserPotentialWinningAmountForAllPosition(address _account) external view returns (uint[] memory) {
         uint[] memory potentialWinning = new uint[](positionCount);
-        bool forNewUserView = getUserOpenBidTotalPlacedAmount(_account) > 0;
         for (uint i = 1; i <= positionCount; i++) {
-            potentialWinning[i - 1] = getPotentialWinningAmountForPosition(
-                i,
-                forNewUserView,
-                userOpenBidPosition[_account][i] > 0
-            );
+            potentialWinning[i - 1] = getUserOpenBidPotentialWinningForPosition(_account, i);
         }
         return potentialWinning;
     }
 
-    function getUserPotentialWinningAmount(address _account) external view returns (uint) {
-        uint maxWin;
-        uint amount;
-        for (uint i = 1; i <= positionCount; i++) {
-            amount = getPotentialWinningAmountForPosition(userOpenBidPosition[_account][i], false, true);
-            if (amount > maxWin) {
-                maxWin = amount;
-            }
-        }
-        return maxWin;
-    }
-
-    function getPotentialWinningAmountForPosition(
-        uint _position,
-        bool forNewUserView,
-        bool userHasAlreadyTakenThisPosition
-    ) internal view returns (uint) {
-        if (totalUsersTakenPositions == 0) {
-            return 0;
-        }
-        if (totalOpenBidAmountPerPosition[_position] == 0) {
-            return forNewUserView ? applyDeduction(totalOpenBidAmount.add(minPosAmount)) : applyDeduction(totalOpenBidAmount);
-        } else {
-            if (forNewUserView) {
-                return applyDeduction(totalOpenBidAmount.add(minPosAmount)).div(totalOpenBidAmountPerPosition[_position].add(minPosAmount));
-            } else {
-                uint calculatedPositions =
-                    userHasAlreadyTakenThisPosition && totalOpenBidAmountPerPosition[_position] > 0
-                        ? totalOpenBidAmountPerPosition[_position]
-                        : totalOpenBidAmountPerPosition[_position].add(minPosAmount);
-                return applyDeduction(totalOpenBidAmount).div(calculatedPositions);
-            }
-        }
-    }
 
     function applyDeduction(uint value) internal view returns (uint) {
         return

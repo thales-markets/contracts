@@ -99,9 +99,6 @@ contract('Position', accounts => {
 
 		await priceFeed.connect(owner).addAggregator(AUDKey, aggregatorAUD.address);
 
-		console.log('AUD rate', await priceFeed.rateForCurrency(AUDKey));
-		console.log('AUD aggregator', await priceFeed.aggregators(AUDKey));
-
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
 			sUSDSynth.approve(manager.address, sUSDQty, { from: initialCreator }),
@@ -123,8 +120,6 @@ contract('Position', accounts => {
 			const options = await market.options();
 			up = await Position.at(options.up);
 			down = await Position.at(options.down);
-
-			console.log('up', options.up);
 
 			await up.transfer(minter, toUnit(1), { from: initialCreator });
 

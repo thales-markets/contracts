@@ -71,7 +71,7 @@
         "type": "address"
       }
     ],
-    "name": "getGameId",
+    "name": "getGameCreatedById",
     "outputs": [
       {
         "internalType": "bytes32",

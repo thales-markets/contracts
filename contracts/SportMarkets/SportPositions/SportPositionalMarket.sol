@@ -178,7 +178,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     /* ---------- Option Balances and Mints ---------- */
-
+    function getGameId() external view override returns(bytes32) {
+        return gameDetails.gameId;
+    }
     function _balancesOf(address account) internal view returns (uint home, uint away, uint draw) {
         return (options.home.getBalanceOf(account), options.away.getBalanceOf(account), options.draw.getBalanceOf(account));
     }

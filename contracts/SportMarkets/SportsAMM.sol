@@ -215,7 +215,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _market,
         Position _position
     ) public view returns (uint) {
-        bytes32 gameId = ITherundownConsumer(theRundownConsumer).getGameId(_market);
+        bytes32 gameId = ISportPositionalMarket(_market).getGameId();
         if(ISportPositionalMarket(_market).optionsCount() >= uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
             odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
@@ -403,6 +403,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetSUSD(address(sUSD));
     }
 
+    function setTherundownConsumer(address _theRundownConsumer) public onlyOwner {
+        theRundownConsumer = _theRundownConsumer;
+        emit SetTherundownConsumer(_theRundownConsumer);
+    }
+    
     function setStakingThales(IStakingThales _stakingThales) public onlyOwner {
         stakingThales = _stakingThales;
         emit SetStakingThales(address(_stakingThales));
@@ -678,4 +683,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetStakingThales(address _stakingThales);
     event SetMinSupportedPrice(uint _spread);
     event SetMaxSupportedPrice(uint _spread);
+    event SetTherundownConsumer(address _theRundownConsumer);
+
 }

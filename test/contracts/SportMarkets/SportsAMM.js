@@ -44,6 +44,7 @@ contract('SportsAMM', accounts => {
 	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
 	const SportPositionalMarketManagerContract = artifacts.require('SportPositionalMarketManager');
 	const SportPositionalMarketFactoryContract = artifacts.require('SportPositionalMarketFactory');
+	const StakingThalesContract = artifacts.require('StakingThales');
     const SportsAMMContract = artifacts.require('SportsAMM');
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 	const ThalesBondsContract = artifacts.require('ThalesBonds');
@@ -114,6 +115,7 @@ contract('SportsAMM', accounts => {
         SportPositionalMarket,
         SportPositionalMarketMastercopy,
         SportPositionMastercopy,
+		StakingThales,
         SportsAMM;
 
 	const game1NBATime = 1646958600;
@@ -122,6 +124,8 @@ contract('SportsAMM', accounts => {
 	const sportId_4 = 4; // NBA
 	const sportId_16 = 16; // CHL
 
+	let gameMarket;
+
 	beforeEach(async () => {
 
         SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({from:manager});
@@ -129,6 +133,7 @@ contract('SportsAMM', accounts => {
         SportPositionalMarketMastercopy = await SportPositionalMarketContract.new({from:manager});
         SportPositionMastercopy = await SportPositionContract.new({from:manager});
         SportPositionalMarketData = await SportPositionalMarketDataContract.new({from:manager});
+        StakingThales = await StakingThalesContract.new({from:manager});
         SportsAMM = await SportsAMMContract.new({from:manager});
 
 		Thales = await ThalesContract.new({ from: owner });
@@ -157,6 +162,11 @@ contract('SportsAMM', accounts => {
 			DAY,
 			{from:owner});
 
+		await SportsAMM.setPositionalMarketManager(SportPositionalMarketManager.address, {from:owner});
+		await SportsAMM.setStakingThales(StakingThales.address, {from:owner});
+		await SportsAMM.setMinSupportedPrice(toUnit(10), {from:owner});
+		await SportsAMM.setMaxSupportedPrice(toUnit(1000), {from:owner});
+		
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });
@@ -164,7 +174,7 @@ contract('SportsAMM', accounts => {
 		await ExoticPositionalTags.addTag('Sport', '1');
 		await ExoticPositionalTags.addTag('Football', '101');
 		await ExoticPositionalTags.addTag('Basketball', '102');
-
+		
 		// ids
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';
 		gameid2 = '0x3937346533663036386233333764313239656435633133646632376133326662';
@@ -172,12 +182,12 @@ contract('SportsAMM', accounts => {
 		// create game props
 		game_1_create =
 			'0x0000000000000000000000000000000000000000000000000000000000000020653630636661373830383436616636383937386234393537396535636633393600000000000000000000000000000000000000000000000000000000625755f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf240000000000000000000000000000000000000000000000000000000000004524ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf2400000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000000d41746c616e7461204861776b73000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011436861726c6f74746520486f726e657473000000000000000000000000000000';
-		game_2_create =
+			game_2_create =
 			'0x0000000000000000000000000000000000000000000000000000000000000020393734653366303638623333376431323965643563313364663237613332666200000000000000000000000000000000000000000000000000000000625755f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf240000000000000000000000000000000000000000000000000000000000004524ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf2400000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000000d41746c616e7461204861776b73000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011436861726c6f74746520486f726e657473000000000000000000000000000000';
-		gamesCreated = [game_1_create, game_2_create];
-		reqIdCreate = '0x65da2443ccd66b09d4e2693933e8fb9aab9addf46fb93300bd7c1d70c5e21666';
+			gamesCreated = [game_1_create, game_2_create];
+			reqIdCreate = '0x65da2443ccd66b09d4e2693933e8fb9aab9addf46fb93300bd7c1d70c5e21666';
 
-		// resolve game props
+			// resolve game props
 		reqIdResolve = '0x30250573c4b099aeaf06273ef9fbdfe32ab2d6b8e33420de988be5d6886c92a7';
 		game_1_resolve =
         '0x6536306366613738303834366166363839373862343935373965356366333936000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000810000000000000000000000000000000000000000000000000000000000000008';
@@ -219,17 +229,18 @@ contract('SportsAMM', accounts => {
 			[1, 2], // cancel statuses
 			{ from: owner }
             );
-
-        await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
-            // await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
-                // 	TherundownConsumerDeployed.address
-        // );
-        await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
+			
+		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
+		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
+			// 	TherundownConsumerDeployed.address
+				// );
+		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
         await TherundownConsumerDeployed.addToWhitelist(third, { from: owner });
+		await SportsAMM.setTherundownConsumer(TherundownConsumerDeployed.address, {from:owner});
         
         await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {from:manager});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
-
+		
 		
 			
 	});
@@ -386,6 +397,8 @@ contract('SportsAMM', accounts => {
 	});
 
 	describe('Test SportsAMM', () => {
+		let deployedMarket;
+		let answer;
 		beforeEach(async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// req. games
@@ -401,6 +414,8 @@ contract('SportsAMM', accounts => {
 			let gameTime = game.startTime;
 			await TherundownConsumerDeployed.createMarketForGame(gameid1);
 			await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+            deployedMarket = await SportPositionalMarketContract.at(answer.toString());
 		});
 		
 		it('Checking SportsAMM variables', async () => {
@@ -409,6 +424,31 @@ contract('SportsAMM', accounts => {
 			assert.bnEqual(await SportsAMM.capPerMarket(), toUnit('5000'));
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
 		});
+		
+		it('Get odds', async () => {
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 1);
+			console.log("Odds for pos 1: ",answer.toString());
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 2);
+			console.log("Odds for pos 2: ",answer.toString());
+		});
+
+		it('Get price', async () => {
+			answer = await SportsAMM.price(deployedMarket.address, 1);
+			console.log("Price for pos 1: ",answer.toString());
+			answer = await SportsAMM.price(deployedMarket.address, 2);
+			console.log("Price for pos 2: ",answer.toString());
+		});
+		it('Get Available to buy from SportsAMM, position 1', async () => {
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
+			console.log("Available to buy: ",answer.toString());
+		});
+
+		it('Get BuyQuote from SportsAMM, position 1, value: 100', async () => {
+			answer = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 2, toUnit(100));
+			console.log("buyAMMQuote: ",answer.toString());
+		});
+
+
 	});
 
 	

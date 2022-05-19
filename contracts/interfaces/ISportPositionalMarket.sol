@@ -25,6 +25,8 @@ interface ISportPositionalMarket {
             string memory gameLabel
         );
 
+    function getGameId() external view returns(bytes32);
+
     function fees() external view returns (uint poolFee, uint creatorFee);
 
     function deposited() external view returns (uint);

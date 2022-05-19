@@ -280,6 +280,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_theRundownConsumer",
+        "type": "address"
+      }
+    ],
+    "name": "SetTherundownConsumer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "seller",
         "type": "address"
       },
@@ -1148,6 +1161,19 @@
       }
     ],
     "name": "setStakingThales",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_theRundownConsumer",
+        "type": "address"
+      }
+    ],
+    "name": "setTherundownConsumer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

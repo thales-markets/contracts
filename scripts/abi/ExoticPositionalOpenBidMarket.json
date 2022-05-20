@@ -181,7 +181,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "totalOpenBidAmountLeft",
+        "name": "totalOpenBidAmount",
         "type": "uint256"
       }
     ],

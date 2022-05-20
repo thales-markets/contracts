@@ -200,7 +200,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             require(!withrawalRestrictedForUser[msg.sender], "Already withdrawn");
             require(
                 totalToWithdraw <=
-                    totalUserPlacedAmount[msg.sender].mul(maxWithdrawPercentage.mul(ONE_PERCENT)).div(HUNDRED_PERCENT),
+                    totalOpenBidAmount.mul(maxWithdrawPercentage.mul(ONE_PERCENT)).div(HUNDRED_PERCENT),
                 "Exceeds withdraw limit"
             );
             withrawalRestrictedForUser[msg.sender] = true;
@@ -621,6 +621,6 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     event BondIncreased(uint amount, uint totalAmount);
     event BondDecreased(uint amount, uint totalAmount);
     event NewOpenBidsForPositions(address account, uint[] openBidPositions, uint[] openBidAmounts);
-    event OpenBidUserWithdrawn(address account, uint position, uint withdrawnAmount, uint totalOpenBidAmountLeft);
+    event OpenBidUserWithdrawn(address account, uint position, uint withdrawnAmount, uint totalOpenBidAmount);
     event FeesIssued(uint totalFees);
 }

@@ -634,7 +634,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     function _capOnMarket(address market) internal view returns (uint) {
-        (bytes32 gameId, ) = ISportPositionalMarket(market).getGameDetails();
+        bytes32 gameId = ISportPositionalMarket(market).getGameId();
         return getCapPerAsset(gameId);
     }
 

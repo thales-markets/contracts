@@ -164,7 +164,7 @@ contract('SportsAMM', accounts => {
 
 		await SportsAMM.setPositionalMarketManager(SportPositionalMarketManager.address, {from:owner});
 		await SportsAMM.setStakingThales(StakingThales.address, {from:owner});
-		await SportsAMM.setMinSupportedPrice(toUnit(10), {from:owner});
+		await SportsAMM.setMinSupportedPrice(10, {from:owner});
 		await SportsAMM.setMaxSupportedPrice(toUnit(1000), {from:owner});
 		
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
@@ -425,6 +425,16 @@ contract('SportsAMM', accounts => {
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
 		});
 		
+		it('Is market in AMM trading', async () => {
+			answer = await SportsAMM.isMarketInAMMTrading(deployedMarket.address);
+			assert.equal(answer, true);
+		});
+
+		it('Get cap per asset', async () => {
+			answer = await SportsAMM.getCapPerAsset(gameid1);
+			console.log("Game id 1 cap: ",answer.toString());
+		});
+
 		it('Get odds', async () => {
 			answer = await SportsAMM.obtainOdds(deployedMarket.address, 1);
 			console.log("Odds for pos 1: ",answer.toString());
@@ -439,12 +449,12 @@ contract('SportsAMM', accounts => {
 			console.log("Price for pos 2: ",answer.toString());
 		});
 		it('Get Available to buy from SportsAMM, position 1', async () => {
-			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
 			console.log("Available to buy: ",answer.toString());
 		});
 
 		it('Get BuyQuote from SportsAMM, position 1, value: 100', async () => {
-			answer = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 2, toUnit(100));
+			answer = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
 			console.log("buyAMMQuote: ",answer.toString());
 		});
 

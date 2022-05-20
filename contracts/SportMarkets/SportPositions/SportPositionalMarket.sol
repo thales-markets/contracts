@@ -200,7 +200,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     function getOptions() external view override returns (IPosition home, IPosition away, IPosition draw) {
         home = options.home;
         away = options.away;
-        away = options.draw;
+        draw = options.draw;
     }
 
     function _getMaximumBurnable(address account) internal view returns (uint amount) {

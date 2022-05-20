@@ -247,7 +247,9 @@
 		"SportPositionalMarketMastercopy": "0xc55C111DC4b609bcFb98c898F7D9c4B3B867F66f",
 		"SportPositionMastercopy": "0x5F62bceB94a2ca9A4C921832B1B5025DeEA7830e",
 		"SportsAMM": "0xEa71aACad9C7105859581AA7048126d6f98B391F",
-		"SportsAMMImplementation": "0x687074CFe56830cF6851187d1ba97f46435E269A"
+		"SportsAMMImplementation": "0x687074CFe56830cF6851187d1ba97f46435E269A",
+		"SportPositionalMarketData": "0xE2C2325191e5DbaB67e1a3ceADF5b3b75a7d4AE6",
+		"SportPositionalMarketDataImplementation": "0x29c24C43378513EdBDBcD8671CE2352d326905a4"
 	},
 	"localhost": {
 		"Airdrop": "",

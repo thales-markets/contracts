@@ -5,8 +5,11 @@ pragma solidity ^0.8.0;
 import "./SportPosition.sol";
 import "./SportPositionalMarket.sol";
 import "./SportPositionalMarketManager.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract SportPositionalMarketData {
+contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     struct OptionValues {
         uint home;
         uint away;
@@ -39,6 +42,12 @@ contract SportPositionalMarketData {
 
     struct AccountData {
         OptionValues balances;
+    }
+
+    function initialize(
+        address _owner
+    ) external initializer {
+        setOwner(_owner);
     }
 
     function getMarketParameters(SportPositionalMarket market) external view returns (MarketParameters memory) {

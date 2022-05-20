@@ -239,6 +239,21 @@
       "address": "0xEa71aACad9C7105859581AA7048126d6f98B391F",
       "txHash": "0xf4ff23d656b1c0f6b051d50fd8f325284b89f1da07965ac6a78e13e0985ebdd1",
       "kind": "transparent"
+    },
+    {
+      "address": "0xF5ffC18C414710876F52139adf42c5A69Dac469B",
+      "txHash": "0xe32973a436a5e3a1215519108a9a19248584baeae41cb115d7f0f23ed17b4a67",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xfedf008f472910B00e24110E62D4082BD6aba92B",
+      "txHash": "0x68f51cf11a54a07cec6e563521e33e68e0edd89adab6996fc530d55b16d890cb",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xE2C2325191e5DbaB67e1a3ceADF5b3b75a7d4AE6",
+      "txHash": "0xbd6504f071bc86934a89bc76aa2aebfe643a1c828b40c335febecfcddca1a3df",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -6752,6 +6767,92 @@
           "t_mapping(t_bytes32,t_uint256)": {
             "label": "mapping(bytes32 => uint256)",
             "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      }
+    },
+    "e65189ee734c4611e77f68011ca44d41f76ce1f60b868e0a6e57c147417b8545": {
+      "address": "0x29c24C43378513EdBDBcD8671CE2352d326905a4",
+      "txHash": "0xeeb49284163b3cdac2d497532102d9517bd02a2e81bf114208438dc23434eb52",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "label": "owner",
+            "offset": 2,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "ProxyOwned",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "label": "nominatedOwner",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "ProxyOwned",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "label": "_initialized",
+            "offset": 20,
+            "slot": "1",
+            "type": "t_bool",
+            "contract": "ProxyOwned",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "label": "_transferredAtInit",
+            "offset": 21,
+            "slot": "1",
+            "type": "t_bool",
+            "contract": "ProxyOwned",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "label": "lastPauseTime",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "ProxyPausable",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "label": "paused",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_bool",
+            "contract": "ProxyPausable",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
           },
           "t_uint256": {
             "label": "uint256",

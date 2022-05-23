@@ -49,6 +49,8 @@ contract('SportsAMM', accounts => {
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 	const ThalesBondsContract = artifacts.require('ThalesBonds');
 	const ExoticPositionalTagsContract = artifacts.require('ExoticPositionalTags');
+	const SNXRewardsContract = artifacts.require('SNXRewards');
+	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	let ExoticPositionalMarket;
 	let ExoticPositionalOpenBidMarket;
 	let ExoticPositionalMarketManager;
@@ -116,6 +118,8 @@ contract('SportsAMM', accounts => {
         SportPositionalMarketMastercopy,
         SportPositionMastercopy,
 		StakingThales,
+		SNXRewards,
+		AddressResolver,
         SportsAMM;
 
 	const game1NBATime = 1646958600;
@@ -135,6 +139,9 @@ contract('SportsAMM', accounts => {
         SportPositionalMarketData = await SportPositionalMarketDataContract.new({from:manager});
         StakingThales = await StakingThalesContract.new({from:manager});
         SportsAMM = await SportsAMMContract.new({from:manager});
+        SNXRewards = await SNXRewardsContract.new({from:manager});
+		AddressResolver = await AddressResolverContract.new();
+		await AddressResolver.setSNXRewardsAddress(SNXRewards.address);
 
 		Thales = await ThalesContract.new({ from: owner });
 		ExoticPositionalTags = await ExoticPositionalTagsContract.new();
@@ -164,12 +171,28 @@ contract('SportsAMM', accounts => {
 
 		await SportsAMM.setPositionalMarketManager(SportPositionalMarketManager.address, {from:owner});
 		await SportsAMM.setStakingThales(StakingThales.address, {from:owner});
+		await StakingThales.initialize(
+			owner,
+			Thales.address,
+			Thales.address,
+			Thales.address,
+			WEEK,
+			WEEK,
+			SNXRewards.address,
+			{from:owner}
+		);
+		await StakingThales.setThalesAMM(SportsAMM.address, {from:owner});
 		await SportsAMM.setMinSupportedPrice(10, {from:owner});
 		await SportsAMM.setMaxSupportedPrice(toUnit(1000), {from:owner});
 		
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });
+		await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
+
+		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: first });
+		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: second });
+		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: third });
 
 		await ExoticPositionalTags.addTag('Sport', '1');
 		await ExoticPositionalTags.addTag('Football', '101');
@@ -318,7 +341,7 @@ contract('SportsAMM', accounts => {
 			assert.equal('Charlotte Hornets', game.awayTeam);
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[0], 'GameCreted', {
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
 				_requestId: reqIdCreate,
 				_sportId: sportId_4,
 				_id: gameid1,
@@ -457,6 +480,34 @@ contract('SportsAMM', accounts => {
 			answer = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
 			console.log("buyAMMQuote: ",answer.toString());
 		});
+		
+		it('Buy from SportsAMM, position 1, value: 100', async () => {
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				1,
+				toUnit(100)
+				);
+			answer = await Thales.balanceOf(first);
+			let before_balance= answer;
+			console.log("acc balance: ",answer.toString());
+			console.log("buyQuote: ",buyFromAmmQuote.toString());
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address, 
+				1, 
+				toUnit(100),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{from: first}
+				);
+			answer = await Thales.balanceOf(first);
+			console.log("acc after buy balance: ",answer.toString());
+			console.log("cost: ",(before_balance.sub(answer)).toString());
+
+		});
+
+		
 
 
 	});

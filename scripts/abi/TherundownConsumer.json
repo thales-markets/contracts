@@ -88,6 +88,12 @@
         "internalType": "struct TherundownConsumer.GameCreate",
         "name": "_game",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_tags",
+        "type": "uint256[]"
       }
     ],
     "name": "CreateSportsMarket",
@@ -164,7 +170,7 @@
         "type": "uint256"
       }
     ],
-    "name": "GameCreted",
+    "name": "GameCreated",
     "type": "event"
   },
   {
@@ -821,6 +827,25 @@
         "internalType": "uint8",
         "name": "statusId",
         "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "gemeIdPerRequestId",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",

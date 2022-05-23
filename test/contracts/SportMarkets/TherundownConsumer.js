@@ -292,7 +292,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Charlotte Hornets', game.awayTeam);
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[0], 'GameCreted', {
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
 				_requestId: reqIdCreate,
 				_sportId: sportId_4,
 				_id: gameid1,
@@ -356,7 +356,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Manchester City Manchester City', game.awayTeam);
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[0], 'GameCreted', {
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
 				_requestId: reqIdFootballCreate,
 				_sportId: sportId_16,
 				_id: gameFootballid1,
@@ -411,7 +411,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Benfica Benfica', game.awayTeam);
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[1], 'GameCreted', {
+			assert.eventEqual(tx.logs[1], 'GameCreated', {
 				_requestId: reqIdFootballCreate,
 				_sportId: sportId_16,
 				_id: gameFootballid2,
@@ -482,7 +482,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Charlotte Hornets', game.awayTeam);
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[0], 'GameCreted', {
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
 				_requestId: reqIdCreate,
 				_sportId: sportId_4,
 				_id: gameid1,
@@ -591,7 +591,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Manchester City Manchester City', game.awayTeam);
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[0], 'GameCreted', {
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
 				_requestId: reqIdFootballCreate,
 				_sportId: sportId_16,
 				_id: gameFootballid1,
@@ -687,7 +687,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Benfica Benfica', game.awayTeam);
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[1], 'GameCreted', {
+			assert.eventEqual(tx.logs[1], 'GameCreated', {
 				_requestId: reqIdFootballCreate,
 				_sportId: sportId_16,
 				_id: gameFootballid2,
@@ -804,7 +804,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Manchester City Manchester City', game.awayTeam);
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[0], 'GameCreted', {
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
 				_requestId: reqIdFootballCreate,
 				_sportId: sportId_16,
 				_id: gameFootballid1,
@@ -884,7 +884,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Benfica Benfica', game.awayTeam);
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[1], 'GameCreted', {
+			assert.eventEqual(tx.logs[1], 'GameCreated', {
 				_requestId: reqIdFootballCreate,
 				_sportId: sportId_16,
 				_id: gameFootballid2,
@@ -982,7 +982,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Charlotte Hornets', game.awayTeam);
 
 			// check if event is emited
-			assert.eventEqual(tx.logs[0], 'GameCreted', {
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
 				_requestId: reqIdCreate,
 				_sportId: sportId_4,
 				_id: gameid1,

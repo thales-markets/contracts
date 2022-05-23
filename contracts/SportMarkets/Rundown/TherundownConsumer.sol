@@ -85,6 +85,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     address public wrapperAddress;
     mapping(address => bool) public whitelistedAddresses;
 
+    mapping(bytes32 => bytes32) public gemeIdPerRequestId;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -308,8 +310,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         gameFulfilledCreated[_game.gameId] = true;
         gameOdds[_game.gameId] = GameOdds(_game.gameId, _game.homeOdds, _game.awayOdds, _game.drawOdds);
         oddsLastPulledForGame[_game.gameId] = block.timestamp;
+        gemeIdPerRequestId[_game.gameId] = requestId;
 
-        emit GameCreted(requestId, _sportId, _game.gameId, _game, queues.lastCreated());
+        emit GameCreated(requestId, _sportId, _game.gameId, _game, queues.lastCreated());
     }
 
     function _resolveGameFulfill(
@@ -361,6 +364,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         GameCreate memory game = getGameCreatedById(_gameId);
         uint sportId = sportsIdPerGame[_gameId];
         uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(sportId);
+        uint[] memory tags = _calculateTags(sportId);
         
         // create
         sportsManager.createMarket(
@@ -369,7 +373,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             game.startTime, //maturity
             0, //initialMint
             numberOfPositions,
-            _calculateTags(sportId) //tags
+            tags //tags
         );
 
         address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
@@ -379,7 +383,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         queues.dequeueGamesCreated();
 
-        emit CreateSportsMarket(marketAddress, game.gameId, game);
+        emit CreateSportsMarket(marketAddress, game.gameId, game, tags);
     }
 
     function _resolveMarket(bytes32 _gameId) internal {
@@ -566,10 +570,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== EVENTS ========== */
 
-    event GameCreted(bytes32 _requestId, uint _sportId, bytes32 _id, GameCreate _game, uint _queueIndex);
+    event GameCreated(bytes32 _requestId, uint _sportId, bytes32 _id, GameCreate _game, uint _queueIndex);
     event GameResolved(bytes32 _requestId, uint _sportId, bytes32 _id, GameResolve _game, uint _queueIndex);
     event GameOddsAdded(bytes32 _requestId, bytes32 _id, GameOdds _game);
-    event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game);
+    event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game, uint[] _tags);
     event ResolveSportsMarket(address _marketAddress, bytes32 _id, uint _outcome);
     event CancelSportsMarket(address _marketAddress, bytes32 _id);
     event SupportedSportsChanged(uint _sportId, bool _isSupported);

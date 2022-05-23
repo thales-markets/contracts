@@ -1,6 +1,6 @@
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 async function main() {
 	
@@ -33,11 +33,15 @@ async function main() {
 	console.log('Found TherundownConsumer at:', therundownConsumerAddress);
 
 	const TherundownConsumer = await ethers.getContractFactory('TherundownConsumer');
-	await upgrades.upgradeProxy(therundownConsumerAddress, TherundownConsumer);
+	const implementation = await upgrades.prepareUpgrade(therundownConsumerAddress, TherundownConsumer);
+
+	// upgrade if test networks
+	if(networkObj.chainId == 69 || networkObj.chainId == 42) {
+		await upgrades.upgradeProxy(therundownConsumerAddress, TherundownConsumer);
+	}
 
 	console.log('TherundownConsumer upgraded');
 
-	const implementation = await getImplementationAddress(ethers.provider, therundownConsumerAddress);
 	console.log('TherundownConsumerImplementation: ', implementation);
     setTargetAddress('TherundownConsumerImplementation', network, implementation);
 

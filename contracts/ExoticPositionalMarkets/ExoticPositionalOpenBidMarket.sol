@@ -103,7 +103,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         disputePrice = marketManager.disputePrice();
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
-        withdrawalPeriod = block.timestamp.add(_endOfPositioning).sub(marketManager.withdrawalTimePeriod());
+        withdrawalPeriod = _endOfPositioning.sub(marketManager.withdrawalTimePeriod());
         minPosAmount = marketManager.minFixedTicketPrice();
     }
 

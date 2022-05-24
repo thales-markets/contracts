@@ -301,6 +301,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             rightQuote,
             additionalSlippage
         );
+        // TODO: what if I got 1% less than amount via Thales AMM? set additional slippage to 0 for internal trades
+        // apply the same in all places
         (, IPosition down) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
         IERC20Upgradeable(address(down)).safeTransfer(address(rangedMarket), amount);
 

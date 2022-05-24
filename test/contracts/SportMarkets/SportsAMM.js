@@ -19,6 +19,7 @@ const YEAR = 31556926;
 const {
 	fastForward,
 	toUnit,
+	fromUnit,
 	currentTime,
 	bytesToString,
 	multiplyDecimalRound,
@@ -459,17 +460,42 @@ contract('SportsAMM', accounts => {
 		});
 
 		it('Get odds', async () => {
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 0);
+			let sumOfOdds = answer;
+			console.log("Odds for pos 0: ",fromUnit(answer));
 			answer = await SportsAMM.obtainOdds(deployedMarket.address, 1);
-			console.log("Odds for pos 1: ",answer.toString());
+			sumOfOdds = sumOfOdds.add(answer);
+			console.log("Odds for pos 1: ",fromUnit(answer));
 			answer = await SportsAMM.obtainOdds(deployedMarket.address, 2);
-			console.log("Odds for pos 2: ",answer.toString());
+			sumOfOdds = sumOfOdds.add(answer);
+			console.log("Odds for pos 2: ",fromUnit(answer));
+			console.log("Total odds: ",fromUnit(sumOfOdds));
 		});
-
+		
+		it('Get american odds', async () => {
+			answer = await TherundownConsumerDeployed.getOddsHomeTeam(gameid1);
+			let sumOfOdds = answer;
+			console.log("American Odds for pos 0: ",fromUnit(answer));
+			answer = await TherundownConsumerDeployed.getOddsAwayTeam(gameid1);
+			sumOfOdds = sumOfOdds.add(answer);
+			console.log("American Odds for pos 1: ",fromUnit(answer));
+			answer = await TherundownConsumerDeployed.getOddsDraw(gameid1);
+			sumOfOdds = sumOfOdds.add(answer);
+			console.log("American Odds for pos 2: ",fromUnit(answer));
+			console.log("American  Total odds: ",fromUnit(sumOfOdds));
+		});
+		
 		it('Get price', async () => {
+			answer = await SportsAMM.price(deployedMarket.address, 0);
+			let sumOfPrices = answer;
+			console.log("Price for pos 0: ",fromUnit(answer));
+			sumOfPrices = sumOfPrices.add(answer);
 			answer = await SportsAMM.price(deployedMarket.address, 1);
-			console.log("Price for pos 1: ",answer.toString());
+			console.log("Price for pos 1: ",fromUnit(answer));
+			sumOfPrices = sumOfPrices.add(answer);
 			answer = await SportsAMM.price(deployedMarket.address, 2);
-			console.log("Price for pos 2: ",answer.toString());
+			console.log("Price for pos 2: ",fromUnit(answer));
+			console.log("Total price: ",fromUnit(sumOfPrices));
 		});
 		it('Get Available to buy from SportsAMM, position 1', async () => {
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
@@ -491,8 +517,8 @@ contract('SportsAMM', accounts => {
 				);
 			answer = await Thales.balanceOf(first);
 			let before_balance= answer;
-			console.log("acc balance: ",answer.toString());
-			console.log("buyQuote: ",buyFromAmmQuote.toString());
+			console.log("acc balance: ",fromUnit(answer));
+			console.log("buyQuote: ",fromUnit(buyFromAmmQuote));
 			answer = await SportsAMM.buyFromAMM(
 				deployedMarket.address, 
 				1, 
@@ -502,9 +528,11 @@ contract('SportsAMM', accounts => {
 				{from: first}
 				);
 			answer = await Thales.balanceOf(first);
-			console.log("acc after buy balance: ",answer.toString());
-			console.log("cost: ",(before_balance.sub(answer)).toString());
-
+			console.log("acc after buy balance: ",fromUnit(answer));
+			console.log("cost: ",fromUnit((before_balance.sub(answer))));
+			let options = await deployedMarket.balancesOf(first);
+			console.log("Balances",options[0].toString(), fromUnit(options[1]), options[2].toString());
+			
 		});
 
 		

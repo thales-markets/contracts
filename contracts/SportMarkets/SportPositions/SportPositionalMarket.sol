@@ -112,6 +112,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         
         if(optionsCount > 2){
             options.draw = SportPosition(_parameters.positions[2]);
+            options.away.initialize(gameDetails.gameLabel, "DRAW", _parameters.limitOrderProvider, _parameters.thalesAMM);
+            
         }
         if(initialMint > 0) {
             _mint(creator, initialMint);
@@ -182,7 +184,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         return gameDetails.gameId;
     }
     function _balancesOf(address account) internal view returns (uint home, uint away, uint draw) {
-        return (options.home.getBalanceOf(account), options.away.getBalanceOf(account), options.draw.getBalanceOf(account));
+        if(optionsCount > 2) {
+            return (options.home.getBalanceOf(account), options.away.getBalanceOf(account), options.draw.getBalanceOf(account));
+        }
+        return (options.home.getBalanceOf(account), options.away.getBalanceOf(account), 0);
     }
 
     function balancesOf(address account) external view override returns (uint home, uint away, uint draw) {
@@ -190,7 +195,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function totalSupplies() external view override returns (uint home, uint away, uint draw) {
-        return (options.home.totalSupply(), options.away.totalSupply(), options.draw.totalSupply());
+        if(optionsCount > 2) {
+            return (options.home.totalSupply(), options.away.totalSupply(), options.draw.totalSupply());
+        }
+        return (options.home.totalSupply(), options.away.totalSupply(), 0);
     }
 
     function getMaximumBurnable(address account) external view override returns (uint amount) {

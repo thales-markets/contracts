@@ -484,16 +484,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             if (_americanOdds[i] == 0) {
                 normalizedOdds[i] = 0;
             } else if (_americanOdds[i] > 0) {
-                odd = uint(_americanOdds[i]) / 100; // two decimal places from CL
-                normalizedOdds[i] = ((100 * 1e16) / (odd + 100)) * 100;
+                // odd = uint(_americanOdds[i]) / 100; // previous usage
+                odd = uint(_americanOdds[i]); 
+                normalizedOdds[i] = ((100 * 1e18) / (odd + 100)) * 100;
             } else if (_americanOdds[i] < 0) {
-                odd = uint(-_americanOdds[i]) / 100; // two decimal places from CL
-                normalizedOdds[i] = ((odd * 1e16) / (odd + 100)) * 100;
+                // odd = uint(-_americanOdds[i]) / 100; // previous usage
+                odd = uint(-_americanOdds[i]); 
+                normalizedOdds[i] = ((odd * 1e18) / (odd + 100)) * 100;
             }
             totalOdds += normalizedOdds[i];
         }
         for (uint i = 0; i < normalizedOdds.length; i++) {
-            normalizedOdds[i] = (1e16 * normalizedOdds[i]) / totalOdds;
+            normalizedOdds[i] = (1e18 * normalizedOdds[i]) / totalOdds;
         }
         return normalizedOdds;
     }

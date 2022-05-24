@@ -482,7 +482,6 @@ contract('SportsAMM', accounts => {
 			answer = await TherundownConsumerDeployed.getOddsDraw(gameid1);
 			sumOfOdds = sumOfOdds.add(answer);
 			console.log("American Odds for pos 2: ",fromUnit(answer));
-			console.log("American  Total odds: ",fromUnit(sumOfOdds));
 		});
 		
 		it('Get price', async () => {
@@ -499,12 +498,12 @@ contract('SportsAMM', accounts => {
 		});
 		it('Get Available to buy from SportsAMM, position 1', async () => {
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
-			console.log("Available to buy: ",answer.toString());
+			console.log("Available to buy: ",fromUnit(answer));
 		});
 
 		it('Get BuyQuote from SportsAMM, position 1, value: 100', async () => {
 			answer = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
-			console.log("buyAMMQuote: ",answer.toString());
+			console.log("buyAMMQuote: ",fromUnit(answer));
 		});
 		
 		it('Buy from SportsAMM, position 1, value: 100', async () => {
@@ -532,6 +531,35 @@ contract('SportsAMM', accounts => {
 			console.log("cost: ",fromUnit((before_balance.sub(answer))));
 			let options = await deployedMarket.balancesOf(first);
 			console.log("Balances",options[0].toString(), fromUnit(options[1]), options[2].toString());
+			
+		});
+		let position = 0;
+		let value = 100;
+		it('Buy from SportsAMM, position '+position+', value: '+ value, async () => {
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				position,
+				toUnit(value)
+				);
+			answer = await Thales.balanceOf(first);
+			let before_balance= answer;
+			console.log("acc balance: ",fromUnit(answer));
+			console.log("buyQuote: ",fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address, 
+				position, 
+				toUnit(value),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{from: first}
+				);
+			answer = await Thales.balanceOf(first);
+			console.log("acc after buy balance: ",fromUnit(answer));
+			console.log("cost: ",fromUnit((before_balance.sub(answer))));
+			let options = await deployedMarket.balancesOf(first);
+			console.log("Balances",fromUnit(options[position]));
 			
 		});
 

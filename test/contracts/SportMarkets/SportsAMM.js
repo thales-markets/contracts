@@ -95,6 +95,7 @@ contract('SportsAMM', accounts => {
 	let oddsResultArray;
 	let reqIdOdds;
 	let gameid2;
+	let gameid3;
 	let game_2_create;
 	let game_2_resolve;
 	let gamesCreated;
@@ -102,15 +103,19 @@ contract('SportsAMM', accounts => {
 	let reqIdCreate;
 	let reqIdResolve;
 	let reqIdFootballCreate;
+	let reqIdFootballCreate2;
 	let gameFootballid1;
 	let gameFootballid2;
+	let gameFootballid3;
 	let game_1_football_create;
 	let game_2_football_create;
+	let game_3_football_create;
 	let gamesFootballCreated;
 	let game_1_football_resolve;
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
+	
 
     let SportPositionalMarketManager,
         SportPositionalMarketFactory,
@@ -221,13 +226,17 @@ contract('SportsAMM', accounts => {
         
 		// football matches
 		reqIdFootballCreate = '0x61d7dd698383c58c7217cf366764a1e92a1f059b1b6ea799dce4030a942302f4';
+		reqIdFootballCreate2 = '0x47e3535f7d3c146606fa6bcc06d95eb74f0bf8eac7d0d9c352814ee4c726d194';
 		gameFootballid1 = '0x3163626162623163303138373465363263313661316462333164363164353333';
 		gameFootballid2 = '0x3662646437313731316337393837643336643465333538643937393237356234';
+		gameFootballid3 = '0x6535303439326161636538313035666362316531366364373664383963643361';
 		game_1_football_create =
 			'0x000000000000000000000000000000000000000000000000000000000000002031636261626231633031383734653632633136613164623331643631643533330000000000000000000000000000000000000000000000000000000062571db00000000000000000000000000000000000000000000000000000000000009c40ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcf2c0000000000000000000000000000000000000000000000000000000000006a4000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000001f41746c657469636f204d61647269642041746c657469636f204d616472696400000000000000000000000000000000000000000000000000000000000000001f4d616e636865737465722043697479204d616e63686573746572204369747900';
 		game_2_football_create =
 			'0x000000000000000000000000000000000000000000000000000000000000002036626464373137313163373938376433366434653335386439373932373562340000000000000000000000000000000000000000000000000000000062571db0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff76800000000000000000000000000000000000000000000000000000000000018c18000000000000000000000000000000000000000000000000000000000000cb2000000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000000134c69766572706f6f6c204c69766572706f6f6c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f42656e666963612042656e666963610000000000000000000000000000000000';
-		gamesFootballCreated = [game_1_football_create, game_2_football_create];
+		game_3_football_create =
+			'0x0000000000000000000000000000000000000000000000000000000000000020653530343932616163653831303566636231653136636437366438396364336100000000000000000000000000000000000000000000000000000000629271300000000000000000000000000000000000000000000000000000000000002a3000000000000000000000000000000000000000000000000000000000000064c800000000000000000000000000000000000000000000000000000000000067e800000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000000134c69766572706f6f6c204c69766572706f6f6c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000175265616c204d6164726964205265616c204d6164726964000000000000000000';
+		gamesFootballCreated = [game_1_football_create, game_2_football_create, game_3_football_create];
 		game_1_football_resolve =
 			'0x316362616262316330313837346536326331366131646233316436316435333300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b';
 		game_2_football_resolve =
@@ -239,6 +248,7 @@ contract('SportsAMM', accounts => {
 		oddsResult = '0x6135363061373861363135353239363137366237393232353866616336613532000000000000000000000000000000000000000000000000000000000000283cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3dc0000000000000000000000000000000000000000000000000000000000000000';
 		oddsResultArray = [oddsResult];
 		reqIdOdds = '0x5bf0ea636f9515e1e1060e5a21e11ef8a628fa99b1effb8aa18624b02c6f36de';
+		// reqIdOdds2 = '';
         
 		TherundownConsumer = artifacts.require('TherundownConsumer');
 		TherundownConsumerDeployed = await TherundownConsumer.new();
@@ -560,6 +570,55 @@ contract('SportsAMM', accounts => {
 			console.log("cost: ",fromUnit((before_balance.sub(answer))));
 			let options = await deployedMarket.balancesOf(first);
 			console.log("Balances",fromUnit(options[position]));
+			
+		});
+		
+		it('Sell to SportsAMM, position '+position+', value: '+ value, async () => {
+			beforeEach(async () => {
+				let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
+				let additionalSlippage = toUnit(0.01);
+				let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+					deployedMarket.address,
+					position,
+					toUnit(value)
+					);
+				answer = await Thales.balanceOf(first);
+				let before_balance= answer;
+				console.log("acc balance: ",fromUnit(answer));
+				console.log("buyQuote: ",fromUnit(buyFromAmmQuote));
+				answer = await SportsAMM.buyFromAMM(
+					deployedMarket.address, 
+					position, 
+					toUnit(value),
+					buyFromAmmQuote,
+					additionalSlippage,
+					{from: first}
+					);
+			});
+			// let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
+			let additionalSlippage = toUnit(0.01);
+			let options = await deployedMarket.balancesOf(first);
+			console.log("user balance of options: ", fromUnit(options[position]));
+			// let sellToAmmQuote = await SportsAMM.sellToAmmQuote(
+			// 	deployedMarket.address,
+			// 	position,
+			// 	options[position]
+			// 	);
+			// answer = await Thales.balanceOf(first);
+			// let before_balance= answer;
+			// console.log("acc balance: ",fromUnit(answer));
+			// console.log("sellQuote: ",fromUnit(sellToAmmQuote));
+			// answer = await SportsAMM.sellToAMM(
+			// 	deployedMarket.address, 
+			// 	position, 
+			// 	options[position],
+			// 	sellToAmmQuote,
+			// 	additionalSlippage,
+			// 	{from: first}
+			// 	);
+			// answer = await Thales.balanceOf(first);
+			// console.log("acc after sell balance: ",fromUnit(answer));
+			// console.log("cost: ",fromUnit((answer.sub(before_balance))));
 			
 		});
 

@@ -269,7 +269,9 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
         resetForUserAllPositionsToZero(msg.sender);
         thalesBonds.transferFromMarket(msg.sender, amount);
-        _issueFees();
+         if(!feesAndBondsClaimed) {
+            _issueFees();
+        }
         userAlreadyClaimed[msg.sender] = userAlreadyClaimed[msg.sender].add(amount);
         emit WinningOpenBidAmountClaimed(msg.sender, amount);
     }
@@ -281,7 +283,9 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
         resetForUserAllPositionsToZero(_user);
         thalesBonds.transferFromMarket(_user, amount);
-        _issueFees();
+        if(!feesAndBondsClaimed) {
+            _issueFees();
+        }
         userAlreadyClaimed[msg.sender] = userAlreadyClaimed[msg.sender].add(amount);
         emit WinningOpenBidAmountClaimed(_user, amount);
     }

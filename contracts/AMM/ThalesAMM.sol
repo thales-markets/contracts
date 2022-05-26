@@ -511,8 +511,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             );
         }
 
-        uint referrerShare = sUSDPaid.mul(ONE).div(ONE.sub(referrerFee)).sub(sUSDPaid);
-        _handleReferrer(seller, referrerShare);
+        if (referrerFee > 0 && referrals != address(0)) {
+            uint referrerShare = sUSDPaid.mul(ONE).div(ONE.sub(referrerFee)).sub(sUSDPaid);
+            _handleReferrer(seller, referrerShare);
+        }
     }
 
     function _updateSpentOnOnMarketOnBuy(
@@ -537,8 +539,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             );
         }
 
-        uint referrerShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(referrerFee)));
-        _handleReferrer(buyer, referrerShare);
+        if (referrerFee > 0 && referrals != address(0)) {
+            uint referrerShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(referrerFee)));
+            _handleReferrer(buyer, referrerShare);
+        }
     }
 
     function _buyPriceImpact(

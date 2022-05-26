@@ -297,9 +297,9 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function _handleReferrer(address buyer, uint sUSDPaid) internal {
-        address referrer = IReferrals(referrals).referrals(buyer);
-        if (referrer != address(0)) {
-            if (referrerFee > 0) {
+        if (referrerFee > 0 && referrals != address(0)) {
+            address referrer = IReferrals(referrals).referrals(buyer);
+            if (referrer != address(0)) {
                 uint referrerShare = (sUSDPaid * (ONE + referrerFee)) / ONE;
                 sUSD.transfer(buyer, referrerShare);
                 emit ReferrerPaid(referrer, buyer, referrerShare);

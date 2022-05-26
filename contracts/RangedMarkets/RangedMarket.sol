@@ -86,6 +86,7 @@ contract RangedMarket {
         IERC20(address(down1)).safeTransfer(msg.sender, value / 2);
 
         positions.inp.burn(claimant, value);
+        //TODO: add burn event
     }
 
     function burnOut(uint value, address claimant) external onlyAMM {
@@ -99,8 +100,12 @@ contract RangedMarket {
         IERC20(address(up1)).safeTransfer(msg.sender, value);
 
         positions.outp.burn(claimant, value);
+
+        //TODO: add burn event
     }
 
+
+    //TODO: remove this, not used
     function _burn(
         uint value,
         Position _position,

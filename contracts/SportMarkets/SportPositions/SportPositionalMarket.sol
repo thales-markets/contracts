@@ -112,7 +112,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         
         if(optionsCount > 2){
             options.draw = SportPosition(_parameters.positions[2]);
-            options.away.initialize(gameDetails.gameLabel, "DRAW", _parameters.limitOrderProvider, _parameters.thalesAMM);
+            options.draw.initialize(gameDetails.gameLabel, "DRAW", _parameters.limitOrderProvider, _parameters.thalesAMM);
             
         }
         if(initialMint > 0) {

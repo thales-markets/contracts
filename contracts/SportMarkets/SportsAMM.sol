@@ -631,11 +631,22 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
         uint balanceOtherSide = position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
-        if(ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
-            balance =
-            position == Position.Away ? away.getBalanceOf(address(this)) : draw.getBalanceOf(address(this));
-            balanceOtherSide = 
-            position == Position.Away ? draw.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
+        if(ISportPositionalMarket(market).optionsCount() == 3) {
+            uint homeBalance = home.getBalanceOf(address(this));
+            uint awayBalance = away.getBalanceOf(address(this));
+            uint drawBalance = draw.getBalanceOf(address(this));
+            if(position == Position.Home) {
+                balance = homeBalance;
+                balanceOtherSide = awayBalance < drawBalance ? awayBalance : drawBalance;
+            }
+            if(position == Position.Away) {
+                balance = awayBalance;
+                balanceOtherSide = homeBalance < drawBalance ? homeBalance : drawBalance;
+            }
+            else {
+                balance = drawBalance;
+                balanceOtherSide = homeBalance < awayBalance ? homeBalance : awayBalance;
+            }
         }
         return (balance, balanceOtherSide);
     }

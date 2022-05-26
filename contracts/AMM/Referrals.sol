@@ -20,6 +20,9 @@ import "../utils/libraries/AddressSetLib.sol";
 contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     mapping(address => bool) public whitelistedAddresses;
     mapping(address => address) public referrals;
+    mapping(address => uint) public referralStarted;
+
+    mapping(address => bool) tradedBefore;
 
     function initialize(
         address _owner,
@@ -33,17 +36,28 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     function setReferrer(address referrer, address referred) external {
+        require(referrer != address(0) && referred != address(0), "Cant refer zero addresses");
         require(
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner set referrers"
         );
-        if (referrals[referred] != referrer) {
+        if (!tradedBefore[referred] && referrals[referred] != referrer) {
             require(referrals[referred] != address(0), "Referred address already has a referrer");
             referrals[referred] = referrer;
+            referralStarted[referred] = block.timestamp;
+            emit ReferralAdded(referrer, referred, block.timestamp);
         }
     }
 
     function setWhitelistedAddress(address _address, bool enabled) external onlyOwner {
         whitelistedAddresses[_address] = enabled;
     }
+
+    function setTradedBefore(address[] calldata _addresses) external onlyOwner {
+        for (uint256 index = 0; index < _addresses.length; index++) {
+            tradedBefore[_addresses[index]] = true;
+        }
+    }
+
+    event ReferralAdded(address referrer, address referred, uint timeStarted);
 }

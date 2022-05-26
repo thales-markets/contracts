@@ -144,12 +144,14 @@
 		"OptimisticAirdropUnclaimedRetro": "0xAC1A4F1d912d30e3a546dcf6fc0F27c44CB1A058",
 		"ExoticManagerData": "0xBb409c6488c4bB2BE9e3BaD7B3C79b553ab6A061",
 		"ExoticManagerDataImplementation": "0xE2A2cF1531bF25Ab9aA31eaf1a1Aa31036e84De2",
-		"ThalesAMMImplementation": "0x107Ae181C7D0efE5df18cA232Ec1241E5CBB253B",
+		"ThalesAMMImplementation": "0x7ab49bCfaBb4e4b87B397bAD8297b858ba6b4a1a",
 		"ThalesAMM": "0xfed727f37e921Faac22e36E0bbaA8504B45F6e3f",
 		"RangedAMM": "0x0690F410FB54d76268e4fa97486CBD605e68dC62",
 		"RangedAMMImplementation": "0xE5F074EBf844f5d9E9E956C4f79DA89F003C11A0",
 		"RangedMarketMastercopy": "0xD50fF1fcB365952deaCc40C4259c8c448314567B",
-		"RangedPositionMastercopy": "0x94Db4617900d8f6cA9633D8937950da75C8264fF"
+		"RangedPositionMastercopy": "0x94Db4617900d8f6cA9633D8937950da75C8264fF",
+		"Referrals": "0x68096121d1eDF7AD897F5db96775eAbc2868Bc09",
+		"ReferralsImplementation": "0x84a55e6743eECE89d5D4a211018b7087BCd6A1B1"
 	},
 	"polygonMumbai": {
 		"ProxyUSDC": "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",

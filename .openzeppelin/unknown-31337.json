@@ -7,7 +7,7 @@
       "hash": "0x5282a6e3fdb1e61533114c19fab5aa6613bd267f70e29f9b286788c37d5acf31",
       "type": 0,
       "accessList": null,
-      "blockHash": "0x84bf5741e35d409cf45f7da6ae3a2164b3df178810705d43c88b12259c6d3374",
+      "blockHash": "0x2ae45e9b0d863074780813bece11e8f4bb2282d4665c7da76b0136d927fa39c9",
       "blockNumber": 10,
       "transactionIndex": 0,
       "confirmations": 1,
@@ -20847,7 +20847,7 @@
           {
             "contract": "PositionalMarketManager",
             "label": "durations",
-            "type": "t_struct(Durations)31228_storage",
+            "type": "t_struct(Durations)31037_storage",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:43"
           },
           {
@@ -20889,25 +20889,25 @@
           {
             "contract": "PositionalMarketManager",
             "label": "_activeMarkets",
-            "type": "t_struct(AddressSet)50519_storage",
+            "type": "t_struct(AddressSet)50202_storage",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:54"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "_maturedMarkets",
-            "type": "t_struct(AddressSet)50519_storage",
+            "type": "t_struct(AddressSet)50202_storage",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:55"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "_migratingManager",
-            "type": "t_contract(PositionalMarketManager)32467",
+            "type": "t_contract(PositionalMarketManager)32276",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:57"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "priceFeed",
-            "type": "t_contract(IPriceFeed)47070",
+            "type": "t_contract(IPriceFeed)46770",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:59"
           },
           {
@@ -20930,7 +20930,7 @@
           }
         ],
         "types": {
-          "t_struct(Durations)31228_storage": {
+          "t_struct(Durations)31037_storage": {
             "label": "struct PositionalMarketManager.Durations",
             "members": [
               {
@@ -20955,7 +20955,7 @@
           "t_address": {
             "label": "address"
           },
-          "t_struct(AddressSet)50519_storage": {
+          "t_struct(AddressSet)50202_storage": {
             "label": "struct AddressSetLib.AddressSet",
             "members": [
               {
@@ -20974,10 +20974,10 @@
           "t_mapping(t_address,t_uint256)": {
             "label": "mapping(address => uint256)"
           },
-          "t_contract(PositionalMarketManager)32467": {
+          "t_contract(PositionalMarketManager)32276": {
             "label": "contract PositionalMarketManager"
           },
-          "t_contract(IPriceFeed)47070": {
+          "t_contract(IPriceFeed)46770": {
             "label": "contract IPriceFeed"
           },
           "t_contract(IERC20)3430": {

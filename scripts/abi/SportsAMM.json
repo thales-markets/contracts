@@ -1169,6 +1169,19 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_testOdds",
+        "type": "address"
+      }
+    ],
+    "name": "setTestOdds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_theRundownConsumer",
         "type": "address"
       }
@@ -1221,6 +1234,19 @@
     "outputs": [
       {
         "internalType": "contract IStakingThales",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "testOdds",
+    "outputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }

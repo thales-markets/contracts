@@ -23,6 +23,7 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
+import "../test-helpers/TestOdds.sol";
 // import "../AMM/DeciMath.sol";
 
 contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard  {
@@ -68,6 +69,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     mapping(address => bool) public whitelistedAddresses;
     mapping(bytes32 => uint) private _capPerAsset;
 
+    address public testOdds;
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
@@ -216,9 +218,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         Position _position
     ) public view returns (uint) {
         bytes32 gameId = ISportPositionalMarket(_market).getGameId();
-        if(ISportPositionalMarket(_market).optionsCount() >= uint(_position)) {
+        if(ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-            odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
+            // odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
+            odds = TestOdds(testOdds).getNormalizedOdds(gameId);
             // (uint positionHome, uint positionAway) = (odds[0], odds[1]);
             return odds[uint(_position)];
         }
@@ -268,7 +271,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint additionalSlippage
     ) public nonReentrant whenNotPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
-
+        require(ISportPositionalMarket(market).optionsCount() > uint(position), "Invalid position");
         uint availableToBuyFromAMMatm = availableToBuyFromAMM(market, position);
         require(amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
 
@@ -312,7 +315,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint additionalSlippage
     ) public nonReentrant whenNotPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
-
+        require(ISportPositionalMarket(market).optionsCount() > uint(position), "Invalid position");
         uint availableToSellToAMMATM = availableToSellToAMM(market, position);
         require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
 
@@ -401,6 +404,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function setSUSD(IERC20Upgradeable _sUSD) public onlyOwner {
         sUSD = _sUSD;
         emit SetSUSD(address(sUSD));
+    }
+
+    function setTestOdds(address _testOdds) public onlyOwner {
+        testOdds = _testOdds;
     }
 
     function setTherundownConsumer(address _theRundownConsumer) public onlyOwner {

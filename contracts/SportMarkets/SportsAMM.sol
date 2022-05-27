@@ -24,6 +24,7 @@ import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
 import "../test-helpers/TestOdds.sol";
+import "hardhat/console.sol";
 // import "../AMM/DeciMath.sol";
 
 contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard  {
@@ -124,10 +125,17 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             return 0;
         }
         uint basePrice = price(market, position).add(min_spread);
+        // console.logUint(basePrice);
+        // console.logUint(price(market, position));
+        // console.logUint(min_spread);
         uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount)).div(ONE);
+        // console.logUint(impactPriceIncrease);
+        // console.logUint(_buyPriceImpact(market, position, amount));
         // add 2% to the price increase to avoid edge cases on the extremes
         impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
+        // console.logUint(impactPriceIncrease);
         uint tempAmount = amount.mul(basePrice.add(impactPriceIncrease)).div(ONE);
+        // console.logUint(tempAmount);
         uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
         return ISportPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
@@ -235,6 +243,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function isMarketInAMMTrading(address market) public view returns (bool) {
         if (ISportPositionalMarketManager(manager).isActiveMarket(market)) {
             ISportPositionalMarket marketContract = ISportPositionalMarket(market);
+            // return true;
             (uint maturity, ) = marketContract.times();
 
             if (maturity < block.timestamp) {
@@ -500,9 +509,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount
     ) internal view returns (uint) {
         (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
+        // console.log("balancePosition: ", balancePosition, "|| balanceOtherSide: ", balanceOtherSide);
         uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
         uint balanceOtherSideAfter =
             balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
+        // console.log("balancePositionAfter: ", balancePositionAfter, "|| balanceOtherSideAfter: ", balanceOtherSideAfter);
         if (balancePositionAfter >= balanceOtherSideAfter) {
             //minimal price impact as it will balance the AMM exposure
             return 0;
@@ -530,8 +541,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint balancePositionAfter
     ) internal view returns (uint) {
         uint maxPossibleSkew = balanceOtherSide.add(availableToBuyFromAMM(market, position)).sub(balancePosition);
+        // console.log("max skew: ", maxPossibleSkew);
         uint skew = balanceOtherSideAfter.sub(balancePositionAfter);
+        // console.log("skew: ", skew);
         uint newImpact = max_spread.mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE);
+        // console.log("newImpact: ", newImpact);
         if (balancePosition > 0) {
             uint newPriceForMintedOnes = newImpact.div(2);
             uint tempMultiplier = amount.sub(balancePosition).mul(newPriceForMintedOnes);
@@ -635,11 +649,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             uint homeBalance = home.getBalanceOf(address(this));
             uint awayBalance = away.getBalanceOf(address(this));
             uint drawBalance = draw.getBalanceOf(address(this));
+            // console.log("homeBalance", homeBalance);
+            // console.log("awayBalance", awayBalance);
+            // console.log("drawBalance", drawBalance);
             if(position == Position.Home) {
                 balance = homeBalance;
                 balanceOtherSide = awayBalance < drawBalance ? awayBalance : drawBalance;
             }
-            if(position == Position.Away) {
+            else if(position == Position.Away) {
                 balance = awayBalance;
                 balanceOtherSide = homeBalance < drawBalance ? homeBalance : drawBalance;
             }

@@ -9,7 +9,6 @@ const { time } = require('@openzeppelin/test-helpers');
 const { assert } = require('../../utils/common');
 
 const VESTING_PERIOD = 86400 * 365;
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const TOTAL_AMOUNT = web3.utils.toWei('4500000');
 const SINGLE_AMOUNT = web3.utils.toWei('150000');
 
@@ -454,7 +453,7 @@ contract('VestingEscrow', accounts => {
 			assert.equal(balanceOfAccount.toString(), numberExponentToLarge(expectedAmount.toString()));
 		});
 
-		it('should be able to claim multiple times', async () => {
+		it('should be able to claim multiple times [ @cov-skip ]', async () => {
 			let balance = 0;
 			await fastForward(WEEK);
 			for (let i = 0; i < 53; i++) {
@@ -466,7 +465,6 @@ contract('VestingEscrow', accounts => {
 			}
 
 			const balanceOfAccount = await ThalesDeployed.balanceOf(beneficiary.address);
-			console.log(balanceOfAccount.toString());
 			assert.equal(balanceOfAccount, SINGLE_AMOUNT);
 		});
 

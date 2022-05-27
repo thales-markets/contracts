@@ -1,20 +1,5 @@
-const path = require('path');
 const { ethers } = require('hardhat');
-const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
-
 const user_key = process.env.PRIVATE_KEY;
-
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../../test/utils/index')();
-
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const L2_BRIDGE_ADDRESS = '0x4200000000000000000000000000000000000010';
 
@@ -22,17 +7,11 @@ const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 const L2StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol/OVM_L2StandardBridge');
 const L1StandardBridgeArtifacts = require('@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L1StandardBridge.sol/OVM_L1StandardBridge');
-const { toBytes32 } = require('../../../index');
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
-	// let networkObj = await ethers.provider.getNetwork();
 	
 	let network_kovan = new ethers.providers.InfuraProvider("kovan");
-	// console.log(network_kovan);
-	const net_kovan = 'kovan'
-	let network_optimistic_kovan = await ethers.provider.getNetwork();
+	const net_kovan = 'kovan';
 	const net_optimistic_kovan = 'optimisticKovan'
 		
 	const l1Wallet = new ethers.Wallet(user_key, network_kovan);
@@ -44,7 +23,6 @@ async function main() {
 	blockNumber = await ethers.provider.getBlockNumber();
 	console.log("Optimistic Kovan block number: ", blockNumber);
 	
-	// const L2StandardBridge = await ethers.getContractFactory('../../node_modules/@eth-optimism/contracts/artifacts/contracts/optimistic-ethereum/OVM/bridge/tokens/OVM_L2StandardBridge.sol:OVM_L2StandardBridge');
 	const L2StandardBridge = new ethers.ContractFactory(L2StandardBridgeArtifacts.abi, L2StandardBridgeArtifacts.bytecode);
 	const L1StandardBridge = new ethers.ContractFactory(L1StandardBridgeArtifacts.abi, L1StandardBridgeArtifacts.bytecode);
 	const OP_Thales_L1 = await ethers.getContractFactory('/contracts/Token/OpThales_L1.sol:OpThales');
@@ -76,7 +54,7 @@ async function main() {
 	const OP_Thales_L1_deployed = await OP_Thales_L1_connected.deploy();
 	
 	let tx = await OP_Thales_L1_deployed.deployed();
-	// console.log(tx);
+
 	console.log("Optimistic Thales L1 deployed on: ",OP_Thales_L1_deployed.address);
 	setTargetAddress('OpThales_L1', net_kovan, OP_Thales_L1_deployed.address);
 	

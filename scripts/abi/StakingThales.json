@@ -423,11 +423,37 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "amm",
+        "type": "address"
+      }
+    ],
+    "name": "ThalesRangedAMMAddressChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "royale",
         "type": "address"
       }
     ],
     "name": "ThalesRoyaleAddressChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "amm",
+        "type": "address"
+      }
+    ],
+    "name": "ThalesSportsAMMAddressChanged",
     "type": "event"
   },
   {
@@ -1774,11 +1800,41 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_thalesRangedAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setThalesRangedAMM",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_royale",
         "type": "address"
       }
     ],
     "name": "setThalesRoyale",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportsAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setThalesSportsAMM",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1812,6 +1868,21 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "sportsAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1970,6 +2041,21 @@
     "constant": true,
     "inputs": [],
     "name": "thalesAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "thalesRangedAMM",
     "outputs": [
       {
         "internalType": "address",

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 // @unsupported: ovm
 pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
@@ -43,7 +44,7 @@ contract MockStandardBridgeL1 {
      ***************/
 
     // This contract lives behind a proxy, so the constructor parameters will go unused.
-    constructor() public {}
+    constructor() {}
 
         // OVM_CrossDomainEnabled(address(0))
     /******************
@@ -171,6 +172,8 @@ contract MockStandardBridgeL1 {
         //     _l2Gas,
         //     message
         // );
+        // silence compiler warning
+        _l2Gas = _l2Gas;
 
         emit ETHDepositInitiated(_from, _to, msg.value, _data);
     }
@@ -234,6 +237,8 @@ contract MockStandardBridgeL1 {
     )
         internal
     {
+        // silence compiler warning
+        _l2Gas = _l2Gas;
         // When a deposit is initiated on L1, the L1 Bridge transfers the funds to itself for future
         // withdrawals. safeTransferFrom also checks if the contract has code, so this will fail if
         // _from is an EOA or address(0).

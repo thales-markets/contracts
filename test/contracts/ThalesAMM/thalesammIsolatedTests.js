@@ -3,25 +3,11 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../utils')();
+const { toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
-const { setupContract, setupAllContracts } = require('../../utils/setup');
+const { setupAllContracts } = require('../../utils/setup');
 
-const {
-	ensureOnlyExpectedMutativeFunctions,
-	onlyGivenAddressCanInvoke,
-	getEventByName,
-	getDecodedLogs,
-	decodedEventEqual,
-	convertToDecimals,
-} = require('../../utils/helpers');
+const { convertToDecimals } = require('../../utils/helpers');
 
 let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
 let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
@@ -33,12 +19,6 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-const Phase = {
-	Trading: toBN(0),
-	Maturity: toBN(1),
-	Expiry: toBN(2),
-};
-
 contract('ThalesAMM', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
 	const [creator, owner] = accounts;
@@ -46,31 +26,12 @@ contract('ThalesAMM', accounts => {
 
 	const sUSDQty = toUnit(100000);
 	const sUSDQtyAmm = toUnit(1000);
-
-	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
-
-	const capitalRequirement = toUnit(2);
-	const skewLimit = toUnit(0.05);
-	const maxOraclePriceAge = toBN(60 * 61);
-	const expiryDuration = toBN(26 * 7 * 24 * 60 * 60);
-	const maxTimeToMaturity = toBN(365 * 24 * 60 * 60);
-
-	const initialStrikePrice = toUnit(100);
-	const initialStrikePriceValue = 100;
 
 	const sAUDKey = toBytes32('sAUD');
 	const sUSDKey = toBytes32('sUSD');
 	const sETHKey = toBytes32('sETH');
 	const nonRate = toBytes32('nonExistent');
-
-	let timeToMaturity = 200;
-	let totalDeposited;
-
-	const Side = {
-		Up: toBN(0),
-		Down: toBN(1),
-	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
@@ -218,8 +179,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-
-		it('additional slippage test on buy', async () => {
+		it('additional slippage test on buy [ @cov-skip ]', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -231,21 +191,21 @@ contract('ThalesAMM', accounts => {
 			);
 
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			console.log('priceUp decimal is:' + priceUp / 1e18);
+			//console.log('priceUp decimal is:' + priceUp / 1e18);
 
 			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.UP,
 				toUnit(10)
 			);
-			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+			//console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
 			let options = await newMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			let ammDownBalance = await down.balanceOf(thalesAMM.address);
-			console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
+			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);
@@ -259,7 +219,7 @@ contract('ThalesAMM', accounts => {
 			);
 
 			ammDownBalance = await down.balanceOf(thalesAMM.address);
-			console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
+			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 
 			additionalSlippage = toUnit(0.01);
 			await expect(
@@ -284,12 +244,11 @@ contract('ThalesAMM', accounts => {
 			);
 
 			ammDownBalance = await down.balanceOf(thalesAMM.address);
-			console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
+			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 		});
-
 	});
 
-	it('additional slippage test on sell', async () => {
+	it('additional slippage test on sell [ @cov-skip ]', async () => {
 		let now = await currentTime();
 		let newMarket = await createMarket(
 			manager,
@@ -305,21 +264,17 @@ contract('ThalesAMM', accounts => {
 		down = await position.at(options.down);
 
 		let ammUpBalance = await up.balanceOf(thalesAMM.address);
-		console.log('amm UpBalance pre buy decimal is:' + ammUpBalance / 1e18);
+		//console.log('amm UpBalance pre buy decimal is:' + ammUpBalance / 1e18);
 
 		let ammDownBalance = await down.balanceOf(thalesAMM.address);
-		console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
+		//console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
 
 		await newMarket.mint(toUnit(6000), {
 			from: minter,
 		});
 
-		let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
-			newMarket.address,
-			Position.UP,
-			toUnit(10)
-		);
-		console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e18);
+		let sellToAmmQuote = await thalesAMM.sellToAmmQuote(newMarket.address, Position.UP, toUnit(10));
+		//console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e18);
 
 		await up.approve(thalesAMM.address, toUnit(1000), {
 			from: minter,
@@ -346,7 +301,6 @@ contract('ThalesAMM', accounts => {
 			{ from: minter }
 		);
 	});
-
 });
 
 function calculateOdds(price, strike, days, volatility) {

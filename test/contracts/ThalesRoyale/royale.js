@@ -6,11 +6,9 @@ const { assert } = require('../../utils/common');
 
 const { toBytes32 } = require('../../../index');
 
-const SECOND = 1000;
 const HOUR = 3600;
 const DAY = 86400;
 const WEEK = 604800;
-const YEAR = 31556926;
 
 const { fastForward, toUnit } = require('../../utils')();
 
@@ -29,7 +27,6 @@ contract('ThalesRoyale', accounts => {
 	let priceFeedAddress;
 	let MockPriceFeedDeployed;
 	let ThalesDeployed;
-	let thales;
 	let ThalesRoyale;
 	let ThalesRoyaleDeployed;
 	let ThalesRoyalePassport;
@@ -38,14 +35,11 @@ contract('ThalesRoyale', accounts => {
 	let initializeRoyaleData;
 	let ThalesRoyaleImplementation;
 	let ThalesRoyalePass;
-	let ThalesRoyalePassDeployed;
 	let voucher;
 
 	beforeEach(async () => {
-		const thalesQty_0 = toUnit(0);
 		const thalesQty = toUnit(20000);
 		const thalesQty_2500 = toUnit(2500);
-		const thalesQty_5000 = toUnit(5000);
 		const uri = 'http://my-json-server.typicode.com/abcoathup/samplenft/tokens/0';
 		const passportURI = 'https://thales-ajlyy.s3.eu-central-1.amazonaws.com';
 
@@ -382,7 +376,7 @@ contract('ThalesRoyale', accounts => {
 
 			assert.equal(false, isTokenFirstAlive);
 
-			console.log('eliminated', await passport.tokenURI(firstPassportId));
+			//console.log('eliminated', await passport.tokenURI(firstPassportId));
 
 			await expect(royale.takeAPosition(firstPassportId, 2, { from: first })).to.be.revertedWith(
 				'Token no longer valid'
@@ -611,7 +605,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(true, isTokenFirstAlive);
 		});
 
-		it('win till the end', async () => {
+		it('win till the end [ @cov-skip ]', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -780,7 +774,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(true, isTokenFirstAlive);
 		});
 
-		it('win till the end - no token transfer', async () => {
+		it('win till the end - no token transfer [ @cov-skip ]', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -843,7 +837,7 @@ contract('ThalesRoyale', accounts => {
 			await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
 		});
 
-		it('win till the end - with transfers', async () => {
+		it('win till the end - with transfers [ @cov-skip ]', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -976,7 +970,7 @@ contract('ThalesRoyale', accounts => {
 			await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
 		});
 
-		it('win till the end and check results', async () => {
+		it('win till the end and check results [ @cov-skip ]', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -1180,7 +1174,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(hasParticipatedInCurrentOrLastRoyale, true);
 		});
 
-		it('check the changing positions', async () => {
+		it('check the changing positions [ @cov-skip ]', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -1392,7 +1386,7 @@ contract('ThalesRoyale', accounts => {
 		});
 	});
 
-	it('Win and collect reward', async () => {
+	it('Win and collect reward [ @cov-skip ]', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		// check rewards
@@ -1524,7 +1518,7 @@ contract('ThalesRoyale', accounts => {
 		).to.be.revertedWith('Reward already collected');
 	});
 
-	it('Win and collect rewards and start new season', async () => {
+	it('Win and collect rewards and start new season [ @cov-skip ]', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		// check rewards
@@ -1878,10 +1872,10 @@ contract('ThalesRoyale', accounts => {
 		await royale.closeRound();
 
 		const positions = await royale.getTokenPositions(sixthPassportIdSeason2);
-		console.log('positions', positions[0]);
+		//console.log('positions', positions[0]);
 		// fetch token uri
 		const tokenURI1 = await passport.tokenURI(sixthPassportIdSeason2);
-		console.log(tokenURI1);
+		//console.log(tokenURI1);
 		
 
 		//#2
@@ -2053,18 +2047,18 @@ contract('ThalesRoyale', accounts => {
 			royale.claimRewardForSeason(season_2, secondPassportIdSeason2, { from: second })
 		).to.be.revertedWith('Token is not alive');
 
-		console.log('finished', await royale.seasonFinished(season_2));
+		//console.log('finished', await royale.seasonFinished(season_2));
 
 		// fetch token uri
 		const tokenURI = await passport.tokenURI(sixthPassportIdSeason2);
-		console.log(tokenURI);
+		//console.log(tokenURI);
 		const metadata = extractJSONFromURI(tokenURI);
 
 		assert.equal(metadata.name, 'Thales Royale Passport');
 		assert.equal(metadata.description, 'Thales Royale Passport - season 2');
 	});
 
-	it('Two players take loosing positions no one left but they can collect and they are winners', async () => {
+	it('Two players take loosing positions no one left but they can collect and they are winners [ @cov-skip ]', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		// check rewards
@@ -2401,7 +2395,7 @@ contract('ThalesRoyale', accounts => {
 		assert.bnEqual(0, await voucher.balanceOf(second));
 	});
 
-	it('Sign up with ALL ROUNDS default positions check values, first scenario', async () => {
+	it('Sign up with ALL ROUNDS default positions check values, first scenario [ @cov-skip ]', async () => {
 		await royale.startNewSeason({ from: owner });
 		
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
@@ -2550,7 +2544,7 @@ contract('ThalesRoyale', accounts => {
 		);
 	});
 
-	it('Sign up with ALL ROUNDS default positions check values, second scenario', async () => {
+	it('Sign up with ALL ROUNDS default positions check values, second scenario [ @cov-skip ]', async () => {
 		await royale.startNewSeason({ from: owner });
 		
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));

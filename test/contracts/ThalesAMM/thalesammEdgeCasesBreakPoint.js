@@ -3,33 +3,14 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../utils')();
+const { toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
-const { setupContract, setupAllContracts } = require('../../utils/setup');
+const { setupAllContracts } = require('../../utils/setup');
 
-const {
-	ensureOnlyExpectedMutativeFunctions,
-	onlyGivenAddressCanInvoke,
-	getEventByName,
-	getDecodedLogs,
-	decodedEventEqual,
-	convertToDecimals,
-} = require('../../utils/helpers');
+const { convertToDecimals } = require('../../utils/helpers');
 
 let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
-let PositionalMarket,
-	priceFeed,
-	oracle,
-	sUSDSynth,
-	PositionalMarketMastercopy,
-	PositionMastercopy;
+let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 let market, up, down, position, Synth;
 
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
@@ -37,12 +18,6 @@ let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
-
-const Phase = {
-	Trading: toBN(0),
-	Maturity: toBN(1),
-	Expiry: toBN(2),
-};
 
 contract('ThalesAMM', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
@@ -52,42 +27,28 @@ contract('ThalesAMM', accounts => {
 	const sUSDQty = toUnit(100000);
 	const sUSDQtyAmm = toUnit(5000);
 
-	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
-
-	const capitalRequirement = toUnit(2);
-	const skewLimit = toUnit(0.05);
-	const maxOraclePriceAge = toBN(60 * 61);
-	const expiryDuration = toBN(26 * 7 * 24 * 60 * 60);
-	const maxTimeToMaturity = toBN(365 * 24 * 60 * 60);
-
-	const initialStrikePrice = toUnit(100);
-	const initialStrikePriceValue = 100;
 
 	const sAUDKey = toBytes32('sAUD');
 	const sUSDKey = toBytes32('sUSD');
 	const sETHKey = toBytes32('sETH');
 	const nonRate = toBytes32('nonExistent');
 
-	let timeToMaturity = 200;
-	let totalDeposited;
-
-	const Side = {
-		Up: toBN(0),
-		Down: toBN(1),
-	};
-
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.connect(creator).createMarket(
-			oracleKey,
-			strikePrice.toString(),
-			maturity,
-			initialMint.toString(),
-			false,
-			ZERO_ADDRESS
-		);
+		const tx = await man
+			.connect(creator)
+			.createMarket(
+				oracleKey,
+				strikePrice.toString(),
+				maturity,
+				initialMint.toString(),
+				false,
+				ZERO_ADDRESS
+			);
 		let receipt = await tx.wait();
-		const marketEvent = receipt.events.find((event) => event['event'] && event['event'] === 'MarketCreated');
+		const marketEvent = receipt.events.find(
+			event => event['event'] && event['event'] === 'MarketCreated'
+		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
 
@@ -120,7 +81,7 @@ contract('ThalesAMM', accounts => {
 				'PriceFeed',
 				'PositionalMarketMastercopy',
 				'PositionMastercopy',
-				'PositionalMarketFactory',				
+				'PositionalMarketFactory',
 			],
 		}));
 
@@ -129,7 +90,9 @@ contract('ThalesAMM', accounts => {
 		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
 		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
-		await factory.connect(ownerSigner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
+		await factory
+			.connect(ownerSigner)
+			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
@@ -217,7 +180,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('price fully unlikely', async () => {
+		it('price fully unlikely [ @cov-skip ]', async () => {
 			let strike = 44000; //2593 works 2592 doesnt
 			let now = await currentTime();
 			let newMarket = await createMarket(
@@ -230,40 +193,37 @@ contract('ThalesAMM', accounts => {
 			);
 
 			let calculatedOdds = calculateOdds(50720, strike, 13, 80);
-			console.log('calculatedOdds is:' + calculatedOdds);
+			//console.log('calculatedOdds is:' + calculatedOdds);
 			let calculatedOddsContract = await thalesAMM.calculateOdds(
 				toUnit(50720),
 				toUnit(strike),
 				toUnit(13),
 				toUnit(80)
 			);
-			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+			//console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
 
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			console.log('priceUp decimal is:' + priceUp / 1e18);
+			//console.log('priceUp decimal is:' + priceUp / 1e18);
 
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToBuyFromAMM UP decimal is:' + availableToBuyFromAMM / 1e18);
-
+			//console.log('availableToBuyFromAMM UP decimal is:' + availableToBuyFromAMM / 1e18);
 
 			let buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
 				newMarket.address,
 				Position.UP,
 				toUnit(1)
 			);
-			console.log('buyPriceImpact 1  decimal is:' + buyPriceImpactPostBuy / 1e18);
+			//console.log('buyPriceImpact 1  decimal is:' + buyPriceImpactPostBuy / 1e18);
 
-
-			 buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
-					newMarket.address,
-					Position.UP,
-					toUnit(availableToBuyFromAMM / 1e18)
-				);
-				console.log('buyPriceImpact post buy max  decimal is:' + buyPriceImpactPostBuy / 1e18);
-
+			buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 1e18)
+			);
+			//console.log('buyPriceImpact post buy max  decimal is:' + buyPriceImpactPostBuy / 1e18);
 		});
 	});
 });
@@ -302,4 +262,3 @@ function calculateOdds(price, strike, days, volatility) {
 	}
 	return Math.floor((1 - x) * 1000) / 10;
 }
-

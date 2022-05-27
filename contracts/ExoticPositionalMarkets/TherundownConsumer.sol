@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -234,13 +235,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return gameResolved[_gameId];
     }
 
-    function isSupportedMarketType(string memory _market) external view returns (bool) {
+    function isSupportedMarketType(string memory _market) external pure returns (bool) {
         return
             keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create")) ||
             keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("resolve"));
     }
 
-    function isSameTeamOrTBD(string memory _teamA, string memory _teamB) public view returns (bool) {
+    function isSameTeamOrTBD(string memory _teamA, string memory _teamB) public pure returns (bool) {
         return
             keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked(_teamB)) ||
             keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked("TBD TBD")) ||
@@ -428,11 +429,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return position;
     }
 
-    function _calculateNumberOfPositionsBasedOnSport(uint _sportsId) internal returns (uint) {
+    function _calculateNumberOfPositionsBasedOnSport(uint _sportsId) internal view returns (uint) {
         return isSportTwoPositionsSport(_sportsId) ? 2 : 3;
     }
 
-    function _calculateTags(uint _sportsId) internal returns (uint[] memory) {
+    function _calculateTags(uint _sportsId) internal pure returns (uint[] memory) {
         uint[] memory result = new uint[](1);
         result[0] = MIN_TAG_NUMBER + _sportsId;
         return result;
@@ -463,7 +464,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return _game.homeScore > _game.awayScore ? HOME_WIN : AWAY_WIN;
     }
 
-    function _calculateAndNormalizeOdds(int[] memory _americanOdds) internal view returns (uint[] memory) {
+    function _calculateAndNormalizeOdds(int[] memory _americanOdds) internal pure returns (uint[] memory) {
         uint[] memory normalizedOdds = new uint[](_americanOdds.length);
         uint totalOdds;
         for (uint i = 0; i < _americanOdds.length; i++) {

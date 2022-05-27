@@ -1,21 +1,4 @@
 const { ethers } = require('hardhat');
-const w3utils = require('web3-utils');
-const snx = require('synthetix-2.50.4-ovm');
-const { artifacts, contract, web3 } = require('hardhat');
-
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../test/utils/index')();
-
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
-
-const { getTargetAddress, setTargetAddress } = require('../helpers');
-
-const { toBytes32 } = require('../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -58,9 +41,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function (resolve) {
-		setTimeout(resolve, time);
-	});
-}

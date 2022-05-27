@@ -1,17 +1,12 @@
 'use strict';
 
-const { artifacts, contract, web3 } = require('hardhat');
+const { artifacts, contract } = require('hardhat');
 
 const { assert } = require('../../utils/common');
 
-const { currentTime, toUnit, bytesToString } = require('../../utils')();
+const { toUnit } = require('../../utils')();
 
-const {
-	onlyGivenAddressCanInvoke,
-	convertToDecimals,
-	encodeCall,
-	assertRevert,
-} = require('../../utils/helpers');
+const { encodeCall } = require('../../utils/helpers');
 
 const { expect } = require('chai');
 
@@ -378,14 +373,8 @@ contract('Proxy Exhanger L1 <=> L2', async accounts => {
 
 		describe('exchange Thales to OpThales', function() {
 			beforeEach(async () => {
-				// let balance = await ThalesToken.balanceOf(owner);
-				// console.log("Owner balance:", balance.toString());
 				await ThalesToken.transfer(userOne, toUnit(100), { from: owner });
 				await ThalesToken.transfer(userTwo, toUnit(100), { from: owner });
-				// balance = await ThalesToken.balanceOf(userOne);
-				// console.log("User 1 balance:", balance.toString());
-				// balance = await ThalesToken.balanceOf(userTwo);
-				// console.log("User 2 balance:", balance.toString());
 			});
 
 			it('insufficient Optimistic Thales in Proxy Exchanger', async function() {
@@ -472,7 +461,7 @@ contract('Proxy Exhanger L1 <=> L2', async accounts => {
 					assert.equal(answer.toString(), toUnit(100).toString());
 				});
 			});
-			
+
 			describe('exchange to different receiver on L2', function() {
 				beforeEach(async () => {
 					await OpThalesToken.transfer(ProxyExchanger.address, toUnit(100), { from: owner });
@@ -491,7 +480,11 @@ contract('Proxy Exhanger L1 <=> L2', async accounts => {
 				});
 				it('exchange completed to L2, funds received by different receiver', async function() {
 					await ThalesToken.approve(ProxyExchanger.address, toUnit(100), { from: userOne });
-					answer = await ProxyExchanger.exchangeThalesToL2OpThalesDifferentReceiver(userTwo, toUnit(100), { from: userOne });
+					answer = await ProxyExchanger.exchangeThalesToL2OpThalesDifferentReceiver(
+						userTwo,
+						toUnit(100),
+						{ from: userOne }
+					);
 					answer = await ThalesToken.balanceOf(userOne);
 					assert.equal(answer.toString(), '0');
 					answer = await OpThalesTokenL2.balanceOf(userTwo);
@@ -539,7 +532,6 @@ contract('Proxy Exhanger L1 <=> L2', async accounts => {
 					assert.equal(answer.toString(), toUnit(100).toString());
 				});
 			});
-			
 		});
 	});
 });

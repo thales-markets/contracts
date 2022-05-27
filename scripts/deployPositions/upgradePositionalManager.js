@@ -30,23 +30,13 @@ async function main() {
 	}
 
 	if (networkObj.chainId == 10) {
-		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 		network = 'optimisticEthereum';
 	} else if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
-		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	}
-	if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
-		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
-	} else {
-		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
 	}
 
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + network);
-
-	console.log('Found ProxyERC20sUSD at:' + ProxyERC20sUSDaddress);
 
 	priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
@@ -57,7 +47,7 @@ async function main() {
 	console.log('Found positionalManagerAddress at:', positionalManagerAddress);
 
 	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
-	upgrades.prepareUpgrade;
+	// upgrades.prepareUpgrade;
 	await upgrades.upgradeProxy(positionalManagerAddress, PositionalMarketManager);
 
 	console.log('PositionalMarketManager upgraded');

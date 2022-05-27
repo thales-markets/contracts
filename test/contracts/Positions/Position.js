@@ -3,74 +3,39 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
+const { assert } = require('../../utils/common');
 const {
 	fastForward,
 	toUnit,
 	currentTime,
 	multiplyDecimalRound,
-	divideDecimalRound,
 } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
-const { setupContract, setupAllContracts } = require('../../utils/setup');
+const { setupAllContracts } = require('../../utils/setup');
 
 const {
 	ensureOnlyExpectedMutativeFunctions,
 	onlyGivenAddressCanInvoke,
-	getEventByName,
-	getDecodedLogs,
-	decodedEventEqual,
 	convertToDecimals,
 } = require('../../utils/helpers');
 
-let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
+let factory, manager;
 let PositionalMarket,
 	priceFeed,
-	oracle,
 	sUSDSynth,
 	positionalMarketMastercopy,
 	PositionMastercopy;
-let market, up, down, Position, Synth;
+let market, up, down, Position, Synth, addressResolver;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
-
-const Phase = {
-	Trading: toBN(0),
-	Maturity: toBN(1),
-	Expiry: toBN(2),
-};
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 contract('Position', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exersizer, secondCreator] = accounts;
+	const [initialCreator, managerOwner, minter, dummy, exersizer] = accounts;
 	let creator, owner;
 	const sUSDQty = toUnit(10000);
-
-	const capitalRequirement = toUnit(2);
-	const skewLimit = toUnit(0.05);
-	const maxOraclePriceAge = toBN(60 * 61);
-	const expiryDuration = toBN(26 * 7 * 24 * 60 * 60);
-	const maxTimeToMaturity = toBN(365 * 24 * 60 * 60);
-
-	const initialStrikePrice = toUnit(100);
-
-	const initialPoolFee = toUnit(0.005);
-	const initialCreatorFee = toUnit(0.005);
-
-	const initialFeeAddress = 0xfeefeefeefeefeefeefeefeefeefeefeefeefeef;
-
 	const AUDKey = toBytes32('sAUD');
-	const iAUDKey = toBytes32('iAUD');
-
-	let timeToMaturity = 200;
-	let totalDepositedAfterFees;
-	let upOption, downOption;
-
-	const Side = {
-		Up: toBN(0),
-		Down: toBN(1),
-	};
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man.connect(creator).createMarket(
@@ -134,9 +99,6 @@ contract('Position', accounts => {
 
 		await priceFeed.connect(owner).addAggregator(AUDKey, aggregatorAUD.address);
 
-		console.log('AUD rate', await priceFeed.rateForCurrency(AUDKey));
-		console.log('AUD aggregator', await priceFeed.aggregators(AUDKey));
-
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
 			sUSDSynth.approve(manager.address, sUSDQty, { from: initialCreator }),
@@ -158,8 +120,6 @@ contract('Position', accounts => {
 			const options = await market.options();
 			up = await Position.at(options.up);
 			down = await Position.at(options.down);
-
-			console.log('up', options.up);
 
 			await up.transfer(minter, toUnit(1), { from: initialCreator });
 

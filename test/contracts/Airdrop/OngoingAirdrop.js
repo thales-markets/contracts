@@ -1,6 +1,6 @@
 const { deploymentFixture, getReward, getRoot } = require('./ongoingAirdropFixture');
 const { assert } = require('../../utils/common');
-const { currentTime, fastForward } = require('../../utils')();
+const { fastForward } = require('../../utils')();
 const YEAR = 31556926;
 
 // OngoindAirdrop tests

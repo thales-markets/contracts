@@ -1,13 +1,7 @@
-const path = require('path');
 const { ethers } = require('hardhat');
-
-const user_key = process.env.PRIVATE_KEY;
-
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress } = require('../helpers');
 
 async function main() {
-	let accounts = await ethers.getSigners();
-	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 

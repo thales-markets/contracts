@@ -9,17 +9,13 @@ const {
 } = require('../../../scripts/snx-data/xsnx-snapshot/helpers');
 
 const {
-	onlyGivenAddressCanInvoke,
-	convertToDecimals,
 	encodeCall,
-	assertRevert,
 } = require('../../utils/helpers');
 
 // snapshot of user addresses balances of SNX
 const snapshot = require('../../../scripts/snx-data/ongoing_distribution.json');
 
 const THALES_AMOUNT = web3.utils.toWei('200');
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const deploymentFixture = async () => {
 	let [admin, proxyOwner] = await ethers.getSigners();
@@ -105,17 +101,6 @@ const deploymentFixture = async () => {
 	// transfer THALES tokens to airdrop contract
 	await ongoingAirdrop.setEscrow(escrowThales.address);
 	await thales.transfer(ongoingAirdrop.address, totalBalance);
-
-	// let StakingThales = artifacts.require('StakingThales');
-	// let StakingThalesDeployed = await StakingThales.new(
-	// 	admin.address,
-	// 	escrowThales.address,
-	// 	thales.address,
-	// 	thales.address,
-	// 	604800,
-	// 	604800,
-	// 	{ from: admin.address }
-	// );
 	await escrowThales.setStakingThalesContract(StakingThalesDeployed.address);
 
 	// Impersonate two accounts from snapshot

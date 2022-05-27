@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.0;
 
 import "../interfaces/ISNXRewards.sol";
@@ -22,6 +23,8 @@ contract SNXRewards is ISNXRewards {
     }
     
     function debtBalanceOf(address _issuer, bytes32 currencyKey) external view override returns (uint) {
+        // to silence compile warning
+        currencyKey = currencyKey;
         return debtBalance[_issuer];
     }
 

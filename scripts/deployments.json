@@ -51,7 +51,8 @@
 		"ExoticPositionalMarketData": "0x7B3241C61889185188E3B444abEf7298fAe6B1E1",
 		"ExoticPositionalMarketDataImplementation": "0x648200a8d65E477b7222b89019bb877209d1B0cF",
 		"ExoticPositionalTags": "0xd550bD32B434bA870642F94710eb220f542Ed3F3",
-		"ExoticPositionalTagsImplementation": "0x7a911614e0a916FB59A14EBd5c186dD076d1eDBc"
+		"ExoticPositionalTagsImplementation": "0x7a911614e0a916FB59A14EBd5c186dD076d1eDBc",
+		"ExoticMarketOpenBidMastercopy": "0x1fCE83884dc4263A92825543522379E37d7917dF"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

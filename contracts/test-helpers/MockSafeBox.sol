@@ -12,7 +12,7 @@ import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "../utils/libraries/UniswapMath.sol";
 
-contract SafeBox is ProxyOwned, Initializable {
+contract MockSafeBox is ProxyOwned, Initializable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     IERC20Upgradeable public sUSD;
@@ -32,7 +32,7 @@ contract SafeBox is ProxyOwned, Initializable {
     }
 
     /// @notice executeBuyback buys THALES tokens for predefined amount of sUSD stored in sUSDperTick value
-    /// @dev executeBuyback can be called if at least 1 tickLength has passed since last buyback,
+    /// @dev executeBuyback can be called if at least 1 tickLength has passed since last buyback, 
     /// it then calculates how many ticks passes and executes buyback via Uniswap V3 integrated contract.
     function executeBuyback() external {
         // check zero addresses
@@ -41,91 +41,14 @@ contract SafeBox is ProxyOwned, Initializable {
         require(ticksFromLastBuyBack > 0, "Not enough ticks have passed since last buyback");
 
         // buy THALES via Uniswap
-        uint256 amountThales = _swapExactInput(
-            sUSDperTick * ticksFromLastBuyBack,
-            address(sUSD),
-            address(thalesToken),
-            3000
-        );
+        uint256 amountThales = _swapExactInput(sUSDperTick * ticksFromLastBuyBack, address(sUSD), address(thalesToken), 3000);
 
         lastBuyback = block.timestamp;
         emit BuybackExecuted(sUSDperTick, amountThales);
     }
 
-    /// @notice swapExactInputSingle swaps a fixed amount of tokenIn for a maximum possible amount of tokenOut
-    /// @param amountIn The exact amount of tokenIn that will be swapped for tokenOut.
-    /// @param tokenIn Address of first token
-    /// @param tokenOut Address of second token
-    /// @param poolFee Fee value of tokenIn/tokenOut pool
-    /// @return amountOut The amount of tokenOut received.
-    function _swapExactInput(
-        uint256 amountIn,
-        address tokenIn,
-        address tokenOut,
-        uint24 poolFee
-    ) internal returns (uint256 amountOut) {
-        // Approve the router to spend tokenIn.
-        TransferHelper.safeApprove(tokenIn, address(swapRouter), amountIn);
-
-        uint256 ratio = _getRatio(tokenIn, tokenOut, poolFee);
-
-        // Multiple pool swaps are encoded through bytes called a `path`. A path is a sequence of token addresses and poolFees that define the pools used in the swaps.
-        // The format for pool encoding is (tokenIn, fee, tokenOut/tokenIn, fee, tokenOut) where tokenIn/tokenOut parameter is the shared token across the pools.
-        ISwapRouter.ExactInputParams memory params = ISwapRouter.ExactInputParams({
-            path: abi.encodePacked(address(tokenIn), poolFee, WETH9, poolFee, address(tokenOut)),
-            recipient: msg.sender,
-            deadline: block.timestamp + 15,
-            amountIn: amountIn,
-            amountOutMinimum: (amountIn * ratio * 99) / 100
-        });
-
-        // The call to `exactInput` executes the swap.
-        amountOut = swapRouter.exactInput(params);
-    }
-
-    /// @notice _getRatio returns ratio between tokenA and tokenB based on prices fetched from 
-    /// UniswapV3Pools
-    /// @param tokenA Address of first token
-    /// @param tokenB Address of second token
-    /// @param poolFee Fee value of tokenA/tokenB pool
-    /// @return ratio tokenA/tokenB ratio
-    function _getRatio(
-        address tokenA,
-        address tokenB,
-        uint24 poolFee
-    ) public view returns (uint256 ratio) {
-        uint256 ratioA = _getWETHPoolRatio(tokenA, poolFee);
-        uint256 ratioB = _getWETHPoolRatio(tokenB, poolFee);
-
-        ratio = ratioA / ratioB;
-    }
-
-    /// @notice _getWETHPoolRatio returns ratio between tokenA and WETH based on prices fetched from 
-    /// UniswapV3Pools
-    /// @dev Ratio is calculated differently if token0 in pool is WETH
-    /// @param token Token address
-    /// @param poolFee Fee value of token/WETH pool
-    /// @return ratio token/WETH ratio
-    function _getWETHPoolRatio(address token, uint24 poolFee) public view returns (uint256 ratio) {
-        address pool = IUniswapV3Factory(uniswapFactory).getPool(WETH9, token, poolFee);
-        (uint160 sqrtPriceX96token, , , , , , ) = IUniswapV3Pool(pool).slot0();
-        if (IUniswapV3Pool(pool).token0() == WETH9) {
-            ratio = 10**18 / _getPriceFromSqrtPrice(sqrtPriceX96token);
-        } else {
-            ratio = _getPriceFromSqrtPrice(sqrtPriceX96token);
-        }
-    }
-
-    /// @notice _getPriceFromSqrtPrice calculate price from UniswapV3Pool via formula
-    /// @param sqrtPriceX96 Price fetched from UniswapV3Pool
-    /// @return Calculated price
-    function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns (uint256 ) {
-        uint256 price = UniswapMath.mulDiv(sqrtPriceX96, sqrtPriceX96, UniswapMath.Q96);
-        return UniswapMath.mulDiv(price, 10**18, UniswapMath.Q96);
-    }
-
-    /// @notice setTickRate sets sUSDperTick amount
-    /// @param _sUSDperTick New sUSDperTick value
+    /// @notice setTickRate sets sUSDperTick amount 
+    /// @param _sUSDperTick New sUSDperTick value 
     function setTickRate(uint256 _sUSDperTick) external onlyOwner {
         sUSDperTick = _sUSDperTick;
         emit TickRateChanged(_sUSDperTick);
@@ -168,6 +91,60 @@ contract SafeBox is ProxyOwned, Initializable {
         require(_uniswapFactory != address(0), "Invalid address");
         uniswapFactory = IUniswapV3Factory(_uniswapFactory);
         emit UniswapV3FactoryAddressChanged(_uniswapFactory);
+    }
+
+    /// @notice swapExactInputSingle swaps a fixed amount of tokenIn for a maximum possible amount of tokenOut
+    /// @param amountIn The exact amount of tokenIn that will be swapped for tokenOut.
+    /// @param tokenIn Address of first token
+    /// @param tokenOut Address of second token
+    /// @param poolFee Fee value of tokenIn/tokenOut pool
+    /// @return amountOut The amount of tokenOut received.
+    function _swapExactInput(
+        uint256 amountIn,
+        address tokenIn,
+        address tokenOut,
+        uint24 poolFee
+    ) internal returns (uint256 amountOut) {
+        // Approve the router to spend tokenIn.
+        TransferHelper.safeApprove(tokenIn, address(swapRouter), amountIn);
+
+        uint256 ratio = _getRatio(tokenIn, tokenOut, poolFee);
+
+        // Multiple pool swaps are encoded through bytes called a `path`. A path is a sequence of token addresses and poolFees that define the pools used in the swaps.
+        // The format for pool encoding is (tokenIn, fee, tokenOut/tokenIn, fee, tokenOut) where tokenIn/tokenOut parameter is the shared token across the pools.
+         ISwapRouter.ExactInputParams memory params =
+            ISwapRouter.ExactInputParams({
+                path: abi.encodePacked(address(tokenIn), poolFee, WETH9, poolFee, address(tokenOut)),
+                recipient: msg.sender,
+                deadline: block.timestamp,
+                amountIn: amountIn,
+                amountOutMinimum: amountIn * ratio * 99 / 100
+            });
+
+
+        // The call to `exactInput` executes the swap.
+       //amountOut = swapRouter.exactInput(params);
+    }
+
+    function _getRatio(address tokenA, address tokenB, uint24 poolFee) internal view returns (uint256 ratio) {
+        uint256 ratioA = _getWETHPoolRatio(tokenA, poolFee);
+        uint256 ratioB = _getWETHPoolRatio(tokenB, poolFee);
+
+        ratio = ratioA / ratioB;
+    }
+
+    function _getWETHPoolRatio(address token, uint24 poolFee) internal view returns (uint256 ratio) {
+        address pool = IUniswapV3Factory(uniswapFactory).getPool(WETH9, token, poolFee);
+        (uint160 sqrtPriceX96token, , , , , , ) = IUniswapV3Pool(pool).slot0();
+        if(IUniswapV3Pool(pool).token0() == WETH9) {
+            ratio = 1 / _getPriceFromSqrtPrice(sqrtPriceX96token);
+        } else {
+            ratio = _getPriceFromSqrtPrice(sqrtPriceX96token);
+        }
+    }
+    function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns (uint256 priceX96) {
+        uint256 price = UniswapMath.mulDiv(sqrtPriceX96, sqrtPriceX96, UniswapMath.Q96);
+        return UniswapMath.mulDiv(price, 10**18, UniswapMath.Q96);
     }
 
     event TickRateChanged(uint256 _sUSDperTick);

@@ -142,59 +142,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "tokenA",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "tokenB",
-        "type": "address"
-      },
-      {
-        "internalType": "uint24",
-        "name": "poolFee",
-        "type": "uint24"
-      }
-    ],
-    "name": "_getRatio",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "ratio",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "uint24",
-        "name": "poolFee",
-        "type": "uint24"
-      }
-    ],
-    "name": "_getWETHPoolRatio",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "ratio",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],

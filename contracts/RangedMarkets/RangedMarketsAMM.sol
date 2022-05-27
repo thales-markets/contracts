@@ -252,7 +252,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address referrer
     ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused {
         IReferrals(referrals).setReferrer(referrer, msg.sender);
-        buyFromAMM(rangedMarket, position, amount, expectedPayout, additionalSlippage);
+        _buyFromAMM(rangedMarket, position, amount, expectedPayout, additionalSlippage);
     }
 
     function buyFromAMM(
@@ -262,6 +262,16 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint expectedPayout,
         uint additionalSlippage
     ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused {
+        _buyFromAMM(rangedMarket, position, amount, expectedPayout, additionalSlippage);
+    }
+
+    function _buyFromAMM(
+        RangedMarket rangedMarket,
+        RangedMarket.Position position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage
+    ) internal {
         require(amount <= _availableToBuyFromAMMOnlyRanged(rangedMarket, position), "Not enough liquidity");
 
         (uint sUSDPaid, uint leftQuote, uint rightQuote) = buyFromAmmQuoteDetailed(rangedMarket, position, amount);
@@ -300,9 +310,9 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (referrerFee > 0 && referrals != address(0)) {
             address referrer = IReferrals(referrals).referrals(buyer);
             if (referrer != address(0)) {
-                uint referrerShare = (sUSDPaid * (ONE + referrerFee)) / ONE;
-                sUSD.transfer(buyer, referrerShare);
-                emit ReferrerPaid(referrer, buyer, referrerShare);
+                uint referrerShare = (sUSDPaid * (ONE + referrerFee)) / ONE - sUSDPaid;
+                sUSD.transfer(referrer, referrerShare);
+                emit ReferrerPaid(referrer, buyer, referrerShare, sUSDPaid);
             }
         }
     }
@@ -677,5 +687,5 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event SetCapPerMarket(uint capPerMarket);
     event SetRangedAmmFee(uint rangedAmmFee);
     event SetStakingThales(address _stakingThales);
-    event ReferrerPaid(address refferer, address trader, uint amount);
+    event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
 }

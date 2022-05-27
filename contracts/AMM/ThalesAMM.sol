@@ -304,7 +304,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address _referrer
     ) public nonReentrant notPaused {
         IReferrals(referrals).setReferrer(_referrer, msg.sender);
-        buyFromAMM(market, position, amount, expectedPayout, additionalSlippage);
+        _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage);
     }
 
     function buyFromAMM(
@@ -314,6 +314,16 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint expectedPayout,
         uint additionalSlippage
     ) public nonReentrant notPaused {
+        _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage);
+    }
+
+    function _buyFromAMM(
+        address market,
+        Position position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage
+    ) internal {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         uint availableToBuyFromAMMatm = availableToBuyFromAMM(market, position);
@@ -513,7 +523,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         if (referrerFee > 0 && referrals != address(0)) {
             uint referrerShare = sUSDPaid.mul(ONE).div(ONE.sub(referrerFee)).sub(sUSDPaid);
-            _handleReferrer(seller, referrerShare);
+            _handleReferrer(seller, referrerShare, sUSDPaid);
         }
     }
 
@@ -541,7 +551,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         if (referrerFee > 0 && referrals != address(0)) {
             uint referrerShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(referrerFee)));
-            _handleReferrer(buyer, referrerShare);
+            _handleReferrer(buyer, referrerShare, sUSDPaid);
         }
     }
 
@@ -594,12 +604,16 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
     }
 
-    function _handleReferrer(address buyer, uint referrerShare) internal {
+    function _handleReferrer(
+        address buyer,
+        uint referrerShare,
+        uint volume
+    ) internal {
         address referrer = IReferrals(referrals).referrals(buyer);
         if (referrer != address(0)) {
             if (referrerFee > 0) {
-                sUSD.transfer(buyer, referrerShare);
-                emit ReferrerPaid(referrer, buyer, referrerShare);
+                sUSD.transfer(referrer, referrerShare);
+                emit ReferrerPaid(referrer, buyer, referrerShare, volume);
             }
         }
     }
@@ -759,5 +773,5 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     event SetStakingThales(address _stakingThales);
     event SetMinSupportedPrice(uint _spread);
     event SetMaxSupportedPrice(uint _spread);
-    event ReferrerPaid(address refferer, address trader, uint amount);
+    event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
 }

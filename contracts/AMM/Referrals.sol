@@ -41,8 +41,7 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner set referrers"
         );
-        if (!tradedBefore[referred] && referrals[referred] != referrer) {
-            require(referrals[referred] != address(0), "Referred address already has a referrer");
+        if (!tradedBefore[referred] && referrals[referred] == address(0)) {
             referrals[referred] = referrer;
             referralStarted[referred] = block.timestamp;
             emit ReferralAdded(referrer, referred, block.timestamp);
@@ -56,8 +55,10 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     function setTradedBefore(address[] calldata _addresses) external onlyOwner {
         for (uint256 index = 0; index < _addresses.length; index++) {
             tradedBefore[_addresses[index]] = true;
+            emit TradedBefore(_addresses[index]);
         }
     }
 
     event ReferralAdded(address referrer, address referred, uint timeStarted);
+    event TradedBefore(address trader);
 }

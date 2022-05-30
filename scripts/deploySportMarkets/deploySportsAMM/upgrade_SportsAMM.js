@@ -58,52 +58,34 @@ async function main() {
 	
 		console.log('Implementation SportsAMM: ', SportsAMMImplementation);
 		setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
+		
+		try {
+			await hre.run('verify:verify', {
+				address: SportsAMMImplementation,
+			});
+		} catch (e) {
+			console.log(e);
+		}
 	}
+
+    
 	if (networkObj.chainId == 10) {
+		const implementation = await upgrades.prepareUpgrade(SportsAMMAddress, SportsAMM);
+		await delay(5000);
+
+		console.log('SportsAMM upgraded');
+
+		console.log('Implementation SportsAMM: ', implementation);
+		setTargetAddress('SportsAMMImplementation', network, implementation);
+		try {
+			await hre.run('verify:verify', {
+				address: implementation,
+			});
+		} catch (e) {
+			console.log(e);
+		}
 	}
    
-    const SportsAMMDeployed = await upgrades.deployProxy(SportsAMM, [
-        owner.address,
-		PaymentToken,
-		capPerMarket,
-		min_spread,
-		max_spread,
-		minimalTimeLeftToMaturity
-	]);
-	await SportsAMMDeployed.deployed;
-    
-    console.log("SportsAMM Deployed on", SportsAMMDeployed.address);
-    setTargetAddress('SportsAMM', network, SportsAMMDeployed.address);
-
-	const SportsAMMImplementation = await getImplementationAddress(
-		ethers.provider,
-		SportsAMMDeployed.address
-	);
-
-	console.log('Implementation SportsAMM: ', SportsAMMImplementation);
-	setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
-	
-	await delay(5000);
-	
-    await SportMarketFactoryDeployed.setThalesAMM(SportsAMMDeployed.address, {from: owner.address});
-	console.log("SportsAMM updated in Factory");
-	await delay(2000);
-
-    try {
-		await hre.run('verify:verify', {
-			address: SportsAMMDeployed.address,
-		});
-	} catch (e) {
-		console.log(e);
-	}
-
-    try {
-		await hre.run('verify:verify', {
-			address: SportsAMMImplementation,
-		});
-	} catch (e) {
-		console.log(e);
-	}
 
 
 }

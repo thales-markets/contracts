@@ -244,10 +244,10 @@
 		"SportPositionalMarketManagerImplementation": "0xab33973d7e248075b808DBfD8b6314b1B07CC144",
 		"SportPositionalMarketFactory": "0x9839BEa51BBaD32Af0de41bEB74b637f188FfC2D",
 		"SportPositionalMarketFactoryImplementation": "0x422c55b4935Da9E86137C535E983fF2C610A970E",
-		"SportPositionalMarketMastercopy": "0xc55C111DC4b609bcFb98c898F7D9c4B3B867F66f",
-		"SportPositionMastercopy": "0x5F62bceB94a2ca9A4C921832B1B5025DeEA7830e",
+		"SportPositionalMarketMastercopy": "0x711B96f2d1d9174CABb095e40A33234Ffe49496F",
+		"SportPositionMastercopy": "0x5c1edaC98d416AFbC23B6559795dd32613b3ac50",
 		"SportsAMM": "0xEa71aACad9C7105859581AA7048126d6f98B391F",
-		"SportsAMMImplementation": "0x687074CFe56830cF6851187d1ba97f46435E269A",
+		"SportsAMMImplementation": "0xE08A6305153c38A2aB547303291707B9398dA096",
 		"SportPositionalMarketData": "0xE2C2325191e5DbaB67e1a3ceADF5b3b75a7d4AE6",
 		"SportPositionalMarketDataImplementation": "0x29c24C43378513EdBDBcD8671CE2352d326905a4"
 	},

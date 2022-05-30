@@ -7534,6 +7534,276 @@
           }
         }
       }
+    },
+    "e48b61dc14eec758d97a74c76427d15be81d0728a59ce49266d604786e327121": {
+      "address": "0xE08A6305153c38A2aB547303291707B9398dA096",
+      "txHash": "0x1f00787ad98a220093ea2802710247cfd4af346a7045f9d0a7293739e3ae084a",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "label": "owner",
+            "offset": 2,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "ProxyOwned",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "label": "nominatedOwner",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "ProxyOwned",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "label": "_initialized",
+            "offset": 20,
+            "slot": "1",
+            "type": "t_bool",
+            "contract": "ProxyOwned",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "label": "_transferredAtInit",
+            "offset": 21,
+            "slot": "1",
+            "type": "t_bool",
+            "contract": "ProxyOwned",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_bool",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "53",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "label": "_guardCounter",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_uint256",
+            "contract": "ProxyReentrancyGuard",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_bool",
+            "contract": "ProxyReentrancyGuard",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "label": "sUSD",
+            "offset": 1,
+            "slot": "103",
+            "type": "t_contract(IERC20Upgradeable)6720",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:47"
+          },
+          {
+            "label": "manager",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_address",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:48"
+          },
+          {
+            "label": "capPerMarket",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_uint256",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:50"
+          },
+          {
+            "label": "min_spread",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_uint256",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:51"
+          },
+          {
+            "label": "max_spread",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_uint256",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:52"
+          },
+          {
+            "label": "minimalTimeLeftToMaturity",
+            "offset": 0,
+            "slot": "108",
+            "type": "t_uint256",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:55"
+          },
+          {
+            "label": "spentOnMarket",
+            "offset": 0,
+            "slot": "109",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:59"
+          },
+          {
+            "label": "safeBox",
+            "offset": 0,
+            "slot": "110",
+            "type": "t_address",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:61"
+          },
+          {
+            "label": "theRundownConsumer",
+            "offset": 0,
+            "slot": "111",
+            "type": "t_address",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:62"
+          },
+          {
+            "label": "safeBoxImpact",
+            "offset": 0,
+            "slot": "112",
+            "type": "t_uint256",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:63"
+          },
+          {
+            "label": "stakingThales",
+            "offset": 0,
+            "slot": "113",
+            "type": "t_contract(IStakingThales)53914",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:65"
+          },
+          {
+            "label": "minSupportedPrice",
+            "offset": 0,
+            "slot": "114",
+            "type": "t_uint256",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:67"
+          },
+          {
+            "label": "maxSupportedPrice",
+            "offset": 0,
+            "slot": "115",
+            "type": "t_uint256",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:68"
+          },
+          {
+            "label": "whitelistedAddresses",
+            "offset": 0,
+            "slot": "116",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:70"
+          },
+          {
+            "label": "_capPerAsset",
+            "offset": 0,
+            "slot": "117",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:71"
+          },
+          {
+            "label": "testOdds",
+            "offset": 0,
+            "slot": "118",
+            "type": "t_address",
+            "contract": "SportsAMM",
+            "src": "contracts/SportMarkets/SportsAMM.sol:73"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IERC20Upgradeable)6720": {
+            "label": "contract IERC20Upgradeable",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IStakingThales)53914": {
+            "label": "contract IStakingThales",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      }
     }
   }
 }

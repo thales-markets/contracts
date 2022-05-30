@@ -58,7 +58,9 @@
 		"RangedAMM": "0x2d356b114cbCA8DEFf2d8783EAc2a5A5324fE1dF",
 		"RangedAMMImplementation": "0xC6BD4862d9b41030ab803DABdc7b2B25ef3379D1",
 		"RangedPositionMastercopy": "0x7801Efa8E30606D2d4c9848852b56ff03efDAd5c",
-		"RangedMarketMastercopy": "0xe5109CC91F2c236Fbee3752AF06dC92d4BDddC84"
+		"RangedMarketMastercopy": "0xe5109CC91F2c236Fbee3752AF06dC92d4BDddC84",
+		"Referrals": "0xCDE1C5D8998165fB417f58B1f258CB0DeC38BA00",
+		"ReferralsImplementation": "0x1A59ac5D4Bdf35B5255c6D301AD23f6Eb1530d57"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

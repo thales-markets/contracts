@@ -22,7 +22,7 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     mapping(address => address) public referrals;
     mapping(address => uint) public referralStarted;
 
-    mapping(address => bool) tradedBefore;
+    mapping(address => bool) public tradedBefore;
 
     function initialize(
         address _owner,

@@ -106,24 +106,24 @@ contract MockSafeBox is ProxyOwned, Initializable {
         uint24 poolFee
     ) internal returns (uint256 amountOut) {
         // Approve the router to spend tokenIn.
-        TransferHelper.safeApprove(tokenIn, address(swapRouter), amountIn);
+        // TransferHelper.safeApprove(tokenIn, address(swapRouter), amountIn);
 
-        uint256 ratio = _getRatio(tokenIn, tokenOut, poolFee);
+        // uint256 ratio = _getRatio(tokenIn, tokenOut, poolFee);
 
-        // Multiple pool swaps are encoded through bytes called a `path`. A path is a sequence of token addresses and poolFees that define the pools used in the swaps.
-        // The format for pool encoding is (tokenIn, fee, tokenOut/tokenIn, fee, tokenOut) where tokenIn/tokenOut parameter is the shared token across the pools.
-         ISwapRouter.ExactInputParams memory params =
-            ISwapRouter.ExactInputParams({
-                path: abi.encodePacked(address(tokenIn), poolFee, WETH9, poolFee, address(tokenOut)),
-                recipient: msg.sender,
-                deadline: block.timestamp,
-                amountIn: amountIn,
-                amountOutMinimum: amountIn * ratio * 99 / 100
-            });
+        // // Multiple pool swaps are encoded through bytes called a `path`. A path is a sequence of token addresses and poolFees that define the pools used in the swaps.
+        // // The format for pool encoding is (tokenIn, fee, tokenOut/tokenIn, fee, tokenOut) where tokenIn/tokenOut parameter is the shared token across the pools.
+        //  ISwapRouter.ExactInputParams memory params =
+        //     ISwapRouter.ExactInputParams({
+        //         path: abi.encodePacked(address(tokenIn), poolFee, WETH9, poolFee, address(tokenOut)),
+        //         recipient: msg.sender,
+        //         deadline: block.timestamp,
+        //         amountIn: amountIn,
+        //         amountOutMinimum: amountIn * ratio * 99 / 100
+        //     });
 
 
-        // The call to `exactInput` executes the swap.
-       //amountOut = swapRouter.exactInput(params);
+        // // The call to `exactInput` executes the swap.
+        // amountOut = swapRouter.exactInput(params);
     }
 
     function _getRatio(address tokenA, address tokenB, uint24 poolFee) internal view returns (uint256 ratio) {

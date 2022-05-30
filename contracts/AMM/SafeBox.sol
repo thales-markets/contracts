@@ -35,10 +35,10 @@ contract SafeBox is ProxyOwned, Initializable {
     /// @dev executeBuyback can be called if at least 1 tickLength has passed since last buyback,
     /// it then calculates how many ticks passes and executes buyback via Uniswap V3 integrated contract.
     function executeBuyback() external {
-        // check zero addresses
 
         uint ticksFromLastBuyBack = lastBuyback != 0 ? (block.timestamp - lastBuyback) / tickLength : 1;
         require(ticksFromLastBuyBack > 0, "Not enough ticks have passed since last buyback");
+        require(sUSD.balanceOf(address(this)) >= sUSDperTick * ticksFromLastBuyBack, "Not enough sUSD in contract.");
 
         // buy THALES via Uniswap
         uint256 amountThales = _swapExactInput(
@@ -49,10 +49,10 @@ contract SafeBox is ProxyOwned, Initializable {
         );
 
         lastBuyback = block.timestamp;
-        emit BuybackExecuted(sUSDperTick, amountThales);
+        emit BuybackExecuted(sUSDperTick * ticksFromLastBuyBack, amountThales);
     }
 
-    /// @notice swapExactInputSingle swaps a fixed amount of tokenIn for a maximum possible amount of tokenOut
+    /// @notice _swapExactInput swaps a fixed amount of tokenIn for a maximum possible amount of tokenOut
     /// @param amountIn The exact amount of tokenIn that will be swapped for tokenOut.
     /// @param tokenIn Address of first token
     /// @param tokenOut Address of second token
@@ -64,6 +64,7 @@ contract SafeBox is ProxyOwned, Initializable {
         address tokenOut,
         uint24 poolFee
     ) internal returns (uint256 amountOut) {
+    
         // Approve the router to spend tokenIn.
         TransferHelper.safeApprove(tokenIn, address(swapRouter), amountIn);
 
@@ -76,15 +77,15 @@ contract SafeBox is ProxyOwned, Initializable {
             recipient: msg.sender,
             deadline: block.timestamp + 15,
             amountIn: amountIn,
-            amountOutMinimum: (amountIn * ratio * 99) / 100
+            amountOutMinimum: (amountIn * ratio * 98) / (100 * 10**18)
         });
 
         // The call to `exactInput` executes the swap.
         amountOut = swapRouter.exactInput(params);
     }
 
-    /// @notice _getRatio returns ratio between tokenA and tokenB based on prices fetched from 
-    /// UniswapV3Pools
+    /// @notice _getRatio returns ratio between tokenA and tokenB based on prices fetched from
+    /// UniswapV3Pool
     /// @param tokenA Address of first token
     /// @param tokenB Address of second token
     /// @param poolFee Fee value of tokenA/tokenB pool
@@ -97,11 +98,11 @@ contract SafeBox is ProxyOwned, Initializable {
         uint256 ratioA = _getWETHPoolRatio(tokenA, poolFee);
         uint256 ratioB = _getWETHPoolRatio(tokenB, poolFee);
 
-        ratio = ratioA / ratioB;
+        ratio = (ratioA * 10**18) / ratioB;
     }
 
-    /// @notice _getWETHPoolRatio returns ratio between tokenA and WETH based on prices fetched from 
-    /// UniswapV3Pools
+    /// @notice _getWETHPoolRatio returns ratio between tokenA and WETH based on prices fetched from
+    /// UniswapV3Pool
     /// @dev Ratio is calculated differently if token0 in pool is WETH
     /// @param token Token address
     /// @param poolFee Fee value of token/WETH pool
@@ -110,7 +111,8 @@ contract SafeBox is ProxyOwned, Initializable {
         address pool = IUniswapV3Factory(uniswapFactory).getPool(WETH9, token, poolFee);
         (uint160 sqrtPriceX96token, , , , , , ) = IUniswapV3Pool(pool).slot0();
         if (IUniswapV3Pool(pool).token0() == WETH9) {
-            ratio = 10**18 / _getPriceFromSqrtPrice(sqrtPriceX96token);
+            // ratio is 10^18/sqrtPrice - multiply again with 10^18 to convert to decimal
+            ratio = UniswapMath.mulDiv(10**18, 10**18, _getPriceFromSqrtPrice(sqrtPriceX96token));
         } else {
             ratio = _getPriceFromSqrtPrice(sqrtPriceX96token);
         }
@@ -119,7 +121,7 @@ contract SafeBox is ProxyOwned, Initializable {
     /// @notice _getPriceFromSqrtPrice calculate price from UniswapV3Pool via formula
     /// @param sqrtPriceX96 Price fetched from UniswapV3Pool
     /// @return Calculated price
-    function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns (uint256 ) {
+    function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns (uint256) {
         uint256 price = UniswapMath.mulDiv(sqrtPriceX96, sqrtPriceX96, UniswapMath.Q96);
         return UniswapMath.mulDiv(price, 10**18, UniswapMath.Q96);
     }

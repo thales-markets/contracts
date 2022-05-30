@@ -64,7 +64,6 @@ async function main() {
         });
 
         delay(5000);
-        delay(5000);
     
         tx = await SafeBoxDeployed.setTickLength(5*MINUTE);
         await tx.wait().then(e => {
@@ -96,7 +95,6 @@ async function main() {
         await tx.wait().then(e => {
             console.log('SafeBox: setUniswapV3Factory');
         });
-
 	}
 
 	setTargetAddress('SafeBoxImplementation', network, implementation);

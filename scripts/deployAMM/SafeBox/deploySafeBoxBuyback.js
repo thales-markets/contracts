@@ -27,7 +27,7 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
-		
+
 	if (networkObj.chainId == 80001) {
 		networkObj.name = 'polygonMumbai';
 		network = 'polygonMumbai';
@@ -40,7 +40,7 @@ async function main() {
 
 	if (networkObj.chainId == 10) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-        thalesAddress = getTargetAddress('OpThales_L2', network);
+		thalesAddress = getTargetAddress('OpThales_L2', network);
 	} else if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
@@ -74,47 +74,54 @@ async function main() {
 	setTargetAddress('SafeBoxBuyback', network, SafeBoxDeployed.address);
 	setTargetAddress('SafeBoxBuybackImplementation', network, SafeBoxImplementation);
 
-    delay(5000);
-    
-    // contract settings
-    let tx = await SafeBoxDeployed.setTickRate(rate);
-    await tx.wait().then(e => {
-        console.log('SafeBox: setTickRate');
-    });
+	delay(5000);
 
-    delay(5000);
-    delay(5000);
+	// contract settings
+	let tx = await SafeBoxDeployed.setTickRate(rate);
+	await tx.wait().then(e => {
+		console.log('SafeBox: setTickRate');
+	});
 
-    tx = await SafeBoxDeployed.setTickLength(5*MINUTE);
-    await tx.wait().then(e => {
-        console.log('SafeBox: setTickLength');
-    });
+	delay(5000);
+	delay(5000);
 
-    delay(5000);
+	tx = await SafeBoxDeployed.setTickLength(5 * MINUTE);
+	await tx.wait().then(e => {
+		console.log('SafeBox: setTickLength');
+	});
 
-    tx = await SafeBoxDeployed.setThalesToken(thalesAddress);
-    await tx.wait().then(e => {
-        console.log('SafeBox: setThalesToken');
-    });
-    delay(5000);
+	delay(5000);
 
-    tx = await SafeBoxDeployed.setWETHAddress('0x4200000000000000000000000000000000000006');
-    await tx.wait().then(e => {
-        console.log('SafeBox: setWETHAddress');
-    });
-    delay(5000);
+	tx = await SafeBoxDeployed.setThalesToken(thalesAddress);
+	await tx.wait().then(e => {
+		console.log('SafeBox: setThalesToken');
+	});
+	delay(5000);
 
-    tx = await SafeBoxDeployed.setSwapRouter(getTargetAddress('SwapRouter', network));
-    await tx.wait().then(e => {
-        console.log('SafeBox: setSwapRouter');
-    });
+	tx = await SafeBoxDeployed.setWETHAddress('0x4200000000000000000000000000000000000006');
+	await tx.wait().then(e => {
+		console.log('SafeBox: setWETHAddress');
+	});
+	delay(5000);
 
-    delay(5000);
+	tx = await SafeBoxDeployed.setSwapRouter(getTargetAddress('SwapRouter', network));
+	await tx.wait().then(e => {
+		console.log('SafeBox: setSwapRouter');
+	});
 
-    tx = await SafeBoxDeployed.setUniswapV3Factory(getTargetAddress('UniswapV3Factory', network));
-    await tx.wait().then(e => {
-        console.log('SafeBox: setUniswapV3Factory');
-    });
+	delay(5000);
+
+	tx = await SafeBoxDeployed.setBuybacksEnabled(true);
+	await tx.wait().then(e => {
+		console.log('SafeBox: setBuybacksEnabled');
+	});
+
+	delay(5000);
+
+	tx = await SafeBoxDeployed.setUniswapV3Factory(getTargetAddress('UniswapV3Factory', network));
+	await tx.wait().then(e => {
+		console.log('SafeBox: setUniswapV3Factory');
+	});
 
 	try {
 		await hre.run('verify:verify', {

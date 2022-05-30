@@ -26,6 +26,8 @@ contract SafeBox is ProxyOwned, Initializable {
     uint256 public tickLength;
     uint256 public lastBuyback;
 
+    bool public buybacksEnabled;
+
     function initialize(address _owner, IERC20Upgradeable _sUSD) public initializer {
         setOwner(_owner);
         sUSD = _sUSD;
@@ -35,18 +37,14 @@ contract SafeBox is ProxyOwned, Initializable {
     /// @dev executeBuyback can be called if at least 1 tickLength has passed since last buyback,
     /// it then calculates how many ticks passes and executes buyback via Uniswap V3 integrated contract.
     function executeBuyback() external {
-
+        require(buybacksEnabled, "Buybacks are not enabled");
         uint ticksFromLastBuyBack = lastBuyback != 0 ? (block.timestamp - lastBuyback) / tickLength : 1;
         require(ticksFromLastBuyBack > 0, "Not enough ticks have passed since last buyback");
         require(sUSD.balanceOf(address(this)) >= sUSDperTick * ticksFromLastBuyBack, "Not enough sUSD in contract.");
 
         // buy THALES via Uniswap
-        uint256 amountThales = _swapExactInput(
-            sUSDperTick * ticksFromLastBuyBack,
-            address(sUSD),
-            address(thalesToken),
-            3000
-        );
+        uint256 amountThales =
+            _swapExactInput(sUSDperTick * ticksFromLastBuyBack, address(sUSD), address(thalesToken), 3000);
 
         lastBuyback = block.timestamp;
         emit BuybackExecuted(sUSDperTick * ticksFromLastBuyBack, amountThales);
@@ -64,7 +62,6 @@ contract SafeBox is ProxyOwned, Initializable {
         address tokenOut,
         uint24 poolFee
     ) internal returns (uint256 amountOut) {
-    
         // Approve the router to spend tokenIn.
         TransferHelper.safeApprove(tokenIn, address(swapRouter), amountIn);
 
@@ -72,13 +69,14 @@ contract SafeBox is ProxyOwned, Initializable {
 
         // Multiple pool swaps are encoded through bytes called a `path`. A path is a sequence of token addresses and poolFees that define the pools used in the swaps.
         // The format for pool encoding is (tokenIn, fee, tokenOut/tokenIn, fee, tokenOut) where tokenIn/tokenOut parameter is the shared token across the pools.
-        ISwapRouter.ExactInputParams memory params = ISwapRouter.ExactInputParams({
-            path: abi.encodePacked(address(tokenIn), poolFee, WETH9, poolFee, address(tokenOut)),
-            recipient: msg.sender,
-            deadline: block.timestamp + 15,
-            amountIn: amountIn,
-            amountOutMinimum: (amountIn * ratio * 98) / (100 * 10**18)
-        });
+        ISwapRouter.ExactInputParams memory params =
+            ISwapRouter.ExactInputParams({
+                path: abi.encodePacked(address(tokenIn), poolFee, WETH9, poolFee, address(tokenOut)),
+                recipient: address(this),
+                deadline: block.timestamp + 15,
+                amountIn: amountIn,
+                amountOutMinimum: (amountIn * ratio * 98) / (100 * 10**18)
+            });
 
         // The call to `exactInput` executes the swap.
         amountOut = swapRouter.exactInput(params);
@@ -94,7 +92,7 @@ contract SafeBox is ProxyOwned, Initializable {
         address tokenA,
         address tokenB,
         uint24 poolFee
-    ) public view returns (uint256 ratio) {
+    ) internal view returns (uint256 ratio) {
         uint256 ratioA = _getWETHPoolRatio(tokenA, poolFee);
         uint256 ratioB = _getWETHPoolRatio(tokenB, poolFee);
 
@@ -107,7 +105,7 @@ contract SafeBox is ProxyOwned, Initializable {
     /// @param token Token address
     /// @param poolFee Fee value of token/WETH pool
     /// @return ratio token/WETH ratio
-    function _getWETHPoolRatio(address token, uint24 poolFee) public view returns (uint256 ratio) {
+    function _getWETHPoolRatio(address token, uint24 poolFee) internal view returns (uint256 ratio) {
         address pool = IUniswapV3Factory(uniswapFactory).getPool(WETH9, token, poolFee);
         (uint160 sqrtPriceX96token, , , , , , ) = IUniswapV3Pool(pool).slot0();
         if (IUniswapV3Pool(pool).token0() == WETH9) {
@@ -124,6 +122,11 @@ contract SafeBox is ProxyOwned, Initializable {
     function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns (uint256) {
         uint256 price = UniswapMath.mulDiv(sqrtPriceX96, sqrtPriceX96, UniswapMath.Q96);
         return UniswapMath.mulDiv(price, 10**18, UniswapMath.Q96);
+    }
+
+    function getTicksFromLastBuys() external view returns (uint) {
+        uint ticksFromLastBuyBack = lastBuyback != 0 ? (block.timestamp - lastBuyback) / tickLength : 1;
+        return ticksFromLastBuyBack;
     }
 
     /// @notice setTickRate sets sUSDperTick amount
@@ -172,11 +175,34 @@ contract SafeBox is ProxyOwned, Initializable {
         emit UniswapV3FactoryAddressChanged(_uniswapFactory);
     }
 
+    /// @notice setBuybacksEnabled enables/disables buybacks
+    /// @param _buybacksEnabled enabled/disabled
+    function setBuybacksEnabled(bool _buybacksEnabled) external onlyOwner {
+        require(buybacksEnabled != _buybacksEnabled, "Already enabled/disabled");
+        buybacksEnabled = _buybacksEnabled;
+        emit SetBuybacksEnabled(_buybacksEnabled);
+    }
+
+    /// @notice retrieveSUSDAmount retrieves sUSD from this contract
+    /// @param account where to send the tokens
+    /// @param amount how much to retrieve
+    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        sUSD.transfer(account, amount);
+    }
+
+    /// @notice retrieveThalesAmount retrieves THALES from this contract
+    /// @param account where to send the tokens
+    /// @param amount how much to retrieve
+    function retrieveThalesAmount(address payable account, uint amount) external onlyOwner {
+        thalesToken.transfer(account, amount);
+    }
+
     event TickRateChanged(uint256 _sUSDperTick);
     event TickLengthChanged(uint256 _tickLength);
     event ThalesTokenAddressChanged(address _tokenAddress);
     event WETHTokenAddressChanged(address _tokenAddress);
     event SwapRouterAddressChanged(address _swapRouter);
     event UniswapV3FactoryAddressChanged(address _uniswapFactory);
+    event SetBuybacksEnabled(bool _buybacksEnabled);
     event BuybackExecuted(uint256 _amountIn, uint256 _amountOut);
 }

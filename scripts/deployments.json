@@ -63,9 +63,9 @@
 		"RangedPositionMastercopy": "0x7801Efa8E30606D2d4c9848852b56ff03efDAd5c",
 		"RangedMarketMastercopy": "0xe5109CC91F2c236Fbee3752AF06dC92d4BDddC84",
 		"Referrals": "0xCDE1C5D8998165fB417f58B1f258CB0DeC38BA00",
-		"ReferralsImplementation": "0x1A59ac5D4Bdf35B5255c6D301AD23f6Eb1530d57"
+		"ReferralsImplementation": "0x1A59ac5D4Bdf35B5255c6D301AD23f6Eb1530d57",
 		"SwapRouter": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -158,7 +158,7 @@
 		"RangedMarketMastercopy": "0xD50fF1fcB365952deaCc40C4259c8c448314567B",
 		"RangedPositionMastercopy": "0x94Db4617900d8f6cA9633D8937950da75C8264fF",
 		"Referrals": "0x68096121d1eDF7AD897F5db96775eAbc2868Bc09",
-		"ReferralsImplementation": "0x3149A69fAe9892a6C179dCC14172F3a1E01CF5cc"
+		"ReferralsImplementation": "0x3149A69fAe9892a6C179dCC14172F3a1E01CF5cc",
 		"SafeBoxImplementation": "0x9de4F62659acd8023c2730218e5CF592A20331c8",
 		"SwapRouter": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
 		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984"

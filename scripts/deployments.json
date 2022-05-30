@@ -63,7 +63,7 @@
 		"RangedPositionMastercopy": "0x7801Efa8E30606D2d4c9848852b56ff03efDAd5c",
 		"RangedMarketMastercopy": "0xe5109CC91F2c236Fbee3752AF06dC92d4BDddC84",
 		"SwapRouter": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

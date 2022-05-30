@@ -1,20 +1,21 @@
-// SPDX-License-Identifier: MIT
+pragma solidity ^0.5.16;
 
-pragma solidity ^0.8.0;
+import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
+import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-
-import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "../utils/proxy/ProxyOwned.sol";
+import "../utils/proxy/ProxyPausable.sol";
 
 contract SafeBox is ProxyOwned, Initializable {
-    using SafeERC20Upgradeable for IERC20Upgradeable;
-    IERC20Upgradeable public sUSD;
+    using SafeERC20 for IERC20;
+    IERC20 public sUSD;
 
-    function initialize(address _owner, IERC20Upgradeable _sUSD) public initializer {
+    function initialize(address _owner, IERC20 _sUSD) public initializer {
         setOwner(_owner);
         sUSD = _sUSD;
+    }
+
+    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        sUSD.transfer(account, amount);
     }
 }

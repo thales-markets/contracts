@@ -72,6 +72,8 @@ async function main() {
 	setTargetAddress('Referrals', network, ReferralsDeployed.address);
 	setTargetAddress('ReferralsImplementation', network, ReferralsImplementation);
 
+	//TODO: add fillip up already traded addresses
+
 	try {
 		await hre.run('verify:verify', {
 			address: ReferralsImplementation,

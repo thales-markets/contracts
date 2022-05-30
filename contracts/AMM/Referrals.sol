@@ -37,6 +37,7 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
     function setReferrer(address referrer, address referred) external {
         require(referrer != address(0) && referred != address(0), "Cant refer zero addresses");
+        require(referrer != referred, "Cant refer to yourself");
         require(
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner set referrers"

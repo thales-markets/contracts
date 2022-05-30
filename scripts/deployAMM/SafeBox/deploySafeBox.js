@@ -2,8 +2,8 @@ const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
-const { toBytes32 } = require('../../index');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
+const { toBytes32 } = require('../../../index');
 const w3utils = require('web3-utils');
 
 async function main() {

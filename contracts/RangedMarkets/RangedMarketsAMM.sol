@@ -301,6 +301,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             rightQuote,
             additionalSlippage
         );
+        // TODO: what if I got 1% less than amount via Thales AMM? set additional slippage to 0 for internal trades
+        // apply the same in all places
         (, IPosition down) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
         IERC20Upgradeable(address(down)).safeTransfer(address(rangedMarket), amount);
 
@@ -407,9 +409,17 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 thalesAmm.sellToAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Up, amount / 2);
             uint rightQuote =
                 thalesAmm.sellToAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down, amount / 2);
-            uint quoteWithoutFees = ((leftQuote + rightQuote) - ((amount / 2 - leftQuote) + (amount / 2 - rightQuote)));
-            uint quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
-            return (quoteWithFees, leftQuote, rightQuote);
+            uint summedQuotes = leftQuote + rightQuote;
+            if (
+                amount / 2 > leftQuote &&
+                amount / 2 > rightQuote &&
+                summedQuotes > ((amount / 2 - leftQuote) + (amount / 2 - rightQuote))
+            ) {
+                uint quoteWithoutFees = summedQuotes - ((amount / 2 - leftQuote) + (amount / 2 - rightQuote));
+                uint quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
+                return (quoteWithFees, leftQuote, rightQuote);
+            }
+            return (0, leftQuote, rightQuote);
         }
     }
 
@@ -424,7 +434,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
 
         (uint pricePaid, uint leftQuote, uint rightQuote) = sellToAmmQuoteDetailed(rangedMarket, position, amount);
-        require((expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "Slippage too high");
+        require(pricePaid > 0 && (expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "Slippage too high");
 
         address target;
         (RangedPosition inp, RangedPosition outp) = rangedMarket.positions();

@@ -14,6 +14,18 @@ async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	let mainnetNetwork = 'mainnet';
+	let PaymentTokenAddress;
+    let SafeBoxAddress;
+    let OracleCouncilAddress;
+    let ThalesBondsAddress;
+    let ExoticTagsAddress;
+    let MarketDataAddress;
+    let ExoticRewardsAddress;
+    let OpenBidMastercopy;
+    let FixedBidMastercopy;
+    let TheRundownConsumer;
+	let addressZero = '0x0000000000000000000000000000000000000000';
+
 
 	if (network == 'homestead') {
 		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
@@ -27,10 +39,30 @@ async function main() {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 		mainnetNetwork = 'kovan';
+		PaymentTokenAddress =  getTargetAddress("ExoticUSD", network);
+        SafeBoxAddress = owner.address;
+        OracleCouncilAddress =  getTargetAddress("ThalesOracleCouncil", network);
+        ThalesBondsAddress =  getTargetAddress("ThalesBonds", network);
+        ExoticTagsAddress =  getTargetAddress("ExoticPositionalTags", network);
+        MarketDataAddress =  getTargetAddress("ExoticPositionalMarketData", network);
+        ExoticRewardsAddress =  getTargetAddress("ExoticRewards", network);
+        OpenBidMastercopy =  getTargetAddress("ExoticMarketOpenBidMastercopy", network);
+        FixedBidMastercopy =  getTargetAddress("ExoticMarketMasterCopy", network);
+        TheRundownConsumer =  getTargetAddress("TherundownConsumer", network);
 	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
+		PaymentTokenAddress =  getTargetAddress("ProxysUSD", network); 
+        SafeBoxAddress = getTargetAddress("SafeBox", network);
+        OracleCouncilAddress =  getTargetAddress("ThalesOracleCouncil", network);
+        ThalesBondsAddress =  getTargetAddress("ThalesBonds", network);
+        ExoticTagsAddress =  getTargetAddress("ExoticPositionalTags", network);
+        MarketDataAddress =  getTargetAddress("ExoticPositionalMarketData", network);
+        ExoticRewardsAddress =  getTargetAddress("ExoticRewards", network);
+        OpenBidMastercopy =  getTargetAddress("ExoticMarketOpenBidMastercopy", network);
+        FixedBidMastercopy =  getTargetAddress("ExoticMarketMasterCopy", network);
+        TheRundownConsumer =  addressZero;
 	}
 	
 
@@ -39,13 +71,40 @@ async function main() {
     await ExoticMarketDeployed.deployed();
 	console.log("ExoticOpenBidMarket Deployed on", ExoticMarketDeployed.address);
 	setTargetAddress('ExoticMarketOpenBidMastercopy', network, ExoticMarketDeployed.address);
+	if (networkObj.chainId == 69) {
+
+		const ExoticMarketManagerAddress = getTargetAddress("ExoticMarketManager", network);
+		const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
+		const ExoticMarketManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
+
+		tx = await ExoticMarketManagerDeployed.setAddresses(
+					FixedBidMastercopy,
+					ExoticMarketDeployed.address,
+					OracleCouncilAddress,
+					PaymentTokenAddress,
+					ExoticTagsAddress,
+					OracleCouncilAddress,
+					MarketDataAddress,
+					ExoticRewardsAddress,
+					SafeBoxAddress,
+					{from: owner.address});
+				await tx.wait().then(e => {
+					console.log('\n setAddresses: \n',
+					'FixedBidMastercopy: ', FixedBidMastercopy, '\n',
+					'OpenBidMastercopy: ', ExoticMarketDeployed.address, '\n',
+					'OracleCouncilAddress: ', OracleCouncilAddress, '\n',
+					'PaymentTokenAddress: ', PaymentTokenAddress, '\n',
+					'ExoticTagsAddress: ', ExoticTagsAddress, '\n',
+					'TheRundownConsumer: ', TheRundownConsumer, '\n',
+					'MarketDataAddress: ', MarketDataAddress, '\n',
+					'ExoticRewardsAddress: ', ExoticRewardsAddress, '\n',
+					'SafeBoxAddress: ', SafeBoxAddress, '\n',
+					);
+				});
+		await delay(1000);
+		console.log("ExoticOpenBidMarket Mastercopy updated");
 	
-	const ExoticMarketManagerAddress = getTargetAddress("ExoticMarketManager", network);
-    const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
-    const ExoticMarketManagerDeployed = await ExoticMarketManager.attach(ExoticMarketManagerAddress);
-    
-	
-    await ExoticMarketManagerDeployed.setExoticMarketOpenBidMastercopy(ExoticMarketDeployed.address);
+	}	
 	console.log("ExoticOpenBidMarket Mastercopy updated");
 	
 }

@@ -11,6 +11,7 @@ async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	let mainnetNetwork = 'mainnet';
+	let OracleCouncilImplementation;
 
 	if (network == 'homestead') {
 		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
@@ -32,20 +33,33 @@ async function main() {
 	
     const OracleCouncilContract = await ethers.getContractFactory('ThalesOracleCouncil');
 	const OracleCouncilAddress = getTargetAddress("ThalesOracleCouncil", network);
-    
-    await upgrades.upgradeProxy(OracleCouncilAddress, OracleCouncilContract);
-    await delay(5000);
 
-    console.log('OracleCouncil upgraded');
+	if (networkObj.chainId == 69) {
     
-    const OracleCouncilImplementation = await getImplementationAddress(
-		ethers.provider,
-		OracleCouncilAddress
-	);
+		await upgrades.upgradeProxy(OracleCouncilAddress, OracleCouncilContract);
+		await delay(5000);
 
-	console.log('Implementation OracleCouncil: ', OracleCouncilImplementation);
-	setTargetAddress('ThalesOracleCouncilImplementation', network, OracleCouncilImplementation);
-	   
+		console.log('OracleCouncil upgraded');
+		
+		OracleCouncilImplementation = await getImplementationAddress(
+			ethers.provider,
+			OracleCouncilAddress
+		);
+
+		console.log('Implementation OracleCouncil: ', OracleCouncilImplementation);
+		setTargetAddress('ThalesOracleCouncilImplementation', network, OracleCouncilImplementation);
+		
+	}
+	
+	if (networkObj.chainId == 10) {
+		OracleCouncilImplementation = await upgrades.prepareUpgrade(OracleCouncilAddress, OracleCouncilContract);
+		await delay(5000);
+		
+		console.log('OracleCouncil upgraded');
+		console.log('Implementation OracleCouncil: ', OracleCouncilImplementation);
+		setTargetAddress('ThalesOracleCouncilImplementation', network, OracleCouncilImplementation);
+
+	}
 
     try {
 		await hre.run('verify:verify', {

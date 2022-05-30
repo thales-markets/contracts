@@ -227,16 +227,18 @@ async function main() {
     //     SafeBoxAddress,
     //     {from: owner.address});
     // await tx.wait().then(e => {
-    //     console.log('\n setLimits: \n',
-    //     'marketQuestionStringLimit: ', marketQuestionStringLimit, '\n',
-    //     'marketSourceStringLimit: ', marketSourceStringLimit, '\n',
-    //     'marketPositionStringLimit: ', marketPositionStringLimit, '\n',
-    //     'disputeStringLengthLimit: ', disputeStringLengthLimit, '\n',
-    //     'maximumPositionsAllowed: ', maximumPositionsAllowed, '\n',
-    //     'maxNumberOfTags: ', maxNumberOfTags, '\n',
-    //     'maxOracleCouncilMembers: ', maxOracleCouncilMembers, '\n',
-    //     );
-    // });
+        // console.log('\n setAddresses: \n',
+        // 'FixedBidMastercopy: ', FixedBidMastercopy, '\n',
+        // 'OpenBidMastercopy: ', OpenBidMastercopy, '\n',
+        // 'OracleCouncilAddress: ', OracleCouncilAddress, '\n',
+        // 'PaymentTokenAddress: ', PaymentTokenAddress, '\n',
+        // 'ExoticTagsAddress: ', ExoticTagsAddress, '\n',
+        // 'TheRundownConsumer: ', TheRundownConsumer, '\n',
+        // 'MarketDataAddress: ', MarketDataAddress, '\n',
+        // 'ExoticRewardsAddress: ', ExoticRewardsAddress, '\n',
+        // 'SafeBoxAddress: ', SafeBoxAddress, '\n',
+        // );
+        // });
     // await delay(1000);
 
     // tx = await ExoticManagerDeployed.setThalesBonds(ThalesBondsAddress, {from: owner.address});

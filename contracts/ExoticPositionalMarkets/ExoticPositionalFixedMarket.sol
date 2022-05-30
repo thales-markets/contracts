@@ -96,7 +96,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         disputePrice = marketManager.disputePrice();
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
-        withdrawalPeriod = block.timestamp.add(marketManager.withdrawalTimePeriod());
+        withdrawalPeriod = block.timestamp.add(_endOfPositioning).sub(marketManager.withdrawalTimePeriod());
     }
 
     function takeCreatorInitialPosition(uint _position) external onlyOwner {
@@ -318,10 +318,15 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     }
 
     function canCreatorCancelMarket() external view returns (bool) {
-        if (totalUsersTakenPositions != 1) {
+        if (disputed) {
+            return false;
+        }
+        else if (totalUsersTakenPositions != 1) {
             return totalUsersTakenPositions > 1 ? false : true;
         }
-        return userPosition[marketManager.creatorAddress(address(this))] > 0 ? true : false;
+        else {
+            return userPosition[marketManager.creatorAddress(address(this))] > 0 ? true : false;
+        }
     }
 
     function canUsersClaim() public view returns (bool) {

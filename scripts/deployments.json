@@ -12,6 +12,8 @@
 		"ThalesAMM": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
 		"ThalesAMMImplementation": "0x4726B4C7b2D2A1Efb07a459fCF5224D5F76c56f6",
 		"SafeBox": "0xe853207c30f3c32eda9aeffddc67357d5332978c",
+		"SafeBoxBuyback": "",
+		"SafeBoxBuybackImplementation": "",
 		"PriceFeedTwap": "0x3Aa0814cD91f33467e6eb5ba58e56AB73699582b",
 		"PriceFeedTwapImplementation": "0xE10A2743A1CE709693D3ad5f06EA47Df3E0b3ec9",
 		"SNXIssuer": "0xA2412e0654CdD40F5677Aaad1a0c572e75dF246C",

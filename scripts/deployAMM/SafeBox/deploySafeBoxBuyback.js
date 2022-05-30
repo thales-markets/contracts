@@ -71,8 +71,8 @@ async function main() {
 
 	console.log('Implementation SafeBox: ', SafeBoxImplementation);
 
-	setTargetAddress('SafeBox', network, SafeBoxDeployed.address);
-	setTargetAddress('SafeBoxImplementation', network, SafeBoxImplementation);
+	setTargetAddress('SafeBoxBuyback', network, SafeBoxDeployed.address);
+	setTargetAddress('SafeBoxBuybackImplementation', network, SafeBoxImplementation);
 
     delay(5000);
     

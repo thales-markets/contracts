@@ -58,28 +58,28 @@ async function main() {
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);
 
-	const SafeBox = await ethers.getContractFactory('SafeBox');
-	let SafeBoxDeployed = await upgrades.deployProxy(SafeBox, [owner.address, ProxyERC20sUSDaddress]);
+	const SafeBoxBuyback = await ethers.getContractFactory('SafeBoxBuyback');
+	let SafeBoxDeployed = await upgrades.deployProxy(SafeBoxBuyback, [owner.address, ProxyERC20sUSDaddress]);
 	await SafeBoxDeployed.deployed();
 
-	console.log('SafeBox proxy:', SafeBoxDeployed.address);
+	console.log('SafeBoxBuyback proxy:', SafeBoxDeployed.address);
 
-	const SafeBoxImplementation = await getImplementationAddress(
+	const SafeBoxBuybackImplementation = await getImplementationAddress(
 		ethers.provider,
 		SafeBoxDeployed.address
 	);
 
-	console.log('Implementation SafeBox: ', SafeBoxImplementation);
+	console.log('Implementation SafeBoxBuyback: ', SafeBoxBuybackImplementation);
 
 	setTargetAddress('SafeBoxBuyback', network, SafeBoxDeployed.address);
-	setTargetAddress('SafeBoxBuybackImplementation', network, SafeBoxImplementation);
+	setTargetAddress('SafeBoxBuybackImplementation', network, SafeBoxBuybackImplementation);
 
 	delay(5000);
 
 	// contract settings
 	let tx = await SafeBoxDeployed.setTickRate(rate);
 	await tx.wait().then(e => {
-		console.log('SafeBox: setTickRate');
+		console.log('SafeBoxBuyback: setTickRate');
 	});
 
 	delay(5000);
@@ -87,45 +87,45 @@ async function main() {
 
 	tx = await SafeBoxDeployed.setTickLength(5 * MINUTE);
 	await tx.wait().then(e => {
-		console.log('SafeBox: setTickLength');
+		console.log('SafeBoxBuyback: setTickLength');
 	});
 
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setThalesToken(thalesAddress);
 	await tx.wait().then(e => {
-		console.log('SafeBox: setThalesToken');
+		console.log('SafeBoxBuyback: setThalesToken');
 	});
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setWETHAddress('0x4200000000000000000000000000000000000006');
 	await tx.wait().then(e => {
-		console.log('SafeBox: setWETHAddress');
+		console.log('SafeBoxBuyback: setWETHAddress');
 	});
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setSwapRouter(getTargetAddress('SwapRouter', network));
 	await tx.wait().then(e => {
-		console.log('SafeBox: setSwapRouter');
+		console.log('SafeBoxBuyback: setSwapRouter');
 	});
 
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setBuybacksEnabled(true);
 	await tx.wait().then(e => {
-		console.log('SafeBox: setBuybacksEnabled');
+		console.log('SafeBoxBuyback: setBuybacksEnabled');
 	});
 
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setUniswapV3Factory(getTargetAddress('UniswapV3Factory', network));
 	await tx.wait().then(e => {
-		console.log('SafeBox: setUniswapV3Factory');
+		console.log('SafeBoxBuyback: setUniswapV3Factory');
 	});
 
 	try {
 		await hre.run('verify:verify', {
-			address: SafeBoxImplementation,
+			address: SafeBoxBuybackImplementation,
 		});
 	} catch (e) {
 		console.log(e);

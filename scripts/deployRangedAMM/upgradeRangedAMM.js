@@ -32,15 +32,15 @@ async function main() {
 	console.log('Found RangedMarketsAMM at:', rangedAmmAddress);
 
 	const RangedMarketsAMM = await ethers.getContractFactory('RangedMarketsAMM');
-	await upgrades.upgradeProxy(rangedAmmAddress, RangedMarketsAMM);
+	// await upgrades.upgradeProxy(rangedAmmAddress, RangedMarketsAMM);
 
-	// let RangedMarketsAMMImplementation = await upgrades.prepareUpgrade(
-	// 	rangedAmmAddress,
-	// 	RangedMarketsAMM
-	// );
-	// console.log('RangedMarketsAMM upgraded');
+	let RangedMarketsAMMImplementation = await upgrades.prepareUpgrade(
+		rangedAmmAddress,
+		RangedMarketsAMM
+	);
+	console.log('RangedMarketsAMM upgraded');
 
-	const RangedMarketsAMMImplementation = await getImplementationAddress(ethers.provider, rangedAmmAddress);
+	// const RangedMarketsAMMImplementation = await getImplementationAddress(ethers.provider, rangedAmmAddress);
 
 	console.log('Implementation RangedMarketsAMM: ', RangedMarketsAMMImplementation);
 

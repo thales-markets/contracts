@@ -44,7 +44,6 @@ contract RangedPosition is IERC20 {
         rangedMarket = RangedMarket(market);
         name = _name;
         symbol = _symbol;
-        // add through constructor
         thalesRangedAMM = _thalesRangedAMM;
     }
 

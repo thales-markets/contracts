@@ -209,10 +209,48 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "homeOdds",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "awayOdds",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "drawOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "StoredOddsOnCancellation",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "awayOddsOnCancellation",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -265,8 +303,50 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_homeBalance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_awayBalance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_drawBalance",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculatePayoutOnCancellation",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "canResolve",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cancelled",
     "outputs": [
       {
         "internalType": "bool",
@@ -293,6 +373,19 @@
   {
     "inputs": [],
     "name": "deposited",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "drawOddsOnCancellation",
     "outputs": [
       {
         "internalType": "uint256",
@@ -440,6 +533,19 @@
         "internalType": "contract IPosition",
         "name": "draw",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "homeOddsOnCancellation",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

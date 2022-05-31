@@ -9,7 +9,7 @@ interface ISportPositionalMarket {
     /* ========== TYPES ========== */
 
     enum Phase {Trading, Maturity, Expiry}
-    enum Side {Home, Away, Draw}
+    enum Side {Home, Away, Draw, Cancelled}
 
     /* ========== VIEWS / VARIABLES ========== */
 
@@ -36,6 +36,8 @@ interface ISportPositionalMarket {
     function creator() external view returns (address);
 
     function resolved() external view returns (bool);
+
+    function cancelled() external view returns (bool);
 
     function phase() external view returns (Phase);
 

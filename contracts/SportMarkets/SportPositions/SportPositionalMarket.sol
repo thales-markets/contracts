@@ -75,7 +75,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     uint public initialMint;
     address public override creator;
     bool public override resolved;
-
+    bool public override cancelled;
+    uint public homeOddsOnCancellation;
+    uint public awayOddsOnCancellation;
+    uint public drawOddsOnCancellation;
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
@@ -167,6 +170,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         }
 
     function _result() internal view returns (Side) {
+        if(cancelled) {
+            return Side.Cancelled;
+        }
         if (theRundownConsumer.getResult(gameDetails.gameId) == 3) {
             return Side.Draw;
         }
@@ -321,9 +327,23 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     function resolve(uint _outcome) external onlyOwner afterMaturity managerNotPaused {
         require(canResolve(), "Can not resolve market");
         require(_outcome <= optionsCount, "Invalid outcome");
+        if(_outcome == 0) {
+            cancelled = true;
+            stampOdds();
+        }
         finalResult = _outcome;
         resolved = true;
         emit MarketResolved(_result(), deposited, 0, 0);
+    }
+
+    function stampOdds() internal {
+        uint[] memory odds = new uint[](optionsCount);
+        odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameDetails.gameId);
+        homeOddsOnCancellation = odds[0];
+        awayOddsOnCancellation = odds[1];
+        drawOddsOnCancellation = optionsCount > 2 ? odds[2] : 0;
+        // require(homeOddsOnCancellation.add(awayOddsOnCancellation).add(drawOddsOnCancellation) <= 1e18, "Odds invalid");
+        emit StoredOddsOnCancellation(homeOddsOnCancellation, awayOddsOnCancellation, drawOddsOnCancellation);
     }
 
     /* ---------- Claiming and Exercising Options ---------- */
@@ -352,10 +372,25 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         if(optionsCount > 2 && _result() != Side.Home) {
             payout = _result() == Side.Away ? awayBalance : drawBalance;
         }
+        if(cancelled) {
+            payout = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
+        }
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);
             sUSD.transfer(msg.sender, payout);
+        }
+    }
+    
+    function calculatePayoutOnCancellation(uint _homeBalance, uint _awayBalance, uint _drawBalance) public view returns(uint) {
+        if(!cancelled) {
+            return 0;
+        }
+        else{
+            uint payout = _homeBalance.mul(homeOddsOnCancellation);
+            payout = payout.add(_awayBalance.mul(awayOddsOnCancellation));
+            payout = payout.add(_drawBalance.mul(drawOddsOnCancellation));
+            return payout;
         }
     }
 
@@ -421,4 +456,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     event SetPriceFeed(address _address);
     event SetTherundownConsumer(address _address);
     event Expired(address beneficiary);
+    event StoredOddsOnCancellation(uint homeOdds, uint awayOdds, uint drawOdds);
+
 }

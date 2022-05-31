@@ -45,7 +45,11 @@ let marketQuestion,
 	disputePrice,
 	outcomePosition,
 	outcomePosition2,
-	outcomePosition3;
+	outcomePosition3,
+	totalAmount12,
+	totalAmount13,
+	totalAmount23,
+	totalAmount123;
 
 contract('Exotic Positional market', async accounts => {
 	const [
@@ -180,7 +184,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				'1',
+				['1'],
 				phrases,
 				{ from: owner }
 			);
@@ -221,7 +225,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				'1',
+				[toUnit('10'), '0', '0'],
 				phrases,
 				{ from: owner }
 			);
@@ -244,6 +248,10 @@ contract('Exotic Positional market', async accounts => {
 			positionAmount1 = toUnit('100');
 			positionAmount2 = toUnit('20');
 			positionAmount3 = toUnit('50');
+			totalAmount12 = positionAmount1.add(positionAmount2);
+			totalAmount13 = positionAmount1.add(positionAmount3);
+			totalAmount23 = positionAmount2.add(positionAmount3);
+			totalAmount123 = positionAmount2.add(positionAmount3).add(positionAmount1);
 			withdrawalAllowed = true;
 			tag = [1, 2, 3];
 			paymentToken = Thales.address;
@@ -265,7 +273,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				'1',
+				[toUnit('10'), '0', '0'],
 				phrases,
 				{ from: owner }
 			);
@@ -563,7 +571,7 @@ contract('Exotic Positional market', async accounts => {
 				beforeEach(async () => {
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition, outcomePosition2],
-						[positionAmount1, positionAmount2],
+						[positionAmount1, positionAmount2], 
 						{ from: userOne }
 					);
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
@@ -719,7 +727,7 @@ contract('Exotic Positional market', async accounts => {
 				withdrawalAllowed,
 				tag,
 				phrases.length,
-				'1',
+				['1'],
 				phrases,
 				{ from: owner }
 			);

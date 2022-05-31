@@ -735,9 +735,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "_positionOfCreator",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "_positionsOfCreator",
+        "type": "uint256[]"
       },
       {
         "internalType": "string[]",

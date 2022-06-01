@@ -1,7 +1,6 @@
 const { ethers, upgrades } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const w3utils = require('web3-utils');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -24,31 +23,37 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
+
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const rangedAmmAddress = getTargetAddress('RangedAMM', network);
-	console.log('Found RangedMarketsAMM at:', rangedAmmAddress);
+	const referralsAddress = getTargetAddress('Referrals', network);
+	console.log('Found Referrals at:', referralsAddress);
 
-	const RangedMarketsAMM = await ethers.getContractFactory('RangedMarketsAMM');
-	// await upgrades.upgradeProxy(rangedAmmAddress, RangedMarketsAMM);
+	const Referrals = await ethers.getContractFactory('Referrals');
+	// const implementation = await upgrades.prepareUpgrade(referralsAddress, Referrals);
+	await upgrades.upgradeProxy(referralsAddress, Referrals);
+	console.log('Referrals upgraded');
+	await delay(10000);
 
-	let RangedMarketsAMMImplementation = await upgrades.prepareUpgrade(
-		rangedAmmAddress,
-		RangedMarketsAMM
-	);
-	console.log('RangedMarketsAMM upgraded');
+	const ReferralsImplementation = await getImplementationAddress(ethers.provider, referralsAddress);
 
-	// const RangedMarketsAMMImplementation = await getImplementationAddress(ethers.provider, rangedAmmAddress);
+	console.log('Implementation Referrals: ', ReferralsImplementation);
 
-	console.log('Implementation RangedMarketsAMM: ', RangedMarketsAMMImplementation);
-
-	setTargetAddress('RangedAMMImplementation', network, RangedMarketsAMMImplementation);
+	setTargetAddress('ReferralsImplementation', network, ReferralsImplementation);
 
 	try {
 		await hre.run('verify:verify', {
-			address: RangedMarketsAMMImplementation,
+			address: ReferralsImplementation,
 		});
 	} catch (e) {
 		console.log(e);
@@ -61,3 +66,8 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
+function delay(time) {
+	return new Promise(function(resolve) {
+		setTimeout(resolve, time);
+	});
+}

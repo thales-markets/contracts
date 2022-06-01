@@ -46,7 +46,16 @@ const Phase = {
 };
 
 contract('RangedAMM', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
+	const [
+		initialCreator,
+		managerOwner,
+		minter,
+		dummy,
+		exersicer,
+		secondCreator,
+		safeBox,
+		referrerAddress,
+	] = accounts;
 	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
 
@@ -265,6 +274,20 @@ contract('RangedAMM', accounts => {
 		console.log('Setting min prices');
 
 		await sUSDSynth.approve(rangedMarketsAMM.address, sUSDQty, { from: minter });
+
+		let Referrals = artifacts.require('Referrals');
+		let referrals = await Referrals.new();
+		await referrals.initialize(owner, thalesAMM.address, rangedMarketsAMM.address);
+
+		await rangedMarketsAMM.setReferrals(referrals.address, toUnit('0.01'), {
+			from: owner,
+		});
+		console.log('rangedMarketsAMM -  set Referrals');
+
+		await thalesAMM.setReferrals(referrals.address, toUnit('0.01'), {
+			from: owner,
+		});
+		console.log('thalesAMM -  set Referrals');
 	});
 
 	const Position = {
@@ -278,6 +301,7 @@ contract('RangedAMM', accounts => {
 	};
 
 	describe('Test ranged AMM', () => {
+
 		it('create market test [ @cov-skip ]', async () => {
 			let now = await currentTime();
 			let leftMarket = await createMarket(

@@ -26,6 +26,7 @@ import "./RangedPosition.sol";
 import "./RangedMarket.sol";
 import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IStakingThales.sol";
+import "../interfaces/IReferrals.sol";
 
 contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -62,6 +63,9 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     IStakingThales public stakingThales;
 
     uint public maximalDifBetweenStrikes;
+
+    address public referrals;
+    uint public referrerFee;
 
     function initialize(
         address _owner,
@@ -239,6 +243,18 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
+    function buyFromAMMWithReferrer(
+        RangedMarket rangedMarket,
+        RangedMarket.Position position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage,
+        address referrer
+    ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused {
+        IReferrals(referrals).setReferrer(referrer, msg.sender);
+        _buyFromAMM(rangedMarket, position, amount, expectedPayout, additionalSlippage);
+    }
+
     function buyFromAMM(
         RangedMarket rangedMarket,
         RangedMarket.Position position,
@@ -246,6 +262,16 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint expectedPayout,
         uint additionalSlippage
     ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused {
+        _buyFromAMM(rangedMarket, position, amount, expectedPayout, additionalSlippage);
+    }
+
+    function _buyFromAMM(
+        RangedMarket rangedMarket,
+        RangedMarket.Position position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage
+    ) internal {
         require(amount <= _availableToBuyFromAMMOnlyRanged(rangedMarket, position), "Not enough liquidity");
 
         (uint sUSDPaid, uint leftQuote, uint rightQuote) = buyFromAmmQuoteDetailed(rangedMarket, position, amount);
@@ -273,10 +299,22 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             rangedMarket.mint(amount, RangedMarket.Position.In, msg.sender);
             _updateSpentOnMarketAndSafeBoxOnBuy(address(rangedMarket), amount, sUSDPaid);
         }
+        _handleReferrer(msg.sender, sUSDPaid);
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, sUSDPaid);
         }
         emit BoughtFromAmm(msg.sender, address(rangedMarket), position, amount, sUSDPaid, address(sUSD), target);
+    }
+
+    function _handleReferrer(address buyer, uint sUSDPaid) internal {
+        if (referrerFee > 0 && referrals != address(0)) {
+            address referrer = IReferrals(referrals).referrals(buyer);
+            if (referrer != address(0)) {
+                uint referrerShare = (sUSDPaid * (ONE + referrerFee)) / ONE - sUSDPaid;
+                sUSD.transfer(referrer, referrerShare);
+                emit ReferrerPaid(referrer, buyer, referrerShare, sUSDPaid);
+            }
+        }
     }
 
     function _buyOUT(
@@ -454,6 +492,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         sUSD.safeTransfer(msg.sender, pricePaid);
 
+        _handleReferrer(msg.sender, pricePaid);
+
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, pricePaid);
         }
@@ -605,6 +645,11 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit SetStakingThales(address(_stakingThales));
     }
 
+    function setReferrals(address _referrals, uint _referrerFee) external onlyOwner {
+        referrals = _referrals;
+        referrerFee = _referrerFee;
+    }
+
     modifier knownRangedMarket(address market) {
         require(_knownMarkets.contains(market), "Not a known ranged market");
         _;
@@ -642,4 +687,5 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event SetCapPerMarket(uint capPerMarket);
     event SetRangedAmmFee(uint rangedAmmFee);
     event SetStakingThales(address _stakingThales);
+    event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
 }

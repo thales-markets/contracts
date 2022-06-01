@@ -50,7 +50,9 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     function setWhitelistedAddress(address _address, bool enabled) external onlyOwner {
+        require(whitelistedAddresses[_address] != enabled, "Address already enabled/disabled");
         whitelistedAddresses[_address] = enabled;
+        emit SetWhitelistedAddress(_address, enabled);
     }
 
     function setTradedBefore(address[] calldata _addresses) external onlyOwner {
@@ -62,4 +64,5 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
 
     event ReferralAdded(address referrer, address referred, uint timeStarted);
     event TradedBefore(address trader);
+    event SetWhitelistedAddress(address whitelisted, bool enabled);
 }

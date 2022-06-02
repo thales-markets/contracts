@@ -105,6 +105,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         _populateCancelGameStatuses(_cancelGameStatuses);
         sportsManager = ISportPositionalMarketManager(_sportsManager);
         queues = _queues;
+        whitelistedAddresses[_owner] = true;
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */

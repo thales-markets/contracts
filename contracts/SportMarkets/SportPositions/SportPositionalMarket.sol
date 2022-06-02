@@ -14,6 +14,7 @@ import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "./SportPositionalMarketManager.sol";
 import "./SportPosition.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
+import "hardhat/console.sol";
 
 error PositionCountMissmatch();
 
@@ -173,11 +174,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         if(cancelled) {
             return Side.Cancelled;
         }
-        if (theRundownConsumer.getResult(gameDetails.gameId) == 3) {
+        else if (finalResult == 3 && optionsCount > 2) {
             return Side.Draw;
         }
         else {
-            return theRundownConsumer.getResult(gameDetails.gameId) == 1 ? Side.Home : Side.Away;
+            return finalResult == 1 ? Side.Home : Side.Away;
         }
     }
 
@@ -243,6 +244,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _decrementDeposited(uint value) internal returns (uint _deposited) {
+        // console.log("deposited:", deposited, " || value:", value);
         _deposited = deposited.sub(value);
         deposited = _deposited;
         _manager().decrementTotalDeposited(value);
@@ -366,15 +368,17 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         if (optionsCount > 2 && drawBalance != 0) {
             options.draw.exercise(msg.sender);
         }
-
+        uint result = uint(_result());
         // Only pay out the side that won.
         uint payout = (_result() == Side.Home) ? homeBalance : awayBalance;
+        // console.log("result: ", result, "|| payout: ", payout);
         if(optionsCount > 2 && _result() != Side.Home) {
             payout = _result() == Side.Away ? awayBalance : drawBalance;
         }
         if(cancelled) {
             payout = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
         }
+        // console.log("result: ", result, "|| payout: ", payout);
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);
@@ -387,9 +391,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             return 0;
         }
         else{
-            uint payout = _homeBalance.mul(homeOddsOnCancellation);
-            payout = payout.add(_awayBalance.mul(awayOddsOnCancellation));
-            payout = payout.add(_drawBalance.mul(drawOddsOnCancellation));
+            uint payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
+            payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
+            payout = payout.add(_drawBalance.mul(drawOddsOnCancellation).div(1e18));
             return payout;
         }
     }

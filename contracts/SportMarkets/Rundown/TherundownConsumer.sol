@@ -18,6 +18,7 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== CONSTANTS =========== */
 
+    uint public constant CANCELLED = 0;
     uint public constant HOME_WIN = 1;
     uint public constant AWAY_WIN = 2;
     uint public constant RESULT_DRAW = 3;
@@ -164,10 +165,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(marketPerGameId[_gameId] != address(0), "No market created for game");
 
         if (isSportTwoPositionsSport(sportsIdPerGame[_gameId])) {
-            require(_outcome == HOME_WIN || _outcome == AWAY_WIN, "Bad outcome for two position game");
+            require(_outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == CANCELLED, "Bad outcome for two position game");
         } else {
             require(
-                _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW,
+                _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW || _outcome == CANCELLED,
                 "Bad outcome for three position game"
             );
         }
@@ -180,10 +181,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(gameIdPerMarket[_market] != 0, "No market created for game");
 
         if (isSportTwoPositionsSport(sportsIdPerGame[gameIdPerMarket[_market]])) {
-            require(_outcome == HOME_WIN || _outcome == AWAY_WIN, "Bad outcome for two position game");
+            require(_outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == CANCELLED, "Bad outcome for two position game");
         } else {
             require(
-                _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW,
+                _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW || _outcome == CANCELLED,
                 "Bad outcome for three position game"
             );
         }

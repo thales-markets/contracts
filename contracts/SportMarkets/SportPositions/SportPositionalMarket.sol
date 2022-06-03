@@ -341,6 +341,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     function stampOdds() internal {
         uint[] memory odds = new uint[](optionsCount);
         odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameDetails.gameId);
+        // console.log("cancellation");
+        // console.log("homeOdd: ", odds[0]);
+        // console.log("awayOdd: ", odds[1]);
+        // console.log("drawOdd: ", odds[2]);
         homeOddsOnCancellation = odds[0];
         awayOddsOnCancellation = odds[1];
         drawOddsOnCancellation = optionsCount > 2 ? odds[2] : 0;
@@ -356,6 +360,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         require(resolved, "Unresolved");
         // If the account holds no options, revert.
         (uint homeBalance, uint awayBalance, uint drawBalance) = _balancesOf(msg.sender);
+        // console.log(homeBalance, awayBalance, drawBalance);
         require(homeBalance != 0 || awayBalance != 0 || drawBalance !=0, "Nothing to exercise");
 
         // Each option only needs to be exercised if the account holds any of it.
@@ -371,6 +376,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         uint result = uint(_result());
         // Only pay out the side that won.
         uint payout = (_result() == Side.Home) ? homeBalance : awayBalance;
+        
         // console.log("result: ", result, "|| payout: ", payout);
         if(optionsCount > 2 && _result() != Side.Home) {
             payout = _result() == Side.Away ? awayBalance : drawBalance;
@@ -394,6 +400,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             uint payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
             payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
             payout = payout.add(_drawBalance.mul(drawOddsOnCancellation).div(1e18));
+            // console.log("payout:",payout);
             return payout;
         }
     }

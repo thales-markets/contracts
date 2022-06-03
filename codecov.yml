@@ -1,3 +1,2 @@
 codecov:
-  require_ci_to_pass: false
-  bot: null
+  token: ff2ddff8-201c-45ef-9ca2-580b5ae41b30

@@ -1,7 +1,7 @@
 # Thales
 
 [![CircleCI](https://circleci.com/gh/Synthetixio/synthetix.svg?style=svg)](https://circleci.com/gh/thales-markets/contracts)
-[![codecov](https://codecov.io/gh/Synthetixio/synthetix/branch/develop/graph/badge.svg)](https://codecov.io/gh/thales-markets/contracts)
+[![codecov](https://codecov.io/gh/thales-markets/contracts/branch/main/graph/badge.svg?token=M2e5X0vJRQ)](https://codecov.io/gh/thales-markets/contracts)
 [![npm version](https://badge.fury.io/js/thales-contracts.svg)](https://badge.fury.io/js/thales-contracts)
 [![Discord](https://img.shields.io/discord/906484044915687464.svg?color=768AD4&label=discord&logo=https%3A%2F%2Fdiscordapp.com%2Fassets%2F8c9701b98ad4372b58f13fd9f65f966e.svg)](https://discord.gg/DHebdQqqaD)
 [![Twitter Follow](https://img.shields.io/twitter/follow/thalesmarket.svg?label=thalesmarket&style=social)](https://twitter.com/thalesmarket)
@@ -40,7 +40,7 @@ List off all deployed contracts are listed [here](https://contracts.thalesmarket
 ### Testing
 
 [![CircleCI](https://circleci.com/gh/Synthetixio/synthetix.svg?style=svg)](https://circleci.com/gh/thales-markets/contracts)
-[![codecov](https://codecov.io/gh/Synthetixio/synthetix/branch/develop/graph/badge.svg)](https://codecov.io/gh/thales-markets/contracts)
+[![codecov](https://codecov.io/gh/thales-markets/contracts/branch/main/graph/badge.svg?token=M2e5X0vJRQ)](https://codecov.io/gh/thales-markets/contracts)
 
 ## Module Usage
 

@@ -1,10 +1,18 @@
 orbs: # declare what orbs we are going to use
   node: circleci/node@3.0.1 # the node orb provides common node-related configuration
-  codecov: codecov/codecov@3.1.1
+  codecov: codecov/codecov@3.0.0
   
 version: 2.1 # using 2.1 provides access to orbs and other features
 
 jobs:
+  codecov-job:
+    docker:
+      # replace with your preferred image
+      - image: cimg/base:stable
+    steps:
+      - codecov/upload:
+          token: ff2ddff8-201c-45ef-9ca2-580b5ae41b30 
+          validate_url: true
   test:
     executor: node/default
     steps:
@@ -19,8 +27,7 @@ jobs:
 workflows:
   upload-to-codecov:
     jobs:
-      - checkout
-      - codecov/upload
+      - codecov-job
   build_and_test:
     jobs:
       - test

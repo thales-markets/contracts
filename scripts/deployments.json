@@ -66,7 +66,8 @@
 		"ReferralsImplementation": "0x1A59ac5D4Bdf35B5255c6D301AD23f6Eb1530d57",
 		"SwapRouter": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
 		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-		"ExoticMarketOpenBidMastercopy": "0x1fCE83884dc4263A92825543522379E37d7917dF"
+		"ExoticMarketOpenBidMastercopy": "0x1fCE83884dc4263A92825543522379E37d7917dF",
+		"CurveSUSD" : "0x061b87122ed14b9526a813209c8a59a633257bab"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

@@ -154,19 +154,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "amm",
-        "type": "address"
-      }
-    ],
-    "name": "SetAmm",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "capPerMarket",
         "type": "uint256"
@@ -290,19 +277,6 @@
       }
     ],
     "name": "SetStakingThales",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "amm",
-        "type": "address"
-      }
-    ],
-    "name": "SetThalesAMM",
     "type": "event"
   },
   {
@@ -884,19 +858,6 @@
         "internalType": "address payable",
         "name": "account",
         "type": "address"
-      }
-    ],
-    "name": "retrieveSUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
       },
       {
         "internalType": "uint256",
@@ -1127,40 +1088,14 @@
         "internalType": "address",
         "name": "_rangedMarketMastercopy",
         "type": "address"
-      }
-    ],
-    "name": "setRangedMarketMastercopy",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
+      },
       {
         "internalType": "address",
         "name": "_rangedPositionMastercopy",
         "type": "address"
       }
     ],
-    "name": "setRangedPositionMastercopy",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_referrals",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_referrerFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setReferrals",
+    "name": "setRangedMarketMastercopies",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1186,25 +1121,27 @@
   {
     "inputs": [
       {
-        "internalType": "contract IStakingThales",
-        "name": "_stakingThales",
-        "type": "address"
-      }
-    ],
-    "name": "setStakingThales",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_thalesAMM",
         "type": "address"
+      },
+      {
+        "internalType": "contract IStakingThales",
+        "name": "_stakingThales",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrals",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_referrerFee",
+        "type": "uint256"
       }
     ],
-    "name": "setThalesAMM",
+    "name": "setThalesAMMStakingThalesAndReferrals",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

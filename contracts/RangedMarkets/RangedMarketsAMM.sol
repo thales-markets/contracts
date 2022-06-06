@@ -141,19 +141,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         return true;
     }
 
-    function _availableToBuyFromAMMOnlyRanged(RangedMarket rangedMarket, RangedMarket.Position position)
-        internal
-        view
-        knownRangedMarket(address(rangedMarket))
-        returns (uint)
-    {
-        if (position == RangedMarket.Position.Out) {
-            return type(uint256).max;
-        } else {
-            return _availableToBuyFromAMMInOnlyRanged(rangedMarket);
-        }
-    }
-
     function availableToBuyFromAMM(RangedMarket rangedMarket, RangedMarket.Position position)
         public
         view
@@ -161,27 +148,27 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         returns (uint)
     {
         if (position == RangedMarket.Position.Out) {
-            return _availableToBuyFromAMMOut(rangedMarket);
+            uint availableLeft =
+                thalesAmm.availableToBuyFromAMM(address(rangedMarket.leftMarket()), IThalesAMM.Position.Down);
+            uint availableRight =
+                thalesAmm.availableToBuyFromAMM(address(rangedMarket.rightMarket()), IThalesAMM.Position.Up);
+            return availableLeft < availableRight ? availableLeft : availableRight;
         } else {
-            return _availableToBuyFromAMMIn(rangedMarket);
+            uint availableLeft = thalesAmm.availableToBuyFromAMM(address(rangedMarket.leftMarket()), IThalesAMM.Position.Up);
+            uint availableRight =
+                thalesAmm.availableToBuyFromAMM(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down);
+            uint availableThalesAMM = (availableLeft < availableRight ? availableLeft : availableRight) * 2;
+            uint availableRangedAmm = _availableToBuyFromAMMOnlyRangedIN(rangedMarket);
+            return availableThalesAMM > availableRangedAmm ? availableRangedAmm : availableThalesAMM;
         }
     }
 
-    function _availableToBuyFromAMMOut(RangedMarket rangedMarket) internal view returns (uint) {
-        uint availableLeft = thalesAmm.availableToBuyFromAMM(address(rangedMarket.leftMarket()), IThalesAMM.Position.Down);
-        uint availableRight = thalesAmm.availableToBuyFromAMM(address(rangedMarket.rightMarket()), IThalesAMM.Position.Up);
-        return availableLeft < availableRight ? availableLeft : availableRight;
-    }
-
-    function _availableToBuyFromAMMIn(RangedMarket rangedMarket) internal view returns (uint) {
-        uint availableLeft = thalesAmm.availableToBuyFromAMM(address(rangedMarket.leftMarket()), IThalesAMM.Position.Up);
-        uint availableRight = thalesAmm.availableToBuyFromAMM(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down);
-        uint availableThalesAMM = (availableLeft < availableRight ? availableLeft : availableRight) * 2;
-        uint availableRangedAmm = _availableToBuyFromAMMInOnlyRanged(rangedMarket);
-        return availableThalesAMM > availableRangedAmm ? availableRangedAmm : availableThalesAMM;
-    }
-
-    function _availableToBuyFromAMMInOnlyRanged(RangedMarket rangedMarket) internal view returns (uint) {
+    function _availableToBuyFromAMMOnlyRangedIN(RangedMarket rangedMarket)
+        internal
+        view
+        knownRangedMarket(address(rangedMarket))
+        returns (uint)
+    {
         uint leftoverOnMarket = capPerMarket - spentOnMarket[address(rangedMarket)];
         uint minPrice = minInPrice(rangedMarket);
         if (minPrice <= minSupportedPrice || minPrice >= maxSupportedPrice) {
@@ -272,7 +259,10 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint expectedPayout,
         uint additionalSlippage
     ) internal {
-        require(amount <= _availableToBuyFromAMMOnlyRanged(rangedMarket, position), "Not enough liquidity");
+        require(
+            position == RangedMarket.Position.Out || amount <= _availableToBuyFromAMMOnlyRangedIN(rangedMarket),
+            "Not enough liquidity"
+        );
 
         (uint sUSDPaid, uint leftQuote, uint rightQuote) = buyFromAmmQuoteDetailed(rangedMarket, position, amount);
 
@@ -382,11 +372,10 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint amount,
         uint sUSDPaid
     ) internal {
-        uint safeBoxShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + safeBoxImpact));
+        uint safeBoxShare = 0;
         if (safeBoxImpact > 0) {
+            safeBoxShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + safeBoxImpact));
             sUSD.transfer(safeBox, safeBoxShare);
-        } else {
-            safeBoxShare = 0;
         }
 
         spentOnMarket[rangedMarket] = spentOnMarket[rangedMarket] + amount + safeBoxShare - sUSDPaid;
@@ -408,8 +397,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint availableLeft = thalesAmm.availableToSellToAMM(address(rangedMarket.leftMarket()), IThalesAMM.Position.Up);
             uint availableRight =
                 thalesAmm.availableToSellToAMM(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down);
-            uint min = availableLeft < availableRight ? availableLeft : availableRight;
-            return min * 2;
+            return availableLeft < availableRight ? availableLeft * 2 : availableRight * 2;
         }
     }
 
@@ -567,15 +555,13 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         RangedMarket rangedMarket,
         uint sUSDPaid
     ) internal {
-        uint safeBoxShare = ((sUSDPaid * ONE) / (ONE - safeBoxImpact)) - sUSDPaid;
+        uint safeBoxShare = 0;
 
         if (safeBoxImpact > 0) {
+            safeBoxShare = ((sUSDPaid * ONE) / (ONE - safeBoxImpact)) - sUSDPaid;
             sUSD.transfer(safeBox, safeBoxShare);
-        } else {
-            safeBoxShare = 0;
         }
 
-        // consider that amount might be 18 decimals
         if (amount > (spentOnMarket[address(rangedMarket)] + sUSDPaid + safeBoxShare)) {
             spentOnMarket[address(rangedMarket)] = 0;
         } else {
@@ -588,19 +574,15 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         sUSD.safeTransfer(receiver, amount);
     }
 
-    function retrieveSUSD(address payable account) external onlyOwner {
-        sUSD.transfer(account, sUSD.balanceOf(address(this)));
-    }
-
     function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
         sUSD.transfer(account, amount);
     }
 
-    function setRangedMarketMastercopy(address _rangedMarketMastercopy) external onlyOwner {
+    function setRangedMarketMastercopies(address _rangedMarketMastercopy, address _rangedPositionMastercopy)
+        external
+        onlyOwner
+    {
         rangedMarketMastercopy = _rangedMarketMastercopy;
-    }
-
-    function setRangedPositionMastercopy(address _rangedPositionMastercopy) external onlyOwner {
         rangedPositionMastercopy = _rangedPositionMastercopy;
     }
 
@@ -634,18 +616,15 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit SetRangedAmmFee(rangedAmmFee);
     }
 
-    function setThalesAMM(address _thalesAMM) external onlyOwner {
+    function setThalesAMMStakingThalesAndReferrals(
+        address _thalesAMM,
+        IStakingThales _stakingThales,
+        address _referrals,
+        uint _referrerFee
+    ) external onlyOwner {
         thalesAmm = IThalesAMM(_thalesAMM);
         sUSD.approve(address(thalesAmm), type(uint256).max);
-        emit SetThalesAMM(_thalesAMM);
-    }
-
-    function setStakingThales(IStakingThales _stakingThales) external onlyOwner {
         stakingThales = _stakingThales;
-        emit SetStakingThales(address(_stakingThales));
-    }
-
-    function setReferrals(address _referrals, uint _referrerFee) external onlyOwner {
         referrals = _referrals;
         referrerFee = _referrerFee;
     }
@@ -674,9 +653,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address asset
     );
 
-    event SetAmm(address amm);
     event SetSUSD(address sUSD);
-    event SetThalesAMM(address amm);
     event RangedMarketCreated(address market, address leftMarket, address rightMarket);
     event SetSafeBoxImpact(uint _safeBoxImpact);
     event SetSafeBox(address _safeBox);

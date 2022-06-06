@@ -167,10 +167,8 @@ contract('ThalesAMM', accounts => {
 		);
 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(80), { from: owner });
-		await thalesAMM.setSafeBoxImpact(toUnit(0.01), { from: owner });
-		await thalesAMM.setSafeBox(safeBox, { from: owner });
-		await thalesAMM.setMinSupportedPrice(toUnit(0.05), { from: owner });
-		await thalesAMM.setMaxSupportedPrice(toUnit(0.95), { from: owner });
+		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
+		await thalesAMM.setMinMaxSupportedPrice(toUnit(0.05), toUnit(0.95), { from: owner });
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 	});
 

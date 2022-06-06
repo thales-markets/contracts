@@ -58,5 +58,6 @@ npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyale/deploy
 npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyalePass/deployRoyalePass.js
 npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyale/verifyOnly.js
 
-
+scripts:
 npx hardhat verify ADDRESS_CONTRACT --network polygon
+npx hardhat size-contracts

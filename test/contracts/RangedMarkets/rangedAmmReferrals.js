@@ -229,10 +229,8 @@ contract('RangedAMM', accounts => {
 		);
 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
-		await thalesAMM.setSafeBoxImpact(toUnit(0.01), { from: owner });
-		await thalesAMM.setSafeBox(safeBox, { from: owner });
-		await thalesAMM.setMinSupportedPrice(toUnit(0.05), { from: owner });
-		await thalesAMM.setMaxSupportedPrice(toUnit(0.95), { from: owner });
+		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
+		await thalesAMM.setMinMaxSupportedPrice(toUnit(0.05), toUnit(0.95), { from: owner });
 
 		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 
@@ -261,13 +259,10 @@ contract('RangedAMM', accounts => {
 		let RangedMarketMastercopy = artifacts.require('RangedMarketMastercopy');
 		let rangedMarketMastercopy = await RangedMarketMastercopy.new();
 		console.log('Setting mastercopy 11');
-		await rangedMarketsAMM.setRangedMarketMastercopy(rangedMarketMastercopy.address, {
-			from: owner,
-		});
 
 		let RangedPositionMastercopy = artifacts.require('RangedPositionMastercopy');
 		let rangedPositionMastercopy = await RangedPositionMastercopy.new();
-		await rangedMarketsAMM.setRangedPositionMastercopy(rangedPositionMastercopy.address, {
+		await rangedMarketsAMM.setRangedMarketMastercopies(rangedMarketMastercopy.address,rangedPositionMastercopy.address, {
 			from: owner,
 		});
 
@@ -282,9 +277,15 @@ contract('RangedAMM', accounts => {
 		referrals = await Referrals.new();
 		await referrals.initialize(owner, thalesAMM.address, rangedMarketsAMM.address);
 
-		await rangedMarketsAMM.setReferrals(referrals.address, toUnit('0.01'), {
-			from: owner,
-		});
+		await rangedMarketsAMM.setThalesAMMStakingThalesAndReferrals(
+			thalesAMM.address,
+			ZERO_ADDRESS,
+			referrals.address,
+			toUnit('0.01'),
+			{
+				from: owner,
+			}
+		);
 		console.log('rangedMarketsAMM -  set Referrals');
 
 		await thalesAMM.setReferrals(referrals.address, toUnit('0.01'), {

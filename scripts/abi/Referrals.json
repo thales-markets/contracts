@@ -75,6 +75,25 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "whitelisted",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "SetWhitelistedAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "trader",
         "type": "address"
       }

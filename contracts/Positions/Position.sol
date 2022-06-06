@@ -158,11 +158,12 @@ contract Position is IERC20, IPosition {
 
     function getBalanceOf(address account) external view override returns (uint) {
         return balanceOf[account];
-    } 
+    }
 
     function getTotalSupply() external view override returns (uint) {
         return totalSupply;
     }
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyMarket() {

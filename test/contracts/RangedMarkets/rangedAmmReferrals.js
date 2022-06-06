@@ -262,9 +262,13 @@ contract('RangedAMM', accounts => {
 
 		let RangedPositionMastercopy = artifacts.require('RangedPositionMastercopy');
 		let rangedPositionMastercopy = await RangedPositionMastercopy.new();
-		await rangedMarketsAMM.setRangedMarketMastercopies(rangedMarketMastercopy.address,rangedPositionMastercopy.address, {
-			from: owner,
-		});
+		await rangedMarketsAMM.setRangedMarketMastercopies(
+			rangedMarketMastercopy.address,
+			rangedPositionMastercopy.address,
+			{
+				from: owner,
+			}
+		);
 
 		await rangedMarketsAMM.setMinMaxSupportedPrice(toUnit(0.05), toUnit(0.95), 5, 200, {
 			from: owner,
@@ -288,7 +292,7 @@ contract('RangedAMM', accounts => {
 		);
 		console.log('rangedMarketsAMM -  set Referrals');
 
-		await thalesAMM.setReferrals(referrals.address, toUnit('0.01'), {
+		await thalesAMM.setStakingThalesAndReferrals(ZERO_ADDRESS, referrals.address, toUnit('0.01'), {
 			from: owner,
 		});
 		console.log('thalesAMM -  set Referrals');

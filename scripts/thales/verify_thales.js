@@ -1,5 +1,5 @@
 const { ethers } = require('hardhat');
-const { setTargetAddress, getTargetAddress } = require('../helpers.js');
+const { getTargetAddress } = require('../helpers.js');
 
 async function main() {
 	let accounts = await ethers.getSigners();

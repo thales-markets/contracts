@@ -1,12 +1,12 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: MIT
 
-import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+pragma solidity ^0.8.0;
 
-import "synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol";
-import "openzeppelin-solidity-2.3.0/contracts/utils/ReentrancyGuard.sol";
-import "synthetix-2.50.4-ovm/contracts/Owned.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/Math.sol";
+import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts-4.4.1/security/ReentrancyGuard.sol";
+import "../utils/Owned.sol";
 
 contract VestingEscrow is ReentrancyGuard, Owned {
     using Math for uint256;
@@ -26,7 +26,7 @@ contract VestingEscrow is ReentrancyGuard, Owned {
         address _token,
         uint256 _startTime,
         uint256 _endTime
-    ) public Owned(_owner) {
+    ) Owned(_owner) {
         require(_startTime >= block.timestamp, "Start time must be in future");
         require(_endTime > _startTime, "End time must be greater than start time");
 

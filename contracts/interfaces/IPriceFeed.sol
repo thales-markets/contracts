@@ -1,4 +1,6 @@
-pragma solidity >=0.4.24;
+// SPDX-License-Identifier: MIT
+
+pragma solidity >=0.5.16;
 
 interface IPriceFeed {
      // Structs
@@ -13,7 +15,6 @@ interface IPriceFeed {
     function removeAggregator(bytes32 currencyKey) external;
 
     // Views
-    function aggregators(bytes32 currencyKey) external view returns (address);
 
     function rateForCurrency(bytes32 currencyKey) external view returns (uint);
 

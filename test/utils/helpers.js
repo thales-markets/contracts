@@ -7,8 +7,20 @@ const { assert } = require('./common');
 
 const { currentTime, toUnit } = require('./index')();
 const { toBytes32 } = require('../../index');
+const abi = require('ethereumjs-abi');
+const Big = require('big.js');
+const { BigNumber } = require('ethers');
+const { numberExponentToLarge } = require('../../scripts/helpers');
 
 module.exports = {
+
+	encodeCall(name, arguments, values) {
+		const methodId = abi.methodID(name, arguments).toString('hex');
+		const params = abi.rawEncode(arguments, values).toString('hex');
+		return '0x' + methodId + params;
+	},
+
+
 	/**
 	 * the truffle transaction does not return all events logged, only those from the invoked
 	 * contract and ERC20 Transfer events (see https://github.com/trufflesuite/truffle/issues/555),
@@ -284,4 +296,13 @@ module.exports = {
 	getEventByName({ tx, name }) {
 		return tx.logs.find(({ event }) => event === name);
 	},
+	// returns the sqrt price as a 64x96
+    encodePriceSqrt(reserve1, reserve0) {
+		return numberExponentToLarge(Big(reserve1)
+			.div(reserve0)
+			.sqrt()
+			.mul(Big(2).pow(96))
+			.round()
+			.toString());
+  	}
 };

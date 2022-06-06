@@ -52,7 +52,7 @@ async function fetchData(start, end) {
 			'https://api.thegraph.com/subgraphs/name/synthetixio-team/synthetix'
 		);
 		const resultL2 = await getCurrentSnapshotViaGraph(
-			'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-issuance'
+			'https://api.thegraph.com/subgraphs/name/synthetixio-team/optimism-main'
 		);
 
 		let data = [],
@@ -72,8 +72,8 @@ async function fetchData(start, end) {
 
 		if (dataL2.length) {
 			// distribute 95% of weekly rewards to L1 and 5% to L2
-			getWeeklyData(data, 82, weeklyReward);
-			getWeeklyData(dataL2, 18, weeklyRewardL2);
+			getWeeklyData(data, 67, weeklyReward);
+			getWeeklyData(dataL2, 33, weeklyRewardL2);
 		} else {
 			getWeeklyData(data, 100, weeklyReward);
 		}

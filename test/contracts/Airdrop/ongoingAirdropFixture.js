@@ -8,14 +8,17 @@ const {
 	bn,
 } = require('../../../scripts/snx-data/xsnx-snapshot/helpers');
 
+const {
+	encodeCall,
+} = require('../../utils/helpers');
+
 // snapshot of user addresses balances of SNX
 const snapshot = require('../../../scripts/snx-data/ongoing_distribution.json');
 
 const THALES_AMOUNT = web3.utils.toWei('200');
-const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const deploymentFixture = async () => {
-	let [admin] = await ethers.getSigners();
+	let [admin, proxyOwner] = await ethers.getSigners();
 
 	let userBalance = [];
 	let userBalanceHashes = [];
@@ -48,7 +51,48 @@ const deploymentFixture = async () => {
 
 	// deploy OngoingAirdrop contract
 	const ongoingAirdrop = await deployArgs('OngoingAirdrop', admin.address, thales.address, root);
-	const escrowThales = await deployArgs('EscrowThales', admin.address, thales.address);
+	// const escrowThales = await deployArgs('EscrowThales', admin.address, thales.address);
+	let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
+	let ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: proxyOwner.address });
+	let ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: proxyOwner.address });
+	let EscrowThales = artifacts.require('EscrowThales');
+	let StakingThales = artifacts.require('StakingThales');
+	let SNXRewards = artifacts.require('SNXRewards');
+	let SNXRewardsDeployed = await SNXRewards.new();
+	let EscrowImplementation = await EscrowThales.new({from:admin.address});
+	let StakingImplementation = await StakingThales.new({from:admin.address});
+	let StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
+	const escrowThales = await EscrowThales.at(ProxyEscrowDeployed.address);
+
+	let initializeEscrowData = encodeCall(
+		'initialize',
+		['address', 'address'],
+		[
+			admin.address,
+			thales.address
+		]
+	);
+	await ProxyEscrowDeployed.upgradeToAndCall(EscrowImplementation.address, initializeEscrowData, {
+		from: proxyOwner.address ,
+	});
+
+	initializeStalkingData = encodeCall(
+		'initialize',
+		['address', 'address', 'address', 'address', 'uint256', 'uint256', 'address'],
+		[
+			admin.address,
+			escrowThales.address,
+			thales.address,
+			thales.address,
+			604800,
+			604800,
+			SNXRewardsDeployed.address
+		]
+	);
+
+	await ProxyStakingDeployed.upgradeToAndCall(StakingImplementation.address, initializeStalkingData, {
+		from: proxyOwner.address,
+	});
 
 	await escrowThales.setAirdropContract(ongoingAirdrop.address);
 	await escrowThales.enableTestMode({ from: admin.address });
@@ -57,17 +101,6 @@ const deploymentFixture = async () => {
 	// transfer THALES tokens to airdrop contract
 	await ongoingAirdrop.setEscrow(escrowThales.address);
 	await thales.transfer(ongoingAirdrop.address, totalBalance);
-
-	let StakingThales = artifacts.require('StakingThales');
-	let StakingThalesDeployed = await StakingThales.new(
-		admin.address,
-		escrowThales.address,
-		thales.address,
-		thales.address,
-		604800,
-		604800,
-		{ from: admin.address }
-	);
 	await escrowThales.setStakingThalesContract(StakingThalesDeployed.address);
 
 	// Impersonate two accounts from snapshot

@@ -1,8 +1,7 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
-const snx = require('synthetix');
-const { artifacts, contract, web3 } = require('hardhat');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const snx = require('synthetix-2.50.4-ovm');
+const { getTargetAddress } = require('../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -18,8 +17,8 @@ async function main() {
 		network = 'optimisticKovan'
 	}
 	if(networkObj.chainId == 10) {
-		networkObj.name = "optimistic";
-		network = 'optimistic'		
+		networkObj.name = "optimisticEthereum";
+		network = 'optimisticEthereum'		
 	}
 
 	console.log('Account is:' + owner.address);
@@ -38,20 +37,20 @@ async function main() {
 	const priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
 	
-	const BinaryOptionMastercopyAddress = getTargetAddress('BinaryOptionMastercopy', network);
-	console.log('Found BinaryOptionMastercopy at:' + BinaryOptionMastercopyAddress);
+	const PositionMastercopyAddress = getTargetAddress('PositionMastercopy', network);
+	console.log('Found PositionMastercopy at:' + PositionMastercopyAddress);
 	
-	const BinaryOptionMarketMastercopyAddress = getTargetAddress('BinaryOptionMarketMastercopy', network);
-	console.log('Found BinaryOptionMarketMastercopy at:' + BinaryOptionMarketMastercopyAddress);
+	const PositionalMarketMastercopyAddress = getTargetAddress('PositionalMarketMastercopy', network);
+	console.log('Found PositionalMarketMastercopy at:' + PositionalMarketMastercopyAddress);
 	
-	const BinaryOptionMarketFactoryAddress = getTargetAddress('BinaryOptionMarketFactory', network);
-	console.log('Found BinaryOptionMarketFactory at:' + BinaryOptionMarketFactoryAddress);
+	const PositionalMarketFactoryAddress = getTargetAddress('PositionalMarketFactory', network);
+	console.log('Found PositionalMarketFactory at:' + PositionalMarketFactoryAddress);
 	
-	const BinaryOptionMarketManagerAddress = getTargetAddress('BinaryOptionMarketManager', network);
-	console.log('Found BinaryOptionMarketManager at:' + BinaryOptionMarketManagerAddress);
+	const PositionalMarketManagerAddress = getTargetAddress('PositionalMarketManager', network);
+	console.log('Found PositionalMarketManager at:' + PositionalMarketManagerAddress);
 	
-	const BinaryOptionMarketDataAddress = getTargetAddress('BinaryOptionMarketData', network);
-	console.log('Found BinaryOptionMarketData at:' + BinaryOptionMarketDataAddress);
+	const PositionalMarketDataAddress = getTargetAddress('PositionalMarketData', network);
+	console.log('Found PositionalMarketData at:' + PositionalMarketDataAddress);
 	
 
 	const ThalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
@@ -68,39 +67,31 @@ async function main() {
 	if (network == 'mainnet') {
 		creatorCapitalRequirement = w3utils.toWei('1000');
 	}
-	const poolFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the pool in the end.
-	const creatorFee = w3utils.toWei('0.005'); // 0.5% of the market's value goes to the creator.
-	const feeAddress = '0xfeefeefeefeefeefeefeefeefeefeefeefeefeef';
-
-	// await hre.run('verify:verify', {
-	// 	address: priceFeedAddress,
-	// 	constructorArguments: [owner.address],
-	// });
 
 	await hre.run('verify:verify', {
-		address: BinaryOptionMarketFactoryAddress,
+		address: PositionalMarketFactoryAddress,
 		constructorArguments: [owner.address],
 	});
 
 	await hre.run('verify:verify', {
-		address: BinaryOptionMastercopyAddress,
+		address: PositionMastercopyAddress,
 		constructorArguments: [],
-		contract: "contracts/BinaryOptions/BinaryOptionMastercopy.sol:BinaryOptionMastercopy"
+		contract: "contracts/Positions/PositionMastercopy.sol:PositionMastercopy"
 	});
 
 	await hre.run('verify:verify', {
-		address: BinaryOptionMarketMastercopyAddress,
+		address: PositionalMarketMastercopyAddress,
 		constructorArguments: [],
-		contract: "contracts/BinaryOptions/BinaryOptionMarketMastercopy.sol:BinaryOptionMarketMastercopy",
+		contract: "contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy",
 	});
 
 	await hre.run('verify:verify', {
-		address: BinaryOptionMarketDataAddress,
+		address: PositionalMarketDataAddress,
 		constructorArguments: [],
 	});
 	
 	await hre.run('verify:verify', {
-		address: BinaryOptionMarketManagerAddress,
+		address: PositionalMarketManagerAddress,
 		constructorArguments: [
 			owner.address,
 			proxysUSDAddress,
@@ -122,9 +113,6 @@ async function main() {
 			7,
 		],
 	});
-
-
-	
 }
 
 main()
@@ -133,9 +121,4 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function(resolve) {
-		setTimeout(resolve, time);
-	});
-}
+	

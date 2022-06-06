@@ -1,19 +1,11 @@
 const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
-const snx = require('synthetix');
-const { artifacts, contract, web3 } = require('hardhat');
 
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../test/utils/index')();
+const { currentTime } = require('../../test/utils/index')();
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress } = require('../helpers');
 
 const { toBytes32 } = require('../../index');
 
@@ -30,9 +22,9 @@ async function main() {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 	}
-	if(networkObj.chainId == 10) {
-		networkObj.name = "optimistic";
-		network = 'optimistic'		
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 
 	console.log('Account is:' + owner.address);
@@ -59,36 +51,26 @@ async function main() {
 	let safeDecimalMath = await safeDecimalMathContract.attach(safeDecimalMathAddress);
 	let proxysUSD = await proxysUSDContract.attach(proxysUSDAddress);
 
-	// const addressResolver = snx.getTarget({ useOvm: true, contract: 'AddressResolver' });
 	console.log('Found address resolver at:' + addressResolver.address);
 
-	// const safeDecimalMath = snx.getTarget({ useOvm: true, contract: 'SafeDecimalMath' });
 	console.log('Found safeDecimalMath at:' + safeDecimalMath.address);
 	console.log('Found proxysUSD at:' + proxysUSD.address);
 
-	const BinaryOptionMarketManager = await ethers.getContractFactory('BinaryOptionMarketManager', 
-										{
-											libraries: {
-												SafeDecimalMath: safeDecimalMath.address,
-											},
-										}
-										);
-	let binaryOptionMarketAddress = getTargetAddress('BinaryOptionMarketManager', network);
-	let binaryOptionMarketManagerDeployed = await BinaryOptionMarketManager.attach(
-		binaryOptionMarketAddress
+	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
+	let PositionalMarketAddress = getTargetAddress('PositionalMarketManager', network);
+	let PositionalMarketManagerDeployed = await PositionalMarketManager.attach(
+		PositionalMarketAddress
 	);
-	console.log('BinaryOptionMarketManager attached to:', binaryOptionMarketManagerDeployed.address);
+	console.log('PositionalMarketManager attached to:', PositionalMarketManagerDeployed.address);
 
-	console.log('All params set');
-
-	const sAUDKey = toBytes32('ETH');
-	const initialStrikePrice = w3utils.toWei('1');
+	const ETHKey = toBytes32('ETH');
+	const initialMint = w3utils.toWei('1');
 	const now = await currentTime();
 
 	let abi = ['function approve(address _spender, uint256 _value) public returns (bool success)'];
 	let contract = new ethers.Contract(proxysUSD.address, abi, owner);
 	let approval = await contract.approve(
-		binaryOptionMarketManagerDeployed.address,
+		PositionalMarketManagerDeployed.address,
 		w3utils.toWei('1000'),
 		{
 			from: owner.address,
@@ -96,17 +78,18 @@ async function main() {
 	);
 	approval.wait().then(console.log('Done approving'));
 
-	const result = await binaryOptionMarketManagerDeployed.createMarket(
-		sAUDKey,
-		initialStrikePrice,
-		now + 360,
-		initialStrikePrice,
+	const hour = 60 * 60;
+
+	const result = await PositionalMarketManagerDeployed.createMarket(
+		ETHKey,
+		w3utils.toWei('3400'),
+		now + hour * 72,
+		initialMint,
 		false,
-		ZERO_ADDRESS,
-		{ gasLimit: 6000000 }
+		ZERO_ADDRESS
 	);
 	let marketCreated;
-	await result.wait().then(function (receipt) {
+	await result.wait().then(function(receipt) {
 		console.log('receipt', receipt);
 		let marketCreationArgs = receipt.events[receipt.events.length - 1].args;
 		for (var key in marketCreationArgs) {
@@ -123,26 +106,20 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: marketCreated,
 		constructorArguments: [
-			sAUDKey,
-			initialStrikePrice,
-			now + 360,
-			initialStrikePrice,
+			ETHKey,
+			w3utils.toWei('4000'),
+			now + hour * 72,
+			initialMint,
 			false,
 			ZERO_ADDRESS,
 		],
-		contract: 'contracts/BinaryOptionMarket.sol:BinaryOptionMarket',
+		contract: 'contracts/Positions/PositionalMarket.sol:PositionalMarket',
 	});
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch((error) => {
+	.catch(error => {
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function (resolve) {
-		setTimeout(resolve, time);
-	});
-}

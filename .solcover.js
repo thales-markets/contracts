@@ -5,11 +5,11 @@ const {
 module.exports = {
 	port: 8545,
 	skipFiles: [
-		'BinaryOptionMarketData.sol',
+		'PositionalMarketData.sol',
 		'OwnedWithInit.sol',
 		'test-helpers',
-		'BinaryOptionMarketMastercopy.sol',
-		'BinaryOptionMastercopy.sol'
+		'PositionalMarketMastercopy.sol',
+		'PositionMastercopy.sol'
 	],
 	providerOptions: {
 		default_balance_ether: 10000000000000, // extra zero just in case (coverage consumes more gas)
@@ -25,4 +25,5 @@ module.exports = {
 	// passed to compiler causes it to crash (See discussion PR #732)
 	// Line and branch coverage will still be reported.
 	measureStatementCoverage: false,
+	configureYulOptimizer: true,
 };

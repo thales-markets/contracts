@@ -12,7 +12,7 @@ const VESTING_PERIOD = 86400 * 365;
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const TOTAL_AMOUNT = web3.utils.toWei('15000000');
 
-const { testAccounts } = require('../Token/test-accounts');
+const { testRecipients } = require('./testRecipients');
 const { numberExponentToLarge } = require('../../../scripts/helpers');
 
 contract('VestingEscrow', accounts => {
@@ -35,7 +35,7 @@ contract('VestingEscrow', accounts => {
 				(now + YEAR).toString(),
 			]);
 
-			const recipients = [beneficiary.address, ...testAccounts];
+			const recipients = [beneficiary.address, ...testRecipients];
 			amounts = new Array(100).fill(web3.utils.toWei('150000'));
 
 			await Thales.approve(VestingEscrow.address, TOTAL_AMOUNT);
@@ -128,7 +128,7 @@ contract('VestingEscrow', accounts => {
 				(now + YEAR).toString(),
 			]);
 
-			recipients = [beneficiary.address, ...testAccounts];
+			recipients = [beneficiary.address, ...testRecipients];
 			amounts = new Array(100);
 			for (let i = 1; i < 101; i++) {
 				amounts[i - 1] = (i * 10 ** 17).toString();
@@ -237,7 +237,7 @@ contract('VestingEscrow', accounts => {
 
 		it("should fund from admin's account only", async () => {
 			const REVERT =
-				'VM Exception while processing transaction: revert Only the contract owner may perform this action';
+				'Only the contract owner may perform this action';
 			await assert.revert(VestingEscrow.connect(notAdmin).fund(recipients, amounts), REVERT);
 		});
 
@@ -304,7 +304,7 @@ contract('VestingEscrow', accounts => {
 
 		it('should show zero balance if claimed before start', async () => {
 			await time.increaseTo((await currentTime()).toString());
-			const REVERT = 'VM Exception while processing transaction: revert nothing to claim';
+			const REVERT = 'nothing to claim';
 			await assert.revert(VestingEscrow.connect(beneficiary).claim(), REVERT);
 		});
 
@@ -320,7 +320,7 @@ contract('VestingEscrow', accounts => {
 			assert.equal(balanceOfAccount.toString(), numberExponentToLarge(expectedAmount.toString()));
 		});
 
-		it('should be able to claim multiple times', async () => {
+		it('should be able to claim multiple times [ @cov-skip ]', async () => {
 			let balance = 0;
 			for (let i = 0; i < 53; i++) {
 				await fastForward(WEEK);
@@ -362,7 +362,7 @@ contract('VestingEscrow', accounts => {
 		it('Cant selfdestruct befor a year passes after end time', async () => {
 			await fastForward(YEAR);
 			const REVERT =
-				'VM Exception while processing transaction: revert Contract can only be selfdestruct a year after endtime';
+				'Contract can only be selfdestruct a year after endtime';
 			await assert.revert(VestingEscrow._selfDestruct(beneficiary.address), REVERT);
 		});
 

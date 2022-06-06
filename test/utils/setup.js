@@ -1,6 +1,6 @@
 'use strict';
 
-const { artifacts, web3, log } = require('hardhat');
+const { artifacts, web3, log, upgrades } = require('hardhat');
 
 const { toWei } = web3.utils;
 const { toUnit } = require('./index')();
@@ -63,12 +63,7 @@ const mockToken = async ({
 			})
 	);
 	if (process.env.DEBUG) {
-		log(
-			'Deployed token',
-			synth,
-			'to',
-			token.address
-		);
+		log('Deployed token', synth, 'to', token.address);
 	}
 	await Promise.all([
 		tokenState.setAssociatedContract(token.address, { from: owner }),
@@ -150,9 +145,7 @@ const setupContract = async ({
 		AddressResolver: [owner],
 		SystemStatus: [owner],
 		FlexibleStorage: [tryGetAddressOf('AddressResolver')],
-		PriceFeed: [
-			owner,
-		],
+		PriceFeed: [owner],
 		SynthetixState: [owner, ZERO_ADDRESS],
 		SupplySchedule: [owner, 0, 0],
 		Proxy: [owner],
@@ -221,8 +214,8 @@ const setupContract = async ({
 		FeePoolEternalStorage: [owner, tryGetAddressOf('FeePool')],
 		DelegateApprovals: [owner, tryGetAddressOf('EternalStorageDelegateApprovals')],
 		Liquidations: [owner, tryGetAddressOf('AddressResolver')],
-		BinaryOptionMarketFactory: [owner],
-		BinaryOptionMarketManager: [
+		PositionalMarketFactory: [owner],
+		PositionalMarketManager: [
 			owner,
 			tryGetAddressOf('SynthsUSD'),
 			tryGetAddressOf('PriceFeed'),
@@ -230,9 +223,9 @@ const setupContract = async ({
 			365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
 			toWei('2'), // Capital requirement
 		],
-		BinaryOptionMarketData: [],
-		BinaryOptionMarketMastercopy: [],
-		BinaryOptionMastercopy: [],
+		PositionalMarketData: [],
+		PositionalMarketMastercopy: [],
+		PositionMastercopy: [],
 		CollateralManager: [
 			tryGetAddressOf('CollateralManagerState'),
 			owner,
@@ -243,11 +236,21 @@ const setupContract = async ({
 		],
 	};
 
+	const proxyContracts = ['PriceFeed', 'PositionalMarketFactory', 'PositionalMarketManager'];
+
 	let instance;
 	try {
-		instance = await create({
-			constructorArgs: args.length > 0 ? args : defaultArgs[contract],
-		});
+		if (proxyContracts.includes(contract)) {
+			const Contract = await ethers.getContractFactory(contract);
+			if (process.env.DEBUG) {
+				console.log(contract, defaultArgs[contract]);
+			}
+			instance = await upgrades.deployProxy(Contract, defaultArgs[contract]);
+		} else {
+			instance = await create({
+				constructorArgs: args.length > 0 ? args : defaultArgs[contract],
+			});
+		}
 		// Show contracts creating for debugging purposes
 		if (process.env.DEBUG) {
 			log(
@@ -584,19 +587,19 @@ const setupAllContracts = async ({
 			deps: ['TokenState', 'ProxyERC20', 'SystemStatus', 'AddressResolver'],
 		}, // a generic synth
 		{
-			contract: 'BinaryOptionMarketFactory',
+			contract: 'PositionalMarketFactory',
 			deps: ['SynthsUSD', 'PriceFeed'],
 		},
 		{
-			contract: 'BinaryOptionMarketMastercopy',
-			deps: ['BinaryOptionMarketManager'],
+			contract: 'PositionalMarketMastercopy',
+			deps: ['PositionalMarketManager'],
 		},
 		{
-			contract: 'BinaryOptionMastercopy',
-			deps: ['SynthsUSD', 'BinaryOptionMarketMastercopy'],
+			contract: 'PositionMastercopy',
+			deps: ['SynthsUSD', 'PositionalMarketMastercopy'],
 		},
 		{
-			contract: 'BinaryOptionMarketManager',
+			contract: 'PositionalMarketManager',
 			deps: [
 				'SystemStatus',
 				'SynthsUSD',
@@ -604,12 +607,12 @@ const setupAllContracts = async ({
 				'PriceFeed',
 				'FeePool',
 				'Synthetix',
-				'BinaryOptionMarketFactory',
+				'PositionalMarketFactory',
 			],
 		},
 		{
-			contract: 'BinaryOptionMarketData',
-			deps: ['BinaryOptionMarketManager', 'BinaryOptionMarket', 'BinaryOption'],
+			contract: 'PositionalMarketData',
+			deps: ['PositionalMarketManager', 'PositionalMarket', 'Position'],
 		},
 	];
 

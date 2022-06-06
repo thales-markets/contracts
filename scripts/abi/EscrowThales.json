@@ -1,22 +1,5 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_vestingToken",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -112,6 +95,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "thalesStakingRewardsPool",
+        "type": "address"
+      }
+    ],
+    "name": "ThalesStakingRewardsPoolChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "account",
         "type": "address"
       },
@@ -134,6 +130,21 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "ThalesStakingRewardsPool",
+    "outputs": [
+      {
+        "internalType": "contract IThalesStakingRewardsPool",
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,
@@ -245,6 +256,21 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "fixEscrowEntry",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [
       {
@@ -330,6 +356,35 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "initNonReentrant",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vestingToken",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -432,12 +487,12 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address payable",
-        "name": "account",
+        "internalType": "address",
+        "name": "AirdropContract",
         "type": "address"
       }
     ],
-    "name": "selfDestruct",
+    "name": "setAirdropContract",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -448,11 +503,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "AirdropContract",
+        "name": "_owner",
         "type": "address"
       }
     ],
-    "name": "setAirdropContract",
+    "name": "setOwner",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -483,6 +538,21 @@
       }
     ],
     "name": "setStakingThalesContract",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_thalesStakingRewardsPool",
+        "type": "address"
+      }
+    ],
+    "name": "setThalesStakingRewardsPool",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -552,6 +622,21 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

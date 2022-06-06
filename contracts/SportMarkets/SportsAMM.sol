@@ -270,6 +270,21 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return false;
     }
 
+    function getMarketDefaultOdds(address _market) external view returns (uint[] memory) {
+        uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
+        Position position = Position.Home;
+        for(uint i=0; i<odds.length; i++) {
+            if(i == uint(Position.Away)) {
+                position = Position.Away;
+            }
+            else if(i == uint(Position.Draw)) {
+                position = Position.Draw;
+            }
+            odds[i] = buyFromAmmQuote(_market, position, ONE);
+        }
+        return odds;
+    }
+
     // write methods
 
     function buyFromAMM(

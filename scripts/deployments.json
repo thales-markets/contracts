@@ -51,7 +51,7 @@
 		"ThalesOracleCouncilImplementation": "0x717eE7991Cfeeb79B1D8E7d1DBD982fb7982d0fD",
 		"ThalesBonds": "0x160Ca569999601bca06109D42d561D85D6Bb4b57",
 		"ThalesBondsImplementation": "0x087aE43C00035fD3e1944513Fd570f416faee62c",
-		"ExoticMarketMasterCopy": "0x3D63AF087bf9cA6cD603689C4360D4765b490C0e",
+		"ExoticMarketMasterCopy": "0xC79339A3F3b36C57c96E457A2B44728f221c7d44",
 		"ExoticRewards": "0x5c936675212cB832aa82bA4b8a1F237Cf8db97aD",
 		"ExoticRewardsImplementation": "0xb089A5B34f061FF658C783AFe948AbBb1eaD9886",
 		"ExoticPositionalMarketData": "0x7B3241C61889185188E3B444abEf7298fAe6B1E1",
@@ -63,7 +63,7 @@
 		"RangedPositionMastercopy": "0x7801Efa8E30606D2d4c9848852b56ff03efDAd5c",
 		"RangedMarketMastercopy": "0xe5109CC91F2c236Fbee3752AF06dC92d4BDddC84",
 		"SwapRouter": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984"
+		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
 		"ExoticMarketOpenBidMastercopy": "0x1fCE83884dc4263A92825543522379E37d7917dF"
 	},
 	"polygon": {
@@ -119,7 +119,7 @@
 		"ThalesStakingRewardsPool": "0xBfb2692Ae8c4399FD27977b9e14E8E69e31711d6",
 		"ThalesStakingRewardsPoolImplementation": "0x576790452350Af24e57d3AEcdbd978372410ec5a",
 		"ExoiticMarket": "0xc85792c44c173F4b6Ee80f82144AcDb2c3bF5aA8",
-		"ExoticMarketMasterCopy": "0x58E5F975E80DdABf565d8951C8E6f7a60bd5D2DC",
+		"ExoticMarketMasterCopy": "0x7852c4347Bbd2ebff2EE9b7dE6135725110E0a31",
 		"ExoticMarketManager": "0x6cEb96ABcAD1078af8D92A628628C75074E9E0b4",
 		"ExoticMarketManagerImplementation": "0xBFf4227803CfDf336E9bA2258396401a2b974A33",
 		"ThalesOracleCouncil": "0x61118647A361CBaFE9119D5d7e08Be5026A20dC4",

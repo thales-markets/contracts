@@ -220,6 +220,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
             }
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
             feesAndBondsClaimed = true;
+            emit FeesIssued(getTotalFeesAmount());
         }
         userAlreadyClaimed[msg.sender] = userAlreadyClaimed[msg.sender].add(amount);
         emit WinningTicketClaimed(msg.sender, amount);
@@ -247,6 +248,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
             }
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
             feesAndBondsClaimed = true;
+            emit FeesIssued(getTotalFeesAmount());
         }
         userAlreadyClaimed[msg.sender] = userAlreadyClaimed[msg.sender].add(amount);
         emit WinningTicketClaimed(_user, amount);

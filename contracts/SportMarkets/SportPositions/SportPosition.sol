@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 // Inheritance
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 
-
 import "../../interfaces/IPosition.sol";
 
 // Libraries

@@ -38,7 +38,7 @@ async function main() {
 		rangedAmmAddress,
 		RangedMarketsAMM
 	);
-	// console.log('RangedMarketsAMM upgraded');
+	console.log('RangedMarketsAMM upgraded');
 
 	// const RangedMarketsAMMImplementation = await getImplementationAddress(ethers.provider, rangedAmmAddress);
 

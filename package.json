@@ -8,9 +8,17 @@
 		"test": "test"
 	},
 	"scripts": {
+		"setup": "npm install && allow-scripts",
+		"format": "prettier --write \"contracts/**/*.sol\" \"**/*.js\" \"**/*.md\" \"**/*.yml\" \"**/*.json\"",
 		"lint": "eslint .",
 		"pack": "webpack --mode production",
-		"prepublish": "npm run pack"
+		"prepublish": "npm run pack",
+		"prepare": "husky install",
+		"clean-install": "rm -rf build && rm ./package-lock.json && rm -rf node_modules/* && npm install",
+		"compile": "hardhat compile",
+		"coverage": "node --max-old-space-size=4096 ./node_modules/.bin/hardhat coverage",
+		"describe": "hardhat describe",
+		"test": "node --max-old-space-size=4096 ./node_modules/.bin/hardhat test"
 	},
 	"devDependencies": {
 		"@codechecks/client": "0.1.10",
@@ -46,7 +54,7 @@
 		"fs-extra": "9.0.1",
 		"hardhat": "~2.1.2",
 		"hardhat-gas-reporter": "~1.0.4",
-		"husky": "^4.3.0",
+		"husky": "^8.0.0",
 		"is-ci": "^2.0.0",
 		"lodash.clonedeep": "^4.5.0",
 		"lodash.uniq": "^4.5.0",

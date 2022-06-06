@@ -169,13 +169,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "withdrawnAmount",
         "type": "uint256"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "totalOpenBidAmountLeft",
+        "name": "totalOpenBidAmount",
         "type": "uint256"
       }
     ],
@@ -262,7 +268,7 @@
         "type": "uint256"
       }
     ],
-    "name": "WinningTicketClaimed",
+    "name": "WinningOpenBidAmountClaimed",
     "type": "event"
   },
   {
@@ -705,19 +711,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "forNewUserView",
-        "type": "bool"
-      },
-      {
-        "internalType": "uint256",
-        "name": "userAlreadyTakenPosition",
-        "type": "uint256"
-      }
-    ],
-    "name": "getPotentialWinningAmountForAllPosition",
+    "inputs": [],
+    "name": "getPotentialOpenBidWinningForAllPositions",
     "outputs": [
       {
         "internalType": "uint256[]",
@@ -901,25 +896,6 @@
       }
     ],
     "name": "getUserOpenBidTotalPlacedAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      }
-    ],
-    "name": "getUserPotentialWinningAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1131,6 +1107,19 @@
   {
     "inputs": [],
     "name": "maxWithdrawPercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minPosAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1409,11 +1398,6 @@
         "internalType": "uint256[]",
         "name": "_amounts",
         "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_depositedAmount",
-        "type": "uint256"
       }
     ],
     "name": "takeOpenBidPositions",

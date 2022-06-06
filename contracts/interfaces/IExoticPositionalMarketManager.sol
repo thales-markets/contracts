@@ -35,6 +35,7 @@ interface IExoticPositionalMarketManager {
     function withdrawalTimePeriod() external view returns(uint);    
     function maxAmountForOpenBidPosition() external view returns(uint);    
     function maxFinalWithdrawPercentage() external view returns(uint);    
+    function minFixedTicketPrice() external view returns(uint);    
 
     function createExoticMarket(
         string memory _marketQuestion,

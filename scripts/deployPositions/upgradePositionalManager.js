@@ -47,14 +47,10 @@ async function main() {
 	console.log('Found positionalManagerAddress at:', positionalManagerAddress);
 
 	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
-	// upgrades.prepareUpgrade;
-	await upgrades.upgradeProxy(positionalManagerAddress, PositionalMarketManager);
 
-	console.log('PositionalMarketManager upgraded');
-
-	const PositionalMarketManagerImplementation = await getImplementationAddress(
-		ethers.provider,
-		positionalManagerAddress
+	let PositionalMarketManagerImplementation = await upgrades.prepareUpgrade(
+		positionalManagerAddress,
+		PositionalMarketManager
 	);
 
 	console.log(
@@ -67,7 +63,6 @@ async function main() {
 		network,
 		PositionalMarketManagerImplementation
 	);
-
 
 	try {
 		await hre.run('verify:verify', {

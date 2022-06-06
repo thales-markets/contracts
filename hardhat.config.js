@@ -193,7 +193,7 @@ module.exports = {
 		// outputFile: 'test-gas-used.log',
 	},
 	mocha: {
-		timeout: 120e3, // 30s
+		timeout: 180e3, // 30s
 	},
 	abiExporter: {
 		path: './scripts/abi',

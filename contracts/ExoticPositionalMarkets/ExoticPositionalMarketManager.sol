@@ -30,7 +30,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     using AddressSetLib for AddressSetLib.AddressSet;
 
     AddressSetLib.AddressSet private _activeMarkets;
-    // AddressSetLib.AddressSet private _maturedMarkets;
 
     uint public fixedBondAmount;
     uint public backstopTimeout;
@@ -245,7 +244,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         );
         isChainLinkMarket[address(exoticMarket)] = true;
         creatorAddress[address(exoticMarket)] = msg.sender;
-        // IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, exoticMarket.fixedBondAmount());
         _activeMarkets.add(address(exoticMarket));
         exoticMarket.takeCreatorInitialOpenBidPositions(creatorPositions, _positionsOfCreator);
         emit CLMarketCreated(
@@ -302,7 +300,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 IExoticPositionalMarket(_marketAddress).fixedBondAmount()
             );
         }
-        resolverAddress[_marketAddress] = msg.sender != oracleCouncilAddress ? msg.sender : safeBoxAddress;
+        resolverAddress[_marketAddress] = (msg.sender == oracleCouncilAddress || msg.sender == owner) ? safeBoxAddress : msg.sender;
         IExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, resolverAddress[_marketAddress]);
         emit MarketResolved(_marketAddress, _outcomePosition);
     }
@@ -323,6 +321,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 "Market can not be cancelled by creator"
             );
             cancelledByCreator[_marketAddress] = true;
+            if(!IThalesOracleCouncil(oracleCouncilAddress).isMarketClosedForDisputes(_marketAddress)) {
+                IThalesOracleCouncil(oracleCouncilAddress).closeMarketForDisputes(_marketAddress);
+            }
         }
         if (IExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "only pDAO");
@@ -339,6 +340,15 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(isActiveMarket(_marketAddress), "NotActive");
         if (IExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "only pDAO");
+            if(IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0) {
+                IThalesBonds(thalesBonds).sendBondFromMarketToUser(
+                    _marketAddress,
+                    safeBoxAddress,
+                    IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress),
+                    102,
+                    safeBoxAddress
+                );
+            }
         }
         IExoticPositionalMarket(_marketAddress).resetMarket();
         emit MarketReset(_marketAddress);
@@ -351,7 +361,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     ) external onlyOracleCouncilAndOwner whenNotPaused {
         require(isActiveMarket(_market), "NotActive");
         IExoticRewards(exoticRewards).sendRewardToDisputoraddress(_market, _disputorAddress, _amount);
-        // emit RewardSentToDisputorForMarket(_market, _disputorAddress, _amount);
     }
 
     function issueBondsBackToCreatorAndResolver(address _marketAddress) external nonReentrant {
@@ -405,8 +414,6 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     function isPauserAddress(address _pauser) external view returns (bool) {
         return pauserIndex[_pauser] > 0;
     }
-
-    // SETTERS ///////////////////////////////////////////////////////////////////////////
 
     function setBackstopTimeout(address _market) external onlyOracleCouncilAndOwner {
         IExoticPositionalMarket(_market).setBackstopTimeout(backstopTimeout);
@@ -677,7 +684,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit PauserAddressRemoved(_pauserAddress);
     }
 
-    // INTERNAL FUNCTIONS
+    // INTERNAL 
 
     function thereAreNonEqualPositions(string[] memory positionPhrases) internal view returns (bool) {
         for (uint i = 0; i < positionPhrases.length - 1; i++) {

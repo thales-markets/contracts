@@ -46,7 +46,16 @@ const Phase = {
 };
 
 contract('RangedAMM', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
+	const [
+		initialCreator,
+		managerOwner,
+		minter,
+		dummy,
+		exersicer,
+		secondCreator,
+		safeBox,
+		referrerAddress,
+	] = accounts;
 	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
 
@@ -239,7 +248,7 @@ contract('RangedAMM', accounts => {
 			toUnit('0.01')
 		);
 
-		//console.log('Successfully create rangedMarketsAMM ' + rangedMarketsAMM.address);
+		console.log('Successfully create rangedMarketsAMM ' + rangedMarketsAMM.address);
 		sUSDSynth.issue(rangedMarketsAMM.address, sUSDQtyAmm);
 
 		[creatorSigner, ownerSigner] = await ethers.getSigners();
@@ -248,7 +257,7 @@ contract('RangedAMM', accounts => {
 
 		let RangedMarketMastercopy = artifacts.require('RangedMarketMastercopy');
 		let rangedMarketMastercopy = await RangedMarketMastercopy.new();
-		//console.log('Setting mastercopy 11');
+		console.log('Setting mastercopy 11');
 		await rangedMarketsAMM.setRangedMarketMastercopy(rangedMarketMastercopy.address, {
 			from: owner,
 		});
@@ -262,9 +271,23 @@ contract('RangedAMM', accounts => {
 		await rangedMarketsAMM.setMinMaxSupportedPrice(toUnit(0.05), toUnit(0.95), 5, 200, {
 			from: owner,
 		});
-		//console.log('Setting min prices');
+		console.log('Setting min prices');
 
 		await sUSDSynth.approve(rangedMarketsAMM.address, sUSDQty, { from: minter });
+
+		let Referrals = artifacts.require('Referrals');
+		let referrals = await Referrals.new();
+		await referrals.initialize(owner, thalesAMM.address, rangedMarketsAMM.address);
+
+		await rangedMarketsAMM.setReferrals(referrals.address, toUnit('0.01'), {
+			from: owner,
+		});
+		console.log('rangedMarketsAMM -  set Referrals');
+
+		await thalesAMM.setReferrals(referrals.address, toUnit('0.01'), {
+			from: owner,
+		});
+		console.log('thalesAMM -  set Referrals');
 	});
 
 	const Position = {
@@ -278,6 +301,7 @@ contract('RangedAMM', accounts => {
 	};
 
 	describe('Test ranged AMM', () => {
+
 		it('create market test [ @cov-skip ]', async () => {
 			let now = await currentTime();
 			let leftMarket = await createMarket(
@@ -288,7 +312,7 @@ contract('RangedAMM', accounts => {
 				toUnit(10),
 				creatorSigner
 			);
-			//console.log('Left market is ' + leftMarket.address);
+			console.log('Left market is ' + leftMarket.address);
 
 			let rightMarket = await createMarket(
 				manager,
@@ -301,22 +325,22 @@ contract('RangedAMM', accounts => {
 
 			let tx = await rangedMarketsAMM.createRangedMarket(leftMarket.address, rightMarket.address);
 			let createdMarketAddress = tx.receipt.logs[0].args.market;
-			//console.log('created market is :' + createdMarketAddress);
+			console.log('created market is :' + createdMarketAddress);
 
 			let rangedMarket = await RangedMarket.at(createdMarketAddress);
 
-			//console.log('rangedMarket is ' + rangedMarket.address);
+			console.log('rangedMarket is ' + rangedMarket.address);
 
 			let rangedMarketsAMMAddressFromCreatedMarket = await rangedMarket.rangedMarketsAMM();
-			//console.log('rangedMarketsAMM market is ' + rangedMarketsAMMAddressFromCreatedMarket);
+			console.log('rangedMarketsAMM market is ' + rangedMarketsAMMAddressFromCreatedMarket);
 
 			let leftMarketAddressFromCreatedRangedMarket = await rangedMarket.leftMarket();
-			// console.log(
-			// 	'leftMarketAddressFromCreatedRangedMarket is ' + leftMarketAddressFromCreatedRangedMarket
-			// );
+			console.log(
+				'leftMarketAddressFromCreatedRangedMarket is ' + leftMarketAddressFromCreatedRangedMarket
+			);
 
 			let minInPrice = await rangedMarketsAMM.minInPrice(rangedMarket.address);
-			//console.log('minInPrice is:' + minInPrice / 1e18);
+			console.log('minInPrice is:' + minInPrice / 1e18);
 			//
 			// let availableToBuyFromAMMLeft = await thalesAMM.availableToBuyFromAMM(
 			// 	leftMarket.address,
@@ -355,7 +379,7 @@ contract('RangedAMM', accounts => {
 				RangedPosition.IN
 			);
 
-			//console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
+			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
 
 			//
 			// buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
@@ -373,7 +397,7 @@ contract('RangedAMM', accounts => {
 			// );
 			// console.log('buyInQuote availableToBuyFromAMMIn is :' + buyInQuote / 1e18);
 
-			//console.log('BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
+			console.log('BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
 
 			let buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
 				rangedMarket.address,
@@ -381,13 +405,13 @@ contract('RangedAMM', accounts => {
 				toUnit('2')
 			);
 
-			//console.log('buyInQuote is:' + buyInQuote / 1e18);
+			console.log('buyInQuote is:' + buyInQuote / 1e18);
 
 			let minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			//console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
 
 			let rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			//console.log('rangedMarketsAMM before:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			console.log('rangedMarketsAMM before:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			let additionalSlippage = toUnit(0.01);
 			await rangedMarketsAMM.buyFromAMM(
@@ -407,42 +431,42 @@ contract('RangedAMM', accounts => {
 			let outPosition = await outposition.at(positions.outp);
 
 			let minterBalance = await inPosition.balanceOf(minter);
-			//console.log('minter In tokens balance:' + minterBalance / 1e18);
+			console.log('minter In tokens balance:' + minterBalance / 1e18);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			//console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
 
 			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			//console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			let options = await leftMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			let rangedPositionLeftMarketUPBalance = await up.balanceOf(rangedMarket.address);
-			//console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
+			console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
 
 			let rangedPositionLeftMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
+			);
 
 			options = await rightMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			let rangedPositionRightMarketUPBalance = await up.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
+			);
 
 			let rangedPositionRightMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
+			);
 
-			// console.log('DONE BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
-			// console.log('BUYING OUT POSITION!!!!!!!!!!!!!!!!!!!!!!');
+			console.log('DONE BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
+			console.log('BUYING OUT POSITION!!!!!!!!!!!!!!!!!!!!!!');
 
 			let buyOutQuote = await rangedMarketsAMM.buyFromAmmQuote(
 				rangedMarket.address,
@@ -450,13 +474,13 @@ contract('RangedAMM', accounts => {
 				toUnit('2')
 			);
 
-			//console.log('buyOutQuote is:' + buyOutQuote / 1e18);
+			console.log('buyOutQuote is:' + buyOutQuote / 1e18);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			//console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
 
 			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			//console.log('rangedMarketsAMM before:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			console.log('rangedMarketsAMM before:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			await rangedMarketsAMM.buyFromAMM(
 				rangedMarket.address,
@@ -468,50 +492,50 @@ contract('RangedAMM', accounts => {
 			);
 
 			minterBalance = await outPosition.balanceOf(minter);
-			//console.log('minter out tokens balance:' + minterBalance / 1e18);
+			console.log('minter out tokens balance:' + minterBalance / 1e18);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			//console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
 
 			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			//console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			options = await leftMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			rangedPositionLeftMarketUPBalance = await up.balanceOf(rangedMarket.address);
-			//console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
+			console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
 
 			rangedPositionLeftMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
+			);
 
 			options = await rightMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			rangedPositionRightMarketUPBalance = await up.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
+			);
 
 			rangedPositionRightMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
+			);
 
-			// console.log('DONE BUYING OUT POSITION!!!!!!!!!!!!!!!!!!!!!!');
+			console.log('DONE BUYING OUT POSITION!!!!!!!!!!!!!!!!!!!!!!');
 
-			// console.log('SELIING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
+			console.log('SELIING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
 
 			let sellInQuote = await rangedMarketsAMM.sellToAmmQuote(
 				rangedMarket.address,
 				RangedPosition.IN,
 				toUnit('1')
 			);
-			//console.log('sellInQuote ' + sellInQuote / 1e18);
+			console.log('sellInQuote ' + sellInQuote / 1e18);
 
 			await rangedMarketsAMM.sellToAMM(
 				rangedMarket.address,
@@ -523,49 +547,49 @@ contract('RangedAMM', accounts => {
 			);
 
 			minterBalance = await inPosition.balanceOf(minter);
-			//console.log('minter in tokens balance:' + minterBalance / 1e18);
+			console.log('minter in tokens balance:' + minterBalance / 1e18);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			//console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
 
 			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			//console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			options = await leftMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			rangedPositionLeftMarketUPBalance = await up.balanceOf(rangedMarket.address);
-			//console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
+			console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
 
 			rangedPositionLeftMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
+			);
 
 			options = await rightMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			rangedPositionRightMarketUPBalance = await up.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
+			);
 
 			rangedPositionRightMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
+			);
 
-			//console.log('DONE SELIING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
+			console.log('DONE SELIING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
 
-			//console.log('SELIING OUT POSITION!!!!!!!!!!!!!!!!!!!!!!');
+			console.log('SELIING OUT POSITION!!!!!!!!!!!!!!!!!!!!!!');
 			let sellOutQuote = await rangedMarketsAMM.sellToAmmQuote(
 				rangedMarket.address,
 				RangedPosition.OUT,
 				toUnit('1')
 			);
-			//console.log('sellOutQuote ' + sellOutQuote / 1e18);
+			console.log('sellOutQuote ' + sellOutQuote / 1e18);
 
 			await rangedMarketsAMM.sellToAMM(
 				rangedMarket.address,
@@ -577,55 +601,55 @@ contract('RangedAMM', accounts => {
 			);
 
 			minterBalance = await outPosition.balanceOf(minter);
-			//console.log('minter out tokens balance:' + minterBalance / 1e18);
+			console.log('minter out tokens balance:' + minterBalance / 1e18);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			//console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
 
 			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			//console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			options = await leftMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			rangedPositionLeftMarketUPBalance = await up.balanceOf(rangedMarket.address);
-			//console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
+			console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
 
 			rangedPositionLeftMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
+			);
 
 			options = await rightMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			rangedPositionRightMarketUPBalance = await up.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
+			);
 
 			rangedPositionRightMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
+			);
 
 			minterBalance = await inPosition.balanceOf(minter);
-			//console.log('minter in tokens balance:' + minterBalance / 1e18);
+			console.log('minter in tokens balance:' + minterBalance / 1e18);
 
 			minterBalance = await outPosition.balanceOf(minter);
-			//console.log('minter out tokens balance:' + minterBalance / 1e18);
+			console.log('minter out tokens balance:' + minterBalance / 1e18);
 
-			//console.log('DONE SELLING OUT POSITIONS!!!!!');
+			console.log('DONE SELLING OUT POSITIONS!!!!!');
 
-			//console.log('BREAK BUY MAXIMUM IN!!!!!!!!!');
+			console.log('BREAK BUY MAXIMUM IN!!!!!!!!!');
 			availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
 				rangedMarket.address,
 				RangedPosition.IN
 			);
 
-			//console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
+			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
 
 			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
 				rangedMarket.address,
@@ -633,7 +657,7 @@ contract('RangedAMM', accounts => {
 				toUnit(availableToBuyFromAMMIn / 1e18 - 1)
 			);
 
-			//console.log('buyInQuote is:' + buyInQuote / 1e18);
+			console.log('buyInQuote is:' + buyInQuote / 1e18);
 
 			await expect(
 				rangedMarketsAMM.buyFromAMM(
@@ -646,13 +670,13 @@ contract('RangedAMM', accounts => {
 				)
 			).to.be.revertedWith('Not enough liquidity');
 
-			//console.log('BUY MAXIMUM IN!!!!!!!!!');
+			console.log('BUY MAXIMUM IN!!!!!!!!!');
 			availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
 				rangedMarket.address,
 				RangedPosition.IN
 			);
 
-			//console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
+			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
 
 			buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
 				rangedMarket.address,
@@ -660,7 +684,7 @@ contract('RangedAMM', accounts => {
 				toUnit(availableToBuyFromAMMIn / 1e18 - 1)
 			);
 
-			//console.log('buyInQuote is:' + buyInQuote / 1e18);
+			console.log('buyInQuote is:' + buyInQuote / 1e18);
 
 			await rangedMarketsAMM.buyFromAMM(
 				rangedMarket.address,
@@ -672,35 +696,35 @@ contract('RangedAMM', accounts => {
 			);
 
 			minterBalance = await inPosition.balanceOf(minter);
-			//console.log('minter In tokens balance:' + minterBalance / 1e18);
+			console.log('minter In tokens balance:' + minterBalance / 1e18);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			//console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
 
 			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			//console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			rangedPositionLeftMarketUPBalance = await up.balanceOf(rangedMarket.address);
-			//console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
+			console.log('rangedPositionLeftMarketUPBalance:' + rangedPositionLeftMarketUPBalance / 1e18);
 
 			rangedPositionLeftMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionLeftMarketDOWNBalance:' + rangedPositionLeftMarketDOWNBalance / 1e18
+			);
 
 			rangedPositionRightMarketUPBalance = await up.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionRightMarketUPBalance:' + rangedPositionRightMarketUPBalance / 1e18
+			);
 
 			rangedPositionRightMarketDOWNBalance = await down.balanceOf(rangedMarket.address);
-			// console.log(
-			// 	'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
-			// );
+			console.log(
+				'rangedPositionRightMarketDOWNBalance:' + rangedPositionRightMarketDOWNBalance / 1e18
+			);
 
-			//console.log('DONE BUYING MAXIMUM IN!!!');
+			console.log('DONE BUYING MAXIMUM IN!!!');
 
-			//console.log('TESTING EXERCISING!!!');
+			console.log('TESTING EXERCISING!!!');
 
 			await fastForward(day * 20);
 			const timestamp = await currentTime();
@@ -711,19 +735,19 @@ contract('RangedAMM', accounts => {
 
 			await rangedMarket.exercisePositions({ from: minter });
 			minterBalance = await inPosition.balanceOf(minter);
-			//console.log('minter in tokens balance:' + minterBalance / 1e18);
+			console.log('minter in tokens balance:' + minterBalance / 1e18);
 
 			minterBalance = await outPosition.balanceOf(minter);
-			//console.log('minter out tokens balance:' + minterBalance / 1e18);
+			console.log('minter out tokens balance:' + minterBalance / 1e18);
 
 			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			//console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
+			console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
 
 			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			//console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
 
 			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
-			//console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
 		});
 	});
 });

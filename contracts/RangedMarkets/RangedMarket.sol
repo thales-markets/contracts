@@ -86,6 +86,7 @@ contract RangedMarket {
         IERC20(address(down1)).safeTransfer(msg.sender, value / 2);
 
         positions.inp.burn(claimant, value);
+        emit Burn(claimant, value, Position.In);
     }
 
     function burnOut(uint value, address claimant) external onlyAMM {
@@ -99,34 +100,8 @@ contract RangedMarket {
         IERC20(address(up1)).safeTransfer(msg.sender, value);
 
         positions.outp.burn(claimant, value);
-    }
 
-    function _burn(
-        uint value,
-        Position _position,
-        address claimant
-    ) private {
-        if (value == 0) {
-            return;
-        }
-        if (_position == Position.Out) {
-            (, IPosition down) = IPositionalMarket(leftMarket).getOptions();
-            IERC20(address(down)).safeTransfer(msg.sender, value);
-
-            (IPosition up1, ) = IPositionalMarket(rightMarket).getOptions();
-            IERC20(address(up1)).safeTransfer(msg.sender, value);
-
-            positions.outp.burn(claimant, value);
-        } else {
-            (IPosition up, ) = IPositionalMarket(leftMarket).getOptions();
-            IERC20(address(up)).safeTransfer(msg.sender, value / 2);
-
-            (, IPosition down1) = IPositionalMarket(rightMarket).getOptions();
-            IERC20(address(down1)).safeTransfer(msg.sender, value / 2);
-
-            positions.inp.burn(claimant, value);
-        }
-        emit Burn(claimant, value, _position);
+        emit Burn(claimant, value, Position.Out);
     }
 
     function canExercisePositions() external view returns (bool) {
@@ -173,17 +148,17 @@ contract RangedMarket {
             positions.outp.burn(msg.sender, outBalance);
         }
 
-        Position result = Position.Out;
+        Position curResult = Position.Out;
         if ((leftMarket.result() == IPositionalMarket.Side.Up) && (rightMarket.result() == IPositionalMarket.Side.Down)) {
-            result = Position.In;
+            curResult = Position.In;
         }
 
         // Only pay out the side that won.
-        uint payout = (result == Position.In) ? inBalance : outBalance;
+        uint payout = (curResult == Position.In) ? inBalance : outBalance;
         if (payout != 0) {
             rangedMarketsAMM.transferSusdTo(msg.sender, payout);
         }
-        emit Exercised(msg.sender, payout, result);
+        emit Exercised(msg.sender, payout, curResult);
     }
 
     function canResolve() external view returns (bool) {
@@ -225,11 +200,11 @@ contract RangedMarket {
     }
 
     function result() public view returns (Position) {
-        Position result = Position.Out;
+        Position resultToReturn = Position.Out;
         if ((leftMarket.result() == IPositionalMarket.Side.Up) && (rightMarket.result() == IPositionalMarket.Side.Down)) {
-            result = Position.In;
+            resultToReturn = Position.In;
         }
-        return result;
+        return resultToReturn;
     }
 
     function withdrawCollateral(address recipient) external onlyAMM {

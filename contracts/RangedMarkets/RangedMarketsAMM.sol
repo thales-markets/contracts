@@ -26,6 +26,7 @@ import "./RangedPosition.sol";
 import "./RangedMarket.sol";
 import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IStakingThales.sol";
+import "../interfaces/IReferrals.sol";
 
 contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -62,6 +63,9 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     IStakingThales public stakingThales;
 
     uint public maximalDifBetweenStrikes;
+
+    address public referrals;
+    uint public referrerFee;
 
     function initialize(
         address _owner,
@@ -239,6 +243,18 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
+    function buyFromAMMWithReferrer(
+        RangedMarket rangedMarket,
+        RangedMarket.Position position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage,
+        address referrer
+    ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused {
+        IReferrals(referrals).setReferrer(referrer, msg.sender);
+        _buyFromAMM(rangedMarket, position, amount, expectedPayout, additionalSlippage);
+    }
+
     function buyFromAMM(
         RangedMarket rangedMarket,
         RangedMarket.Position position,
@@ -246,6 +262,16 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint expectedPayout,
         uint additionalSlippage
     ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused {
+        _buyFromAMM(rangedMarket, position, amount, expectedPayout, additionalSlippage);
+    }
+
+    function _buyFromAMM(
+        RangedMarket rangedMarket,
+        RangedMarket.Position position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage
+    ) internal {
         require(amount <= _availableToBuyFromAMMOnlyRanged(rangedMarket, position), "Not enough liquidity");
 
         (uint sUSDPaid, uint leftQuote, uint rightQuote) = buyFromAmmQuoteDetailed(rangedMarket, position, amount);
@@ -273,10 +299,22 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             rangedMarket.mint(amount, RangedMarket.Position.In, msg.sender);
             _updateSpentOnMarketAndSafeBoxOnBuy(address(rangedMarket), amount, sUSDPaid);
         }
+        _handleReferrer(msg.sender, sUSDPaid);
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, sUSDPaid);
         }
         emit BoughtFromAmm(msg.sender, address(rangedMarket), position, amount, sUSDPaid, address(sUSD), target);
+    }
+
+    function _handleReferrer(address buyer, uint sUSDPaid) internal {
+        if (referrerFee > 0 && referrals != address(0)) {
+            address referrer = IReferrals(referrals).referrals(buyer);
+            if (referrer != address(0)) {
+                uint referrerShare = (sUSDPaid * (ONE + referrerFee)) / ONE - sUSDPaid;
+                sUSD.transfer(referrer, referrerShare);
+                emit ReferrerPaid(referrer, buyer, referrerShare, sUSDPaid);
+            }
+        }
     }
 
     function _buyOUT(
@@ -301,6 +339,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             rightQuote,
             additionalSlippage
         );
+        // TODO: what if I got 1% less than amount via Thales AMM? set additional slippage to 0 for internal trades
+        // apply the same in all places
         (, IPosition down) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
         IERC20Upgradeable(address(down)).safeTransfer(address(rangedMarket), amount);
 
@@ -407,9 +447,17 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 thalesAmm.sellToAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Up, amount / 2);
             uint rightQuote =
                 thalesAmm.sellToAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down, amount / 2);
-            uint quoteWithoutFees = ((leftQuote + rightQuote) - ((amount / 2 - leftQuote) + (amount / 2 - rightQuote)));
-            uint quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
-            return (quoteWithFees, leftQuote, rightQuote);
+            uint summedQuotes = leftQuote + rightQuote;
+            if (
+                amount / 2 > leftQuote &&
+                amount / 2 > rightQuote &&
+                summedQuotes > ((amount / 2 - leftQuote) + (amount / 2 - rightQuote))
+            ) {
+                uint quoteWithoutFees = summedQuotes - ((amount / 2 - leftQuote) + (amount / 2 - rightQuote));
+                uint quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
+                return (quoteWithFees, leftQuote, rightQuote);
+            }
+            return (0, leftQuote, rightQuote);
         }
     }
 
@@ -424,7 +472,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
 
         (uint pricePaid, uint leftQuote, uint rightQuote) = sellToAmmQuoteDetailed(rangedMarket, position, amount);
-        require((expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "Slippage too high");
+        require(pricePaid > 0 && (expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "Slippage too high");
 
         address target;
         (RangedPosition inp, RangedPosition outp) = rangedMarket.positions();
@@ -443,6 +491,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         sUSD.safeTransfer(msg.sender, pricePaid);
+
+        _handleReferrer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, pricePaid);
@@ -595,6 +645,11 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit SetStakingThales(address(_stakingThales));
     }
 
+    function setReferrals(address _referrals, uint _referrerFee) external onlyOwner {
+        referrals = _referrals;
+        referrerFee = _referrerFee;
+    }
+
     modifier knownRangedMarket(address market) {
         require(_knownMarkets.contains(market), "Not a known ranged market");
         _;
@@ -632,4 +687,5 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event SetCapPerMarket(uint capPerMarket);
     event SetRangedAmmFee(uint rangedAmmFee);
     event SetStakingThales(address _stakingThales);
+    event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
 }

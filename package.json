@@ -110,5 +110,10 @@
 		"synthetix-2.50.4-ovm": "npm:synthetix@2.50.4-ovm",
 		"synthetix-data": "^2.1.43",
 		"web3-utils": "1.2.2"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "pretty-quick --staged"
+		}
 	}
 }

@@ -106,8 +106,7 @@ contract PositionalMarketFactory is Initializable, ProxyOwned {
         emit SetLimitOrderProvider(_limitOrderProvider);
     }
 
-    function setThalesAMM(address _thalesAMM) external onlyOwner 
-    {
+    function setThalesAMM(address _thalesAMM) external onlyOwner {
         thalesAMM = _thalesAMM;
         emit SetThalesAMM(_thalesAMM);
     }

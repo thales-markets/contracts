@@ -59,6 +59,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     address public referrals;
     uint public referrerFee;
 
+    address public previousManager;
+
     function initialize(
         address _owner,
         IPriceFeed _priceFeed,
@@ -289,7 +291,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     function canExerciseMaturedMarket(address market) public view returns (bool) {
         if (
-            IPositionalMarketManager(manager).isKnownMarket(market) &&
+            (IPositionalMarketManager(manager).isKnownMarket(market) ||
+                IPositionalMarketManager(previousManager).isKnownMarket(market)) &&
             (IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity)
         ) {
             (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
@@ -421,8 +424,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function exerciseMaturedMarket(address market) external {
-        require(IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity, "Market is not in Maturity phase");
-        require(IPositionalMarketManager(manager).isKnownMarket(market), "Unknown market");
         require(canExerciseMaturedMarket(market), "No options to exercise");
         IPositionalMarket(market).exerciseOptions();
     }
@@ -500,12 +501,16 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function setPositionalMarketManager(address _manager) external onlyOwner {
-        if (address(_manager) != address(0)) {
-            sUSD.approve(address(_manager), 0);
+        if (address(manager) != address(0)) {
+            sUSD.approve(address(manager), 0);
         }
         manager = _manager;
         sUSD.approve(manager, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         emit SetPositionalMarketManager(_manager);
+    }
+
+    function setPreviousManager(address _ogManager) external onlyOwner {
+        previousManager = _ogManager;
     }
 
     function setCapPerAsset(bytes32 asset, uint _cap) external onlyOwner {

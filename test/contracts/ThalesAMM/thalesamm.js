@@ -951,7 +951,7 @@ contract('ThalesAMM', accounts => {
 
 			await expect(thalesAMM.exerciseMaturedMarket(newMarket.address), {
 				from: minter,
-			}).to.be.revertedWith('Market is not in Maturity phase');
+			}).to.be.revertedWith('Can\'t exercise that market');
 
 			await fastForward(day * 20);
 

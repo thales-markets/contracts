@@ -481,7 +481,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function exerciseMaturedMarket(address market) external {
-        require(canExerciseMaturedMarket(market), "No options to exercise");
+        require(canExerciseMaturedMarket(market), "Can't exercise that market");
         IPositionalMarket(market).exerciseOptions();
     }
 

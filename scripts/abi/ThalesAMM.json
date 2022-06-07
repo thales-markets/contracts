@@ -1422,21 +1422,6 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_ogManager",
-        "type": "address"
-      }
-    ],
-    "name": "setPreviousManager",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
         "internalType": "contract IPriceFeed",
         "name": "_priceFeed",
         "type": "address"

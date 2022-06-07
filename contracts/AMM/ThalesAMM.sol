@@ -291,8 +291,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     function canExerciseMaturedMarket(address market) public view returns (bool) {
         if (
-            (IPositionalMarketManager(manager).isKnownMarket(market) ||
-                IPositionalMarketManager(previousManager).isKnownMarket(market)) &&
+            IPositionalMarketManager(manager).isKnownMarket(market) &&
             (IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity)
         ) {
             (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
@@ -507,10 +506,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         manager = _manager;
         sUSD.approve(manager, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         emit SetPositionalMarketManager(_manager);
-    }
-
-    function setPreviousManager(address _ogManager) external onlyOwner {
-        previousManager = _ogManager;
     }
 
     function setCapPerAsset(bytes32 asset, uint _cap) external onlyOwner {

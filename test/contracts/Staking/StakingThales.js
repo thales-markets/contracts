@@ -443,7 +443,7 @@ contract('StakingThales', accounts => {
 				'Staking period has not started'
 			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
-			
+
 			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, 70001, {
 				from: owner,
 			});
@@ -469,7 +469,7 @@ contract('StakingThales', accounts => {
 			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, fixedReward, {
 				from: owner,
 			});
-		
+
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);

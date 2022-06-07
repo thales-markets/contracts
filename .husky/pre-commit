@@ -1,4 +1,18 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npx pretty-quick --staged && .husky/hooks/lint
+# get all changed files
+ALL_ALTERED_FILES=$(git diff --cached --name-only --diff-filter=ACMR)
+echo "Changed files \n: $ALL_ALTERED_FILES"
+
+## list files that needed to be formated
+echo "FILES THAT NEED FORMATTING: "
+npx prettier --list-different $ALL_ALTERED_FILES
+
+## not commiting!
+stderrOutput=$(npx prettier --check $ALL_ALTERED_FILES 2>&1)
+echo $?
+	if [[ $? -ne 0 ]]; then
+        echo "File not formatted: $ALL_ALTERED_FILES"
+		exit 1
+	fi

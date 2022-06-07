@@ -6,6 +6,7 @@ const { assert } = require('../../utils/common');
 
 const { toBytes32 } = require('../../../index');
 
+
 const HOUR = 3600;
 const DAY = 86400;
 const WEEK = 604800;

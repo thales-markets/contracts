@@ -140,7 +140,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address collateral
     ) public view returns (uint, uint) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        if (curveIndex <= 0) {
+        if (curveIndex == 0) {
             return (0, 0);
         }
 

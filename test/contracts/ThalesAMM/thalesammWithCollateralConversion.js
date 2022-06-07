@@ -328,7 +328,6 @@ contract('ThalesAMM', accounts => {
 			sUSDBalance = await testUSDC.balanceOf(minter);
 			//console.log('sUSDBalance minter after mint:' + sUSDBalance / 1e6);
 
-			// TODO check why slippage didnt work
 			sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.DOWN,
@@ -387,86 +386,6 @@ contract('ThalesAMM', accounts => {
 			//console.log('sUSDBalance safeBox after exercize:' + sUSDBalance / 1e6);
 		});
 
-		// it('Exercise market', async () => {
-		// 	let now = await currentTime();
-		// 	let newMarket = await createMarket(
-		// 		manager,
-		// 		sETHKey,
-		// 		toUnit(12000),
-		// 		now + day * 10,
-		// 		toUnit(10),
-		// 		creatorSigner
-		// 	);
-		//
-		// 	await newMarket.mint(toUnit(1000), {
-		// 		from: minter,
-		// 	});
-		//
-		// 	let canExerciseMaturedMarket = await thalesAMM.canExerciseMaturedMarket(newMarket.address);
-		// 	console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
-		// 	let phase = await newMarket.phase();
-		// 	console.log('phase ' + phase);
-		//
-		// 	let options = await newMarket.options();
-		// 	up = await position.at(options.up);
-		// 	down = await position.at(options.down);
-		// 	await up.approve(thalesAMM.address, toUnit(100), { from: minter });
-		// 	await down.approve(thalesAMM.address, toUnit(100), { from: minter });
-		//
-		// 	let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
-		// 		newMarket.address,
-		// 		Position.UP,
-		// 		toUnit(100)
-		// 	);
-		// 	console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e18);
-		//
-		// 	let additionalSlippage = toUnit(0.01);
-		// 	await thalesAMM.sellToAMM(
-		// 		newMarket.address,
-		// 		Position.DOWN,
-		// 		toUnit(100),
-		// 		sellToAmmQuote,
-		// 		additionalSlippage,
-		// 		{ from: minter }
-		// 	);
-		//
-		// 	await sUSDSynth.approve(thalesAMM.address, toUnit(1), { from: minter });
-		//
-		// 	await expect(thalesAMM.exerciseMaturedMarket(newMarket.address), {
-		// 		from: minter,
-		// 	}).to.be.revertedWith('Market is not in Maturity phase');
-		//
-		// 	await fastForward(day * 20);
-		//
-		// 	phase = await newMarket.phase();
-		// 	console.log('phase ' + phase);
-		//
-		// 	let isKnownMarket = await manager.isKnownMarket(newMarket.address);
-		// 	console.log('isKnownMarket ' + isKnownMarket);
-		//
-		// 	let ammUpBalance = await up.balanceOf(thalesAMM.address);
-		// 	console.log('amm UpBalance pre Exercise decimal is:' + ammUpBalance / 1e18);
-		//
-		// 	let ammDownBalance = await down.balanceOf(thalesAMM.address);
-		// 	console.log('ammDownBalance pre Exercise  decimal is:' + ammDownBalance / 1e18);
-		//
-		// 	let sUSDBalance = await sUSDSynth.balanceOf(thalesAMM.address);
-		// 	console.log('sUSDBalance post Exercise  decimal is:' + sUSDBalance / 1e18);
-		//
-		// 	canExerciseMaturedMarket = await thalesAMM.canExerciseMaturedMarket(newMarket.address);
-		// 	console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
-		//
-		// 	await thalesAMM.exerciseMaturedMarket(newMarket.address);
-		//
-		// 	ammUpBalance = await up.balanceOf(thalesAMM.address);
-		// 	console.log('amm UpBalance post Exercise decimal is:' + ammUpBalance / 1e18);
-		//
-		// 	ammDownBalance = await down.balanceOf(thalesAMM.address);
-		// 	console.log('ammDownBalance post Exercise  decimal is:' + ammDownBalance / 1e18);
-		//
-		// 	sUSDBalance = await sUSDSynth.balanceOf(thalesAMM.address);
-		// 	console.log('sUSDBalance post Exercise  decimal is:' + sUSDBalance / 1e18);
-		// });
 	});
 });
 

@@ -61,6 +61,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     uint public referrerFee;
 
     address public previousManager;
+
     ICurveSUSD public curveSUSD;
 
     address public usdc;
@@ -485,10 +486,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         IPositionalMarket(market).exerciseOptions();
     }
 
-    }
-
-    function setPreviousManager(address _ogManager) external onlyOwner {
-        previousManager = _ogManager;
     // Internal
 
     function _updateSpentOnMarketOnSell(
@@ -812,6 +809,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         manager = _manager;
         sUSD.approve(manager, MAX_APPROVAL);
         emit SetPositionalMarketManager(_manager);
+    }
+
+
+    function setPreviousManager(address _ogManager) external onlyOwner {
+        previousManager = _ogManager;
     }
 
     function setCurveSUSD(

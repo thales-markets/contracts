@@ -552,6 +552,25 @@
   {
     "inputs": [
       {
+        "internalType": "int256",
+        "name": "_americanOdd",
+        "type": "int256"
+      }
+    ],
+    "name": "calculateNormalizedOddFromAmerican",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"
@@ -1096,25 +1115,6 @@
       }
     ],
     "name": "getNormalizedOdds",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getNormalizedOddsForTwoPosition",
     "outputs": [
       {
         "internalType": "uint256[]",

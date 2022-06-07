@@ -33,11 +33,19 @@ async function main() {
 	console.log('Found TherundownConsumer at:', therundownConsumerAddress);
 
 	const TherundownConsumer = await ethers.getContractFactory('TherundownConsumer');
-	const implementation = await upgrades.prepareUpgrade(therundownConsumerAddress, TherundownConsumer);
+	let implementation;
+	if(networkObj.chainId == 10) {
+		implementation = await upgrades.prepareUpgrade(therundownConsumerAddress, TherundownConsumer);
+	}
 
 	// upgrade if test networks
 	if(networkObj.chainId == 69 || networkObj.chainId == 42) {
 		await upgrades.upgradeProxy(therundownConsumerAddress, TherundownConsumer);
+
+		implementation = await getImplementationAddress(
+			ethers.provider,
+			therundownConsumerAddress
+		);
 	}
 
 	console.log('TherundownConsumer upgraded');

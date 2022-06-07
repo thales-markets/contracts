@@ -279,16 +279,20 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return _calculateAndNormalizeOdds(odds);
     }
 
-    function getNormalizedOddsForTwoPosition(bytes32 _gameId) external view returns (uint[] memory) {
-        if (gameOdds[_gameId].drawOdds == 0) {
-            int[] memory odds = new int[](2);
-            odds[0] = int256(gameOdds[_gameId].homeOdds);
-            odds[1] = int256(gameOdds[_gameId].awayOdds);
-            return _calculateAndNormalizeOdds(odds);
-        } else {
-            uint[] memory empty = new uint[](1);
-            return empty;
-        }
+    function calculateNormalizedOddFromAmerican(int _americanOdd) external pure returns(uint) {
+            uint odd;
+            if (_americanOdd == 0) {
+                odd = 0;
+            } else if (_americanOdd > 0) {
+                // odd = uint(_americanOdds[i]) / 100; // previous usage
+                odd = uint(_americanOdd); 
+                odd = ((10000 * 1e18) / (odd + 10000)) * 100;
+            } else if (_americanOdd < 0) {
+                // odd = uint(-_americanOdds[i]) / 100; // previous usage
+                odd = uint(-_americanOdd); 
+                odd = ((odd * 1e18) / (odd + 10000)) * 100;
+            }
+            return odd;
     }
 
     function getResult(bytes32 _gameId) external view returns (uint) {
@@ -488,11 +492,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             } else if (_americanOdds[i] > 0) {
                 // odd = uint(_americanOdds[i]) / 100; // previous usage
                 odd = uint(_americanOdds[i]); 
-                normalizedOdds[i] = ((100 * 1e18) / (odd + 100)) * 100;
+                normalizedOdds[i] = ((10000 * 1e18) / (odd + 10000)) * 100;
             } else if (_americanOdds[i] < 0) {
                 // odd = uint(-_americanOdds[i]) / 100; // previous usage
                 odd = uint(-_americanOdds[i]); 
-                normalizedOdds[i] = ((odd * 1e18) / (odd + 100)) * 100;
+                normalizedOdds[i] = ((odd * 1e18) / (odd + 10000)) * 100;
             }
             totalOdds += normalizedOdds[i];
         }

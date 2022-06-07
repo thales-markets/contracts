@@ -80,6 +80,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     uint public homeOddsOnCancellation;
     uint public awayOddsOnCancellation;
     uint public drawOddsOnCancellation;
+
+    bool public invalidOdds;
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
@@ -341,6 +343,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     function stampOdds() internal {
         uint[] memory odds = new uint[](optionsCount);
         odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameDetails.gameId);
+        if(odds[0] == 0 || odds[1] == 0) {
+            invalidOdds = true;
+        }
         // console.log("cancellation");
         // console.log("homeOdd: ", odds[0]);
         // console.log("awayOdd: ", odds[1]);
@@ -382,6 +387,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             payout = _result() == Side.Away ? awayBalance : drawBalance;
         }
         if(cancelled) {
+            require(!invalidOdds, "Invalid stamped odds");
             payout = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
         }
         // console.log("result: ", result, "|| payout: ", payout);
@@ -390,6 +396,15 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             _decrementDeposited(payout);
             sUSD.transfer(msg.sender, payout);
         }
+    }
+
+    function restoreInvalidOdds(uint _homeOdds, uint _awayOdds, uint _drawOdds) external override onlyOwner {
+        require(_homeOdds > 0 && _awayOdds > 0, "Invalid odd");
+        homeOddsOnCancellation = _homeOdds;
+        awayOddsOnCancellation = _awayOdds;
+        drawOddsOnCancellation = optionsCount > 2 ? _drawOdds : 0;
+        invalidOdds = false;
+        emit StoredOddsOnCancellation(homeOddsOnCancellation, awayOddsOnCancellation, drawOddsOnCancellation);
     }
     
     function calculatePayoutOnCancellation(uint _homeBalance, uint _awayBalance, uint _drawBalance) public view returns(uint) {

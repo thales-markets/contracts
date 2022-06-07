@@ -169,6 +169,37 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_homeOdds",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_awayOdds",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_drawOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "OddsForMarketRestored",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -794,6 +825,34 @@
       }
     ],
     "name": "resolveMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_homeOdds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_awayOdds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_drawOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "restoreInvalidOddsForMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

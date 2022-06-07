@@ -296,6 +296,13 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             emit MarketExpired(market);
         }
     }
+    
+    function restoreInvalidOddsForMarket(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds) external onlyOwner {
+        require(isKnownMarket(address(_market)), "Market unknown.");
+        require(SportPositionalMarket(_market).cancelled(), "Market not cancelled.");
+        SportPositionalMarket(_market).restoreInvalidOdds(_homeOdds, _awayOdds,_drawOdds);
+        emit OddsForMarketRestored(_market, _homeOdds, _awayOdds,_drawOdds);
+    }
 
     function setMarketCreationEnabled(bool enabled) external onlyOwner {
         if (enabled != marketCreationEnabled) {
@@ -430,5 +437,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event SetCustomMarketCreationEnabled(bool enabled);
     event SetMigratingManager(address manager);
     event SetTherundownConsumer(address theRundownConsumer);
+    event OddsForMarketRestored(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds);
 
 }

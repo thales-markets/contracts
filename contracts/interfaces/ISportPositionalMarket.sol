@@ -57,6 +57,8 @@ interface ISportPositionalMarket {
 
     function exerciseOptions() external;
 
+    function restoreInvalidOdds(uint _homeOdds, uint _awayOdds, uint _drawOdds) external;
+
     function burnOptions(uint amount) external;
 
     function burnOptionsMaximum() external;

@@ -251,6 +251,29 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_homeOdds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_awayOdds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_drawOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "restoreInvalidOdds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "result",
     "outputs": [

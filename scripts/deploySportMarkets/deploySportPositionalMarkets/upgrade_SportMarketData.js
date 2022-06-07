@@ -34,12 +34,12 @@ async function main() {
 		PaymentToken = getTargetAddress("ProxysUSD", network);;
 	}
 	
-    const SportMarketFactory = await ethers.getContractFactory('SportPositionalMarketFactory');
-    const SportMarketFactoryAddress = getTargetAddress("SportPositionalMarketFactory", network);
+    const SportMarketData = await ethers.getContractFactory('SportPositionalMarketData');
+    const SportMarketDataAddress = getTargetAddress("SportPositionalMarketData", network);
 
-    let implementation;
+	let implementation;
 	if(networkObj.chainId == 10) {
-		implementation = await upgrades.prepareUpgrade(SportMarketFactoryAddress, SportMarketFactory);
+		implementation = await upgrades.prepareUpgrade(SportMarketDataAddress, SportMarketData);
 	}
 
 	// upgrade if test networks
@@ -53,10 +53,10 @@ async function main() {
         
 	}
     
-    console.log('SportPositionalMarketFactory upgraded');
+    console.log('SportPositionalMarketData upgraded');
 
-	console.log('SportPositionalMarketFactoryImplementation: ', implementation);
-    setTargetAddress('SportPositionalMarketFactoryImplementation', network, implementation);
+	console.log('SportPositionalMarketDataImplementation: ', implementation);
+    setTargetAddress('SportPositionalMarketDataImplementation', network, implementation);
 
     await delay(5000);
     try {
@@ -66,7 +66,6 @@ async function main() {
 	} catch (e) {
 		console.log(e);
 	}
-
 
 
 }

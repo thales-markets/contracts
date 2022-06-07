@@ -53,9 +53,11 @@ async function main() {
     // await delay(5000);
     // await SportMarketManagerDeployed.setPositionalMarketFactory(SportMarketFactoryDeployed.address, {from: owner.address});
     await delay(5000);
-    await SportMarketFactoryDeployed.setPositionMastercopy(SportPositionDeployed.address, {from: owner.address});
-	console.log("SportPositionMarketMastercopy set in Factory");
-    await delay(5000);
+	if(networkObj.chainId == 69 || networkObj.chainId == 42) {
+		await SportMarketFactoryDeployed.setPositionMastercopy(SportPositionDeployed.address, {from: owner.address});
+		console.log("SportPositionMarketMastercopy set in Factory");
+    	await delay(5000);	
+	}
     try {
 		await hre.run('verify:verify', {
 			address: SportPositionDeployed.address,

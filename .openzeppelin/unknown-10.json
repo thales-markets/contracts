@@ -194,6 +194,11 @@
       "address": "0x679C0174f6c288C4bcd5C95C9Ec99D50357C59E7",
       "txHash": "0x3863cb55904b3615ecad5e651cd4b2879a322e823c5871c0323ace3d81987273",
       "kind": "transparent"
+    },
+    {
+      "address": "0xebD11DC0AD74a44EE1FDb3E41c8db0C2Ae032b3F",
+      "txHash": "0xbb4a73afdba64bd77233590199f4208754b522ecedac5da8730e59e4dcd7719d",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -16952,6 +16957,265 @@
           },
           "t_bool": {
             "label": "bool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "f57c8924148af613de3c0189e1d2460d0d44aa0250984ab347a12c01ccc19aaa": {
+      "address": "0xBF40dA2e303c4a7CDb1a7b4D444B10b8e9b91cd9",
+      "txHash": "0x51dcf74fac31111e15eab42c6d9949c233e445239df878fbefb324cdcbf25dbe",
+      "layout": {
+        "storage": [
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:28"
+          },
+          {
+            "contract": "Initializable",
+            "label": "______gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\upgrades-core\\contracts\\Initializable.sol:63"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "deciMath",
+            "type": "t_contract(DeciMath)6221",
+            "src": "contracts\\AMM\\ThalesAMM.sol:27"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "priceFeed",
+            "type": "t_contract(IPriceFeed)16068",
+            "src": "contracts\\AMM\\ThalesAMM.sol:32"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "sUSD",
+            "type": "t_contract(IERC20)18683",
+            "src": "contracts\\AMM\\ThalesAMM.sol:33"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "manager",
+            "type": "t_address",
+            "src": "contracts\\AMM\\ThalesAMM.sol:34"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "capPerMarket",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\ThalesAMM.sol:36"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "min_spread",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\ThalesAMM.sol:37"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "max_spread",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\ThalesAMM.sol:38"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "impliedVolatilityPerAsset",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts\\AMM\\ThalesAMM.sol:40"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "minimalTimeLeftToMaturity",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\ThalesAMM.sol:42"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "spentOnMarket",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\AMM\\ThalesAMM.sol:46"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "safeBox",
+            "type": "t_address",
+            "src": "contracts\\AMM\\ThalesAMM.sol:48"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "safeBoxImpact",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\ThalesAMM.sol:49"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "stakingThales",
+            "type": "t_contract(IStakingThales)16200",
+            "src": "contracts\\AMM\\ThalesAMM.sol:51"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "minSupportedPrice",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\ThalesAMM.sol:53"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "maxSupportedPrice",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\ThalesAMM.sol:54"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "_capPerAsset",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts\\AMM\\ThalesAMM.sol:56"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "whitelistedAddresses",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\AMM\\ThalesAMM.sol:58"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "referrals",
+            "type": "t_address",
+            "src": "contracts\\AMM\\ThalesAMM.sol:60"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "referrerFee",
+            "type": "t_uint256",
+            "src": "contracts\\AMM\\ThalesAMM.sol:61"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "previousManager",
+            "type": "t_address",
+            "src": "contracts\\AMM\\ThalesAMM.sol:63"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "curveSUSD",
+            "type": "t_contract(ICurveSUSD)15663",
+            "src": "contracts\\AMM\\ThalesAMM.sol:65"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "usdc",
+            "type": "t_address",
+            "src": "contracts\\AMM\\ThalesAMM.sol:67"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "usdt",
+            "type": "t_address",
+            "src": "contracts\\AMM\\ThalesAMM.sol:68"
+          },
+          {
+            "contract": "ThalesAMM",
+            "label": "dai",
+            "type": "t_address",
+            "src": "contracts\\AMM\\ThalesAMM.sol:69"
+          }
+        ],
+        "types": {
+          "t_contract(DeciMath)6221": {
+            "label": "contract DeciMath"
+          },
+          "t_contract(IPriceFeed)16068": {
+            "label": "contract IPriceFeed"
+          },
+          "t_contract(IERC20)18683": {
+            "label": "contract IERC20"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_contract(IStakingThales)16200": {
+            "label": "contract IStakingThales"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(ICurveSUSD)15663": {
+            "label": "contract ICurveSUSD"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"

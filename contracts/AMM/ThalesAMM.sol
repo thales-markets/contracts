@@ -810,11 +810,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         emit SetPositionalMarketManager(_manager);
     }
 
-
-    function setPreviousManager(address _ogManager) external onlyOwner {
-        previousManager = _ogManager;
-    }
-
     function setCurveSUSD(
         address _curveSUSD,
         address _dai,

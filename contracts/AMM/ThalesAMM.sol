@@ -60,6 +60,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     address public referrals;
     uint public referrerFee;
 
+    address public previousManager;
     ICurveSUSD public curveSUSD;
 
     address public usdc;
@@ -316,7 +317,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     function canExerciseMaturedMarket(address market) public view returns (bool) {
         if (
-            IPositionalMarketManager(manager).isKnownMarket(market) &&
+            (IPositionalMarketManager(manager).isKnownMarket(market) ||
+                IPositionalMarketManager(previousManager).isKnownMarket(market)) &&
             (IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity)
         ) {
             (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
@@ -479,12 +481,14 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function exerciseMaturedMarket(address market) external {
-        require(IPositionalMarket(market).phase() == IPositionalMarket.Phase.Maturity, "Market is not in Maturity phase");
-        require(IPositionalMarketManager(manager).isKnownMarket(market), "Unknown market");
         require(canExerciseMaturedMarket(market), "No options to exercise");
         IPositionalMarket(market).exerciseOptions();
     }
 
+    }
+
+    function setPreviousManager(address _ogManager) external onlyOwner {
+        previousManager = _ogManager;
     // Internal
 
     function _updateSpentOnMarketOnSell(

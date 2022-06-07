@@ -1100,6 +1100,21 @@
   },
   {
     "constant": true,
+    "inputs": [],
+    "name": "previousManager",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [
       {
         "internalType": "address",
@@ -1511,6 +1526,21 @@
       }
     ],
     "name": "setPositionalMarketManager",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_ogManager",
+        "type": "address"
+      }
+    ],
+    "name": "setPreviousManager",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

@@ -180,7 +180,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('price fully unlikely [ @cov-skip ]', async () => {
+		it('price fully unlikely ', async () => {
 			let strike = 44000; //2593 works 2592 doesnt
 			let now = await currentTime();
 			let newMarket = await createMarket(

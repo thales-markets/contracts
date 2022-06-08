@@ -106,7 +106,7 @@ contract('PositionalMarketManager', accounts => {
 	});
 
 	describe('Market tracking', () => {
-		it('Multiple markets can exist simultaneously, and debt is tracked properly across them. [ @cov-skip ]', async () => {
+		it('Multiple markets can exist simultaneously, and debt is tracked properly across them. ', async () => {
 			const newValue = toUnit(1);
 			const tx = await manager.connect(creator).setCreatorCapitalRequirement(newValue.toString());
 
@@ -148,7 +148,7 @@ contract('PositionalMarketManager', accounts => {
 			await assert.revert(manager.resolveMarket(initialCreator), 'Not an active market');
 		});
 
-		it('Adding, resolving, and expiring markets properly updates market lists [ @cov-skip ]', async () => {
+		it('Adding, resolving, and expiring markets properly updates market lists ', async () => {
 			const numMarkets = 8;
 			assert.bnEqual(await manager.numActiveMarkets(), toBN(0));
 			assert.equal((await manager.activeMarkets(0, 100)).length, 0);
@@ -223,7 +223,7 @@ contract('PositionalMarketManager', accounts => {
 			assert.equal((await manager.maturedMarkets(0, 100)).length, 0);
 		});
 
-		it('Pagination works properly [ @cov-skip ]', async () => {
+		it('Pagination works properly ', async () => {
 			const numMarkets = 8;
 			const now = await currentTime();
 			const markets = [];
@@ -378,7 +378,7 @@ contract('PositionalMarketManager', accounts => {
 		});
 	});
 
-	describe('Market migration [ @cov-skip ]', () => {
+	describe('Market migration ', () => {
 		let markets, newManager, newerManager, now;
 
 		before(async () => {

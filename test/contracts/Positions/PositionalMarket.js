@@ -4,12 +4,7 @@ const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
 const { assert } = require('../../utils/common');
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound
-} = require('../../utils')();
+const { fastForward, toUnit, currentTime, multiplyDecimalRound } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupAllContracts } = require('../../utils/setup');
 
@@ -21,11 +16,7 @@ const {
 } = require('../../utils/helpers');
 
 let factory, manager;
-let PositionalMarket,
-	priceFeed,
-	sUSDSynth,
-	positionalMarketMastercopy,
-	PositionMastercopy;
+let PositionalMarket, priceFeed, sUSDSynth, positionalMarketMastercopy, PositionMastercopy;
 let market, up, down, Position, Synth, addressResolver;
 
 let aggregator_sAUD, aggregator_iAUD, aggregator_sUSD, aggregator_nonRate;
@@ -160,9 +151,7 @@ contract('Position', accounts => {
 		await manager.connect(creator).setPositionalMarketFactory(factory.address);
 
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
-		await factory
-			.connect(owner)
-			.setPositionalMarketMastercopy(positionalMarketMastercopy.address);
+		await factory.connect(owner).setPositionalMarketMastercopy(positionalMarketMastercopy.address);
 		await factory.connect(owner).setPositionMastercopy(PositionMastercopy.address);
 
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
@@ -1226,7 +1215,7 @@ contract('Position', accounts => {
 			});
 		});
 
-		it('Expired market remits any unclaimed options and extra sUSD to the caller. [ @cov-skip ]', async () => {
+		it('Expired market remits any unclaimed options and extra sUSD to the caller. ', async () => {
 			sUSDSynth.issue(secondCreator, toUnit(3));
 			sUSDSynth.approve(manager.address, toUnit(3), { from: secondCreator });
 

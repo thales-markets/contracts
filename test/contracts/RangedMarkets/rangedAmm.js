@@ -301,8 +301,7 @@ contract('RangedAMM', accounts => {
 	};
 
 	describe('Test ranged AMM', () => {
-
-		it('create market test [ @cov-skip ]', async () => {
+		it('create market test ', async () => {
 			let now = await currentTime();
 			let leftMarket = await createMarket(
 				manager,

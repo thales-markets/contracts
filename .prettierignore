@@ -3,3 +3,7 @@ build
 coverage
 .circleci/src
 .circleci/config.template.yml
+
+# husky hooks
+.husky/
+.prettierignore

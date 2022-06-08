@@ -982,6 +982,21 @@
   },
   {
     "constant": true,
+    "inputs": [],
+    "name": "previousManager",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [
       {
         "internalType": "address",

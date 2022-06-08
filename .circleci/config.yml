@@ -1,21 +1,54 @@
 orbs: # declare what orbs we are going to use
   node: circleci/node@3.0.1 # the node orb provides common node-related configuration
-  
+  codecov: codecov/codecov@3.2.3
+
 version: 2.1 # using 2.1 provides access to orbs and other features
 
 jobs:
-  test:
+  build-and-test:
     executor: node/default
     steps:
       - checkout
       - node/install-packages:
           cache-path: ~/project/node_modules
           override-ci-command: npm install
-      - run: npx hardhat compile --showsize --optimizer
-      - run: npx hardhat test --optimizer
-      - run: npx hardhat coverage
-
+      - run:
+          name: Compile
+          command: |
+            npx hardhat compile --showsize --optimizer
+      - run:
+          name: Tests
+          command: |
+            npx hardhat test --optimizer
+      - run:
+          name: Create shared coverage outputs folder
+          command: mkdir -p /tmp/coverage
+      - run:
+          name: Coverage
+          command: |
+            npx hardhat coverage
+      - run:
+          name: Save coverage
+          command: |
+            cp coverage.json /tmp/coverage/coverage.json
+      - persist_to_workspace:
+          root: /tmp/coverage
+          paths:
+            - coverage.json
+  codecov-job:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - attach_workspace:
+          at: /tmp/coverage
+      - checkout
+      - codecov/upload:
+          file: '/tmp/coverage/coverage.json'
+          
 workflows:
-  build_and_test:
+  jobs-workflow:
     jobs:
-      - test
+      - codecov-job:
+          requires:
+            - build-and-test
+      - build-and-test

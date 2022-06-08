@@ -68,6 +68,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint public maxSupportedPrice;
 
     mapping(address => bool) public whitelistedAddresses;
+
+
     mapping(bytes32 => uint) private _capPerAsset;
 
     address public testOdds;
@@ -90,7 +92,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
     }
 
-    function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
+            function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position);
             // ignore extremes

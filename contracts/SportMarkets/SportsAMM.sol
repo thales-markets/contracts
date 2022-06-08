@@ -23,7 +23,6 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
-import "../test-helpers/TestOdds.sol";
 import "hardhat/console.sol";
 
 // import "../AMM/DeciMath.sol";
@@ -70,7 +69,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     mapping(address => bool) public whitelistedAddresses;
     mapping(bytes32 => uint) private _capPerAsset;
 
-    address public testOdds;
+    uint[] public testOdds;
+    bool public testingOdds;
 
     function initialize(
         address _owner,
@@ -227,8 +227,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bytes32 gameId = ISportPositionalMarket(_market).getGameId();
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-            // odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
-            odds = TestOdds(testOdds).getNormalizedOdds(gameId);
+            if (testingOdds) {
+                odds = testOdds;
+            } else {
+                odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
+            }
             // (uint positionHome, uint positionAway) = (odds[0], odds[1]);
             return odds[uint(_position)];
         } else {
@@ -428,8 +431,19 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetSUSD(address(sUSD));
     }
 
-    function setTestOdds(address _testOdds) public onlyOwner {
-        testOdds = _testOdds;
+    function setTesting(bool _testing) external onlyOwner {
+        testingOdds = _testing;
+    }
+
+    function setTestOdds(
+        uint _homeOdds,
+        uint _awayOdds,
+        uint _drawOdds
+    ) public onlyOwner {
+        testOdds = new uint[](3);
+        testOdds[0] = _homeOdds;
+        testOdds[1] = _awayOdds;
+        testOdds[2] = _drawOdds;
     }
 
     function setTherundownConsumer(address _theRundownConsumer) public onlyOwner {

@@ -236,8 +236,7 @@ contract('VestingEscrow', accounts => {
 		});
 
 		it("should fund from admin's account only", async () => {
-			const REVERT =
-				'Only the contract owner may perform this action';
+			const REVERT = 'Only the contract owner may perform this action';
 			await assert.revert(VestingEscrow.connect(notAdmin).fund(recipients, amounts), REVERT);
 		});
 
@@ -361,8 +360,7 @@ contract('VestingEscrow', accounts => {
 
 		it('Cant selfdestruct befor a year passes after end time', async () => {
 			await fastForward(YEAR);
-			const REVERT =
-				'Contract can only be selfdestruct a year after endtime';
+			const REVERT = 'Contract can only be selfdestruct a year after endtime';
 			await assert.revert(VestingEscrow._selfDestruct(beneficiary.address), REVERT);
 		});
 

@@ -25,12 +25,13 @@ import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
 import "../test-helpers/TestOdds.sol";
 import "hardhat/console.sol";
+
 // import "../AMM/DeciMath.sol";
 
-contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard  {
+contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
     using SafeERC20Upgradeable for IERC20Upgradeable;
-    
+
     struct GameOdds {
         bytes32 gameId;
         int24 homeOdds;
@@ -51,7 +52,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint public min_spread;
     uint public max_spread;
 
-
     uint public minimalTimeLeftToMaturity;
 
     enum Position {Home, Away, Draw}
@@ -68,11 +68,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint public maxSupportedPrice;
 
     mapping(address => bool) public whitelistedAddresses;
-
-
     mapping(bytes32 => uint) private _capPerAsset;
 
     address public testOdds;
+
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
@@ -92,7 +91,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
     }
 
-            function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
+    function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position);
             // ignore extremes
@@ -164,9 +163,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
 
             // Balancing with three positions needs to be elaborated
-            if(ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
-                balanceOfTheOtherSide =
-                position == Position.Away ? draw.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
+            if (ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
+                balanceOfTheOtherSide = position == Position.Away
+                    ? draw.getBalanceOf(address(this))
+                    : away.getBalanceOf(address(this));
             }
 
             // can burn straight away balanceOfTheOtherSide
@@ -223,24 +223,18 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         } else return 0;
     }
 
-    function obtainOdds(
-        address _market,
-        Position _position
-    ) public view returns (uint) {
+    function obtainOdds(address _market, Position _position) public view returns (uint) {
         bytes32 gameId = ISportPositionalMarket(_market).getGameId();
-        if(ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
+        if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
             // odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
             odds = TestOdds(testOdds).getNormalizedOdds(gameId);
             // (uint positionHome, uint positionAway) = (odds[0], odds[1]);
             return odds[uint(_position)];
-        }
-        else {
+        } else {
             return 0;
         }
     }
-
-    
 
     function isMarketInAMMTrading(address market) public view returns (bool) {
         if (ISportPositionalMarketManager(manager).isActiveMarket(market)) {
@@ -275,11 +269,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function getMarketDefaultOdds(address _market) external view returns (uint[] memory) {
         uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
         Position position = Position.Home;
-        for(uint i=0; i<odds.length; i++) {
-            if(i == uint(Position.Away)) {
+        for (uint i = 0; i < odds.length; i++) {
+            if (i == uint(Position.Away)) {
                 position = Position.Away;
-            }
-            else if(i == uint(Position.Draw)) {
+            } else if (i == uint(Position.Draw)) {
                 position = Position.Draw;
             }
             odds[i] = buyFromAmmQuote(_market, position, ONE);
@@ -319,7 +312,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         IPosition target = position == Position.Home ? home : away;
-        if(ISportPositionalMarket(market).optionsCount() > 2 && position != Position.Home) {
+        if (ISportPositionalMarket(market).optionsCount() > 2 && position != Position.Home) {
             target = position == Position.Away ? away : draw;
         }
 
@@ -350,7 +343,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         IPosition target = position == Position.Home ? home : away;
-        if(ISportPositionalMarket(market).optionsCount() > 2 && position != Position.Home) {
+        if (ISportPositionalMarket(market).optionsCount() > 2 && position != Position.Home) {
             target = position == Position.Away ? away : draw;
         }
 
@@ -380,7 +373,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     function exerciseMaturedMarket(address market) external {
-        require(ISportPositionalMarket(market).phase() == ISportPositionalMarket.Phase.Maturity, "Market is not in Maturity phase");
+        require(
+            ISportPositionalMarket(market).phase() == ISportPositionalMarket.Phase.Maturity,
+            "Market is not in Maturity phase"
+        );
         require(ISportPositionalMarketManager(manager).isKnownMarket(market), "Unknown market");
         require(canExerciseMaturedMarket(market), "No options to exercise");
         ISportPositionalMarket(market).exerciseOptions();
@@ -440,7 +436,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         theRundownConsumer = _theRundownConsumer;
         emit SetTherundownConsumer(_theRundownConsumer);
     }
-    
+
     function setStakingThales(IStakingThales _stakingThales) public onlyOwner {
         stakingThales = _stakingThales;
         emit SetStakingThales(address(_stakingThales));
@@ -510,7 +506,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
 
         if (
-            spentOnMarket[market] <= ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.sub(safeBoxShare))
+            spentOnMarket[market] <=
+            ISportPositionalMarketManager(manager).reverseTransformCollateral(sUSDPaid.sub(safeBoxShare))
         ) {
             spentOnMarket[market] = 0;
         } else {
@@ -651,9 +648,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint) {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
-        if(ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
-            balance =
-            position == Position.Away ? away.getBalanceOf(address(this)) : draw.getBalanceOf(address(this));
+        if (ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
+            balance = position == Position.Away ? away.getBalanceOf(address(this)) : draw.getBalanceOf(address(this));
         }
         return balance;
     }
@@ -661,23 +657,22 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function _balanceOfPositionsOnMarket(address market, Position position) internal view returns (uint, uint) {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
-        uint balanceOtherSide = position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
-        if(ISportPositionalMarket(market).optionsCount() == 3) {
+        uint balanceOtherSide =
+            position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
+        if (ISportPositionalMarket(market).optionsCount() == 3) {
             uint homeBalance = home.getBalanceOf(address(this));
             uint awayBalance = away.getBalanceOf(address(this));
             uint drawBalance = draw.getBalanceOf(address(this));
             // console.log("homeBalance", homeBalance);
             // console.log("awayBalance", awayBalance);
             // console.log("drawBalance", drawBalance);
-            if(position == Position.Home) {
+            if (position == Position.Home) {
                 balance = homeBalance;
                 balanceOtherSide = awayBalance < drawBalance ? awayBalance : drawBalance;
-            }
-            else if(position == Position.Away) {
+            } else if (position == Position.Away) {
                 balance = awayBalance;
                 balanceOtherSide = homeBalance < drawBalance ? homeBalance : drawBalance;
-            }
-            else {
+            } else {
                 balance = drawBalance;
                 balanceOtherSide = homeBalance < awayBalance ? homeBalance : awayBalance;
             }
@@ -736,5 +731,4 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetMinSupportedPrice(uint _spread);
     event SetMaxSupportedPrice(uint _spread);
     event SetTherundownConsumer(address _theRundownConsumer);
-
 }

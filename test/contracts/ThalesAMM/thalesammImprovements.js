@@ -180,7 +180,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('buying test [ @cov-skip ]', async () => {
+		it('buying test ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -281,10 +281,7 @@ contract('ThalesAMM', accounts => {
 			// 	'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
 			// );
 
-			let balancePosition = await thalesAMM.balancePosition(
-				newMarket.address,
-				Position.DOWN
-			);
+			let balancePosition = await thalesAMM.balancePosition(newMarket.address, Position.DOWN);
 			// console.log(
 			// 	'balancePosition down availableToBuyFromAMM decimal is:' + balancePosition / 1e18
 			// );

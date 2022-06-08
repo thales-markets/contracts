@@ -179,7 +179,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test Safe Box', () => {
-		it('Safe box [ @cov-skip ]', async () => {
+		it('Safe box ', async () => {
 			let strike = 4000;
 			let now = await currentTime();
 			let newMarket = await createMarket(
@@ -312,7 +312,7 @@ contract('ThalesAMM', accounts => {
 			//console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
 		});
 
-		it('Safe box sell [ @cov-skip ]', async () => {
+		it('Safe box sell ', async () => {
 			let strike = 4000;
 			let now = await currentTime();
 			let newMarket = await createMarket(

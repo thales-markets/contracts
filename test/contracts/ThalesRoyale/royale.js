@@ -608,7 +608,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(true, isTokenFirstAlive);
 		});
 
-		it('win till the end [ @cov-skip ]', async () => {
+		it('win till the end ', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -777,7 +777,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(true, isTokenFirstAlive);
 		});
 
-		it('win till the end - no token transfer [ @cov-skip ]', async () => {
+		it('win till the end - no token transfer ', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -840,7 +840,7 @@ contract('ThalesRoyale', accounts => {
 			await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
 		});
 
-		it('win till the end - with transfers [ @cov-skip ]', async () => {
+		it('win till the end - with transfers ', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -973,7 +973,7 @@ contract('ThalesRoyale', accounts => {
 			await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
 		});
 
-		it('win till the end and check results [ @cov-skip ]', async () => {
+		it('win till the end and check results ', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -1177,7 +1177,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(hasParticipatedInCurrentOrLastRoyale, true);
 		});
 
-		it('check the changing positions [ @cov-skip ]', async () => {
+		it('check the changing positions ', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -1389,7 +1389,7 @@ contract('ThalesRoyale', accounts => {
 		});
 	});
 
-	it('Win and collect reward [ @cov-skip ]', async () => {
+	it('Win and collect reward ', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		// check rewards
@@ -1521,7 +1521,7 @@ contract('ThalesRoyale', accounts => {
 		).to.be.revertedWith('Reward already collected');
 	});
 
-	it('Win and collect rewards and start new season [ @cov-skip ]', async () => {
+	it('Win and collect rewards and start new season ', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		// check rewards
@@ -2060,7 +2060,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(metadata.description, 'Thales Royale Passport - season 2');
 	});
 
-	it('Two players take loosing positions no one left but they can collect and they are winners [ @cov-skip ]', async () => {
+	it('Two players take loosing positions no one left but they can collect and they are winners ', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		// check rewards
@@ -2397,7 +2397,7 @@ contract('ThalesRoyale', accounts => {
 		assert.bnEqual(0, await voucher.balanceOf(second));
 	});
 
-	it('Sign up with ALL ROUNDS default positions check values, first scenario [ @cov-skip ]', async () => {
+	it('Sign up with ALL ROUNDS default positions check values, first scenario ', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
@@ -2546,7 +2546,7 @@ contract('ThalesRoyale', accounts => {
 		);
 	});
 
-	it('Sign up with ALL ROUNDS default positions check values, second scenario [ @cov-skip ]', async () => {
+	it('Sign up with ALL ROUNDS default positions check values, second scenario ', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));

@@ -116,8 +116,8 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
 
         if (_fixedTicketPrice > 0) {
             require(
-            IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice),
-            "Low amount for creation."
+                IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(_fixedTicketPrice),
+                "Low amount for creation."
             );
             require(
                 IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount.add(_fixedTicketPrice),
@@ -159,10 +159,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 totalCreatorDeposit = totalCreatorDeposit.add(_positionsOfCreator[i]);
                 creatorPositions[i] = i + 1;
             }
-             require(
-            IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(totalCreatorDeposit),
-            "Low amount"
-            );
+            require(IERC20(paymentToken).balanceOf(msg.sender) >= fixedBondAmount.add(totalCreatorDeposit), "Low amount");
             require(
                 IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= fixedBondAmount.add(totalCreatorDeposit),
                 "No allowance."
@@ -300,7 +297,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 IExoticPositionalMarket(_marketAddress).fixedBondAmount()
             );
         }
-        resolverAddress[_marketAddress] = (msg.sender == oracleCouncilAddress || msg.sender == owner) ? safeBoxAddress : msg.sender;
+        resolverAddress[_marketAddress] = (msg.sender == oracleCouncilAddress || msg.sender == owner)
+            ? safeBoxAddress
+            : msg.sender;
         IExoticPositionalMarket(_marketAddress).resolveMarket(_outcomePosition, resolverAddress[_marketAddress]);
         emit MarketResolved(_marketAddress, _outcomePosition);
     }
@@ -321,7 +320,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 "Market can not be cancelled by creator"
             );
             cancelledByCreator[_marketAddress] = true;
-            if(!IThalesOracleCouncil(oracleCouncilAddress).isMarketClosedForDisputes(_marketAddress)) {
+            if (!IThalesOracleCouncil(oracleCouncilAddress).isMarketClosedForDisputes(_marketAddress)) {
                 IThalesOracleCouncil(oracleCouncilAddress).closeMarketForDisputes(_marketAddress);
             }
         }
@@ -340,7 +339,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         require(isActiveMarket(_marketAddress), "NotActive");
         if (IExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "only pDAO");
-            if(IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0) {
+            if (IThalesBonds(thalesBonds).getResolverBondForMarket(_marketAddress) > 0) {
                 IThalesBonds(thalesBonds).sendBondFromMarketToUser(
                     _marketAddress,
                     safeBoxAddress,
@@ -607,7 +606,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         if (_minFixedTicketPrice != minFixedTicketPrice) {
             minFixedTicketPrice = _minFixedTicketPrice;
         }
-        
+
         if (_maxFixedTicketPrice != maxFixedTicketPrice) {
             maxFixedTicketPrice = _maxFixedTicketPrice;
         }
@@ -684,7 +683,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         emit PauserAddressRemoved(_pauserAddress);
     }
 
-    // INTERNAL 
+    // INTERNAL
 
     function thereAreNonEqualPositions(string[] memory positionPhrases) internal view returns (bool) {
         for (uint i = 0; i < positionPhrases.length - 1; i++) {

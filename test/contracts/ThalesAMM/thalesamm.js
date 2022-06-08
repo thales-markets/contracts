@@ -183,7 +183,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('simple sell test [ @cov-skip ]', async () => {
+		it('simple sell test ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -223,7 +223,7 @@ contract('ThalesAMM', accounts => {
 			);
 		});
 
-		it('buy effect on sellPriceImpact [ @cov-skip ]', async () => {
+		it('buy effect on sellPriceImpact ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -296,7 +296,7 @@ contract('ThalesAMM', accounts => {
 			);
 		});
 
-		it('buying test [ @cov-skip ]', async () => {
+		it('buying test ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -385,7 +385,7 @@ contract('ThalesAMM', accounts => {
 			//console.log('availableToBuyFromAMM post buy max decimal is:' + availableToBuyFromAMM / 1e18);
 		});
 
-		it('buy effect on sellPriceImpact [ @cov-skip ]', async () => {
+		it('buy effect on sellPriceImpact ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -500,7 +500,7 @@ contract('ThalesAMM', accounts => {
 			//console.log('sellPriceImpactPostBuy post sell decimal is:' + sellPriceImpactPostBuy / 1e18);
 		});
 
-		it('sell effect on buyPriceImpact [ @cov-skip ]', async () => {
+		it('sell effect on buyPriceImpact ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -620,7 +620,7 @@ contract('ThalesAMM', accounts => {
 			//console.log('sellPriceImpactPostBuy post sell decimal is:' + sellPriceImpactPostBuy / 1e18);
 		});
 
-		it('buy other side effect [ @cov-skip ]', async () => {
+		it('buy other side effect ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -832,7 +832,7 @@ contract('ThalesAMM', accounts => {
 			// );
 		});
 
-		it('Market time left condition [ @cov-skip ]', async () => {
+		it('Market time left condition ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -892,7 +892,7 @@ contract('ThalesAMM', accounts => {
 			).to.be.revertedWith('Market is not in Trading phase');
 		});
 
-		it('Unsupported asset market [ @cov-skip ]', async () => {
+		it('Unsupported asset market ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -906,7 +906,7 @@ contract('ThalesAMM', accounts => {
 			assert.equal(false, isMarketInAMMTrading);
 		});
 
-		it('Exercise market [ @cov-skip ]', async () => {
+		it('Exercise market ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -953,7 +953,7 @@ contract('ThalesAMM', accounts => {
 
 			await expect(thalesAMM.exerciseMaturedMarket(newMarket.address), {
 				from: minter,
-			}).to.be.revertedWith('Market is not in Maturity phase');
+			}).to.be.revertedWith('No options to exercise');
 
 			await fastForward(day * 20);
 
@@ -987,7 +987,7 @@ contract('ThalesAMM', accounts => {
 			//console.log('sUSDBalance post Exercise  decimal is:' + sUSDBalance / 1e18);
 		});
 
-		it('Odds calculation checker [ @cov-skip ]', async () => {
+		it('Odds calculation checker ', async () => {
 			//console.log('ThalesAMM deployed to ' + thalesAMM.address);
 
 			let now = await currentTime();
@@ -1058,7 +1058,7 @@ contract('ThalesAMM', accounts => {
 			//('priceUp decimal is:' + priceUp / 1e18);
 		});
 
-		it('Edge cases for price [ @cov-skip ]', async () => {
+		it('Edge cases for price ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -1112,7 +1112,7 @@ contract('ThalesAMM', accounts => {
 			// );
 		});
 
-		it('TIP examples1 [ @cov-skip ]', async () => {
+		it('TIP examples1 ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -1166,7 +1166,7 @@ contract('ThalesAMM', accounts => {
 			// );
 		});
 
-		it('TIP examples2 [ @cov-skip ]', async () => {
+		it('TIP examples2 ', async () => {
 			await thalesAMM.setCapPerMarket(toUnit(500), { from: owner });
 			let now = await currentTime();
 			let newMarket = await createMarket(

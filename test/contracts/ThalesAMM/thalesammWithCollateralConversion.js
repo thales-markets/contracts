@@ -204,7 +204,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('buying test [ @cov-skip ]', async () => {
+		it('buying test ', async () => {
 			let sUSDBalance = await testUSDC.balanceOf(creatorSigner.address);
 			//console.log('sUSDBalance creatorSigner:' + sUSDBalance / 1e6);
 

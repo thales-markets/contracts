@@ -1,5 +1,5 @@
 orbs: # declare what orbs we are going to use
-  node: circleci/node@3.0.1 # the node orb provides common node-related configuration
+  node: circleci/node@5.0.2 # the node orb provides common node-related configuration
   codecov: codecov/codecov@3.2.3
 
 version: 2.1 # using 2.1 provides access to orbs and other features
@@ -71,4 +71,12 @@ workflows:
       - codecov-job:
           requires:
             - build-and-test
-      - build-and-test
+          filters:
+            branches:
+              only:
+                - main
+      - build-and-test:
+          filters:
+            branches:
+              only:
+                - main

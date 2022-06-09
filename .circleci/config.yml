@@ -56,6 +56,10 @@ jobs:
           command: |
             cp -R /tmp/coverage/coverage-*.json .
       - run:
+          name: Copy files
+          command: |
+            rm coverage.json
+      - run:
           name: LS
           command: |
             ls /tmp/coverage/

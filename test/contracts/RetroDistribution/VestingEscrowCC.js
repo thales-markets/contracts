@@ -577,10 +577,10 @@ contract('VestingEscrow', accounts => {
 					await fastForward(30 * WEEK);
 					await VestingEscrow.claim({ from: beneficiary.address });
 
-					assert.revert(
-						await VestingEscrow.decreaseAllocation(
+					await assert.revert(
+						VestingEscrow.decreaseAllocation(
 							beneficiary.address,
-							web3.utils.toWei('100000'),
+							web3.utils.toWei('100000000000000000000000000'),
 							{
 								from: owner.address,
 							}

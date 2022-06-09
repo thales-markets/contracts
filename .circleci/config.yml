@@ -52,6 +52,10 @@ jobs:
       - attach_workspace:
           at: /tmp/coverage
       - run:
+          name: Copy files
+          command: |
+            cp -R /tmp/coverage/coverage-*.json .
+      - run:
           name: LS
           command: |
             ls /tmp/coverage/

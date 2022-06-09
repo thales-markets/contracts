@@ -43,8 +43,8 @@ jobs:
           at: /tmp/coverage
       - checkout
       - codecov/upload:
-          file: '/tmp/coverage/coverage.json'
-          
+          file: "/tmp/coverage/coverage.json"
+
 workflows:
   jobs-workflow:
     jobs:

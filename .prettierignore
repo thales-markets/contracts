@@ -3,6 +3,8 @@ build
 coverage
 .circleci/src
 .circleci/config.template.yml
+.circleci/config.yml
+codecov.yml
 
 # husky hooks
 .husky/

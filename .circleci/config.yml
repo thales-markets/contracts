@@ -33,15 +33,17 @@ jobs:
       - run:
           name: Coverage
           command: |
-            npx hardhat coverage
+            TEST_FILES="{$(circleci tests glob "test/contracts/*/*.js" | \
+              circleci tests split --split-by=timings | xargs | sed -e 's/ /,/g')}"
+            npm run coverage -- --testfiles "$TEST_FILES"
       - run:
           name: Save coverage
           command: |
-            cp coverage.json /tmp/coverage/coverage.json
+            cp coverage.json /tmp/coverage/coverage-$CIRCLE_NODE_INDEX.json
       - persist_to_workspace:
           root: /tmp/coverage
           paths:
-            - coverage.json
+            - coverage-*.json
   codecov-job:
     docker:
       - image: cimg/base:stable
@@ -49,8 +51,11 @@ jobs:
       - attach_workspace:
           at: /tmp/coverage
       - checkout
-      - codecov/upload:
-          file: "/tmp/coverage/coverage.json"
+      - run:
+          name: LS
+          command: |
+            ls /tmp/coverage/
+      - codecov/upload
 
 workflows:
   jobs-workflow:

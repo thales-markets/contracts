@@ -11,7 +11,6 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../interfaces/IExoticPositionalMarketManager.sol";
 import "../interfaces/IThalesBonds.sol";
 
-
 contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausable, ProxyReentrancyGuard {
     using SafeMath for uint;
     using SafeERC20 for IERC20;
@@ -117,15 +116,19 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
-            require(_amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition),"Amounts exceed");
-                totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
-                userOpenBidPosition[creatorAddress][_positions[i]] = userOpenBidPosition[creatorAddress][_positions[i]].add(
-                    _amounts[i]
-                );
-                totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
+            require(
+                _amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition),
+                "Amounts exceed"
+            );
+            totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
+            userOpenBidPosition[creatorAddress][_positions[i]] = userOpenBidPosition[creatorAddress][_positions[i]].add(
+                _amounts[i]
+            );
+            totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
         }
-        require(totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) >= minPosAmount &&
-            totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) <= maxAmountForOpenBidPosition,
+        require(
+            totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) >= minPosAmount &&
+                totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) <= maxAmountForOpenBidPosition,
             "Amounts exceed"
         );
         totalOpenBidAmount = totalOpenBidAmount.add(totalDepositedAmount);
@@ -140,11 +143,11 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         require(_positions.length <= positionCount, "Exceeds count");
         require(canUsersPlacePosition(), "Market resolved");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
-        if(block.timestamp.add(1 days) > endOfPositioning) {
-            if(totalUserPlacedAmount[msg.sender] > 0) {
+        if (block.timestamp.add(1 days) > endOfPositioning) {
+            if (totalUserPlacedAmount[msg.sender] > 0) {
                 require(
                     totalUserPlacedAmount[msg.sender] <=
-                    totalOpenBidAmount.mul(maxWithdrawPercentage.mul(ONE_PERCENT)).div(HUNDRED_PERCENT),
+                        totalOpenBidAmount.mul(maxWithdrawPercentage.mul(ONE_PERCENT)).div(HUNDRED_PERCENT),
                     "Exceeds reposition"
                 );
             }
@@ -154,22 +157,27 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
-            require(_amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition), "Amounts exceed");
-                if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
-                        totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].sub(userOpenBidPosition[msg.sender][_positions[i]]);
-                        firstTime = false;
-                }
-                totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
-                userOpenBidPosition[msg.sender][_positions[i]] = _amounts[i];
-                totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
+            require(
+                _amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition),
+                "Amounts exceed"
+            );
+            if (userOpenBidPosition[msg.sender][_positions[i]] > 0) {
+                totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].sub(
+                    userOpenBidPosition[msg.sender][_positions[i]]
+                );
+                firstTime = false;
+            }
+            totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
+            userOpenBidPosition[msg.sender][_positions[i]] = _amounts[i];
+            totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
         }
-        require(totalDepositedAmount >= minPosAmount && totalDepositedAmount >= totalUserPlacedAmount[msg.sender], "Bellow init amounts");
-        uint amountToBeAdded = totalDepositedAmount.sub(totalUserPlacedAmount[msg.sender]);
         require(
-            amountToBeAdded <= maxAmountForOpenBidPosition,
-            "Amounts exceed"
+            totalDepositedAmount >= minPosAmount && totalDepositedAmount >= totalUserPlacedAmount[msg.sender],
+            "Bellow init amounts"
         );
-        if(amountToBeAdded > 0) {
+        uint amountToBeAdded = totalDepositedAmount.sub(totalUserPlacedAmount[msg.sender]);
+        require(amountToBeAdded <= maxAmountForOpenBidPosition, "Amounts exceed");
+        if (amountToBeAdded > 0) {
             totalOpenBidAmount = totalOpenBidAmount.add(amountToBeAdded);
             totalUserPlacedAmount[msg.sender] = totalUserPlacedAmount[msg.sender].add(amountToBeAdded);
             totalUsersTakenPositions = firstTime ? totalUsersTakenPositions.add(1) : totalUsersTakenPositions;
@@ -188,21 +196,24 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             for (uint i = 1; i <= positionCount; i++) {
                 if (userOpenBidPosition[msg.sender][i] > 0) {
                     totalToWithdraw = totalToWithdraw.add(userOpenBidPosition[msg.sender][i]);
-                    totalOpenBidAmountPerPosition[i] = totalOpenBidAmountPerPosition[i].sub(userOpenBidPosition[msg.sender][i]);
+                    totalOpenBidAmountPerPosition[i] = totalOpenBidAmountPerPosition[i].sub(
+                        userOpenBidPosition[msg.sender][i]
+                    );
                     userOpenBidPosition[msg.sender][i] = 0;
                 }
             }
         } else {
             require(userOpenBidPosition[msg.sender][_openBidPosition] > 0, "No amount for position");
-            totalOpenBidAmountPerPosition[_openBidPosition] = totalOpenBidAmountPerPosition[_openBidPosition].sub(userOpenBidPosition[msg.sender][_openBidPosition]);
+            totalOpenBidAmountPerPosition[_openBidPosition] = totalOpenBidAmountPerPosition[_openBidPosition].sub(
+                userOpenBidPosition[msg.sender][_openBidPosition]
+            );
             totalToWithdraw = userOpenBidPosition[msg.sender][_openBidPosition];
             userOpenBidPosition[msg.sender][_openBidPosition] = 0;
         }
         if (block.timestamp.add(1 days) > endOfPositioning && block.timestamp <= endOfPositioning) {
             require(!withrawalRestrictedForUser[msg.sender], "Already withdrawn");
             require(
-                totalToWithdraw <=
-                    totalOpenBidAmount.mul(maxWithdrawPercentage.mul(ONE_PERCENT)).div(HUNDRED_PERCENT),
+                totalToWithdraw <= totalOpenBidAmount.mul(maxWithdrawPercentage.mul(ONE_PERCENT)).div(HUNDRED_PERCENT),
                 "Exceeds withdraw limit"
             );
             withrawalRestrictedForUser[msg.sender] = true;
@@ -271,7 +282,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
         resetForUserAllPositionsToZero(msg.sender);
         thalesBonds.transferFromMarket(msg.sender, amount);
-         if(!feesAndBondsClaimed) {
+        if (!feesAndBondsClaimed) {
             _issueFees();
         }
         userAlreadyClaimed[msg.sender] = userAlreadyClaimed[msg.sender].add(amount);
@@ -285,7 +296,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
         resetForUserAllPositionsToZero(_user);
         thalesBonds.transferFromMarket(_user, amount);
-        if(!feesAndBondsClaimed) {
+        if (!feesAndBondsClaimed) {
             _issueFees();
         }
         userAlreadyClaimed[msg.sender] = userAlreadyClaimed[msg.sender].add(amount);
@@ -377,11 +388,9 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     function canCreatorCancelMarket() external view returns (bool) {
         if (disputed) {
             return false;
-        }
-        else if (totalUsersTakenPositions == 1) {
+        } else if (totalUsersTakenPositions == 1) {
             return true;
-        }
-        else {
+        } else {
             return false;
             // return totalOpenBidAmount == getUserOpenBidTotalPlacedAmount(marketManager.creatorAddress(address(this)))
             //         ? true
@@ -475,14 +484,17 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         }
         return userAllPositions;
     }
+
     function getPotentialOpenBidWinningForAllPositions() external view returns (uint[] memory) {
         uint[] memory potentialWinning = new uint[](positionCount);
         if (totalUsersTakenPositions == 0 || totalOpenBidAmount == 0) {
             return potentialWinning;
         }
         for (uint i = 1; i <= positionCount; i++) {
-            if(totalOpenBidAmountPerPosition[i] > 0) {
-                potentialWinning[i - 1] = applyDeduction(totalOpenBidAmount).mul(HUNDRED_PERCENT).div(totalOpenBidAmountPerPosition[i]);
+            if (totalOpenBidAmountPerPosition[i] > 0) {
+                potentialWinning[i - 1] = applyDeduction(totalOpenBidAmount).mul(HUNDRED_PERCENT).div(
+                    totalOpenBidAmountPerPosition[i]
+                );
             }
         }
         return potentialWinning;
@@ -506,9 +518,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         }
         return getUserOpenBidPotentialWinningForPosition(_account, winningPosition);
     }
-   
 
-    
     function getUserPotentialWinningAmountForAllPosition(address _account) external view returns (uint[] memory) {
         uint[] memory potentialWinning = new uint[](positionCount);
         for (uint i = 1; i <= positionCount; i++) {
@@ -516,7 +526,6 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         }
         return potentialWinning;
     }
-
 
     function applyDeduction(uint value) internal view returns (uint) {
         return

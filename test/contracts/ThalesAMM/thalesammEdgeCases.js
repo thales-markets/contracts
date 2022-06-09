@@ -178,7 +178,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('Strike more than current price [ @cov-skip ]', async () => {
+		it('Strike more than current price ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -233,7 +233,7 @@ contract('ThalesAMM', accounts => {
 		});
 	});
 
-	it('Strike less than current price [ @cov-skip ]', async () => {
+	it('Strike less than current price ', async () => {
 		let now = await currentTime();
 		let newMarket = await createMarket(
 			manager,

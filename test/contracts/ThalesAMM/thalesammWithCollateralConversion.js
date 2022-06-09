@@ -202,7 +202,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('buying test [ @cov-skip ]', async () => {
+		it('buying test ', async () => {
 			let sUSDBalance = await testUSDC.balanceOf(creatorSigner.address);
 			//console.log('sUSDBalance creatorSigner:' + sUSDBalance / 1e6);
 
@@ -385,7 +385,6 @@ contract('ThalesAMM', accounts => {
 			sUSDBalance = await testUSDC.balanceOf(safeBox);
 			//console.log('sUSDBalance safeBox after exercize:' + sUSDBalance / 1e6);
 		});
-
 	});
 });
 

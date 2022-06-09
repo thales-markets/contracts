@@ -4,28 +4,16 @@ const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
 const { assert } = require('../../utils/common');
-const {
-	fastForward,
-	toUnit,
-	currentTime
-} = require('../../utils')();
+const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupContract, setupAllContracts } = require('../../utils/setup');
 
-const {
-	getEventByName,
-	convertToDecimals,
-} = require('../../utils/helpers');
+const { getEventByName, convertToDecimals } = require('../../utils/helpers');
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 let factory, manager, addressResolver;
-let PositionalMarket,
-	priceFeed,
-	sUSDSynth,
-	Synth,
-	PositionalMarketMastercopy,
-	PositionMastercopy;
+let PositionalMarket, priceFeed, sUSDSynth, Synth, PositionalMarketMastercopy, PositionMastercopy;
 let market, Position;
 let aggregator_sAUD;
 
@@ -96,9 +84,7 @@ contract('PositionalMarketManager', accounts => {
 
 		await manager.connect(creator).setPositionalMarketFactory(factory.address);
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
-		await factory
-			.connect(owner)
-			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
+		await factory.connect(owner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(owner).setPositionMastercopy(PositionMastercopy.address);
 
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
@@ -120,7 +106,7 @@ contract('PositionalMarketManager', accounts => {
 	});
 
 	describe('Market tracking', () => {
-		it('Multiple markets can exist simultaneously, and debt is tracked properly across them. [ @cov-skip ]', async () => {
+		it('Multiple markets can exist simultaneously, and debt is tracked properly across them. ', async () => {
 			const newValue = toUnit(1);
 			const tx = await manager.connect(creator).setCreatorCapitalRequirement(newValue.toString());
 
@@ -162,7 +148,7 @@ contract('PositionalMarketManager', accounts => {
 			await assert.revert(manager.resolveMarket(initialCreator), 'Not an active market');
 		});
 
-		it('Adding, resolving, and expiring markets properly updates market lists [ @cov-skip ]', async () => {
+		it('Adding, resolving, and expiring markets properly updates market lists ', async () => {
 			const numMarkets = 8;
 			assert.bnEqual(await manager.numActiveMarkets(), toBN(0));
 			assert.equal((await manager.activeMarkets(0, 100)).length, 0);
@@ -237,7 +223,7 @@ contract('PositionalMarketManager', accounts => {
 			assert.equal((await manager.maturedMarkets(0, 100)).length, 0);
 		});
 
-		it('Pagination works properly [ @cov-skip ]', async () => {
+		it('Pagination works properly ', async () => {
 			const numMarkets = 8;
 			const now = await currentTime();
 			const markets = [];
@@ -392,7 +378,7 @@ contract('PositionalMarketManager', accounts => {
 		});
 	});
 
-	describe('Market migration [ @cov-skip ]', () => {
+	describe('Market migration ', () => {
 		let markets, newManager, newerManager, now;
 
 		before(async () => {
@@ -480,7 +466,9 @@ contract('PositionalMarketManager', accounts => {
 
 		it('Markets can only be migrated by the owner.', async () => {
 			await assert.revert(
-				manager.connect(minterSigner).migrateMarkets(newManager.address, true, [markets[1].address]),
+				manager
+					.connect(minterSigner)
+					.migrateMarkets(newManager.address, true, [markets[1].address]),
 				'Only the contract owner may perform this action'
 			);
 		});
@@ -511,7 +499,9 @@ contract('PositionalMarketManager', accounts => {
 
 		it('Cannot receive duplicate markets.', async () => {
 			await newerManager.connect(creator).setMigratingManager(manager.address);
-			await manager.connect(creator).migrateMarkets(newerManager.address, true, [markets[0].address]);
+			await manager
+				.connect(creator)
+				.migrateMarkets(newerManager.address, true, [markets[0].address]);
 			await newerManager.connect(creator).setMigratingManager(managerOwner);
 			await assert.revert(
 				newerManager.connect(owner).receiveMarkets(true, [markets[0].address]),

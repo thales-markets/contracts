@@ -7,6 +7,7 @@ const { assert } = require('../../utils/common');
 const { toBytes32 } = require('../../../index');
 
 const HOUR = 3600;
+
 const DAY = 86400;
 const WEEK = 604800;
 
@@ -118,7 +119,11 @@ contract('ThalesRoyale', accounts => {
 		let ThalesRoyalePassportImplementation = await ThalesRoyalePassport.new({ from: owner });
 		passport = await ThalesRoyalePassport.at(ThalesRoyalePassportDeployed.address);
 
-		let initializePassportData = encodeCall('initialize', ['address', 'string'], [royale.address, passportURI]);
+		let initializePassportData = encodeCall(
+			'initialize',
+			['address', 'string'],
+			[royale.address, passportURI]
+		);
 
 		await ThalesRoyalePassportDeployed.upgradeToAndCall(
 			ThalesRoyalePassportImplementation.address,
@@ -176,13 +181,12 @@ contract('ThalesRoyale', accounts => {
 		});
 
 		it('Signing up can be called twice - two passports are minted', async () => {
-
 			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(0));
 			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(2));
 			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(1));
 
 			await royale.startNewSeason({ from: owner });
-			
+
 			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(0));
 			assert.equal(toBytes32('SNX'), await royale.oracleKeyPerSeason(1));
 			assert.notEqual(toBytes32('SNX'), await royale.oracleKeyPerSeason(2));
@@ -190,7 +194,6 @@ contract('ThalesRoyale', accounts => {
 			// first token id #1, second token id #2
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
-
 
 			let initTotalTokensInARound = await royale.totalTokensPerRoundPerSeason(season_1, 1);
 			// not started
@@ -204,7 +207,7 @@ contract('ThalesRoyale', accounts => {
 			await ThalesDeployed.approve(royale.address, toUnit(2500), { from: first });
 
 			// third token id #3
-			await royale.signUp({ from: first })
+			await royale.signUp({ from: first });
 
 			assert.equal(await passport.ownerOf(1), first);
 			assert.equal(await passport.ownerOf(2), second);
@@ -231,7 +234,7 @@ contract('ThalesRoyale', accounts => {
 				user: first,
 				tokenId: firstPassportId,
 				season: season_1,
-				positions: [0, 0, 0, 0, 0, 0, 0]
+				positions: [0, 0, 0, 0, 0, 0, 0],
 			});
 		});
 
@@ -605,7 +608,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(true, isTokenFirstAlive);
 		});
 
-		it('win till the end [ @cov-skip ]', async () => {
+		it('win till the end ', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -774,7 +777,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(true, isTokenFirstAlive);
 		});
 
-		it('win till the end - no token transfer [ @cov-skip ]', async () => {
+		it('win till the end - no token transfer ', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -837,7 +840,7 @@ contract('ThalesRoyale', accounts => {
 			await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
 		});
 
-		it('win till the end - with transfers [ @cov-skip ]', async () => {
+		it('win till the end - with transfers ', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -970,7 +973,7 @@ contract('ThalesRoyale', accounts => {
 			await expect(royale.closeRound()).to.be.revertedWith('Competition finished');
 		});
 
-		it('win till the end and check results [ @cov-skip ]', async () => {
+		it('win till the end and check results ', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -1174,7 +1177,7 @@ contract('ThalesRoyale', accounts => {
 			assert.equal(hasParticipatedInCurrentOrLastRoyale, true);
 		});
 
-		it('check the changing positions [ @cov-skip ]', async () => {
+		it('check the changing positions ', async () => {
 			await royale.startNewSeason({ from: owner });
 			await royale.signUp({ from: first });
 			await royale.signUp({ from: second });
@@ -1386,7 +1389,7 @@ contract('ThalesRoyale', accounts => {
 		});
 	});
 
-	it('Win and collect reward [ @cov-skip ]', async () => {
+	it('Win and collect reward ', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		// check rewards
@@ -1518,7 +1521,7 @@ contract('ThalesRoyale', accounts => {
 		).to.be.revertedWith('Reward already collected');
 	});
 
-	it('Win and collect rewards and start new season [ @cov-skip ]', async () => {
+	it('Win and collect rewards and start new season ', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		// check rewards
@@ -1876,7 +1879,6 @@ contract('ThalesRoyale', accounts => {
 		// fetch token uri
 		const tokenURI1 = await passport.tokenURI(sixthPassportIdSeason2);
 		//console.log(tokenURI1);
-		
 
 		//#2
 		await royale.takeAPosition(firstPassportIdSeason2, 1, { from: first });
@@ -2058,7 +2060,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(metadata.description, 'Thales Royale Passport - season 2');
 	});
 
-	it('Two players take loosing positions no one left but they can collect and they are winners [ @cov-skip ]', async () => {
+	it('Two players take loosing positions no one left but they can collect and they are winners ', async () => {
 		await royale.startNewSeason({ from: owner });
 
 		// check rewards
@@ -2297,12 +2299,12 @@ contract('ThalesRoyale', accounts => {
 		let reward = await royale.rewardPerSeason(season_1);
 		assert.bnEqual(reward, toUnit(0));
 
-		await expect(royale.signUpWithPosition([3, 1, 1, 1, 1, 1, 1], { from: first })).to.be.revertedWith(
-			'Position can only be 1 or 2'
-		);
-		await expect(royale.signUpWithPosition([0, 0, 0, 0, 0, 0, 0], { from: first })).to.be.revertedWith(
-			'Position can only be 1 or 2'
-		);
+		await expect(
+			royale.signUpWithPosition([3, 1, 1, 1, 1, 1, 1], { from: first })
+		).to.be.revertedWith('Position can only be 1 or 2');
+		await expect(
+			royale.signUpWithPosition([0, 0, 0, 0, 0, 0, 0], { from: first })
+		).to.be.revertedWith('Position can only be 1 or 2');
 
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2));
@@ -2373,9 +2375,9 @@ contract('ThalesRoyale', accounts => {
 		await expect(royale.signUpWithPass(1, { from: second })).to.be.revertedWith(
 			'Owner of the token not valid'
 		);
-		await expect(royale.signUpWithPassWithPosition(2, [2, 2, 2, 2, 2, 2, 2], { from: first })).to.be.revertedWith(
-			'Owner of the token not valid'
-		);
+		await expect(
+			royale.signUpWithPassWithPosition(2, [2, 2, 2, 2, 2, 2, 2], { from: first })
+		).to.be.revertedWith('Owner of the token not valid');
 
 		assert.bnEqual(1, await voucher.balanceOf(first));
 		assert.bnEqual(1, await voucher.balanceOf(second));
@@ -2395,9 +2397,9 @@ contract('ThalesRoyale', accounts => {
 		assert.bnEqual(0, await voucher.balanceOf(second));
 	});
 
-	it('Sign up with ALL ROUNDS default positions check values, first scenario [ @cov-skip ]', async () => {
+	it('Sign up with ALL ROUNDS default positions check values, first scenario ', async () => {
 		await royale.startNewSeason({ from: owner });
-		
+
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2));
 
@@ -2419,7 +2421,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(2, await royale.positionsPerRoundPerSeason(season_1, 2, 2)); // round 3 ...
 
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 1));
-		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 2));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 3));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 4));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 5));
@@ -2443,7 +2445,7 @@ contract('ThalesRoyale', accounts => {
 			strikePrice: 1000,
 			finalPrice: 900,
 			numberOfEliminatedPlayers: 2,
-			numberOfWinningPlayers: 2
+			numberOfWinningPlayers: 2,
 		});
 
 		let isTokenFirstAlive = await royale.isTokenAlive(firstPassportId);
@@ -2489,7 +2491,7 @@ contract('ThalesRoyale', accounts => {
 		);
 
 		await royale.takeAPosition(thirdPassportId, 2, { from: third });
-		
+
 		await MockPriceFeedDeployed.setPricetoReturn(1100);
 		await fastForward(HOUR * 72 + 1);
 		const tx_close_2 = await royale.closeRound();
@@ -2502,7 +2504,7 @@ contract('ThalesRoyale', accounts => {
 			strikePrice: 900,
 			finalPrice: 1100,
 			numberOfEliminatedPlayers: 1,
-			numberOfWinningPlayers: 1
+			numberOfWinningPlayers: 1,
 		});
 
 		assert.eventEqual(tx_close_2.logs[1], 'RoyaleFinished', {
@@ -2524,7 +2526,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 6));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 7));
 
-		assert.equal(false, isTokenFirstAlive); 
+		assert.equal(false, isTokenFirstAlive);
 		assert.equal(false, isTokenSecondAlive);
 		assert.equal(true, isTokenThirdAlive);
 		assert.equal(false, isTokenFourthAlive);
@@ -2544,9 +2546,9 @@ contract('ThalesRoyale', accounts => {
 		);
 	});
 
-	it('Sign up with ALL ROUNDS default positions check values, second scenario [ @cov-skip ]', async () => {
+	it('Sign up with ALL ROUNDS default positions check values, second scenario ', async () => {
 		await royale.startNewSeason({ from: owner });
-		
+
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1));
 		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2));
 
@@ -2568,7 +2570,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 2, 2)); // round 3 ...
 
 		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 1));
-		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 2)); 
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 2));
 		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 3));
 		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 4));
 		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 5));
@@ -2576,7 +2578,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 7));
 
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 1));
-		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 2));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 3));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 4));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 5));
@@ -2584,7 +2586,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 7));
 
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 1));
-		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 2));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 3));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 4));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 5));
@@ -2605,7 +2607,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 1, 2)); // round 1 loosing
 
 		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 1));
-		assert.equal(0, await royale.tokenPositionInARoundPerSeason(firstPassportId, 2)); 
+		assert.equal(0, await royale.tokenPositionInARoundPerSeason(firstPassportId, 2));
 		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 3));
 		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 4));
 		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 5));
@@ -2613,7 +2615,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(2, await royale.tokenPositionInARoundPerSeason(firstPassportId, 7));
 
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 1));
-		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 2));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 3));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 4));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 5));
@@ -2621,13 +2623,12 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 7));
 
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 1));
-		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 2));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 3));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 4));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 5));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 6));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 7));
-
 
 		// check if event is emited
 		assert.eventEqual(tx_close_1.logs[0], 'RoundClosed', {
@@ -2637,7 +2638,7 @@ contract('ThalesRoyale', accounts => {
 			strikePrice: 1000,
 			finalPrice: 900,
 			numberOfEliminatedPlayers: 1,
-			numberOfWinningPlayers: 3
+			numberOfWinningPlayers: 3,
 		});
 
 		let isTokenFirstAlive = await royale.isTokenAlive(firstPassportId);
@@ -2668,7 +2669,7 @@ contract('ThalesRoyale', accounts => {
 		await royale.takeAPosition(thirdPassportId, 2, { from: third });
 
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 1));
-		assert.equal(2, await royale.tokenPositionInARoundPerSeason(secondPassportId, 2)); 
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(secondPassportId, 2));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 3));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 4));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 5));
@@ -2676,7 +2677,7 @@ contract('ThalesRoyale', accounts => {
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(secondPassportId, 7));
 
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 1));
-		assert.equal(2, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 2)); 
+		assert.equal(2, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 2));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 3));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 4));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(thirdPassportId, 5));
@@ -2685,14 +2686,14 @@ contract('ThalesRoyale', accounts => {
 
 		assert.equal(0, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 0));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 1));
-		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 2)); 
+		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 2));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 3));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 4));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 5));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 6));
 		assert.equal(1, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 7));
 		assert.equal(0, await royale.tokenPositionInARoundPerSeason(fourthPassportId, 8));
-		
+
 		await MockPriceFeedDeployed.setPricetoReturn(1100);
 		await fastForward(HOUR * 72 + 1);
 		const tx_close_2 = await royale.closeRound();
@@ -2713,7 +2714,7 @@ contract('ThalesRoyale', accounts => {
 			strikePrice: 900,
 			finalPrice: 1100,
 			numberOfEliminatedPlayers: 1,
-			numberOfWinningPlayers: 2
+			numberOfWinningPlayers: 2,
 		});
 
 		isTokenFirstAlive = await royale.isTokenAlive(firstPassportId);
@@ -2721,7 +2722,7 @@ contract('ThalesRoyale', accounts => {
 		isTokenThirdAlive = await royale.isTokenAlive(thirdPassportId);
 		isTokenFourthAlive = await royale.isTokenAlive(fourthPassportId);
 
-		assert.equal(false, isTokenFirstAlive); 
+		assert.equal(false, isTokenFirstAlive);
 		assert.equal(true, isTokenSecondAlive);
 		assert.equal(true, isTokenThirdAlive);
 		assert.equal(false, isTokenFourthAlive);
@@ -2747,7 +2748,7 @@ contract('ThalesRoyale', accounts => {
 			strikePrice: 1100,
 			finalPrice: 1200,
 			numberOfEliminatedPlayers: 2,
-			numberOfWinningPlayers: 2
+			numberOfWinningPlayers: 2,
 		});
 
 		assert.eventEqual(tx_close_3.logs[1], 'RoyaleFinished', {
@@ -2761,7 +2762,7 @@ contract('ThalesRoyale', accounts => {
 		isTokenThirdAlive = await royale.isTokenAlive(thirdPassportId);
 		isTokenFourthAlive = await royale.isTokenAlive(fourthPassportId);
 
-		assert.equal(false, isTokenFirstAlive); 
+		assert.equal(false, isTokenFirstAlive);
 		assert.equal(true, isTokenSecondAlive);
 		assert.equal(true, isTokenThirdAlive);
 		assert.equal(false, isTokenFourthAlive);
@@ -2779,6 +2780,5 @@ contract('ThalesRoyale', accounts => {
 		await expect(royale.takeAPosition(thirdPassportId, 1, { from: third })).to.be.revertedWith(
 			'Competition finished'
 		);
-
 	});
 });

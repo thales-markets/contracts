@@ -3,16 +3,10 @@
 const { artifacts, contract } = require('hardhat');
 const { assert } = require('../../utils/common');
 
-
 const SECOND = 1000;
 const HOUR = 3600;
 
-const {
-	fastForward,
-	toUnit,
-	currentTime
-} = require('../../utils')();
-
+const { fastForward, toUnit, currentTime } = require('../../utils')();
 
 contract('TherundownConsumer', accounts => {
 	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
@@ -32,8 +26,7 @@ contract('TherundownConsumer', accounts => {
 	let Thales;
 	let ThalesBonds;
 
-	let deployedMarket,
-		fixedBondAmount;
+	let deployedMarket, fixedBondAmount;
 
 	let TherundownConsumer;
 	let TherundownConsumerDeployed;
@@ -76,61 +69,38 @@ contract('TherundownConsumer', accounts => {
 		await ExoticPositionalTags.initialize(manager, { from: manager });
 		await ThalesBonds.initialize(manager, { from: manager });
 		let GamesQueue = artifacts.require('GamesQueue');
-		gamesQueue = await GamesQueue.new({from:owner});
+		gamesQueue = await GamesQueue.new({ from: owner });
 		await gamesQueue.initialize(owner, { from: owner });
 
-		await ExoticPositionalMarketManager.initialize(
-			manager,
-			{ from: manager }
-		);
+		await ExoticPositionalMarketManager.initialize(manager, { from: manager });
 
 		fixedBondAmount = toUnit(100);
 		let disputePrice = toUnit(10);
 		let maxOpenBidPositon = toUnit(1000);
 
-		
-		
-		await ExoticPositionalMarketManager.setPercentages(
-			"1",
-			"1",
-			"1",
-			"6",
-			"10",
-			{ from: manager });
-		
-		await ExoticPositionalMarketManager.setDurations(
-			"14400",
-			"0",
-			"28800",
-			"172800",
-			"86400",
-			{ from: manager });
-		
-		await ExoticPositionalMarketManager.setLimits(
-			"1000",
-			"1000",
-			"60",
-			"1000",
-			"5",
-			"5",
-			"5",
-			{ from: manager });
-		
+		await ExoticPositionalMarketManager.setPercentages('1', '1', '1', '6', '10', { from: manager });
+
+		await ExoticPositionalMarketManager.setDurations('14400', '0', '28800', '172800', '86400', {
+			from: manager,
+		});
+
+		await ExoticPositionalMarketManager.setLimits('1000', '1000', '60', '1000', '5', '5', '5', {
+			from: manager,
+		});
+
 		await ExoticPositionalMarketManager.setAmounts(
-			"10",
-			"1000",
+			'10',
+			'1000',
 			disputePrice,
 			fixedBondAmount,
 			disputePrice,
 			disputePrice,
 			maxOpenBidPositon,
-			{ from: manager });
-			
-		await ExoticPositionalMarketManager.setFlags(
-			false,
-			true,
-			{ from: manager });
-			
+			{ from: manager }
+		);
+
+		await ExoticPositionalMarketManager.setFlags(false, true, { from: manager });
+
 		await ExoticPositionalMarketManager.setAddresses(
 			ExoticPositionalMarket.address,
 			ExoticPositionalOpenBidMarket.address,
@@ -141,10 +111,11 @@ contract('TherundownConsumer', accounts => {
 			safeBox,
 			owner,
 			owner,
-			{ from: manager });
+			{ from: manager }
+		);
 		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
 		await ThalesBonds.setMarketManager(ExoticPositionalMarketManager.address, { from: manager });
-	
+
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });
@@ -219,8 +190,8 @@ contract('TherundownConsumer', accounts => {
 			safeBox,
 			owner,
 			owner,
-			{ from: manager });
-			
+			{ from: manager }
+		);
 	});
 
 	describe('Init', () => {
@@ -238,10 +209,22 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarketType('resolve'));
 			assert.equal(false, await TherundownConsumerDeployed.isSupportedMarketType('aaa'));
 
-			assert.equal(true, await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'Real Madrid'));
-			assert.equal(true, await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'TBD TBD'));
-			assert.equal(true, await TherundownConsumerDeployed.isSameTeamOrTBD('TBD TBD', 'Liverpool FC'));
-			assert.equal(false, await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'Liverpool FC'));
+			assert.equal(
+				true,
+				await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'Real Madrid')
+			);
+			assert.equal(
+				true,
+				await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'TBD TBD')
+			);
+			assert.equal(
+				true,
+				await TherundownConsumerDeployed.isSameTeamOrTBD('TBD TBD', 'Liverpool FC')
+			);
+			assert.equal(
+				false,
+				await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'Liverpool FC')
+			);
 		});
 	});
 
@@ -322,7 +305,6 @@ contract('TherundownConsumer', accounts => {
 			assert.equal('Atlanta Hawks', await deployedMarket.positionPhrase(1));
 			assert.equal('Charlotte Hornets', await deployedMarket.positionPhrase(2));
 			assert.equal(9004, await deployedMarket.tags(0));
-
 		});
 
 		it('Fulfill Games Created - Champions League Game 1, create market, check results', async () => {
@@ -580,7 +562,7 @@ contract('TherundownConsumer', accounts => {
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 
-		it('Fulfill Games Resolved - Champions League Game 1, resolve market, check results [ @cov-skip ]', async () => {
+		it('Fulfill Games Resolved - Champions League Game 1, resolve market, check results ', async () => {
 			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
 
 			// req. games
@@ -869,16 +851,28 @@ contract('TherundownConsumer', accounts => {
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
-			await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, { from: second })).to.be.revertedWith('Address not supported');
-			await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 0, { from: third })).to.be.revertedWith('Bad outcome for three position game');
-			await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 4, { from: third })).to.be.revertedWith('Bad outcome for three position game');
-			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: second })).to.be.revertedWith('Address not supported');
-			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for three position game');
-			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, { from: third })).to.be.revertedWith('Bad outcome for three position game');
+			await expect(
+				TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, { from: second })
+			).to.be.revertedWith('Address not supported');
+			await expect(
+				TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 0, { from: third })
+			).to.be.revertedWith('Bad outcome for three position game');
+			await expect(
+				TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 4, { from: third })
+			).to.be.revertedWith('Bad outcome for three position game');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: second })
+			).to.be.revertedWith('Address not supported');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })
+			).to.be.revertedWith('Bad outcome for three position game');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, { from: third })
+			).to.be.revertedWith('Bad outcome for three position game');
 
-			const tx_2 = await TherundownConsumerDeployed.resolveGameManually(
-				gameFootballid1, 2, { from: third }
-			);
+			const tx_2 = await TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, {
+				from: third,
+			});
 
 			// check if event is emited
 			assert.eventEqual(tx_2.logs[0], 'ResolveSportsMarket', {
@@ -887,7 +881,9 @@ contract('TherundownConsumer', accounts => {
 				_outcome: 2,
 			});
 
-			await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
+			await expect(
+				TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, { from: third })
+			).to.be.revertedWith('Market resoved or canceled');
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
@@ -963,13 +959,19 @@ contract('TherundownConsumer', accounts => {
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
-			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: second })).to.be.revertedWith('Address not supported');
-			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for three position game');
-			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, { from: third })).to.be.revertedWith('Bad outcome for three position game');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: second })
+			).to.be.revertedWith('Address not supported');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })
+			).to.be.revertedWith('Bad outcome for three position game');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, { from: third })
+			).to.be.revertedWith('Bad outcome for three position game');
 
-			const tx_2 = await TherundownConsumerDeployed.resolveMarketManually(
-				marketAdd, 1, { from: third }
-			);
+			const tx_2 = await TherundownConsumerDeployed.resolveMarketManually(marketAdd, 1, {
+				from: third,
+			});
 
 			// check if event is emited
 			assert.eventEqual(tx_2.logs[0], 'ResolveSportsMarket', {
@@ -978,14 +980,17 @@ contract('TherundownConsumer', accounts => {
 				_outcome: 1,
 			});
 
-			await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid2, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
-			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
+			await expect(
+				TherundownConsumerDeployed.resolveGameManually(gameFootballid2, 2, { from: third })
+			).to.be.revertedWith('Market resoved or canceled');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: third })
+			).to.be.revertedWith('Market resoved or canceled');
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
-
 
 		it('Cancel market Manually, check results', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
@@ -1066,12 +1071,22 @@ contract('TherundownConsumer', accounts => {
 
 			//await fastForward(await currentTime());
 
-			await expect(TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: second })).to.be.revertedWith('Address not supported');
-			await expect(TherundownConsumerDeployed.cancelMarketManually(second, { from: third })).to.be.revertedWith('No market created for game');
-			await expect(TherundownConsumerDeployed.cancelGameManually(gameFootballid1, { from: third })).to.be.revertedWith('No market created for game');
+			await expect(
+				TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: second })
+			).to.be.revertedWith('Address not supported');
+			await expect(
+				TherundownConsumerDeployed.cancelMarketManually(second, { from: third })
+			).to.be.revertedWith('No market created for game');
+			await expect(
+				TherundownConsumerDeployed.cancelGameManually(gameFootballid1, { from: third })
+			).to.be.revertedWith('No market created for game');
 
-			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for two position game');
-			await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, { from: third })).to.be.revertedWith('Bad outcome for two position game');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })
+			).to.be.revertedWith('Bad outcome for two position game');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, { from: third })
+			).to.be.revertedWith('Bad outcome for two position game');
 
 			// const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(
 			// 	marketAdd, { from: third }

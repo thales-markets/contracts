@@ -358,7 +358,7 @@ contract('StakingThales', accounts => {
 			);
 		});
 
-		it('Close staking period with low funds (99,999) in StakingThales and claim single user [ @cov-skip ]', async () => {
+		it('Close staking period with low funds (99,999) in StakingThales and claim single user ', async () => {
 			let deposit = toUnit(100000);
 			let lowerDeposit = toUnit(500);
 			await ThalesDeployed.transfer(first, toUnit(2), { from: owner });
@@ -383,7 +383,7 @@ contract('StakingThales', accounts => {
 			);
 		});
 
-		it('Close staking period with enough funds (100,000) in StakingThales and claim single user [ @cov-skip ]', async () => {
+		it('Close staking period with enough funds (100,000) in StakingThales and claim single user ', async () => {
 			let deposit = toUnit(100000);
 			await ThalesDeployed.transfer(first, toUnit(2), { from: owner });
 			await StakingThalesDeployed.setFixedPeriodReward(deposit, { from: owner });
@@ -411,7 +411,7 @@ contract('StakingThales', accounts => {
 			assert.bnEqual(answer, answer2);
 		});
 
-		it('Close staking period after period with funds (100001) in StakingThales [ @cov-skip ]', async () => {
+		it('Close staking period after period with funds (100001) in StakingThales ', async () => {
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -435,7 +435,7 @@ contract('StakingThales', accounts => {
 			assert.equal(web3.utils.toDecimal(answer), 100001);
 		});
 
-		it('Stake with first account with NO THALES funds and fees [ @cov-skip ]', async () => {
+		it('Stake with first account with NO THALES funds and fees ', async () => {
 			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 				from: owner,
 			});
@@ -443,7 +443,7 @@ contract('StakingThales', accounts => {
 				'Staking period has not started'
 			);
 			await StakingThalesDeployed.startStakingPeriod({ from: owner });
-			
+
 			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, 70001, {
 				from: owner,
 			});
@@ -469,7 +469,7 @@ contract('StakingThales', accounts => {
 			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, fixedReward, {
 				from: owner,
 			});
-		
+
 			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
 			await StakingThalesDeployed.stake(stake, { from: first });
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
@@ -580,7 +580,7 @@ contract('StakingThales', accounts => {
 			answer = await StakingThalesDeployed.stakedBalanceOf.call(first);
 			assert.bnEqual(answer, 0);
 		});
-		it('Stake, claim reward twice, then (claim at) unstake [ @cov-skip ]', async () => {
+		it('Stake, claim reward twice, then (claim at) unstake ', async () => {
 			let deposit = toUnit(100000);
 			let lowerDeposit = toUnit(500);
 			let stake = toUnit(1500);
@@ -639,7 +639,7 @@ contract('StakingThales', accounts => {
 		});
 	});
 	describe('Vesting:', () => {
-		it('Claimable [ @cov-skip ]', async () => {
+		it('Claimable ', async () => {
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);
 			let weeks = 10;
@@ -690,7 +690,7 @@ contract('StakingThales', accounts => {
 			assert.bnEqual(answer, deposit.mul(toBN(2)));
 		});
 
-		it('Vest first user [ @cov-skip ]', async () => {
+		it('Vest first user ', async () => {
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);
 			let weeks = 11;
@@ -729,7 +729,7 @@ contract('StakingThales', accounts => {
 			assert.bnEqual(answer, deposit);
 		});
 
-		it('Staking & vesting with 2 users [ @cov-skip ]', async () => {
+		it('Staking & vesting with 2 users ', async () => {
 			let deposit = toUnit(100000);
 			let stake = [toUnit(1500), toUnit(1500)];
 			let users = [first, second];
@@ -776,7 +776,7 @@ contract('StakingThales', accounts => {
 			}
 		});
 
-		it('Staking & vesting with 3 users [ @cov-skip ]', async () => {
+		it('Staking & vesting with 3 users ', async () => {
 			let deposit = toUnit(100000);
 			let stake = [toUnit(1500), toUnit(1500), toUnit(1500)];
 			let users = [first, second, third];
@@ -823,7 +823,7 @@ contract('StakingThales', accounts => {
 			}
 		});
 
-		it('Vesting at 19th week, after claiming first user in weeks: 5, 9, 13 [ @cov-skip ]', async () => {
+		it('Vesting at 19th week, after claiming first user in weeks: 5, 9, 13 ', async () => {
 			let periods = [5, 9, 13];
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);
@@ -864,7 +864,7 @@ contract('StakingThales', accounts => {
 			assert.bnEqual(answer, deposit);
 		});
 
-		it('Vesting at 20th week, after claiming first user in weeks: 5, 9, 13 [ @cov-skip ]', async () => {
+		it('Vesting at 20th week, after claiming first user in weeks: 5, 9, 13 ', async () => {
 			let periods = [5, 9, 13];
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);
@@ -905,7 +905,7 @@ contract('StakingThales', accounts => {
 			assert.bnEqual(answer, deposit.mul(toBN(2)));
 		});
 
-		it('Continous vesting trial for 35 weeks; first user claims rewards in 2, 21, 31 weeks [ @cov-skip ]', async () => {
+		it('Continous vesting trial for 35 weeks; first user claims rewards in 2, 21, 31 weeks ', async () => {
 			let periods = [1, 20, 30];
 			let deposit = toUnit(100000);
 			let stake = toUnit(1500);
@@ -959,7 +959,7 @@ contract('StakingThales', accounts => {
 			}
 		});
 
-		it('Staking 2 users 1500 stake, vest all on week 11, unstake with one user 1499, vest again [ @cov-skip ]', async () => {
+		it('Staking 2 users 1500 stake, vest all on week 11, unstake with one user 1499, vest again ', async () => {
 			let deposit = toUnit(100000);
 			let stake = [toUnit(1500), toUnit(1500)];
 			let users = [first, second];

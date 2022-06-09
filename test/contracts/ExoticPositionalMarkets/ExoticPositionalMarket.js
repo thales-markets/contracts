@@ -74,10 +74,7 @@ contract('Exotic Positional market', async accounts => {
 		await ExoticPositionalTags.initialize(manager, { from: manager });
 		await ThalesBonds.initialize(manager, { from: manager });
 
-		await ExoticPositionalMarketManager.initialize(
-			manager,
-			{ from: manager }
-		);
+		await ExoticPositionalMarketManager.initialize(manager, { from: manager });
 		fixedBondAmount = toUnit(100);
 		disputePrice = toUnit(10);
 		let maxOpenBidPositon = toUnit(1000);
@@ -92,34 +89,19 @@ contract('Exotic Positional market', async accounts => {
 			safeBox,
 			owner,
 			owner,
-			{ from: manager });
-		
-		await ExoticPositionalMarketManager.setPercentages(
-			"1",
-			"1",
-			"1",
-			"6",
-			"10",
-			{ from: manager });
-		
-		await ExoticPositionalMarketManager.setDurations(
-			"14400",
-			"0",
-			"28800",
-			"172800",
-			"86400",
-			{ from: manager });
-		
-		await ExoticPositionalMarketManager.setLimits(
-			"1000",
-			"1000",
-			"60",
-			"1000",
-			"5",
-			"5",
-			"5",
-			{ from: manager });
-		
+			{ from: manager }
+		);
+
+		await ExoticPositionalMarketManager.setPercentages('1', '1', '1', '6', '10', { from: manager });
+
+		await ExoticPositionalMarketManager.setDurations('14400', '0', '28800', '172800', '86400', {
+			from: manager,
+		});
+
+		await ExoticPositionalMarketManager.setLimits('1000', '1000', '60', '1000', '5', '5', '5', {
+			from: manager,
+		});
+
 		await ExoticPositionalMarketManager.setAmounts(
 			toUnit(10),
 			toUnit(1000),
@@ -128,13 +110,11 @@ contract('Exotic Positional market', async accounts => {
 			disputePrice,
 			disputePrice,
 			maxOpenBidPositon,
-			{ from: manager });
-			
-		await ExoticPositionalMarketManager.setFlags(
-			false,
-			true,
-			{ from: manager });
-			
+			{ from: manager }
+		);
+
+		await ExoticPositionalMarketManager.setFlags(false, true, { from: manager });
+
 		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
 		await ThalesBonds.setMarketManager(ExoticPositionalMarketManager.address, { from: manager });
 		await Thales.transfer(userOne, toUnit('1000'), { from: owner });
@@ -571,7 +551,7 @@ contract('Exotic Positional market', async accounts => {
 				beforeEach(async () => {
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition, outcomePosition2],
-						[positionAmount1, positionAmount2], 
+						[positionAmount1, positionAmount2],
 						{ from: userOne }
 					);
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(

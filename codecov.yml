@@ -1,2 +1,12 @@
 codecov:
-  token: ff2ddff8-201c-45ef-9ca2-580b5ae41b30
+  require_ci_to_pass: false
+  bot: null
+
+coverage:
+  precision: 2
+  round: down
+  range: "50...100"
+  status:
+    project:
+      default:
+        target: 50% #overall project/ repo coverage

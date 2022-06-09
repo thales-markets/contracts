@@ -71,4 +71,12 @@ workflows:
       - codecov-job:
           requires:
             - build-and-test
-      - build-and-test
+          filters:
+            branches:
+              only:
+                - main
+      - build-and-test:
+          filters:
+            branches:
+              only:
+                - main

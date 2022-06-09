@@ -605,6 +605,30 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit AMMVolumeUpdated(account, amount);
     }
 
+    function decreaseVolume(address account, uint amount) external {
+        require(
+            msg.sender == thalesAMM || msg.sender == exoticBonds || msg.sender == thalesRangedAMM || msg.sender == sportsAMM,
+            "Invalid address"
+        );
+        require(msg.sender != address(0), "Invalid address");
+        if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
+            stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
+            stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
+            lastAMMUpdatePeriod[account] = periodsOfStaking;
+        } else {
+            if (stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount <= amount) {
+                stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
+            } else {
+                stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = stakerAMMVolume[account][
+                    periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
+                ]
+                    .amount
+                    .sub(amount);
+            }
+        }
+        emit AMMVolumeDecreased(account, amount);
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _claimReward(address account) internal notPaused {
@@ -710,6 +734,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event ThalesRangedAMMAddressChanged(address amm);
     event ThalesSportsAMMAddressChanged(address amm);
     event AMMVolumeUpdated(address account, uint amount);
+    event AMMVolumeDecreased(address account, uint amount);
     event ExtraRewardsChanged(bool extrarewardsactive);
     event PriceFeedAddressChanged(address pricefeed);
     event MaxSNXRewardsPercentageChanged(uint maxSnxRewardsPercentage);

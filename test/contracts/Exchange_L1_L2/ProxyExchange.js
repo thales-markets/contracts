@@ -2,11 +2,11 @@
 
 const { artifacts, contract } = require('hardhat');
 
-const { assert } = require('../../../utils/common');
+const { assert } = require('../../utils/common');
 
-const { toUnit } = require('../../../utils')();
+const { toUnit } = require('../../utils')();
 
-const { encodeCall } = require('../../../utils/helpers');
+const { encodeCall } = require('../../utils/helpers');
 
 const { expect } = require('chai');
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);

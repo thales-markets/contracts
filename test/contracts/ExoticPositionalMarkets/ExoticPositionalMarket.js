@@ -86,9 +86,9 @@ contract('Exotic Positional market', async accounts => {
 			Thales.address,
 			ExoticPositionalTags.address,
 			owner,
+			owner,
+			owner,
 			safeBox,
-			owner,
-			owner,
 			{ from: manager }
 		);
 
@@ -132,6 +132,163 @@ contract('Exotic Positional market', async accounts => {
 	describe('initial deploy', function() {
 		it('deployed', async function() {
 			assert.notEqual(ExoticPositionalMarket.address, ZERO_ADDRESS);
+		});
+	});
+
+	describe('test setters', function() {
+		it('addresses', async function() {
+			await ExoticPositionalMarketManager.setAddresses(
+				ExoticPositionalMarket.address,
+				ExoticPositionalOpenBidMarket.address,
+				ThalesOracleCouncil.address,
+				Thales.address,
+				ExoticPositionalTags.address,
+				councilOne,
+				councilTwo,
+				councilThree,
+				safeBox,
+				{ from: manager }
+			);
+			answer = await ExoticPositionalMarketManager.exoticMarketMastercopy();
+			assert.equal(answer.toString(), ExoticPositionalMarket.address);
+			answer = await ExoticPositionalMarketManager.exoticMarketOpenBidMastercopy();
+			assert.equal(answer.toString(), ExoticPositionalOpenBidMarket.address);
+
+			answer = await ExoticPositionalMarketManager.paymentToken();
+			assert.equal(answer.toString(), Thales.address);
+			answer = await ExoticPositionalMarketManager.oracleCouncilAddress();
+			assert.equal(answer.toString(), ThalesOracleCouncil.address);
+
+			answer = await ExoticPositionalMarketManager.tagsAddress();
+			assert.equal(answer.toString(), ExoticPositionalTags.address);
+
+			answer = await ExoticPositionalMarketManager.theRundownConsumerAddress();
+			assert.equal(answer.toString(), councilOne);
+
+			answer = await ExoticPositionalMarketManager.marketDataAddress();
+			assert.equal(answer.toString(), councilTwo);
+
+			answer = await ExoticPositionalMarketManager.exoticRewards();
+			assert.equal(answer.toString(), councilThree);
+
+			answer = await ExoticPositionalMarketManager.safeBoxAddress();
+			assert.equal(answer.toString(), safeBox);
+		});
+
+		it('percentages', async function() {
+			await ExoticPositionalMarketManager.setPercentages('55', '55', '55', '55', '55', {
+				from: manager,
+			});
+
+			answer = await ExoticPositionalMarketManager.safeBoxPercentage();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.creatorPercentage();
+			assert.equal(answer.toString(), '55');
+
+			answer = await ExoticPositionalMarketManager.resolverPercentage();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.withdrawalPercentage();
+			assert.equal(answer.toString(), '55');
+
+			answer = await ExoticPositionalMarketManager.maxFinalWithdrawPercentage();
+			assert.equal(answer.toString(), '55');
+		});
+
+		it('durations', async function() {
+			await ExoticPositionalMarketManager.setDurations('55', '55', '55', '55', '55', {
+				from: manager,
+			});
+
+			answer = await ExoticPositionalMarketManager.backstopTimeout();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.minimumPositioningDuration();
+			assert.equal(answer.toString(), '55');
+
+			answer = await ExoticPositionalMarketManager.withdrawalTimePeriod();
+			assert.equal(answer.toString(), '55');
+
+			answer = await ExoticPositionalMarketManager.pDAOResolveTimePeriod();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.claimTimeoutDefaultPeriod();
+			assert.equal(answer.toString(), '55');
+		});
+
+		it('limits', async function() {
+			await ExoticPositionalMarketManager.setLimits('55', '55', '55', '55', '55', '55', '55', {
+				from: manager,
+			});
+
+			answer = await ExoticPositionalMarketManager.marketQuestionStringLimit();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.marketSourceStringLimit();
+			assert.equal(answer.toString(), '55');
+
+			answer = await ExoticPositionalMarketManager.marketPositionStringLimit();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.disputeStringLengthLimit();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.maximumPositionsAllowed();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.maxNumberOfTags();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.maxOracleCouncilMembers();
+			assert.equal(answer.toString(), '55');
+		});
+
+		it('amounts', async function() {
+			await ExoticPositionalMarketManager.setAmounts('55', '55', '55', '55', '55', '55', '55', {
+				from: manager,
+			});
+
+			answer = await ExoticPositionalMarketManager.minFixedTicketPrice();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.maxFixedTicketPrice();
+			assert.equal(answer.toString(), '55');
+
+			answer = await ExoticPositionalMarketManager.disputePrice();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.fixedBondAmount();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.safeBoxLowAmount();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.arbitraryRewardForDisputor();
+			assert.equal(answer.toString(), '55');
+			answer = await ExoticPositionalMarketManager.maxAmountForOpenBidPosition();
+			assert.equal(answer.toString(), '55');
+		});
+
+		it('flags', async function() {
+			await ExoticPositionalMarketManager.setFlags(true, true, { from: manager });
+
+			answer = await ExoticPositionalMarketManager.creationRestrictedToOwner();
+			assert.equal(answer, true);
+			answer = await ExoticPositionalMarketManager.openBidAllowed();
+			assert.equal(answer, true);
+		});
+
+		it('thales bonds', async function() {
+			await ExoticPositionalMarketManager.setThalesBonds(userOne, { from: manager });
+			answer = await ExoticPositionalMarketManager.thalesBonds();
+			assert.equal(answer.toString(), userOne);
+		});
+
+		it('add pauser address', async function() {
+			await ExoticPositionalMarketManager.addPauserAddress(userOne, { from: manager });
+
+			answer = await ExoticPositionalMarketManager.pausersCount();
+			assert.equal(answer.toString(), 1);
+		});
+
+		it('remove pauser address', async function() {
+			await ExoticPositionalMarketManager.addPauserAddress(userOne, { from: manager });
+
+			answer = await ExoticPositionalMarketManager.pausersCount();
+			assert.equal(answer.toString(), '1');
+
+			await ExoticPositionalMarketManager.removePauserAddress(userOne, { from: manager });
+
+			answer = await ExoticPositionalMarketManager.pausersCount();
+			assert.equal(answer.toString(), '0');
 		});
 	});
 

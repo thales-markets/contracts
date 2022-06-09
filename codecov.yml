@@ -5,8 +5,8 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: "50...100"
+  range: "60...100"
   status:
     project:
       default:
-        target: 50% #overall project/ repo coverage
+        target: 70% #overall project/ repo coverage

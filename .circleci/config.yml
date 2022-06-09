@@ -56,7 +56,7 @@ jobs:
           command: |
             cp -R /tmp/coverage/coverage-*.json .
       - run:
-          name: Copy files
+          name: Remove file - only node files
           command: |
             rm coverage.json
       - run:

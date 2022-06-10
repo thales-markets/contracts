@@ -5,7 +5,11 @@ coverage
 .circleci/config.template.yml
 .circleci/config.yml
 codecov.yml
+.openzeppelin\unknown-10.json
+scripts\abi\*
 
 # husky hooks
 .husky/
 .prettierignore
+
+

@@ -72,7 +72,9 @@
 		"USDC": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
 		"USDT": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
 		"ThalesAMMMultiCollateral": "0xebD11DC0AD74a44EE1FDb3E41c8db0C2Ae032b3F",
-		"ThalesAMMImplementationMultiCollateral": "0xBF40dA2e303c4a7CDb1a7b4D444B10b8e9b91cd9"
+		"ThalesAMMImplementationMultiCollateral": "0xBF40dA2e303c4a7CDb1a7b4D444B10b8e9b91cd9",
+		"RangedAMMMultiCollateral": "0xbe4C7750Bf54eD9F83B189b6a4daefFc760F6882",
+		"RangedAMMImplementationultiCollateral": "0x8ad0b66851Bd6d50d82F623472A0BF6e402381e8"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

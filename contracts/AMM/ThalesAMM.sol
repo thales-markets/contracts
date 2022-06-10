@@ -70,6 +70,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     uint public constant MAX_APPROVAL = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
+    bool public curveOnrampEnabled;
+
     function initialize(
         address _owner,
         IPriceFeed _priceFeed,
@@ -140,7 +142,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address collateral
     ) public view returns (uint, uint) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        if (curveIndex == 0) {
+        if (curveIndex == 0 || !curveOnrampEnabled) {
             return (0, 0);
         }
 
@@ -367,7 +369,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
 
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        require(curveIndex > 0, "unsupported collateral");
+        require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
         (uint collateralQuote, uint susdQuote) =
             buyFromAmmQuoteWithDifferentCollateral(market, position, amount, collateral);
@@ -814,7 +816,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address _curveSUSD,
         address _dai,
         address _usdc,
-        address _usdt
+        address _usdt,
+        bool _curveOnrampEnabled
     ) external onlyOwner {
         curveSUSD = ICurveSUSD(_curveSUSD);
         dai = _dai;
@@ -825,6 +828,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         IERC20(usdt).approve(_curveSUSD, MAX_APPROVAL);
         // not needed unless selling into different collateral is enabled
         //sUSD.approve(_curveSUSD, MAX_APPROVAL);
+        curveOnrampEnabled = _curveOnrampEnabled;
     }
 
     function setCapPerAsset(bytes32 asset, uint _cap) external onlyOwner {

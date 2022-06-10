@@ -69,7 +69,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     mapping(address => bool) public whitelistedAddresses;
     mapping(bytes32 => uint) private _capPerAsset;
 
-    uint[] public testOdds;
+    address public testOdds;
+    uint[] public oddsInTesting;
     bool public testingOdds;
 
     function initialize(
@@ -196,7 +197,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount
     ) public view returns (uint) {
         if (amount > availableToSellToAMM(market, position)) {
-            return 10;
+            return 0;
         }
         uint basePrice = price(market, position).sub(min_spread);
 
@@ -228,7 +229,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
             if (testingOdds) {
-                odds = testOdds;
+                odds = oddsInTesting;
             } else {
                 odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
             }
@@ -241,9 +242,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function isMarketInAMMTrading(address market) public view returns (bool) {
         if (ISportPositionalMarketManager(manager).isActiveMarket(market)) {
-            ISportPositionalMarket marketContract = ISportPositionalMarket(market);
+            // ISportPositionalMarket marketContract = ISportPositionalMarket(market);
             // return true;
-            (uint maturity, ) = marketContract.times();
+            (uint maturity, ) = ISportPositionalMarket(market).times();
 
             if (maturity < block.timestamp) {
                 return false;
@@ -440,10 +441,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint _awayOdds,
         uint _drawOdds
     ) public onlyOwner {
-        testOdds = new uint[](3);
-        testOdds[0] = _homeOdds;
-        testOdds[1] = _awayOdds;
-        testOdds[2] = _drawOdds;
+        oddsInTesting = new uint[](3);
+        oddsInTesting[0] = _homeOdds;
+        oddsInTesting[1] = _awayOdds;
+        oddsInTesting[2] = _drawOdds;
     }
 
     function setTherundownConsumer(address _theRundownConsumer) public onlyOwner {

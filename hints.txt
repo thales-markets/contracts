@@ -14,7 +14,7 @@ npx hardhat test test/contracts/ThalesRoyale/royale.js
 npx hardhat test test/contracts/ThalesRoyale/royalePrivate.js
 npx hardhat test test/contracts/ThalesAMM/thalesamm.js
 npx hardhat test test/contracts/ThalesAMM/thalesammImprovements.js
->npx hardhat test test/contracts/RangedMarkets/rangedAmm.js
+npx hardhat test test/contracts/RangedMarkets/rangedAmm.js
 
 npx hardhat coverage
 

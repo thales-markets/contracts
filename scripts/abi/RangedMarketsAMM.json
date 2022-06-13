@@ -376,7 +376,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_available",
         "type": "uint256"
       }
     ],
@@ -519,7 +519,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "sUSDPaid",
         "type": "uint256"
       }
     ],
@@ -548,17 +548,17 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "quoteWithFees",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "leftQuote",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "rightQuote",
         "type": "uint256"
       }
     ],
@@ -592,12 +592,12 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "collateralQuote",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "sUSDToPay",
         "type": "uint256"
       }
     ],
@@ -823,7 +823,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "quotedPrice",
         "type": "uint256"
       }
     ],
@@ -1085,7 +1085,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "pricePaid",
         "type": "uint256"
       }
     ],
@@ -1114,17 +1114,17 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "quoteWithFees",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "leftQuote",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "rightQuote",
         "type": "uint256"
       }
     ],

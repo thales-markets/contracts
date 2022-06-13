@@ -175,35 +175,37 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         internal
         view
         knownRangedMarket(address(rangedMarket))
-        returns (uint)
+        returns (uint availableRangedAmm)
     {
         uint minPrice = minInPrice(rangedMarket);
         if (minPrice <= minSupportedPrice || minPrice >= maxSupportedPrice) {
             return 0;
         }
         uint rangedAMMRisk = ONE - minInPrice(rangedMarket);
-        uint availableRangedAmm = ((capPerMarket - spentOnMarket[address(rangedMarket)]) * ONE) / rangedAMMRisk;
-        return availableRangedAmm;
+        availableRangedAmm = ((capPerMarket - spentOnMarket[address(rangedMarket)]) * ONE) / rangedAMMRisk;
     }
 
-    function minInPrice(RangedMarket rangedMarket) public view knownRangedMarket(address(rangedMarket)) returns (uint) {
+    function minInPrice(RangedMarket rangedMarket)
+        public
+        view
+        knownRangedMarket(address(rangedMarket))
+        returns (uint quotedPrice)
+    {
         uint leftQuote = thalesAmm.buyFromAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Up, ONE);
         uint rightQuote = thalesAmm.buyFromAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down, ONE);
-        uint quotedPrice = ((leftQuote + rightQuote) - ((ONE - leftQuote) + (ONE - rightQuote))) / 2;
-        return quotedPrice;
+        quotedPrice = ((leftQuote + rightQuote) - ((ONE - leftQuote) + (ONE - rightQuote))) / 2;
     }
 
     function buyFromAmmQuote(
         RangedMarket rangedMarket,
         RangedMarket.Position position,
         uint amount
-    ) public view knownRangedMarket(address(rangedMarket)) returns (uint) {
-        (uint sUSDPaid, , ) = buyFromAmmQuoteDetailed(rangedMarket, position, amount);
+    ) public view knownRangedMarket(address(rangedMarket)) returns (uint sUSDPaid) {
+        (sUSDPaid, , ) = buyFromAmmQuoteDetailed(rangedMarket, position, amount);
         uint basePrice = (sUSDPaid * ONE) / amount;
         if (basePrice < minSupportedPrice || basePrice >= ONE) {
-            return 0;
+            sUSDPaid = 0;
         }
-        return sUSDPaid;
     }
 
     function buyFromAmmQuoteDetailed(
@@ -215,32 +217,28 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         view
         knownRangedMarket(address(rangedMarket))
         returns (
-            uint,
-            uint,
-            uint
+            uint quoteWithFees,
+            uint leftQuote,
+            uint rightQuote
         )
     {
         amount = position == RangedMarket.Position.Out ? amount : amount / 2;
-        uint leftQuote =
-            thalesAmm.buyFromAmmQuote(
-                address(rangedMarket.leftMarket()),
-                position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
-                amount
-            );
-        uint rightQuote =
-            thalesAmm.buyFromAmmQuote(
-                address(rangedMarket.rightMarket()),
-                position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
-                amount
-            );
+        leftQuote = thalesAmm.buyFromAmmQuote(
+            address(rangedMarket.leftMarket()),
+            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
+            amount
+        );
+        rightQuote = thalesAmm.buyFromAmmQuote(
+            address(rangedMarket.rightMarket()),
+            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
+            amount
+        );
+        uint summedQuotes = leftQuote + rightQuote;
         if (position == RangedMarket.Position.Out) {
-            uint quoteWithoutFees = leftQuote + rightQuote;
-            uint quoteWithFees = (quoteWithoutFees * (rangedAmmFee + ONE)) / ONE;
-            return (quoteWithFees, leftQuote, rightQuote);
+            quoteWithFees = (summedQuotes * (rangedAmmFee + ONE)) / ONE;
         } else {
-            uint quoteWithoutFees = ((leftQuote + rightQuote) - ((amount - leftQuote) + (amount - rightQuote)));
-            uint quoteWithFees = (quoteWithoutFees * (rangedAmmFee + safeBoxImpact + ONE)) / ONE;
-            return (quoteWithFees, leftQuote, rightQuote);
+            uint quoteWithoutFees = ((summedQuotes) - ((amount - leftQuote) + (amount - rightQuote)));
+            quoteWithFees = (quoteWithoutFees * (rangedAmmFee + safeBoxImpact + ONE)) / ONE;
         }
     }
 
@@ -249,17 +247,16 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         RangedMarket.Position position,
         uint amount,
         address collateral
-    ) public view returns (uint, uint) {
+    ) public view returns (uint collateralQuote, uint sUSDToPay) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         if (curveIndex == 0 || !curveOnrampEnabled) {
             return (0, 0);
         }
 
-        uint sUSDToPay = buyFromAmmQuote(rangedMarket, position, amount);
+        sUSDToPay = buyFromAmmQuote(rangedMarket, position, amount);
         //cant get a quote on how much collateral is needed from curve for sUSD,
         //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        uint256 collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay) * (ONE + (ONE_PERCENT / 5))) / ONE;
-        return (collateralQuote, sUSDToPay);
+        collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay) * (ONE + (ONE_PERCENT / 5))) / ONE;
     }
 
     function buyFromAMMWithReferrer(
@@ -342,22 +339,21 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         if (position == RangedMarket.Position.Out) {
             target = address(outp);
-
             _buyOUT(rangedMarket, amount, leftQuote, rightQuote, additionalSlippage);
         } else {
             target = address(inp);
-
             _buyIN(rangedMarket, amount, leftQuote, rightQuote, additionalSlippage);
-
             _updateSpentOnMarketAndSafeBoxOnBuy(address(rangedMarket), amount, sUSDPaid);
         }
 
         rangedMarket.mint(amount, position, msg.sender);
 
         _handleReferrer(msg.sender, sUSDPaid);
+
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, sUSDPaid);
         }
+
         emit BoughtFromAmm(msg.sender, address(rangedMarket), position, amount, sUSDPaid, address(sUSD), target);
     }
 
@@ -425,7 +421,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         public
         view
         knownRangedMarket(address(rangedMarket))
-        returns (uint)
+        returns (uint _available)
     {
         uint availableLeft =
             thalesAmm.availableToSellToAMM(
@@ -438,10 +434,9 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down
             );
 
-        if (position == RangedMarket.Position.Out) {
-            return availableLeft < availableRight ? availableLeft : availableRight;
-        } else {
-            return availableLeft < availableRight ? availableLeft * 2 : availableRight * 2;
+        _available = availableLeft < availableRight ? availableLeft : availableRight;
+        if (position == RangedMarket.Position.In) {
+            _available = _available * 2;
         }
     }
 
@@ -449,9 +444,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         RangedMarket rangedMarket,
         RangedMarket.Position position,
         uint amount
-    ) public view knownRangedMarket(address(rangedMarket)) returns (uint) {
-        (uint pricePaid, , ) = sellToAmmQuoteDetailed(rangedMarket, position, amount);
-        return pricePaid;
+    ) public view knownRangedMarket(address(rangedMarket)) returns (uint pricePaid) {
+        (pricePaid, , ) = sellToAmmQuoteDetailed(rangedMarket, position, amount);
     }
 
     function sellToAmmQuoteDetailed(
@@ -463,33 +457,31 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         view
         knownRangedMarket(address(rangedMarket))
         returns (
-            uint,
-            uint,
-            uint
+            uint quoteWithFees,
+            uint leftQuote,
+            uint rightQuote
         )
     {
+        amount = position == RangedMarket.Position.Out ? amount : amount / 2;
+        leftQuote = thalesAmm.sellToAmmQuote(
+            address(rangedMarket.leftMarket()),
+            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
+            amount
+        );
+        rightQuote = thalesAmm.sellToAmmQuote(
+            address(rangedMarket.rightMarket()),
+            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
+            amount
+        );
+        uint summedQuotes = leftQuote + rightQuote;
         if (position == RangedMarket.Position.Out) {
-            uint leftQuote = thalesAmm.sellToAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Down, amount);
-            uint rightQuote = thalesAmm.sellToAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Up, amount);
-            uint quoteWithoutFees = leftQuote + rightQuote;
-            uint quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee)) / ONE;
-            return (quoteWithFees, leftQuote, rightQuote);
+            quoteWithFees = (summedQuotes * (ONE - rangedAmmFee)) / ONE;
         } else {
-            uint leftQuote =
-                thalesAmm.sellToAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Up, amount / 2);
-            uint rightQuote =
-                thalesAmm.sellToAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down, amount / 2);
             uint summedQuotes = leftQuote + rightQuote;
-            if (
-                amount / 2 > leftQuote &&
-                amount / 2 > rightQuote &&
-                summedQuotes > ((amount / 2 - leftQuote) + (amount / 2 - rightQuote))
-            ) {
-                uint quoteWithoutFees = summedQuotes - ((amount / 2 - leftQuote) + (amount / 2 - rightQuote));
-                uint quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
-                return (quoteWithFees, leftQuote, rightQuote);
+            if (amount > leftQuote && amount > rightQuote && summedQuotes > ((amount - leftQuote) + (amount - rightQuote))) {
+                uint quoteWithoutFees = summedQuotes - ((amount - leftQuote) + (amount - rightQuote));
+                quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
             }
-            return (0, leftQuote, rightQuote);
         }
     }
 

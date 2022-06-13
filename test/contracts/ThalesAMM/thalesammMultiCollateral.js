@@ -170,7 +170,9 @@ contract('ThalesAMM', accounts => {
 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
 		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
-		await thalesAMM.setMinMaxSupportedPrice(toUnit(0.05), toUnit(0.95), { from: owner });
+		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
+			from: owner,
+		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQty);
 
 		let TestUSDC = artifacts.require('TestUSDC');
@@ -269,18 +271,31 @@ contract('ThalesAMM', accounts => {
 			let ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
 			console.log('ammSusdBalance pre buy decimal is:' + ammSusdBalance / 1e18);
 
+			let buyFromAmmQuoteUSDCCollateralObjectSlippagedObject = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
+				newMarket.address,
+				Position.UP,
+				toUnit(0.9 * (availableToBuyFromAMM / 1e18 - 1)),
+				testUSDC.address
+			);
+			let buyFromAmmQuoteUSDCCollateralObjectSlippaged =
+				buyFromAmmQuoteUSDCCollateralObjectSlippagedObject[0];
+			console.log(
+				'buyFromAmmQuoteUSDCCollateralObjectSlippaged decimal is:' +
+					buyFromAmmQuoteUSDCCollateralObjectSlippaged / 1e6
+			);
+
 			await expect(
 				thalesAMM.buyFromAMMWithDifferentCollateralAndReferrer(
 					newMarket.address,
 					Position.UP,
 					toUnit(availableToBuyFromAMM / 1e18 - 1),
-					buyFromAmmQuoteUSDCCollateral * 0.9,
+					buyFromAmmQuoteUSDCCollateralObjectSlippaged,
 					additionalSlippage,
 					testUSDC.address,
 					ZERO_ADDRESS,
 					{ from: minter }
 				)
-			).to.be.revertedWith('Slippage too high');
+			).to.be.revertedWith('Slippage too high!');
 
 			await expect(
 				thalesAMM.buyFromAMMWithDifferentCollateralAndReferrer(

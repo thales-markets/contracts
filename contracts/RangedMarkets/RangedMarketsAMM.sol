@@ -621,7 +621,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
-        sUSD.transfer(account, amount);
+        sUSD.safeTransfer(account, amount);
     }
 
     function setRangedMarketMastercopies(address _rangedMarketMastercopy, address _rangedPositionMastercopy)

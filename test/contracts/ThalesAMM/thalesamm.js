@@ -170,7 +170,9 @@ contract('ThalesAMM', accounts => {
 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
 		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
-		await thalesAMM.setMinMaxSupportedPrice(toUnit(0.05), toUnit(0.95), { from: owner });
+		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
+			from: owner,
+		});
 
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 	});
@@ -1165,7 +1167,9 @@ contract('ThalesAMM', accounts => {
 		});
 
 		it('TIP examples2 ', async () => {
-			await thalesAMM.setCapPerMarket(toUnit(500), { from: owner });
+			await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(500), {
+				from: owner,
+			});
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,

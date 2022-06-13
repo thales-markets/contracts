@@ -175,7 +175,9 @@ contract('ThalesAMM', accounts => {
 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
 		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
-		await thalesAMM.setMinMaxSupportedPrice(toUnit(0.05), toUnit(0.95), { from: owner });
+		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
+			from: owner,
+		});
 		await manager.setNeedsTransformingCollateral(true);
 
 		const usdcQuantity = toBN(100 * 1e6); //100 USDC

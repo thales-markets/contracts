@@ -396,7 +396,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_available",
         "type": "uint256"
       }
     ],
@@ -419,32 +419,6 @@
       }
     ],
     "name": "availableToSellToAMM",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "enum ThalesAMM.Position",
-        "name": "position",
-        "type": "uint8"
-      }
-    ],
-    "name": "balancePosition",
     "outputs": [
       {
         "internalType": "uint256",
@@ -635,12 +609,12 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "collateralQuote",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "sUSDToPay",
         "type": "uint256"
       }
     ],
@@ -728,7 +702,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "_canExercise",
         "type": "bool"
       }
     ],
@@ -839,7 +813,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_cap",
         "type": "uint256"
       }
     ],
@@ -940,7 +914,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "isTrading",
         "type": "bool"
       }
     ],
@@ -1146,7 +1120,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "price",
         "type": "uint256"
       }
     ],
@@ -1287,7 +1261,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_impact",
         "type": "uint256"
       }
     ],
@@ -1353,7 +1327,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_available",
         "type": "uint256"
       }
     ],
@@ -1376,21 +1350,6 @@
       }
     ],
     "name": "setCapPerAsset",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_capPerMarket",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCapPerMarket",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1483,9 +1442,14 @@
         "internalType": "uint256",
         "name": "_maxSupportedPrice",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_capPerMarket",
+        "type": "uint256"
       }
     ],
-    "name": "setMinMaxSupportedPrice",
+    "name": "setMinMaxSupportedPriceAndCap",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1558,24 +1522,14 @@
         "internalType": "contract IPriceFeed",
         "name": "_priceFeed",
         "type": "address"
-      }
-    ],
-    "name": "setPriceFeed",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
+      },
       {
         "internalType": "contract IERC20",
         "name": "_sUSD",
         "type": "address"
       }
     ],
-    "name": "setSUSD",
+    "name": "setPriceFeedAndSUSD",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

@@ -270,7 +270,9 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint additionalSlippage,
         address referrer
     ) public knownRangedMarket(address(rangedMarket)) nonReentrant notPaused {
-        IReferrals(referrals).setReferrer(referrer, msg.sender);
+        if (referrer != address(0)) {
+            IReferrals(referrals).setReferrer(referrer, msg.sender);
+        }
         _buyFromAMM(rangedMarket, position, amount, expectedPayout, additionalSlippage, true);
     }
 
@@ -517,7 +519,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         amount = position == RangedMarket.Position.Out ? amount : amount / 2;
-        _handleSellToAmm(rangedMarket, position, amount, expectedPayout, additionalSlippage, leftQuote, rightQuote);
+        _handleSellToAmm(rangedMarket, position, amount, additionalSlippage, leftQuote, rightQuote);
 
         sUSD.safeTransfer(msg.sender, pricePaid);
 
@@ -534,7 +536,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         RangedMarket rangedMarket,
         RangedMarket.Position position,
         uint amount,
-        uint expectedPayout,
         uint additionalSlippage,
         uint leftQuote,
         uint rightQuote

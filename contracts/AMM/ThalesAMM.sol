@@ -351,7 +351,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint additionalSlippage,
         address _referrer
     ) public nonReentrant notPaused {
-        IReferrals(referrals).setReferrer(_referrer, msg.sender);
+        if (_referrer != address(0)) {
+            IReferrals(referrals).setReferrer(_referrer, msg.sender);
+        }
         _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
     }
 

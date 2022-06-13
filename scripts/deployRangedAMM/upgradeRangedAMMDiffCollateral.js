@@ -45,7 +45,7 @@ async function main() {
 	console.log('Implementation RangedMarketsAMM: ', RangedMarketsAMMImplementation);
 
 	setTargetAddress(
-		'RangedAMMImplementationRangedAMMMultiCollateral',
+		'RangedAMMImplementationMultiCollateral',
 		network,
 		RangedMarketsAMMImplementation
 	);

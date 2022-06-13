@@ -85,14 +85,14 @@ async function main() {
 	console.log('Implementation RangedAMM: ', RangedAMMImplementation);
 
 	setTargetAddress('RangedAMMMultiCollateral', network, RangedAMM_deployed.address);
-	setTargetAddress('RangedAMMImplementationultiCollateral', network, RangedAMMImplementation);
+	setTargetAddress('RangedAMMImplementationMultiCollateral', network, RangedAMMImplementation);
 
 	let curveSusdAddresss = getTargetAddress('CurveSUSD', network);
 	let DAI = getTargetAddress('DAI', network);
 	let USDC = getTargetAddress('USDC', network);
 	let USDT = getTargetAddress('USDT', network);
 
-	let tx = await RangedAMM_deployed.setCurveSUSD(curveSusdAddresss, DAI, USDC, USDT);
+	let tx = await RangedAMM_deployed.setCurveSUSD(curveSusdAddresss, DAI, USDC, USDT, true);
 	await tx.wait().then(e => {
 		console.log('RangedAMM_deployed: setCurveSUSD');
 	});

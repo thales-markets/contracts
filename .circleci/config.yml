@@ -75,10 +75,8 @@ workflows:
             branches:
               only:
                 - main
-                - feature/unused-dependency-cleaning
       - build-and-test:
           filters:
             branches:
               only:
                 - main
-                - feature/unused-dependency-cleaning

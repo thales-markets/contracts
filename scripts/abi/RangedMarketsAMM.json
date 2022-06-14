@@ -154,19 +154,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "amm",
-        "type": "address"
-      }
-    ],
-    "name": "SetAmm",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "capPerMarket",
         "type": "uint256"
@@ -298,19 +285,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "amm",
-        "type": "address"
-      }
-    ],
-    "name": "SetThalesAMM",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "seller",
         "type": "address"
       },
@@ -402,7 +376,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_available",
         "type": "uint256"
       }
     ],
@@ -471,6 +445,49 @@
       },
       {
         "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
+      }
+    ],
+    "name": "buyFromAMMWithDifferentCollateralAndReferrer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "enum RangedMarket.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "additionalSlippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
         "name": "referrer",
         "type": "address"
       }
@@ -502,7 +519,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "sUSDPaid",
         "type": "uint256"
       }
     ],
@@ -531,17 +548,56 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "quoteWithFees",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "leftQuote",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "rightQuote",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract RangedMarket",
+        "name": "rangedMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "enum RangedMarket.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      }
+    ],
+    "name": "buyFromAmmQuoteWithDifferentCollateral",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "collateralQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sUSDToPay",
         "type": "uint256"
       }
     ],
@@ -617,6 +673,45 @@
       }
     ],
     "name": "createdRangedMarkets",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "curveOnrampEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "curveSUSD",
+    "outputs": [
+      {
+        "internalType": "contract ICurveSUSD",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "dai",
     "outputs": [
       {
         "internalType": "address",
@@ -728,7 +823,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "quotedPrice",
         "type": "uint256"
       }
     ],
@@ -884,19 +979,6 @@
         "internalType": "address payable",
         "name": "account",
         "type": "address"
-      }
-    ],
-    "name": "retrieveSUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
       },
       {
         "internalType": "uint256",
@@ -1003,7 +1085,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "pricePaid",
         "type": "uint256"
       }
     ],
@@ -1032,17 +1114,17 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "quoteWithFees",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "leftQuote",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "rightQuote",
         "type": "uint256"
       }
     ],
@@ -1063,6 +1145,39 @@
       }
     ],
     "name": "setCapPerMarketAndRangedAMMFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_curveSUSD",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_dai",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_usdc",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_usdt",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_curveOnrampEnabled",
+        "type": "bool"
+      }
+    ],
+    "name": "setCurveSUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1127,40 +1242,14 @@
         "internalType": "address",
         "name": "_rangedMarketMastercopy",
         "type": "address"
-      }
-    ],
-    "name": "setRangedMarketMastercopy",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
+      },
       {
         "internalType": "address",
         "name": "_rangedPositionMastercopy",
         "type": "address"
       }
     ],
-    "name": "setRangedPositionMastercopy",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_referrals",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_referrerFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setReferrals",
+    "name": "setRangedMarketMastercopies",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1186,25 +1275,27 @@
   {
     "inputs": [
       {
-        "internalType": "contract IStakingThales",
-        "name": "_stakingThales",
-        "type": "address"
-      }
-    ],
-    "name": "setStakingThales",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_thalesAMM",
         "type": "address"
+      },
+      {
+        "internalType": "contract IStakingThales",
+        "name": "_stakingThales",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrals",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_referrerFee",
+        "type": "uint256"
       }
     ],
-    "name": "setThalesAMM",
+    "name": "setThalesAMMStakingThalesAndReferrals",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1283,6 +1374,32 @@
     "name": "transferSusdTo",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "usdc",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "usdt",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

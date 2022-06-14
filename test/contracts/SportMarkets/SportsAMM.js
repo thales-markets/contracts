@@ -164,6 +164,8 @@ contract('SportsAMM', accounts => {
 		await SportPositionalMarketManager.initialize(manager, Thales.address, { from: manager });
 		await SportPositionalMarketFactory.initialize(manager, { from: manager });
 
+		await SportPositionalMarketManager.setExpiryDuration(5 * DAY, { from: manager });
+
 		await SportPositionalMarketFactory.setPositionalMarketManager(
 			SportPositionalMarketManager.address,
 			{ from: manager }
@@ -491,6 +493,24 @@ contract('SportsAMM', accounts => {
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
 		});
 
+		it('Setters testing', async () => {
+			answer = await SportsAMM.setMinimalTimeLeftToMaturity(toUnit(1), { from: owner });
+			answer = await SportsAMM.setMinSpread(toUnit(1), { from: owner });
+			answer = await SportsAMM.setSafeBoxImpact(toUnit(1), { from: owner });
+			answer = await SportsAMM.setSafeBox(third, { from: owner });
+			answer = await SportsAMM.setMaxSpread(toUnit(1), { from: owner });
+			answer = await SportsAMM.setMinSupportedPrice(toUnit(1), { from: owner });
+			answer = await SportsAMM.setMaxSupportedPrice(toUnit(1), { from: owner });
+			answer = await SportsAMM.setCapPerMarket(toUnit(1), { from: owner });
+			answer = await SportsAMM.setSUSD(Thales.address, { from: owner });
+			answer = await SportsAMM.setTesting(true, { from: owner });
+			answer = await SportsAMM.setTestOdds(toUnit(0.1), toUnit(0.5), toUnit(0.4), { from: owner });
+			answer = await SportsAMM.setTherundownConsumer(third, { from: owner });
+			answer = await SportsAMM.setStakingThales(third, { from: owner });
+			answer = await SportsAMM.setPositionalMarketManager(third, { from: owner });
+			answer = await SportsAMM.setCapPerAsset(third, toUnit(1), { from: owner });
+		});
+
 		it('Is market in AMM trading', async () => {
 			answer = await SportsAMM.isMarketInAMMTrading(deployedMarket.address);
 			assert.equal(answer, true);
@@ -662,6 +682,16 @@ contract('SportsAMM', accounts => {
 				': ',
 				fromUnit(buyPriceImpact)
 			);
+			let sellAvailable = await SportsAMM.availableToSellToAMM(deployedMarket.address, position);
+			console.log('Available to sell: ', fromUnit(sellAvailable));
+
+			sellAvailable = await SportsAMM.sellPriceImpact(
+				deployedMarket.address,
+				position,
+				toUnit(value)
+			);
+			console.log('Sell price impact: ', fromUnit(sellAvailable));
+
 			let sellToAmmQuote = await SportsAMM.sellToAmmQuote(
 				deployedMarket.address,
 				position,
@@ -1106,6 +1136,7 @@ contract('SportsAMM', accounts => {
 			let initial_balance_2 = balance;
 			console.log('USD balance of user 2 before excercising: ', fromUnit(balance));
 			console.log('----------- EXCERCISING OPTIONS -----------');
+
 			await deployedMarket.exerciseOptions({ from: first });
 			await deployedMarket.exerciseOptions({ from: second });
 
@@ -1122,35 +1153,97 @@ contract('SportsAMM', accounts => {
 			console.log('USD balance of user 2 after excercising: ', fromUnit(balance));
 			cost = balance.sub(initial_balance_2);
 			console.log('User 2 gained after excercising: ', fromUnit(cost));
+		});
 
-			// balance = await Thales.balanceOf(SportsAMM.address);
-			// console.log("acc sUSD balance before exercise: ",fromUnit(answer));
-			// let options = await deployedMarket.balancesOf(first);
-			// console.log("options balance before exercise: ",fromUnit(options[positionInAMM]));
-			// await deployedMarket.exerciseOptions({from: first});
-			// answer = await Thales.balanceOf(first);
-			// cost = answer.sub(initial_balance);
-			// console.log("acc sUSD balance after exercise: ",fromUnit(answer));
-			// options = await deployedMarket.balancesOf(first);
-			// console.log("options balance after exercise: ",fromUnit(options[positionInAMM]));
-			// console.log("difference: ",fromUnit(cost));
+		it('Can excercise', async () => {
+			let odds = [];
+			odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
+			odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
+			odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
 
-			// answer = await Thales.balanceOf(first);
-			// let startBalance = answer;
-			// let initial_balance = answer;
-			// console.log("acc sUSD balance before buy: ",fromUnit(answer));
-			// console.log("buyQuote: ",fromUnit(buyFromAmmQuote));
-			// answer = await SportsAMM.buyFromAMM(
-			// 	deployedMarket.address,
-			// 	positionInAMM,
-			// 	toUnit(value),
-			// 	buyFromAmmQuote,
-			// 	additionalSlippage,
-			// 	{from: first}
-			// 	);
-			// 	// let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
-			// let cost;
-			// answer = await Thales.balanceOf(first);
+			await SportsAMM.setTestOdds(toUnit('0.51'), toUnit('0.49'), toUnit('0'), { from: owner });
+			await SportsAMM.setTesting(true, { from: owner });
+			odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
+			odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
+			odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
+			console.log(
+				'Game odds: 0=',
+				fromUnit(odds[0]),
+				', 1=',
+				fromUnit(odds[1]),
+				', 2=',
+				fromUnit(odds[2])
+			);
+
+			let user1_position = 0;
+			let user1_USDamount = 100;
+			let user2_position = 1;
+			let user2_USDamount = 100;
+			// console.log("User 1 buying ....");
+
+			let buyFromAmmQuote_1 = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				user1_position,
+				toUnit(user1_USDamount)
+			);
+			console.log('User 1 buy quote for ', user1_USDamount, ': ', fromUnit(buyFromAmmQuote_1));
+			let additionalSlippage = toUnit(0.05);
+			let buyFromAmmQuote_2 = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				user2_position,
+				toUnit(user2_USDamount)
+			);
+
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				user1_position,
+				toUnit(user1_USDamount),
+				buyFromAmmQuote_1,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			let marketOdds = await SportsAMM.getMarketDefaultOdds(deployedMarket.address);
+			console.log('market odds: ', marketOdds);
+
+			// await fastForward(await currentTime());
+
+			let maturity;
+			maturity = await deployedMarket.times();
+			await fastForward(maturity[1] - HOUR - (await currentTime()));
+			let expiry;
+			assert.equal(true, await deployedMarket.canResolve());
+			let current = await currentTime();
+			console.log('times:');
+			console.log('current: ', current.toString());
+			console.log('maturity: ', maturity[0].toString());
+			console.log('expiry: ', maturity[1].toString());
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolve,
+				gamesResolved,
+				sportId_4,
+				{ from: wrapper }
+			);
+			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
+			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(
+				gameid1,
+				user2_position + 1,
+				{ from: owner }
+			);
+			answer = await deployedMarket.result();
+			let game_results = ['Home', 'Away', 'Draw'];
+			console.log('Game result: ', game_results[parseInt(answer.toString())], ' wins');
+			answer = await TherundownConsumerDeployed.getResult(gameid1);
+			console.log('Therundown result returns: ', game_results[parseInt(answer.toString())]);
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			let phase = await deployedMarket.phase();
+			console.log('market phase: ', phase.toString());
+			let known = await SportPositionalMarketManager.isKnownMarket(deployedMarket.address);
+			console.log('known market: ', known.toString());
+			let canExcercise = await SportsAMM.canExerciseMaturedMarket(deployedMarket.address);
+			console.log('Market can be excercised: ', canExcercise.toString());
+			await SportsAMM.exerciseMaturedMarket(deployedMarket.address, { from: first });
 		});
 	});
 

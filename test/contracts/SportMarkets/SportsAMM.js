@@ -45,6 +45,10 @@ contract('SportsAMM', accounts => {
 	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
 	const SportPositionalMarketManagerContract = artifacts.require('SportPositionalMarketManager');
 	const SportPositionalMarketFactoryContract = artifacts.require('SportPositionalMarketFactory');
+	const SportPositionalMarketMasterCopyContract = artifacts.require(
+		'SportPositionalMarketMastercopy'
+	);
+	const SportPositionMasterCopyContract = artifacts.require('SportPositionMastercopy');
 	const StakingThalesContract = artifacts.require('StakingThales');
 	const SportsAMMContract = artifacts.require('SportsAMM');
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
@@ -341,6 +345,69 @@ contract('SportsAMM', accounts => {
 
 			assert.equal(false, await TherundownConsumerDeployed.cancelGameStatuses(8));
 			assert.equal(true, await TherundownConsumerDeployed.cancelGameStatuses(1));
+		});
+
+		it('Check init Master copies', async () => {
+			SportPositionalMarketMastercopy = await SportPositionalMarketMasterCopyContract.new({
+				from: manager,
+			});
+			SportPositionMastercopy = await SportPositionMasterCopyContract.new({ from: manager });
+		});
+	});
+
+	describe('Manager checks', () => {
+		let answer;
+		it('Checks', async () => {
+			await SportPositionalMarketManager.setPositionalMarketFactory(first, { from: manager });
+			await SportPositionalMarketManager.setTherundownConsumer(first, { from: manager });
+			await SportPositionalMarketManager.setWhitelistedAddresses([first, second], {
+				from: manager,
+			});
+			await SportPositionalMarketManager.disableWhitelistedAddresses({ from: manager });
+			await SportPositionalMarketManager.enableWhitelistedAddresses({ from: manager });
+			await SportPositionalMarketManager.addWhitelistedAddress(third, { from: manager });
+			await SportPositionalMarketManager.removeWhitelistedAddress(third, { from: manager });
+		});
+		beforeEach(async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				{ from: wrapper }
+			);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			await TherundownConsumerDeployed.createMarketForGame(gameid1);
+			await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer.toString());
+		});
+		it('Checks for markets', async () => {
+			let answer = await SportPositionalMarketManager.isKnownMarket(deployedMarket.address);
+			answer = await SportPositionalMarketManager.isActiveMarket(deployedMarket.address);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			answer = await SportPositionalMarketManager.activeMarkets('0', '10');
+			answer = await SportPositionalMarketManager.numMaturedMarkets();
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			answer = await SportPositionalMarketManager.maturedMarkets('0', '10');
+		});
+
+		it('Checks for durations', async () => {
+			await SportPositionalMarketManager.setExpiryDuration('10', { from: manager });
+			await SportPositionalMarketManager.setMaxTimeToMaturity('10', { from: manager });
+			await SportPositionalMarketManager.setCreatorCapitalRequirement('10', { from: manager });
+			await SportPositionalMarketManager.setsUSD(third, { from: manager });
+			await SportPositionalMarketManager.setMarketCreationEnabled(false, { from: manager });
+			await SportPositionalMarketManager.setCustomMarketCreationEnabled(true, { from: manager });
+			await SportPositionalMarketManager.setMigratingManager(third, { from: manager });
+			await SportPositionalMarketManager.transformCollateral('10', { from: manager });
+			await SportPositionalMarketManager.transformCollateral('100000000000000000000000', {
+				from: manager,
+			});
+			await SportPositionalMarketManager.reverseTransformCollateral('10', { from: manager });
 		});
 	});
 
@@ -1204,7 +1271,7 @@ contract('SportsAMM', accounts => {
 			);
 
 			let marketOdds = await SportsAMM.getMarketDefaultOdds(deployedMarket.address);
-			console.log('market odds: ', marketOdds);
+			// console.log('market odds: ', marketOdds);
 
 			// await fastForward(await currentTime());
 

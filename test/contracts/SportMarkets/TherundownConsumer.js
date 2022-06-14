@@ -15,7 +15,6 @@ const HOUR = 3600;
 const DAY = 86400;
 const WEEK = 604800;
 
-
 const YEAR = 31556926;
 
 const {
@@ -305,6 +304,16 @@ contract('TheRundownConsumer', accounts => {
 
 			assert.bnEqual(-20700, await TherundownConsumerDeployed.getOddsHomeTeam(gameid1));
 			assert.bnEqual(17700, await TherundownConsumerDeployed.getOddsAwayTeam(gameid1));
+			assert.notEqual(0, await TherundownConsumerDeployed.getGameTime(gameid1));
+			assert.notEqual(
+				0,
+				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(-20700)
+			);
+			assert.notEqual(
+				0,
+				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(17700)
+			);
+			assert.bnEqual(0, await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(0));
 
 			assert.equal(
 				game_1_create,
@@ -319,6 +328,10 @@ contract('TheRundownConsumer', accounts => {
 			let gameTime = game.startTime;
 			assert.equal('Atlanta Hawks', game.homeTeam);
 			assert.equal('Charlotte Hornets', game.awayTeam);
+
+			let game_per_req = await TherundownConsumerDeployed.getGameCreatedByRequestId(reqIdCreate, 0);
+			assert.equal('Atlanta Hawks', game_per_req.homeTeam);
+			assert.equal('Charlotte Hornets', game_per_req.awayTeam);
 
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'GameCreated', {
@@ -616,6 +629,13 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal('Atletico Madrid Atletico Madrid', game.homeTeam);
 			assert.equal('Manchester City Manchester City', game.awayTeam);
 
+			let game_per_req = await TherundownConsumerDeployed.getGameCreatedByRequestId(
+				reqIdFootballCreate,
+				0
+			);
+			assert.equal('Atletico Madrid Atletico Madrid', game_per_req.homeTeam);
+			assert.equal('Manchester City Manchester City', game_per_req.awayTeam);
+
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'GameCreated', {
 				_requestId: reqIdFootballCreate,
@@ -860,14 +880,12 @@ contract('TheRundownConsumer', accounts => {
 			await expect(
 				TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, { from: second })
 			).to.be.revertedWith('Address not supported');
-			// await expect(TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 0, { from: third })).to.be.revertedWith('Bad outcome for three position game');
 			await expect(
 				TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 4, { from: third })
 			).to.be.revertedWith('Bad outcome for three position game');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: second })
 			).to.be.revertedWith('Address not supported');
-			// await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for three position game');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, { from: third })
 			).to.be.revertedWith('Bad outcome for three position game');
@@ -957,7 +975,6 @@ contract('TheRundownConsumer', accounts => {
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: second })
 			).to.be.revertedWith('Address not supported');
-			// await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for three position game');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, { from: third })
 			).to.be.revertedWith('Bad outcome for three position game');
@@ -1070,28 +1087,33 @@ contract('TheRundownConsumer', accounts => {
 				TherundownConsumerDeployed.cancelGameManually(gameFootballid1, { from: third })
 			).to.be.revertedWith('No market created for game');
 
-			// await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, { from: third })).to.be.revertedWith('Bad outcome for two position game');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, { from: third })
 			).to.be.revertedWith('Bad outcome for two position game');
 
-			// const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(
-			// 	marketAdd, { from: third }
-			// );
+			const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(marketAdd, {
+				from: third,
+			});
 
-			// // check if event is emited
-			// assert.eventEqual(tx_2.logs[0], 'CancelSportsMarket', {
-			// 	_marketAddress: marketAdd,
-			// 	_id: gameid1
-			// });
+			// check if event is emited
+			assert.eventEqual(tx_2.logs[0], 'CancelSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+			});
 
-			// await expect(TherundownConsumerDeployed.resolveGameManually(gameid1, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
-			// await expect(TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: third })).to.be.revertedWith('Market resoved or canceled');
-			// await expect(TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: third })).to.be.revertedWith('Market resoved or canceled');
+			await expect(
+				TherundownConsumerDeployed.resolveGameManually(gameid1, 2, { from: third })
+			).to.be.revertedWith('Market resoved or canceled');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, { from: third })
+			).to.be.revertedWith('Market resoved or canceled');
+			await expect(
+				TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: third })
+			).to.be.revertedWith('Market resoved or canceled');
 
-			// assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-			// assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-			// assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
+			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
 		});
 	});
 
@@ -1105,6 +1127,100 @@ contract('TheRundownConsumer', accounts => {
 			assert.bnEqual(10300, await TherundownConsumerDeployed.getOddsHomeTeam(oddsid));
 			assert.bnEqual(-11300, await TherundownConsumerDeployed.getOddsAwayTeam(oddsid));
 			assert.bnEqual(0, await TherundownConsumerDeployed.getOddsDraw(oddsid));
+		});
+	});
+
+	describe('Consumer management', () => {
+		it('Test owner functions', async () => {
+			const tx_SupportedSport = await TherundownConsumerDeployed.setSupportedSport(15, true, {
+				from: owner,
+			});
+
+			await expect(
+				TherundownConsumerDeployed.setSupportedSport(15, false, { from: wrapper })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_SupportedSport.logs[0], 'SupportedSportsChanged', {
+				_sportId: 15,
+				_isSupported: true,
+			});
+
+			const tx_SupportedResolvedStatuses = await TherundownConsumerDeployed.setSupportedResolvedStatuses(
+				15,
+				true,
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				TherundownConsumerDeployed.setSupportedResolvedStatuses(15, false, { from: wrapper })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_SupportedResolvedStatuses.logs[0], 'SupportedResolvedStatusChanged', {
+				_status: 15,
+				_isSupported: true,
+			});
+
+			const tx_SupportedCancelStatuses = await TherundownConsumerDeployed.setSupportedCancelStatuses(
+				15,
+				true,
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				TherundownConsumerDeployed.setSupportedCancelStatuses(15, false, { from: wrapper })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_SupportedCancelStatuses.logs[0], 'SupportedCancelStatusChanged', {
+				_status: 15,
+				_isSupported: true,
+			});
+
+			const tx_twoPositionSport = await TherundownConsumerDeployed.setwoPositionSport(15, true, {
+				from: owner,
+			});
+
+			await expect(
+				TherundownConsumerDeployed.setwoPositionSport(15, false, { from: wrapper })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_twoPositionSport.logs[0], 'TwoPositionSportChanged', {
+				_sportId: 15,
+				_isTwoPosition: true,
+			});
+
+			const tx_SportsManager = await TherundownConsumerDeployed.setSportsManager(wrapper, {
+				from: owner,
+			});
+
+			await expect(
+				TherundownConsumerDeployed.setSportsManager(wrapper, { from: wrapper })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_SportsManager.logs[0], 'NewSportsMarketManager', {
+				_sportsManager: wrapper,
+			});
+
+			const tx_QueueAddress = await TherundownConsumerDeployed.setQueueAddress(wrapper, {
+				from: owner,
+			});
+
+			await expect(
+				TherundownConsumerDeployed.setQueueAddress(wrapper, { from: wrapper })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_QueueAddress.logs[0], 'NewQueueAddress', {
+				_queues: wrapper,
+			});
 		});
 	});
 });

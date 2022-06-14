@@ -7,3 +7,5 @@ coverage
 # husky hooks
 .husky/
 .prettierignore
+
+.openzeppelin/

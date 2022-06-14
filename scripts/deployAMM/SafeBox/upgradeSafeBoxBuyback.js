@@ -42,14 +42,14 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const safeBoxAddress = getTargetAddress('SafeBox', network);
+	const safeBoxAddress = getTargetAddress('SafeBoxBuyback', network);
 	console.log('Found SafeBox at:', safeBoxAddress);
 
-	const SafeBox = await ethers.getContractFactory('SafeBox');
+	const SafeBox = await ethers.getContractFactory('SafeBoxBuyback');
 	const implementation = await upgrades.prepareUpgrade(safeBoxAddress, SafeBox);
 	console.log('SafeBox upgrade prepared');
 
-	setTargetAddress('SafeBoxImplementation', network, implementation);
+	setTargetAddress('SafeBoxImplementationBuyback', network, implementation);
 
 	try {
 		await hre.run('verify:verify', {

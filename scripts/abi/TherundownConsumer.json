@@ -215,6 +215,12 @@
         "internalType": "struct TherundownConsumer.GameOdds",
         "name": "_game",
         "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_normalizedOdds",
+        "type": "uint256[]"
       }
     ],
     "name": "GameOddsAdded",

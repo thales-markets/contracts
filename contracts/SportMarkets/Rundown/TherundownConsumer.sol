@@ -274,7 +274,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return _isGameStatusResolved(getGameResolvedById(_gameId));
     }
 
-    function getNormalizedOdds(bytes32 _gameId) external view returns (uint[] memory) {
+    function getNormalizedOdds(bytes32 _gameId) public view returns (uint[] memory) {
         int[] memory odds = new int[](3);
         odds[0] = gameOdds[_gameId].homeOdds;
         odds[1] = gameOdds[_gameId].awayOdds;
@@ -350,7 +350,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         gameOdds[_game.gameId] = _game;
         oddsLastPulledForGame[_game.gameId] = block.timestamp;
-        emit GameOddsAdded(requestId, _game.gameId, _game);
+        emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
     }
 
     function _populateSports(uint[] memory _supportedSportIds) internal {
@@ -592,7 +592,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     event GameCreated(bytes32 _requestId, uint _sportId, bytes32 _id, GameCreate _game, uint _queueIndex);
     event GameResolved(bytes32 _requestId, uint _sportId, bytes32 _id, GameResolve _game, uint _queueIndex);
-    event GameOddsAdded(bytes32 _requestId, bytes32 _id, GameOdds _game);
+    event GameOddsAdded(bytes32 _requestId, bytes32 _id, GameOdds _game, uint[] _normalizedOdds);
     event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game, uint[] _tags);
     event ResolveSportsMarket(address _marketAddress, bytes32 _id, uint _outcome);
     event CancelSportsMarket(address _marketAddress, bytes32 _id);

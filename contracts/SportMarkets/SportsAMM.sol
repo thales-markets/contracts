@@ -310,7 +310,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     // write methods
 
-    function buyFromAMMWithDifferentCollateralAndReferrer(
+    function buyFromAMMWithDifferentCollateral(
         address market,
         Position position,
         uint amount,

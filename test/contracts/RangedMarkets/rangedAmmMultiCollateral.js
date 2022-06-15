@@ -31,13 +31,15 @@ let PositionalMarket,
 	PositionalMarketMastercopy,
 	PositionMastercopy,
 	RangedMarket;
-let market, up, down, position, Synth;
+let market, up, down, position, Synth, curveSUSD, testUSDC, testUSDT, testDAI;
 
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
+
+const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 
 const Phase = {
 	Trading: toBN(0),
@@ -60,8 +62,8 @@ contract('RangedAMM', accounts => {
 	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
 
-	const sUSDQty = toUnit(1000);
-	const sUSDQtyAmm = toUnit(1000);
+	const sUSDQty = toUnit(100000);
+	const sUSDQtyAmm = toUnit(100000);
 
 	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
@@ -297,6 +299,36 @@ contract('RangedAMM', accounts => {
 			from: owner,
 		});
 		console.log('thalesAMM -  set Referrals');
+
+		let TestUSDC = artifacts.require('TestUSDC');
+		testUSDC = await TestUSDC.new();
+		testUSDT = await TestUSDC.new();
+
+		let ERC20token = artifacts.require('Thales');
+		testDAI = await ERC20token.new();
+
+		let CurveSUSD = artifacts.require('MockCurveSUSD');
+		curveSUSD = await CurveSUSD.new(
+			sUSDSynth.address,
+			testUSDC.address,
+			testUSDT.address,
+			testDAI.address
+		);
+
+		await rangedMarketsAMM.setCurveSUSD(
+			curveSUSD.address,
+			testDAI.address,
+			testUSDC.address,
+			testUSDT.address,
+			true,
+			{ from: owner }
+		);
+
+		console.log('minting');
+		await testUSDC.mint(minter, usdcQuantity);
+		await testUSDC.mint(curveSUSD.address, usdcQuantity);
+		await testUSDC.approve(rangedMarketsAMM.address, usdcQuantity, { from: minter });
+		console.log('done minting');
 	});
 
 	const Position = {
@@ -346,73 +378,137 @@ contract('RangedAMM', accounts => {
 
 			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
 
-			console.log('BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
-
-			let buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
-				rangedMarket.address,
-				RangedPosition.IN,
-				toUnit('200')
-			);
-
-			console.log('buyInQuote is:' + buyInQuote / 1e18);
-
-			let minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			console.log('minterSusdBalance before:' + minterSusdBalance / 1e18);
-
-			let rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			console.log('rangedMarketsAMM before:' + rangedMarketsAMMBalanceSUSd / 1e18);
-			let referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
-			console.log('referrerSusdBalance before:' + referrerSusdBalance / 1e18);
-
+			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);
-			await rangedMarketsAMM.buyFromAMMWithReferrer(
+			let buyFromAmmQuote = await rangedMarketsAMM.buyFromAmmQuote(
 				rangedMarket.address,
 				RangedPosition.IN,
-				toUnit('200'),
-				buyInQuote,
-				additionalSlippage,
-				referrerAddress,
-				{ from: minter }
+				toUnit(availableToBuyFromAMMIn / 1e18 - 1)
 			);
+			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
-			let referredMinter = await referrals.referrals(minter);
-			console.log('Minter referrer is ' + referredMinter);
-
-			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
-
-			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
-
-			referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
-			console.log('referrerSusdBalance after:' + referrerSusdBalance / 1e18);
-
-			await rangedMarketsAMM.buyFromAMMWithReferrer(
+			let buyFromAmmQuoteUSDCCollateralObject = await rangedMarketsAMM.buyFromAmmQuoteWithDifferentCollateral(
 				rangedMarket.address,
 				RangedPosition.IN,
-				toUnit('200'),
-				buyInQuote,
-				additionalSlippage,
-				secondReferrerAddress,
-				{ from: minter }
+				toUnit(availableToBuyFromAMMIn / 1e18 - 1),
+				testUSDC.address
+			);
+			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
+			console.log('buyFromAmmQuoteUSDCCollateral  is:' + buyFromAmmQuoteUSDCCollateral);
+			console.log(
+				'buyFromAmmQuoteUSDCCollateral decimal is:' + buyFromAmmQuoteUSDCCollateral / 1e6
 			);
 
-			referredMinter = await referrals.referrals(minter);
-			console.log('Minter referrer is ' + referredMinter);
+			let buyFromAmmQuoteDAICollateralObject = await rangedMarketsAMM.buyFromAmmQuoteWithDifferentCollateral(
+				rangedMarket.address,
+				RangedPosition.IN,
+				toUnit(availableToBuyFromAMMIn / 1e18 - 1),
+				testDAI.address
+			);
+			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
+			console.log('buyFromAmmQuoteDAICollateral  is:' + buyFromAmmQuoteDAICollateral);
+			console.log('buyFromAmmQuoteDAICollateral decimal is:' + buyFromAmmQuoteDAICollateral / 1e18);
 
-			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
+			let minterUSDC = await testUSDC.balanceOf(minter);
+			console.log('minterUSDC pre  buy decimal is:' + minterUSDC / 1e6);
 
-			rangedMarketsAMMBalanceSUSd = await sUSDSynth.balanceOf(rangedMarketsAMM.address);
-			console.log('rangedMarketsAMM after:' + rangedMarketsAMMBalanceSUSd / 1e18);
+			let ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			console.log('ammSusdBalance pre buy decimal is:' + ammSusdBalance / 1e18);
 
-			referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
-			console.log('referrerSusdBalance after:' + referrerSusdBalance / 1e18);
+			let buyFromAmmQuoteUSDCCollateralObjectSlippagedObject = await rangedMarketsAMM.buyFromAmmQuoteWithDifferentCollateral(
+				rangedMarket.address,
+				RangedPosition.IN,
+				toUnit(0.9 * (availableToBuyFromAMMIn / 1e18 - 1)),
+				testUSDC.address
+			);
+			let buyFromAmmQuoteUSDCCollateralObjectSlippaged =
+				buyFromAmmQuoteUSDCCollateralObjectSlippagedObject[0];
+			console.log(
+				'buyFromAmmQuoteUSDCCollateralObjectSlippaged decimal is:' +
+					buyFromAmmQuoteUSDCCollateralObjectSlippaged / 1e6
+			);
 
-			let secondreferrerSusdBalance = await sUSDSynth.balanceOf(secondReferrerAddress);
-			console.log('secondreferrerSusdBalance after:' + secondreferrerSusdBalance / 1e18);
+			await expect(
+				rangedMarketsAMM.buyFromAMMWithDifferentCollateralAndReferrer(
+					rangedMarket.address,
+					RangedPosition.IN,
+					toUnit(availableToBuyFromAMMIn / 1e18 - 1),
+					buyFromAmmQuoteUSDCCollateralObjectSlippaged,
+					additionalSlippage,
+					testUSDC.address,
+					ZERO_ADDRESS,
+					{ from: minter }
+				)
+			).to.be.revertedWith('Slippage too high');
 
-			console.log('DONE BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
+			await expect(
+				rangedMarketsAMM.buyFromAMMWithDifferentCollateralAndReferrer(
+					rangedMarket.address,
+					RangedPosition.IN,
+					toUnit(availableToBuyFromAMMIn / 1e18 - 1),
+					buyFromAmmQuoteUSDCCollateral,
+					additionalSlippage,
+					sUSDSynth.address,
+					ZERO_ADDRESS,
+					{ from: minter }
+				)
+			).to.be.revertedWith('unsupported collateral');
+
+			await rangedMarketsAMM.buyFromAMMWithDifferentCollateralAndReferrer(
+				rangedMarket.address,
+				RangedPosition.IN,
+				toUnit(availableToBuyFromAMMIn / 1e18 - 1),
+				buyFromAmmQuoteUSDCCollateral,
+				additionalSlippage,
+				testUSDC.address,
+				ZERO_ADDRESS,
+				{ from: minter }
+			);
+			console.log(
+				'Bought  ' +
+					(availableToBuyFromAMMIn / 1e18 - 1) +
+					' for ' +
+					buyFromAmmQuoteUSDCCollateral / 1e6 +
+					' sUSD'
+			);
+
+			minterUSDC = await testUSDC.balanceOf(minter);
+			console.log('minterUSDC post buy decimal is:' + minterUSDC / 1e6);
+
+			ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			console.log('ammSusdBalance post buy decimal is:' + ammSusdBalance / 1e18);
+
+			let inposition = artifacts.require('RangedPosition');
+			let outposition = artifacts.require('RangedPosition');
+
+			let positions = await rangedMarket.positions();
+			let inPosition = await inposition.at(positions.inp);
+			let outPosition = await outposition.at(positions.outp);
+
+			let minterBalance = await inPosition.balanceOf(minter);
+			console.log('minter In tokens balance:' + minterBalance / 1e18);
+
+			await rangedMarketsAMM.setCurveSUSD(
+				curveSUSD.address,
+				testDAI.address,
+				testUSDC.address,
+				testUSDT.address,
+				false,
+				{ from: owner }
+			);
+
+			await expect(
+				rangedMarketsAMM.buyFromAMMWithDifferentCollateralAndReferrer(
+					rangedMarket.address,
+					RangedPosition.IN,
+					toUnit(availableToBuyFromAMMIn / 1e18 - 1),
+					buyFromAmmQuoteUSDCCollateral,
+					additionalSlippage,
+					testUSDC.address,
+					ZERO_ADDRESS,
+					{ from: minter }
+				)
+			).to.be.revertedWith('unsupported collateral');
 		});
 	});
 });

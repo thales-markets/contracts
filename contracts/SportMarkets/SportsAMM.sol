@@ -509,8 +509,27 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             sUSD.approve(address(_manager), 0);
         }
         manager = _manager;
-        sUSD.approve(manager, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+        sUSD.approve(manager, MAX_APPROVAL);
         emit SetPositionalMarketManager(_manager);
+    }
+
+    function setCurveSUSD(
+        address _curveSUSD,
+        address _dai,
+        address _usdc,
+        address _usdt,
+        bool _curveOnrampEnabled
+    ) external onlyOwner {
+        curveSUSD = ICurveSUSD(_curveSUSD);
+        dai = _dai;
+        usdc = _usdc;
+        usdt = _usdt;
+        IERC20Upgradeable(dai).approve(_curveSUSD, MAX_APPROVAL);
+        IERC20Upgradeable(usdc).approve(_curveSUSD, MAX_APPROVAL);
+        IERC20Upgradeable(usdt).approve(_curveSUSD, MAX_APPROVAL);
+        // not needed unless selling into different collateral is enabled
+        //sUSD.approve(_curveSUSD, MAX_APPROVAL);
+        curveOnrampEnabled = _curveOnrampEnabled;
     }
 
     function setCapPerAsset(bytes32 asset, uint _cap) public onlyOwner {

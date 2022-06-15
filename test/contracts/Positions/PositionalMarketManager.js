@@ -18,6 +18,7 @@ let market, Position;
 let aggregator_sAUD;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const DAY = 24 * 60 * 60;
 
 contract('PositionalMarketManager', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator] = accounts;
@@ -27,6 +28,7 @@ contract('PositionalMarketManager', accounts => {
 
 	const expiryDuration = toBN(26 * 7 * 24 * 60 * 60);
 	const sAUDKey = toBytes32('sAUD');
+	const ETHKey = toBytes32('ETH');
 
 	let timeToMaturity = 200;
 
@@ -83,6 +85,8 @@ contract('PositionalMarketManager', accounts => {
 		[creator, owner, minterSigner, dummySigner] = await ethers.getSigners();
 
 		await manager.connect(creator).setPositionalMarketFactory(factory.address);
+		await manager.connect(creator).setTimeframe(12); // 12h
+		await manager.connect(creator).setPriceBuffer(5); // 5%
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
 		await factory.connect(owner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(owner).setPositionMastercopy(PositionMastercopy.address);
@@ -94,6 +98,7 @@ contract('PositionalMarketManager', accounts => {
 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
 		await priceFeed.connect(owner).addAggregator(sAUDKey, aggregator_sAUD.address);
+		await priceFeed.connect(owner).addAggregator(ETHKey, aggregator_sAUD.address);
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
@@ -150,14 +155,14 @@ contract('PositionalMarketManager', accounts => {
 
 		it('Adding, resolving, and expiring markets properly updates market lists ', async () => {
 			const numMarkets = 8;
+			const markets = [];
 			assert.bnEqual(await manager.numActiveMarkets(), toBN(0));
 			assert.equal((await manager.activeMarkets(0, 100)).length, 0);
 			const now = await currentTime();
-			const markets = await Promise.all(
-				new Array(numMarkets)
-					.fill(0)
-					.map(() => createMarket(manager, sAUDKey, toUnit(1), now + 200, toUnit(1), creator))
-			);
+			for (let i = 0; i < numMarkets; i++) {
+				let market = await createMarket(manager, sAUDKey, toUnit(i), now + 200, toUnit(1), creator);
+				markets.push(market);
+			}
 			assert.bnEqual(await manager.numMaturedMarkets(), toBN(0));
 			assert.equal((await manager.maturedMarkets(0, 100)).length, 0);
 
@@ -304,7 +309,7 @@ contract('PositionalMarketManager', accounts => {
 			const newMarket = await createMarket(
 				manager,
 				sAUDKey,
-				toUnit(1),
+				toUnit(100),
 				now + 100,
 				toUnit(3),
 				creator
@@ -313,6 +318,70 @@ contract('PositionalMarketManager', accounts => {
 			await manager.resolveMarket(newMarket.address);
 			const REVERT = 'Only the contract owner may perform this action';
 			await assert.revert(manager.connect(minterSigner).expireMarkets([newMarket.address]), REVERT);
+		});
+	});
+
+	describe('Create market checks', async () => {
+		let maturity, date, strikePrice;
+		beforeEach(async () => {
+			maturity = (await currentTime()) + DAY;
+			date = await manager.getDateFromTimestamp(maturity);
+			strikePrice = 100;
+			await manager.connect(creator).setMaxTimeToMaturity(3 * DAY);
+		});
+
+		it('Properly distributes markets with oracle and date key', async () => {
+			await createMarket(manager, sAUDKey, toUnit(strikePrice), maturity, toUnit(3), creator);
+			await createMarket(manager, ETHKey, toUnit(strikePrice), maturity, toUnit(3), creator);
+			const saudMarkets = await manager.getMarketsPerOracleKey(sAUDKey, date);
+			const ethMarkets = await manager.getMarketsPerOracleKey(ETHKey, date);
+
+			assert.equal(saudMarkets.length, 1);
+			assert.equal(ethMarkets.length, 1);
+		});
+
+		it('Cannot create duplicate markets price-wise', async () => {
+			const priceBuffer = await manager.priceBuffer();
+			const strikePriceUpperLimit = strikePrice + (strikePrice * priceBuffer) / 100;
+			const strikePriceLowerLimit = strikePrice - (strikePrice * priceBuffer) / 100 + 0.3;
+			await createMarket(manager, ETHKey, toUnit(strikePrice + 100), maturity, toUnit(3), creator);
+			await assert.revert(
+				createMarket(manager, ETHKey, toUnit(strikePriceUpperLimit), maturity, toUnit(3), creator),
+				'Market already exists'
+			);
+			await assert.revert(
+				createMarket(manager, ETHKey, toUnit(strikePriceLowerLimit), maturity, toUnit(3), creator),
+				'Market already exists'
+			);
+
+		});
+
+		it('Cannot create duplicate markets time-wise', async () => {
+			const timeframe = await manager.timeframe();
+			await assert.revert(
+				createMarket(
+					manager,
+					ETHKey,
+					toUnit(strikePrice),
+					maturity + timeframe * 60,
+					toUnit(3),
+					creator
+				),
+				'Market already exists'
+			);
+			await assert.revert(
+				createMarket(
+					manager,
+					ETHKey,
+					toUnit(strikePrice),
+					maturity - timeframe * 60,
+					toUnit(3),
+					creator
+				),
+				'Market already exists'
+			);
+
+			await createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY, toUnit(3), creator);
 		});
 	});
 
@@ -345,7 +414,7 @@ contract('PositionalMarketManager', accounts => {
 			const newMarket = await createMarket(
 				manager,
 				sAUDKey,
-				toUnit(1),
+				toUnit(200),
 				now + 200,
 				toUnit(5),
 				creator
@@ -375,145 +444,6 @@ contract('PositionalMarketManager', accounts => {
 
 			await newMarket.mint(toUnit(2), { from: initialCreator });
 			assert.bnEqual(await manager.totalDeposited(), depositBefore.add(toUnit(7).toString()));
-		});
-	});
-
-	describe('Market migration ', () => {
-		let markets, newManager, newerManager, now;
-
-		before(async () => {
-			now = await currentTime();
-			markets = [];
-
-			for (const p of [1, 2, 3]) {
-				markets.push(
-					await createMarket(manager, sAUDKey, toUnit(p), now + 100, toUnit(1), creator)
-				);
-			}
-
-			newManager = await setupContract({
-				accounts,
-				contract: 'PositionalMarketManager',
-				args: [
-					managerOwner,
-					sUSDSynth.address,
-					priceFeed.address,
-					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
-					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
-					toUnit('2'), // Capital requirement
-				],
-			});
-
-			await addressResolver.importAddresses(
-				[toBytes32('PositionalMarketManager')],
-				[newManager.address],
-				{
-					from: accounts[1],
-				}
-			);
-
-			await Promise.all(
-				markets.map(m => sUSDSynth.approve(m.address, toUnit(1000), { from: minter }))
-			);
-			await sUSDSynth.approve(newManager.address, toUnit(1000), { from: minter });
-
-			await newManager.connect(creator).setMigratingManager(manager.address);
-		});
-		it('Migrating manager can be set', async () => {
-			await manager.connect(creator).setMigratingManager(initialCreator);
-		});
-
-		it("Can't migrate to self", async () => {
-			await assert.revert(
-				manager.connect(creator).migrateMarkets(manager.address, true, [markets[0].address]),
-				"Can't migrate to self"
-			);
-		});
-
-		it('Migrating manager can only be set by the manager owner', async () => {
-			await assert.revert(
-				manager.connect(minterSigner).setMigratingManager(initialCreator),
-				'Only the contract owner may perform this action'
-			);
-		});
-
-		it('Markets can be migrated between factories.', async () => {
-			await manager.connect(creator).migrateMarkets(newManager.address, true, [markets[1].address]);
-
-			const oldMarkets = await manager.activeMarkets(0, 100);
-			assert.bnEqual(await manager.numActiveMarkets(), toBN(12));
-			assert.equal(oldMarkets.length, 12);
-			assert.equal(oldMarkets[10], markets[0].address);
-			assert.equal(oldMarkets[11], markets[2].address);
-
-			const newMarkets = await newManager.activeMarkets(0, 100);
-			assert.bnEqual(await newManager.numActiveMarkets(), toBN(1));
-			assert.equal(newMarkets.length, 1);
-			assert.equal(newMarkets[0], markets[1].address);
-
-			assert.equal(await markets[0].owner(), manager.address);
-			assert.equal(await markets[2].owner(), manager.address);
-			assert.equal(await markets[1].owner(), newManager.address);
-		});
-
-		it('Markets cannot be migrated between factories if the migrating manager unset', async () => {
-			await newManager.connect(creator).setMigratingManager('0x' + '0'.repeat(40));
-			await assert.revert(
-				manager.connect(creator).migrateMarkets(newManager.address, true, [markets[0].address]),
-				'Only permitted for migrating manager.'
-			);
-		});
-
-		it('Markets can only be migrated by the owner.', async () => {
-			await assert.revert(
-				manager
-					.connect(minterSigner)
-					.migrateMarkets(newManager.address, true, [markets[1].address]),
-				'Only the contract owner may perform this action'
-			);
-		});
-
-		it('An empty migration does nothing, as does migration from an empty manager', async () => {
-			newerManager = await setupContract({
-				accounts,
-				contract: 'PositionalMarketManager',
-				args: [
-					managerOwner,
-					sUSDSynth.address,
-					priceFeed.address,
-					26 * 7 * 24 * 60 * 60, // expiry duration: 26 weeks (~ 6 months)
-					365 * 24 * 60 * 60, // Max time to maturity: ~ 1 year
-					toUnit('2'), // Capital requirement
-				],
-			});
-			await newerManager.connect(creator).setMigratingManager(newManager.address);
-			await newManager.connect(creator).migrateMarkets(newerManager.address, true, []);
-			assert.equal(await newerManager.numActiveMarkets(), 0);
-		});
-
-		it('Receiving an empty market list does nothing.', async () => {
-			await newerManager.connect(creator).setMigratingManager(managerOwner);
-			await newerManager.connect(owner).receiveMarkets(true, []);
-			assert.bnEqual(await newerManager.numActiveMarkets(), 0);
-		});
-
-		it('Cannot receive duplicate markets.', async () => {
-			await newerManager.connect(creator).setMigratingManager(manager.address);
-			await manager
-				.connect(creator)
-				.migrateMarkets(newerManager.address, true, [markets[0].address]);
-			await newerManager.connect(creator).setMigratingManager(managerOwner);
-			await assert.revert(
-				newerManager.connect(owner).receiveMarkets(true, [markets[0].address]),
-				'Market already known.'
-			);
-		});
-
-		it('Markets can only be received from the migrating manager.', async () => {
-			await assert.revert(
-				manager.connect(minterSigner).receiveMarkets(true, [markets[1].address]),
-				'Only permitted for migrating manager.'
-			);
 		});
 	});
 
@@ -583,7 +513,7 @@ contract('PositionalMarketManager', accounts => {
 				.connect(creator)
 				.createMarket(
 					sAUDKey,
-					toUnit(1).toString(),
+					toUnit(10).toString(),
 					now + 100,
 					toUnit(5).toString(),
 					false,
@@ -601,7 +531,7 @@ contract('PositionalMarketManager', accounts => {
 				.connect(minterSigner)
 				.createMarket(
 					sAUDKey,
-					toUnit(1).toString(),
+					toUnit(11).toString(),
 					now + 100,
 					toUnit(5).toString(),
 					false,

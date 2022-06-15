@@ -9,6 +9,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
 // Libraries
 import "../utils/libraries/AddressSetLib.sol";
+import "../utils/libraries/DateTime.sol";
 import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 
 // Internal references
@@ -62,6 +63,12 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     address public positionalMarketFactory;
 
     bool public needsTransformingCollateral;
+
+    uint public timeframe;
+    uint public priceBuffer;
+
+    mapping(bytes32 => mapping(uint => address[])) public marketsPerOracleKey;
+    mapping(address => uint) public marketsStrikePrice;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -151,6 +158,20 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         return _maturedMarkets.getPage(index, pageSize);
     }
 
+    function getMarketsPerOracleKey(bytes32 oracleKey, uint date) public view returns (address[] memory) {
+        return marketsPerOracleKey[oracleKey][date];
+    }
+
+    function getDateFromTimestamp(uint timestamp) public pure returns (uint date) {
+        uint second = DateTime.getSecond(timestamp);
+        uint minute = DateTime.getMinute(timestamp);
+        uint hour = DateTime.getHour(timestamp);
+
+        date = DateTime.subHours(timestamp, hour);
+        date = DateTime.subMinutes(date, minute);
+        date = DateTime.subSeconds(date, second);
+    }
+
     function _isValidKey(bytes32 oracleKey) internal view returns (bool) {
         // If it has a rate, then it's possibly a valid key
         if (priceFeed.rateForCurrency(oracleKey) != 0) {
@@ -163,6 +184,41 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
 
         return false;
+    }
+
+    function _checkStrikePrice(
+        address[] memory markets,
+        uint upperPriceLimit,
+        uint lowerPriceLimit
+    ) internal view returns (bool) {
+        for (uint i = 0; i < markets.length; i++) {
+            if (marketsStrikePrice[markets[i]] <= upperPriceLimit && marketsStrikePrice[markets[i]] >= lowerPriceLimit) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function _checkMarkets(
+        bytes32 oracleKey,
+        uint strikePrice,
+        uint maturity
+    ) internal view returns (bool) {
+        uint date = getDateFromTimestamp(maturity);
+        uint upperDateLimit = DateTime.addHours(date, timeframe);
+        uint lowerDateLimit = DateTime.subHours(date, timeframe);
+
+        address[] memory marketsOnDate = getMarketsPerOracleKey(oracleKey, date);
+        address[] memory marketsDateAfter = getMarketsPerOracleKey(oracleKey, upperDateLimit);
+        address[] memory marketsDateBefore = getMarketsPerOracleKey(oracleKey, lowerDateLimit);
+
+        uint upperPriceLimit = strikePrice + (strikePrice * priceBuffer) / 100;
+        uint lowerPriceLimit = strikePrice - (strikePrice * priceBuffer) / 100;
+
+        return
+            _checkStrikePrice(marketsOnDate, upperPriceLimit, lowerPriceLimit) &&
+            _checkStrikePrice(marketsDateAfter, upperPriceLimit, lowerPriceLimit) &&
+            _checkStrikePrice(marketsDateBefore, upperPriceLimit, lowerPriceLimit);
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
@@ -192,6 +248,16 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     function setsUSD(address _address) external onlyOwner {
         sUSD = IERC20(_address);
         emit SetsUSD(_address);
+    }
+
+    function setPriceBuffer(uint _priceBuffer) external onlyOwner {
+        priceBuffer = _priceBuffer;
+        emit PriceBufferChanged(_priceBuffer);
+    }
+
+    function setTimeframe(uint _timeframe) external onlyOwner {
+        timeframe = _timeframe;
+        emit TimeframeChanged(_timeframe);
     }
 
     /* ---------- Deposit Management ---------- */
@@ -247,20 +313,21 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
         require(capitalRequirement <= initialMint, "Insufficient capital");
 
-        PositionalMarket market =
-            PositionalMarketFactory(positionalMarketFactory).createMarket(
-                PositionalMarketFactory.PositionCreationMarketParameters(
-                    msg.sender,
-                    sUSD,
-                    priceFeed,
-                    oracleKey,
-                    strikePrice,
-                    [maturity, expiry],
-                    initialMint,
-                    customMarket,
-                    customOracle
-                )
-            );
+        require(_checkMarkets(oracleKey, strikePrice, maturity) == true, "Market already exists");
+
+        PositionalMarket market = PositionalMarketFactory(positionalMarketFactory).createMarket(
+            PositionalMarketFactory.PositionCreationMarketParameters(
+                msg.sender,
+                sUSD,
+                priceFeed,
+                oracleKey,
+                strikePrice,
+                [maturity, expiry],
+                initialMint,
+                customMarket,
+                customOracle
+            )
+        );
 
         _activeMarkets.add(address(market));
 
@@ -270,6 +337,9 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         sUSD.transferFrom(msg.sender, address(market), _transformCollateral(initialMint));
 
         (IPosition up, IPosition down) = market.getOptions();
+
+        marketsStrikePrice[address(market)] = strikePrice;
+        marketsPerOracleKey[oracleKey][getDateFromTimestamp(maturity)].push(address(market));
 
         emit MarketCreated(
             address(market),
@@ -335,67 +405,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         emit SetCustomMarketCreationEnabled(enabled);
     }
 
-    function setMigratingManager(PositionalMarketManager manager) external onlyOwner {
-        _migratingManager = manager;
-        emit SetMigratingManager(address(manager));
-    }
-
-    function migrateMarkets(
-        PositionalMarketManager receivingManager,
-        bool active,
-        PositionalMarket[] calldata marketsToMigrate
-    ) external onlyOwner {
-        require(address(receivingManager) != address(this), "Can't migrate to self");
-
-        uint _numMarkets = marketsToMigrate.length;
-        if (_numMarkets == 0) {
-            return;
-        }
-        AddressSetLib.AddressSet storage markets = active ? _activeMarkets : _maturedMarkets;
-
-        uint runningDepositTotal;
-        for (uint i; i < _numMarkets; i++) {
-            PositionalMarket market = marketsToMigrate[i];
-            require(isKnownMarket(address(market)), "Market unknown.");
-
-            // Remove it from our list and deposit total.
-            markets.remove(address(market));
-            runningDepositTotal = runningDepositTotal.add(market.deposited());
-
-            // Prepare to transfer ownership to the new manager.
-            market.nominateNewOwner(address(receivingManager));
-        }
-        // Deduct the total deposits of the migrated markets.
-        totalDeposited = totalDeposited.sub(runningDepositTotal);
-        emit MarketsMigrated(receivingManager, marketsToMigrate);
-
-        // Now actually transfer the markets over to the new manager.
-        receivingManager.receiveMarkets(active, marketsToMigrate);
-    }
-
-    function receiveMarkets(bool active, PositionalMarket[] calldata marketsToReceive) external {
-        require(msg.sender == address(_migratingManager), "Only permitted for migrating manager.");
-
-        uint _numMarkets = marketsToReceive.length;
-        if (_numMarkets == 0) {
-            return;
-        }
-        AddressSetLib.AddressSet storage markets = active ? _activeMarkets : _maturedMarkets;
-
-        uint runningDepositTotal;
-        for (uint i; i < _numMarkets; i++) {
-            PositionalMarket market = marketsToReceive[i];
-            require(!isKnownMarket(address(market)), "Market already known.");
-
-            market.acceptOwnership();
-            markets.add(address(market));
-            // Update the market with the new manager address,
-            runningDepositTotal = runningDepositTotal.add(market.deposited());
-        }
-        totalDeposited = totalDeposited.add(runningDepositTotal);
-        emit MarketsReceived(_migratingManager, marketsToReceive);
-    }
-
     // support USDC with 6 decimals
     function transformCollateral(uint value) external view override returns (uint) {
         return _transformCollateral(value);
@@ -456,4 +465,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     event SetsUSD(address _address);
     event SetCustomMarketCreationEnabled(bool enabled);
     event SetMigratingManager(address manager);
+    event PriceBufferChanged(uint priceBuffer);
+    event TimeframeChanged(uint timeframe);
 }

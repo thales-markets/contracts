@@ -88,6 +88,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     mapping(bytes32 => bytes32) public gemeIdPerRequestId;
 
+    //TODO delete only for report
+    mapping(bytes32 => uint) public countIfOddsChangeForGame;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -336,6 +339,15 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
+
+        // TODO delete this if statement
+        if(_game.awayOdds != getOddsAwayTeam(_game.gameId) ||
+            _game.homeOdds != getOddsHomeTeam(_game.gameId) ||
+            _game.drawOdds != getOddsDraw(_game.gameId)
+            ){
+            countIfOddsChangeForGame[_game.gameId]++;
+        }
+
         gameOdds[_game.gameId] = _game;
         oddsLastPulledForGame[_game.gameId] = block.timestamp;
         emit GameOddsAdded(requestId, _game.gameId, _game);

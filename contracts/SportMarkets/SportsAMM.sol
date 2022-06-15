@@ -23,7 +23,9 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
-import "hardhat/console.sol";
+import "../interfaces/ICurveSUSD.sol";
+
+// import "hardhat/console.sol";
 
 // import "../AMM/DeciMath.sol";
 
@@ -72,6 +74,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     address public testOdds;
     uint[] public oddsInTesting;
     bool public testingOdds;
+
+    ICurveSUSD public curveSUSD;
+
+    address public usdc;
+    address public usdt;
+    address public dai;
+
+    uint public constant MAX_APPROVAL = type(uint256).max;
+
+    bool public curveOnrampEnabled;
 
     function initialize(
         address _owner,
@@ -127,12 +139,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             return 0;
         }
         uint basePrice = price(market, position).add(min_spread);
-        // console.logUint(basePrice);
-        // console.logUint(price(market, position));
-        // console.logUint(min_spread);
         uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount)).div(ONE);
-        // console.logUint(impactPriceIncrease);
-        // console.logUint(_buyPriceImpact(market, position, amount));
         // add 2% to the price increase to avoid edge cases on the extremes
         impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
         // console.logUint(impactPriceIncrease);
@@ -140,6 +147,23 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         // console.logUint(tempAmount);
         uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
         return ISportPositionalMarketManager(manager).transformCollateral(returnQuote);
+    }
+
+    function buyFromAmmQuoteWithDifferentCollateral(
+        address market,
+        Position position,
+        uint amount,
+        address collateral
+    ) public view returns (uint collateralQuote, uint sUSDToPay) {
+        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
+        if (curveIndex == 0 || !curveOnrampEnabled) {
+            return (0, 0);
+        }
+
+        sUSDToPay = buyFromAmmQuote(market, position, amount);
+        //cant get a quote on how much collateral is needed from curve for sUSD,
+        //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
+        collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
     }
 
     function buyPriceImpact(
@@ -285,6 +309,29 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     // write methods
+
+    function buyFromAMMWithDifferentCollateralAndReferrer(
+        address market,
+        Position position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage,
+        address collateral
+    ) public nonReentrant whenNotPaused {
+        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
+        require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
+
+        (uint collateralQuote, uint susdQuote) =
+            buyFromAmmQuoteWithDifferentCollateral(market, position, amount, collateral);
+
+        require(collateralQuote.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high!");
+
+        IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
+        collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
+        curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, susdQuote);
+
+        buyFromAMM(market, position, amount, susdQuote, additionalSlippage);
+    }
 
     function buyFromAMM(
         address market,
@@ -698,6 +745,19 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function _capOnMarket(address market) internal view returns (uint) {
         bytes32 gameId = ISportPositionalMarket(market).getGameId();
         return getCapPerAsset(gameId);
+    }
+
+    function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
+        if (collateral == dai) {
+            return 1;
+        }
+        if (collateral == usdc) {
+            return 2;
+        }
+        if (collateral == usdt) {
+            return 3;
+        }
+        return 0;
     }
 
     function retrieveSUSD(address payable account) external onlyOwner {

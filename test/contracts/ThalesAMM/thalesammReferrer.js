@@ -265,4 +265,23 @@ contract('ThalesAMM', accounts => {
 			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 		});
 	});
+	describe('Test Referrers whitelist and traded before', () => {
+		it('sets correctly', async () => {
+			await referrals.setWhitelistedAddress(owner, true, {
+				from: owner,
+			});
+
+			let traders = new Array();
+			traders.push(owner);
+			await referrals.setTradedBefore(traders, {
+				from: owner,
+			});
+
+			let isOwnerWhitelisted = await referrals.whitelistedAddresses(owner);
+			assert(isOwnerWhitelisted, true);
+
+			let isOwnerPrevtrader = await referrals.tradedBefore(owner);
+			assert(isOwnerPrevtrader, true);
+		});
+	});
 });

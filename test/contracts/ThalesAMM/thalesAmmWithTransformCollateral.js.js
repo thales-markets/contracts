@@ -6,6 +6,7 @@ const { toBN } = web3.utils;
 const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupAllContracts } = require('../../utils/setup');
+const { assert } = require('../../utils/common');
 
 const { convertToDecimals } = require('../../utils/helpers');
 
@@ -183,9 +184,6 @@ contract('ThalesAMM', accounts => {
 		const usdcQuantity = toBN(100 * 1e6); //100 USDC
 		const ammusdcQuantity = toBN(10000 * 1e6); //100 USDC
 
-		let sUSDBalance = await testUSDC.balanceOf(creatorSigner.address);
-		//console.log('sUSDBalance creatorSigner before:' + sUSDBalance / 1e6);
-
 		await manager.setsUSD(testUSDC.address);
 		await testUSDC.mint(minter, usdcQuantity);
 		await testUSDC.approve(manager.address, usdcQuantity, { from: minter });
@@ -193,9 +191,6 @@ contract('ThalesAMM', accounts => {
 		await testUSDC.mint(thalesAMM.address, ammusdcQuantity);
 		await testUSDC.mint(creatorSigner.address, usdcQuantity);
 		await testUSDC.approve(manager.address, usdcQuantity, { from: creatorSigner.address });
-
-		sUSDBalance = await testUSDC.balanceOf(creatorSigner.address);
-		//console.log('sUSDBalance creatorSigner after:' + sUSDBalance / 1e6);
 	});
 
 	const Position = {
@@ -205,11 +200,8 @@ contract('ThalesAMM', accounts => {
 
 	describe('Test AMM', () => {
 		it('buying test ', async () => {
-			let sUSDBalance = await testUSDC.balanceOf(creatorSigner.address);
-			//console.log('sUSDBalance creatorSigner:' + sUSDBalance / 1e6);
-
+			let usdcBalance = await testUSDC.balanceOf(creatorSigner.address);
 			let transformedCollateral = await manager.transformCollateral(toUnit(10).toString());
-			//console.log('transformedCollateral ' + transformedCollateral / 1e6);
 
 			let now = await currentTime();
 			let newMarket = await createMarket(
@@ -226,36 +218,20 @@ contract('ThalesAMM', accounts => {
 			down = await position.at(options.down);
 
 			let ammUpBalance = await up.balanceOf(creatorSigner.address);
-			//console.log('up balance creatorSigner.address:' + ammUpBalance / 1e18);
-
-			sUSDBalance = await testUSDC.balanceOf(creatorSigner.address);
-			//console.log('sUSDBalance creatorSigner:' + sUSDBalance / 1e6);
-
-			sUSDBalance = await testUSDC.balanceOf(newMarket.address);
-			//console.log('sUSDBalance newMarket:' + sUSDBalance / 1e6);
-
-			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			//console.log('priceUp decimal is:' + priceUp / 1e18);
 
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.UP
 			);
-			//console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
-
-			let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18)
-			);
-			//console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
 
 			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18)
+				toUnit(availableToBuyFromAMM / 1e18 - 1)
 			);
-			//console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e6);
+			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote);
+			assert.equal(buyFromAmmQuote > 200 * 1e6, true);
+			assert.equal(buyFromAmmQuote < 300 * 1e6, true);
 
 			await testUSDC.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);
@@ -264,14 +240,8 @@ contract('ThalesAMM', accounts => {
 				Position.UP,
 				toUnit(500)
 			);
-			//console.log('buyFromAmmQuote 500 decimal is:' + buyFromAmmQuote / 1e6);
-
-			sUSDBalance = await testUSDC.balanceOf(minter);
-			//console.log('sUSDBalance minter before:' + sUSDBalance / 1e6);
-			sUSDBalance = await testUSDC.balanceOf(thalesAMM.address);
-			//console.log('sUSDBalance thalesAMM before:' + sUSDBalance / 1e6);
-			sUSDBalance = await testUSDC.balanceOf(safeBox);
-			//console.log('sUSDBalance safeBox before:' + sUSDBalance / 1e6);
+			console.log('buyFromAmmQuote 500 decimal is:' + buyFromAmmQuote / 1e6);
+			assert.equal(buyFromAmmQuote > 99 * 1e6 && buyFromAmmQuote < 100 * 1e6, true);
 
 			//slippage test
 			await thalesAMM.buyFromAMM(
@@ -283,15 +253,15 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			sUSDBalance = await testUSDC.balanceOf(minter);
-			//console.log('sUSDBalance minter after:' + sUSDBalance / 1e6);
-			sUSDBalance = await testUSDC.balanceOf(thalesAMM.address);
-			//console.log('sUSDBalance thalesAMM after:' + sUSDBalance / 1e6);
-			sUSDBalance = await testUSDC.balanceOf(safeBox);
-			//console.log('sUSDBalance safeBox after:' + sUSDBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(minter);
+			console.log('usdcBalance minter after:' + usdcBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(thalesAMM.address);
+			console.log('usdcBalance thalesAMM after:' + usdcBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(safeBox);
+			console.log('usdcBalance safeBox after:' + usdcBalance / 1e6);
 
 			ammUpBalance = await up.balanceOf(minter);
-			//console.log('up balance minter:' + ammUpBalance / 1e18);
+			console.log('up balance minter:' + ammUpBalance / 1e18);
 
 			await up.approve(thalesAMM.address, toUnit(100), { from: minter });
 			await down.approve(thalesAMM.address, toUnit(100), { from: minter });
@@ -300,7 +270,7 @@ contract('ThalesAMM', accounts => {
 				Position.UP,
 				toUnit(100)
 			);
-			//console.log('sellToAmmQuote is ' + sellToAmmQuote / 1e6);
+			console.log('sellToAmmQuote is ' + sellToAmmQuote / 1e6);
 			await thalesAMM.sellToAMM(
 				newMarket.address,
 				Position.UP,
@@ -310,15 +280,15 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			sUSDBalance = await testUSDC.balanceOf(minter);
-			//console.log('sUSDBalance minter after sell:' + sUSDBalance / 1e6);
-			sUSDBalance = await testUSDC.balanceOf(thalesAMM.address);
-			//console.log('sUSDBalance thalesAMM after sell:' + sUSDBalance / 1e6);
-			sUSDBalance = await testUSDC.balanceOf(safeBox);
-			//console.log('sUSDBalance safeBox after sell:' + sUSDBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(minter);
+			console.log('usdcBalance minter after sell:' + usdcBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(thalesAMM.address);
+			console.log('usdcBalance thalesAMM after sell:' + usdcBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(safeBox);
+			console.log('usdcBalance safeBox after sell:' + usdcBalance / 1e6);
 
 			ammUpBalance = await up.balanceOf(minter);
-			//console.log('up balance minter sell:' + ammUpBalance / 1e18);
+			console.log('up balance minter sell:' + ammUpBalance / 1e18);
 
 			const minterQuantity = toBN(1000 * 1e6); //1000 USDC
 			await testUSDC.mint(minter, minterQuantity);
@@ -327,15 +297,15 @@ contract('ThalesAMM', accounts => {
 				from: minter,
 			});
 
-			sUSDBalance = await testUSDC.balanceOf(minter);
-			//console.log('sUSDBalance minter after mint:' + sUSDBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(minter);
+			console.log('usdcBalance minter after mint:' + usdcBalance / 1e6);
 
 			sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.DOWN,
 				toUnit(500)
 			);
-			//console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e6);
+			console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e6);
 			await down.approve(thalesAMM.address, toUnit(500), { from: minter });
 			await thalesAMM.sellToAMM(
 				newMarket.address,
@@ -346,81 +316,48 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			sUSDBalance = await testUSDC.balanceOf(minter);
-			//console.log('sUSDBalance minter after sell2:' + sUSDBalance / 1e6);
-			sUSDBalance = await testUSDC.balanceOf(thalesAMM.address);
-			//console.log('sUSDBalance thalesAMM after sell2:' + sUSDBalance / 1e6);
-			sUSDBalance = await testUSDC.balanceOf(safeBox);
-			//console.log('sUSDBalance safeBox after sell2:' + sUSDBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(minter);
+			console.log('usdcBalance minter after sell2:' + usdcBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(thalesAMM.address);
+			console.log('usdcBalance thalesAMM after sell2:' + usdcBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(safeBox);
+			console.log('usdcBalance safeBox after sell2:' + usdcBalance / 1e6);
 
 			await fastForward(day * 20);
 
 			let phase = await newMarket.phase();
-			//console.log('phase ' + phase);
+			console.log('phase ' + phase);
 
 			let isKnownMarket = await manager.isKnownMarket(newMarket.address);
-			//console.log('isKnownMarket ' + isKnownMarket);
+			console.log('isKnownMarket ' + isKnownMarket);
 
 			ammUpBalance = await up.balanceOf(thalesAMM.address);
-			//console.log('amm UpBalance pre Exercise decimal is:' + ammUpBalance / 1e18);
+			console.log('amm UpBalance pre Exercise decimal is:' + ammUpBalance / 1e18);
 
 			let ammDownBalance = await down.balanceOf(thalesAMM.address);
-			//console.log('ammDownBalance pre Exercise  decimal is:' + ammDownBalance / 1e18);
+			console.log('ammDownBalance pre Exercise  decimal is:' + ammDownBalance / 1e18);
 
-			sUSDBalance = await sUSDSynth.balanceOf(thalesAMM.address);
-			//console.log('sUSDBalance post Exercise  decimal is:' + sUSDBalance / 1e6);
+			usdcBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			console.log('usdcBalance post Exercise  decimal is:' + usdcBalance / 1e6);
 
 			let canExerciseMaturedMarket = await thalesAMM.canExerciseMaturedMarket(newMarket.address);
-			//console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
+			console.log('canExerciseMaturedMarket ' + canExerciseMaturedMarket);
 
 			await thalesAMM.exerciseMaturedMarket(newMarket.address);
 
 			ammUpBalance = await up.balanceOf(thalesAMM.address);
-			//console.log('amm UpBalance post Exercise decimal is:' + ammUpBalance / 1e18);
+			console.log('amm UpBalance post Exercise decimal is:' + ammUpBalance / 1e18);
 			ammDownBalance = await down.balanceOf(thalesAMM.address);
-			//console.log('ammDownBalance pre Exercise  decimal is:' + ammDownBalance / 1e18);
+			console.log('ammDownBalance pre Exercise  decimal is:' + ammDownBalance / 1e18);
 
-			sUSDBalance = await testUSDC.balanceOf(minter);
-			//console.log('sUSDBalance minter after exercize:' + sUSDBalance / 1e6);
-			sUSDBalance = await testUSDC.balanceOf(thalesAMM.address);
-			//console.log('sUSDBalance thalesAMM after exercize:' + sUSDBalance / 1e6);
-			sUSDBalance = await testUSDC.balanceOf(safeBox);
-			//console.log('sUSDBalance safeBox after exercize:' + sUSDBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(minter);
+			console.log('usdcBalance minter after exercize:' + usdcBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(thalesAMM.address);
+			console.log('usdcBalance thalesAMM after exercize:' + usdcBalance / 1e6);
+			usdcBalance = await testUSDC.balanceOf(safeBox);
+			console.log('usdcBalance safeBox after exercize:' + usdcBalance / 1e6);
+
+			assert.equal(usdcBalance > 5 * 1e6, true);
 		});
 	});
 });
-
-function calculateOdds(price, strike, days, volatility) {
-	let p = price;
-	let q = strike;
-	let t = days / 365;
-	let v = volatility / 100;
-
-	let tt = Math.sqrt(t);
-	let vt = v * tt;
-	let lnpq = Math.log(q / p);
-	let d1 = lnpq / vt;
-	let y9 = 1 + 0.2316419 * Math.abs(d1);
-
-	let y = Math.floor((1 / y9) * 100000) / 100000;
-	let z1 = Math.exp(-((d1 * d1) / 2));
-	let d2 = -((d1 * d1) / 2);
-	let d3 = Math.exp(d2);
-	let z = Math.floor(0.3989423 * d3 * 100000) / 100000;
-
-	let y5 = 1.330274 * Math.pow(y, 5);
-	let y4 = 1.821256 * Math.pow(y, 4);
-	let y3 = 1.781478 * Math.pow(y, 3);
-	let y2 = 0.356538 * Math.pow(y, 2);
-	let y1 = 0.3193815 * y;
-	let x1 = y5 + y3 + y1 - y4 - y2;
-	let x = 1 - z * (y5 - y4 + y3 - y2 + y1);
-
-	let x2 = z * x1;
-	x = Math.floor(x * 100000) / 100000;
-
-	if (d1 < 0) {
-		x = 1 - x;
-	}
-	return Math.floor((1 - x) * 1000) / 10;
-}

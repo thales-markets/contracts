@@ -278,6 +278,8 @@ contract('ThalesAMM', accounts => {
 
 			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			assert.bnGte(safeBoxsUSD, toUnit(63));
+			assert.bnLte(safeBoxsUSD, toUnit(64));
 		});
 
 		it('Safe box sell ', async () => {
@@ -296,14 +298,12 @@ contract('ThalesAMM', accounts => {
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToBuyFromAMM UP decimal is:' + availableToBuyFromAMM / 1e18);
 
 			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.UP,
 				toUnit(availableToBuyFromAMM / 1e18 - 1)
 			);
-			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);
 			await thalesAMM.buyFromAMM(
@@ -323,7 +323,6 @@ contract('ThalesAMM', accounts => {
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToSellToAMM pre buy decimal is:' + availableToSellToAMM / 1e18);
 
 			let options = await newMarket.options();
 			up = await position.at(options.up);
@@ -335,14 +334,12 @@ contract('ThalesAMM', accounts => {
 				Position.UP,
 				toUnit(availableToSellToAMM / 1e18 - 1)
 			);
-			console.log('sellPriceImpactPostBuy pre buy decimal is:' + sellPriceImpactPostBuy / 1e18);
 
 			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.UP,
 				toUnit(availableToSellToAMM / 1e18 - 1)
 			);
-			console.log('sellToAmmQuote is ' + sellToAmmQuote / 1e18);
 			additionalSlippage = toUnit(0.01);
 			await thalesAMM.sellToAMM(
 				newMarket.address,
@@ -353,27 +350,18 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			let ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
-			console.log('ammSusdBalance post buy decimal is:' + ammSusdBalance / 1e18);
-
-			let minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			console.log('minterSusdBalance post buy decimal is:' + minterSusdBalance / 1e18);
-
-			let spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
-			console.log('spentOnMarket post buy decimal is:' + spentOnMarket / 1e18);
-
 			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			assert.bnGte(safeBoxsUSD, toUnit(34));
+			assert.bnLte(safeBoxsUSD, toUnit(35));
 
 			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.UP);
-			console.log('availableToBuyFromAMM UP decimal is:' + availableToBuyFromAMM / 1e18);
 
 			buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.UP,
 				toUnit(availableToBuyFromAMM / 1e18 - 1)
 			);
-			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			additionalSlippage = toUnit(0.01);
 			await thalesAMM.buyFromAMM(
@@ -385,11 +373,10 @@ contract('ThalesAMM', accounts => {
 				{ from: minter }
 			);
 
-			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
-			console.log('spentOnMarket post buy decimal is:' + spentOnMarket / 1e18);
-
 			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			assert.bnGte(safeBoxsUSD, toUnit(65));
+			assert.bnLte(safeBoxsUSD, toUnit(66));
 		});
 	});
 

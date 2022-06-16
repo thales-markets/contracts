@@ -20993,7 +20993,7 @@
           {
             "contract": "PositionalMarketManager",
             "label": "durations",
-            "type": "t_struct(Durations)32413_storage",
+            "type": "t_struct(Durations)29425_storage",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:43"
           },
           {
@@ -21035,25 +21035,25 @@
           {
             "contract": "PositionalMarketManager",
             "label": "_activeMarkets",
-            "type": "t_struct(AddressSet)52603_storage",
+            "type": "t_struct(AddressSet)60766_storage",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:54"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "_maturedMarkets",
-            "type": "t_struct(AddressSet)52603_storage",
+            "type": "t_struct(AddressSet)60766_storage",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:55"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "_migratingManager",
-            "type": "t_contract(PositionalMarketManager)33652",
+            "type": "t_contract(PositionalMarketManager)30664",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:57"
           },
           {
             "contract": "PositionalMarketManager",
             "label": "priceFeed",
-            "type": "t_contract(IPriceFeed)48300",
+            "type": "t_contract(IPriceFeed)55801",
             "src": "contracts\\Positions\\PositionalMarketManager.sol:59"
           },
           {
@@ -21076,7 +21076,7 @@
           }
         ],
         "types": {
-          "t_struct(Durations)32413_storage": {
+          "t_struct(Durations)29425_storage": {
             "label": "struct PositionalMarketManager.Durations",
             "members": [
               {
@@ -21101,7 +21101,7 @@
           "t_address": {
             "label": "address"
           },
-          "t_struct(AddressSet)52603_storage": {
+          "t_struct(AddressSet)60766_storage": {
             "label": "struct AddressSetLib.AddressSet",
             "members": [
               {
@@ -21120,10 +21120,10 @@
           "t_mapping(t_address,t_uint256)": {
             "label": "mapping(address => uint256)"
           },
-          "t_contract(PositionalMarketManager)33652": {
+          "t_contract(PositionalMarketManager)30664": {
             "label": "contract PositionalMarketManager"
           },
-          "t_contract(IPriceFeed)48300": {
+          "t_contract(IPriceFeed)55801": {
             "label": "contract IPriceFeed"
           },
           "t_contract(IERC20)3430": {

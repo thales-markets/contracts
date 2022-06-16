@@ -13,7 +13,7 @@ import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import "../utils/libraries/UniswapMath.sol";
 
-contract SafeBoxBuyback is ProxyOwned, Initializable,ProxyReentrancyGuard {
+contract SafeBoxBuyback is ProxyOwned, Initializable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     IERC20Upgradeable public sUSD;
@@ -29,6 +29,8 @@ contract SafeBoxBuyback is ProxyOwned, Initializable,ProxyReentrancyGuard {
 
     bool public buybacksEnabled;
 
+    uint256 public minAccepted;
+
     function initialize(address _owner, IERC20Upgradeable _sUSD) public initializer {
         setOwner(_owner);
         initNonReentrant();
@@ -38,7 +40,7 @@ contract SafeBoxBuyback is ProxyOwned, Initializable,ProxyReentrancyGuard {
     /// @notice executeBuyback buys THALES tokens for predefined amount of sUSD stored in sUSDperTick value
     /// @dev executeBuyback can be called if at least 1 tickLength has passed since last buyback,
     /// it then calculates how many ticks passes and executes buyback via Uniswap V3 integrated contract.
-    function executeBuyback() external nonReentrant{
+    function executeBuyback() external nonReentrant {
         require(buybacksEnabled, "Buybacks are not enabled");
         uint ticksFromLastBuyBack = lastBuyback != 0 ? (block.timestamp - lastBuyback) / tickLength : 1;
         require(ticksFromLastBuyBack > 0, "Not enough ticks have passed since last buyback");
@@ -67,6 +69,8 @@ contract SafeBoxBuyback is ProxyOwned, Initializable,ProxyReentrancyGuard {
         // Approve the router to spend tokenIn.
         TransferHelper.safeApprove(tokenIn, address(swapRouter), amountIn);
 
+        uint256 _minAccepted = minAccepted == 0 ? 95 : minAccepted;
+
         uint256 ratio = _getRatio(tokenIn, tokenOut, poolFee);
 
         // Multiple pool swaps are encoded through bytes called a `path`. A path is a sequence of token addresses and poolFees that define the pools used in the swaps.
@@ -77,7 +81,7 @@ contract SafeBoxBuyback is ProxyOwned, Initializable,ProxyReentrancyGuard {
                 recipient: address(this),
                 deadline: block.timestamp + 15,
                 amountIn: amountIn,
-                amountOutMinimum: (amountIn * ratio * 98) / (100 * 10**18)
+                amountOutMinimum: (amountIn * ratio * _minAccepted) / (100 * 10**18)
             });
 
         // The call to `exactInput` executes the swap.
@@ -177,6 +181,13 @@ contract SafeBoxBuyback is ProxyOwned, Initializable,ProxyReentrancyGuard {
         emit UniswapV3FactoryAddressChanged(_uniswapFactory);
     }
 
+    /// @notice setMinAccepted sets _minAccepted amount
+    /// @param _minAccepted for buyback
+    function setMinAccepted(uint256 _minAccepted) external onlyOwner {
+        minAccepted = _minAccepted;
+        emit MinAcceptedChanged(_minAccepted);
+    }
+
     /// @notice setBuybacksEnabled enables/disables buybacks
     /// @param _buybacksEnabled enabled/disabled
     function setBuybacksEnabled(bool _buybacksEnabled) external onlyOwner {
@@ -200,6 +211,7 @@ contract SafeBoxBuyback is ProxyOwned, Initializable,ProxyReentrancyGuard {
     }
 
     event TickRateChanged(uint256 _sUSDperTick);
+    event MinAcceptedChanged(uint256 _minAccepted);
     event TickLengthChanged(uint256 _tickLength);
     event ThalesTokenAddressChanged(address _tokenAddress);
     event WETHTokenAddressChanged(address _tokenAddress);

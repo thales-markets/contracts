@@ -2,13 +2,13 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
-const { setTargetAddress, getTargetAddress } = require('../helpers');
+const { setTargetAddress, getTargetAddress } = require('../../helpers');
 
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
 const { toBN } = web3.utils;
 
-const { toBytes32 } = require('../../index');
+const { toBytes32 } = require('../../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -51,10 +51,10 @@ async function main() {
 
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
-	const exoticManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
-	let exoticManagerAddress = getTargetAddress('ExoticMarketManager', network);
+	const sportsManager = await ethers.getContractFactory('SportPositionalMarketManager');
+	let sportsManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
 
-	console.log('ExoticMarketManager address: ', exoticManagerAddress);
+	console.log('SportPositionalMarketManager address: ', sportsManagerAddress);
 
 	const chainlink = require(`./chainlink/${network}.json`);
 
@@ -67,9 +67,9 @@ async function main() {
 	const allowedSports = [4, 11, 16];
 
 	const twoPositionSports = [4];
-	const fixedPrice = w3utils.toWei('10');
-	const withdrawalAllowed = true;
-	const fixedsUSD = w3utils.toWei('100');
+
+	const allowedResolvedStatuses = [8, 12];
+	const allowedCancelStatuses = [1, 2];
 
 	/* ========== DEPLOY CONTRACT ========== */
 
@@ -98,12 +98,11 @@ async function main() {
 	const therundown = await upgrades.deployProxy(TherundownConsumer, [
 		owner.address,
 		allowedSports,
-		exoticManagerAddress,
+		sportsManagerAddress,
 		twoPositionSports,
-		fixedPrice,
-		withdrawalAllowed,
-		fixedsUSD,
 		gamesQueue.address,
+		allowedResolvedStatuses,
+		allowedCancelStatuses
 	]);
 
 	await therundown.deployed();

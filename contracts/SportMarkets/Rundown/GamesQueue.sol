@@ -6,8 +6,8 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 // internal
-import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
 /* 
     Storage for games (created or resolved)
@@ -56,7 +56,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit EnqueueGamesCreated(data, sportsId, lastCreated);
     }
 
-    function dequeueGamesCreated() public returns (bytes32 data) {
+    function dequeueGamesCreated() public onlyConsumer returns (bytes32 data) {
         require(lastCreated >= firstCreated, "No more elements in a queue");
 
         data = gamesCreateQueue[firstCreated];

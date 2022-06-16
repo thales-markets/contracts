@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-4.4.1/security/Pausable.sol";
 import "@openzeppelin/contracts-4.4.1/access/Ownable.sol";
 
 // internal
-import "../interfaces/ITherundownConsumer.sol";
+import "../../interfaces/ITherundownConsumer.sol";
 
 contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     using Chainlink for Chainlink.Request;
@@ -81,6 +81,29 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         sportIdPerRequestId[requestId] = _sportId;
     }
 
+    function requestOddsWithFilters(
+        bytes32 _specId,
+        uint256 _payment,
+        uint256 _sportId,
+        uint256 _date,
+        string[] memory _gameIds
+    ) public whenNotPaused isAddressWhitelisted {
+        require(consumer.isSupportedSport(_sportId), "SportId is not supported");
+
+        Chainlink.Request memory req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesOdds.selector);
+
+        req.addUint("date", _date);
+        req.addUint("sportId", _sportId);
+
+        // optional param.
+        if(_gameIds.length > 0){
+            req.addStringArray("gameIds", _gameIds);
+        }
+
+        bytes32 requestId = sendChainlinkRequest(req, _payment);
+        sportIdPerRequestId[requestId] = _sportId;
+    }
+
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
 
     function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games) public recordChainlinkFulfillment(_requestId) {
@@ -89,6 +112,10 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     function fulfillGamesResolved(bytes32 _requestId, bytes[] memory _games) public recordChainlinkFulfillment(_requestId) {
         consumer.fulfillGamesResolved(_requestId, _games, sportIdPerRequestId[_requestId]);
+    }
+    
+    function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) public recordChainlinkFulfillment(_requestId) {
+        consumer.fulfillGamesOdds(_requestId, _games);
     }
 
     /* ========== VIEWS ========== */

@@ -280,11 +280,17 @@ contract('TheRundownConsumer', accounts => {
 		it('Fulfill Games Created - NBA, create market, check results', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 
+			assert.bnEqual(false, await TherundownConsumerDeployed.havingGamesPerDate(game1NBATime));
+			assert.bnEqual(false, await TherundownConsumerDeployed.havingGamesPerDate(game1NBATime));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
 			// req. games
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdCreate,
 				gamesCreated,
 				sportId_4,
+				game1NBATime,
 				{ from: wrapper }
 			);
 
@@ -298,6 +304,12 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal(sportId_4, await gamesQueue.sportPerGameId(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(true, await TherundownConsumerDeployed.havingGamesPerDate(game1NBATime));
+			assert.bnEqual(true, await TherundownConsumerDeployed.havingGamesPerDate(game1NBATime));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			assert.bnEqual(gameid1, await TherundownConsumerDeployed.gamesPerDate(game1NBATime, 0));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
@@ -373,6 +385,7 @@ contract('TheRundownConsumer', accounts => {
 				reqIdFootballCreate,
 				gamesFootballCreated,
 				sportId_16,
+				gameFootballTime,
 				{ from: wrapper }
 			);
 
@@ -431,6 +444,7 @@ contract('TheRundownConsumer', accounts => {
 				reqIdFootballCreate,
 				gamesFootballCreated,
 				sportId_16,
+				gameFootballTime,
 				{ from: wrapper }
 			);
 
@@ -490,6 +504,7 @@ contract('TheRundownConsumer', accounts => {
 				reqIdCreate,
 				gamesCreated,
 				sportId_4,
+				game1NBATime,
 				{ from: wrapper }
 			);
 
@@ -610,6 +625,7 @@ contract('TheRundownConsumer', accounts => {
 				reqIdFootballCreate,
 				gamesFootballCreated,
 				sportId_16,
+				gameFootballTime,
 				{ from: wrapper }
 			);
 
@@ -713,6 +729,7 @@ contract('TheRundownConsumer', accounts => {
 				reqIdFootballCreate,
 				gamesFootballCreated,
 				sportId_16,
+				gameFootballTime,
 				{ from: wrapper }
 			);
 
@@ -830,6 +847,7 @@ contract('TheRundownConsumer', accounts => {
 				reqIdFootballCreate,
 				gamesFootballCreated,
 				sportId_16,
+				gameFootballTime,
 				{ from: wrapper }
 			);
 
@@ -918,6 +936,7 @@ contract('TheRundownConsumer', accounts => {
 				reqIdFootballCreate,
 				gamesFootballCreated,
 				sportId_16,
+				gameFootballTime,
 				{ from: wrapper }
 			);
 
@@ -1010,6 +1029,7 @@ contract('TheRundownConsumer', accounts => {
 				reqIdCreate,
 				gamesCreated,
 				sportId_4,
+				game1NBATime,
 				{ from: wrapper }
 			);
 
@@ -1120,9 +1140,14 @@ contract('TheRundownConsumer', accounts => {
 	describe('Odds for game', () => {
 		it('Get odds per game, check results', async () => {
 			// req. games
-			const tx = await TherundownConsumerDeployed.fulfillGamesOdds(reqIdOdds, oddsResultArray, {
-				from: wrapper,
-			});
+			const tx = await TherundownConsumerDeployed.fulfillGamesOdds(
+				reqIdOdds,
+				oddsResultArray,
+				game1NBATime,
+				{
+					from: wrapper,
+				}
+			);
 
 			assert.bnEqual(10300, await TherundownConsumerDeployed.getOddsHomeTeam(oddsid));
 			assert.bnEqual(-11300, await TherundownConsumerDeployed.getOddsAwayTeam(oddsid));

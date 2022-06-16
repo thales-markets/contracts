@@ -98,50 +98,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_cap",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetCapPerAsset",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "_defaultCapPerGame",
         "type": "uint256"
       }
     ],
     "name": "SetDefaultCapPerGame",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_impliedVolatility",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetImpliedVolatilityPerAsset",
     "type": "event"
   },
   {

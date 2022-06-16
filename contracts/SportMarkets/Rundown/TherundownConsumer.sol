@@ -13,7 +13,7 @@ import "./GamesQueue.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 
 /** 
-    Link to docs: https://market.link/nodes/098c3c5e-811d-4b8a-b2e3-d1806909c7d7/integrations
+    Link to docs: https://market.link/nodes/TheRundown/integrations
  */
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== CONSTANTS =========== */
@@ -89,7 +89,16 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => bytes32) public gemeIdPerRequestId;
 
     //TODO delete only for report
-    mapping(bytes32 => uint) public countIfOddsChangeForGame;
+    mapping(bytes32 => uint) public countIfOddsChangeForGame; // delete
+
+    mapping(uint => bool) public havingGamesPerDate;
+    
+    //TODO delete only for report
+    mapping(uint => bool) public havingSportOnADate;  // delete
+
+    mapping(uint => bytes32[]) public gamesPerDate;
+    mapping(uint => uint) public oddsLastPulledForDate;
+    mapping(uint =>  mapping(uint => bool)) public isSportOnADate;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -117,12 +126,21 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function fulfillGamesCreated(
         bytes32 _requestId,
         bytes[] memory _games,
-        uint _sportId
+        uint _sportId,
+        uint _date
     ) external onlyWrapper {
         requestIdGamesCreated[_requestId] = _games;
+
+        if(_games.length > 0){
+            havingGamesPerDate[_date] = true;
+            isSportOnADate[_date][_sportId] = true;
+            oddsLastPulledForDate[_date] = block.timestamp;
+        }
+
         for (uint i = 0; i < _games.length; i++) {
             GameCreate memory game = abi.decode(_games[i], (GameCreate));
             if (!queues.existingGamesInCreatedQueue(game.gameId) && !isSameTeamOrTBD(game.homeTeam, game.awayTeam)) {
+                gamesPerDate[_date].push(game.gameId);
                 _createGameFulfill(_requestId, game, _sportId);
             }
         }
@@ -142,8 +160,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external onlyWrapper {
+    function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games, uint _date) external onlyWrapper {
         requestIdGamesOdds[_requestId] = _games;
+        oddsLastPulledForDate[_date] = block.timestamp;
         for (uint i = 0; i < _games.length; i++) {
             GameOdds memory game = abi.decode(_games[i], (GameOdds));
             _oddsGameFulfill(_requestId, game);
@@ -287,11 +306,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             if (_americanOdd == 0) {
                 odd = 0;
             } else if (_americanOdd > 0) {
-                // odd = uint(_americanOdds[i]) / 100; // previous usage
                 odd = uint(_americanOdd); 
                 odd = ((10000 * 1e18) / (odd + 10000)) * 100;
             } else if (_americanOdd < 0) {
-                // odd = uint(-_americanOdds[i]) / 100; // previous usage
                 odd = uint(-_americanOdd); 
                 odd = ((odd * 1e18) / (odd + 10000)) * 100;
             }
@@ -321,7 +338,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         oddsLastPulledForGame[_game.gameId] = block.timestamp;
         gemeIdPerRequestId[_game.gameId] = requestId;
 
-        emit GameCreated(requestId, _sportId, _game.gameId, _game, queues.lastCreated());
+        emit GameCreated(requestId, _sportId, _game.gameId, _game, queues.lastCreated(), getNormalizedOdds(_game.gameId));
     }
 
     function _resolveGameFulfill(
@@ -339,15 +356,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
-
-        // TODO delete this if statement
-        if(_game.awayOdds != getOddsAwayTeam(_game.gameId) ||
-            _game.homeOdds != getOddsHomeTeam(_game.gameId) ||
-            _game.drawOdds != getOddsDraw(_game.gameId)
-            ){
-            countIfOddsChangeForGame[_game.gameId]++;
-        }
-
         gameOdds[_game.gameId] = _game;
         oddsLastPulledForGame[_game.gameId] = block.timestamp;
         emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
@@ -401,7 +409,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         queues.dequeueGamesCreated();
 
-        emit CreateSportsMarket(marketAddress, game.gameId, game, tags);
+        emit CreateSportsMarket(marketAddress, game.gameId, game, tags, getNormalizedOdds(game.gameId));
     }
 
     function _resolveMarket(bytes32 _gameId) internal {
@@ -502,11 +510,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             if (_americanOdds[i] == 0) {
                 normalizedOdds[i] = 0;
             } else if (_americanOdds[i] > 0) {
-                // odd = uint(_americanOdds[i]) / 100; // previous usage
                 odd = uint(_americanOdds[i]); 
                 normalizedOdds[i] = ((10000 * 1e18) / (odd + 10000)) * 100;
             } else if (_americanOdds[i] < 0) {
-                // odd = uint(-_americanOdds[i]) / 100; // previous usage
                 odd = uint(-_americanOdds[i]); 
                 normalizedOdds[i] = ((odd * 1e18) / (odd + 10000)) * 100;
             }
@@ -590,10 +596,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== EVENTS ========== */
 
-    event GameCreated(bytes32 _requestId, uint _sportId, bytes32 _id, GameCreate _game, uint _queueIndex);
+    event GameCreated(bytes32 _requestId, uint _sportId, bytes32 _id, GameCreate _game, uint _queueIndex, uint[] _normalizedOdds);
     event GameResolved(bytes32 _requestId, uint _sportId, bytes32 _id, GameResolve _game, uint _queueIndex);
     event GameOddsAdded(bytes32 _requestId, bytes32 _id, GameOdds _game, uint[] _normalizedOdds);
-    event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game, uint[] _tags);
+    event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game, uint[] _tags, uint[] _normalizedOdds);
     event ResolveSportsMarket(address _marketAddress, bytes32 _id, uint _outcome);
     event CancelSportsMarket(address _marketAddress, bytes32 _id);
     event SupportedSportsChanged(uint _sportId, bool _isSupported);

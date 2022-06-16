@@ -15,6 +15,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     ITherundownConsumer public consumer;
     mapping(bytes32 => uint) public sportIdPerRequestId;
+    mapping(bytes32 => uint) public datePerRequest;
     mapping(address => bool) public whitelistedAddresses;
 
     /* ========== CONSTRUCTOR ========== */
@@ -56,6 +57,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
         bytes32 requestId = sendChainlinkRequest(req, _payment);
         sportIdPerRequestId[requestId] = _sportId;
+        datePerRequest[requestId] = _date;
     }
 
     function requestGames(
@@ -79,6 +81,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
         bytes32 requestId = sendChainlinkRequest(req, _payment);
         sportIdPerRequestId[requestId] = _sportId;
+        datePerRequest[requestId] = _date;
     }
 
     function requestOddsWithFilters(
@@ -102,12 +105,13 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
         bytes32 requestId = sendChainlinkRequest(req, _payment);
         sportIdPerRequestId[requestId] = _sportId;
+        datePerRequest[requestId] = _date;
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
 
     function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games) public recordChainlinkFulfillment(_requestId) {
-        consumer.fulfillGamesCreated(_requestId, _games, sportIdPerRequestId[_requestId]);
+        consumer.fulfillGamesCreated(_requestId, _games, sportIdPerRequestId[_requestId], datePerRequest[_requestId]);
     }
 
     function fulfillGamesResolved(bytes32 _requestId, bytes[] memory _games) public recordChainlinkFulfillment(_requestId) {
@@ -115,7 +119,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     }
     
     function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) public recordChainlinkFulfillment(_requestId) {
-        consumer.fulfillGamesOdds(_requestId, _games);
+        consumer.fulfillGamesOdds(_requestId, _games, datePerRequest[_requestId]);
     }
 
     /* ========== VIEWS ========== */

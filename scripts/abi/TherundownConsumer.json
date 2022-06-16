@@ -94,6 +94,12 @@
         "internalType": "uint256[]",
         "name": "_tags",
         "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_normalizedOdds",
+        "type": "uint256[]"
       }
     ],
     "name": "CreateSportsMarket",
@@ -168,6 +174,12 @@
         "internalType": "uint256",
         "name": "_queueIndex",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_normalizedOdds",
+        "type": "uint256[]"
       }
     ],
     "name": "GameCreated",
@@ -667,6 +679,11 @@
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_date",
+        "type": "uint256"
       }
     ],
     "name": "fulfillGamesCreated",
@@ -685,6 +702,11 @@
         "internalType": "bytes[]",
         "name": "_games",
         "type": "bytes[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_date",
+        "type": "uint256"
       }
     ],
     "name": "fulfillGamesOdds",
@@ -884,6 +906,30 @@
         "internalType": "uint8",
         "name": "statusId",
         "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "gamesPerDate",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -1229,6 +1275,44 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "havingGamesPerDate",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "havingSportOnADate",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -1321,6 +1405,30 @@
       }
     ],
     "name": "isSameTeamOrTBD",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "isSportOnADate",
     "outputs": [
       {
         "internalType": "bool",
@@ -1479,6 +1587,25 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "oddsLastPulledForDate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

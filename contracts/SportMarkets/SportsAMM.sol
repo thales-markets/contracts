@@ -9,11 +9,6 @@ import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-// import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
-// import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
-// import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
-// import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
-
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
@@ -26,8 +21,6 @@ import "../interfaces/ITherundownConsumer.sol";
 import "../interfaces/ICurveSUSD.sol";
 
 // import "hardhat/console.sol";
-
-// import "../AMM/DeciMath.sol";
 
 contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
@@ -43,13 +36,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
 
-    uint private constant MIN_SUPPORTED_PRICE = 10e16;
-    uint private constant MAX_SUPPORTED_PRICE = 90e16;
-
     IERC20Upgradeable public sUSD;
     address public manager;
 
-    uint public capPerMarket;
+    uint public defaultCapPerGame;
     uint public min_spread;
     uint public max_spread;
 
@@ -68,13 +58,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint public minSupportedPrice;
     uint public maxSupportedPrice;
 
-    mapping(address => bool) public whitelistedAddresses;
-    mapping(bytes32 => uint) private _capPerAsset;
-
-    address public testOdds;
-    uint[] public oddsInTesting;
-    bool public testingOdds;
-
     ICurveSUSD public curveSUSD;
 
     address public usdc;
@@ -88,7 +71,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
-        uint _capPerMarket,
+        uint _defaultCapPerGame,
         // DeciMath _deciMath,
         uint _min_spread,
         uint _max_spread,
@@ -97,7 +80,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         setOwner(_owner);
         initNonReentrant();
         sUSD = _sUSD;
-        capPerMarket = _capPerMarket;
+        defaultCapPerGame = _defaultCapPerGame;
         // deciMath = _deciMath;
         min_spread = _min_spread;
         max_spread = _max_spread;
@@ -119,10 +102,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
             uint additionalBufferFromSelling = balance.mul(basePrice).div(ONE);
 
-            if (_capOnMarket(market).add(additionalBufferFromSelling) <= spentOnMarket[market]) {
+            if (defaultCapPerGame.add(additionalBufferFromSelling) <= spentOnMarket[market]) {
                 return 0;
             }
-            uint availableUntilCapSUSD = _capOnMarket(market).add(additionalBufferFromSelling).sub(spentOnMarket[market]);
+            uint availableUntilCapSUSD = defaultCapPerGame.add(additionalBufferFromSelling).sub(spentOnMarket[market]);
 
             return balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
         } else {
@@ -196,7 +179,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
             // can burn straight away balanceOfTheOtherSide
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
-            uint capPlusBalance = _capOnMarket(market).add(balanceOfTheOtherSide);
+            uint capPlusBalance = defaultCapPerGame.add(balanceOfTheOtherSide);
             if (capPlusBalance < spentOnMarket[market].add(willPay)) {
                 return 0;
             }
@@ -252,12 +235,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bytes32 gameId = ISportPositionalMarket(_market).getGameId();
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-            if (testingOdds) {
-                odds = oddsInTesting;
-            } else {
-                odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
-            }
-            // (uint positionHome, uint positionAway) = (odds[0], odds[1]);
+            odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
             return odds[uint(_position)];
         } else {
             return 0;
@@ -266,10 +244,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function isMarketInAMMTrading(address market) public view returns (bool) {
         if (ISportPositionalMarketManager(manager).isActiveMarket(market)) {
-            // ISportPositionalMarket marketContract = ISportPositionalMarket(market);
-            // return true;
             (uint maturity, ) = ISportPositionalMarket(market).times();
-
             if (maturity < block.timestamp) {
                 return false;
             }
@@ -469,29 +444,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetMaxSupportedPrice(_maxSupportedPrice);
     }
 
-    function setCapPerMarket(uint _capPerMarket) public onlyOwner {
-        capPerMarket = _capPerMarket;
-        emit SetCapPerMarket(_capPerMarket);
+    function setDefaultCapPerGame(uint _defaultCapPerGame) public onlyOwner {
+        defaultCapPerGame = _defaultCapPerGame;
+        emit SetDefaultCapPerGame(_defaultCapPerGame);
     }
 
     function setSUSD(IERC20Upgradeable _sUSD) public onlyOwner {
         sUSD = _sUSD;
         emit SetSUSD(address(sUSD));
-    }
-
-    function setTesting(bool _testing) external onlyOwner {
-        testingOdds = _testing;
-    }
-
-    function setTestOdds(
-        uint _homeOdds,
-        uint _awayOdds,
-        uint _drawOdds
-    ) public onlyOwner {
-        oddsInTesting = new uint[](3);
-        oddsInTesting[0] = _homeOdds;
-        oddsInTesting[1] = _awayOdds;
-        oddsInTesting[2] = _drawOdds;
     }
 
     function setTherundownConsumer(address _theRundownConsumer) public onlyOwner {
@@ -504,13 +464,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetStakingThales(address(_stakingThales));
     }
 
-    function setPositionalMarketManager(address _manager) public onlyOwner {
+    function setSportsPositionalMarketManager(address _manager) public onlyOwner {
         if (address(_manager) != address(0)) {
             sUSD.approve(address(_manager), 0);
         }
         manager = _manager;
         sUSD.approve(manager, MAX_APPROVAL);
-        emit SetPositionalMarketManager(_manager);
+        emit SetSportsPositionalMarketManager(_manager);
     }
 
     function setCurveSUSD(
@@ -530,18 +490,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         // not needed unless selling into different collateral is enabled
         //sUSD.approve(_curveSUSD, MAX_APPROVAL);
         curveOnrampEnabled = _curveOnrampEnabled;
-    }
-
-    function setCapPerAsset(bytes32 asset, uint _cap) public onlyOwner {
-        _capPerAsset[asset] = _cap;
-        emit SetCapPerAsset(asset, _cap);
-    }
-
-    function getCapPerAsset(bytes32 asset) public view returns (uint) {
-        if (_capPerAsset[asset] == 0) {
-            return capPerMarket;
-        }
-        return _capPerAsset[asset];
     }
 
     // Internal
@@ -761,11 +709,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return (balance, balanceOtherSide);
     }
 
-    function _capOnMarket(address market) internal view returns (uint) {
-        bytes32 gameId = ISportPositionalMarket(market).getGameId();
-        return getCapPerAsset(gameId);
-    }
-
     function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
         if (collateral == dai) {
             return 1;
@@ -779,16 +722,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return 0;
     }
 
-    function retrieveSUSD(address payable account) external onlyOwner {
-        sUSD.transfer(account, sUSD.balanceOf(address(this)));
-    }
-
     function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
         sUSD.transfer(account, amount);
-    }
-
-    function setWhitelistedAddress(address _address, bool enabled) external onlyOwner {
-        whitelistedAddresses[_address] = enabled;
     }
 
     // events
@@ -811,11 +746,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address asset
     );
 
-    event SetPositionalMarketManager(address _manager);
+    event SetSportsPositionalMarketManager(address _manager);
     event SetSUSD(address sUSD);
-    event SetCapPerMarket(uint _capPerMarket);
-    event SetImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility);
-    event SetCapPerAsset(bytes32 asset, uint _cap);
+    event SetDefaultCapPerGame(uint _defaultCapPerGame);
     event SetMaxSpread(uint _spread);
     event SetMinSpread(uint _spread);
     event SetSafeBoxImpact(uint _safeBoxImpact);

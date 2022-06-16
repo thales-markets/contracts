@@ -118,11 +118,11 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_capPerMarket",
+        "name": "_defaultCapPerGame",
         "type": "uint256"
       }
     ],
-    "name": "SetCapPerMarket",
+    "name": "SetDefaultCapPerGame",
     "type": "event"
   },
   {
@@ -215,19 +215,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_manager",
-        "type": "address"
-      }
-    ],
-    "name": "SetPositionalMarketManager",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "sUSD",
         "type": "address"
       }
@@ -259,6 +246,19 @@
       }
     ],
     "name": "SetSafeBoxImpact",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "SetSportsPositionalMarketManager",
     "type": "event"
   },
   {
@@ -635,19 +635,6 @@
   },
   {
     "inputs": [],
-    "name": "capPerMarket",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "curveOnrampEnabled",
     "outputs": [
       {
@@ -686,6 +673,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "defaultCapPerGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -696,25 +696,6 @@
     "name": "exerciseMaturedMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getCapPerAsset",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -757,7 +738,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_capPerMarket",
+        "name": "_defaultCapPerGame",
         "type": "uint256"
       },
       {
@@ -929,25 +910,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "oddsInTesting",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -995,19 +957,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "retrieveSUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1161,37 +1110,6 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_cap",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCapPerAsset",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_capPerMarket",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCapPerMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_curveSUSD",
         "type": "address"
@@ -1218,6 +1136,19 @@
       }
     ],
     "name": "setCurveSUSD",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_defaultCapPerGame",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDefaultCapPerGame",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1303,19 +1234,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_manager",
-        "type": "address"
-      }
-    ],
-    "name": "setPositionalMarketManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "contract IERC20Upgradeable",
         "name": "_sUSD",
         "type": "address"
@@ -1355,6 +1273,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "setSportsPositionalMarketManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -1368,66 +1299,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_homeOdds",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_awayOdds",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_drawOdds",
-        "type": "uint256"
-      }
-    ],
-    "name": "setTestOdds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "_testing",
-        "type": "bool"
-      }
-    ],
-    "name": "setTesting",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_theRundownConsumer",
         "type": "address"
       }
     ],
     "name": "setTherundownConsumer",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "setWhitelistedAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1459,32 +1336,6 @@
         "internalType": "contract IStakingThales",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "testOdds",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "testingOdds",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1537,25 +1388,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "whitelistedAddresses",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",

@@ -116,6 +116,9 @@ contract('Exotic Positional market', async accounts => {
 		await ExoticPositionalMarketManager.setFlags(false, true, { from: manager });
 
 		await ExoticPositionalMarketManager.setThalesBonds(ThalesBonds.address);
+		// await ExoticPositionalMarketManager.setPercentages('55', '55', '55', '55', '55', {
+		// 	from: manager,
+		// });
 		await ThalesBonds.setMarketManager(ExoticPositionalMarketManager.address, { from: manager });
 		await Thales.transfer(userOne, toUnit('1000'), { from: owner });
 		await Thales.transfer(userTwo, toUnit('1000'), { from: owner });
@@ -483,6 +486,39 @@ contract('Exotic Positional market', async accounts => {
 			answer = await deployedOpenBidMarket.canMarketBeResolved();
 			assert.equal(answer, true);
 		});
+
+		it('read functions', async function() {
+			answer = await deployedOpenBidMarket.isMarketCreated();
+			answer = await deployedOpenBidMarket.isMarketCancelled();
+			answer = await deployedOpenBidMarket.canUsersPlacePosition();
+			answer = await deployedOpenBidMarket.canMarketBeResolved();
+			answer = await deployedOpenBidMarket.canMarketBeResolvedByOwner();
+			answer = await deployedOpenBidMarket.canMarketBeResolvedByPDAO();
+			answer = await deployedOpenBidMarket.canCreatorCancelMarket();
+			answer = await deployedOpenBidMarket.canUsersClaim();
+			answer = await deployedOpenBidMarket.canUserClaim(userOne);
+			answer = await deployedOpenBidMarket.canUserWithdraw(userOne);
+			answer = await deployedOpenBidMarket.canIssueFees();
+			answer = await deployedOpenBidMarket.getPositionPhrase('0');
+			answer = await deployedOpenBidMarket.getTotalPlacedAmount();
+			answer = await deployedOpenBidMarket.getTotalClaimableAmount();
+			answer = await deployedOpenBidMarket.getTotalFeesAmount();
+			answer = await deployedOpenBidMarket.getPlacedAmountPerPosition('0');
+			answer = await deployedOpenBidMarket.getUserClaimableAmount(userOne);
+			answer = await deployedOpenBidMarket.getUserOpenBidTotalPlacedAmount(userOne);
+			answer = await deployedOpenBidMarket.getUserOpenBidPositionPlacedAmount(userOne, '0');
+			answer = await deployedOpenBidMarket.getAllUserPositions(userOne);
+			answer = await deployedOpenBidMarket.getPotentialOpenBidWinningForAllPositions();
+			answer = await deployedOpenBidMarket.getUserOpenBidPotentialWinningForPosition(userOne, '0');
+			answer = await deployedOpenBidMarket.getUserOpenBidTotalClaimableAmount(userOne);
+			answer = await deployedOpenBidMarket.getUserPotentialWinningAmountForAllPosition(userOne);
+			answer = await deployedOpenBidMarket.getTagsCount();
+			answer = await deployedOpenBidMarket.getTags();
+			answer = await deployedOpenBidMarket.getTicketType();
+			answer = await deployedOpenBidMarket.getAllAmounts();
+			answer = await deployedOpenBidMarket.getAllFees();
+		});
+
 		describe('position and resolve (no Council decision)', function() {
 			beforeEach(async () => {
 				let sumOfPositions = positionAmount1.add(positionAmount2).add(positionAmount3);
@@ -730,6 +766,17 @@ contract('Exotic Positional market', async accounts => {
 					assert.equal(answer[2].toString(), positionAmount3);
 				});
 
+				// it('userOne withdraws all', async function() {
+				// 	answer = await deployedOpenBidMarket.withdrawalPeriod();
+				// 	answer = await deployedOpenBidMarket.withdraw("0", { from: userOne });
+
+				// });
+
+				// it('userOne withdraws single', async function() {
+				// 	answer = await deployedOpenBidMarket.withdraw("1", { from: userOne });
+
+				// });
+
 				describe('resolve with ticket holder result', async function() {
 					beforeEach(async () => {
 						await fastForward(DAY + SECOND);
@@ -928,6 +975,58 @@ contract('Exotic Positional market', async accounts => {
 			answer = await deployedMarket.canMarketBeResolved();
 			assert.equal(answer, true);
 		});
+
+		it('test tags', async function() {
+			answer = await ExoticPositionalTags.isValidTagNumber('1');
+			answer = await ExoticPositionalTags.isValidTagLabel('Football');
+			answer = await ExoticPositionalTags.isValidTag('Football', '101');
+			answer = await ExoticPositionalTags.getTagLabel('1');
+			answer = await ExoticPositionalTags.getTagNumber('Football');
+			answer = await ExoticPositionalTags.getTagNumberIndex('1');
+			answer = await ExoticPositionalTags.getTagIndexNumber('0');
+			answer = await ExoticPositionalTags.getTagByIndex('0');
+			answer = await ExoticPositionalTags.getAllTags();
+			answer = await ExoticPositionalTags.getAllTagsNumbers();
+			answer = await ExoticPositionalTags.getAllTagsLabels();
+			answer = await ExoticPositionalTags.getTagsCount();
+
+			await ExoticPositionalTags.editTagNumber('Football', '1001');
+			await ExoticPositionalTags.editTagLabel('Football_FIFA', '1001');
+			await ExoticPositionalTags.removeTag('1001');
+			await ExoticPositionalTags.addTag('Basketball_2', '1002');
+		});
+
+		it('read functions', async function() {
+			answer = await deployedMarket.isMarketCreated();
+			answer = await deployedMarket.isMarketCancelled();
+			answer = await deployedMarket.canUsersPlacePosition();
+			answer = await deployedMarket.canMarketBeResolved();
+			answer = await deployedMarket.canMarketBeResolvedByOwner();
+			answer = await deployedMarket.canMarketBeResolvedByPDAO();
+			answer = await deployedMarket.canCreatorCancelMarket();
+			answer = await deployedMarket.canUsersClaim();
+			answer = await deployedMarket.canUserClaim(userOne);
+			answer = await deployedMarket.canUserWithdraw(userOne);
+			answer = await deployedMarket.getPositionPhrase('0');
+			answer = await deployedMarket.getTotalPlacedAmount();
+			answer = await deployedMarket.getTotalClaimableAmount();
+			answer = await deployedMarket.getTotalFeesAmount();
+			answer = await deployedMarket.getPlacedAmountPerPosition('0');
+			answer = await deployedMarket.getUserClaimableAmount(userOne);
+			answer = await deployedMarket.getAllUserPositions(userOne);
+			answer = await deployedMarket.getUserPosition(userOne);
+			answer = await deployedMarket.getUserPositionPhrase(userOne);
+			answer = await deployedMarket.getPotentialWinningAmountForAllPosition(true, '0');
+			answer = await deployedMarket.getPotentialWinningAmountForAllPosition(false, '0');
+			answer = await deployedMarket.getUserPotentialWinningAmount(userOne);
+			answer = await deployedMarket.getWinningAmountPerTicket();
+			answer = await deployedMarket.getTagsCount();
+			answer = await deployedMarket.getTags();
+			answer = await deployedMarket.getTicketType();
+			answer = await deployedMarket.getAllAmounts();
+			answer = await deployedMarket.getAllFees();
+		});
+
 		describe('position and resolve (no Council decision)', function() {
 			beforeEach(async () => {
 				answer = await Thales.increaseAllowance(ThalesBonds.address, fixedTicketPrice, {

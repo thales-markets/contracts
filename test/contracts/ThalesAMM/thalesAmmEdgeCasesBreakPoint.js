@@ -2,7 +2,7 @@
 
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
-
+const { assert } = require('../../utils/common');
 const { toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupAllContracts } = require('../../utils/setup');
@@ -25,9 +25,9 @@ contract('ThalesAMM', accounts => {
 	let creatorSigner, ownerSigner;
 
 	const sUSDQty = toUnit(100000);
-	const sUSDQtyAmm = toUnit(1000);
+	const sUSDQtyAmm = toUnit(5000);
 
-	const hour = 60 * 60;
+	const day = 24 * 60 * 60;
 
 	const sAUDKey = toBytes32('sAUD');
 	const sUSDKey = toBytes32('sUSD');
@@ -105,7 +105,7 @@ contract('ThalesAMM', accounts => {
 		const timestamp = await currentTime();
 
 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
-		await aggregator_sETH.setLatestAnswer(convertToDecimals(3950, 8), timestamp);
+		await aggregator_sETH.setLatestAnswer(convertToDecimals(50720, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
 		await priceFeed.connect(ownerSigner).addAggregator(sAUDKey, aggregator_sAUD.address);
@@ -159,14 +159,14 @@ contract('ThalesAMM', accounts => {
 			owner,
 			priceFeedAddress,
 			sUSDSynth.address,
-			toUnit(1000),
+			toUnit(5000),
 			deciMath.address,
-			toUnit(0.01),
-			toUnit(0.05),
-			hour * 2
+			toUnit(0.02),
+			toUnit(0.12),
+			hour * 24
 		);
 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
-		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
+		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(80), { from: owner });
 		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
 			from: owner,
@@ -180,108 +180,52 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('Strike more than current price ', async () => {
+		it('price fully unlikely ', async () => {
+			let strike = 44000; //2593 works 2592 doesnt
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(4000),
-				now + hour * 8,
+				toUnit(strike),
+				now + day * 13,
 				toUnit(10),
 				creatorSigner
 			);
 
-			let calculatedOdds = calculateOdds(3950, 4000, 0.25, 120);
-			//console.log('calculatedOdds is:' + calculatedOdds);
+			let calculatedOdds = calculateOdds(50720, strike, 13, 80);
+			console.log('calculatedOdds is:' + calculatedOdds);
 			let calculatedOddsContract = await thalesAMM.calculateOdds(
-				toUnit(3950),
-				toUnit(4000),
-				toUnit(0.25),
-				toUnit(120)
+				toUnit(50720),
+				toUnit(strike),
+				toUnit(13),
+				toUnit(80)
 			);
-			//console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+			let ratio = calculatedOdds / (calculatedOddsContract / 1e18);
+			console.log('ratio is:' + ratio);
+			assert.equal(ratio > 0.99 && ratio < 1.01, true);
 
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			//console.log('priceUp decimal is:' + priceUp / 1e18);
-
-			let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-			//console.log('priceDown decimal is:' + priceDown / 1e18);
-
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.UP
 			);
-			//console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
-
-			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
+			let buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
 				newMarket.address,
-				Position.UP
+				Position.UP,
+				toUnit(1)
 			);
-			//console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
+			console.log('buyPriceImpactPostBuy is:' + buyPriceImpactPostBuy / 1e18);
+			assert.equal(buyPriceImpactPostBuy / 1e18 < 0.0001, true);
 
-			let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
+			buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
 				newMarket.address,
-				Position.DOWN
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 1e18)
 			);
-			//console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
-
-			let availableToSellToAMMDown = await thalesAMM.availableToSellToAMM(
-				newMarket.address,
-				Position.DOWN
-			);
-			// console.log(
-			// 	'availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18
-			// );
+			console.log('buyPriceImpactPostBuy is:' + buyPriceImpactPostBuy / 1e18);
+			assert.equal(buyPriceImpactPostBuy / 1e18 > 0.05, true);
 		});
-	});
-
-	it('Strike less than current price ', async () => {
-		let now = await currentTime();
-		let newMarket = await createMarket(
-			manager,
-			sETHKey,
-			toUnit(3900),
-			now + hour * 8,
-			toUnit(10),
-			creatorSigner
-		);
-
-		let calculatedOdds = calculateOdds(3950, 3900, 0.25, 120);
-		//console.log('calculatedOdds is:' + calculatedOdds);
-		let calculatedOddsContract = await thalesAMM.calculateOdds(
-			toUnit(3950),
-			toUnit(3900),
-			toUnit(0.25),
-			toUnit(120)
-		);
-		//console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
-
-		let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-		//console.log('priceUp decimal is:' + priceUp / 1e18);
-
-		let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-		//console.log('priceDown decimal is:' + priceDown / 1e18);
-
-		let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-			newMarket.address,
-			Position.UP
-		);
-		//console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
-
-		let availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
-		//console.log('availableToSellToAMM post buy decimal is:' + availableToSellToAMM / 1e18);
-
-		let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
-			newMarket.address,
-			Position.DOWN
-		);
-		//console.log('availableToBuyFromAMMDown decimal is:' + availableToBuyFromAMMDown / 1e18);
-
-		let availableToSellToAMMDown = await thalesAMM.availableToSellToAMM(
-			newMarket.address,
-			Position.DOWN
-		);
-		//console.log('availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18);
 	});
 });
 

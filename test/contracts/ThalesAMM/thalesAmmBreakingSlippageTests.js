@@ -6,6 +6,7 @@ const { toBN } = web3.utils;
 const { toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupAllContracts } = require('../../utils/setup');
+const { assert } = require('../../utils/common');
 
 const { convertToDecimals } = require('../../utils/helpers');
 
@@ -190,22 +191,17 @@ contract('ThalesAMM', accounts => {
 				creatorSigner
 			);
 
-			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			//console.log('priceUp decimal is:' + priceUp / 1e18);
-
 			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.UP,
 				toUnit(10)
 			);
-			//console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
 			let options = await newMarket.options();
 			up = await position.at(options.up);
 			down = await position.at(options.down);
 
 			let ammDownBalance = await down.balanceOf(thalesAMM.address);
-			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);
@@ -219,7 +215,6 @@ contract('ThalesAMM', accounts => {
 			);
 
 			ammDownBalance = await down.balanceOf(thalesAMM.address);
-			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
 
 			additionalSlippage = toUnit(0.01);
 			await expect(
@@ -244,7 +239,8 @@ contract('ThalesAMM', accounts => {
 			);
 
 			ammDownBalance = await down.balanceOf(thalesAMM.address);
-			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
+			console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
+			assert.bnEqual(ammDownBalance, toUnit(20));
 		});
 	});
 
@@ -264,17 +260,13 @@ contract('ThalesAMM', accounts => {
 		down = await position.at(options.down);
 
 		let ammUpBalance = await up.balanceOf(thalesAMM.address);
-		//console.log('amm UpBalance pre buy decimal is:' + ammUpBalance / 1e18);
-
 		let ammDownBalance = await down.balanceOf(thalesAMM.address);
-		//console.log('ammDownBalance pre buy  decimal is:' + ammDownBalance / 1e18);
 
 		await newMarket.mint(toUnit(6000), {
 			from: minter,
 		});
 
 		let sellToAmmQuote = await thalesAMM.sellToAmmQuote(newMarket.address, Position.UP, toUnit(10));
-		//console.log('sellToAmmQuote decimal is:' + sellToAmmQuote / 1e18);
 
 		await up.approve(thalesAMM.address, toUnit(1000), {
 			from: minter,
@@ -302,38 +294,3 @@ contract('ThalesAMM', accounts => {
 		);
 	});
 });
-
-function calculateOdds(price, strike, days, volatility) {
-	let p = price;
-	let q = strike;
-	let t = days / 365;
-	let v = volatility / 100;
-
-	let tt = Math.sqrt(t);
-	let vt = v * tt;
-	let lnpq = Math.log(q / p);
-	let d1 = lnpq / vt;
-	let y9 = 1 + 0.2316419 * Math.abs(d1);
-
-	let y = Math.floor((1 / y9) * 100000) / 100000;
-	let z1 = Math.exp(-((d1 * d1) / 2));
-	let d2 = -((d1 * d1) / 2);
-	let d3 = Math.exp(d2);
-	let z = Math.floor(0.3989423 * d3 * 100000) / 100000;
-
-	let y5 = 1.330274 * Math.pow(y, 5);
-	let y4 = 1.821256 * Math.pow(y, 4);
-	let y3 = 1.781478 * Math.pow(y, 3);
-	let y2 = 0.356538 * Math.pow(y, 2);
-	let y1 = 0.3193815 * y;
-	let x1 = y5 + y3 + y1 - y4 - y2;
-	let x = 1 - z * (y5 - y4 + y3 - y2 + y1);
-
-	let x2 = z * x1;
-	x = Math.floor(x * 100000) / 100000;
-
-	if (d1 < 0) {
-		x = 1 - x;
-	}
-	return Math.floor((1 - x) * 1000) / 10;
-}

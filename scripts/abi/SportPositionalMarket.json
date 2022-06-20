@@ -153,46 +153,7 @@
         "type": "address"
       }
     ],
-    "name": "SetPriceFeed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
     "name": "SetTherundownConsumer",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_zeroExAddress",
-        "type": "address"
-      }
-    ],
-    "name": "SetZeroExAddress",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_zeroExAddress",
-        "type": "address"
-      }
-    ],
-    "name": "SetZeroExAddressAtInit",
     "type": "event"
   },
   {
@@ -610,12 +571,7 @@
           },
           {
             "internalType": "address",
-            "name": "limitOrderProvider",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "thalesAMM",
+            "name": "sportsAMM",
             "type": "address"
           },
           {

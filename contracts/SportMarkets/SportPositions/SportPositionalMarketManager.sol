@@ -14,8 +14,6 @@ import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "./SportPositionalMarketFactory.sol";
 import "./SportPositionalMarket.sol";
 import "./SportPosition.sol";
-// import "../../interfaces/IPositionalMarket.sol";
-import "../../interfaces/IPriceFeed.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
@@ -60,15 +58,12 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     IERC20 public sUSD;
 
     address public theRundownConsumer;
-    address public positionalMarketFactory;
+    address public sportPositionalMarketFactory;
     bool public needsTransformingCollateral;
 
     /* ========== CONSTRUCTOR ========== */
 
-    function initialize(
-        address _owner,
-        IERC20 _sUSD
-    ) external initializer {
+    function initialize(address _owner, IERC20 _sUSD) external initializer {
         setOwner(_owner);
         sUSD = _sUSD;
 
@@ -78,15 +73,14 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         marketCreationEnabled = true;
         customMarketCreationEnabled = false;
         onlyWhitelistedAddressesCanCreateMarkets = false;
-
     }
 
     /* ========== SETTERS ========== */
-    function setPositionalMarketFactory(address _positionalMarketFactory) external onlyOwner {
-        positionalMarketFactory = _positionalMarketFactory;
-        emit SetPositionalMarketFactory(_positionalMarketFactory);
+    function setSportPositionalMarketFactory(address _sportPositionalMarketFactory) external onlyOwner {
+        sportPositionalMarketFactory = _sportPositionalMarketFactory;
+        emit SetSportPositionalMarketFactory(_sportPositionalMarketFactory);
     }
-    
+
     function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
         theRundownConsumer = _theRundownConsumer;
         emit SetTherundownConsumer(_theRundownConsumer);
@@ -141,10 +135,9 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function getActiveMarketAddress(uint _index) external view override returns (address) {
-        if(_index < _activeMarkets.elements.length) {
+        if (_index < _activeMarkets.elements.length) {
             return _activeMarkets.elements[_index];
-        }
-        else {
+        } else {
             return address(0);
         }
     }
@@ -152,7 +145,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function maturedMarkets(uint index, uint pageSize) external view override returns (address[] memory) {
         return _maturedMarkets.getPage(index, pageSize);
     }
-
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
@@ -198,7 +190,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         string memory gameLabel,
         uint maturity,
         uint initialMint, // initial sUSD to mint options for,
-        uint positionCount, 
+        uint positionCount,
         uint[] memory tags
     )
         external
@@ -209,7 +201,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-       
+
         if (onlyWhitelistedAddressesCanCreateMarkets) {
             require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
         }
@@ -221,20 +213,20 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         // We also require maturity < expiry. But there is no need to check this.
         // The market itself validates the capital and skew requirements.
 
-
-        SportPositionalMarket market = SportPositionalMarketFactory(positionalMarketFactory).createMarket(
-            SportPositionalMarketFactory.SportPositionCreationMarketParameters(
-                msg.sender,
-                sUSD,
-                gameId,
-                gameLabel,
-                [maturity, expiry],
-                initialMint,
-                positionCount,
-                msg.sender,
-                tags
-            )
-        );
+        SportPositionalMarket market =
+            SportPositionalMarketFactory(sportPositionalMarketFactory).createMarket(
+                SportPositionalMarketFactory.SportPositionCreationMarketParameters(
+                    msg.sender,
+                    sUSD,
+                    gameId,
+                    gameLabel,
+                    [maturity, expiry],
+                    initialMint,
+                    positionCount,
+                    msg.sender,
+                    tags
+                )
+            );
 
         _activeMarkets.add(address(market));
 
@@ -253,7 +245,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             maturity,
             expiry,
             address(up),
-            address(down), 
+            address(down),
             address(draw)
         );
         return market;
@@ -296,12 +288,17 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             emit MarketExpired(market);
         }
     }
-    
-    function restoreInvalidOddsForMarket(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds) external onlyOwner {
+
+    function restoreInvalidOddsForMarket(
+        address _market,
+        uint _homeOdds,
+        uint _awayOdds,
+        uint _drawOdds
+    ) external onlyOwner {
         require(isKnownMarket(address(_market)), "Market unknown.");
         require(SportPositionalMarket(_market).cancelled(), "Market not cancelled.");
-        SportPositionalMarket(_market).restoreInvalidOdds(_homeOdds, _awayOdds,_drawOdds);
-        emit OddsForMarketRestored(_market, _homeOdds, _awayOdds,_drawOdds);
+        SportPositionalMarket(_market).restoreInvalidOdds(_homeOdds, _awayOdds, _drawOdds);
+        emit OddsForMarketRestored(_market, _homeOdds, _awayOdds, _drawOdds);
     }
 
     function setMarketCreationEnabled(bool enabled) external onlyOwner {
@@ -309,72 +306,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             marketCreationEnabled = enabled;
             emit MarketCreationEnabledUpdated(enabled);
         }
-    }
-
-    function setCustomMarketCreationEnabled(bool enabled) external onlyOwner {
-        customMarketCreationEnabled = enabled;
-        emit SetCustomMarketCreationEnabled(enabled);
-    }
-
-    function setMigratingManager(SportPositionalMarketManager manager) external onlyOwner {
-        _migratingManager = manager;
-        emit SetMigratingManager(address(manager));
-    }
-
-    function migrateMarkets(
-        SportPositionalMarketManager receivingManager,
-        bool active,
-        SportPositionalMarket[] calldata marketsToMigrate
-    ) external onlyOwner {
-        require(address(receivingManager) != address(this), "Can't migrate to self");
-
-        uint _numMarkets = marketsToMigrate.length;
-        if (_numMarkets == 0) {
-            return;
-        }
-        AddressSetLib.AddressSet storage markets = active ? _activeMarkets : _maturedMarkets;
-
-        uint runningDepositTotal;
-        for (uint i; i < _numMarkets; i++) {
-            SportPositionalMarket market = marketsToMigrate[i];
-            require(isKnownMarket(address(market)), "Market unknown.");
-
-            // Remove it from our list and deposit total.
-            markets.remove(address(market));
-            runningDepositTotal = runningDepositTotal.add(market.deposited());
-
-            // Prepare to transfer ownership to the new manager.
-            market.nominateNewOwner(address(receivingManager));
-        }
-        // Deduct the total deposits of the migrated markets.
-        totalDeposited = totalDeposited.sub(runningDepositTotal);
-        emit MarketsMigrated(receivingManager, marketsToMigrate);
-
-        // Now actually transfer the markets over to the new manager.
-        receivingManager.receiveMarkets(active, marketsToMigrate);
-    }
-
-    function receiveMarkets(bool active, SportPositionalMarket[] calldata marketsToReceive) external {
-        require(msg.sender == address(_migratingManager), "Only permitted for migrating manager.");
-
-        uint _numMarkets = marketsToReceive.length;
-        if (_numMarkets == 0) {
-            return;
-        }
-        AddressSetLib.AddressSet storage markets = active ? _activeMarkets : _maturedMarkets;
-
-        uint runningDepositTotal;
-        for (uint i; i < _numMarkets; i++) {
-            SportPositionalMarket market = marketsToReceive[i];
-            require(!isKnownMarket(address(market)), "Market already known.");
-
-            market.acceptOwnership();
-            markets.add(address(market));
-            // Update the market with the new manager address,
-            runningDepositTotal = runningDepositTotal.add(market.deposited());
-        }
-        totalDeposited = totalDeposited.add(runningDepositTotal);
-        emit MarketsReceived(_migratingManager, marketsToReceive);
     }
 
     // support USDC with 6 decimals
@@ -424,19 +355,12 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         address draw
     );
     event MarketExpired(address market);
-    event MarketsMigrated(SportPositionalMarketManager receivingManager, SportPositionalMarket[] markets);
-    event MarketsReceived(SportPositionalMarketManager migratingManager, SportPositionalMarket[] markets);
     event MarketCreationEnabledUpdated(bool enabled);
     event ExpiryDurationUpdated(uint duration);
     event MaxTimeToMaturityUpdated(uint duration);
     event CreatorCapitalRequirementUpdated(uint value);
-    event SetPositionalMarketFactory(address _positionalMarketFactory);
-    event SetZeroExAddress(address _zeroExAddress);
-    event SetPriceFeed(address _address);
+    event SetSportPositionalMarketFactory(address _sportPositionalMarketFactory);
     event SetsUSD(address _address);
-    event SetCustomMarketCreationEnabled(bool enabled);
-    event SetMigratingManager(address manager);
     event SetTherundownConsumer(address theRundownConsumer);
     event OddsForMarketRestored(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds);
-
 }

@@ -44,9 +44,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         OptionValues balances;
     }
 
-    function initialize(
-        address _owner
-    ) external initializer {
+    function initialize(address _owner) external initializer {
         setOwner(_owner);
     }
 
@@ -55,11 +53,12 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         (uint maturityDate, uint expiryDate) = market.times();
         (uint poolFee, uint creatorFee) = market.fees();
 
-        MarketParameters memory data = MarketParameters(
-            market.creator(),
-            SportPositionalMarket.Times(maturityDate, expiryDate),
-            SportPositionalMarketManager.Fees(poolFee, creatorFee)
-        );
+        MarketParameters memory data =
+            MarketParameters(
+                market.creator(),
+                SportPositionalMarket.Times(maturityDate, expiryDate),
+                SportPositionalMarketManager.Fees(poolFee, creatorFee)
+            );
 
         return data;
     }

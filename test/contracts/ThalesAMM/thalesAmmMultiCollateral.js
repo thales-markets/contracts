@@ -6,14 +6,17 @@ const { toBN } = web3.utils;
 const { toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupAllContracts } = require('../../utils/setup');
+const { assert } = require('../../utils/common');
 
 const { convertToDecimals } = require('../../utils/helpers');
 
 let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
 let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
-let market, up, down, position, Synth;
+let market, up, down, position, Synth, testUSDC, testUSDT, testDAI;
 
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
+
+const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -130,7 +133,7 @@ contract('ThalesAMM', accounts => {
 	let deciMath;
 	let rewardTokenAddress;
 	let ThalesAMM;
-	let thalesAMM;
+	let thalesAMM, curveSUSD;
 	let MockPriceFeedDeployed;
 
 	beforeEach(async () => {
@@ -171,7 +174,37 @@ contract('ThalesAMM', accounts => {
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
 			from: owner,
 		});
-		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+		sUSDSynth.issue(thalesAMM.address, sUSDQty);
+
+		let TestUSDC = artifacts.require('TestUSDC');
+		testUSDC = await TestUSDC.new();
+		testUSDT = await TestUSDC.new();
+
+		let ERC20token = artifacts.require('Thales');
+		testDAI = await ERC20token.new();
+
+		let CurveSUSD = artifacts.require('MockCurveSUSD');
+		curveSUSD = await CurveSUSD.new(
+			sUSDSynth.address,
+			testUSDC.address,
+			testUSDT.address,
+			testDAI.address
+		);
+
+		await thalesAMM.setCurveSUSD(
+			curveSUSD.address,
+			testDAI.address,
+			testUSDC.address,
+			testUSDT.address,
+			true,
+			{ from: owner }
+		);
+
+		console.log('minting');
+		await testUSDC.mint(minter, usdcQuantity);
+		await testUSDC.mint(curveSUSD.address, usdcQuantity);
+		await testUSDC.approve(thalesAMM.address, usdcQuantity, { from: minter });
+		console.log('done minting');
 	});
 
 	const Position = {
@@ -180,7 +213,7 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('buying test ', async () => {
+		it('buying test', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
@@ -191,44 +224,10 @@ contract('ThalesAMM', accounts => {
 				creatorSigner
 			);
 
-			let spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
-			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
-			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-			console.log('priceUp decimal is:' + priceUp / 1e18);
-
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.UP
 			);
-			console.log('availableToBuyFromAMM UP decimal is:' + availableToBuyFromAMM / 1e18);
-
-			let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
-				newMarket.address,
-				Position.DOWN
-			);
-			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMMDown / 1e18);
-
-			let buyPriceImpactMin = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.UP,
-				toUnit(1)
-			);
-			console.log('buyPriceImpactMin decimal is:' + buyPriceImpactMin / 1e18);
-
-			let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18)
-			);
-
-			console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
-
-			let buyPriceImpactMid = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 2 / 1e18)
-			);
-			console.log('buyPriceImpactMid decimal is:' + buyPriceImpactMid / 1e18);
 
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
 			let additionalSlippage = toUnit(0.01);
@@ -238,182 +237,125 @@ contract('ThalesAMM', accounts => {
 				toUnit(availableToBuyFromAMM / 1e18 - 1)
 			);
 			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
-			await thalesAMM.buyFromAMM(
+
+			let buyFromAmmQuoteUSDCCollateralObject = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
 				newMarket.address,
 				Position.UP,
 				toUnit(availableToBuyFromAMM / 1e18 - 1),
-				buyFromAmmQuote,
-				additionalSlippage,
-				{ from: minter }
+				testUSDC.address
 			);
-			console.log(
-				'Bought  ' + (availableToBuyFromAMM / 1e18 - 1) + ' for ' + buyFromAmmQuote / 1e18 + ' sUSD'
-			);
+			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
 
-			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
-			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > buyFromAmmQuote / 1e18, true);
 
-			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.UP);
-			console.log('availableToBuyFromAMM here decimal is:' + availableToBuyFromAMM / 1e18);
-
-			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
-			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
-
-			buyPriceImpactMin = await thalesAMM.buyPriceImpact(newMarket.address, Position.UP, toUnit(1));
-			console.log('buyPriceImpactMin decimal is:' + buyPriceImpactMin / 1e18);
-
-			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
+			let buyFromAmmQuoteDAICollateralObject = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
 				newMarket.address,
-				Position.DOWN,
-				toUnit(1)
-			);
-			console.log('buyPriceImpactMin down decimal is:' + buyPriceImpactMin / 1e18);
-			availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
-				newMarket.address,
-				Position.DOWN
-			);
-			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMMDown / 1e18);
-
-			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(1000)
-			);
-			console.log('buyPriceImpactMin down thousand decimal is:' + buyPriceImpactMin / 1e18);
-
-			buyPriceImpactMax = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMMDown / 1e18 - 1)
-			);
-			console.log(
-				'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
-			);
-
-			buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
-			await thalesAMM.buyFromAMM(
-				newMarket.address,
-				Position.DOWN,
+				Position.UP,
 				toUnit(availableToBuyFromAMM / 1e18 - 1),
-				buyFromAmmQuote,
-				additionalSlippage,
-				{ from: minter }
+				testDAI.address
 			);
+			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
 
-			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
-			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			assert.equal(buyFromAmmQuoteDAICollateral / 1e18 > buyFromAmmQuote / 1e18, true);
 
-			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
-			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
+			let minterUSDC = await testUSDC.balanceOf(minter);
 
-			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+			let ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+
+			let buyFromAmmQuoteUSDCCollateralObjectSlippagedObject = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
 				newMarket.address,
-				Position.DOWN
+				Position.UP,
+				toUnit(0.9 * (availableToBuyFromAMM / 1e18 - 1)),
+				testUSDC.address
 			);
-			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMM / 1e18);
-
-			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(1)
-			);
-			console.log('buyPriceImpactMin down decimal is:' + buyPriceImpactMin / 1e18);
-
-			buyPriceImpactMax = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
+			let buyFromAmmQuoteUSDCCollateralObjectSlippaged =
+				buyFromAmmQuoteUSDCCollateralObjectSlippagedObject[0];
 			console.log(
-				'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
+				'buyFromAmmQuoteUSDCCollateralObjectSlippaged decimal is:' +
+					buyFromAmmQuoteUSDCCollateralObjectSlippaged / 1e6
 			);
 
-			buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+			assert.equal(buyFromAmmQuoteUSDCCollateralObjectSlippaged / 1e6 > 1200, true);
+			assert.equal(buyFromAmmQuoteUSDCCollateralObjectSlippaged / 1e6 < 1300, true);
+
+			await expect(
+				thalesAMM.buyFromAMMWithDifferentCollateralAndReferrer(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18 - 1),
+					buyFromAmmQuoteUSDCCollateralObjectSlippaged,
+					additionalSlippage,
+					testUSDC.address,
+					ZERO_ADDRESS,
+					{ from: minter }
+				)
+			).to.be.revertedWith('Slippage too high!');
+
+			await expect(
+				thalesAMM.buyFromAMMWithDifferentCollateralAndReferrer(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18 - 1),
+					buyFromAmmQuoteUSDCCollateral * 0.9,
+					additionalSlippage,
+					sUSDSynth.address,
+					ZERO_ADDRESS,
+					{ from: minter }
+				)
+			).to.be.revertedWith('unsupported collateral');
+
+			await thalesAMM.buyFromAMMWithDifferentCollateralAndReferrer(
 				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
-			await thalesAMM.buyFromAMM(
-				newMarket.address,
-				Position.DOWN,
+				Position.UP,
 				toUnit(availableToBuyFromAMM / 1e18 - 1),
-				buyFromAmmQuote,
+				buyFromAmmQuoteUSDCCollateral,
 				additionalSlippage,
+				testUSDC.address,
+				ZERO_ADDRESS,
 				{ from: minter }
 			);
-
 			console.log(
-				'Bought  ' + (availableToBuyFromAMM / 1e18 - 1) + ' for ' + buyFromAmmQuote / 1e18 + ' sUSD'
+				'Bought  ' +
+					(availableToBuyFromAMM / 1e18 - 1) +
+					' for ' +
+					buyFromAmmQuoteUSDCCollateral / 1e6 +
+					' sUSD'
 			);
 
-			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
-			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+			minterUSDC = await testUSDC.balanceOf(minter);
+			console.log('minterUSDC post buy decimal is:' + minterUSDC / 1e6);
 
-			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
-			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
+			ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			console.log('ammSusdBalance post buy decimal is:' + ammSusdBalance / 1e18);
 
-			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-				newMarket.address,
-				Position.DOWN
-			);
-			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMM / 1e18);
+			let options = await newMarket.options();
+			up = await position.at(options.up);
+			down = await position.at(options.down);
 
-			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(1)
-			);
-			console.log('buyPriceImpactMin down decimal is:' + buyPriceImpactMin / 1e18);
+			let minterUps = await up.balanceOf(minter);
+			console.log('minterUps post buy:' + minterUps / 1e18);
 
-			buyPriceImpactMax = await thalesAMM.buyPriceImpact(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
+			await thalesAMM.setCurveSUSD(
+				curveSUSD.address,
+				testDAI.address,
+				testUSDC.address,
+				testUSDT.address,
+				false,
+				{ from: owner }
 			);
-			console.log(
-				'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
-			);
+
+			await expect(
+				thalesAMM.buyFromAMMWithDifferentCollateralAndReferrer(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18 - 1),
+					buyFromAmmQuoteUSDCCollateral * 0.9,
+					additionalSlippage,
+					testUSDC.address,
+					ZERO_ADDRESS,
+					{ from: minter }
+				)
+			).to.be.revertedWith('unsupported collateral');
 		});
 	});
 });
-
-function calculateOdds(price, strike, days, volatility) {
-	let p = price;
-	let q = strike;
-	let t = days / 365;
-	let v = volatility / 100;
-
-	let tt = Math.sqrt(t);
-	let vt = v * tt;
-	let lnpq = Math.log(q / p);
-	let d1 = lnpq / vt;
-	let y9 = 1 + 0.2316419 * Math.abs(d1);
-
-	let y = Math.floor((1 / y9) * 100000) / 100000;
-	let z1 = Math.exp(-((d1 * d1) / 2));
-	let d2 = -((d1 * d1) / 2);
-	let d3 = Math.exp(d2);
-	let z = Math.floor(0.3989423 * d3 * 100000) / 100000;
-
-	let y5 = 1.330274 * Math.pow(y, 5);
-	let y4 = 1.821256 * Math.pow(y, 4);
-	let y3 = 1.781478 * Math.pow(y, 3);
-	let y2 = 0.356538 * Math.pow(y, 2);
-	let y1 = 0.3193815 * y;
-	let x1 = y5 + y3 + y1 - y4 - y2;
-	let x = 1 - z * (y5 - y4 + y3 - y2 + y1);
-
-	let x2 = z * x1;
-	x = Math.floor(x * 100000) / 100000;
-
-	if (d1 < 0) {
-		x = 1 - x;
-	}
-	return Math.floor((1 - x) * 1000) / 10;
-}

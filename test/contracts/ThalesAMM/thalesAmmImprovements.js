@@ -6,7 +6,6 @@ const { toBN } = web3.utils;
 const { toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupAllContracts } = require('../../utils/setup');
-const { assert } = require('../../utils/common');
 
 const { convertToDecimals } = require('../../utils/helpers');
 
@@ -14,19 +13,20 @@ let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressR
 let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 let market, up, down, position, Synth;
 
-let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate, safeBox;
+let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 contract('ThalesAMM', accounts => {
-	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
-	const [first, owner, second, third, fourth] = accounts;
+	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
+	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
 
 	const sUSDQty = toUnit(100000);
-	const sUSDQtyAmm = toUnit(5000);
+	const sUSDQtyAmm = toUnit(1000);
+
 	const day = 24 * 60 * 60;
 
 	const sAUDKey = toBytes32('sAUD');
@@ -105,7 +105,7 @@ contract('ThalesAMM', accounts => {
 		const timestamp = await currentTime();
 
 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
-		await aggregator_sETH.setLatestAnswer(convertToDecimals(4000, 8), timestamp);
+		await aggregator_sETH.setLatestAnswer(convertToDecimals(10000, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
 		await priceFeed.connect(ownerSigner).addAggregator(sAUDKey, aggregator_sAUD.address);
@@ -152,10 +152,6 @@ contract('ThalesAMM', accounts => {
 
 		priceFeedAddress = MockPriceFeedDeployed.address;
 
-		let SafeBox = artifacts.require('SafeBox');
-		safeBox = await SafeBox.new();
-		await safeBox.initialize(owner, sUSDSynth.address);
-
 		const hour = 60 * 60;
 		ThalesAMM = artifacts.require('ThalesAMM');
 		thalesAMM = await ThalesAMM.new();
@@ -163,15 +159,15 @@ contract('ThalesAMM', accounts => {
 			owner,
 			priceFeedAddress,
 			sUSDSynth.address,
-			toUnit(5000),
+			toUnit(1000),
 			deciMath.address,
 			toUnit(0.02),
-			toUnit(0.12),
-			hour * 24
+			toUnit(0.2),
+			hour * 2
 		);
 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
-		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(80), { from: owner });
-		await thalesAMM.setSafeBoxData(safeBox.address, toUnit(0.01), { from: owner });
+		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
+		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
 			from: owner,
 		});
@@ -183,129 +179,65 @@ contract('ThalesAMM', accounts => {
 		DOWN: toBN(1),
 	};
 
-	describe('Test Safe Box', () => {
-		it('Safe box ', async () => {
-			let strike = 4000;
+	describe('Test AMM', () => {
+		it('buying test ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(strike),
+				toUnit(10000),
 				now + day * 10,
 				toUnit(10),
 				creatorSigner
 			);
 
+			let spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
+			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
+			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			console.log('priceUp decimal is:' + priceUp / 1e18);
+
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.UP
 			);
-
-			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18 - 1)
-			);
-			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
-			let additionalSlippage = toUnit(0.01);
-			await thalesAMM.buyFromAMM(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18 - 1),
-				buyFromAmmQuote,
-				additionalSlippage,
-				{ from: minter }
-			);
-
-			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
-			console.log('safeBoxsUSD before assert and post buy decimal is:' + safeBoxsUSD / 1e18);
-
-			assert.bnGte(safeBoxsUSD, toUnit(11));
-			assert.bnLte(safeBoxsUSD, toUnit(13));
+			console.log('availableToBuyFromAMM UP decimal is:' + availableToBuyFromAMM / 1e18);
 
 			let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
 				Position.DOWN
 			);
+			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMMDown / 1e18);
 
-			let buyFromAmmQuoteDown = await thalesAMM.buyFromAmmQuote(
+			let buyPriceImpactMin = await thalesAMM.buyPriceImpact(
 				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMMDown / 1e18 - 1)
+				Position.UP,
+				toUnit(1)
 			);
+			console.log('buyPriceImpactMin decimal is:' + buyPriceImpactMin / 1e18);
+
+			let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 1e18)
+			);
+
+			console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
+
+			let buyPriceImpactMid = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 2 / 1e18)
+			);
+			console.log('buyPriceImpactMid decimal is:' + buyPriceImpactMid / 1e18);
+
 			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
-			await thalesAMM.buyFromAMM(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToBuyFromAMMDown / 1e18 - 1),
-				buyFromAmmQuoteDown,
-				additionalSlippage,
-				{ from: minter }
-			);
-
-			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
-			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
-			assert.bnGte(safeBoxsUSD, toUnit(37));
-			assert.bnLte(safeBoxsUSD, toUnit(38));
-
-			await newMarket.mint(toUnit(20000), {
-				from: minter,
-			});
-
-			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
-				newMarket.address,
-				Position.DOWN
-			);
-
-			let options = await newMarket.options();
-			up = await position.at(options.up);
-			down = await position.at(options.down);
-
-			await down.approve(thalesAMM.address, toUnit(availableToSellToAMM / 1e18), { from: minter });
-			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToSellToAMM / 1e18 - 1)
-			);
-			await thalesAMM.sellToAMM(
-				newMarket.address,
-				Position.DOWN,
-				toUnit(availableToSellToAMM / 1e18 - 1),
-				sellToAmmQuote,
-				additionalSlippage,
-				{ from: minter }
-			);
-
-			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
-			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
-			assert.bnGte(safeBoxsUSD, toUnit(63));
-			assert.bnLte(safeBoxsUSD, toUnit(64));
-		});
-
-		it('Safe box sell ', async () => {
-			let strike = 4000;
-			let now = await currentTime();
-			let newMarket = await createMarket(
-				manager,
-				sETHKey,
-				toUnit(strike),
-				now + day * 10,
-				toUnit(10),
-				creatorSigner
-			);
-
-			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-				newMarket.address,
-				Position.UP
-			);
-
+			let additionalSlippage = toUnit(0.01);
 			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.UP,
 				toUnit(availableToBuyFromAMM / 1e18 - 1)
 			);
-			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
-			let additionalSlippage = toUnit(0.01);
+			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 			await thalesAMM.buyFromAMM(
 				newMarket.address,
 				Position.UP,
@@ -314,83 +246,141 @@ contract('ThalesAMM', accounts => {
 				additionalSlippage,
 				{ from: minter }
 			);
-
-			await newMarket.mint(toUnit(20000), {
-				from: minter,
-			});
-
-			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
-				newMarket.address,
-				Position.UP
+			console.log(
+				'Bought  ' + (availableToBuyFromAMM / 1e18 - 1) + ' for ' + buyFromAmmQuote / 1e18 + ' sUSD'
 			);
 
-			let options = await newMarket.options();
-			up = await position.at(options.up);
-			down = await position.at(options.down);
-
-			await up.approve(thalesAMM.address, toUnit(availableToSellToAMM / 1e18), { from: minter });
-			let sellPriceImpactPostBuy = await thalesAMM.sellPriceImpact(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToSellToAMM / 1e18 - 1)
-			);
-
-			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToSellToAMM / 1e18 - 1)
-			);
-			additionalSlippage = toUnit(0.01);
-			await thalesAMM.sellToAMM(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToSellToAMM / 1e18 - 1),
-				sellToAmmQuote,
-				additionalSlippage,
-				{ from: minter }
-			);
-
-			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
+			let safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
-			assert.bnGte(safeBoxsUSD, toUnit(34));
-			assert.bnLte(safeBoxsUSD, toUnit(35));
 
 			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(newMarket.address, Position.UP);
+			console.log('availableToBuyFromAMM here decimal is:' + availableToBuyFromAMM / 1e18);
+
+			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
+			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
+
+			buyPriceImpactMin = await thalesAMM.buyPriceImpact(newMarket.address, Position.UP, toUnit(1));
+			console.log('buyPriceImpactMin decimal is:' + buyPriceImpactMin / 1e18);
+
+			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.DOWN,
+				toUnit(1)
+			);
+			console.log('buyPriceImpactMin down decimal is:' + buyPriceImpactMin / 1e18);
+			availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.DOWN
+			);
+			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMMDown / 1e18);
+
+			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.DOWN,
+				toUnit(1000)
+			);
+			console.log('buyPriceImpactMin down thousand decimal is:' + buyPriceImpactMin / 1e18);
+
+			buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.DOWN,
+				toUnit(availableToBuyFromAMMDown / 1e18 - 1)
+			);
+			console.log(
+				'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
+			);
 
 			buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
-				Position.UP,
+				Position.DOWN,
 				toUnit(availableToBuyFromAMM / 1e18 - 1)
 			);
-			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
-			additionalSlippage = toUnit(0.01);
+			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 			await thalesAMM.buyFromAMM(
 				newMarket.address,
-				Position.UP,
+				Position.DOWN,
 				toUnit(availableToBuyFromAMM / 1e18 - 1),
 				buyFromAmmQuote,
 				additionalSlippage,
 				{ from: minter }
 			);
 
-			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
+			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
-			assert.bnGte(safeBoxsUSD, toUnit(65));
-			assert.bnLte(safeBoxsUSD, toUnit(66));
-		});
-	});
 
-	describe('Retrieve sUSD from SafeBox', () => {
-		it('Retrieves sUSD ', async () => {
-			await sUSDSynth.issue(safeBox.address, sUSDQty);
+			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
+			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
 
-			let sUSDBalanceSafeBox = await sUSDSynth.balanceOf(safeBox.address);
-			let sUSDBalanceOwner = await sUSDSynth.balanceOf(owner);
-			await safeBox.retrieveSUSDAmount(owner, sUSDQtyAmm, { from: owner });
-			let sUSDBalanceSafeBoxAfter = await sUSDSynth.balanceOf(thalesAMM.address);
-			let sUSDBalanceOwnerAfter = await sUSDSynth.balanceOf(owner);
-			assert.bnGte(sUSDBalanceOwnerAfter, sUSDBalanceOwner);
-			assert.bnGte(sUSDBalanceSafeBox, sUSDBalanceSafeBoxAfter);
+			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.DOWN
+			);
+			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMM / 1e18);
+
+			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.DOWN,
+				toUnit(1)
+			);
+			console.log('buyPriceImpactMin down decimal is:' + buyPriceImpactMin / 1e18);
+
+			buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.DOWN,
+				toUnit(availableToBuyFromAMM / 1e18 - 1)
+			);
+			console.log(
+				'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
+			);
+
+			buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+				newMarket.address,
+				Position.DOWN,
+				toUnit(availableToBuyFromAMM / 1e18 - 1)
+			);
+			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+			await thalesAMM.buyFromAMM(
+				newMarket.address,
+				Position.DOWN,
+				toUnit(availableToBuyFromAMM / 1e18 - 1),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: minter }
+			);
+
+			console.log(
+				'Bought  ' + (availableToBuyFromAMM / 1e18 - 1) + ' for ' + buyFromAmmQuote / 1e18 + ' sUSD'
+			);
+
+			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox);
+			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
+
+			spentOnMarket = await thalesAMM.spentOnMarket(newMarket.address);
+			console.log('spentOnMarket pre buy decimal is:' + spentOnMarket / 1e18);
+
+			availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.DOWN
+			);
+			console.log('availableToBuyFromAMM down decimal is:' + availableToBuyFromAMM / 1e18);
+
+			buyPriceImpactMin = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.DOWN,
+				toUnit(1)
+			);
+			console.log('buyPriceImpactMin down decimal is:' + buyPriceImpactMin / 1e18);
+			assert.equal(buyPriceImpactMin / 1e18 > 0.19, true);
+
+			buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.DOWN,
+				toUnit(availableToBuyFromAMM / 1e18 - 1)
+			);
+			console.log(
+				'buyPriceImpactMax down availableToBuyFromAMM decimal is:' + buyPriceImpactMax / 1e18
+			);
+			assert.equal(buyPriceImpactMax / 1e18 > 0.19, true);
 		});
 	});
 });

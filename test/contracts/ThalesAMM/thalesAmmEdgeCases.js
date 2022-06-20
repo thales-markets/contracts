@@ -6,13 +6,13 @@ const { toBN } = web3.utils;
 const { toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupAllContracts } = require('../../utils/setup');
+const { assert } = require('../../utils/common');
 
 const { convertToDecimals } = require('../../utils/helpers');
 
 let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
 let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 let market, up, down, position, Synth;
-let Referrals, referrals;
 
 let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
@@ -21,23 +21,14 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 contract('ThalesAMM', accounts => {
-	const [
-		initialCreator,
-		managerOwner,
-		minter,
-		dummy,
-		exersicer,
-		secondCreator,
-		safeBox,
-		referrerAddress,
-		secondReferrerAddress,
-	] = accounts;
-	const [creator, owner] = accounts;
+	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
+	const [first, owner, second, third, fourth] = accounts;
 	let creatorSigner, ownerSigner;
 
 	const sUSDQty = toUnit(100000);
 	const sUSDQtyAmm = toUnit(1000);
-	const day = 24 * 60 * 60;
+
+	const hour = 60 * 60;
 
 	const sAUDKey = toBytes32('sAUD');
 	const sUSDKey = toBytes32('sUSD');
@@ -115,7 +106,7 @@ contract('ThalesAMM', accounts => {
 		const timestamp = await currentTime();
 
 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
-		await aggregator_sETH.setLatestAnswer(convertToDecimals(10000, 8), timestamp);
+		await aggregator_sETH.setLatestAnswer(convertToDecimals(3950, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
 		await priceFeed.connect(ownerSigner).addAggregator(sAUDKey, aggregator_sAUD.address);
@@ -182,15 +173,6 @@ contract('ThalesAMM', accounts => {
 			from: owner,
 		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
-
-		Referrals = artifacts.require('Referrals');
-		referrals = await Referrals.new();
-		await referrals.initialize(owner, thalesAMM.address, thalesAMM.address);
-
-		await thalesAMM.setStakingThalesAndReferrals(ZERO_ADDRESS, referrals.address, toUnit('0.01'), {
-			from: owner,
-		});
-		console.log('thalesAMM -  set Referrals');
 	});
 
 	const Position = {
@@ -199,70 +181,131 @@ contract('ThalesAMM', accounts => {
 	};
 
 	describe('Test AMM', () => {
-		it('additional slippage test on buy ', async () => {
+		it('Strike more than current price ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(10000),
-				now + day * 10,
+				toUnit(4000),
+				now + hour * 8,
 				toUnit(10),
 				creatorSigner
 			);
 
-			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
-				newMarket.address,
-				Position.UP,
-				toUnit(100)
+			let calculatedOdds = calculateOdds(3950, 4000, 0.25, 120);
+			console.log('calculatedOdds is:' + calculatedOdds);
+			let calculatedOddsContract = await thalesAMM.calculateOdds(
+				toUnit(3950),
+				toUnit(4000),
+				toUnit(0.25),
+				toUnit(120)
 			);
-			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+			let ratio = calculatedOdds / (calculatedOddsContract / 1e18);
+			console.log('ratio is:' + ratio);
+			assert.equal(ratio > 0.99 && ratio < 1.01, true);
 
-			let options = await newMarket.options();
-			up = await position.at(options.up);
-			down = await position.at(options.down);
+			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
 
-			let ammDownBalance = await down.balanceOf(thalesAMM.address);
-			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
-
-			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
-			let additionalSlippage = toUnit(0.01);
-			await thalesAMM.buyFromAMM(
+			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
 				newMarket.address,
-				Position.UP,
-				toUnit(10),
-				buyFromAmmQuote,
-				additionalSlippage,
-				{ from: minter }
+				Position.UP
 			);
-
-			ammDownBalance = await down.balanceOf(thalesAMM.address);
-			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
-
-			let minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
-
-			let referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
-			console.log('referrerSusdBalance after:' + referrerSusdBalance / 1e18);
-
-			additionalSlippage = toUnit(0.2); // 20%
-			await thalesAMM.buyFromAMMWithReferrer(
+			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
 				newMarket.address,
-				Position.UP,
-				toUnit(10),
-				toUnit((buyFromAmmQuote / 1e18) * 0.9),
-				additionalSlippage,
-				referrerAddress,
-				{ from: minter }
+				Position.UP
 			);
 
-			minterSusdBalance = await sUSDSynth.balanceOf(minter);
-			console.log('minterSusdBalance after:' + minterSusdBalance / 1e18);
+			let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.DOWN
+			);
 
-			referrerSusdBalance = await sUSDSynth.balanceOf(referrerAddress);
-			console.log('referrerSusdBalance after:' + referrerSusdBalance / 1e18);
-
-			ammDownBalance = await down.balanceOf(thalesAMM.address);
-			//console.log('amm down pre buy decimal is:' + ammDownBalance / 1e18);
+			let availableToSellToAMMDown = await thalesAMM.availableToSellToAMM(
+				newMarket.address,
+				Position.DOWN
+			);
 		});
 	});
+
+	it('Strike less than current price ', async () => {
+		let now = await currentTime();
+		let newMarket = await createMarket(
+			manager,
+			sETHKey,
+			toUnit(3900),
+			now + hour * 8,
+			toUnit(10),
+			creatorSigner
+		);
+
+		let calculatedOdds = calculateOdds(3950, 3900, 0.25, 120);
+		console.log('calculatedOdds is:' + calculatedOdds);
+		let calculatedOddsContract = await thalesAMM.calculateOdds(
+			toUnit(3950),
+			toUnit(3900),
+			toUnit(0.25),
+			toUnit(120)
+		);
+		console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
+
+		let ratio = calculatedOdds / (calculatedOddsContract / 1e18);
+		console.log('ratio is:' + ratio);
+		assert.equal(ratio > 0.99 && ratio < 1.01, true);
+
+		let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+		let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
+		let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+			newMarket.address,
+			Position.UP
+		);
+
+		let availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
+
+		let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
+			newMarket.address,
+			Position.DOWN
+		);
+
+		let availableToSellToAMMDown = await thalesAMM.availableToSellToAMM(
+			newMarket.address,
+			Position.DOWN
+		);
+	});
 });
+
+function calculateOdds(price, strike, days, volatility) {
+	let p = price;
+	let q = strike;
+	let t = days / 365;
+	let v = volatility / 100;
+
+	let tt = Math.sqrt(t);
+	let vt = v * tt;
+	let lnpq = Math.log(q / p);
+	let d1 = lnpq / vt;
+	let y9 = 1 + 0.2316419 * Math.abs(d1);
+
+	let y = Math.floor((1 / y9) * 100000) / 100000;
+	let z1 = Math.exp(-((d1 * d1) / 2));
+	let d2 = -((d1 * d1) / 2);
+	let d3 = Math.exp(d2);
+	let z = Math.floor(0.3989423 * d3 * 100000) / 100000;
+
+	let y5 = 1.330274 * Math.pow(y, 5);
+	let y4 = 1.821256 * Math.pow(y, 4);
+	let y3 = 1.781478 * Math.pow(y, 3);
+	let y2 = 0.356538 * Math.pow(y, 2);
+	let y1 = 0.3193815 * y;
+	let x1 = y5 + y3 + y1 - y4 - y2;
+	let x = 1 - z * (y5 - y4 + y3 - y2 + y1);
+
+	let x2 = z * x1;
+	x = Math.floor(x * 100000) / 100000;
+
+	if (d1 < 0) {
+		x = 1 - x;
+	}
+	return Math.floor((1 - x) * 1000) / 10;
+}

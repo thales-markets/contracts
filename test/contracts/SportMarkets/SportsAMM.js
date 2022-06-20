@@ -181,9 +181,9 @@ contract('SportsAMM', accounts => {
 		await SportPositionalMarketFactory.setPositionMastercopy(SportPositionMastercopy.address, {
 			from: manager,
 		});
-		await SportPositionalMarketFactory.setLimitOrderProvider(SportsAMM.address, { from: manager });
-		await SportPositionalMarketFactory.setThalesAMM(SportsAMM.address, { from: manager });
-		await SportPositionalMarketManager.setPositionalMarketFactory(
+		// await SportPositionalMarketFactory.setLimitOrderProvider(SportsAMM.address, { from: manager });
+		await SportPositionalMarketFactory.setSportsAMM(SportsAMM.address, { from: manager });
+		await SportPositionalMarketManager.setSportPositionalMarketFactory(
 			SportPositionalMarketFactory.address,
 			{ from: manager }
 		);
@@ -357,7 +357,7 @@ contract('SportsAMM', accounts => {
 	describe('Manager checks', () => {
 		let answer;
 		it('Checks', async () => {
-			await SportPositionalMarketManager.setPositionalMarketFactory(first, { from: manager });
+			await SportPositionalMarketManager.setSportPositionalMarketFactory(first, { from: manager });
 			await SportPositionalMarketManager.setTherundownConsumer(first, { from: manager });
 			await SportPositionalMarketManager.setWhitelistedAddresses([first, second], {
 				from: manager,
@@ -374,6 +374,7 @@ contract('SportsAMM', accounts => {
 				reqIdCreate,
 				gamesCreated,
 				sportId_4,
+				game1NBATime,
 				{ from: wrapper }
 			);
 
@@ -400,8 +401,6 @@ contract('SportsAMM', accounts => {
 			await SportPositionalMarketManager.setCreatorCapitalRequirement('10', { from: manager });
 			await SportPositionalMarketManager.setsUSD(third, { from: manager });
 			await SportPositionalMarketManager.setMarketCreationEnabled(false, { from: manager });
-			await SportPositionalMarketManager.setCustomMarketCreationEnabled(true, { from: manager });
-			await SportPositionalMarketManager.setMigratingManager(third, { from: manager });
 			await SportPositionalMarketManager.transformCollateral('10', { from: manager });
 			await SportPositionalMarketManager.transformCollateral('100000000000000000000000', {
 				from: manager,
@@ -419,6 +418,7 @@ contract('SportsAMM', accounts => {
 				reqIdCreate,
 				gamesCreated,
 				sportId_4,
+				game1NBATime,
 				{ from: wrapper }
 			);
 
@@ -539,6 +539,7 @@ contract('SportsAMM', accounts => {
 				reqIdCreate,
 				gamesCreated,
 				sportId_4,
+				game1NBATime,
 				{ from: wrapper }
 			);
 
@@ -1317,6 +1318,7 @@ contract('SportsAMM', accounts => {
 				reqIdFootballCreate,
 				gamesFootballCreated,
 				sportId_16,
+				game1NBATime,
 				{ from: wrapper }
 			);
 

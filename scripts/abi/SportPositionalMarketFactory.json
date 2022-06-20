@@ -144,11 +144,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_thalesAMM",
+        "name": "_sportsAMM",
         "type": "address"
       }
     ],
-    "name": "SetThalesAMM",
+    "name": "SetSportsAMM",
     "type": "event"
   },
   {
@@ -238,19 +238,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "limitOrderProvider",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -332,19 +319,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_limitOrderProvider",
-        "type": "address"
-      }
-    ],
-    "name": "setLimitOrderProvider",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_owner",
         "type": "address"
       }
@@ -397,18 +371,18 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_thalesAMM",
+        "name": "_sportsAMM",
         "type": "address"
       }
     ],
-    "name": "setThalesAMM",
+    "name": "setSportsAMM",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "thalesAMM",
+    "name": "sportsAMM",
     "outputs": [
       {
         "internalType": "address",

@@ -11,4 +11,5 @@ How to deploy sports markets:
    `npx hardhat run --network XXXXXX scripts/deploySportMarkets/deployRundown/deploy_TherundownConsumerWrapper.js`
 4. add whitelisted address to wrapper and consumer contracts via `addToWhiteList` method (addresses which can resolve/create games/markets and pull odds)
 5. after deploy od sports manager add address to a consumer contract via `setSportsManager` method
-6. add LINK to a wrapper contract
+6. set wrapper address to consumer contract via method `setWrapperAddress`
+7. add LINK to a wrapper contract

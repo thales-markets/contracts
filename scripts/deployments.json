@@ -243,11 +243,6 @@
 		"ExoticMarketManagerImplementation": "0x427a45FE1101da66e640cAB25920d6F374334fe1",
 		"ThalesBonds": "0x08383DE28Ce4CC48773c7876d4A6649578C26153",
 		"ThalesBondsImplementation": "0xA17A70722dff78A06f585Fb2B2f63f0B16d75B8F",
-		"TherundownConsumerWrapper": "0xAFAe4a0e7bc95C432980612ED2daA74939fCED31",
-		"GamesQueue": "0x1CF94f7b0B296E3b48F9084d1D2957da79Ddfddd",
-		"GamesQueueImplementation": "0x898392a5Bd0029fCD55492c7cBD7442bafcFb71c",
-		"TherundownConsumer": "0x8b6791d4925c03c424745AC387a66d4163893a47",
-		"TherundownConsumerImplementation": "0xEbD259d6bACd565b9d086F166c31530A107DCc01",
 		"InvestorsAirdropUnclaimedRetro": "0x686525728323b10bF611C6d260604c02946792ab",
 		"VestingEscrowInvestors": "0x758c5D4b48A9beDcF38f81cB6f75cd8Ce92C846E",
 		"VestingEscrowInvestorsImplementation": "0x2Be57E642B04376338F4Ce1BA8ecC5105AaF5995",
@@ -270,7 +265,12 @@
 		"SportsAMM": "0xEa71aACad9C7105859581AA7048126d6f98B391F",
 		"SportsAMMImplementation": "0xef4e90b909C0a5919AE049Ea18C997FdA09Ab66c",
 		"SportPositionalMarketData": "0xE2C2325191e5DbaB67e1a3ceADF5b3b75a7d4AE6",
-		"SportPositionalMarketDataImplementation": "0x29c24C43378513EdBDBcD8671CE2352d326905a4"
+		"SportPositionalMarketDataImplementation": "0x29c24C43378513EdBDBcD8671CE2352d326905a4",
+		"GamesQueue": "0x952Af77e13e121A648Ff2aDe0b65779f45a1f496",
+		"GamesQueueImplementation": "0x898392a5Bd0029fCD55492c7cBD7442bafcFb71c",
+		"TherundownConsumer": "0xd03f473caC24767134A86A298FeC38294986EcE6",
+		"TherundownConsumerImplementation": "0xe2b0182f809a89443C9CF8eFCE64f17A6733A243",
+		"TherundownConsumerWrapper": "0xae4fB5Dc9b2371Ef994D09DB1b4F341CdED0b1d6"
 	},
 	"localhost": {
 		"Airdrop": "",

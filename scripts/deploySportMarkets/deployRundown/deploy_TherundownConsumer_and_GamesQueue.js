@@ -64,9 +64,12 @@ async function main() {
 	// NBA: 4
 	// EPL: 11
 	// UEFA Champions League: 16
-	const allowedSports = [4, 11, 16];
+	// MLB: 3
+	// MLS: 10
+	// NHL: 10
+	const allowedSports = [3, 10, 4, 11, 16, 6];
 
-	const twoPositionSports = [4];
+	const twoPositionSports = [3, 4, 6];
 
 	const allowedResolvedStatuses = [8, 12];
 	const allowedCancelStatuses = [1, 2];
@@ -79,9 +82,7 @@ async function main() {
 
 	const GamesQueue = await ethers.getContractFactory('GamesQueue');
 
-	const gamesQueue = await upgrades.deployProxy(GamesQueue, [
-		owner.address
-	]);
+	const gamesQueue = await upgrades.deployProxy(GamesQueue, [owner.address]);
 
 	await gamesQueue.deployed();
 
@@ -102,7 +103,7 @@ async function main() {
 		twoPositionSports,
 		gamesQueue.address,
 		allowedResolvedStatuses,
-		allowedCancelStatuses
+		allowedCancelStatuses,
 	]);
 
 	await therundown.deployed();
@@ -115,14 +116,14 @@ async function main() {
 	setTargetAddress('TherundownConsumerImplementation', network, implementation);
 
 	await therundown.setQueueAddress(gamesQueue.address);
-	console.log("GamesQueue address set in TherundownConsumer");
+	console.log('GamesQueue address set in TherundownConsumer');
 
 	await gamesQueue.setConsumerAddress(therundown.address);
-	console.log("TherundownConsumer address set in GamesQueue");
+	console.log('TherundownConsumer address set in GamesQueue');
 
 	await hre.run('verify:verify', {
-		address: implementationQueue
-	})
+		address: implementationQueue,
+	});
 
 	await hre.run('verify:verify', {
 		address: implementation,

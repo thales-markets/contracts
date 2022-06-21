@@ -50,29 +50,36 @@ async function main() {
 	const max_spread = w3utils.toWei('0.05');
 	const min_supported = w3utils.toWei('0.1');
 	const max_supported = w3utils.toWei('0.1');
-	const minimalTimeLeftToMaturity = '86400';
+	let minimalTimeLeftToMaturity = '86400';
 
 	const SportMarketFactory = await ethers.getContractFactory('SportPositionalMarketFactory');
 	const SportMarketFactoryAddress = getTargetAddress('SportPositionalMarketFactory', network);
+	const SportMarketManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
+	const TherundownConsumerAddress = getTargetAddress('TherundownConsumer', network);
+	let PaymentAddress;
 	const SportMarketFactoryDeployed = await SportMarketFactory.attach(SportMarketFactoryAddress);
 
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
 	const SportsAMM = await ethers.getContractFactory('SportsAMM');
 
-	// if (networkObj.chainId == 42) {
-	// 	await upgrades.upgradeProxy(SportsAMMAddress, SportsAMM);
-	// 	await delay(5000);
+	if (networkObj.chainId == 42) {
+		PaymentAddress = getTargetAddress('ExoticUSD', network);
+		minimalTimeLeftToMaturity = '360';
+		// 	await upgrades.upgradeProxy(SportsAMMAddress, SportsAMM);
+		// 	await delay(5000);
 
-	// 	const SportsAMMImplementation = await getImplementationAddress(
-	// 		ethers.provider,
-	// 		SportsAMMAddress
-	// 	);
-	// 	console.log('SportsAMM upgraded');
+		// 	const SportsAMMImplementation = await getImplementationAddress(
+		// 		ethers.provider,
+		// 		SportsAMMAddress
+		// 	);
+		// 	console.log('SportsAMM upgraded');
 
-	// 	console.log('Implementation SportsAMM: ', SportsAMMImplementation);
-	// 	setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
-	// }
+		// 	console.log('Implementation SportsAMM: ', SportsAMMImplementation);
+		// 	setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
+	}
+
 	if (networkObj.chainId == 10) {
+		PaymentAddress = getTargetAddress('ProxysUSD', network);
 	}
 
 	const SportsAMMDeployed = await upgrades.deployProxy(SportsAMM, [
@@ -97,9 +104,17 @@ async function main() {
 	setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
 
 	await delay(2000);
+	await SportsAMMDeployed.setSUSD(TherundownConsumerAddress, { from: owner.address });
+	await delay(2000);
 	await SportsAMMDeployed.setMinSupportedPrice(min_supported, { from: owner.address });
 	await delay(2000);
 	await SportsAMMDeployed.setMaxSupportedPrice(max_supported, { from: owner.address });
+	await delay(2000);
+	await SportsAMMDeployed.setTherundownConsumer(TherundownConsumerAddress, { from: owner.address });
+	await delay(2000);
+	await SportsAMMDeployed.setSportsPositionalMarketManager(SportMarketManagerAddress, {
+		from: owner.address,
+	});
 	await delay(2000);
 
 	await SportMarketFactoryDeployed.setSportsAMM(SportsAMMDeployed.address, { from: owner.address });

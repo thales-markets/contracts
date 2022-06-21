@@ -85,8 +85,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     GamesQueue public queues;
     mapping(bytes32 => uint) public oddsLastPulledForGame;
     mapping(bytes32 => bytes32) public gemeIdPerRequestId;
-    mapping(uint => bool) public havingGamesPerDate;
-    mapping(uint => bytes32[]) public gamesPerDate;
+    mapping(uint => bool) public havingGamesPerDate; // delete
+    mapping(uint => bytes32[]) public gamesPerDate; // delete
     mapping(uint => uint) public oddsLastPulledForDate;
     mapping(uint => mapping(uint => bool)) public isSportOnADate;
 
@@ -127,7 +127,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         requestIdGamesCreated[_requestId] = _games;
 
         if (_games.length > 0) {
-            havingGamesPerDate[_date] = true;
             isSportOnADate[_date][_sportId] = true;
             oddsLastPulledForDate[_date] = block.timestamp;
         }
@@ -135,7 +134,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         for (uint i = 0; i < _games.length; i++) {
             GameCreate memory game = abi.decode(_games[i], (GameCreate));
             if (!queues.existingGamesInCreatedQueue(game.gameId) && !isSameTeamOrTBD(game.homeTeam, game.awayTeam)) {
-                gamesPerDate[_date].push(game.gameId);
                 _createGameFulfill(_requestId, game, _sportId);
             }
         }
@@ -599,7 +597,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             totalOdds += normalizedOdds[i];
         }
         for (uint i = 0; i < normalizedOdds.length; i++) {
-            normalizedOdds[i] = (1e18 * normalizedOdds[i]) / totalOdds;
+            if(totalOdds == 0){
+                normalizedOdds[i] = 0;
+            }else{
+                normalizedOdds[i] = (1e18 * normalizedOdds[i]) / totalOdds;
+            }
         }
         return normalizedOdds;
     }

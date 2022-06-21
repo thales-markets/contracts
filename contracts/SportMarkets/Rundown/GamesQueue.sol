@@ -111,7 +111,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit GameProcessed(dataProccessed, index);
     }
 
-    /// @notice public function which will return length of unprocessed array 
+    /// @notice public function which will return length of unprocessed array
     /// @return index index in array
     function getLengthUnproccessedGames() public view returns (uint) {
         return unproccessedGames.length;

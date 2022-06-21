@@ -336,7 +336,7 @@
         "type": "address"
       }
     ],
-    "name": "setPositionMastercopy",
+    "name": "setSportPositionMastercopy",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -349,7 +349,7 @@
         "type": "address"
       }
     ],
-    "name": "setPositionalMarketManager",
+    "name": "setSportPositionalMarketManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -362,7 +362,7 @@
         "type": "address"
       }
     ],
-    "name": "setPositionalMarketMastercopy",
+    "name": "setSportPositionalMarketMastercopy",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

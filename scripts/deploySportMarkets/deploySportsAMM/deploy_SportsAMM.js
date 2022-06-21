@@ -48,6 +48,8 @@ async function main() {
 	const capPerMarket = w3utils.toWei('1000');
 	const min_spread = w3utils.toWei('0.01');
 	const max_spread = w3utils.toWei('0.05');
+	const min_supported = w3utils.toWei('0.1');
+	const max_supported = w3utils.toWei('0.1');
 	const minimalTimeLeftToMaturity = '86400';
 
 	const SportMarketFactory = await ethers.getContractFactory('SportPositionalMarketFactory');
@@ -57,19 +59,19 @@ async function main() {
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
 	const SportsAMM = await ethers.getContractFactory('SportsAMM');
 
-	if (networkObj.chainId == 42) {
-		await upgrades.upgradeProxy(SportsAMMAddress, SportsAMM);
-		await delay(5000);
+	// if (networkObj.chainId == 42) {
+	// 	await upgrades.upgradeProxy(SportsAMMAddress, SportsAMM);
+	// 	await delay(5000);
 
-		const SportsAMMImplementation = await getImplementationAddress(
-			ethers.provider,
-			SportsAMMAddress
-		);
-		console.log('SportsAMM upgraded');
+	// 	const SportsAMMImplementation = await getImplementationAddress(
+	// 		ethers.provider,
+	// 		SportsAMMAddress
+	// 	);
+	// 	console.log('SportsAMM upgraded');
 
-		console.log('Implementation SportsAMM: ', SportsAMMImplementation);
-		setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
-	}
+	// 	console.log('Implementation SportsAMM: ', SportsAMMImplementation);
+	// 	setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
+	// }
 	if (networkObj.chainId == 10) {
 	}
 
@@ -94,9 +96,13 @@ async function main() {
 	console.log('Implementation SportsAMM: ', SportsAMMImplementation);
 	setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
 
-	await delay(5000);
+	await delay(2000);
+	await SportsAMMDeployed.setMinSupportedPrice(min_supported, { from: owner.address });
+	await delay(2000);
+	await SportsAMMDeployed.setMaxSupportedPrice(max_supported, { from: owner.address });
+	await delay(2000);
 
-	await SportMarketFactoryDeployed.setThalesAMM(SportsAMMDeployed.address, { from: owner.address });
+	await SportMarketFactoryDeployed.setSportsAMM(SportsAMMDeployed.address, { from: owner.address });
 	console.log('SportsAMM updated in Factory');
 	await delay(2000);
 

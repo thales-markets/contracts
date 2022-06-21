@@ -82,17 +82,17 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
     }
 
     /* ========== SETTERS ========== */
-    function setPositionalMarketManager(address _positionalMarketManager) external onlyOwner {
+    function setSportPositionalMarketManager(address _positionalMarketManager) external onlyOwner {
         positionalMarketManager = _positionalMarketManager;
         emit PositionalMarketManagerChanged(_positionalMarketManager);
     }
 
-    function setPositionalMarketMastercopy(address _positionalMarketMastercopy) external onlyOwner {
+    function setSportPositionalMarketMastercopy(address _positionalMarketMastercopy) external onlyOwner {
         positionalMarketMastercopy = _positionalMarketMastercopy;
         emit PositionalMarketMastercopyChanged(_positionalMarketMastercopy);
     }
 
-    function setPositionMastercopy(address _positionMastercopy) external onlyOwner {
+    function setSportPositionMastercopy(address _positionMastercopy) external onlyOwner {
         positionMastercopy = _positionMastercopy;
         emit PositionMastercopyChanged(_positionMastercopy);
     }

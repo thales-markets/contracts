@@ -9,9 +9,11 @@ import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
+// internal
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
+// interface
 import "../interfaces/IPriceFeed.sol";
 import "../interfaces/ISportPositionalMarket.sol";
 import "../interfaces/ISportPositionalMarketManager.sol";
@@ -20,8 +22,8 @@ import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
 import "../interfaces/ICurveSUSD.sol";
 
-// import "hardhat/console.sol";
-
+//// @title Sports AMM contract
+//// @author kirilaa
 contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -36,36 +38,65 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
 
+    //// @return The sUSD contract used for payment
     IERC20Upgradeable public sUSD;
+
+    //// @return The address of the SportsPositionalManager contract
     address public manager;
 
+    //// @notice Each game has `defaultCapPerGame` available for trading
+    //// @return The default cap per game.
     uint public defaultCapPerGame;
+
+    //// @return The minimal spread/skrew percentage
     uint public min_spread;
+
+    //// @return The maximum spread/skrew percentage
     uint public max_spread;
 
+    //// @notice Each game will be restricted for AMM trading `minimalTimeLeftToMaturity` seconds before is mature
+    //// @return The period of time before a game is matured and begins to be restricted for AMM trading
     uint public minimalTimeLeftToMaturity;
 
     enum Position {Home, Away, Draw}
 
+    //// @return The sUSD amount bought from AMM by users for the market
     mapping(address => uint) public spentOnMarket;
 
+    //// @return The SafeBox address
     address public safeBox;
+
+    //// @return The address of Therundown Consumer
     address public theRundownConsumer;
+
+    //// @return The percentage that goes to SafeBox
     uint public safeBoxImpact;
 
+    //// @return The address of the Staking contract
     IStakingThales public stakingThales;
 
+    //// @return The minimum supported odd
     uint public minSupportedPrice;
+
+    //// @return The maximum supported odd
     uint public maxSupportedPrice;
 
+    //// @return The address of the Curve contract for multi-collateral
     ICurveSUSD public curveSUSD;
 
+    //// @return The address of USDC
     address public usdc;
+
+    //// @return The address of USDT (Theter)
     address public usdt;
+
+    //// @return The address of DAI
     address public dai;
 
+    //// @return The max uint number used for approval
     uint public constant MAX_APPROVAL = type(uint256).max;
 
+    //// @return curve usage is enabled?
     bool public curveOnrampEnabled;
 
     function initialize(

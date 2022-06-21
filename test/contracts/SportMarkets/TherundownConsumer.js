@@ -156,9 +156,9 @@ contract('TheRundownConsumer', accounts => {
 		await SportPositionalMarketFactory.setPositionMastercopy(SportPositionMastercopy.address, {
 			from: manager,
 		});
-		await SportPositionalMarketFactory.setLimitOrderProvider(SportsAMM.address, { from: manager });
-		await SportPositionalMarketFactory.setThalesAMM(SportsAMM.address, { from: manager });
-		await SportPositionalMarketManager.setPositionalMarketFactory(
+		// await SportPositionalMarketFactory.setLimitOrderProvider(SportsAMM.address, { from: manager });
+		await SportPositionalMarketFactory.setSportsAMM(SportsAMM.address, { from: manager });
+		await SportPositionalMarketManager.setSportPositionalMarketFactory(
 			SportPositionalMarketFactory.address,
 			{ from: manager }
 		);

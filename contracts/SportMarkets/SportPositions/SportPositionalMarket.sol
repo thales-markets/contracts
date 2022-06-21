@@ -97,7 +97,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         deposited = _parameters.deposit;
         initialMint = _parameters.deposit;
         optionsCount = _parameters.positionCount;
-        require(optionsCount != _parameters.positions.length, "Position count mismatch");
+        require(optionsCount == _parameters.positions.length, "Position count mismatch");
         // Instantiate the options themselves
         options.home = SportPosition(_parameters.positions[0]);
         options.away = SportPosition(_parameters.positions[1]);

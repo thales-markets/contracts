@@ -170,15 +170,15 @@ contract('SportsAMM', accounts => {
 
 		await SportPositionalMarketManager.setExpiryDuration(5 * DAY, { from: manager });
 
-		await SportPositionalMarketFactory.setPositionalMarketManager(
+		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
 			{ from: manager }
 		);
-		await SportPositionalMarketFactory.setPositionalMarketMastercopy(
+		await SportPositionalMarketFactory.setSportPositionalMarketMastercopy(
 			SportPositionalMarketMastercopy.address,
 			{ from: manager }
 		);
-		await SportPositionalMarketFactory.setPositionMastercopy(SportPositionMastercopy.address, {
+		await SportPositionalMarketFactory.setSportPositionMastercopy(SportPositionMastercopy.address, {
 			from: manager,
 		});
 		// await SportPositionalMarketFactory.setLimitOrderProvider(SportsAMM.address, { from: manager });
@@ -213,8 +213,7 @@ contract('SportsAMM', accounts => {
 			{ from: owner }
 		);
 		await StakingThales.setThalesAMM(SportsAMM.address, { from: owner });
-		await SportsAMM.setMinSupportedPrice(10, { from: owner });
-		await SportsAMM.setMaxSupportedPrice(toUnit(1000), { from: owner });
+		await SportsAMM.setMinSupportedOdd(10, { from: owner });
 
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
@@ -566,8 +565,7 @@ contract('SportsAMM', accounts => {
 			answer = await SportsAMM.setSafeBoxImpact(toUnit(1), { from: owner });
 			answer = await SportsAMM.setSafeBox(third, { from: owner });
 			answer = await SportsAMM.setMaxSpread(toUnit(1), { from: owner });
-			answer = await SportsAMM.setMinSupportedPrice(toUnit(1), { from: owner });
-			answer = await SportsAMM.setMaxSupportedPrice(toUnit(1), { from: owner });
+			answer = await SportsAMM.setMinSupportedOdd(toUnit(1), { from: owner });
 			answer = await SportsAMM.setDefaultCapPerGame(toUnit(1), { from: owner });
 			answer = await SportsAMM.setSUSD(Thales.address, { from: owner });
 			answer = await SportsAMM.setTherundownConsumer(third, { from: owner });
@@ -607,14 +605,14 @@ contract('SportsAMM', accounts => {
 		});
 
 		it('Get price', async () => {
-			answer = await SportsAMM.price(deployedMarket.address, 0);
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 0);
 			let sumOfPrices = answer;
 			console.log('Price for pos 0: ', fromUnit(answer));
 			sumOfPrices = sumOfPrices.add(answer);
-			answer = await SportsAMM.price(deployedMarket.address, 1);
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 1);
 			console.log('Price for pos 1: ', fromUnit(answer));
 			sumOfPrices = sumOfPrices.add(answer);
-			answer = await SportsAMM.price(deployedMarket.address, 2);
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 2);
 			console.log('Price for pos 2: ', fromUnit(answer));
 			console.log('Total price: ', fromUnit(sumOfPrices));
 		});
@@ -1368,14 +1366,14 @@ contract('SportsAMM', accounts => {
 		});
 
 		it('Get price', async () => {
-			answer = await SportsAMM.price(deployedMarket.address, 0);
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 0);
 			let sumOfPrices = answer;
 			console.log('Price for pos 0: ', fromUnit(answer));
 			sumOfPrices = sumOfPrices.add(answer);
-			answer = await SportsAMM.price(deployedMarket.address, 1);
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 1);
 			console.log('Price for pos 1: ', fromUnit(answer));
 			sumOfPrices = sumOfPrices.add(answer);
-			answer = await SportsAMM.price(deployedMarket.address, 2);
+			answer = await SportsAMM.obtainOdds(deployedMarket.address, 2);
 			console.log('Price for pos 2: ', fromUnit(answer));
 			console.log('Total price: ', fromUnit(sumOfPrices));
 		});

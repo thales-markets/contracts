@@ -155,7 +155,7 @@
         "type": "uint256"
       }
     ],
-    "name": "SetMinSupportedPrice",
+    "name": "SetMinSupportedOdd",
     "type": "event"
   },
   {
@@ -758,19 +758,6 @@
   },
   {
     "inputs": [],
-    "name": "maxSupportedPrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "max_spread",
     "outputs": [
       {
@@ -784,7 +771,7 @@
   },
   {
     "inputs": [],
-    "name": "minSupportedPrice",
+    "name": "minSupportedOdd",
     "outputs": [
       {
         "internalType": "uint256",
@@ -892,30 +879,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "enum SportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
-      }
-    ],
-    "name": "price",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1132,19 +1095,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_maxSupportedPrice",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMaxSupportedPrice",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "_spread",
         "type": "uint256"
       }
@@ -1158,11 +1108,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_minSupportedPrice",
+        "name": "_minSupportedOdd",
         "type": "uint256"
       }
     ],
-    "name": "setMinSupportedPrice",
+    "name": "setMinSupportedOdd",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

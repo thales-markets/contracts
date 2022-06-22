@@ -117,6 +117,44 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "contract SportPositionalMarketManager",
+        "name": "receivingManager",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "contract SportPositionalMarket[]",
+        "name": "markets",
+        "type": "address[]"
+      }
+    ],
+    "name": "MarketsMigrated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "contract SportPositionalMarketManager",
+        "name": "migratingManager",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "contract SportPositionalMarket[]",
+        "name": "markets",
+        "type": "address[]"
+      }
+    ],
+    "name": "MarketsReceived",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "duration",
         "type": "uint256"
@@ -199,6 +237,19 @@
       }
     ],
     "name": "PauseChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "migratingManager",
+        "type": "address"
+      }
+    ],
+    "name": "SetMigratingManager",
     "type": "event"
   },
   {
@@ -551,6 +602,29 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "contract SportPositionalMarketManager",
+        "name": "receivingManager",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "active",
+        "type": "bool"
+      },
+      {
+        "internalType": "contract SportPositionalMarket[]",
+        "name": "marketsToMigrate",
+        "type": "address[]"
+      }
+    ],
+    "name": "migrateMarkets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "needsTransformingCollateral",
     "outputs": [
@@ -652,6 +726,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "active",
+        "type": "bool"
+      },
+      {
+        "internalType": "contract SportPositionalMarket[]",
+        "name": "marketsToReceive",
+        "type": "address[]"
+      }
+    ],
+    "name": "receiveMarkets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -793,6 +885,19 @@
       }
     ],
     "name": "setMaxTimeToMaturity",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract SportPositionalMarketManager",
+        "name": "manager",
+        "type": "address"
+      }
+    ],
+    "name": "setMigratingManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

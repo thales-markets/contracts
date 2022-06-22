@@ -50,6 +50,7 @@ async function main() {
 	const max_spread = w3utils.toWei('0.05');
 	const min_supported = w3utils.toWei('0.1');
 	const max_supported = w3utils.toWei('0.1');
+	const safeBoxImpact = w3utils.toWei('0.01');
 	let minimalTimeLeftToMaturity = '86400';
 
 	const SportMarketFactory = await ethers.getContractFactory('SportPositionalMarketFactory');
@@ -109,6 +110,8 @@ async function main() {
 	await SportsAMMDeployed.setMinSupportedPrice(min_supported, { from: owner.address });
 	await delay(2000);
 	await SportsAMMDeployed.setMaxSupportedPrice(max_supported, { from: owner.address });
+	await delay(2000);
+	await SportsAMMDeployed.setSafeBoxImpact(safeBoxImpact, { from: owner.address });
 	await delay(2000);
 	await SportsAMMDeployed.setTherundownConsumer(TherundownConsumerAddress, { from: owner.address });
 	await delay(2000);

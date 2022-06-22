@@ -308,6 +308,67 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         }
     }
 
+    function setMigratingManager(SportPositionalMarketManager manager) external onlyOwner {
+        _migratingManager = manager;
+        emit SetMigratingManager(address(manager));
+    }
+
+    function migrateMarkets(
+        SportPositionalMarketManager receivingManager,
+        bool active,
+        SportPositionalMarket[] calldata marketsToMigrate
+    ) external onlyOwner {
+        require(address(receivingManager) != address(this), "Can't migrate to self");
+
+        uint _numMarkets = marketsToMigrate.length;
+        if (_numMarkets == 0) {
+            return;
+        }
+        AddressSetLib.AddressSet storage markets = active ? _activeMarkets : _maturedMarkets;
+
+        uint runningDepositTotal;
+        for (uint i; i < _numMarkets; i++) {
+            SportPositionalMarket market = marketsToMigrate[i];
+            require(isKnownMarket(address(market)), "Market unknown.");
+
+            // Remove it from our list and deposit total.
+            markets.remove(address(market));
+            runningDepositTotal = runningDepositTotal.add(market.deposited());
+
+            // Prepare to transfer ownership to the new manager.
+            market.nominateNewOwner(address(receivingManager));
+        }
+        // Deduct the total deposits of the migrated markets.
+        totalDeposited = totalDeposited.sub(runningDepositTotal);
+        emit MarketsMigrated(receivingManager, marketsToMigrate);
+
+        // Now actually transfer the markets over to the new manager.
+        receivingManager.receiveMarkets(active, marketsToMigrate);
+    }
+
+    function receiveMarkets(bool active, SportPositionalMarket[] calldata marketsToReceive) external {
+        require(msg.sender == address(_migratingManager), "Only permitted for migrating manager.");
+
+        uint _numMarkets = marketsToReceive.length;
+        if (_numMarkets == 0) {
+            return;
+        }
+        AddressSetLib.AddressSet storage markets = active ? _activeMarkets : _maturedMarkets;
+
+        uint runningDepositTotal;
+        for (uint i; i < _numMarkets; i++) {
+            SportPositionalMarket market = marketsToReceive[i];
+            require(!isKnownMarket(address(market)), "Market already known.");
+
+            market.acceptOwnership();
+            markets.add(address(market));
+            // Update the market with the new manager address,
+            runningDepositTotal = runningDepositTotal.add(market.deposited());
+        }
+        totalDeposited = totalDeposited.add(runningDepositTotal);
+        emit MarketsReceived(_migratingManager, marketsToReceive);
+    }
+
     // support USDC with 6 decimals
     function transformCollateral(uint value) external view override returns (uint) {
         return _transformCollateral(value);
@@ -356,6 +417,9 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     );
     event MarketExpired(address market);
     event MarketCreationEnabledUpdated(bool enabled);
+    event MarketsMigrated(SportPositionalMarketManager receivingManager, SportPositionalMarket[] markets);
+    event MarketsReceived(SportPositionalMarketManager migratingManager, SportPositionalMarket[] markets);
+    event SetMigratingManager(address migratingManager);
     event ExpiryDurationUpdated(uint duration);
     event MaxTimeToMaturityUpdated(uint duration);
     event CreatorCapitalRequirementUpdated(uint value);

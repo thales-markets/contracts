@@ -36,6 +36,7 @@ async function main() {
 	}
 
 	const SportMarketManager = await ethers.getContractFactory('SportPositionalMarketManager');
+	const TherundownConsumerAddress = await ethers.getContractFactory('TherundownConsumer');
 
 	const SportMarketManagerDeployed = await upgrades.deployProxy(SportMarketManager, [
 		owner.address,
@@ -58,7 +59,13 @@ async function main() {
 		SportMarketManagerImplementation
 	);
 
-	await delaoy(5000);
+	await delay(5000);
+	await SportMarketManagerDeployed.setTherundownConsumer(TherundownConsumerAddress, {
+		from: owner.address,
+	});
+	console.log('Rundown consumer set in Manager');
+	await delay(5000);
+
 	try {
 		await hre.run('verify:verify', {
 			address: SportMarketManagerDeployed.address,

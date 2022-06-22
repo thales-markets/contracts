@@ -85,21 +85,21 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The address of USDC
     address public usdc;
 
-    /// @return The address of USDT (Theter)
+    /// @return The address of USDT (Tether)
     address public usdt;
 
     /// @return The address of DAI
     address public dai;
 
-    /// @return curve usage is enabled?
+    /// @return Curve usage is enabled?
     bool public curveOnrampEnabled;
 
-    /// @notice initialize the storage in the proxy contract with the parameters.
-    /// @param _owner owner for using the ownerOnly functions
-    /// @param _sUSD the payment token (sUSD)
-    /// @param _min_spread minimal spread (percentage)
-    /// @param _max_spread maximum spread (percentage)
-    /// @param _minimalTimeLeftToMaturity period to close AMM trading befor maturity
+    /// @notice Initialize the storage in the proxy contract with the parameters.
+    /// @param _owner Owner for using the ownerOnly functions
+    /// @param _sUSD The payment token (sUSD)
+    /// @param _min_spread Minimal spread (percentage)
+    /// @param _max_spread Maximum spread (percentage)
+    /// @param _minimalTimeLeftToMaturity Period to close AMM trading befor maturity
     function initialize(
         address _owner,
         IERC20Upgradeable _sUSD,
@@ -117,10 +117,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
     }
 
-    /// @notice returns the available position options to buy from AMM for specific market/game
-    /// @param market the address of the SportPositional market created for a game
-    /// @param position the position (home/away/draw) to check availability
-    /// @return the amount of position options (tokens) available to buy from AMM.
+    /// @notice Returns the available position options to buy from AMM for specific market/game
+    /// @param market The address of the SportPositional market created for a game
+    /// @param position The position (home/away/draw) to check availability
+    /// @return The amount of position options (tokens) available to buy from AMM.
     function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
             uint baseOdd = obtainOdds(market, position);
@@ -147,11 +147,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
-    /// @notice calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game
-    /// @param market the address of the SportPositional market of a game
-    /// @param position the position (home/away/draw) quoted to buy from AMM
-    /// @param amount the position amount quoted to buy from AMM
-    /// @return the sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
+    /// @notice Calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) quoted to buy from AMM
+    /// @param amount The position amount quoted to buy from AMM
+    /// @return The sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
     function buyFromAmmQuote(
         address market,
         Position position,
@@ -171,13 +171,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return ISportPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
 
-    /// @notice calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game
-    /// @param market the address of the SportPositional market of a game
-    /// @param position the position (home/away/draw) quoted to buy from AMM
-    /// @param amount the position amount quoted to buy from AMM
-    /// @param collateral the position amount quoted to buy from AMM
-    /// @param collateralQuote the sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
-    /// @param sUSDToPay the sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
+    /// @notice Calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) quoted to buy from AMM
+    /// @param amount The position amount quoted to buy from AMM
+    /// @param collateral The position amount quoted to buy from AMM
+    /// @return collateralQuote The sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
+    /// @return sUSDToPay The sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
     function buyFromAmmQuoteWithDifferentCollateral(
         address market,
         Position position,
@@ -195,6 +195,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
     }
 
+    /// @notice Calculates the buy price impact for given position amount. Changes with every new purchase.
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) for which the buy price impact is calculated
+    /// @param amount The position amount to calculate the buy price impact
+    /// @return The buy price impact after the buy of the amount of positions for market
     function buyPriceImpact(
         address market,
         Position position,
@@ -206,6 +211,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return _buyPriceImpact(market, position, amount);
     }
 
+    /// @notice Calculate the maximum position amount available to sell to AMM for specific market/game
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) to sell to AMM
+    /// @return The maximum amount available to be sold to AMM
     function availableToSellToAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
             uint sell_max_price = _getSellMaxPrice(market, position);
@@ -244,6 +253,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return sell_max_price;
     }
 
+    /// @notice Calculate the sUSD to receive for selling the position amount to AMM for specific market/game
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) to sell to AMM
+    /// @param amount The position amount to sell to AMM
+    /// @return The sUSD to receive for the `amount` of `position` options if sold to AMM for `market`
     function sellToAmmQuote(
         address market,
         Position position,
@@ -260,6 +274,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return ISportPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
 
+    /// @notice Calculates the sell price impact for given position amount. Changes with every new sell.
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) to sell to AMM
+    /// @param amount The position amount to sell to AMM
+    /// @return The price impact after selling the position amount to AMM
     function sellPriceImpact(
         address market,
         Position position,
@@ -271,6 +290,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return _sellPriceImpact(market, position, amount);
     }
 
+    /// @notice Obtains the oracle odds for `_position` of a given `_market` game. Odds do not contain price impact
+    /// @param _market The address of the SportPositional market of a game
+    /// @param _position The position (home/away/draw) to get the odds
+    /// @return The oracle odds for `_position` of a `_market`
     function obtainOdds(address _market, Position _position) public view returns (uint) {
         bytes32 gameId = ISportPositionalMarket(_market).getGameId();
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
@@ -282,6 +305,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
+    /// @notice Checks if a `market` is active for AMM trading
+    /// @param market The address of the SportPositional market of a game
+    /// @return Returns true if market is active, returns false if not active.
     function isMarketInAMMTrading(address market) public view returns (bool) {
         if (ISportPositionalMarketManager(manager).isActiveMarket(market)) {
             (uint maturity, ) = ISportPositionalMarket(market).times();
@@ -296,6 +322,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
+    /// @notice Checks if a `market` options can be excercised. Winners get the full options amount 1 option = 1 sUSD.
+    /// @param market The address of the SportPositional market of a game
+    /// @return Returns true if market can be exercised, returns false market can not be exercised.
     function canExerciseMaturedMarket(address market) public view returns (bool) {
         if (
             ISportPositionalMarketManager(manager).isKnownMarket(market) &&
@@ -309,6 +338,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return false;
     }
 
+    /// @notice Checks the default odds for a `_market`. These odds take into account the price impact.
+    /// @param _market The address of the SportPositional market of a game
+    /// @return Returns the default odds for the `_market` including the price impact.
     function getMarketDefaultOdds(address _market) external view returns (uint[] memory) {
         uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
         Position position = Position.Home;
@@ -325,6 +357,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     // write methods
 
+    /// @notice Buy amount of position for market/game from AMM using different collateral
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) to buy from AMM
+    /// @param amount The position amount to buy from AMM
+    /// @param expectedPayout The amount expected to pay in sUSD for the amount of position. Obtained by buyAMMQuote.
+    /// @param additionalSlippage The slippage percentage for the payout
+    /// @param collateral The address of the collateral used
     function buyFromAMMWithDifferentCollateral(
         address market,
         Position position,
@@ -348,6 +387,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         buyFromAMM(market, position, amount, susdQuote, additionalSlippage);
     }
 
+    /// @notice Buy amount of position for market/game from AMM using sUSD
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) to buy from AMM
+    /// @param amount The position amount to buy from AMM
+    /// @param expectedPayout The sUSD amount expected to pay for buyuing the position amount. Obtained by buyAMMQuote.
+    /// @param additionalSlippage The slippage percentage for the payout
     function buyFromAMM(
         address market,
         Position position,
@@ -392,6 +437,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
     }
 
+    /// @notice Sell amount of position for market/game to AMM
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) to buy from AMM
+    /// @param amount The position amount to buy from AMM
+    /// @param expectedPayout The sUSD amount expected to receive for selling the position amount. Obtained by sellToAMMQuote.
+    /// @param additionalSlippage The slippage percentage for the payout
     function sellToAMM(
         address market,
         Position position,
@@ -449,56 +500,79 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     // setters
+
+    /// @notice Setting the minimal time left until the market is active for AMM trading, before the market is mature.
+    /// @param _minimalTimeLeftToMaturity The time period in seconds.
     function setMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity) public onlyOwner {
         minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
         emit SetMinimalTimeLeftToMaturity(_minimalTimeLeftToMaturity);
     }
 
+    /// @notice Setting the minimal spread amount
+    /// @param _spread Percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
     function setMinSpread(uint _spread) public onlyOwner {
         min_spread = _spread;
         emit SetMinSpread(_spread);
     }
 
+    /// @notice Setting the safeBox price impact
+    /// @param _safeBoxImpact Percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
     function setSafeBoxImpact(uint _safeBoxImpact) public onlyOwner {
         safeBoxImpact = _safeBoxImpact;
         emit SetSafeBoxImpact(_safeBoxImpact);
     }
 
+    /// @notice Setting the safeBox address
+    /// @param _safeBox Address of the Safe Box
     function setSafeBox(address _safeBox) public onlyOwner {
         safeBox = _safeBox;
         emit SetSafeBox(_safeBox);
     }
 
+    /// @notice Setting the maximum spread amount
+    /// @param _spread Percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
     function setMaxSpread(uint _spread) public onlyOwner {
         max_spread = _spread;
         emit SetMaxSpread(_spread);
     }
 
+    /// @notice Setting the minimum supported oracle odd.
+    /// @param _minSupportedOdd Minimal oracle odd in ether unit (18 decimals)
     function setMinSupportedOdd(uint _minSupportedOdd) public onlyOwner {
         minSupportedOdd = _minSupportedOdd;
         emit SetMinSupportedOdd(_minSupportedOdd);
     }
 
+    /// @notice Setting the default cap in sUSD for each market/game
+    /// @param _defaultCapPerGame Default sUSD cap per market (18 decimals)
     function setDefaultCapPerGame(uint _defaultCapPerGame) public onlyOwner {
         defaultCapPerGame = _defaultCapPerGame;
         emit SetDefaultCapPerGame(_defaultCapPerGame);
     }
 
+    /// @notice Setting the sUSD address
+    /// @param _sUSD Address of the sUSD
     function setSUSD(IERC20Upgradeable _sUSD) public onlyOwner {
         sUSD = _sUSD;
         emit SetSUSD(address(sUSD));
     }
 
+    /// @notice Setting Therundown consumer address
+    /// @param _theRundownConsumer Address of Therundown consumer
     function setTherundownConsumer(address _theRundownConsumer) public onlyOwner {
         theRundownConsumer = _theRundownConsumer;
         emit SetTherundownConsumer(_theRundownConsumer);
     }
 
+    /// @notice Setting Staking contract address
+    /// @param _stakingThales Address of Staking contract
     function setStakingThales(IStakingThales _stakingThales) public onlyOwner {
         stakingThales = _stakingThales;
         emit SetStakingThales(address(_stakingThales));
     }
 
+    /// @notice Setting the Sport Positional Manager contract address
+    /// @param _manager Address of Staking contract
     function setSportsPositionalMarketManager(address _manager) public onlyOwner {
         if (address(_manager) != address(0)) {
             sUSD.approve(address(_manager), 0);
@@ -508,6 +582,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetSportsPositionalMarketManager(_manager);
     }
 
+    /// @notice Setting the Curve collateral addresses for all collaterals
+    /// @param _curveSUSD Address of the Curve contract
+    /// @param _dai Address of the DAI contract
+    /// @param _usdc Address of the USDC contract
+    /// @param _usdt Address of the USDT (Tether) contract
+    /// @param _curveOnrampEnabled Enabling or restricting the use of multicollateral
     function setCurveSUSD(
         address _curveSUSD,
         address _dai,
@@ -757,6 +837,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return 0;
     }
 
+    /// @notice Retrive all sUSD funds of the SportsAMM contract, in case of destroying
+    /// @param account Address where to send the funds
+    /// @param amount Amount of sUSD to be sent
     function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
         sUSD.transfer(account, amount);
     }

@@ -36,6 +36,8 @@ async function main() {
 	}
 
 	const SportMarketData = await ethers.getContractFactory('SportPositionalMarketData');
+	const SportMarketManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
+	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
 
 	const SportMarketDataDeployed = await upgrades.deployProxy(SportMarketData, [owner.address]);
 	await SportMarketDataDeployed.deployed;
@@ -43,6 +45,7 @@ async function main() {
 	console.log('SportMarketData Deployed on', SportMarketDataDeployed.address);
 	setTargetAddress('SportPositionalMarketData', network, SportMarketDataDeployed.address);
 
+	await delay(5000);
 	const SportMarketDataImplementation = await getImplementationAddress(
 		ethers.provider,
 		SportMarketDataDeployed.address
@@ -55,13 +58,21 @@ async function main() {
 		SportMarketDataImplementation
 	);
 
-	try {
-		await hre.run('verify:verify', {
-			address: SportMarketDataDeployed.address,
-		});
-	} catch (e) {
-		console.log(e);
-	}
+	await delay(5000);
+	SportMarketDataDeployed.setSportPositionalMarketManager(SportMarketManagerAddress, {
+		from: owner.address,
+	});
+	await delay(5000);
+	SportMarketDataDeployed.setSportsAMM(SportsAMMAddress, { from: owner.address });
+	await delay(5000);
+
+	// try {
+	// 	await hre.run('verify:verify', {
+	// 		address: SportMarketDataDeployed.address,
+	// 	});
+	// } catch (e) {
+	// 	console.log(e);
+	// }
 
 	try {
 		await hre.run('verify:verify', {

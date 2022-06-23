@@ -92,45 +92,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_positionMastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "PositionMastercopyChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_positionalMarketManager",
-        "type": "address"
-      }
-    ],
-    "name": "PositionalMarketManagerChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_positionalMarketMastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "PositionalMarketMastercopyChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "_limitOrderProvider",
         "type": "address"
       }
@@ -149,6 +110,45 @@
       }
     ],
     "name": "SetSportsAMM",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_positionMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "SportPositionMastercopyChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_positionalMarketManager",
+        "type": "address"
+      }
+    ],
+    "name": "SportPositionalMarketManagerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_positionalMarketMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "SportPositionalMarketMastercopyChanged",
     "type": "event"
   },
   {

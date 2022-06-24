@@ -62,6 +62,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     ITherundownConsumer public theRundownConsumer;
     SportPositionalMarketManager.Fees public override fees;
     IERC20 public sUSD;
+    address public sportsAMM;
     uint[] public tags;
     uint public finalResult;
 
@@ -77,10 +78,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     uint public drawOddsOnCancellation;
 
     bool public invalidOdds;
-    /* ========== CONSTRUCTOR ========== */
-
     bool public initialized = false;
 
+    /* ========== CONSTRUCTOR ========== */
     function initialize(SportPositionalMarketParameters calldata _parameters) external {
         require(!initialized, "Positional Market already initialized");
         initialized = true;
@@ -97,6 +97,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         deposited = _parameters.deposit;
         initialMint = _parameters.deposit;
         optionsCount = _parameters.positionCount;
+        sportsAMM = _parameters.sportsAMM;
         require(optionsCount == _parameters.positions.length, "Position count mismatch");
         // Instantiate the options themselves
         options.home = SportPosition(_parameters.positions[0]);
@@ -285,6 +286,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     function mint(uint value) external override {
         require(!_matured(), "Minting inactive");
+        require(msg.sender == sportsAMM, "Invalid minter");
         if (value == 0) {
             return;
         }

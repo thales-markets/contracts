@@ -831,6 +831,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "sportsAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",

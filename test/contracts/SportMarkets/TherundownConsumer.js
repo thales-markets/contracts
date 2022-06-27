@@ -145,15 +145,15 @@ contract('TheRundownConsumer', accounts => {
 		await SportPositionalMarketManager.initialize(manager, Thales.address, { from: manager });
 		await SportPositionalMarketFactory.initialize(manager, { from: manager });
 
-		await SportPositionalMarketFactory.setPositionalMarketManager(
+		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
 			{ from: manager }
 		);
-		await SportPositionalMarketFactory.setPositionalMarketMastercopy(
+		await SportPositionalMarketFactory.setSportPositionalMarketMastercopy(
 			SportPositionalMarketMastercopy.address,
 			{ from: manager }
 		);
-		await SportPositionalMarketFactory.setPositionMastercopy(SportPositionMastercopy.address, {
+		await SportPositionalMarketFactory.setSportPositionMastercopy(SportPositionMastercopy.address, {
 			from: manager,
 		});
 		// await SportPositionalMarketFactory.setLimitOrderProvider(SportsAMM.address, { from: manager });
@@ -304,12 +304,8 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal(sportId_4, await gamesQueue.sportPerGameId(gameid2));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
-			assert.bnEqual(true, await TherundownConsumerDeployed.havingGamesPerDate(game1NBATime));
-			assert.bnEqual(true, await TherundownConsumerDeployed.havingGamesPerDate(game1NBATime));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
-
-			assert.bnEqual(gameid1, await TherundownConsumerDeployed.gamesPerDate(game1NBATime, 0));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));

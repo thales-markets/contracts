@@ -133,7 +133,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         for (uint i = 0; i < _games.length; i++) {
             GameCreate memory game = abi.decode(_games[i], (GameCreate));
-            if (!queues.existingGamesInCreatedQueue(game.gameId) && !isSameTeamOrTBD(game.homeTeam, game.awayTeam)) {
+            if (!queues.existingGamesInCreatedQueue(game.gameId) && !isSameTeamOrTBD(game.homeTeam, game.awayTeam) && game.startTime > block.timestamp) {
                 _createGameFulfill(_requestId, game, _sportId);
             }
         }
@@ -151,7 +151,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         requestIdGamesResolved[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
             GameResolve memory game = abi.decode(_games[i], (GameResolve));
-            if (!queues.existingGamesInResolvedQueue(game.gameId)) {
+            // if game is not resolved already and there is market for that game 
+            if (!queues.existingGamesInResolvedQueue(game.gameId) && marketPerGameId[game.gameId] != address(0)) {
                 _resolveGameFulfill(_requestId, game, _sportId);
             }
         }

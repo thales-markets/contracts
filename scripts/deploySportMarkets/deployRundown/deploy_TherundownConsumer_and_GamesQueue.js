@@ -71,7 +71,7 @@ async function main() {
 
 	const twoPositionSports = [3, 4, 6];
 
-	const allowedResolvedStatuses = [8, 12];
+	const allowedResolvedStatuses = [8, 11];
 	const allowedCancelStatuses = [1, 2];
 
 	/* ========== DEPLOY CONTRACT ========== */

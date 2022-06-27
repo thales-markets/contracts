@@ -33,8 +33,6 @@ contract PositionalMarketFactory is Initializable, ProxyOwned {
         uint strikePrice;
         uint[2] times; // [maturity, expiry]
         uint initialMint;
-        bool customMarket;
-        address customOracle;
     }
 
     /* ========== INITIALIZER ========== */
@@ -64,8 +62,6 @@ contract PositionalMarketFactory is Initializable, ProxyOwned {
                 _parameters.strikePrice,
                 _parameters.times,
                 _parameters.initialMint,
-                _parameters.customMarket,
-                _parameters.customOracle,
                 address(up),
                 address(down),
                 limitOrderProvider,
@@ -78,9 +74,7 @@ contract PositionalMarketFactory is Initializable, ProxyOwned {
             _parameters.strikePrice,
             _parameters.times[0],
             _parameters.times[1],
-            _parameters.initialMint,
-            _parameters.customMarket,
-            _parameters.customOracle
+            _parameters.initialMint
         );
         return pom;
     }
@@ -122,8 +116,6 @@ contract PositionalMarketFactory is Initializable, ProxyOwned {
         uint strikePrice,
         uint maturityDate,
         uint expiryDate,
-        uint initialMint,
-        bool customMarket,
-        address customOracle
+        uint initialMint
     );
 }

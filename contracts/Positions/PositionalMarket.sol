@@ -36,8 +36,6 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         bytes32 key;
         uint strikePrice;
         uint finalPrice;
-        bool customMarket;
-        address iOracleInstanceAddress;
     }
 
     struct PositionalMarketParameters {
@@ -49,8 +47,6 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         uint strikePrice;
         uint[2] times; // [maturity, expiry]
         uint deposit; // sUSD deposit
-        bool customMarket;
-        address iOracleInstanceAddress;
         address up;
         address down;
         address limitOrderProvider;
@@ -65,9 +61,6 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
     PositionalMarketManager.Fees public override fees;
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
-
-    IOracleInstance public iOracleInstance;
-    bool public customMarket;
 
     // `deposited` tracks the sum of all deposits.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
@@ -91,12 +84,8 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         oracleDetails = OracleDetails(
             _parameters.oracleKey,
             _parameters.strikePrice,
-            0,
-            _parameters.customMarket,
-            _parameters.iOracleInstanceAddress
+            0
         );
-        customMarket = _parameters.customMarket;
-        iOracleInstance = IOracleInstance(_parameters.iOracleInstanceAddress);
 
         times = Times(_parameters.times[0], _parameters.times[1]);
 
@@ -165,26 +154,19 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
     }
 
     function canResolve() public view override returns (bool) {
-        if (customMarket) {
-            return !resolved && _matured() && iOracleInstance.resolvable();
-        } else {
-            return !resolved && _matured();
-        }
+        return !resolved && _matured();
     }
 
     function _result() internal view returns (Side) {
-        if (customMarket) {
-            return iOracleInstance.getOutcome() ? Side.Up : Side.Down;
+        uint price;
+        if (resolved) {
+            price = oracleDetails.finalPrice;
         } else {
-            uint price;
-            if (resolved) {
-                price = oracleDetails.finalPrice;
-            } else {
-                price = _oraclePrice();
-            }
-
-            return oracleDetails.strikePrice <= price ? Side.Up : Side.Down;
+            price = _oraclePrice();
         }
+
+        return oracleDetails.strikePrice <= price ? Side.Up : Side.Down;
+        
     }
 
     function result() external view override returns (Side) {
@@ -305,12 +287,6 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         emit OptionsBurned(account, amount);
     }
 
-    /* ---------- Custom oracle configuration ---------- */
-    function setIOracleInstance(address _address) external onlyOwner {
-        iOracleInstance = IOracleInstance(_address);
-        emit SetIOracleInstance(_address);
-    }
-
     function setPriceFeed(address _address) external onlyOwner {
         priceFeed = IPriceFeed(_address);
         emit SetPriceFeed(_address);
@@ -327,10 +303,10 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         require(canResolve(), "Can not resolve market");
         uint price;
         uint updatedAt;
-        if (!customMarket) {
-            (price, updatedAt) = _oraclePriceAndTimestamp();
-            oracleDetails.finalPrice = price;
-        }
+       
+        (price, updatedAt) = _oraclePriceAndTimestamp();
+        oracleDetails.finalPrice = price;
+        
         resolved = true;
 
         emit MarketResolved(_result(), price, updatedAt, deposited, 0, 0);

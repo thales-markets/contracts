@@ -75,18 +75,6 @@
         "internalType": "address",
         "name": "down",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "customMarket",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "customOracle",
-        "type": "address"
       }
     ],
     "name": "MarketCreated",
@@ -232,19 +220,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "SetCustomMarketCreationEnabled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "manager",
         "type": "address"
@@ -311,11 +286,11 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "timeframe",
+        "name": "timeframeBuffer",
         "type": "uint256"
       }
     ],
-    "name": "TimeframeChanged",
+    "name": "TimeframeBufferChanged",
     "type": "event"
   },
   {
@@ -396,16 +371,6 @@
         "internalType": "uint256",
         "name": "initialMint",
         "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "customMarket",
-        "type": "bool"
-      },
-      {
-        "internalType": "address",
-        "name": "customOracle",
-        "type": "address"
       }
     ],
     "name": "createMarket",
@@ -488,49 +453,6 @@
     "name": "expireMarkets",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "getDateFromTimestamp",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "date",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "oracleKey",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "date",
-        "type": "uint256"
-      }
-    ],
-    "name": "getMarketsPerOracleKey",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -937,19 +859,6 @@
   {
     "inputs": [
       {
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "setCustomMarketCreationEnabled",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_expiryDuration",
         "type": "uint256"
@@ -1068,11 +977,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_timeframe",
+        "name": "_timeframeBuffer",
         "type": "uint256"
       }
     ],
-    "name": "setTimeframe",
+    "name": "setTimeframeBuffer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1105,7 +1014,7 @@
   },
   {
     "inputs": [],
-    "name": "timeframe",
+    "name": "timeframeBuffer",
     "outputs": [
       {
         "internalType": "uint256",

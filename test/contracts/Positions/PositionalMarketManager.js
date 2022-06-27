@@ -39,9 +39,7 @@ contract('PositionalMarketManager', accounts => {
 				oracleKey,
 				strikePrice.toString(),
 				maturity,
-				initialMint.toString(),
-				false,
-				ZERO_ADDRESS
+				initialMint.toString()
 			);
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
@@ -85,7 +83,7 @@ contract('PositionalMarketManager', accounts => {
 		[creator, owner, minterSigner, dummySigner] = await ethers.getSigners();
 
 		await manager.connect(creator).setPositionalMarketFactory(factory.address);
-		await manager.connect(creator).setTimeframe(12); // 12h
+		await manager.connect(creator).setTimeframeBuffer(1);
 		await manager.connect(creator).setPriceBuffer(5); // 5%
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
 		await factory.connect(owner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
@@ -325,39 +323,31 @@ contract('PositionalMarketManager', accounts => {
 		let maturity, date, strikePrice;
 		beforeEach(async () => {
 			maturity = (await currentTime()) + DAY;
-			date = await manager.getDateFromTimestamp(maturity);
+			let date = new Date(maturity);
+			date.setHours(0, 0, 0, 0);  
+			date = Date.parse(date);
 			strikePrice = 100;
 			await manager.connect(creator).setMaxTimeToMaturity(3 * DAY);
-		});
-
-		it('Properly distributes markets with oracle and date key', async () => {
-			await createMarket(manager, sAUDKey, toUnit(strikePrice), maturity, toUnit(3), creator);
-			await createMarket(manager, ETHKey, toUnit(strikePrice), maturity, toUnit(3), creator);
-			const saudMarkets = await manager.getMarketsPerOracleKey(sAUDKey, date);
-			const ethMarkets = await manager.getMarketsPerOracleKey(ETHKey, date);
-
-			assert.equal(saudMarkets.length, 1);
-			assert.equal(ethMarkets.length, 1);
 		});
 
 		it('Cannot create duplicate markets price-wise', async () => {
 			const priceBuffer = await manager.priceBuffer();
 			const strikePriceUpperLimit = strikePrice + (strikePrice * priceBuffer) / 100;
 			const strikePriceLowerLimit = strikePrice - (strikePrice * priceBuffer) / 100 + 0.3;
-			await createMarket(manager, ETHKey, toUnit(strikePrice + 100), maturity, toUnit(3), creator);
+			await createMarket(manager, ETHKey, toUnit(strikePrice), maturity, toUnit(3), creator);
 			await assert.revert(
 				createMarket(manager, ETHKey, toUnit(strikePriceUpperLimit), maturity, toUnit(3), creator),
-				'Market already exists'
+				'A market already exists within that timeframe and price buffer'
 			);
 			await assert.revert(
 				createMarket(manager, ETHKey, toUnit(strikePriceLowerLimit), maturity, toUnit(3), creator),
-				'Market already exists'
+				'A market already exists within that timeframe and price buffer'
 			);
 
 		});
 
 		it('Cannot create duplicate markets time-wise', async () => {
-			const timeframe = await manager.timeframe();
+			const timeframe = await manager.timeframeBuffer();
 			await assert.revert(
 				createMarket(
 					manager,
@@ -367,7 +357,7 @@ contract('PositionalMarketManager', accounts => {
 					toUnit(3),
 					creator
 				),
-				'Market already exists'
+				'A market already exists within that timeframe and price buffer'
 			);
 			await assert.revert(
 				createMarket(
@@ -378,10 +368,8 @@ contract('PositionalMarketManager', accounts => {
 					toUnit(3),
 					creator
 				),
-				'Market already exists'
+				'A market already exists within that timeframe and price buffer'
 			);
-
-			await createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY, toUnit(3), creator);
 		});
 	});
 
@@ -476,9 +464,7 @@ contract('PositionalMarketManager', accounts => {
 						sAUDKey,
 						toUnit(1).toString(),
 						now + 100,
-						toUnit(5).toString(),
-						false,
-						ZERO_ADDRESS
+						toUnit(5).toString()
 					),
 				'Only whitelisted addresses can create markets'
 			);
@@ -496,9 +482,7 @@ contract('PositionalMarketManager', accounts => {
 						sAUDKey,
 						toUnit(1).toString(),
 						now + 100,
-						toUnit(5).toString(),
-						false,
-						ZERO_ADDRESS
+						toUnit(5).toString()
 					),
 				'Only whitelisted addresses can create markets'
 			);
@@ -515,9 +499,7 @@ contract('PositionalMarketManager', accounts => {
 					sAUDKey,
 					toUnit(10).toString(),
 					now + 100,
-					toUnit(5).toString(),
-					false,
-					ZERO_ADDRESS
+					toUnit(5).toString()
 				);
 			let receipt = await tx.wait();
 			assert.equal(receipt.events.length, 10);
@@ -533,9 +515,7 @@ contract('PositionalMarketManager', accounts => {
 					sAUDKey,
 					toUnit(11).toString(),
 					now + 100,
-					toUnit(5).toString(),
-					false,
-					ZERO_ADDRESS
+					toUnit(5).toString()
 				);
 			let receipt = await tx.wait();
 			assert.equal(receipt.events.length, 10);

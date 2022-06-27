@@ -40,9 +40,7 @@ contract('ThalesAMM', accounts => {
 				oracleKey,
 				strikePrice.toString(),
 				maturity,
-				initialMint.toString(),
-				false,
-				ZERO_ADDRESS
+				initialMint.toString()
 			);
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
@@ -319,7 +317,7 @@ contract('ThalesAMM', accounts => {
 				manager,
 				sETHKey,
 				toUnit(strike),
-				now + day * 10,
+				now + day * 12,
 				toUnit(10),
 				creatorSigner
 			);

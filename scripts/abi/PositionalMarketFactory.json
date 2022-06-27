@@ -37,18 +37,6 @@
         "internalType": "uint256",
         "name": "initialMint",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "customMarket",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "customOracle",
-        "type": "address"
       }
     ],
     "name": "MarketCreated",
@@ -196,16 +184,6 @@
             "internalType": "uint256",
             "name": "initialMint",
             "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "customMarket",
-            "type": "bool"
-          },
-          {
-            "internalType": "address",
-            "name": "customOracle",
-            "type": "address"
           }
         ],
         "internalType": "struct PositionalMarketFactory.PositionCreationMarketParameters",

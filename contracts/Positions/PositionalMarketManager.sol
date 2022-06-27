@@ -64,7 +64,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
     bool public needsTransformingCollateral;
 
-    uint public timeframe;
+    uint public timeframeBuffer;
     uint public priceBuffer;
 
     mapping(bytes32 => mapping(uint => address[])) public marketsPerOracleKey;
@@ -96,192 +96,74 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         setCreatorCapitalRequirement(_creatorCapitalRequirement);
     }
 
-    /* ========== SETTERS ========== */
-    function setPositionalMarketFactory(address _positionalMarketFactory) external onlyOwner {
-        positionalMarketFactory = _positionalMarketFactory;
-        emit SetPositionalMarketFactory(_positionalMarketFactory);
-    }
-
-    function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
-        needsTransformingCollateral = _needsTransformingCollateral;
-    }
-
-    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses) external onlyOwner {
-        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
-        onlyWhitelistedAddressesCanCreateMarkets = true;
-        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
-            whitelistedAddresses[_whitelistedAddresses[index]] = true;
-        }
-    }
-
-    function disableWhitelistedAddresses() external onlyOwner {
-        onlyWhitelistedAddressesCanCreateMarkets = false;
-    }
-
-    function enableWhitelistedAddresses() external onlyOwner {
-        onlyWhitelistedAddressesCanCreateMarkets = true;
-    }
-
-    function addWhitelistedAddress(address _address) external onlyOwner {
-        whitelistedAddresses[_address] = true;
-    }
-
-    function removeWhitelistedAddress(address _address) external onlyOwner {
-        delete whitelistedAddresses[_address];
-    }
-
-    /* ========== VIEWS ========== */
-
-    /* ---------- Market Information ---------- */
-
+    /// @notice isKnownMarket checks if market is among matured or active markets
+    /// @param candidate Address of the market.
+    /// @return bool 
     function isKnownMarket(address candidate) public view override returns (bool) {
         return _activeMarkets.contains(candidate) || _maturedMarkets.contains(candidate);
     }
 
+    /// @notice isActiveMarket checks if market is active market
+    /// @param candidate Address of the market.
+    /// @return bool 
     function isActiveMarket(address candidate) public view override returns (bool) {
         return _activeMarkets.contains(candidate);
     }
 
+    /// @notice numActiveMarkets returns number of active markets
+    /// @return uint  
     function numActiveMarkets() external view override returns (uint) {
         return _activeMarkets.elements.length;
     }
 
+    /// @notice activeMarkets returns list of active markets
+    /// @param index index of the page
+    /// @param pageSize number of addresses per page
+    /// @return address[] active market list
     function activeMarkets(uint index, uint pageSize) external view override returns (address[] memory) {
         return _activeMarkets.getPage(index, pageSize);
     }
 
+    /// @notice numMaturedMarkets returns number of mature markets
+    /// @return uint 
     function numMaturedMarkets() external view override returns (uint) {
         return _maturedMarkets.elements.length;
     }
 
+    /// @notice maturedMarkets returns list of matured markets
+    /// @param index index of the page
+    /// @param pageSize number of addresses per page
+    /// @return address[] matured market list
     function maturedMarkets(uint index, uint pageSize) external view override returns (address[] memory) {
         return _maturedMarkets.getPage(index, pageSize);
     }
 
-    function getMarketsPerOracleKey(bytes32 oracleKey, uint date) public view returns (address[] memory) {
-        return marketsPerOracleKey[oracleKey][date];
-    }
-
-    function getDateFromTimestamp(uint timestamp) public pure returns (uint date) {
-        uint second = DateTime.getSecond(timestamp);
-        uint minute = DateTime.getMinute(timestamp);
-        uint hour = DateTime.getHour(timestamp);
-
-        date = DateTime.subHours(timestamp, hour);
-        date = DateTime.subMinutes(date, minute);
-        date = DateTime.subSeconds(date, second);
-    }
-
-    function _isValidKey(bytes32 oracleKey) internal view returns (bool) {
-        // If it has a rate, then it's possibly a valid key
-        if (priceFeed.rateForCurrency(oracleKey) != 0) {
-            // But not sUSD
-            if (oracleKey == "sUSD") {
-                return false;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    function _checkStrikePrice(
-        address[] memory markets,
-        uint upperPriceLimit,
-        uint lowerPriceLimit
-    ) internal view returns (bool) {
-        for (uint i = 0; i < markets.length; i++) {
-            if (marketsStrikePrice[markets[i]] <= upperPriceLimit && marketsStrikePrice[markets[i]] >= lowerPriceLimit) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    function _checkMarkets(
-        bytes32 oracleKey,
-        uint strikePrice,
-        uint maturity
-    ) internal view returns (bool) {
-        uint date = getDateFromTimestamp(maturity);
-        uint upperDateLimit = DateTime.addHours(date, timeframe);
-        uint lowerDateLimit = DateTime.subHours(date, timeframe);
-
-        address[] memory marketsOnDate = getMarketsPerOracleKey(oracleKey, date);
-        address[] memory marketsDateAfter = getMarketsPerOracleKey(oracleKey, upperDateLimit);
-        address[] memory marketsDateBefore = getMarketsPerOracleKey(oracleKey, lowerDateLimit);
-
-        uint upperPriceLimit = strikePrice + (strikePrice * priceBuffer) / 100;
-        uint lowerPriceLimit = strikePrice - (strikePrice * priceBuffer) / 100;
-
-        return
-            _checkStrikePrice(marketsOnDate, upperPriceLimit, lowerPriceLimit) &&
-            _checkStrikePrice(marketsDateAfter, upperPriceLimit, lowerPriceLimit) &&
-            _checkStrikePrice(marketsDateBefore, upperPriceLimit, lowerPriceLimit);
-    }
-
-    /* ========== MUTATIVE FUNCTIONS ========== */
-
-    /* ---------- Setters ---------- */
-
-    function setExpiryDuration(uint _expiryDuration) public onlyOwner {
-        durations.expiryDuration = _expiryDuration;
-        emit ExpiryDurationUpdated(_expiryDuration);
-    }
-
-    function setMaxTimeToMaturity(uint _maxTimeToMaturity) public onlyOwner {
-        durations.maxTimeToMaturity = _maxTimeToMaturity;
-        emit MaxTimeToMaturityUpdated(_maxTimeToMaturity);
-    }
-
-    function setCreatorCapitalRequirement(uint _creatorCapitalRequirement) public onlyOwner {
-        capitalRequirement = _creatorCapitalRequirement;
-        emit CreatorCapitalRequirementUpdated(_creatorCapitalRequirement);
-    }
-
-    function setPriceFeed(address _address) external onlyOwner {
-        priceFeed = IPriceFeed(_address);
-        emit SetPriceFeed(_address);
-    }
-
-    function setsUSD(address _address) external onlyOwner {
-        sUSD = IERC20(_address);
-        emit SetsUSD(_address);
-    }
-
-    function setPriceBuffer(uint _priceBuffer) external onlyOwner {
-        priceBuffer = _priceBuffer;
-        emit PriceBufferChanged(_priceBuffer);
-    }
-
-    function setTimeframe(uint _timeframe) external onlyOwner {
-        timeframe = _timeframe;
-        emit TimeframeChanged(_timeframe);
-    }
-
-    /* ---------- Deposit Management ---------- */
-
-    function incrementTotalDeposited(uint delta) external onlyActiveMarkets notPaused {
+    /// @notice incrementTotalDeposited increments totalDeposited value
+    /// @param delta increment amount
+     function incrementTotalDeposited(uint delta) external onlyActiveMarkets notPaused {
         totalDeposited = totalDeposited.add(delta);
     }
 
+    /// @notice decrementTotalDeposited decrements totalDeposited value
+    /// @dev As individual market debt is not tracked here, the underlying markets
+    /// need to be careful never to subtract more debt than they added.
+    /// This can't be enforced without additional state/communication overhead.
+    /// @param delta decrement amount
     function decrementTotalDeposited(uint delta) external onlyKnownMarkets notPaused {
-        // NOTE: As individual market debt is not tracked here, the underlying markets
-        //       need to be careful never to subtract more debt than they added.
-        //       This can't be enforced without additional state/communication overhead.
         totalDeposited = totalDeposited.sub(delta);
     }
 
-    /* ---------- Market Lifecycle ---------- */
-
+    /// @notice createMarket create market function
+    /// @param oracleKey market oracle key
+    /// @param strikePrice market strike price
+    /// @param maturity  market maturity date
+    /// @param initialMint initial sUSD to mint options for
+    /// @return IPositionalMarket created market
     function createMarket(
         bytes32 oracleKey,
         uint strikePrice,
         uint maturity,
-        uint initialMint, // initial sUSD to mint options for,
-        bool customMarket,
-        address customOracle
+        uint initialMint
     )
         external
         override
@@ -291,14 +173,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-        if (!customMarket) {
-            require(_isValidKey(oracleKey), "Invalid key");
-        } else {
-            if (!customMarketCreationEnabled) {
-                require(owner == msg.sender, "Only owner can create custom markets");
-            }
-            require(address(0) != customOracle, "Invalid custom oracle");
-        }
+        require(_isValidKey(oracleKey), "Invalid key");
+        
 
         if (onlyWhitelistedAddressesCanCreateMarkets) {
             require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
@@ -313,7 +189,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
         require(capitalRequirement <= initialMint, "Insufficient capital");
 
-        require(_checkMarkets(oracleKey, strikePrice, maturity) == true, "Market already exists");
+        require(_checkMarkets(oracleKey, strikePrice, maturity) == true, "A market already exists within that timeframe and price buffer");
 
         PositionalMarket market = PositionalMarketFactory(positionalMarketFactory).createMarket(
             PositionalMarketFactory.PositionCreationMarketParameters(
@@ -323,9 +199,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
                 oracleKey,
                 strikePrice,
                 [maturity, expiry],
-                initialMint,
-                customMarket,
-                customOracle
+                initialMint
             )
         );
 
@@ -339,7 +213,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         (IPosition up, IPosition down) = market.getOptions();
 
         marketsStrikePrice[address(market)] = strikePrice;
-        marketsPerOracleKey[oracleKey][getDateFromTimestamp(maturity)].push(address(market));
+        marketsPerOracleKey[oracleKey][_getDateFromTimestamp(maturity)].push(address(market));
 
         emit MarketCreated(
             address(market),
@@ -349,13 +223,16 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
             maturity,
             expiry,
             address(up),
-            address(down),
-            customMarket,
-            customOracle
+            address(down)
         );
         return market;
     }
 
+    /// @notice transferSusdTo transfers sUSD from market to receiver
+    /// @dev Only to be called by markets themselves
+    /// @param sender address of sender
+    /// @param receiver address of receiver
+    /// @param amount amount to be transferred
     function transferSusdTo(
         address sender,
         address receiver,
@@ -369,6 +246,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
     }
 
+    /// @notice resolveMarket resolves an active market
+    /// @param market address of the market
     function resolveMarket(address market) external override {
         require(_activeMarkets.contains(market), "Not an active market");
         PositionalMarket(market).resolve();
@@ -376,6 +255,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         _maturedMarkets.add(market);
     }
 
+    /// @notice expireMarkets removes expired markets from matured markets
+    /// @param markets array of market addresses
     function expireMarkets(address[] calldata markets) external override notPaused onlyOwner {
         for (uint i = 0; i < markets.length; i++) {
             address market = markets[i];
@@ -393,31 +274,16 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
     }
 
-    function setMarketCreationEnabled(bool enabled) external onlyOwner {
-        if (enabled != marketCreationEnabled) {
-            marketCreationEnabled = enabled;
-            emit MarketCreationEnabledUpdated(enabled);
-        }
-    }
-
-    function setCustomMarketCreationEnabled(bool enabled) external onlyOwner {
-        customMarketCreationEnabled = enabled;
-        emit SetCustomMarketCreationEnabled(enabled);
-    }
-
-    // support USDC with 6 decimals
+    /// @notice transformCollateral transforms collateral
+    /// @param value value to be transformed
+    /// @return uint
     function transformCollateral(uint value) external view override returns (uint) {
         return _transformCollateral(value);
     }
 
-    function _transformCollateral(uint value) internal view returns (uint) {
-        if (needsTransformingCollateral) {
-            return value / 1e12;
-        } else {
-            return value;
-        }
-    }
-
+    /// @notice reverseTransformCollateral reverse collateral if needed
+    /// @param value value to be reversed
+    /// @return uint
     function reverseTransformCollateral(uint value) external view override returns (uint) {
         if (needsTransformingCollateral) {
             return value * 1e12;
@@ -426,7 +292,206 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         }
     }
 
-    /* ========== MODIFIERS ========== */
+    /// @notice enableWhitelistedAddresses enables option that only whitelisted addresses 
+    /// can create markets
+    function enableWhitelistedAddresses() external onlyOwner {
+        onlyWhitelistedAddressesCanCreateMarkets = true;
+    }
+
+    /// @notice disableWhitelistedAddresses disables option that only whitelisted addresses 
+    /// can create markets
+    function disableWhitelistedAddresses() external onlyOwner {
+        onlyWhitelistedAddressesCanCreateMarkets = false;
+    }
+
+    /// @notice addWhitelistedAddress adds given address to whitelisted addresses list 
+    /// @param _address address to be added to the list
+    function addWhitelistedAddress(address _address) external onlyOwner {
+        whitelistedAddresses[_address] = true;
+    }
+
+    /// @notice removeWhitelistedAddress removes given address from whitelisted addresses list 
+    /// @param _address address to be removed from the list
+    function removeWhitelistedAddress(address _address) external onlyOwner {
+        delete whitelistedAddresses[_address];
+    }
+
+    /// @notice setWhitelistedAddresses enables whitelist addresses option and creates list  
+    /// @param _whitelistedAddresses array of whitelisted addresses
+    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses) external onlyOwner {
+        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
+        onlyWhitelistedAddressesCanCreateMarkets = true;
+        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
+            whitelistedAddresses[_whitelistedAddresses[index]] = true;
+        }
+    }
+
+    /// @notice setPositionalMarketFactory sets PositionalMarketFactory address
+    /// @param _positionalMarketFactory address of PositionalMarketFactory
+    function setPositionalMarketFactory(address _positionalMarketFactory) external onlyOwner {
+        positionalMarketFactory = _positionalMarketFactory;
+        emit SetPositionalMarketFactory(_positionalMarketFactory);
+    }
+
+    /// @notice setNeedsTransformingCollateral sets needsTransformingCollateral value
+    /// @param _needsTransformingCollateral boolen value to be set
+    function setNeedsTransformingCollateral(bool _needsTransformingCollateral) external onlyOwner {
+        needsTransformingCollateral = _needsTransformingCollateral;
+    }
+
+    /// @notice setExpiryDuration sets expiryDuration value 
+    /// @param _expiryDuration value in seconds needed for market expiry check
+    function setExpiryDuration(uint _expiryDuration) public onlyOwner {
+        durations.expiryDuration = _expiryDuration;
+        emit ExpiryDurationUpdated(_expiryDuration);
+    }
+
+    /// @notice setMaxTimeToMaturity sets maxTimeToMaturity value 
+    /// @param _maxTimeToMaturity value in seconds for market max time to maturity check
+    function setMaxTimeToMaturity(uint _maxTimeToMaturity) public onlyOwner {
+        durations.maxTimeToMaturity = _maxTimeToMaturity;
+        emit MaxTimeToMaturityUpdated(_maxTimeToMaturity);
+    }
+
+    /// @notice setCreatorCapitalRequirement sets capitalRequirement value 
+    /// @param _creatorCapitalRequirement capitalRequirement value
+    function setCreatorCapitalRequirement(uint _creatorCapitalRequirement) public onlyOwner {
+        capitalRequirement = _creatorCapitalRequirement;
+        emit CreatorCapitalRequirementUpdated(_creatorCapitalRequirement);
+    }
+
+    /// @notice setPriceFeed sets address of PriceFeed contract 
+    /// @param _address PriceFeed address
+    function setPriceFeed(address _address) external onlyOwner {
+        priceFeed = IPriceFeed(_address);
+        emit SetPriceFeed(_address);
+    }
+
+    /// @notice setsUSD sets address of sUSD contract 
+    /// @param _address sUSD address
+    function setsUSD(address _address) external onlyOwner {
+        sUSD = IERC20(_address);
+        emit SetsUSD(_address);
+    }
+
+    /// @notice setPriceBuffer sets priceBuffer value
+    /// @param _priceBuffer value in percents needed for market creaton check
+    function setPriceBuffer(uint _priceBuffer) external onlyOwner {
+        priceBuffer = _priceBuffer;
+        emit PriceBufferChanged(_priceBuffer);
+    }
+
+    /// @notice setTimeframeBuffer sets timeframeBuffer value
+    /// @param _timeframeBuffer value in days needed for market creaton check
+    function setTimeframeBuffer(uint _timeframeBuffer) external onlyOwner {
+        timeframeBuffer = _timeframeBuffer;
+        emit TimeframeBufferChanged(_timeframeBuffer);
+    }
+
+    /// @notice setMarketCreationEnabled sets marketCreationEnabled value
+    /// @param enabled boolean value to enable/disable market creation
+    function setMarketCreationEnabled(bool enabled) external onlyOwner {
+        if (enabled != marketCreationEnabled) {
+            marketCreationEnabled = enabled;
+            emit MarketCreationEnabledUpdated(enabled);
+        }
+    }
+
+    /// @notice _isValidKey checks if oracle key is supported by PriceFeed contract
+    /// @param oracleKey oracle key
+    /// @return bool
+    function _isValidKey(bytes32 oracleKey) internal view returns (bool) {
+        // If it has a rate, then it's possibly a valid key
+        if (priceFeed.rateForCurrency(oracleKey) != 0) {
+            // But not sUSD
+            if (oracleKey == "sUSD") {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /// @notice _checkStrikePrice checks if markets strike prices are between given price values
+    /// @param markets list of markets to be checked
+    /// @param upperPriceLimit upper strike price limit
+    /// @param lowerPriceLimit lower strike price limit
+    /// @return bool - true if there are no markets between given price values, otherwise false
+    function _checkStrikePrice(
+        address[] memory markets,
+        uint upperPriceLimit,
+        uint lowerPriceLimit
+    ) internal view returns (bool) {
+        for (uint i = 0; i < markets.length; i++) {
+            if (marketsStrikePrice[markets[i]] <= upperPriceLimit && marketsStrikePrice[markets[i]] >= lowerPriceLimit) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /// @notice _checkMarkets checks if there exists similar market with same oracleKey
+    /// @dev price limits are calculated from given strike price using priceBuffer percentage and
+    /// we're checking lists of markets using timeframeBuffer 
+    /// @param oracleKey oracle key of the market to be created
+    /// @param strikePrice strike price
+    /// @param maturity market date maturity
+    /// @return bool
+    function _checkMarkets(
+        bytes32 oracleKey,
+        uint strikePrice,
+        uint maturity
+    ) internal view returns (bool) {
+        uint date = _getDateFromTimestamp(maturity);
+        uint upperDateLimit = DateTime.addDays(date, timeframeBuffer);
+        uint lowerDateLimit = DateTime.subDays(date, timeframeBuffer);
+
+        address[] memory marketsOnDate = _getMarketsPerOracleKey(oracleKey, date);
+        address[] memory marketsDateAfter = _getMarketsPerOracleKey(oracleKey, upperDateLimit);
+        address[] memory marketsDateBefore = _getMarketsPerOracleKey(oracleKey, lowerDateLimit);
+
+        uint upperPriceLimit = strikePrice + (strikePrice * priceBuffer) / 100;
+        uint lowerPriceLimit = strikePrice - (strikePrice * priceBuffer) / 100;
+
+        return
+            _checkStrikePrice(marketsOnDate, upperPriceLimit, lowerPriceLimit) &&
+            _checkStrikePrice(marketsDateAfter, upperPriceLimit, lowerPriceLimit) &&
+            _checkStrikePrice(marketsDateBefore, upperPriceLimit, lowerPriceLimit);
+    }  
+
+    /// @notice _getMarketsPerOracleKey returns list of markets with same oracle key and maturity date
+    /// @param oracleKey oracle key
+    /// @param date maturity date 
+    /// @return address[] list of markets
+    function _getMarketsPerOracleKey(bytes32 oracleKey, uint date) internal view returns (address[] memory) {
+        return marketsPerOracleKey[oracleKey][date];
+    }
+
+    /// @notice _getDateFromTimestamp calculates midnight timestamp
+    /// @param timestamp timestamp to strip seconds, minutes and hours
+    /// @return date midnigth timestamp
+    function _getDateFromTimestamp(uint timestamp) internal pure returns (uint date) {
+        uint second = DateTime.getSecond(timestamp);
+        uint minute = DateTime.getMinute(timestamp);
+        uint hour = DateTime.getHour(timestamp);
+
+        date = DateTime.subHours(timestamp, hour);
+        date = DateTime.subMinutes(date, minute);
+        date = DateTime.subSeconds(date, second);
+    }
+
+    /// @notice _transformCollateral transforms collateral if needed 
+    /// @param value value to be transformed
+    /// @return uint
+    function _transformCollateral(uint value) internal view returns (uint) {
+        if (needsTransformingCollateral) {
+            return value / 1e12;
+        } else {
+            return value;
+        }
+    }
 
     modifier onlyActiveMarkets() {
         require(_activeMarkets.contains(msg.sender), "Permitted only for active markets.");
@@ -438,8 +503,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         _;
     }
 
-    /* ========== EVENTS ========== */
-
     event MarketCreated(
         address market,
         address indexed creator,
@@ -448,9 +511,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         uint maturityDate,
         uint expiryDate,
         address up,
-        address down,
-        bool customMarket,
-        address customOracle
+        address down
     );
     event MarketExpired(address market);
     event MarketsMigrated(PositionalMarketManager receivingManager, PositionalMarket[] markets);
@@ -463,8 +524,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     event SetZeroExAddress(address _zeroExAddress);
     event SetPriceFeed(address _address);
     event SetsUSD(address _address);
-    event SetCustomMarketCreationEnabled(bool enabled);
     event SetMigratingManager(address manager);
     event PriceBufferChanged(uint priceBuffer);
-    event TimeframeChanged(uint timeframe);
+    event TimeframeBufferChanged(uint timeframeBuffer);
 }

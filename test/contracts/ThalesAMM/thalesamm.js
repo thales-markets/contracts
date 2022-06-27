@@ -43,9 +43,7 @@ contract('ThalesAMM', accounts => {
 				oracleKey,
 				strikePrice.toString(),
 				maturity,
-				initialMint.toString(),
-				false,
-				ZERO_ADDRESS
+				initialMint.toString()
 			);
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
@@ -89,6 +87,7 @@ contract('ThalesAMM', accounts => {
 
 		[creatorSigner, ownerSigner] = await ethers.getSigners();
 
+
 		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
 		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
@@ -96,6 +95,9 @@ contract('ThalesAMM', accounts => {
 			.connect(ownerSigner)
 			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
+
+		await manager.connect(creatorSigner).setTimeframeBuffer(0);
+		await manager.connect(creatorSigner).setPriceBuffer(1); // 1%
 
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 		aggregator_sETH = await MockAggregator.new({ from: managerOwner });
@@ -229,7 +231,7 @@ contract('ThalesAMM', accounts => {
 				manager,
 				sETHKey,
 				toUnit(12000),
-				now + day * 10,
+				now + day * 9,
 				toUnit(10),
 				creatorSigner
 			);
@@ -302,7 +304,7 @@ contract('ThalesAMM', accounts => {
 				manager,
 				sETHKey,
 				toUnit(12000),
-				now + day * 10,
+				now + day * 12,
 				toUnit(10),
 				creatorSigner
 			);
@@ -390,7 +392,7 @@ contract('ThalesAMM', accounts => {
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
+				toUnit(12200),
 				now + day * 10,
 				toUnit(10),
 				creatorSigner
@@ -505,7 +507,7 @@ contract('ThalesAMM', accounts => {
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
+				toUnit(12400),
 				now + day * 10,
 				toUnit(10),
 				creatorSigner
@@ -625,7 +627,7 @@ contract('ThalesAMM', accounts => {
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
+				toUnit(12600),
 				now + day * 10,
 				toUnit(10),
 				creatorSigner
@@ -837,7 +839,7 @@ contract('ThalesAMM', accounts => {
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
+				toUnit(12800),
 				now + day * 10,
 				toUnit(10),
 				creatorSigner
@@ -911,7 +913,7 @@ contract('ThalesAMM', accounts => {
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
+				toUnit(13000),
 				now + day * 10,
 				toUnit(10),
 				creatorSigner
@@ -994,7 +996,7 @@ contract('ThalesAMM', accounts => {
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(12000),
+				toUnit(13200),
 				now + day * 10,
 				toUnit(10),
 				creatorSigner
@@ -1174,7 +1176,7 @@ contract('ThalesAMM', accounts => {
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(10235),
+				toUnit(10435),
 				now + hour * 12,
 				toUnit(10),
 				creatorSigner

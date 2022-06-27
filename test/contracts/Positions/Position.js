@@ -28,6 +28,7 @@ let PositionalMarket,
 let market, up, down, Position, Synth, addressResolver;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const DAY = 24 * 60 * 60;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
@@ -42,9 +43,7 @@ contract('Position', accounts => {
 			oracleKey,
 			strikePrice.toString(),
 			maturity,
-			initialMint.toString(),
-			false,
-			ZERO_ADDRESS
+			initialMint.toString()
 		);
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find((event) => event['event'] && event['event'] === 'MarketCreated');
@@ -91,6 +90,9 @@ contract('Position', accounts => {
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
 		await factory.connect(owner).setPositionalMarketMastercopy(positionalMarketMastercopy.address);
 		await factory.connect(owner).setPositionMastercopy(PositionMastercopy.address);
+
+		await manager.connect(creator).setTimeframeBuffer(1);
+		await manager.connect(creator).setPriceBuffer(5); // 5%
 
 		let aggregatorAUD = await MockAggregator.new({ from: managerOwner });
 		aggregatorAUD.setDecimals('8');
@@ -227,7 +229,7 @@ contract('Position', accounts => {
 
 		it('Can transferFrom tokens.', async () => {
 			let now = await currentTime();
-			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), creator);
+			market = await createMarket(manager, AUDKey, toUnit(1), now + 2 * DAY , toUnit(2), creator);
 			await fastForward(100);
 
 			const options = await market.options();
@@ -274,7 +276,7 @@ contract('Position', accounts => {
 	describe('Exercising Options', () => {
 		it('Exercising options updates balances properly', async () => {
 			const totalSupply = await down.totalSupply();
-			await fastForward(200);
+			await fastForward(2 * DAY);
 			await market.exerciseOptions({ from: minter });
 			await assertAllBnEqual([down.balanceOf(minter), down.totalSupply()], [toBN(0), toUnit(1)]);
 		});

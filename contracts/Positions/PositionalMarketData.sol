@@ -52,7 +52,7 @@ contract PositionalMarketData {
     function getMarketParameters(PositionalMarket market) external view returns (MarketParameters memory) {
         (Position up, Position down) = market.options();
         (uint maturityDate, uint expiryDate) = market.times();
-        (bytes32 key, uint strikePrice, uint finalPrice, bool customMarket, address iOracleInstanceAddress) = market
+        (bytes32 key, uint strikePrice, uint finalPrice) = market
             .oracleDetails();
         (uint poolFee, uint creatorFee) = market.fees();
 
@@ -60,7 +60,7 @@ contract PositionalMarketData {
             market.creator(),
             PositionalMarket.Options(up, down),
             PositionalMarket.Times(maturityDate, expiryDate),
-            PositionalMarket.OracleDetails(key, strikePrice, finalPrice, customMarket, iOracleInstanceAddress),
+            PositionalMarket.OracleDetails(key, strikePrice, finalPrice),
             PositionalMarketManager.Fees(poolFee, creatorFee)
         );
 

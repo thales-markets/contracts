@@ -41,9 +41,7 @@ contract('ThalesAMM', accounts => {
 				oracleKey,
 				strikePrice.toString(),
 				maturity,
-				initialMint.toString(),
-				false,
-				ZERO_ADDRESS
+				initialMint.toString()
 			);
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(

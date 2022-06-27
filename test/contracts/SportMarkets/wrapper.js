@@ -2,6 +2,8 @@
 
 const { artifacts, contract } = require('hardhat');
 
+const w3utils = require('web3-utils');
+
 const { assert } = require('../../utils/common');
 
 const { toUnit } = require('../../utils')();
@@ -18,6 +20,7 @@ contract('TherundownConsumerWrapper', accounts => {
 	let consumer;
 	let ThalesDeployed;
 	let MockPriceFeedDeployed;
+	let payment;
 
 	beforeEach(async () => {
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
@@ -30,6 +33,8 @@ contract('TherundownConsumerWrapper', accounts => {
 		TherundownConsumerDeployed = await TherundownConsumer.new({ from: owner });
 
 		consumer = await TherundownConsumer.at(TherundownConsumerDeployed.address);
+
+		payment = toUnit(1);
 
 		await consumer.initialize(
 			owner,
@@ -47,6 +52,7 @@ contract('TherundownConsumerWrapper', accounts => {
 			ThalesDeployed.address,
 			ThalesDeployed.address,
 			TherundownConsumerDeployed.address,
+			payment,
 			{ from: owner }
 		);
 
@@ -57,22 +63,10 @@ contract('TherundownConsumerWrapper', accounts => {
 		it('Init checking', async () => {
 			assert.bnEqual(ThalesDeployed.address, await wrapper.getOracleAddress());
 			assert.bnEqual(ThalesDeployed.address, await wrapper.getTokenAddress());
+			assert.bnEqual(payment, await wrapper.payment());
 		});
 
 		it('Contract management', async () => {
-			const tx_AddToWhitelist = await wrapper.addToWhitelist(first, {
-				from: owner,
-			});
-
-			await expect(wrapper.addToWhitelist(first, { from: first })).to.be.revertedWith(
-				'Ownable: caller is not the owner'
-			);
-
-			// check if event is emited
-			assert.eventEqual(tx_AddToWhitelist.logs[0], 'AddedIntoWhitelist', {
-				_whitelistAddress: first,
-			});
-
 			const tx_Oracle = await wrapper.setOracle(first, {
 				from: owner,
 			});
@@ -98,16 +92,29 @@ contract('TherundownConsumerWrapper', accounts => {
 			assert.eventEqual(tx_Consumer.logs[0], 'NewConsumer', {
 				_consumer: first,
 			});
+
+			const payment = w3utils.toWei('0.3');
+
+			const tx_payment = await wrapper.setPayment(payment, {
+				from: owner,
+			});
+
+			await expect(wrapper.setPayment(first, { from: first })).to.be.revertedWith(
+				'Ownable: caller is not the owner'
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_payment.logs[0], 'NewPaymentAmount', {
+				_payment: payment,
+			});
 		});
 
 		it('Test requests', async () => {
-			await wrapper.addToWhitelist(first, { from: owner });
-
 			await expect(
 				wrapper.requestGames(toBytes32('RSX'), toUnit('1'), 'create', 4, 1655215501, {
 					from: second,
 				})
-			).to.be.revertedWith('Address not supported');
+			).to.be.revertedWith('No enough LINK for request');
 
 			await expect(
 				wrapper.requestGames(toBytes32('RSX'), toUnit('1'), 'create1', 4, 1655215501, {

@@ -47,6 +47,8 @@ async function main() {
 		network = 'polygon';
 	}
 
+	const payment = w3utils.toWei('0.3');
+
 	const consumer = await ethers.getContractFactory('TherundownConsumer');
 	let consumerAddress = getTargetAddress('TherundownConsumer', network);
 
@@ -62,7 +64,8 @@ async function main() {
 	const TherundownConsumerWrapperDeployed = await TherundownConsumerWrapper.deploy(
 		chainlink['LINK'],
 		chainlink['ORACLE'],
-		consumerAddress
+		consumerAddress,
+		payment
 	);
 	await TherundownConsumerWrapperDeployed.deployed();
 

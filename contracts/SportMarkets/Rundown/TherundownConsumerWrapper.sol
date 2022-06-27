@@ -18,25 +18,26 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     ITherundownConsumer public consumer;
     mapping(bytes32 => uint) public sportIdPerRequestId;
     mapping(bytes32 => uint) public datePerRequest;
-    mapping(address => bool) public whitelistedAddresses;
+    uint public payment;
 
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
         address _link,
         address _oracle,
-        address _consumer
+        address _consumer,
+        uint _payment
     ) {
         setChainlinkToken(_link);
         setChainlinkOracle(_oracle);
         consumer = ITherundownConsumer(_consumer);
+        payment = _payment;
     }
 
     /* ========== CONSUMER REQUEST FUNCTIONS ========== */
 
     /// @notice request of create/resolve games on a specific date with specific sport with optional filters
     /// @param _specId specification id which is provided by CL
-    /// @param _payment peyment amount per request which is provided from CL
     /// @param _market string which can be "create" or "resolve"
     /// @param _sportId sports id which is provided from CL (Example: NBA = 4)
     /// @param _date date on which game/games are played
@@ -44,13 +45,12 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @param _gameIds optional param, grap only for specific games
     function requestGamesResolveWithFilters(
         bytes32 _specId,
-        uint256 _payment,
         string memory _market,
         uint256 _sportId,
         uint256 _date,
         string[] memory _statusIds,
         string[] memory _gameIds
-    ) public whenNotPaused isValidRequest(_market, _sportId) isAddressWhitelisted {
+    ) public whenNotPaused isValidRequest(_market, _sportId) canSenderMakeRequest(chainlinkTokenAddress()) {
         Chainlink.Request memory req;
 
         if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
@@ -65,24 +65,24 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         req.addStringArray("statusIds", _statusIds);
         req.addStringArray("gameIds", _gameIds);
 
-        bytes32 requestId = sendChainlinkRequest(req, _payment);
+        bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
+
+        _putLink(msg.sender);
     }
 
     /// @notice request of create/resolve games on a specific date with specific sport without filters
     /// @param _specId specification id which is provided by CL
-    /// @param _payment peyment amount per request which is provided from CL
     /// @param _market string which can be "create" or "resolve"
     /// @param _sportId sports id which is provided from CL (Example: NBA = 4)
     /// @param _date date on which game/games are played
     function requestGames(
         bytes32 _specId,
-        uint256 _payment,
         string memory _market,
         uint256 _sportId,
         uint256 _date
-    ) public whenNotPaused isValidRequest(_market, _sportId) isAddressWhitelisted {
+    ) public whenNotPaused isValidRequest(_market, _sportId) canSenderMakeRequest(chainlinkTokenAddress()){
         Chainlink.Request memory req;
 
         if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
@@ -95,24 +95,24 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         req.add("market", _market);
         req.addUint("sportId", _sportId);
 
-        bytes32 requestId = sendChainlinkRequest(req, _payment);
+        bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
+
+        _putLink(msg.sender);
     }
 
     /// @notice request for odds in games on a specific date with specific sport with filters
     /// @param _specId specification id which is provided by CL
-    /// @param _payment peyment amount per request which is provided from CL
     /// @param _sportId sports id which is provided from CL (Example: NBA = 4)
     /// @param _date date on which game/games are played
     /// @param _gameIds optional param, grap only for specific games
     function requestOddsWithFilters(
         bytes32 _specId,
-        uint256 _payment,
         uint256 _sportId,
         uint256 _date,
         string[] memory _gameIds
-    ) public whenNotPaused isAddressWhitelisted {
+    ) public whenNotPaused canSenderMakeRequest(chainlinkTokenAddress()){
         require(consumer.isSupportedSport(_sportId), "SportId is not supported");
 
         Chainlink.Request memory req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesOdds.selector);
@@ -125,9 +125,11 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
             req.addStringArray("gameIds", _gameIds);
         }
 
-        bytes32 requestId = sendChainlinkRequest(req, _payment);
+        bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
+
+        _putLink(msg.sender);
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -169,15 +171,22 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     function getTokenAddress() public view returns (address) {
         return chainlinkTokenAddress();
     }
+    /* ========== INTERNALS ========== */
+
+    /// @notice send link to this contract
+    /// @param _sender address which pays LINK
+    function _putLink(address _sender) internal {
+        LinkTokenInterface linkToken = LinkTokenInterface(chainlinkTokenAddress());
+        require(linkToken.transferFrom(_sender, address(this), payment), "Unable to put LINK");
+    }
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    /// @notice adding into whitelist address which can call sports data feed
-    /// @param _whitelistAddress address that needed to be whitelisted
-    function addToWhitelist(address _whitelistAddress) external onlyOwner {
-        require(_whitelistAddress != address(0), "Invalid address");
-        whitelistedAddresses[_whitelistAddress] = true;
-        emit AddedIntoWhitelist(_whitelistAddress);
+    /// @notice setting payment
+    /// @param _payment amount of link per request
+    function setPayment(uint _payment) external onlyOwner {
+        payment = _payment;
+        emit NewPaymentAmount(_payment);
     }
 
     /// @notice setting new oracle address
@@ -208,14 +217,18 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         _;
     }
 
-    modifier isAddressWhitelisted() {
-        require(whitelistedAddresses[msg.sender], "Address not supported");
+
+    modifier canSenderMakeRequest(address _chainLinkAddress) {
+        require(_chainLinkAddress != address(0), "Invalid address");
+        LinkTokenInterface linkToken = LinkTokenInterface(_chainLinkAddress);
+        require(linkToken.balanceOf(msg.sender) >= payment, "No enough LINK for request");
+        require(linkToken.allowance(msg.sender, address(this)) >= payment, "No allowance.");
         _;
     }
 
     /* ========== EVENTS ========== */
 
     event NewOracleAddress(address _oracle);
+    event NewPaymentAmount(uint _payment);
     event NewConsumer(address _consumer);
-    event AddedIntoWhitelist(address _whitelistAddress);
 }

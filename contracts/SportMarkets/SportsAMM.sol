@@ -62,6 +62,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     enum Position {Home, Away, Draw}
 
     /// @return The sUSD amount bought from AMM by users for the market
+    // TODO: rename to spentOnGame
     mapping(address => uint) public spentOnMarket;
 
     /// @return The SafeBox address
@@ -76,6 +77,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The address of the Staking contract
     IStakingThales public stakingThales;
 
+    // TODO: change to plural minSupportedOdds
     /// @return The minimum supported odd
     uint public minSupportedOdd;
 
@@ -123,18 +125,19 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The amount of position options (tokens) available to buy from AMM.
     function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
-            uint baseOdd = obtainOdds(market, position);
+            uint baseOdds = obtainOdds(market, position);
             // ignore extremes
-            if (baseOdd <= minSupportedOdd) {
+            //TODO: no maxSupportedOdds?
+            if (baseOdds <= minSupportedOdd) {
                 return 0;
             }
-            baseOdd = baseOdd.add(min_spread);
+            baseOdds = baseOdds.add(min_spread);
             uint balance = _balanceOfPositionOnMarket(market, position);
-            uint midImpactPriceIncrease = ONE.sub(baseOdd).mul(max_spread.div(2)).div(ONE);
+            uint midImpactPriceIncrease = ONE.sub(baseOdds).mul(max_spread.div(2)).div(ONE);
 
-            uint divider_price = ONE.sub(baseOdd.add(midImpactPriceIncrease));
+            uint divider_price = ONE.sub(baseOdds.add(midImpactPriceIncrease));
 
-            uint additionalBufferFromSelling = balance.mul(baseOdd).div(ONE);
+            uint additionalBufferFromSelling = balance.mul(baseOdds).div(ONE);
 
             if (defaultCapPerGame.add(additionalBufferFromSelling) <= spentOnMarket[market]) {
                 return 0;
@@ -160,13 +163,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
             return 0;
         }
-        uint baseOdd = obtainOdds(market, position).add(min_spread);
-        uint impactPriceIncrease = ONE.sub(baseOdd).mul(_buyPriceImpact(market, position, amount)).div(ONE);
+        uint baseOdds = obtainOdds(market, position).add(min_spread);
+        uint impactPriceIncrease = ONE.sub(baseOdds).mul(_buyPriceImpact(market, position, amount)).div(ONE);
         // add 2% to the price increase to avoid edge cases on the extremes
         impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
-        // console.logUint(impactPriceIncrease);
-        uint tempAmount = amount.mul(baseOdd.add(impactPriceIncrease)).div(ONE);
-        // console.logUint(tempAmount);
+        uint tempAmount = amount.mul(baseOdds.add(impactPriceIncrease)).div(ONE);
         uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
         return ISportPositionalMarketManager(manager).transformCollateral(returnQuote);
     }

@@ -65,7 +65,7 @@ async function main() {
 
 	if (networkObj.chainId == 42) {
 		PaymentAddress = getTargetAddress('ExoticUSD', network);
-		minimalTimeLeftToMaturity = '360';
+		minimalTimeLeftToMaturity = '60';
 		// 	await upgrades.upgradeProxy(SportsAMMAddress, SportsAMM);
 		// 	await delay(5000);
 

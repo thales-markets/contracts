@@ -232,6 +232,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 balanceOfTheOtherSide = position == Position.Away
                     ? draw.getBalanceOf(address(this))
                     : away.getBalanceOf(address(this));
+                // uint homeBalance = home.getBalanceOf(address(this));
+                // uint awayBalance = away.getBalanceOf(address(this));
+                // uint drawBalance = draw.getBalanceOf(address(this));
+                // if (position == Position.Home) {
+                //     balanceOfTheOtherSide = awayBalance < drawBalance ? awayBalance : drawBalance;
+                // } else if (position == Position.Away) {
+                //     balanceOfTheOtherSide = homeBalance < drawBalance ? homeBalance : drawBalance;
+                // } else {
+                //     balanceOfTheOtherSide = homeBalance < awayBalance ? homeBalance : awayBalance;
+                // }
             }
 
             // can burn straight away balanceOfTheOtherSide

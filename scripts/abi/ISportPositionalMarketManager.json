@@ -24,19 +24,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "capitalRequirement",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -78,24 +65,6 @@
       }
     ],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "durations",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "expiryDuration",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "maxTimeToMaturity",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

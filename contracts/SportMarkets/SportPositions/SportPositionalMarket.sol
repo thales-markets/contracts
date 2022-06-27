@@ -60,7 +60,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     Times public override times;
     GameDetails public gameDetails;
     ITherundownConsumer public theRundownConsumer;
-    SportPositionalMarketManager.Fees public override fees;
     IERC20 public sUSD;
     address public sportsAMM;
     uint[] public tags;

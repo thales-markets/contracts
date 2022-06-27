@@ -6,10 +6,6 @@ import "../interfaces/ISportPositionalMarket.sol";
 interface ISportPositionalMarketManager {
     /* ========== VIEWS / VARIABLES ========== */
 
-    function durations() external view returns (uint expiryDuration, uint maxTimeToMaturity);
-
-    function capitalRequirement() external view returns (uint);
-
     function marketCreationEnabled() external view returns (bool);
 
     function totalDeposited() external view returns (uint);
@@ -31,8 +27,6 @@ interface ISportPositionalMarketManager {
     function transformCollateral(uint value) external view returns (uint);
 
     function reverseTransformCollateral(uint value) external view returns (uint);
-
-
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 

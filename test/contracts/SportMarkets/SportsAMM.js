@@ -214,6 +214,7 @@ contract('SportsAMM', accounts => {
 		);
 		await StakingThales.setThalesAMM(SportsAMM.address, { from: owner });
 		await SportsAMM.setMinSupportedOdd(10, { from: owner });
+		await SportsAMM.setMaxSupportedOdd(toUnit(0.95), { from: owner });
 
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
@@ -358,13 +359,6 @@ contract('SportsAMM', accounts => {
 		it('Checks', async () => {
 			await SportPositionalMarketManager.setSportPositionalMarketFactory(first, { from: manager });
 			await SportPositionalMarketManager.setTherundownConsumer(first, { from: manager });
-			await SportPositionalMarketManager.setWhitelistedAddresses([first, second], {
-				from: manager,
-			});
-			await SportPositionalMarketManager.disableWhitelistedAddresses({ from: manager });
-			await SportPositionalMarketManager.enableWhitelistedAddresses({ from: manager });
-			await SportPositionalMarketManager.addWhitelistedAddress(third, { from: manager });
-			await SportPositionalMarketManager.removeWhitelistedAddress(third, { from: manager });
 		});
 		beforeEach(async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
@@ -396,8 +390,6 @@ contract('SportsAMM', accounts => {
 
 		it('Checks for durations', async () => {
 			await SportPositionalMarketManager.setExpiryDuration('10', { from: manager });
-			await SportPositionalMarketManager.setMaxTimeToMaturity('10', { from: manager });
-			await SportPositionalMarketManager.setCreatorCapitalRequirement('10', { from: manager });
 			await SportPositionalMarketManager.setsUSD(third, { from: manager });
 			await SportPositionalMarketManager.setMarketCreationEnabled(false, { from: manager });
 			await SportPositionalMarketManager.transformCollateral('10', { from: manager });

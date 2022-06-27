@@ -109,24 +109,6 @@
   },
   {
     "inputs": [],
-    "name": "fees",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "poolFee",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "creatorFee",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "getGameDetails",
     "outputs": [
       {
@@ -297,7 +279,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "destructino",
+        "name": "destruction",
         "type": "uint256"
       }
     ],

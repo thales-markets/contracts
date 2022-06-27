@@ -25,28 +25,12 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     using SafeMath for uint;
     using AddressSetLib for AddressSetLib.AddressSet;
 
-    /* ========== TYPES ========== */
-
-    struct Fees {
-        uint poolFee;
-        uint creatorFee;
-    }
-
-    struct Durations {
-        uint expiryDuration;
-        uint maxTimeToMaturity;
-    }
-
     /* ========== STATE VARIABLES ========== */
 
-    Durations public override durations;
-    uint public override capitalRequirement;
+    uint public expiryDuration;
 
     bool public override marketCreationEnabled;
     bool public customMarketCreationEnabled;
-
-    bool public onlyWhitelistedAddressesCanCreateMarkets;
-    mapping(address => bool) public whitelistedAddresses;
 
     uint public override totalDeposited;
 
@@ -72,7 +56,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
         marketCreationEnabled = true;
         customMarketCreationEnabled = false;
-        onlyWhitelistedAddressesCanCreateMarkets = false;
     }
 
     /* ========== SETTERS ========== */
@@ -84,31 +67,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
         theRundownConsumer = _theRundownConsumer;
         emit SetTherundownConsumer(_theRundownConsumer);
-    }
-
-    // TODO: We dont need whitelisting
-    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses) external onlyOwner {
-        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
-        onlyWhitelistedAddressesCanCreateMarkets = true;
-        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
-            whitelistedAddresses[_whitelistedAddresses[index]] = true;
-        }
-    }
-
-    function disableWhitelistedAddresses() external onlyOwner {
-        onlyWhitelistedAddressesCanCreateMarkets = false;
-    }
-
-    function enableWhitelistedAddresses() external onlyOwner {
-        onlyWhitelistedAddressesCanCreateMarkets = true;
-    }
-
-    function addWhitelistedAddress(address _address) external onlyOwner {
-        whitelistedAddresses[_address] = true;
-    }
-
-    function removeWhitelistedAddress(address _address) external onlyOwner {
-        delete whitelistedAddresses[_address];
     }
 
     /* ========== VIEWS ========== */
@@ -152,20 +110,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     /* ---------- Setters ---------- */
 
     function setExpiryDuration(uint _expiryDuration) public onlyOwner {
-        durations.expiryDuration = _expiryDuration;
+        expiryDuration = _expiryDuration;
         emit ExpiryDurationUpdated(_expiryDuration);
-    }
-
-    // TODO: not needed
-    function setMaxTimeToMaturity(uint _maxTimeToMaturity) public onlyOwner {
-        durations.maxTimeToMaturity = _maxTimeToMaturity;
-        emit MaxTimeToMaturityUpdated(_maxTimeToMaturity);
-    }
-
-    // TODO: not needed
-    function setCreatorCapitalRequirement(uint _creatorCapitalRequirement) public onlyOwner {
-        capitalRequirement = _creatorCapitalRequirement;
-        emit CreatorCapitalRequirementUpdated(_creatorCapitalRequirement);
     }
 
     function setsUSD(address _address) external onlyOwner {
@@ -204,14 +150,9 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
+        require(msg.sender == theRundownConsumer, "Invalid creator");
 
-        // TODO: whitelisting not needed, instead we should check if a market for the gameId already exists. We also need some verification for the game ID, i.e. that it cames from chainlink
-        if (onlyWhitelistedAddressesCanCreateMarkets) {
-            require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
-        }
-
-        // require(maturity <= block.timestamp + durations.maxTimeToMaturity, "Maturity too far in the future");
-        uint expiry = maturity.add(durations.expiryDuration);
+        uint expiry = maturity.add(expiryDuration);
 
         require(block.timestamp < maturity, "Maturity has to be in the future");
         // We also require maturity < expiry. But there is no need to check this.
@@ -310,68 +251,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             marketCreationEnabled = enabled;
             emit MarketCreationEnabledUpdated(enabled);
         }
-    }
-
-    function setMigratingManager(SportPositionalMarketManager manager) external onlyOwner {
-        _migratingManager = manager;
-        emit SetMigratingManager(address(manager));
-    }
-
-    function migrateMarkets(
-        SportPositionalMarketManager receivingManager,
-        bool active,
-        SportPositionalMarket[] calldata marketsToMigrate
-    ) external onlyOwner {
-        require(address(receivingManager) != address(this), "Can't migrate to self");
-
-        uint _numMarkets = marketsToMigrate.length;
-        if (_numMarkets == 0) {
-            return;
-        }
-        AddressSetLib.AddressSet storage markets = active ? _activeMarkets : _maturedMarkets;
-
-        uint runningDepositTotal;
-        for (uint i; i < _numMarkets; i++) {
-            SportPositionalMarket market = marketsToMigrate[i];
-            require(isKnownMarket(address(market)), "Market unknown.");
-
-            // Remove it from our list and deposit total.
-            markets.remove(address(market));
-            runningDepositTotal = runningDepositTotal.add(market.deposited());
-
-            // Prepare to transfer ownership to the new manager.
-            market.nominateNewOwner(address(receivingManager));
-        }
-        // Deduct the total deposits of the migrated markets.
-        totalDeposited = totalDeposited.sub(runningDepositTotal);
-        emit MarketsMigrated(receivingManager, marketsToMigrate);
-
-        // Now actually transfer the markets over to the new manager.
-        receivingManager.receiveMarkets(active, marketsToMigrate);
-    }
-
-    // TODO: not needed
-    function receiveMarkets(bool active, SportPositionalMarket[] calldata marketsToReceive) external {
-        require(msg.sender == address(_migratingManager), "Only permitted for migrating manager.");
-
-        uint _numMarkets = marketsToReceive.length;
-        if (_numMarkets == 0) {
-            return;
-        }
-        AddressSetLib.AddressSet storage markets = active ? _activeMarkets : _maturedMarkets;
-
-        uint runningDepositTotal;
-        for (uint i; i < _numMarkets; i++) {
-            SportPositionalMarket market = marketsToReceive[i];
-            require(!isKnownMarket(address(market)), "Market already known.");
-
-            market.acceptOwnership();
-            markets.add(address(market));
-            // Update the market with the new manager address,
-            runningDepositTotal = runningDepositTotal.add(market.deposited());
-        }
-        totalDeposited = totalDeposited.add(runningDepositTotal);
-        emit MarketsReceived(_migratingManager, marketsToReceive);
     }
 
     // support USDC with 6 decimals

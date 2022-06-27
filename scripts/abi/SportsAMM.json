@@ -129,6 +129,19 @@
         "type": "uint256"
       }
     ],
+    "name": "SetMaxSupportedOdd",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_spread",
+        "type": "uint256"
+      }
+    ],
     "name": "SetMaxSupportedPrice",
     "type": "event"
   },
@@ -745,6 +758,19 @@
   },
   {
     "inputs": [],
+    "name": "maxSupportedOdds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "max_spread",
     "outputs": [
       {
@@ -758,7 +784,7 @@
   },
   {
     "inputs": [],
-    "name": "minSupportedOdd",
+    "name": "minSupportedOdds",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1082,6 +1108,19 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_maxSupportedOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxSupportedOdd",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_spread",
         "type": "uint256"
       }
@@ -1095,7 +1134,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_minSupportedOdd",
+        "name": "_minSupportedOdds",
         "type": "uint256"
       }
     ],
@@ -1216,7 +1255,7 @@
         "type": "address"
       }
     ],
-    "name": "spentOnMarket",
+    "name": "spentOnGame",
     "outputs": [
       {
         "internalType": "uint256",

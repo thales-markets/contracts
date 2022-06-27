@@ -6,6 +6,7 @@ import "./SportPosition.sol";
 import "./SportPositionalMarket.sol";
 // import "./SportPositionalMarketManager.sol";
 import "../../interfaces/ISportsAMM.sol";
+import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
@@ -13,7 +14,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     struct ActiveMarketsOdds {
-        address market;
+        bytes32 market;
         uint[] odds;
     }
 
@@ -24,11 +25,15 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         setOwner(_owner);
     }
 
-    function getOddsForAllActiveMarkets(uint index, uint pageSize) external view returns (ActiveMarketsOdds[] memory) {
-        address[] memory activeMarkets = ISportPositionalMarketManager(manager).activeMarkets(index, pageSize);
+    function getOddsForAllActiveMarkets() external view returns (ActiveMarketsOdds[] memory) {
+        address[] memory activeMarkets =
+            ISportPositionalMarketManager(manager).activeMarkets(
+                0,
+                ISportPositionalMarketManager(manager).numActiveMarkets()
+            );
         ActiveMarketsOdds[] memory marketOdds = new ActiveMarketsOdds[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
-            marketOdds[i].market = activeMarkets[i];
+            marketOdds[i].market = ISportPositionalMarket(activeMarkets[i]).getGameId();
             marketOdds[i].odds = ISportsAMM(sportsAMM).getMarketDefaultOdds(activeMarkets[i]);
         }
         return marketOdds;

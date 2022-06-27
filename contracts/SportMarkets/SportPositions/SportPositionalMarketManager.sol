@@ -86,6 +86,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit SetTherundownConsumer(_theRundownConsumer);
     }
 
+    // TODO: We dont need whitelisting
     function setWhitelistedAddresses(address[] calldata _whitelistedAddresses) external onlyOwner {
         require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
         onlyWhitelistedAddressesCanCreateMarkets = true;
@@ -155,11 +156,13 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit ExpiryDurationUpdated(_expiryDuration);
     }
 
+    // TODO: not needed
     function setMaxTimeToMaturity(uint _maxTimeToMaturity) public onlyOwner {
         durations.maxTimeToMaturity = _maxTimeToMaturity;
         emit MaxTimeToMaturityUpdated(_maxTimeToMaturity);
     }
 
+    // TODO: not needed
     function setCreatorCapitalRequirement(uint _creatorCapitalRequirement) public onlyOwner {
         capitalRequirement = _creatorCapitalRequirement;
         emit CreatorCapitalRequirementUpdated(_creatorCapitalRequirement);
@@ -202,6 +205,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     {
         require(marketCreationEnabled, "Market creation is disabled");
 
+        // TODO: whitelisting not needed, instead we should check if a market for the gameId already exists. We also need some verification for the game ID, i.e. that it cames from chainlink
         if (onlyWhitelistedAddressesCanCreateMarkets) {
             require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
         }
@@ -346,6 +350,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         receivingManager.receiveMarkets(active, marketsToMigrate);
     }
 
+    // TODO: not needed
     function receiveMarkets(bool active, SportPositionalMarket[] calldata marketsToReceive) external {
         require(msg.sender == address(_migratingManager), "Only permitted for migrating manager.");
 

@@ -176,7 +176,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             uint balanceOfTheOtherSide =
                 position == Position.Up ? down.getBalanceOf(address(this)) : up.getBalanceOf(address(this));
 
-            // can burn straight away balanceOfTheOtherSide
+            // any balanceOfTheOtherSide will be burned to get sUSD back (1 to 1) at the `willPay` cost
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
             if (_capOnMarket(market).add(balanceOfTheOtherSide) < spentOnMarket[market].add(willPay)) {
                 return 0;

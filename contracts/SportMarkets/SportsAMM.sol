@@ -227,6 +227,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
 
             // Balancing with three positions needs to be elaborated
+            // TODO: this doesnt work, if you are buying 10 HOME options, you need 10 AWAY and 10 DRAW to be able to burn those, so basically you get the lesser of other two position balances as `balanceOfTheOtherSide`
             if (ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
                 balanceOfTheOtherSide = position == Position.Away
                     ? draw.getBalanceOf(address(this))
@@ -245,12 +246,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     function _getSellMaxPrice(address market, Position position) internal view returns (uint) {
-        uint baseOdd = obtainOdds(market, position);
+        uint baseOdds = obtainOdds(market, position);
         // ignore extremes
-        if (baseOdd <= minSupportedOdd) {
+        if (baseOdds <= minSupportedOdd) {
             return 0;
         }
-        uint sell_max_price = baseOdd.sub(min_spread).mul(ONE.sub(max_spread.div(2))).div(ONE);
+        uint sell_max_price = baseOdds.sub(min_spread).mul(ONE.sub(max_spread.div(2))).div(ONE);
         return sell_max_price;
     }
 
@@ -267,9 +268,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (amount > availableToSellToAMM(market, position)) {
             return 0;
         }
-        uint baseOdd = obtainOdds(market, position).sub(min_spread);
+        uint baseOdds = obtainOdds(market, position).sub(min_spread);
 
-        uint tempAmount = amount.mul(baseOdd.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
+        uint tempAmount = amount.mul(baseOdds.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
 
         uint returnQuote = tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
         return ISportPositionalMarketManager(manager).transformCollateral(returnQuote);
@@ -332,6 +333,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             (ISportPositionalMarket(market).phase() == ISportPositionalMarket.Phase.Maturity)
         ) {
             (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+            // TODO: what about draw?
             if ((home.getBalanceOf(address(this)) > 0) || (away.getBalanceOf(address(this)) > 0)) {
                 return true;
             }
@@ -402,6 +404,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint additionalSlippage
     ) public nonReentrant whenNotPaused {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
+        // TODO: is the check below really needed when using enumarition?
         require(ISportPositionalMarket(market).optionsCount() > uint(position), "Invalid position");
         uint availableToBuyFromAMMatm = availableToBuyFromAMM(market, position);
         require(amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
@@ -480,6 +483,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
 
+        // TODO: use safeTransfer everywhere
         sUSD.transfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
@@ -784,19 +788,18 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount
     ) internal view returns (uint mintable) {
         uint availableInContract = _balanceOfPositionOnMarket(market, position);
-        mintable = 0;
         if (availableInContract < amount) {
+            // TODO as compiler is >0.8 dont use SafeMath
             mintable = amount.sub(availableInContract);
         }
     }
 
-    function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint) {
+    function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint balance) {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
         if (ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
             balance = position == Position.Away ? away.getBalanceOf(address(this)) : draw.getBalanceOf(address(this));
         }
-        return balance;
     }
 
     function _balanceOfPositionsOnMarket(address market, Position position) internal view returns (uint, uint) {
@@ -842,6 +845,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param account Address where to send the funds
     /// @param amount Amount of sUSD to be sent
     function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        // TODO: use SafeTransfer everywhere
         sUSD.transfer(account, amount);
     }
 

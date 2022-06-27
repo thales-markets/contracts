@@ -154,6 +154,17 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         _signUpPlayer(msg.sender, _positions, passId);
     }
 
+    function signUpOnBehalf(address player) external playerCanSignUp {
+        // don't set positions to winners
+        uint[] memory positions = new uint[](rounds);
+        for(uint i = 0; i < positions.length; i++) {
+            positions[i] = 0;
+        }
+
+        // pass id is 0 so it will be sUSD buyin
+        _signUpPlayerOnBehalf(msg.sender, player, positions);
+    }
+
     function startRoyaleInASeason() external {
         require(block.timestamp > (seasonCreationTime[season] + signUpPeriod), "Can't start until signup period expires");
         require(mintedTokensCount[season] > 0, "Can not start, no tokens in a season");
@@ -391,6 +402,22 @@ contract ThalesRoyale is Initializable, ProxyOwned, PausableUpgradeable, ProxyRe
         } else {
             _buyIn(_player, buyInAmount);
         }
+
+        emit SignedUpPassport(_player, tokenId, season, _positions);
+    }
+
+    function _signUpPlayerOnBehalf(address _sender, address _player, uint[] memory _positions) internal {
+        uint tokenId = thalesRoyalePassport.safeMint(_player);
+        tokenSeason[tokenId] = season;
+
+        tokensMintedPerSeason[season][tokenId] = block.timestamp;
+        tokensPerSeason[season].push(tokenId);
+        mintedTokensCount[season]++;
+
+        playerSignedUpPerSeason[season][_player] = block.timestamp;
+
+        // sender buy-in
+        _buyIn(_sender, buyInAmount);
 
         emit SignedUpPassport(_player, tokenId, season, _positions);
     }

@@ -165,7 +165,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @param market a Positional Market known to Market Manager
     /// @param position UP or DOWN
     /// @return _available how many positions of that type can be sold
-    function availableToSellToAMM(address market, Position position) public view returns (uint) {
+    function availableToSellToAMM(address market, Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint sell_max_price = _getSellMaxPrice(market, position);
             if (sell_max_price == 0) {
@@ -182,8 +182,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
                 return 0;
             }
             uint usdAvailable = _capOnMarket(market).add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
-            return usdAvailable.div(sell_max_price).mul(ONE).add(balanceOfTheOtherSide);
-        } else return 0;
+            _available = usdAvailable.div(sell_max_price).mul(ONE).add(balanceOfTheOtherSide);
+        }
     }
 
     /// @notice get a quote in sUSD on how much the trader would receive as payment to sell the amount of UP or DOWN positions

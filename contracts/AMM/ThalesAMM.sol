@@ -112,14 +112,14 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @param market a Positional Market known to Market Manager
     /// @param position UP or DOWN
     /// @param amount number of positions to buy with 18 decimals
-    /// @return a quote in sUSD on how much the trader would need to pay to buy the amount of UP or DOWN positions
+    /// @return _quote in sUSD on how much the trader would need to pay to buy the amount of UP or DOWN positions
     function buyFromAmmQuote(
         address market,
         Position position,
         uint amount
-    ) public view returns (uint) {
+    ) public view returns (uint _quote) {
         uint basePrice = price(market, position).add(min_spread);
-        return _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
+        _quote = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
     }
 
     /// @notice get a quote in the collateral of choice (USDC, USDT or DAI) on how much the trader would need to pay to buy the amount of UP or DOWN positions
@@ -190,12 +190,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @param market a Positional Market known to Market Manager
     /// @param position UP or DOWN
     /// @param amount number of positions to buy with 18 decimals
-    /// @return a quote in sUSD on how much the trader would receive as payment to sell the amount of UP or DOWN positions
+    /// @return _quote in sUSD on how much the trader would receive as payment to sell the amount of UP or DOWN positions
     function sellToAmmQuote(
         address market,
         Position position,
         uint amount
-    ) public view returns (uint _available) {
+    ) public view returns (uint _quote) {
         if (!(amount > availableToSellToAMM(market, position))) {
             uint basePrice = price(market, position).sub(min_spread);
 
@@ -203,7 +203,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
                 amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
 
             uint returnQuote = tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
-            _available = IPositionalMarketManager(manager).transformCollateral(returnQuote);
+            _quote = IPositionalMarketManager(manager).transformCollateral(returnQuote);
         }
     }
 

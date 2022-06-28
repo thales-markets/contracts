@@ -280,8 +280,6 @@ contract('TheRundownConsumer', accounts => {
 		it('Fulfill Games Created - NBA, create market, check results', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 
-			assert.bnEqual(false, await TherundownConsumerDeployed.havingGamesPerDate(game1NBATime));
-			assert.bnEqual(false, await TherundownConsumerDeployed.havingGamesPerDate(game1NBATime));
 			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
@@ -306,6 +304,10 @@ contract('TheRundownConsumer', accounts => {
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			assert.bnEqual(gameid1, await TherundownConsumerDeployed.gamesPerDate(game1NBATime, 0));
+			let getGamesPerdate = await TherundownConsumerDeployed.getGamesPerdate(game1NBATime);
+			assert.bnEqual(2, getGamesPerdate.length);
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));

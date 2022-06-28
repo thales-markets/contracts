@@ -314,11 +314,6 @@
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
-        "name": "_payment",
-        "type": "uint256"
-      },
-      {
         "internalType": "string",
         "name": "_market",
         "type": "string"
@@ -345,11 +340,6 @@
         "internalType": "bytes32",
         "name": "_specId",
         "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_payment",
-        "type": "uint256"
       },
       {
         "internalType": "string",
@@ -388,11 +378,6 @@
         "internalType": "bytes32",
         "name": "_specId",
         "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_payment",
-        "type": "uint256"
       },
       {
         "internalType": "uint256",

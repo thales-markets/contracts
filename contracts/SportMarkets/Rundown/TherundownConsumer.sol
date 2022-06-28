@@ -85,8 +85,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     GamesQueue public queues;
     mapping(bytes32 => uint) public oddsLastPulledForGame;
     mapping(bytes32 => bytes32) public gemeIdPerRequestId;
-    mapping(uint => bool) public havingGamesPerDate; // delete
-    mapping(uint => bytes32[]) public gamesPerDate; // delete
+    mapping(uint => bytes32[]) public gamesPerDate;
     mapping(uint => uint) public oddsLastPulledForDate;
     mapping(uint => mapping(uint => bool)) public isSportOnADate;
 
@@ -134,6 +133,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         for (uint i = 0; i < _games.length; i++) {
             GameCreate memory game = abi.decode(_games[i], (GameCreate));
             if (!queues.existingGamesInCreatedQueue(game.gameId) && !isSameTeamOrTBD(game.homeTeam, game.awayTeam) && game.startTime > block.timestamp) {
+                gamesPerDate[_date].push(game.gameId);
                 _createGameFulfill(_requestId, game, _sportId);
             }
         }
@@ -307,6 +307,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @return drawOdds moneyline odd in a two decimal places
     function getOddsDraw(bytes32 _gameId) public view returns (int24) {
         return gameOdds[_gameId].drawOdds;
+    }
+
+    /// @notice view function which returns games on certan date
+    /// @param _date date
+    /// @return bytes32[] list of games
+    function getGamesPerdate(uint _date) public view returns (bytes32[] memory) {
+        return gamesPerDate[_date];
     }
 
     /// @notice view function which returns game resolved object based on id of a game

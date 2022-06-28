@@ -65,11 +65,12 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         req.addStringArray("statusIds", _statusIds);
         req.addStringArray("gameIds", _gameIds);
 
+        _putLink(msg.sender);
+        
         bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
 
-        _putLink(msg.sender);
     }
 
     /// @notice request of create/resolve games on a specific date with specific sport without filters
@@ -95,11 +96,11 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         req.add("market", _market);
         req.addUint("sportId", _sportId);
 
+        _putLink(msg.sender);
+
         bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
-
-        _putLink(msg.sender);
     }
 
     /// @notice request for odds in games on a specific date with specific sport with filters
@@ -125,11 +126,12 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
             req.addStringArray("gameIds", _gameIds);
         }
 
+        _putLink(msg.sender);
+
         bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
 
-        _putLink(msg.sender);
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */

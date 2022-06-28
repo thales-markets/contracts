@@ -14,7 +14,6 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
 // interface
-import "../interfaces/IPriceFeed.sol";
 import "../interfaces/ISportPositionalMarket.sol";
 import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
@@ -550,16 +549,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @notice Setting the minimum supported oracle odd.
     /// @param _minSupportedOdds Minimal oracle odd in ether unit (18 decimals)
-    function setMinSupportedOdd(uint _minSupportedOdds) public onlyOwner {
+    function setMinSupportedOdds(uint _minSupportedOdds) public onlyOwner {
         minSupportedOdds = _minSupportedOdds;
-        emit SetMinSupportedOdd(_minSupportedOdds);
+        emit SetMinSupportedOdds(_minSupportedOdds);
     }
 
     /// @notice Setting the maximum supported oracle odds.
     /// @param _maxSupportedOdds Maximum oracle odds in ether unit (18 decimals)
-    function setMaxSupportedOdd(uint _maxSupportedOdds) public onlyOwner {
+    function setMaxSupportedOdds(uint _maxSupportedOdds) public onlyOwner {
         maxSupportedOdds = _maxSupportedOdds;
-        emit SetMaxSupportedOdd(_maxSupportedOdds);
+        emit SetMaxSupportedOdds(_maxSupportedOdds);
     }
 
     /// @notice Setting the default cap in sUSD for each market/game
@@ -882,8 +881,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetSafeBox(address _safeBox);
     event SetMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity);
     event SetStakingThales(address _stakingThales);
-    event SetMinSupportedOdd(uint _spread);
-    event SetMaxSupportedOdd(uint _spread);
+    event SetMinSupportedOdds(uint _spread);
+    event SetMaxSupportedOdds(uint _spread);
     event SetMaxSupportedPrice(uint _spread);
     event SetTherundownConsumer(address _theRundownConsumer);
 }

@@ -173,6 +173,23 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         return gameDetails.gameId;
     }
 
+    function getStampedOdds()
+        external
+        view
+        override
+        returns (
+            uint,
+            uint,
+            uint
+        )
+    {
+        if (cancelled) {
+            return (homeOddsOnCancellation, awayOddsOnCancellation, drawOddsOnCancellation);
+        } else {
+            return (0, 0, 0);
+        }
+    }
+
     function _balancesOf(address account)
         internal
         view

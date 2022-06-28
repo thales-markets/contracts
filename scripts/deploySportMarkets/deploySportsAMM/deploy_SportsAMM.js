@@ -49,9 +49,9 @@ async function main() {
 	const min_spread = w3utils.toWei('0.01');
 	const max_spread = w3utils.toWei('0.05');
 	const min_supported = w3utils.toWei('0.1');
-	const max_supported = w3utils.toWei('0.1');
+	const max_supported = w3utils.toWei('0.9');
 	const safeBoxImpact = w3utils.toWei('0.01');
-	let minimalTimeLeftToMaturity = '86400';
+	let minimalTimeLeftToMaturity = '60';
 
 	const SportMarketFactory = await ethers.getContractFactory('SportPositionalMarketFactory');
 	const SportMarketFactoryAddress = getTargetAddress('SportPositionalMarketFactory', network);
@@ -66,17 +66,6 @@ async function main() {
 	if (networkObj.chainId == 42) {
 		PaymentAddress = getTargetAddress('ExoticUSD', network);
 		minimalTimeLeftToMaturity = '60';
-		// 	await upgrades.upgradeProxy(SportsAMMAddress, SportsAMM);
-		// 	await delay(5000);
-
-		// 	const SportsAMMImplementation = await getImplementationAddress(
-		// 		ethers.provider,
-		// 		SportsAMMAddress
-		// 	);
-		// 	console.log('SportsAMM upgraded');
-
-		// 	console.log('Implementation SportsAMM: ', SportsAMMImplementation);
-		// 	setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
 	}
 
 	if (networkObj.chainId == 10) {
@@ -105,19 +94,25 @@ async function main() {
 	setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
 
 	await delay(2000);
-	await SportsAMMDeployed.setSUSD(TherundownConsumerAddress, { from: owner.address });
+	await SportsAMMDeployed.setMinSupportedOdds(min_supported, { from: owner.address });
+	console.log('minSupportedOdds set');
 	await delay(2000);
-	await SportsAMMDeployed.setMinSupportedPrice(min_supported, { from: owner.address });
-	await delay(2000);
-	await SportsAMMDeployed.setMaxSupportedPrice(max_supported, { from: owner.address });
+	await SportsAMMDeployed.setMaxSupportedOdds(max_supported, { from: owner.address });
+	console.log('maxSupportedOdds set');
 	await delay(2000);
 	await SportsAMMDeployed.setSafeBoxImpact(safeBoxImpact, { from: owner.address });
+	console.log('set SafeBox impact');
+	await delay(2000);
+	await SportsAMMDeployed.setSafeBox(owner.address, { from: owner.address });
+	console.log('set SafeBox');
 	await delay(2000);
 	await SportsAMMDeployed.setTherundownConsumer(TherundownConsumerAddress, { from: owner.address });
-	await delay(2000);
+	console.log('set Rundownconsumer');
+	await delay(5000);
 	await SportsAMMDeployed.setSportsPositionalMarketManager(SportMarketManagerAddress, {
 		from: owner.address,
 	});
+	console.log('set Manager');
 	await delay(2000);
 
 	await SportMarketFactoryDeployed.setSportsAMM(SportsAMMDeployed.address, { from: owner.address });

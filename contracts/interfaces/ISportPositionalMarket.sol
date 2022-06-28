@@ -44,6 +44,15 @@ interface ISportPositionalMarket {
 
     function result() external view returns (Side);
 
+    function getStampedOdds()
+        external
+        view
+        returns (
+            uint,
+            uint,
+            uint
+        );
+
     function balancesOf(address account)
         external
         view

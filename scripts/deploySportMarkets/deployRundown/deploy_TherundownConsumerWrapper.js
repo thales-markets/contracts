@@ -76,7 +76,7 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: TherundownConsumerWrapperDeployed.address,
-			constructorArguments: [chainlink['LINK'], chainlink['ORACLE'], consumerAddress],
+			constructorArguments: [chainlink['LINK'], chainlink['ORACLE'], consumerAddress, payment],
 		});
 	} catch (e) {
 		console.log(e);

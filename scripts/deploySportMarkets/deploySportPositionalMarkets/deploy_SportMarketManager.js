@@ -36,7 +36,7 @@ async function main() {
 	}
 
 	const SportMarketManager = await ethers.getContractFactory('SportPositionalMarketManager');
-	const TherundownConsumerAddress = await ethers.getContractFactory('TherundownConsumer');
+	const TherundownConsumerAddress = getTargetAddress('TherundownConsumer', network);
 
 	const SportMarketManagerDeployed = await upgrades.deployProxy(SportMarketManager, [
 		owner.address,

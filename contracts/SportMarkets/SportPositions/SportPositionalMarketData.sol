@@ -2,9 +2,6 @@
 pragma solidity ^0.8.0;
 
 // Inheritance
-import "./SportPosition.sol";
-import "./SportPositionalMarket.sol";
-// import "./SportPositionalMarketManager.sol";
 import "../../interfaces/ISportsAMM.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";

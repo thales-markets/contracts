@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
-/// @title Storage for games (created or resolved), calclulation for order-making bot processing
+/// @title Storage for games (created or resolved), calculation for order-making bot processing
 /// @author gruja
 contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     // create games queue

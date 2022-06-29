@@ -12,7 +12,7 @@ import "./GamesQueue.sol";
 // interface
 import "../../interfaces/ISportPositionalMarketManager.sol";
 
-/// @title Consumer contract which stores all data from CL data feed (Link to docs: https://market.link/nodes/TheRundown/integrations), also ceate all sports markets based on that data
+/// @title Consumer contract which stores all data from CL data feed (Link to docs: https://market.link/nodes/TheRundown/integrations), also creates all sports markets based on that data
 /// @author gruja
 contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== CONSTANTS =========== */
@@ -84,7 +84,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     // game
     GamesQueue public queues;
     mapping(bytes32 => uint) public oddsLastPulledForGame;
-    mapping(bytes32 => bytes32) public gemeIdPerRequestId;
+    mapping(bytes32 => bytes32) public gameIdPerRequestId;
     mapping(uint => bytes32[]) public gamesPerDate;
     mapping(uint => uint) public oddsLastPulledForDate;
     mapping(uint => mapping(uint => bool)) public isSportOnADate;
@@ -132,7 +132,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         for (uint i = 0; i < _games.length; i++) {
             GameCreate memory game = abi.decode(_games[i], (GameCreate));
-            if (!queues.existingGamesInCreatedQueue(game.gameId) && !isSameTeamOrTBD(game.homeTeam, game.awayTeam) && game.startTime > block.timestamp) {
+            if (
+                !queues.existingGamesInCreatedQueue(game.gameId) &&
+                !isSameTeamOrTBD(game.homeTeam, game.awayTeam) &&
+                game.startTime > block.timestamp
+            ) {
                 gamesPerDate[_date].push(game.gameId);
                 _createGameFulfill(_requestId, game, _sportId);
             }
@@ -151,7 +155,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         requestIdGamesResolved[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
             GameResolve memory game = abi.decode(_games[i], (GameResolve));
-            // if game is not resolved already and there is market for that game 
+            // if game is not resolved already and there is market for that game
             if (!queues.existingGamesInResolvedQueue(game.gameId) && marketPerGameId[game.gameId] != address(0)) {
                 _resolveGameFulfill(_requestId, game, _sportId);
             }
@@ -199,6 +203,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         require(marketPerGameId[_gameId] != address(0), "No market created for game");
 
+        // TODO: same code as the method below, extract common code to internal function
         if (isSportTwoPositionsSport(sportsIdPerGame[_gameId])) {
             require(
                 _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == CANCELLED,
@@ -239,6 +244,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice cancel market for a given game id
     /// @param _gameId game id
     function cancelGameManually(bytes32 _gameId) external isAddressWhitelisted {
+        // TODO: these two require statements are same as for the method below, extract those to a modifier
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         require(marketPerGameId[_gameId] != address(0), "No market created for game");
 
@@ -423,7 +429,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         gameFulfilledCreated[_game.gameId] = true;
         gameOdds[_game.gameId] = GameOdds(_game.gameId, _game.homeOdds, _game.awayOdds, _game.drawOdds);
         oddsLastPulledForGame[_game.gameId] = block.timestamp;
-        gemeIdPerRequestId[_game.gameId] = requestId;
+        gameIdPerRequestId[_game.gameId] = requestId;
 
         emit GameCreated(requestId, _sportId, _game.gameId, _game, queues.lastCreated(), getNormalizedOdds(_game.gameId));
     }
@@ -443,6 +449,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
+        //TODO: what about some validation that odds make sense?
+        //TODO: what if we had odds before but arent receiving odds now? The trading should be seized
         gameOdds[_game.gameId] = _game;
         oddsLastPulledForGame[_game.gameId] = block.timestamp;
         emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
@@ -605,9 +613,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             totalOdds += normalizedOdds[i];
         }
         for (uint i = 0; i < normalizedOdds.length; i++) {
-            if(totalOdds == 0){
+            if (totalOdds == 0) {
                 normalizedOdds[i] = 0;
-            }else{
+            } else {
                 normalizedOdds[i] = (1e18 * normalizedOdds[i]) / totalOdds;
             }
         }
@@ -646,6 +654,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _status status ID which needs to be supported or not
     /// @param _isSuported true/false (supported or not)
     function setSupportedResolvedStatuses(uint _status, bool _isSuported) external onlyOwner {
+        // TODO: typo in variable name, supported has two "P"
         suportResolveGameStatuses[_status] = _isSuported;
         emit SupportedResolvedStatusChanged(_status, _isSuported);
     }
@@ -661,6 +670,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice sets if sport is two positional (Example: NBA)
     /// @param _sportId sport ID which is two positional
     /// @param _isTwoPosition true/false (two positional sport or not)
+    // TODO: typo in method name
     function setwoPositionSport(uint _sportId, bool _isTwoPosition) external onlyOwner {
         twoPositionSport[_sportId] = _isTwoPosition;
         emit TwoPositionSportChanged(_sportId, _isTwoPosition);

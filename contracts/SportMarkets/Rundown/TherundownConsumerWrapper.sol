@@ -178,6 +178,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @param _sender address which pays LINK
     function _putLink(address _sender) internal {
         LinkTokenInterface linkToken = LinkTokenInterface(chainlinkTokenAddress());
+        // TODO: use safe transfer
         require(linkToken.transferFrom(_sender, address(this), payment), "Unable to put LINK");
     }
 
@@ -221,6 +222,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     modifier canSenderMakeRequest(address _chainLinkAddress) {
         require(_chainLinkAddress != address(0), "Invalid address");
         LinkTokenInterface linkToken = LinkTokenInterface(_chainLinkAddress);
+        // TODO: if you use safeTransfer the below two are checked implicitely
         require(linkToken.balanceOf(msg.sender) >= payment, "No enough LINK for request");
         require(linkToken.allowance(msg.sender, address(this)) >= payment, "No allowance.");
         _;

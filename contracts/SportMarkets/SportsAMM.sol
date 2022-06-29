@@ -353,11 +353,20 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @notice Checks the default odds for a `_market`. These odds take into account the price impact.
     /// @param _market The address of the SportPositional market of a game
     /// @return Returns the default odds for the `_market` including the price impact.
-    function getMarketDefaultOdds(address _market) external view returns (uint[] memory) {
+    function getMarketDefaultOdds(address _market) public view returns (uint[] memory) {
         uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-        Position[3] memory position = [Position.Home, Position.Away, Position.Draw];
-        for (uint i = 0; i < odds.length; i++) {
-            odds[i] = buyFromAmmQuote(_market, position[i], ONE);
+        if (isMarketInAMMTrading(_market)) {
+            Position position;
+            for (uint i = 0; i < odds.length; i++) {
+                if (i == 0) {
+                    position = Position.Home;
+                } else if (i == 1) {
+                    position = Position.Away;
+                } else {
+                    position = Position.Draw;
+                }
+                odds[i] = buyFromAmmQuote(_market, position, ONE);
+            }
         }
         return odds;
     }
@@ -680,12 +689,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         Position position,
         uint amount
     ) internal view returns (uint) {
-        (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
-
+        // take the balanceOtherSideMaximum
+        (uint balancePosition, uint balanceOtherSide, ) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
         uint balanceOtherSideAfter =
             balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
-        if (balancePositionAfter >= balanceOtherSideAfter) {
+
+        if (balancePosition >= amount) {
             //minimal price impact as it will balance the AMM exposure
             return 0;
         } else {
@@ -714,7 +724,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint maxPossibleSkew = balanceOtherSide.add(availableToBuyFromAMM(market, position)).sub(balancePosition);
         uint skew = balanceOtherSideAfter.sub(balancePositionAfter);
         uint newImpact = max_spread.mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE);
+        console.log("newImpact: ", newImpact);
         if (balancePosition > 0) {
+            if (balancePosition > amount) {
+                return 0;
+            }
             uint newPriceForMintedOnes = newImpact.div(2);
             uint tempMultiplier = amount.sub(balancePosition).mul(newPriceForMintedOnes);
             return tempMultiplier.div(amount);
@@ -725,16 +739,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
-    function balancePosition(
-        address market,
-        Position position,
-        uint amount
-    ) public view returns (uint) {
-        (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
-        uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
-        uint balanceOtherSideAfter =
-            balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
-        return balancePosition;
+    function testGetMarketDefaultOdds(address _market) external {
+        getMarketDefaultOdds(_market);
+        uint i = 1;
     }
 
     function _sellPriceImpact(
@@ -742,7 +749,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         Position position,
         uint amount
     ) internal view returns (uint) {
-        (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
+        // take the balanceOtherSideMinimum
+        (uint balancePosition, , uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter =
             balancePosition > 0 ? balancePosition.add(amount) : balanceOtherSide > amount ? 0 : amount.sub(balanceOtherSide);
         uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide.sub(amount) : 0;
@@ -807,27 +815,54 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return balance;
     }
 
-    function _balanceOfPositionsOnMarket(address market, Position position) internal view returns (uint, uint) {
+    function _balanceOfPositionsOnMarket(address market, Position position)
+        internal
+        view
+        returns (
+            uint,
+            uint,
+            uint
+        )
+    {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
-        uint balanceOtherSide =
+        uint balanceOtherSideMax =
             position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
+        uint balanceOtherSideMin = balanceOtherSideMax;
         if (ISportPositionalMarket(market).optionsCount() == 3) {
             uint homeBalance = home.getBalanceOf(address(this));
             uint awayBalance = away.getBalanceOf(address(this));
             uint drawBalance = draw.getBalanceOf(address(this));
             if (position == Position.Home) {
                 balance = homeBalance;
-                balanceOtherSide = awayBalance < drawBalance ? awayBalance : drawBalance;
+                if (awayBalance < drawBalance) {
+                    balanceOtherSideMax = drawBalance;
+                    balanceOtherSideMin = awayBalance;
+                } else {
+                    balanceOtherSideMax = awayBalance;
+                    balanceOtherSideMin = drawBalance;
+                }
             } else if (position == Position.Away) {
                 balance = awayBalance;
-                balanceOtherSide = homeBalance < drawBalance ? homeBalance : drawBalance;
-            } else {
+                if (homeBalance < drawBalance) {
+                    balanceOtherSideMax = drawBalance;
+                    balanceOtherSideMin = homeBalance;
+                } else {
+                    balanceOtherSideMax = homeBalance;
+                    balanceOtherSideMin = drawBalance;
+                }
+            } else if (position == Position.Draw) {
                 balance = drawBalance;
-                balanceOtherSide = homeBalance < awayBalance ? homeBalance : awayBalance;
+                if (homeBalance < awayBalance) {
+                    balanceOtherSideMax = awayBalance;
+                    balanceOtherSideMin = homeBalance;
+                } else {
+                    balanceOtherSideMax = homeBalance;
+                    balanceOtherSideMin = awayBalance;
+                }
             }
         }
-        return (balance, balanceOtherSide);
+        return (balance, balanceOtherSideMax, balanceOtherSideMin);
     }
 
     function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {

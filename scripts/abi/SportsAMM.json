@@ -395,35 +395,6 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
-      }
-    ],
-    "name": "balancePosition",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "enum SportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
       },
       {
         "internalType": "uint256",
@@ -1277,6 +1248,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "testGetMarketDefaultOdds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

@@ -20,6 +20,7 @@ import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
 import "../interfaces/ICurveSUSD.sol";
+import "hardhat/console.sol";
 
 /// @title Sports AMM contract
 /// @author kirilaa
@@ -354,14 +355,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return Returns the default odds for the `_market` including the price impact.
     function getMarketDefaultOdds(address _market) external view returns (uint[] memory) {
         uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-        Position position = Position.Home;
+        Position[3] memory position = [Position.Home, Position.Away, Position.Draw];
         for (uint i = 0; i < odds.length; i++) {
-            if (i == uint(Position.Away)) {
-                position = Position.Away;
-            } else if (i == uint(Position.Draw)) {
-                position = Position.Draw;
-            }
-            odds[i] = buyFromAmmQuote(_market, position, ONE);
+            odds[i] = buyFromAmmQuote(_market, position[i], ONE);
         }
         return odds;
     }
@@ -685,6 +681,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount
     ) internal view returns (uint) {
         (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
+
         uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
         uint balanceOtherSideAfter =
             balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
@@ -801,12 +798,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
-    function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint balance) {
+    function _balanceOfPositionOnMarket(address market, Position position) internal view returns (uint) {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
         if (ISportPositionalMarket(market).optionsCount() == 3 && position != Position.Home) {
             balance = position == Position.Away ? away.getBalanceOf(address(this)) : draw.getBalanceOf(address(this));
         }
+        return balance;
     }
 
     function _balanceOfPositionsOnMarket(address market, Position position) internal view returns (uint, uint) {

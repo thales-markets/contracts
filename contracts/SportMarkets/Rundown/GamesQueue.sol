@@ -18,7 +18,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     uint public firstCreated;
     uint public lastCreated;
     mapping(bytes32 => uint) public gameStartPerGameId;
-    mapping(bytes32 => uint) public sportPerGameId;
+    mapping(bytes32 => uint) public sportPerGameId; // delete
 
     // resolve games queue
     bytes32[] public unproccessedGames;
@@ -56,7 +56,6 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         unproccessedGames.push(data);
         unproccessedGamesIndex[data] = unproccessedGames.length - 1;
         gameStartPerGameId[data] = startTime;
-        sportPerGameId[data] = sportsId;
 
         emit EnqueueGamesCreated(data, sportsId, lastCreated);
     }

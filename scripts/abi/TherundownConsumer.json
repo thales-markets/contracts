@@ -832,6 +832,25 @@
         "type": "bytes32"
       }
     ],
+    "name": "gameIdPerRequestId",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
     "name": "gameOdds",
     "outputs": [
       {
@@ -906,25 +925,6 @@
       }
     ],
     "name": "gamesPerDate",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "gemeIdPerRequestId",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -1888,19 +1888,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_wrapperAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setWrapperAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
@@ -1911,7 +1898,20 @@
         "type": "bool"
       }
     ],
-    "name": "setwoPositionSport",
+    "name": "setTwoPositionSport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_wrapperAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setWrapperAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1956,7 +1956,7 @@
         "type": "uint256"
       }
     ],
-    "name": "suportResolveGameStatuses",
+    "name": "supportResolveGameStatuses",
     "outputs": [
       {
         "internalType": "bool",

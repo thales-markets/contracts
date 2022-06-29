@@ -394,13 +394,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Claiming and Exercising Options ---------- */
 
     function exerciseOptions() external override {
-        require(_matured(), "Not yet mature");
         // The market must be resolved if it has not been.
         // the first one to exercise pays the gas fees. Might be worth splitting it home.
         require(resolved, "Unresolved");
         // If the account holds no options, revert.
         (uint homeBalance, uint awayBalance, uint drawBalance) = _balancesOf(msg.sender);
-        // console.log(homeBalance, awayBalance, drawBalance);
         require(homeBalance != 0 || awayBalance != 0 || drawBalance != 0, "Nothing to exercise");
 
         // Each option only needs to be exercised if the account holds any of it.

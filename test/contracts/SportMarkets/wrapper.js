@@ -111,19 +111,19 @@ contract('TherundownConsumerWrapper', accounts => {
 
 		it('Test requests', async () => {
 			await expect(
-				wrapper.requestGames(toBytes32('RSX'), toUnit('1'), 'create', 4, 1655215501, {
+				wrapper.requestGames(toBytes32('RSX'), 'create', 4, 1655215501, {
 					from: second,
 				})
 			).to.be.revertedWith('No enough LINK for request');
 
 			await expect(
-				wrapper.requestGames(toBytes32('RSX'), toUnit('1'), 'create1', 4, 1655215501, {
+				wrapper.requestGames(toBytes32('RSX'), 'create1', 4, 1655215501, {
 					from: second,
 				})
 			).to.be.revertedWith('Market is not supported');
 
 			await expect(
-				wrapper.requestGames(toBytes32('RSX'), toUnit('1'), 'create', 5, 1655215501, {
+				wrapper.requestGames(toBytes32('RSX'), 'create', 5, 1655215501, {
 					from: second,
 				})
 			).to.be.revertedWith('SportId is not supported');

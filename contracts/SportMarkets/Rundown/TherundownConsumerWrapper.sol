@@ -65,11 +65,11 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         req.addStringArray("statusIds", _statusIds);
         req.addStringArray("gameIds", _gameIds);
 
+        _putLink(msg.sender);
+
         bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
-
-        _putLink(msg.sender);
     }
 
     /// @notice request of create/resolve games on a specific date with specific sport without filters
@@ -82,7 +82,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         string memory _market,
         uint256 _sportId,
         uint256 _date
-    ) public whenNotPaused isValidRequest(_market, _sportId) canSenderMakeRequest(chainlinkTokenAddress()){
+    ) public whenNotPaused isValidRequest(_market, _sportId) canSenderMakeRequest(chainlinkTokenAddress()) {
         Chainlink.Request memory req;
 
         if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
@@ -95,11 +95,11 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         req.add("market", _market);
         req.addUint("sportId", _sportId);
 
+        _putLink(msg.sender);
+
         bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
-
-        _putLink(msg.sender);
     }
 
     /// @notice request for odds in games on a specific date with specific sport with filters
@@ -112,7 +112,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint256 _sportId,
         uint256 _date,
         string[] memory _gameIds
-    ) public whenNotPaused canSenderMakeRequest(chainlinkTokenAddress()){
+    ) public whenNotPaused canSenderMakeRequest(chainlinkTokenAddress()) {
         require(consumer.isSupportedSport(_sportId), "SportId is not supported");
 
         Chainlink.Request memory req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesOdds.selector);
@@ -125,11 +125,11 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
             req.addStringArray("gameIds", _gameIds);
         }
 
+        _putLink(msg.sender);
+
         bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
-
-        _putLink(msg.sender);
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -171,6 +171,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     function getTokenAddress() public view returns (address) {
         return chainlinkTokenAddress();
     }
+
     /* ========== INTERNALS ========== */
 
     /// @notice send link to this contract
@@ -216,7 +217,6 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         require(consumer.isSupportedSport(_sportId), "SportId is not supported");
         _;
     }
-
 
     modifier canSenderMakeRequest(address _chainLinkAddress) {
         require(_chainLinkAddress != address(0), "Invalid address");

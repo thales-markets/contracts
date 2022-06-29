@@ -655,7 +655,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         if (balancePosition > 0) {
             uint newPriceForMintedOnes = newImpact.div(2);
             uint tempMultiplier = amount.sub(balancePosition).mul(newPriceForMintedOnes);
-            return tempMultiplier.div(amount);
+            return tempMultiplier.mul(ONE).div(amount).div(ONE);
         } else {
             uint previousSkew = balanceOtherSide;
             uint previousImpact = max_spread.mul(previousSkew.mul(ONE).div(maxPossibleSkew)).div(ONE);

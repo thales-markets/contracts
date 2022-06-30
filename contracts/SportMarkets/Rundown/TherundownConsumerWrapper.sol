@@ -6,6 +6,7 @@ pragma solidity ^0.8.0;
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
 import "@openzeppelin/contracts-4.4.1/security/Pausable.sol";
 import "@openzeppelin/contracts-4.4.1/access/Ownable.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
 // internal
 import "../../interfaces/ITherundownConsumer.sol";
@@ -14,11 +15,13 @@ import "../../interfaces/ITherundownConsumer.sol";
 /// @author gruja
 contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     using Chainlink for Chainlink.Request;
+    using SafeERC20 for IERC20;
 
     ITherundownConsumer public consumer;
     mapping(bytes32 => uint) public sportIdPerRequestId;
     mapping(bytes32 => uint) public datePerRequest;
     uint public payment;
+    IERC20 public linkToken;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -32,6 +35,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         setChainlinkOracle(_oracle);
         consumer = ITherundownConsumer(_consumer);
         payment = _payment;
+        linkToken = IERC20(_link);
     }
 
     /* ========== CONSUMER REQUEST FUNCTIONS ========== */
@@ -50,7 +54,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint256 _date,
         string[] memory _statusIds,
         string[] memory _gameIds
-    ) public whenNotPaused isValidRequest(_market, _sportId) canSenderMakeRequest(chainlinkTokenAddress()) {
+    ) public whenNotPaused isValidRequest(_market, _sportId) {
         Chainlink.Request memory req;
 
         if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
@@ -82,7 +86,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         string memory _market,
         uint256 _sportId,
         uint256 _date
-    ) public whenNotPaused isValidRequest(_market, _sportId) canSenderMakeRequest(chainlinkTokenAddress()) {
+    ) public whenNotPaused isValidRequest(_market, _sportId) {
         Chainlink.Request memory req;
 
         if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
@@ -112,7 +116,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint256 _sportId,
         uint256 _date,
         string[] memory _gameIds
-    ) public whenNotPaused canSenderMakeRequest(chainlinkTokenAddress()) {
+    ) public whenNotPaused {
         require(consumer.isSupportedSport(_sportId), "SportId is not supported");
 
         Chainlink.Request memory req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesOdds.selector);
@@ -174,12 +178,10 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /* ========== INTERNALS ========== */
 
-    /// @notice send link to this contract
+    /// @notice send link to this contract, check of allownece and balanceOf is checked in safeTransferFrom
     /// @param _sender address which pays LINK
     function _putLink(address _sender) internal {
-        LinkTokenInterface linkToken = LinkTokenInterface(chainlinkTokenAddress());
-        // TODO: use safe transfer
-        require(linkToken.transferFrom(_sender, address(this), payment), "Unable to put LINK");
+        linkToken.safeTransferFrom(_sender, address(this), payment);
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */
@@ -205,6 +207,14 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewConsumer(_consumer);
     }
 
+    /// @notice setting link address
+    /// @param _link address of a LINK which request will be paid
+    function setLink(address _link) external onlyOwner {
+        setChainlinkToken(_link);
+        linkToken = IERC20(_link);
+        emit NewLinkAddress(_link);
+    }
+
     /// @notice withdraw LINK token which is used for requests
     function withdrawLink() external onlyOwner {
         LinkTokenInterface linkToken = LinkTokenInterface(chainlinkTokenAddress());
@@ -219,18 +229,10 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         _;
     }
 
-    modifier canSenderMakeRequest(address _chainLinkAddress) {
-        require(_chainLinkAddress != address(0), "Invalid address");
-        LinkTokenInterface linkToken = LinkTokenInterface(_chainLinkAddress);
-        // TODO: if you use safeTransfer the below two are checked implicitely
-        require(linkToken.balanceOf(msg.sender) >= payment, "No enough LINK for request");
-        require(linkToken.allowance(msg.sender, address(this)) >= payment, "No allowance.");
-        _;
-    }
-
     /* ========== EVENTS ========== */
 
     event NewOracleAddress(address _oracle);
     event NewPaymentAmount(uint _payment);
     event NewConsumer(address _consumer);
+    event NewLinkAddress(address _link);
 }

@@ -83,6 +83,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_link",
+        "type": "address"
+      }
+    ],
+    "name": "NewLinkAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_oracle",
         "type": "address"
       }
@@ -262,6 +275,19 @@
   },
   {
     "inputs": [],
+    "name": "linkToken",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -409,6 +435,19 @@
       }
     ],
     "name": "setConsumer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_link",
+        "type": "address"
+      }
+    ],
+    "name": "setLink",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

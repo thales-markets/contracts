@@ -107,6 +107,19 @@ contract('TherundownConsumerWrapper', accounts => {
 			assert.eventEqual(tx_payment.logs[0], 'NewPaymentAmount', {
 				_payment: payment,
 			});
+
+			const tx_link = await wrapper.setLink(first, {
+				from: owner,
+			});
+
+			await expect(wrapper.setLink(first, { from: first })).to.be.revertedWith(
+				'Ownable: caller is not the owner'
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_link.logs[0], 'NewLinkAddress', {
+				_link: first,
+			});
 		});
 
 		it('Test requests', async () => {
@@ -114,7 +127,7 @@ contract('TherundownConsumerWrapper', accounts => {
 				wrapper.requestGames(toBytes32('RSX'), 'create', 4, 1655215501, {
 					from: second,
 				})
-			).to.be.revertedWith('No enough LINK for request');
+			).to.be.revertedWith('SafeMath: subtraction overflow');
 
 			await expect(
 				wrapper.requestGames(toBytes32('RSX'), 'create1', 4, 1655215501, {

@@ -172,10 +172,15 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint _date
     ) external onlyWrapper {
         requestIdGamesOdds[_requestId] = _games;
-        oddsLastPulledForDate[_date] = block.timestamp;
+        
+        if(_games.length > 0){
+            oddsLastPulledForDate[_date] = block.timestamp;
+        }
+        
         for (uint i = 0; i < _games.length; i++) {
             GameOdds memory game = abi.decode(_games[i], (GameOdds));
-            if(gameFulfilledCreated[game.gameId]){
+            // game needs to be fulfilled and market needed to be created 
+            if(gameFulfilledCreated[game.gameId] && marketPerGameId[game.gameId] != address(0)){
                 _oddsGameFulfill(_requestId, game);
             }
         }
@@ -412,12 +417,23 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
+        // if odds are valid store them if not pause market
         if(_areOddsValid(_game)){
+
             gameOdds[_game.gameId] = _game;
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
+            if(sportsManager.isMarketPaused(marketPerGameId[_game.gameId])){
+                sportsManager.setMarketPaused(marketPerGameId[_game.gameId], false);
+            }
+
             emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
         }else{
+
+            if(!sportsManager.isMarketPaused(marketPerGameId[_game.gameId])){
+                sportsManager.setMarketPaused(marketPerGameId[_game.gameId], true);
+            }
+
             emit InvalidOddsForMarket(requestId, marketPerGameId[_game.gameId], _game.gameId, _game);
         }
     }

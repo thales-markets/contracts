@@ -89,6 +89,10 @@ contract('TheRundownConsumer', accounts => {
 	let gameid1;
 	let oddsid;
 	let oddsResult;
+	let oddsid_1;
+	let oddsResult_1;
+	let oddsResultArray_1;
+	let reqIdOdds_1;
 	let oddsResultArray;
 	let reqIdOdds;
 	let gameid2;
@@ -212,6 +216,12 @@ contract('TheRundownConsumer', accounts => {
 			'0x6135363061373861363135353239363137366237393232353866616336613532000000000000000000000000000000000000000000000000000000000000283cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3dc0000000000000000000000000000000000000000000000000000000000000000';
 		oddsResultArray = [oddsResult];
 		reqIdOdds = '0x5bf0ea636f9515e1e1060e5a21e11ef8a628fa99b1effb8aa18624b02c6f36de';
+
+		oddsid_1 = '0x3163626162623163303138373465363263313661316462333164363164353333';
+		oddsResult_1 =
+			'0x3163626162623163303138373465363263313661316462333164363164353333000000000000000000000000000000000000000000000000000000000000283cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3dc0000000000000000000000000000000000000000000000000000000000000000';
+		oddsResultArray_1 = [oddsResult_1];
+		reqIdOdds_1 = '0x5bf0ea636f9515e1e1060e5a21e11ef8a628fa99b1effb8aa18624b02c6f36de';
 
 		TherundownConsumer = artifacts.require('TherundownConsumer');
 		TherundownConsumerDeployed = await TherundownConsumer.new();
@@ -1136,7 +1146,7 @@ contract('TheRundownConsumer', accounts => {
 	});
 
 	describe('Odds for game', () => {
-		it('Get odds per game, check results', async () => {
+		it('Get odds per game, check results, geme not created', async () => {
 			// req. games
 			const tx = await TherundownConsumerDeployed.fulfillGamesOdds(
 				reqIdOdds,
@@ -1147,9 +1157,83 @@ contract('TheRundownConsumer', accounts => {
 				}
 			);
 
-			assert.bnEqual(10300, await TherundownConsumerDeployed.getOddsHomeTeam(oddsid));
-			assert.bnEqual(-11300, await TherundownConsumerDeployed.getOddsAwayTeam(oddsid));
+			// game not created so zero odds
+			assert.bnEqual(0, await TherundownConsumerDeployed.getOddsHomeTeam(oddsid));
+			assert.bnEqual(0, await TherundownConsumerDeployed.getOddsAwayTeam(oddsid));
 			assert.bnEqual(0, await TherundownConsumerDeployed.getOddsDraw(oddsid));
+		});
+
+		it('Get odds per game, check results', async () => {
+			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
+				gameFootballTime,
+				{ from: wrapper }
+			);
+
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
+
+			assert.equal(
+				game_1_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
+			);
+			assert.equal(
+				game_2_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
+			);
+
+			assert.bnEqual(40000, await TherundownConsumerDeployed.getOddsHomeTeam(gameFootballid1));
+			assert.bnEqual(-12500, await TherundownConsumerDeployed.getOddsAwayTeam(gameFootballid1));
+			assert.bnEqual(27200, await TherundownConsumerDeployed.getOddsDraw(gameFootballid1));
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			assert.equal('Atletico Madrid Atletico Madrid', game.homeTeam);
+			assert.equal('Manchester City Manchester City', game.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdFootballCreate,
+				_sportId: sportId_16,
+				_id: gameFootballid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid1,
+				_game: game,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9016, await deployedMarket.tags(0));
+
+			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
+				reqIdOdds_1,
+				oddsResultArray_1,
+				game1NBATime,
+				{
+					from: wrapper,
+				}
+			);
+
+			// game not created so zero odds
+			assert.bnEqual(10300, await TherundownConsumerDeployed.getOddsHomeTeam(oddsid_1));
+			assert.bnEqual(-11300, await TherundownConsumerDeployed.getOddsAwayTeam(oddsid_1));
+			assert.bnEqual(0, await TherundownConsumerDeployed.getOddsDraw(oddsid_1));
 		});
 	});
 

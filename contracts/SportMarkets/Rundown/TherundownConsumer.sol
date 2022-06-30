@@ -175,7 +175,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         oddsLastPulledForDate[_date] = block.timestamp;
         for (uint i = 0; i < _games.length; i++) {
             GameOdds memory game = abi.decode(_games[i], (GameOdds));
-            _oddsGameFulfill(_requestId, game);
+            if(gameFulfilledCreated[game.gameId]){
+                _oddsGameFulfill(_requestId, game);
+            }
         }
     }
 

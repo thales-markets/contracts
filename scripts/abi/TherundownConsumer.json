@@ -302,6 +302,59 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct TherundownConsumer.GameOdds",
+        "name": "_game",
+        "type": "tuple"
+      }
+    ],
+    "name": "InvalidOddsForMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "contract GamesQueue",
         "name": "_queues",
         "type": "address"

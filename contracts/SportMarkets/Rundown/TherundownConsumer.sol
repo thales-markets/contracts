@@ -417,6 +417,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
             emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
+        }else{
+            emit InvalidOddsForMarket(requestId, marketPerGameId[_game.gameId], _game.gameId, _game);
         }
     }
 
@@ -721,6 +723,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game, uint[] _tags, uint[] _normalizedOdds);
     event ResolveSportsMarket(address _marketAddress, bytes32 _id, uint _outcome);
     event CancelSportsMarket(address _marketAddress, bytes32 _id);
+    event InvalidOddsForMarket(bytes32 _requestId, address _marketAddress, bytes32 _id, GameOdds _game);
     event SupportedSportsChanged(uint _sportId, bool _isSupported);
     event SupportedResolvedStatusChanged(uint _status, bool _isSupported);
     event SupportedCancelStatusChanged(uint _status, bool _isSupported);

@@ -155,7 +155,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _result() internal view returns (Side) {
-        if (cancelled) {
+        if (!resolved || cancelled) {
             return Side.Cancelled;
         } else if (finalResult == 3 && optionsCount > 2) {
             return Side.Draw;

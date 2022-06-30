@@ -336,7 +336,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function canExerciseMaturedMarket(address market) public view returns (bool) {
         if (
             ISportPositionalMarketManager(manager).isKnownMarket(market) &&
-            (ISportPositionalMarket(market).phase() == ISportPositionalMarket.Phase.Maturity)
+            (ISportPositionalMarket(market).phase() == ISportPositionalMarket.Phase.Maturity ||
+                ISportPositionalMarket(market).cancelled())
         ) {
             (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
             if (
@@ -506,11 +507,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     function exerciseMaturedMarket(address market) external {
-        require(
-            ISportPositionalMarket(market).phase() == ISportPositionalMarket.Phase.Maturity,
-            "Market is not in Maturity phase"
-        );
-        require(ISportPositionalMarketManager(manager).isKnownMarket(market), "Unknown market");
         require(canExerciseMaturedMarket(market), "No options to exercise");
         ISportPositionalMarket(market).exerciseOptions();
     }
@@ -724,7 +720,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint maxPossibleSkew = balanceOtherSide.add(availableToBuyFromAMM(market, position)).sub(balancePosition);
         uint skew = balanceOtherSideAfter.sub(balancePositionAfter);
         uint newImpact = max_spread.mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE);
-        console.log("newImpact: ", newImpact);
         if (balancePosition > 0) {
             if (balancePosition > amount) {
                 return 0;

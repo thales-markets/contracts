@@ -78,7 +78,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function isActiveMarket(address candidate) public view override returns (bool) {
-        return _activeMarkets.contains(candidate);
+        return _activeMarkets.contains(candidate) && !ISportPositionalMarket(candidate).paused();
     }
 
     function numActiveMarkets() external view override returns (uint) {
@@ -103,6 +103,16 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     function maturedMarkets(uint index, uint pageSize) external view override returns (address[] memory) {
         return _maturedMarkets.getPage(index, pageSize);
+    }
+
+    function setMarketPaused(address _market, bool _paused) external override {
+        require(msg.sender == owner || msg.sender == theRundownConsumer, "Invalid caller");
+        require(ISportPositionalMarket(_market).paused() != _paused, "No state change");
+        ISportPositionalMarket(_market).setPaused(_paused);
+    }
+
+    function isMarketPaused(address _market) external view override returns (bool) {
+        return ISportPositionalMarket(_market).paused();
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */

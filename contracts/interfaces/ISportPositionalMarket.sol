@@ -38,6 +38,8 @@ interface ISportPositionalMarket {
 
     function cancelled() external view returns (bool);
 
+    function paused() external view returns (bool);
+
     function phase() external view returns (Phase);
 
     function canResolve() external view returns (bool);
@@ -74,6 +76,8 @@ interface ISportPositionalMarket {
     function getMaximumBurnable(address account) external view returns (uint amount);
 
     /* ========== MUTATIVE FUNCTIONS ========== */
+
+    function setPaused(bool _paused) external;
 
     function mint(uint value) external;
 

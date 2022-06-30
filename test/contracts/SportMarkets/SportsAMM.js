@@ -1342,6 +1342,13 @@ contract('SportsAMM', accounts => {
 			assert.equal(answer, true);
 		});
 
+		it('Pause market', async () => {
+			await SportPositionalMarketManager.setMarketPaused(deployedMarket.address, true);
+			answer = await SportsAMM.isMarketInAMMTrading(deployedMarket.address);
+			// assert.equal(answer, false);
+			assert.equal(answer, false);
+		});
+
 		it('Get odds', async () => {
 			answer = await SportsAMM.obtainOdds(deployedMarket.address, 0);
 			let sumOfOdds = answer;

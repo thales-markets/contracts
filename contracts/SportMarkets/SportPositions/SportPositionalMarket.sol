@@ -78,6 +78,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     bool public invalidOdds;
     bool public initialized = false;
+    bool public override paused;
 
     /* ========== CONSTRUCTOR ========== */
     function initialize(SportPositionalMarketParameters calldata _parameters) external {
@@ -144,10 +145,16 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         return Phase.Expiry;
     }
 
+    function setPaused(bool _paused) external override onlyOwner managerNotPaused {
+        require(paused != _paused, "State not changed");
+        paused = _paused;
+        emit PauseUpdated(_paused);
+    }
+
     /* ---------- Market Resolution ---------- */
 
     function canResolve() public view override returns (bool) {
-        return !resolved && _matured();
+        return !resolved && _matured() && !paused;
     }
 
     function getGameDetails() external view override returns (bytes32 gameId, string memory gameLabel) {
@@ -301,7 +308,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Minting ---------- */
 
     function mint(uint value) external override {
-        require(!_matured(), "Minting inactive");
+        require(!_matured() && !paused, "Minting inactive");
         require(msg.sender == sportsAMM, "Invalid minter");
         if (value == 0) {
             return;
@@ -334,6 +341,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     function _burnOptions(address account, uint amount) internal {
         require(amount > 0, "Can not burn zero amount!");
+        require(!paused, "Market paused");
         require(_getMaximumBurnable(account) >= amount, "There is not enough options!");
 
         // decrease deposit
@@ -397,6 +405,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         // The market must be resolved if it has not been.
         // the first one to exercise pays the gas fees. Might be worth splitting it home.
         require(resolved, "Unresolved");
+        require(!paused, "Paused");
         // If the account holds no options, revert.
         (uint homeBalance, uint awayBalance, uint drawBalance) = _balancesOf(msg.sender);
         require(homeBalance != 0 || awayBalance != 0 || drawBalance != 0, "Nothing to exercise");
@@ -505,4 +514,5 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     event SetTherundownConsumer(address _address);
     event Expired(address beneficiary);
     event StoredOddsOnCancellation(uint homeOdds, uint awayOdds, uint drawOdds);
+    event PauseUpdated(bool _paused);
 }

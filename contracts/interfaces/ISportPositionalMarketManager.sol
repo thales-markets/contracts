@@ -28,6 +28,8 @@ interface ISportPositionalMarketManager {
 
     function reverseTransformCollateral(uint value) external view returns (uint);
 
+    function isMarketPaused(address _market) external view returns (bool);
+
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function createMarket(
@@ -38,6 +40,8 @@ interface ISportPositionalMarketManager {
         uint positionCount,
         uint[] memory tags
     ) external returns (ISportPositionalMarket);
+
+    function setMarketPaused(address _market, bool _paused) external;
 
     function resolveMarket(address market, uint outcome) external;
 

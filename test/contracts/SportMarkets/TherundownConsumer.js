@@ -93,6 +93,10 @@ contract('TheRundownConsumer', accounts => {
 	let oddsResult_1;
 	let oddsResultArray_1;
 	let reqIdOdds_1;
+	let oddsid_2;
+	let oddsResult_2;
+	let oddsResultArray_2;
+	let reqIdOdds_2;
 	let oddsResultArray;
 	let reqIdOdds;
 	let gameid2;
@@ -222,6 +226,12 @@ contract('TheRundownConsumer', accounts => {
 			'0x3163626162623163303138373465363263313661316462333164363164353333000000000000000000000000000000000000000000000000000000000000283cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3dc0000000000000000000000000000000000000000000000000000000000000000';
 		oddsResultArray_1 = [oddsResult_1];
 		reqIdOdds_1 = '0x5bf0ea636f9515e1e1060e5a21e11ef8a628fa99b1effb8aa18624b02c6f36de';
+
+		oddsid_2 = '0x6536306366613738303834366166363839373862343935373965356366333936';
+		oddsResult_2 =
+			'0x6536306366613738303834366166363839373862343935373965356366333936000000000000000000000000000000000000000000000000000000000000283cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3dc0000000000000000000000000000000000000000000000000000000000000000';
+		oddsResultArray_2 = [oddsResult_2];
+		reqIdOdds_2 = '0x5bf0ea636f9515e1e1060e5a21e11ef8a628fa99b1effb8aa18624b02c6f36de';
 
 		TherundownConsumer = artifacts.require('TherundownConsumer');
 		TherundownConsumerDeployed = await TherundownConsumer.new();
@@ -1146,7 +1156,7 @@ contract('TheRundownConsumer', accounts => {
 	});
 
 	describe('Odds for game', () => {
-		it('Get odds per game, check results, geme not created', async () => {
+		it('Get odds per game, check results, geme not created, no odds created', async () => {
 			// req. games
 			const tx = await TherundownConsumerDeployed.fulfillGamesOdds(
 				reqIdOdds,
@@ -1163,7 +1173,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.bnEqual(0, await TherundownConsumerDeployed.getOddsDraw(oddsid));
 		});
 
-		it('Get odds per game, check results', async () => {
+		it('Get odds per game, check results, invalid odds', async () => {
 			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
 
 			// req. games
@@ -1221,6 +1231,7 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal(false, await deployedMarket.canResolve());
 			assert.equal(9016, await deployedMarket.tags(0));
 
+			// invalid odds zero as draw
 			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
 				reqIdOdds_1,
 				oddsResultArray_1,
@@ -1230,10 +1241,116 @@ contract('TheRundownConsumer', accounts => {
 				}
 			);
 
-			// game not created so zero odds
-			assert.bnEqual(10300, await TherundownConsumerDeployed.getOddsHomeTeam(oddsid_1));
-			assert.bnEqual(-11300, await TherundownConsumerDeployed.getOddsAwayTeam(oddsid_1));
-			assert.bnEqual(0, await TherundownConsumerDeployed.getOddsDraw(oddsid_1));
+			assert.bnEqual(40000, await TherundownConsumerDeployed.getOddsHomeTeam(gameFootballid1));
+			assert.bnEqual(-12500, await TherundownConsumerDeployed.getOddsAwayTeam(gameFootballid1));
+			assert.bnEqual(27200, await TherundownConsumerDeployed.getOddsDraw(gameFootballid1));
+		});
+
+		it('Get odds per game, check results, valid odds', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+
+			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
+			assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			assert.bnEqual(gameid1, await TherundownConsumerDeployed.gamesPerDate(game1NBATime, 0));
+			let getGamesPerdate = await TherundownConsumerDeployed.getGamesPerdate(game1NBATime);
+			assert.bnEqual(2, getGamesPerdate.length);
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
+
+			assert.bnEqual(-20700, await TherundownConsumerDeployed.getOddsHomeTeam(gameid1));
+			assert.bnEqual(17700, await TherundownConsumerDeployed.getOddsAwayTeam(gameid1));
+			assert.notEqual(0, await TherundownConsumerDeployed.getGameTime(gameid1));
+			assert.notEqual(
+				0,
+				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(-20700)
+			);
+			assert.notEqual(
+				0,
+				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(17700)
+			);
+			assert.bnEqual(0, await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(0));
+
+			assert.equal(
+				game_1_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
+			);
+			assert.equal(
+				game_2_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
+			);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
+			let gameTime = game.startTime;
+			assert.equal('Atlanta Hawks', game.homeTeam);
+			assert.equal('Charlotte Hornets', game.awayTeam);
+
+			let game_per_req = await TherundownConsumerDeployed.getGameCreatedByRequestId(reqIdCreate, 0);
+			assert.equal('Atlanta Hawks', game_per_req.homeTeam);
+			assert.equal('Charlotte Hornets', game_per_req.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdCreate,
+				_sportId: sportId_4,
+				_id: gameid1,
+				_game: game,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+				_game: game,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9004, await deployedMarket.tags(0));
+
+			// invalid odds zero as draw
+			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
+				reqIdOdds_2,
+				oddsResultArray_2,
+				game1NBATime,
+				{
+					from: wrapper,
+				}
+			);
+
+			assert.bnEqual(10300, await TherundownConsumerDeployed.getOddsHomeTeam(gameid1));
+			assert.bnEqual(-11300, await TherundownConsumerDeployed.getOddsAwayTeam(gameid1));
+			assert.bnEqual(0, await TherundownConsumerDeployed.getOddsDraw(gameid1));
 		});
 	});
 

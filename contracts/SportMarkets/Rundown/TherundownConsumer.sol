@@ -412,12 +412,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
-        //TODO: what about some validation that odds make sense?
-        //TODO: what if we had odds before but arent receiving odds now? The trading should be seized
-        gameOdds[_game.gameId] = _game;
-        oddsLastPulledForGame[_game.gameId] = block.timestamp;
+        if(_areOddsValid(_game)){
+            gameOdds[_game.gameId] = _game;
+            oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
-        emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
+            emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
+        }
     }
 
     function _populateSports(uint[] memory _supportedSportIds) internal {
@@ -557,6 +557,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             return RESULT_DRAW;
         }
         return _game.homeScore > _game.awayScore ? HOME_WIN : AWAY_WIN;
+    }
+
+    function _areOddsValid(GameOdds memory _game) internal view returns (bool) {
+        if(isSportTwoPositionsSport(sportsIdPerGame[_game.gameId])){
+            return _game.awayOdds != 0 && _game.homeOdds != 0;
+        }else{
+            return _game.awayOdds != 0 && _game.homeOdds != 0 && _game.drawOdds != 0;
+        }
     }
 
     function _isValidOutcomeForGame(bytes32 _gameId, uint _outcome) internal view returns (bool) {

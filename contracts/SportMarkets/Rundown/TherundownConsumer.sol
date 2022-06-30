@@ -83,10 +83,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     // game
     GamesQueue public queues;
-    mapping(bytes32 => uint) public oddsLastPulledForGame; // delete
+    mapping(bytes32 => uint) public oddsLastPulledForGame;
     mapping(bytes32 => bytes32) public gameIdPerRequestId; // delete
     mapping(uint => bytes32[]) public gamesPerDate;
-    mapping(uint => uint) public oddsLastPulledForDate; // delete
+    mapping(uint => uint) public oddsLastPulledForDate;
     mapping(uint => mapping(uint => bool)) public isSportOnADate;
 
     /* ========== CONSTRUCTOR ========== */
@@ -127,6 +127,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         if (_games.length > 0) {
             isSportOnADate[_date][_sportId] = true;
+            oddsLastPulledForDate[_date] = block.timestamp;
         }
 
         for (uint i = 0; i < _games.length; i++) {
@@ -171,6 +172,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint _date
     ) external onlyWrapper {
         requestIdGamesOdds[_requestId] = _games;
+        oddsLastPulledForDate[_date] = block.timestamp;
         for (uint i = 0; i < _games.length; i++) {
             GameOdds memory game = abi.decode(_games[i], (GameOdds));
             _oddsGameFulfill(_requestId, game);
@@ -388,6 +390,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         queues.enqueueGamesCreated(_game.gameId, _game.startTime, _sportId);
         gameFulfilledCreated[_game.gameId] = true;
         gameOdds[_game.gameId] = GameOdds(_game.gameId, _game.homeOdds, _game.awayOdds, _game.drawOdds);
+        oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
         emit GameCreated(requestId, _sportId, _game.gameId, _game, queues.lastCreated(), getNormalizedOdds(_game.gameId));
     }
@@ -410,6 +413,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         //TODO: what about some validation that odds make sense?
         //TODO: what if we had odds before but arent receiving odds now? The trading should be seized
         gameOdds[_game.gameId] = _game;
+        oddsLastPulledForGame[_game.gameId] = block.timestamp;
+
         emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
     }
 

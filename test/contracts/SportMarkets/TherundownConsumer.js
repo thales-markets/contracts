@@ -710,10 +710,12 @@ contract('TheRundownConsumer', accounts => {
 				{ from: wrapper }
 			);
 
-			assert.equal(
-				game_1_football_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 0)
+			let game_resolve = await TherundownConsumerDeployed.getGameResolvedByRequestId(
+				reqIdResolveFoodball,
+				0
 			);
+			assert.equal(gameFootballid1, game_resolve.gameId);
+
 			assert.equal(
 				game_2_football_resolve,
 				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 1)
@@ -816,6 +818,11 @@ contract('TheRundownConsumer', accounts => {
 				gamesResolvedFootball,
 				sportId_16,
 				{ from: wrapper }
+			);
+
+			assert.equal(
+				game_1_football_resolve,
+				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 0)
 			);
 
 			assert.equal(
@@ -1518,6 +1525,165 @@ contract('TheRundownConsumer', accounts => {
 			assert.eventEqual(tx_QueueAddress.logs[0], 'NewQueueAddress', {
 				_queues: wrapper,
 			});
+		});
+	});
+	describe('Game management', () => {
+		it('Test created queue', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+			assert.equal(1, await gamesQueue.firstCreated());
+			assert.equal(2, await gamesQueue.lastCreated());
+
+			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
+
+			const tx_remove = await TherundownConsumerDeployed.removeFromCreatedQueue({ from: third });
+
+			assert.equal(2, await gamesQueue.firstCreated());
+			assert.equal(2, await gamesQueue.lastCreated());
+
+			const tx_remove_2 = await TherundownConsumerDeployed.removeFromCreatedQueue({ from: third });
+
+			assert.equal(3, await gamesQueue.firstCreated());
+			assert.equal(2, await gamesQueue.lastCreated());
+		});
+
+		it('Unprocessed games', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(false, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			assert.equal(gameid1, await gamesQueue.gamesCreateQueue(1));
+			assert.equal(gameid2, await gamesQueue.gamesCreateQueue(2));
+
+			assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
+			assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
+
+			const tx_remove = await TherundownConsumerDeployed.removeFromUnprocessedGamesArray(0, {
+				from: third,
+			});
+
+			// changed from 1 -> 0
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
+			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+		});
+
+		it('Test resolved queue', async () => {
+			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
+
+			// req games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
+				gameFootballTime,
+				{ from: wrapper }
+			);
+
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
+
+			assert.equal(
+				game_1_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
+			);
+			assert.equal(
+				game_2_football_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
+			);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
+			assert.equal('Liverpool Liverpool', game.homeTeam);
+			assert.equal('Benfica Benfica', game.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[1], 'GameCreated', {
+				_requestId: reqIdFootballCreate,
+				_sportId: sportId_16,
+				_id: gameFootballid2,
+				_game: game,
+			});
+
+			await expect(
+				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
+			).to.be.revertedWith('Must be first in a queue');
+
+			// clean first in queue
+			await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameFootballid2,
+				_game: game,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('1');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9016, await deployedMarket.tags(0));
+
+			await expect(
+				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
+			).to.be.revertedWith('Market for game already exists');
+
+			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
+
+			assert.equal(true, await deployedMarket.canResolve());
+
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolveFoodball,
+				gamesResolvedFootball,
+				sportId_16,
+				{ from: wrapper }
+			);
+
+			assert.equal(gameFootballid1, await gamesQueue.gamesResolvedQueue(1));
+			assert.equal(gameFootballid2, await gamesQueue.gamesResolvedQueue(2));
+			assert.equal(1, await gamesQueue.firstResolved());
+			assert.equal(2, await gamesQueue.lastResolved());
+
+			const tx_remove = await TherundownConsumerDeployed.removeFromResolvedQueue({ from: third });
+
+			assert.equal(2, await gamesQueue.firstResolved());
+			assert.equal(2, await gamesQueue.lastResolved());
+
+			const tx_remove_2 = await TherundownConsumerDeployed.removeFromResolvedQueue({ from: third });
+
+			assert.equal(3, await gamesQueue.firstResolved());
+			assert.equal(2, await gamesQueue.lastResolved());
 		});
 	});
 });

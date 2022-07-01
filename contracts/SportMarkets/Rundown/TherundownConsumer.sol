@@ -640,18 +640,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== GAMES MANAGEMENT ========== */
 
     /// @notice remove first game in a created queue if needed
-    function removeFromCreatedQueue() external onlyOwner {
+    function removeFromCreatedQueue() external isAddressWhitelisted {
         queues.dequeueGamesCreated();
     }
 
     /// @notice remove first game in a resolved queue if needed
-    function removeFromResolvedQueue() external onlyOwner {
+    function removeFromResolvedQueue() external isAddressWhitelisted {
         queues.dequeueGamesResolved();
     }
 
     /// @notice remove from unprocessed games array based on index
     /// @param _index index which needed to be removed
-    function removeFromUnprocessedGamesArray(uint _index) external onlyOwner {
+    function removeFromUnprocessedGamesArray(uint _index) external isAddressWhitelisted {
         queues.removeItemUnproccessedGames(_index);
     }
 

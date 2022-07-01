@@ -116,6 +116,7 @@ contract('TheRundownConsumer', accounts => {
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
+	let dummyAddress;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -232,6 +233,8 @@ contract('TheRundownConsumer', accounts => {
 			'0x6536306366613738303834366166363839373862343935373965356366333936000000000000000000000000000000000000000000000000000000000000283cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd3dc0000000000000000000000000000000000000000000000000000000000000000';
 		oddsResultArray_2 = [oddsResult_2];
 		reqIdOdds_2 = '0x5bf0ea636f9515e1e1060e5a21e11ef8a628fa99b1effb8aa18624b02c6f36de';
+
+		dummyAddress = '0xb69e74324bc030f1b8889236efa461496d439226';
 
 		TherundownConsumer = artifacts.require('TherundownConsumer');
 		TherundownConsumerDeployed = await TherundownConsumer.new();
@@ -1152,6 +1155,76 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
+		});
+
+		it('Pause-unpause market manually, check results', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			await expect(
+				TherundownConsumerDeployed.pauseOrUnpauseGameManually(gameid1, false, { from: third })
+			).to.be.revertedWith('No market address');
+
+			await expect(
+				TherundownConsumerDeployed.pauseOrUnpauseMarketManually(dummyAddress, true, { from: third })
+			).to.be.revertedWith('Game not existing');
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			await expect(
+				TherundownConsumerDeployed.pauseOrUnpauseGameManually(gameid1, true, { from: third })
+			).to.be.revertedWith('No market address');
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			await expect(
+				TherundownConsumerDeployed.pauseOrUnpauseGameManually(gameid1, false, { from: third })
+			).to.be.revertedWith('Already paused/unpaused');
+
+			const tx_pause = await TherundownConsumerDeployed.pauseOrUnpauseGameManually(gameid1, true, {
+				from: third,
+			});
+
+			// check if event is emited
+			assert.eventEqual(tx_pause.logs[0], 'PauseSportsMarket', {
+				_marketAddress: marketAdd,
+				_pause: true,
+			});
+
+			await expect(
+				TherundownConsumerDeployed.pauseOrUnpauseMarketManually(marketAdd, true, { from: third })
+			).to.be.revertedWith('Already paused/unpaused');
+
+			const tx_unpause = await TherundownConsumerDeployed.pauseOrUnpauseMarketManually(
+				marketAdd,
+				false,
+				{ from: third }
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_unpause.logs[0], 'PauseSportsMarket', {
+				_marketAddress: marketAdd,
+				_pause: false,
+			});
+
+			await fastForward(await currentTime());
+
+			const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(marketAdd, {
+				from: third,
+			});
+
+			await expect(
+				TherundownConsumerDeployed.pauseOrUnpauseMarketManually(marketAdd, true, { from: third })
+			).to.be.revertedWith('Market resoved or canceled');
 		});
 	});
 

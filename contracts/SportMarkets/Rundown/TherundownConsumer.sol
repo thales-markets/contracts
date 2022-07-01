@@ -229,6 +229,20 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         _cancelMarketManually(_market);
     }
 
+    /// @notice pause/unpause market for a given game id
+    /// @param _gameId game id
+    /// @param _pause pause = true, unpause = false
+    function pauseOrUnpauseGameManually(bytes32 _gameId, bool _pause) external isAddressWhitelisted canGameBePaused(marketPerGameId[_gameId], _pause) {
+        _pauseOrUnpauseMarketManually(marketPerGameId[_gameId], _pause);
+    }
+
+    /// @notice pause/unpause market for a given market address
+    /// @param _market market address
+    /// @param _pause pause = true, unpause = false
+    function pauseOrUnpauseMarketManually(address _market, bool _pause) external isAddressWhitelisted canGameBePaused(_market, _pause) {
+        _pauseOrUnpauseMarketManually(_market, _pause);
+    }
+
     /* ========== VIEW FUNCTIONS ========== */
 
     /// @notice returns game created based on CL request id and index of a game in a array
@@ -539,6 +553,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit CancelSportsMarket(_market, gameIdPerMarket[_market]);
     }
 
+    function _pauseOrUnpauseMarketManually(address _market, bool _pause) internal {
+        sportsManager.setMarketPaused(_market, _pause);
+        emit PauseSportsMarket(_market, _pause);
+    }
+
     function _cleanStorageQueue(uint index) internal {
         queues.dequeueGamesResolved();
         queues.removeItemUnproccessedGames(index);
@@ -724,6 +743,15 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(_isValidOutcomeForGame(_gameId, _outcome) , "Bad outcome.");
         _;
     } 
+
+    modifier canGameBePaused(address _market, bool _pause) {
+        require(_market != address(0), "No market address");
+        require(gameFulfilledCreated[gameIdPerMarket[_market]], "Game not existing");
+        require(gameIdPerMarket[_market] != 0 , "Market not existing");
+        require(!isGameResolvedOrCanceled(gameIdPerMarket[_market]), "Market resoved or canceled");
+        require(sportsManager.isMarketPaused(_market) != _pause, "Already paused/unpaused");
+        _;
+    } 
     /* ========== EVENTS ========== */
 
     event GameCreated(
@@ -738,6 +766,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event GameOddsAdded(bytes32 _requestId, bytes32 _id, GameOdds _game, uint[] _normalizedOdds);
     event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game, uint[] _tags, uint[] _normalizedOdds);
     event ResolveSportsMarket(address _marketAddress, bytes32 _id, uint _outcome);
+    event PauseSportsMarket(address _marketAddress, bool _pause);
     event CancelSportsMarket(address _marketAddress, bytes32 _id);
     event InvalidOddsForMarket(bytes32 _requestId, address _marketAddress, bytes32 _id, GameOdds _game);
     event SupportedSportsChanged(uint _sportId, bool _isSupported);

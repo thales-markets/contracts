@@ -94,7 +94,8 @@
 		"OpThales_L1": "0x8947da500Eb47F82df21143D0C01A29862a8C3c5",
 		"InvestorsAirdropUnclaimedRetro": "0x4f896abE9E28C2Db248a8DdAC205ca1cf84A2771",
 		"VestingEscrowInvestors": "0x088c6Ad16ba124F1d40fD2A3EDe63ef2E8dAe39f",
-		"VestingEscrowInvestorsImplementation": "0xcA52bcA5Bd68B75b38a0ef2bAC683fC245e0F912"
+		"VestingEscrowInvestorsImplementation": "0xcA52bcA5Bd68B75b38a0ef2bAC683fC245e0F912",
+		"ThalesCouncilNFT": "0xA71F5fACaF3e021897931BE44b10d68F89EC6a3B"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

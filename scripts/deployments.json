@@ -260,11 +260,11 @@
 		"SportsAMMImplementation": "0x1F68cCb315a493ECBd853044f00601417b68604e",
 		"SportPositionalMarketData": "0xa463f269787f9d2446BB8d6916cbaE2cfdE08805",
 		"SportPositionalMarketDataImplementation": "0xf24b9AD35F049732C9ca05a53aF4CE7E86708BeF",
-		"GamesQueue": "0x170b4acD71Ccc896f04d28D1AAbAd3b5BF01458F",
-		"GamesQueueImplementation": "0x898392a5Bd0029fCD55492c7cBD7442bafcFb71c",
-		"TherundownConsumer": "0x2C19a76baAc63b136784308f667CB54046efAd0A",
-		"TherundownConsumerImplementation": "0x915710dAa73DE8FDffe70E2B6d8e36959685269B",
-		"TherundownConsumerWrapper": "0x9EA64Da708ba3CB90457a1659fAcA2083bb2E094"
+		"GamesQueue": "0x7c24B772F2feC88d3327497f5bc2D3db9344Fd33",
+		"GamesQueueImplementation": "0x0A4893adA2882b23aC51C1cEE43D67ed44266497",
+		"TherundownConsumer": "0x0FFb8656a270d376A88fe06a1AaAb100028B6e35",
+		"TherundownConsumerImplementation": "0xa11c7430125c27a6213A11C1Bf8AF9fA044eEdc7",
+		"TherundownConsumerWrapper": "0xFfbFb9694c960C5d04f95dc907Bb8a58Fae0f969"
 	},
 	"localhost": {
 		"Airdrop": "",

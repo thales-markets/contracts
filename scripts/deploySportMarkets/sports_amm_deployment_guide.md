@@ -22,3 +22,5 @@ How to deploy sports markets:
     `npx hardhat run --network XXXXXX scripts/deploySportMarkets/deploySportPositionalMarkets/deploy_SportPositionMastercopy.js`
 11. Deploy the SportsAMM using:  
     `npx hardhat run --network XXXXXX scripts/deploySportMarkets/deploySportsAMM/deploy_SportsAMM.js`
+12. Deploy the SportMarketData using:  
+    `npx hardhat run --network XXXXXX scripts/deploySportMarkets/deploySportPositionalMarkets/deploy_SportMarketData.js`

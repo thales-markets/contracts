@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 // Inheritance
-import "../../interfaces/IPositionalMarketManager.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 

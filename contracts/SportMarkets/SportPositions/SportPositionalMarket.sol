@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 // Inheritance
 import "../../OwnedWithInit.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
-import "../../interfaces/IOracleInstance.sol";
 import "../../interfaces/ITherundownConsumer.sol";
 
 // Libraries

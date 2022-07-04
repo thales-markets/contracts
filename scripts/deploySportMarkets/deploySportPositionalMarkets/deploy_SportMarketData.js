@@ -59,11 +59,11 @@ async function main() {
 	);
 
 	await delay(5000);
-	SportMarketDataDeployed.setSportPositionalMarketManager(SportMarketManagerAddress, {
+	await SportMarketDataDeployed.setSportPositionalMarketManager(SportMarketManagerAddress, {
 		from: owner.address,
 	});
 	await delay(5000);
-	SportMarketDataDeployed.setSportsAMM(SportsAMMAddress, { from: owner.address });
+	await SportMarketDataDeployed.setSportsAMM(SportsAMMAddress, { from: owner.address });
 	await delay(5000);
 
 	// try {

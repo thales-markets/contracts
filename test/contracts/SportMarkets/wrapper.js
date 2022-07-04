@@ -123,6 +123,7 @@ contract('TherundownConsumerWrapper', accounts => {
 		});
 
 		it('Test requests', async () => {
+			let emptyArray = [];
 			await expect(
 				wrapper.requestGames(toBytes32('RSX'), 'create', 4, 1655215501, {
 					from: second,
@@ -140,6 +141,26 @@ contract('TherundownConsumerWrapper', accounts => {
 					from: second,
 				})
 			).to.be.revertedWith('SportId is not supported');
+
+			await expect(
+				wrapper.requestOddsWithFilters(toBytes32('RSX'), 5, 1655215501, emptyArray, {
+					from: second,
+				})
+			).to.be.revertedWith('SportId is not supported');
+
+			await expect(
+				wrapper.requestGamesResolveWithFilters(
+					toBytes32('RSX'),
+					'create1',
+					4,
+					1655215501,
+					emptyArray,
+					emptyArray,
+					{
+						from: second,
+					}
+				)
+			).to.be.revertedWith('Market is not supported');
 		});
 	});
 });

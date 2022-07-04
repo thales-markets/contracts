@@ -215,12 +215,6 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewLinkAddress(_link);
     }
 
-    /// @notice withdraw LINK token which is used for requests
-    function withdrawLink() external onlyOwner {
-        LinkTokenInterface linkToken = LinkTokenInterface(chainlinkTokenAddress());
-        require(linkToken.transfer(msg.sender, linkToken.balanceOf(address(this))), "Unable to transfer");
-    }
-
     /* ========== MODIFIERS ========== */
 
     modifier isValidRequest(string memory _market, uint256 _sportId) {

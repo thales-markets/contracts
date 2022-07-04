@@ -84,9 +84,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     // game
     GamesQueue public queues;
     mapping(bytes32 => uint) public oddsLastPulledForGame;
-    mapping(bytes32 => bytes32) public gameIdPerRequestId; // delete
     mapping(uint => bytes32[]) public gamesPerDate;
-    mapping(uint => uint) public oddsLastPulledForDate;
     mapping(uint => mapping(uint => bool)) public isSportOnADate;
 
     /* ========== CONSTRUCTOR ========== */
@@ -127,7 +125,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         if (_games.length > 0) {
             isSportOnADate[_date][_sportId] = true;
-            oddsLastPulledForDate[_date] = block.timestamp;
         }
 
         for (uint i = 0; i < _games.length; i++) {
@@ -172,11 +169,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint _date
     ) external onlyWrapper {
         requestIdGamesOdds[_requestId] = _games;
-        
-        if(_games.length > 0){
-            oddsLastPulledForDate[_date] = block.timestamp;
-        }
-        
         for (uint i = 0; i < _games.length; i++) {
             GameOdds memory game = abi.decode(_games[i], (GameOdds));
             // game needs to be fulfilled and market needed to be created 
@@ -640,18 +632,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== GAMES MANAGEMENT ========== */
 
     /// @notice remove first game in a created queue if needed
-    function removeFromCreatedQueue() external onlyOwner {
+    function removeFromCreatedQueue() external isAddressWhitelisted {
         queues.dequeueGamesCreated();
     }
 
     /// @notice remove first game in a resolved queue if needed
-    function removeFromResolvedQueue() external onlyOwner {
+    function removeFromResolvedQueue() external isAddressWhitelisted {
         queues.dequeueGamesResolved();
     }
 
     /// @notice remove from unprocessed games array based on index
     /// @param _index index which needed to be removed
-    function removeFromUnprocessedGamesArray(uint _index) external onlyOwner {
+    function removeFromUnprocessedGamesArray(uint _index) external isAddressWhitelisted {
         queues.removeItemUnproccessedGames(_index);
     }
 

@@ -75,10 +75,8 @@ workflows:
             branches:
               only:
                 - main
-                - sports_amm
       - build-and-test:
           filters:
             branches:
               only:
                 - main
-                - sports_amm

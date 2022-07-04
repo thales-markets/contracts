@@ -252,7 +252,7 @@ contract('TheRundownConsumer', accounts => {
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 
 		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
-		await TherundownConsumerDeployed.addToWhitelist(third, { from: owner });
+		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
 		});

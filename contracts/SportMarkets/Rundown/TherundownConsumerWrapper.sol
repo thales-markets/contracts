@@ -196,6 +196,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @notice setting new oracle address
     /// @param _oracle address of oracle sports data feed
     function setOracle(address _oracle) external onlyOwner {
+        require(_oracle != address(0), "Invalid address");
         setChainlinkOracle(_oracle);
         emit NewOracleAddress(_oracle);
     }
@@ -203,6 +204,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @notice setting consumer address
     /// @param _consumer address of a consumer which gets the data from CL requests
     function setConsumer(address _consumer) external onlyOwner {
+        require(_consumer != address(0), "Invalid address");
         consumer = ITherundownConsumer(_consumer);
         emit NewConsumer(_consumer);
     }
@@ -210,6 +212,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @notice setting link address
     /// @param _link address of a LINK which request will be paid
     function setLink(address _link) external onlyOwner {
+        require(_link != address(0), "Invalid address");
         setChainlinkToken(_link);
         linkToken = IERC20(_link);
         emit NewLinkAddress(_link);

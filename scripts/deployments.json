@@ -72,8 +72,8 @@
 		"GamesQueue": "0x8415E409a5566a1333815c2E7735Cd71b3Db229d",
 		"GamesQueueImplementation": "0x9DC42A2535b7161222862dAEb4A301361098D800",
 		"TherundownConsumer": "0xa1086d77493a1b316C927E7ed3ab2f06Ee6B6C9A",
-		"TherundownConsumerImplementation": "0xAEF7A2c9c95A0D11fd35A73f0c58770860e8a7c9",
-		"TherundownConsumerWrapper": "0xbd39d496EEBA3842521e8886a04312795c2bC799",
+		"TherundownConsumerImplementation": "0xce8895D6A19F34AE1f6eBb2310b4ce355DCC8985",
+		"TherundownConsumerWrapper": "0x35AaECF71819f30D793B7dD39C20a96Ec43Cf39b",
 		"SportPositionalMarketManager": "0xFBffEbfA2bF2cF84fdCf77917b358fC59Ff5771e",
 		"SportPositionalMarketManagerImplementation": "0x0024Fc033708AB6917e3003Cf425a289cebF1c9f",
 		"SportPositionalMarketFactory": "0x795BA11D575E6703282b1Db0cB849A15E304115d",
@@ -279,7 +279,7 @@
 		"GamesQueue": "0x7c24B772F2feC88d3327497f5bc2D3db9344Fd33",
 		"GamesQueueImplementation": "0x0A4893adA2882b23aC51C1cEE43D67ed44266497",
 		"TherundownConsumer": "0x0FFb8656a270d376A88fe06a1AaAb100028B6e35",
-		"TherundownConsumerImplementation": "0xa11c7430125c27a6213A11C1Bf8AF9fA044eEdc7",
+		"TherundownConsumerImplementation": "0xb0C65B8e76eE5d54accaDE23E3F2A9f172507862",
 		"TherundownConsumerWrapper": "0xFfbFb9694c960C5d04f95dc907Bb8a58Fae0f969"
 	},
 	"localhost": {

@@ -651,32 +651,37 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice sets if sport is suported or not (delete from supported sport)
     /// @param _sportId sport id which needs to be supported or not
-    /// @param _isSuported true/false (supported or not)
-    function setSupportedSport(uint _sportId, bool _isSuported) external onlyOwner {
-        supportedSport[_sportId] = _isSuported;
-        emit SupportedSportsChanged(_sportId, _isSuported);
+    /// @param _isSupported true/false (supported or not)
+    function setSupportedSport(uint _sportId, bool _isSupported) external onlyOwner {
+        require(supportedSport[_sportId] != _isSupported, "Already set to that value");
+        supportedSport[_sportId] = _isSupported;
+        emit SupportedSportsChanged(_sportId, _isSupported);
     }
 
     /// @notice sets resolved status which is supported or not
     /// @param _status status ID which needs to be supported or not
-    /// @param _isSuported true/false (supported or not)
-    function setSupportedResolvedStatuses(uint _status, bool _isSuported) external onlyOwner {
-        supportResolveGameStatuses[_status] = _isSuported;
-        emit SupportedResolvedStatusChanged(_status, _isSuported);
+    /// @param _isSupported true/false (supported or not)
+    function setSupportedResolvedStatuses(uint _status, bool _isSupported) external onlyOwner {
+        require(supportResolveGameStatuses[_status] != _isSupported, "Already set to that value");
+        supportResolveGameStatuses[_status] = _isSupported;
+        emit SupportedResolvedStatusChanged(_status, _isSupported);
     }
 
     /// @notice sets cancel status which is supported or not
     /// @param _status ststus ID which needs to be supported or not
-    /// @param _isSuported true/false (supported or not)
-    function setSupportedCancelStatuses(uint _status, bool _isSuported) external onlyOwner {
-        cancelGameStatuses[_status] = _isSuported;
-        emit SupportedCancelStatusChanged(_status, _isSuported);
+    /// @param _isSupported true/false (supported or not)
+    function setSupportedCancelStatuses(uint _status, bool _isSupported) external onlyOwner {
+        require(cancelGameStatuses[_status] != _isSupported, "Already set to that value");
+        cancelGameStatuses[_status] = _isSupported;
+        emit SupportedCancelStatusChanged(_status, _isSupported);
     }
 
     /// @notice sets if sport is two positional (Example: NBA)
     /// @param _sportId sport ID which is two positional
     /// @param _isTwoPosition true/false (two positional sport or not)
     function setTwoPositionSport(uint _sportId, bool _isTwoPosition) external onlyOwner {
+        require(supportedSport[_sportId], "Sport must be supported");
+        require(twoPositionSport[_sportId] != _isTwoPosition, "Already set to that value");
         twoPositionSport[_sportId] = _isTwoPosition;
         emit TwoPositionSportChanged(_sportId, _isTwoPosition);
     }
@@ -684,6 +689,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice sets manager for market creation
     /// @param _sportsManager sport manager address
     function setSportsManager(address _sportsManager) external onlyOwner {
+        require(_sportsManager != address(0), "Invalid address");
         sportsManager = ISportPositionalMarketManager(_sportsManager);
         emit NewSportsMarketManager(_sportsManager);
     }
@@ -699,16 +705,19 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice sets queue address
     /// @param _queues queue address
     function setQueueAddress(GamesQueue _queues) external onlyOwner {
+        require(address(_queues) != address(0), "Invalid address");
         queues = _queues;
         emit NewQueueAddress(_queues);
     }
 
-    /// @notice adding into whitelist address which can call market creation
-    /// @param _whitelistAddress address that needed to be whitelisted
-    function addToWhitelist(address _whitelistAddress) external onlyOwner {
+    /// @notice adding/removing whitelist address depending on a flag
+    /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
+    /// @param _flag adding or removing from whitelist (true: add, false: remove)
+    function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
         require(_whitelistAddress != address(0), "Invalid address");
-        whitelistedAddresses[_whitelistAddress] = true;
-        emit AddedIntoWhitelist(_whitelistAddress);
+        require(whitelistedAddresses[_whitelistAddress] != _flag, "Already set to that flag");
+        whitelistedAddresses[_whitelistAddress] = _flag;
+        emit AddedIntoWhitelist(_whitelistAddress, _flag);
     }
 
     /* ========== MODIFIERS ========== */
@@ -768,5 +777,5 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event NewSportsMarketManager(address _sportsManager);
     event NewWrapperAddress(address _wrapperAddress);
     event NewQueueAddress(GamesQueue _queues);
-    event AddedIntoWhitelist(address _whitelistAddress);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 }

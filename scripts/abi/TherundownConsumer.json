@@ -7,6 +7,12 @@
         "internalType": "address",
         "name": "_whitelistAddress",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
       }
     ],
     "name": "AddedIntoWhitelist",
@@ -632,6 +638,11 @@
         "internalType": "address",
         "name": "_whitelistAddress",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
       }
     ],
     "name": "addToWhitelist",
@@ -1910,7 +1921,7 @@
       },
       {
         "internalType": "bool",
-        "name": "_isSuported",
+        "name": "_isSupported",
         "type": "bool"
       }
     ],
@@ -1928,7 +1939,7 @@
       },
       {
         "internalType": "bool",
-        "name": "_isSuported",
+        "name": "_isSupported",
         "type": "bool"
       }
     ],
@@ -1946,7 +1957,7 @@
       },
       {
         "internalType": "bool",
-        "name": "_isSuported",
+        "name": "_isSupported",
         "type": "bool"
       }
     ],

@@ -20,7 +20,6 @@ import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
 import "../interfaces/ICurveSUSD.sol";
-import "hardhat/console.sol";
 
 /// @title Sports AMM contract
 /// @author kirilaa

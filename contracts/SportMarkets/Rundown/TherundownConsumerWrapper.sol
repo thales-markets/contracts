@@ -166,13 +166,13 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /// @notice getting oracle address for CL data sport feed
     /// @return address of oracle
-    function getOracleAddress() public view returns (address) {
+    function getOracleAddress() external view returns (address) {
         return chainlinkOracleAddress();
     }
 
     /// @notice getting LINK token address for payment for requests
     /// @return address of LINK token
-    function getTokenAddress() public view returns (address) {
+    function getTokenAddress() external view returns (address) {
         return chainlinkTokenAddress();
     }
 
@@ -189,6 +189,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @notice setting payment
     /// @param _payment amount of link per request
     function setPayment(uint _payment) external onlyOwner {
+        require(_payment > 0, "Can not be zero");
         payment = _payment;
         emit NewPaymentAmount(_payment);
     }

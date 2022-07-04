@@ -18,7 +18,6 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     uint public firstCreated;
     uint public lastCreated;
     mapping(bytes32 => uint) public gameStartPerGameId;
-    mapping(bytes32 => uint) public sportPerGameId; // delete
 
     // resolve games queue
     bytes32[] public unproccessedGames;

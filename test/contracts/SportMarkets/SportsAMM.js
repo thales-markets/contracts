@@ -202,6 +202,7 @@ contract('SportsAMM', accounts => {
 			from: owner,
 		});
 		await SportsAMM.setStakingThales(StakingThales.address, { from: owner });
+		await SportPositionalMarketData.initialize(owner, { from: owner });
 		await StakingThales.initialize(
 			owner,
 			Thales.address,
@@ -298,13 +299,19 @@ contract('SportsAMM', accounts => {
 		// 	TherundownConsumerDeployed.address
 		// );
 		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
-		await TherundownConsumerDeployed.addToWhitelist(third, { from: owner });
+		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
 		await SportsAMM.setTherundownConsumer(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
 		});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
+
+		await SportPositionalMarketData.setSportPositionalMarketManager(
+			SportPositionalMarketManager.address,
+			{ from: owner }
+		);
+		await SportPositionalMarketData.setSportsAMM(SportsAMM.address, { from: owner });
 	});
 
 	describe('Init', () => {
@@ -546,6 +553,12 @@ contract('SportsAMM', accounts => {
 			assert.bnEqual(await SportsAMM.max_spread(), toUnit('0.2'));
 			assert.bnEqual(await SportsAMM.defaultCapPerGame(), toUnit('5000'));
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
+		});
+
+		it('Market data test', async () => {
+			let activeMarkets = await SportPositionalMarketData.getOddsForAllActiveMarkets();
+			assert.bnEqual(activeMarkets.length, 1);
+			assert.bnEqual(activeMarkets[0].odds.length, 2);
 		});
 
 		it('Setters testing', async () => {

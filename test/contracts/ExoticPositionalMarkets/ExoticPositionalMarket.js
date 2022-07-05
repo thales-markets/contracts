@@ -319,6 +319,7 @@ contract('Exotic Positional market', async accounts => {
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				marketSource,
+				marketSource,
 				endOfPositioning,
 				fixedTicketPrice,
 				withdrawalAllowed,
@@ -359,6 +360,7 @@ contract('Exotic Positional market', async accounts => {
 			);
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
+				marketSource,
 				marketSource,
 				endOfPositioning,
 				fixedTicketPrice,
@@ -407,6 +409,7 @@ contract('Exotic Positional market', async accounts => {
 			);
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
+				marketSource,
 				marketSource,
 				endOfPositioning,
 				fixedTicketPrice,
@@ -905,6 +908,7 @@ contract('Exotic Positional market', async accounts => {
 			);
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
+				marketSource,
 				marketSource,
 				endOfPositioning,
 				fixedTicketPrice,

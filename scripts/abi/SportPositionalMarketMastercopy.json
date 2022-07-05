@@ -5,11 +5,6 @@
     "type": "constructor"
   },
   {
-    "inputs": [],
-    "name": "PositionCountMissmatch",
-    "type": "error"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {

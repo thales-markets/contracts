@@ -1,0 +1,361 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "oldOwner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerNominated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isPaused",
+        "type": "bool"
+      }
+    ],
+    "name": "PauseChanged",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract SportPositionalMarket",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "getAccountMarketData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "home",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "away",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "draw",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct SportPositionalMarketData.OptionValues",
+            "name": "balances",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.AccountData",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract SportPositionalMarket",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "getMarketData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "deposited",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct SportPositionalMarketData.Deposits",
+            "name": "deposits",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "bool",
+                "name": "resolved",
+                "type": "bool"
+              },
+              {
+                "internalType": "bool",
+                "name": "canResolve",
+                "type": "bool"
+              }
+            ],
+            "internalType": "struct SportPositionalMarketData.Resolution",
+            "name": "resolution",
+            "type": "tuple"
+          },
+          {
+            "internalType": "enum ISportPositionalMarket.Phase",
+            "name": "phase",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum ISportPositionalMarket.Side",
+            "name": "result",
+            "type": "uint8"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "home",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "away",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "draw",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct SportPositionalMarketData.OptionValues",
+            "name": "totalSupplies",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.MarketData",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract SportPositionalMarket",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "getMarketParameters",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "creator",
+            "type": "address"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "maturity",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "expiry",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct SportPositionalMarket.Times",
+            "name": "times",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "poolFee",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "creatorFee",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct SportPositionalMarketManager.Fees",
+            "name": "fees",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct SportPositionalMarketData.MarketParameters",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastPauseTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "nominateNewOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nominatedOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_paused",
+        "type": "bool"
+      }
+    ],
+    "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

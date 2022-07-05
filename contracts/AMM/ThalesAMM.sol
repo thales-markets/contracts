@@ -20,6 +20,8 @@ import "../interfaces/IReferrals.sol";
 import "../interfaces/ICurveSUSD.sol";
 import "./DeciMath.sol";
 
+/// @title An AMM using BlackScholed odds algorithm to provide liqudidity for traders of UP or DOWN positions
+/// @author Danijel
 contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
     using SafeMath for uint;
     using SafeERC20 for IERC20;
@@ -41,7 +43,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     uint public minimalTimeLeftToMaturity;
 
-    enum Position {Up, Down}
+    enum Position {
+        Up,
+        Down
+    }
 
     mapping(address => uint) public spentOnMarket;
 
@@ -93,6 +98,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
     }
 
+    // READ public methods
+
+    /// @notice get how many positions of a certain type (UP or DOWN) can be bought from the given positional market
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @return _available how many positions of that type can be bought
     function availableToBuyFromAMM(address market, Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position).add(min_spread);
@@ -100,30 +111,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
     }
 
-    function _availableToBuyFromAMMWithBasePrice(
-        address market,
-        Position position,
-        uint basePrice
-    ) internal view returns (uint) {
-        if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
-            return 0;
-        }
-
-        uint balance = _balanceOfPositionOnMarket(market, position);
-        uint midImpactPriceIncrease = ONE.sub(basePrice).mul(max_spread.div(2)).div(ONE);
-
-        uint divider_price = ONE.sub(basePrice.add(midImpactPriceIncrease));
-
-        uint additionalBufferFromSelling = balance.mul(basePrice).div(ONE);
-
-        if (_capOnMarket(market).add(additionalBufferFromSelling) <= spentOnMarket[market]) {
-            return 0;
-        }
-        uint availableUntilCapSUSD = _capOnMarket(market).add(additionalBufferFromSelling).sub(spentOnMarket[market]);
-
-        return balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
-    }
-
+    /// @notice get a quote in sUSD on how much the trader would need to pay to buy the amount of UP or DOWN positions
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @param amount number of positions to buy with 18 decimals
+    /// @return a quote in sUSD on how much the trader would need to pay to buy the amount of UP or DOWN positions
     function buyFromAmmQuote(
         address market,
         Position position,
@@ -133,6 +125,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         return _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
     }
 
+    /// @notice get a quote in the collateral of choice (USDC, USDT or DAI) on how much the trader would need to pay to buy the amount of UP or DOWN positions
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @param amount number of positions to buy with 18 decimals
+    /// @param collateral USDT, USDC or DAI address
+    /// @return a quote in collateral on how much the trader would need to pay to buy the amount of UP or DOWN positions
     function buyFromAmmQuoteWithDifferentCollateral(
         address market,
         Position position,
@@ -150,23 +148,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
     }
 
-    function _buyFromAmmQuoteWithBasePrice(
-        address market,
-        Position position,
-        uint amount,
-        uint basePrice
-    ) internal view returns (uint) {
-        if (amount < 1 || amount > _availableToBuyFromAMMWithBasePrice(market, position, basePrice)) {
-            return 0;
-        }
-        uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount)).div(ONE);
-        // add 2% to the price increase to avoid edge cases on the extremes
-        impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
-        uint tempAmount = amount.mul(basePrice.add(impactPriceIncrease)).div(ONE);
-        uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
-        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
-    }
-
+    /// @notice get the skew impact applied to that side of the market on buy
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @param amount number of positions to buy with 18 decimals
+    /// @return the skew impact applied to that side of the market
     function buyPriceImpact(
         address market,
         Position position,
@@ -178,6 +164,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         return _buyPriceImpact(market, position, amount);
     }
 
+    /// @notice get how many positions of a certain type (UP or DOWN) can be sold for the given positional market
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @return _available how many positions of that type can be sold
     function availableToSellToAMM(address market, Position position) public view returns (uint) {
         if (isMarketInAMMTrading(market)) {
             uint sell_max_price = _getSellMaxPrice(market, position);
@@ -186,8 +176,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             }
 
             (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
-            uint balanceOfTheOtherSide =
-                position == Position.Up ? down.getBalanceOf(address(this)) : up.getBalanceOf(address(this));
+            uint balanceOfTheOtherSide = position == Position.Up
+                ? down.getBalanceOf(address(this))
+                : up.getBalanceOf(address(this));
 
             // can burn straight away balanceOfTheOtherSide
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
@@ -199,14 +190,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         } else return 0;
     }
 
-    function _getSellMaxPrice(address market, Position position) internal view returns (uint sell_max_price) {
-        uint basePrice = price(market, position);
-        // ignore extremes
-        if (!(basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice)) {
-            sell_max_price = basePrice.sub(min_spread).mul(ONE.sub(max_spread.div(2))).div(ONE);
-        }
-    }
-
+    /// @notice get a quote in sUSD on how much the trader would receive as payment to sell the amount of UP or DOWN positions
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @param amount number of positions to buy with 18 decimals
+    /// @return a quote in sUSD on how much the trader would receive as payment to sell the amount of UP or DOWN positions
     function sellToAmmQuote(
         address market,
         Position position,
@@ -215,14 +203,20 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         if (!(amount > availableToSellToAMM(market, position))) {
             uint basePrice = price(market, position).sub(min_spread);
 
-            uint tempAmount =
-                amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
+            uint tempAmount = amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(
+                ONE
+            );
 
             uint returnQuote = tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
             _available = IPositionalMarketManager(manager).transformCollateral(returnQuote);
         }
     }
 
+    /// @notice get the skew impact applied to that side of the market on sell
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @param amount number of positions to buy with 18 decimals
+    /// @return the skew impact applied to that side of the market
     function sellPriceImpact(
         address market,
         Position position,
@@ -233,6 +227,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
     }
 
+    /// @notice get the base price (odds) of a given side of the market
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @return the base price (odds) of a given side of the market
     function price(address market, Position position) public view returns (uint price) {
         if (isMarketInAMMTrading(market)) {
             // add price calculation
@@ -258,6 +256,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
     }
 
+    /// @notice get the algorithmic odds of market being in the money, taken from JS code https://gist.github.com/aasmith/524788/208694a9c74bb7dfcb3295d7b5fa1ecd1d662311
+    /// @param _price current price of the asset
+    /// @param strike price of the asset
+    /// @param timeLeftInDays when does the market mature
+    /// @param volatility implied yearly volatility of the asset
+    /// @return odds of market being in the money
     function calculateOdds(
         uint _price,
         uint strike,
@@ -287,6 +291,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
     }
 
+    /// @notice check if market is supported by the AMM
+    /// @param market positional market known to manager
+    /// @return is market supported by the AMM
     function isMarketInAMMTrading(address market) public view returns (bool isTrading) {
         if (IPositionalMarketManager(manager).isActiveMarket(market)) {
             IPositionalMarket marketContract = IPositionalMarket(market);
@@ -300,6 +307,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
     }
 
+    /// @notice check if AMM market has exercisable positions on a given market
+    /// @param market positional market known to manager
+    /// @return if AMM market has exercisable positions on a given market
     function canExerciseMaturedMarket(address market) public view returns (bool _canExercise) {
         if (
             IPositionalMarketManager(manager).isKnownMarket(market) &&
@@ -310,6 +320,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
     }
 
+    /// @notice get the maximum risk in sUSD the AMM will offer on a certain asset on an individual market
+    /// @param asset e.g. ETH, BTC, SNX....
+    /// @return the maximum risk in sUSD the AMM will offer on a certain asset on an individual market
     function getCapPerAsset(bytes32 asset) public view returns (uint _cap) {
         if (!(priceFeed.rateForCurrency(asset) == 0)) {
             _cap = _capPerAsset[asset] == 0 ? capPerMarket : _capPerAsset[asset];
@@ -318,6 +331,13 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     // write methods
 
+    /// @notice buy positions of the defined type of a given market from the AMM coming from a referrer
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @param amount how many positions
+    /// @param expectedPayout how much does the buyer expect to pay (retrieved via quote)
+    /// @param additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
+    /// @param _referrer who referred the buyer to Thales
     function buyFromAMMWithReferrer(
         address market,
         Position position,
@@ -332,6 +352,14 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
     }
 
+    /// @notice buy positions of the defined type of a given market from the AMM with USDC, USDT or DAI
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @param amount how many positions
+    /// @param expectedPayout how much does the buyer expect to pay (retrieved via quote)
+    /// @param collateral USDC, USDT or DAI
+    /// @param additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
+    /// @param _referrer who referred the buyer to Thales
     function buyFromAMMWithDifferentCollateralAndReferrer(
         address market,
         Position position,
@@ -348,8 +376,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
-        (uint collateralQuote, uint susdQuote) =
-            buyFromAmmQuoteWithDifferentCollateral(market, position, amount, collateral);
+        (uint collateralQuote, uint susdQuote) = buyFromAmmQuoteWithDifferentCollateral(
+            market,
+            position,
+            amount,
+            collateral
+        );
 
         require(collateralQuote.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high!");
 
@@ -360,6 +392,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         _buyFromAMM(market, position, amount, susdQuote, additionalSlippage, false, susdQuote);
     }
 
+    /// @notice buy positions of the defined type of a given market from the AMM
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @param amount how many positions
+    /// @param expectedPayout how much does the buyer expect to pay (retrieved via quote)
+    /// @param additionalSlippage how much of a slippage on the sUSD expectedPayout will the buyer accept
     function buyFromAMM(
         address market,
         Position position,
@@ -368,6 +406,117 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint additionalSlippage
     ) public nonReentrant notPaused {
         _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
+    }
+
+    /// @notice sell positions of the defined type of a given market to the AMM
+    /// @param market a Positional Market known to Market Manager
+    /// @param position UP or DOWN
+    /// @param amount how many positions
+    /// @param expectedPayout how much does the seller to receive(retrieved via quote)
+    /// @param additionalSlippage how much of a slippage on the sUSD expectedPayout will the seller accept
+    function sellToAMM(
+        address market,
+        Position position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage
+    ) public nonReentrant notPaused {
+        require(isMarketInAMMTrading(market), "Market is not in Trading phase");
+
+        uint availableToSellToAMMATM = availableToSellToAMM(market, position);
+        require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
+
+        uint pricePaid = sellToAmmQuote(market, position, amount);
+        require(expectedPayout.mul(ONE).div(pricePaid) <= (ONE.add(additionalSlippage)), "Slippage too high");
+
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        IPosition target = position == Position.Up ? up : down;
+
+        //transfer options first to have max burn available
+        IERC20(address(target)).safeTransferFrom(msg.sender, address(this), amount);
+
+        uint sUSDFromBurning = IPositionalMarketManager(manager).transformCollateral(
+            IPositionalMarket(market).getMaximumBurnable(address(this))
+        );
+        if (sUSDFromBurning > 0) {
+            IPositionalMarket(market).burnOptionsMaximum();
+        }
+
+        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
+
+        sUSD.safeTransfer(msg.sender, pricePaid);
+
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(msg.sender, pricePaid);
+        }
+        _updateSpentOnMarketOnSell(market, pricePaid, sUSDFromBurning, msg.sender);
+
+        emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), address(target));
+    }
+
+    /// @notice Exercise positions on a certain matured market to retrieve sUSD
+    /// @param market a Positional Market known to Market Manager
+    function exerciseMaturedMarket(address market) external {
+        require(canExerciseMaturedMarket(market), "Can't exercise that market");
+        IPositionalMarket(market).exerciseOptions();
+    }
+
+    /// @notice Retrieve sUSD from the contract
+    /// @param account whom to send the sUSD
+    /// @param amount how much sUSD to retrieve
+    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        sUSD.safeTransfer(account, amount);
+    }
+
+    // Internal
+
+    function _availableToBuyFromAMMWithBasePrice(
+        address market,
+        Position position,
+        uint basePrice
+    ) internal view returns (uint) {
+        if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
+            return 0;
+        }
+
+        uint balance = _balanceOfPositionOnMarket(market, position);
+        uint midImpactPriceIncrease = ONE.sub(basePrice).mul(max_spread.div(2)).div(ONE);
+
+        uint divider_price = ONE.sub(basePrice.add(midImpactPriceIncrease));
+
+        uint additionalBufferFromSelling = balance.mul(basePrice).div(ONE);
+
+        if (_capOnMarket(market).add(additionalBufferFromSelling) <= spentOnMarket[market]) {
+            return 0;
+        }
+        uint availableUntilCapSUSD = _capOnMarket(market).add(additionalBufferFromSelling).sub(spentOnMarket[market]);
+
+        return balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
+    }
+
+    function _buyFromAmmQuoteWithBasePrice(
+        address market,
+        Position position,
+        uint amount,
+        uint basePrice
+    ) internal view returns (uint) {
+        if (amount < 1 || amount > _availableToBuyFromAMMWithBasePrice(market, position, basePrice)) {
+            return 0;
+        }
+        uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount)).div(ONE);
+        // add 2% to the price increase to avoid edge cases on the extremes
+        impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
+        uint tempAmount = amount.mul(basePrice.add(impactPriceIncrease)).div(ONE);
+        uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
+        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
+    }
+
+    function _getSellMaxPrice(address market, Position position) internal view returns (uint sell_max_price) {
+        uint basePrice = price(market, position);
+        // ignore extremes
+        if (!(basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice)) {
+            sell_max_price = basePrice.sub(min_spread).mul(ONE.sub(max_spread.div(2))).div(ONE);
+        }
     }
 
     function _buyFromAMM(
@@ -413,58 +562,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
     }
-
-    function sellToAMM(
-        address market,
-        Position position,
-        uint amount,
-        uint expectedPayout,
-        uint additionalSlippage
-    ) public nonReentrant notPaused {
-        require(isMarketInAMMTrading(market), "Market is not in Trading phase");
-
-        uint availableToSellToAMMATM = availableToSellToAMM(market, position);
-        require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
-
-        uint pricePaid = sellToAmmQuote(market, position, amount);
-        require(expectedPayout.mul(ONE).div(pricePaid) <= (ONE.add(additionalSlippage)), "Slippage too high");
-
-        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
-        IPosition target = position == Position.Up ? up : down;
-
-        //transfer options first to have max burn available
-        IERC20(address(target)).safeTransferFrom(msg.sender, address(this), amount);
-
-        uint sUSDFromBurning =
-            IPositionalMarketManager(manager).transformCollateral(
-                IPositionalMarket(market).getMaximumBurnable(address(this))
-            );
-        if (sUSDFromBurning > 0) {
-            IPositionalMarket(market).burnOptionsMaximum();
-        }
-
-        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
-
-        sUSD.safeTransfer(msg.sender, pricePaid);
-
-        if (address(stakingThales) != address(0)) {
-            stakingThales.updateVolume(msg.sender, pricePaid);
-        }
-        _updateSpentOnMarketOnSell(market, pricePaid, sUSDFromBurning, msg.sender);
-
-        emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), address(target));
-    }
-
-    function exerciseMaturedMarket(address market) external {
-        require(canExerciseMaturedMarket(market), "Can't exercise that market");
-        IPositionalMarket(market).exerciseOptions();
-    }
-
-    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
-        sUSD.safeTransfer(account, amount);
-    }
-
-    // Internal
 
     function _updateSpentOnMarketOnSell(
         address market,
@@ -532,8 +629,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) internal view returns (uint) {
         (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
-        uint balanceOtherSideAfter =
-            balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
+        uint balanceOtherSideAfter = balancePosition > amount
+            ? balanceOtherSide
+            : balanceOtherSide.add(amount.sub(balancePosition));
         if (balancePositionAfter >= balanceOtherSideAfter) {
             //minimal price impact as it will balance the AMM exposure
             return 0;
@@ -592,10 +690,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint amount
     ) internal view returns (uint _sellImpact) {
         (uint _balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
-        uint balancePositionAfter =
-            _balancePosition > 0 ? _balancePosition.add(amount) : balanceOtherSide > amount
-                ? 0
-                : amount.sub(balanceOtherSide);
+        uint balancePositionAfter = _balancePosition > 0 ? _balancePosition.add(amount) : balanceOtherSide > amount
+            ? 0
+            : amount.sub(balanceOtherSide);
         uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide.sub(amount) : 0;
         if (!(balancePositionAfter < balanceOtherSideAfter)) {
             _sellImpact = _sellPriceImpactElse(
@@ -701,15 +798,24 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     // setters
+
+    /// @notice Updates contract parametars
+    /// @param _minimalTimeLeftToMaturity how long till maturity will AMM support trading on a given market
     function setMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity) external onlyOwner {
         minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
         emit SetMinimalTimeLeftToMaturity(_minimalTimeLeftToMaturity);
     }
 
+    /// @notice Updates contract parametars
+    /// @param _address which can update implied volatility
+    /// @param enabled update if the address can set implied volatility
     function setWhitelistedAddress(address _address, bool enabled) external onlyOwner {
         whitelistedAddresses[_address] = enabled;
     }
 
+    /// @notice Updates contract parametars
+    /// @param _minspread minimum spread applied to base price
+    /// @param _maxspread maximum skew impact, e.g. if all UP positions are drained, skewImpact on that side = _maxspread
     function setMinMaxSpread(uint _minspread, uint _maxspread) external onlyOwner {
         min_spread = _minspread;
         max_spread = _maxspread;
@@ -717,12 +823,19 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         emit SetMaxSpread(_maxspread);
     }
 
+    /// @notice Updates contract parametars
+    /// @param _safeBox where to send a fee reserved for protocol from each trade
+    /// @param _safeBoxImpact how much is the SafeBoxFee
     function setSafeBoxData(address _safeBox, uint _safeBoxImpact) external onlyOwner {
         safeBoxImpact = _safeBoxImpact;
         safeBox = _safeBox;
         emit SetSafeBoxImpact(_safeBoxImpact);
     }
 
+    /// @notice Updates contract parametars
+    /// @param _minSupportedPrice whats the max price AMM supports, e.g. 10 cents
+    /// @param _maxSupportedPrice whats the max price AMM supports, e.g. 90 cents
+    /// @param _capPerMarket default amount the AMM will risk on markets, overrided by capPerAsset if existing
     function setMinMaxSupportedPriceAndCap(
         uint _minSupportedPrice,
         uint _maxSupportedPrice,
@@ -737,6 +850,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         emit SetCapPerMarket(_capPerMarket);
     }
 
+    /// @notice Updates contract parametars. Can be set by owner or whitelisted addresses. In the future try to get it as a feed from Chainlink.
+    /// @param asset e.g. ETH, BTC, SNX...
+    /// @param _impliedVolatility IV for BlackScholes
     function setImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility) external {
         require(
             whitelistedAddresses[msg.sender] || owner == msg.sender,
@@ -748,6 +864,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);
     }
 
+    /// @notice Updates contract parametars
+    /// @param _priceFeed contract from which we read prices, can be chainlink or twap
+    /// @param _sUSD address of sUSD
     function setPriceFeedAndSUSD(IPriceFeed _priceFeed, IERC20 _sUSD) external onlyOwner {
         priceFeed = _priceFeed;
         emit SetPriceFeed(address(_priceFeed));
@@ -756,6 +875,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         emit SetSUSD(address(sUSD));
     }
 
+    /// @notice Updates contract parametars
+    /// @param _stakingThales contract address for staking bonuses
+    /// @param _referrals contract for referrals storage
+    /// @param _referrerFee how much of a fee to pay to referrers
     function setStakingThalesAndReferrals(
         IStakingThales _stakingThales,
         address _referrals,
@@ -766,6 +889,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         referrerFee = _referrerFee;
     }
 
+    /// @notice Updates contract parametars
+    /// @param _manager Positional Market Manager contract
     function setPositionalMarketManager(address _manager) external onlyOwner {
         if (address(manager) != address(0)) {
             sUSD.approve(address(manager), 0);
@@ -775,6 +900,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         emit SetPositionalMarketManager(_manager);
     }
 
+    /// @notice Updates contract parametars
+    /// @param _curveSUSD curve sUSD pool exchanger contract
+    /// @param _dai DAI address
+    /// @param _usdc USDC address
+    /// @param _usdt USDT addresss
+    /// @param _curveOnrampEnabled whether AMM supports curve onramp
     function setCurveSUSD(
         address _curveSUSD,
         address _dai,
@@ -794,6 +925,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         curveOnrampEnabled = _curveOnrampEnabled;
     }
 
+    /// @notice Updates contract parametars
+    /// @param asset e.g. ETH, BTC, SNX
+    /// @param _cap how much risk can AMM take on markets for given asset
     function setCapPerAsset(bytes32 asset, uint _cap) external onlyOwner {
         _capPerAsset[asset] = _cap;
         emit SetCapPerAsset(asset, _cap);

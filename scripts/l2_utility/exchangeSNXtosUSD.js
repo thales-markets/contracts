@@ -13,9 +13,9 @@ async function main() {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 	}
-	if(networkObj.chainId == 10) {
-		networkObj.name = "optimisticEthereum";
-		network = 'optimisticEthereum'		
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 
 	console.log('Account is:' + owner.address);
@@ -25,19 +25,16 @@ async function main() {
 	const SynthetixAddress = '0xCAA5c8e9E67BBa010D2D7F589F02d588Fb49f93D';
 	let abi = ['function issueMaxSynths() external'];
 	let contract = new ethers.Contract(SynthetixAddress, abi, owner);
-	let issueMax = await contract.issueMaxSynths(
-			{
-				from: owner.address,
-			}
-		);
-	console.log(issueMax)
+	let issueMax = await contract.issueMaxSynths({
+		from: owner.address,
+	});
+	console.log(issueMax);
 	issueMax.wait().then(console.log('Done transfer! $$$$ >'));
-
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch((error) => {
+	.catch(error => {
 		console.error(error);
 		process.exit(1);
 	});

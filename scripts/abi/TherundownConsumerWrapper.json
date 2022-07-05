@@ -200,6 +200,24 @@
         "type": "bytes[]"
       }
     ],
+    "name": "fulfillGamesOdds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "_games",
+        "type": "bytes[]"
+      }
+    ],
     "name": "fulfillGamesResolved",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -336,6 +354,39 @@
       }
     ],
     "name": "requestGamesResolveWithFilters",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_specId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_payment",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_date",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string[]",
+        "name": "_gameIds",
+        "type": "string[]"
+      }
+    ],
+    "name": "requestOddsWithFilters",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

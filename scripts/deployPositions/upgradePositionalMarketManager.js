@@ -35,10 +35,19 @@ async function main() {
 
 	console.log('PositionalMarketManager upgraded');
 
-	const positionalMarketManagerImplementation = await getImplementationAddress(ethers.provider, positionalMarketManagerAddress);
-	setTargetAddress('PositionalMarketManagerImplementation', network, positionalMarketManagerImplementation);
+	const positionalMarketManagerImplementation = await getImplementationAddress(
+		ethers.provider,
+		positionalMarketManagerAddress
+	);
+	setTargetAddress(
+		'PositionalMarketManagerImplementation',
+		network,
+		positionalMarketManagerImplementation
+	);
 
-	const PositionalMarketManagerDeployed = await PositionalMarketManager.attach(positionalMarketManagerAddress);
+	const PositionalMarketManagerDeployed = await PositionalMarketManager.attach(
+		positionalMarketManagerAddress
+	);
 
 	const positionalMarketFactoryAddress = getTargetAddress('PositionalMarketFactory', network);
 	tx = await PositionalMarketManagerDeployed.setPositionalMarketFactory(
@@ -85,7 +94,6 @@ async function main() {
 		});
 	}
 
-	
 	try {
 		await hre.run('verify:verify', {
 			address: positionalMarketManagerImplementation,

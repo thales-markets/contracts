@@ -95,12 +95,7 @@ contract('RangedAMM', accounts => {
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
 			.connect(creator)
-			.createMarket(
-				oracleKey,
-				strikePrice.toString(),
-				maturity,
-				initialMint.toString()
-			);
+			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
 			event => event['event'] && event['event'] === 'MarketCreated'

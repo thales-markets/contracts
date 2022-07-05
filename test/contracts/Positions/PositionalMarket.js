@@ -16,7 +16,12 @@ const {
 } = require('../../utils/helpers');
 
 let factory, manager;
-let PositionalMarket, priceFeed, sUSDSynth, positionalMarketMastercopy, PositionMastercopy, thalesAMM;
+let PositionalMarket,
+	priceFeed,
+	sUSDSynth,
+	positionalMarketMastercopy,
+	PositionMastercopy,
+	thalesAMM;
 let market, up, down, Position, Synth, addressResolver;
 
 let aggregator_sAUD, aggregator_iAUD, aggregator_sUSD, aggregator_nonRate;
@@ -90,12 +95,7 @@ contract('Position', accounts => {
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
 			.connect(creator)
-			.createMarket(
-				oracleKey,
-				strikePrice.toString(),
-				maturity,
-				initialMint.toString()
-			);
+			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
 			event => event['event'] && event['event'] === 'MarketCreated'
@@ -147,7 +147,7 @@ contract('Position', accounts => {
 		await manager.connect(creator).setPositionalMarketFactory(factory.address);
 
 		await manager.connect(creator).setTimeframeBuffer(1);
-		await manager.connect(creator).setPriceBuffer(toUnit(0.05).toString()); 
+		await manager.connect(creator).setPriceBuffer(toUnit(0.05).toString());
 
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
 		await factory.connect(owner).setPositionalMarketMastercopy(positionalMarketMastercopy.address);
@@ -194,7 +194,6 @@ contract('Position', accounts => {
 		await priceFeed.connect(owner).addAggregator(nonRate, aggregator_nonRate.address);
 
 		await thalesAMM.setImpliedVolatilityPerAsset(sAUDKey, toUnit(100), { from: owner.address });
-
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
@@ -259,12 +258,7 @@ contract('Position', accounts => {
 
 			const result = await manager
 				.connect(creator)
-				.createMarket(
-					sAUDKey,
-					initialStrikePrice.toString(),
-					now + 200,
-					toUnit(2).toString()
-				);
+				.createMarket(sAUDKey, initialStrikePrice.toString(), now + 200, toUnit(2).toString());
 
 			const marketCreatedEvent = await transactionEvent(result, 'MarketCreated');
 			let createdMarket = await PositionalMarket.at(marketCreatedEvent.args.market);
@@ -321,12 +315,7 @@ contract('Position', accounts => {
 			await assert.revert(
 				manager
 					.connect(creator)
-					.createMarket(
-						nonRate,
-						toUnit(1).toString(),
-						now + 100,
-						toUnit(2).toString()
-					),
+					.createMarket(nonRate, toUnit(1).toString(), now + 100, toUnit(2).toString()),
 				'Invalid key'
 			);
 		});
@@ -352,12 +341,7 @@ contract('Position', accounts => {
 			await assert.revert(
 				manager
 					.connect(creator)
-					.createMarket(
-						sAUDKey,
-						toUnit(1).toString(),
-						now + 200,
-						toUnit(5).toString()
-					),
+					.createMarket(sAUDKey, toUnit(1).toString(), now + 200, toUnit(5).toString()),
 				'This action cannot be performed while the contract is paused'
 			);
 			await manager.connect(creator).setPaused(false);
@@ -390,24 +374,14 @@ contract('Position', accounts => {
 			await assert.revert(
 				manager
 					.connect(creator)
-					.createMarket(
-						sAUDKey,
-						toUnit(1).toString(),
-						now + 200,
-						toUnit(5).toString()
-					),
+					.createMarket(sAUDKey, toUnit(1).toString(), now + 200, toUnit(5).toString()),
 				'Market creation is disabled'
 			);
 
 			await manager.connect(creator).setMarketCreationEnabled(true);
 			const tx = await manager
 				.connect(creator)
-				.createMarket(
-					sAUDKey,
-					toUnit(1).toString(),
-					now + 200,
-					toUnit(5).toString()
-				);
+				.createMarket(sAUDKey, toUnit(1).toString(), now + 200, toUnit(5).toString());
 			const event = await transactionEvent(tx, 'MarketCreated');
 			const localMarket = await PositionalMarket.at(event.args.market);
 
@@ -419,12 +393,7 @@ contract('Position', accounts => {
 			await assert.revert(
 				manager
 					.connect(creator)
-					.createMarket(
-						sAUDKey,
-						toUnit(1).toString(),
-						now - 1,
-						toUnit(2).toString()
-					),
+					.createMarket(sAUDKey, toUnit(1).toString(), now - 1, toUnit(2).toString()),
 				'Maturity too far in the future'
 			);
 		});

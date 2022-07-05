@@ -1,7 +1,6 @@
 const path = require('path');
 const { ethers } = require('hardhat');
 
-
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
@@ -12,7 +11,9 @@ async function main() {
 	let mainnetNetwork = 'mainnet';
 
 	if (network == 'homestead') {
-		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
+		console.log(
+			"Error L1 network used! Deploy only on L2 Optimism. \nTry using '--network optimistic'"
+		);
 		return 0;
 	}
 	if (networkObj.chainId == 42) {
@@ -28,16 +29,14 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
-	
 
-	
 	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalFixedMarket');
 	const ExoticMarketDeployed = await ExoticMarket.deploy();
-    await ExoticMarketDeployed.deployed();
-	console.log("ExoticMarket Deployed on", ExoticMarketDeployed.address);
+	await ExoticMarketDeployed.deployed();
+	console.log('ExoticMarket Deployed on', ExoticMarketDeployed.address);
 	setTargetAddress('ExoticMarketMasterCopy', network, ExoticMarketDeployed.address);
 
-    try {
+	try {
 		await hre.run('verify:verify', {
 			address: ExoticMarketDeployed.address,
 		});
@@ -45,30 +44,28 @@ async function main() {
 		console.log(e);
 	}
 
-    // await delay(5000);
+	// await delay(5000);
 
-    // await ExoticMarketDeployed.initializeWithTwoParameters(
-    //     "Who will win the el clasico which will be played on 2022-02-22?",
-    //     "2000",
-    //     "50000",
-    //     "300",
-    //     "5",
-    //     "[0,1]",
-    //     "Real Madrid",
-    //     "FC Barcelona",
-    //     "It will be a draw"
-    // );
-
+	// await ExoticMarketDeployed.initializeWithTwoParameters(
+	//     "Who will win the el clasico which will be played on 2022-02-22?",
+	//     "2000",
+	//     "50000",
+	//     "300",
+	//     "5",
+	//     "[0,1]",
+	//     "Real Madrid",
+	//     "FC Barcelona",
+	//     "It will be a draw"
+	// );
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch((error) => {
+	.catch(error => {
 		console.error(error);
 		process.exit(1);
 	});
 
-    
 function delay(time) {
 	return new Promise(function(resolve) {
 		setTimeout(resolve, time);

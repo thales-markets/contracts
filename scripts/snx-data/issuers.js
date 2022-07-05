@@ -15,10 +15,10 @@ async function getBlocks() {
 	const currentBlockNumber = (await provider.getBlock()).number;
 	console.log('currentBlockNumber', currentBlockNumber);
 
-	for(let i = FIRST_BLOCK; i < currentBlockNumber + BLOCKS_PER_WEEK; i = i+BLOCKS_PER_WEEK) {
+	for (let i = FIRST_BLOCK; i < currentBlockNumber + BLOCKS_PER_WEEK; i = i + BLOCKS_PER_WEEK) {
 		blocks.push(i);
 	}
-	
+
 	return blocks;
 }
 
@@ -32,9 +32,16 @@ async function main() {
 			accounts[result[element].account.toLowerCase()] = 1;
 		}
 		txCount += result.length;
-		console.log('results length', result.length, 'min block', blocks[i], 'max block', blocks[i+1]);
+		console.log(
+			'results length',
+			result.length,
+			'min block',
+			blocks[i],
+			'max block',
+			blocks[i + 1]
+		);
 	}
-	
+
 	console.log('total accounts', Object.keys(accounts).length);
 	console.log('total transactions', txCount);
 	fs.writeFileSync('scripts/snx-data/issuers.json', JSON.stringify(accounts));

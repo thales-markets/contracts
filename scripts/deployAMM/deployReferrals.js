@@ -23,7 +23,7 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
-		
+
 	if (networkObj.chainId == 80001) {
 		networkObj.name = 'polygonMumbai';
 		network = 'polygonMumbai';
@@ -57,7 +57,11 @@ async function main() {
 	let rangedAMM = getTargetAddress('RangedAMM', network);
 
 	const Referrals = await ethers.getContractFactory('Referrals');
-	let ReferralsDeployed = await upgrades.deployProxy(Referrals, [owner.address, thalesAMM, rangedAMM]);
+	let ReferralsDeployed = await upgrades.deployProxy(Referrals, [
+		owner.address,
+		thalesAMM,
+		rangedAMM,
+	]);
 	await ReferralsDeployed.deployed();
 
 	console.log('Referrals proxy:', ReferralsDeployed.address);

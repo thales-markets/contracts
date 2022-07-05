@@ -10,7 +10,7 @@ const { setupAllContracts } = require('../../utils/setup');
 
 const { convertToDecimals } = require('../../utils/helpers');
 
-let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
+let factory, manager, addressResolver;
 let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 let market, up, down, position, Synth;
 
@@ -39,12 +39,7 @@ contract('ThalesAMM', accounts => {
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
 			.connect(creator)
-			.createMarket(
-				oracleKey,
-				strikePrice.toString(),
-				maturity,
-				initialMint.toString()
-			);
+			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
 			event => event['event'] && event['event'] === 'MarketCreated'
@@ -87,7 +82,6 @@ contract('ThalesAMM', accounts => {
 
 		[creatorSigner, ownerSigner] = await ethers.getSigners();
 
-
 		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
 		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
@@ -97,8 +91,8 @@ contract('ThalesAMM', accounts => {
 		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
 		await manager.connect(creatorSigner).setTimeframeBuffer(0);
-		await manager.connect(creatorSigner).setPriceBuffer(toUnit(0.01).toString()); 
-		
+		await manager.connect(creatorSigner).setPriceBuffer(toUnit(0.01).toString());
+
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 		aggregator_sETH = await MockAggregator.new({ from: managerOwner });
 		aggregator_sUSD = await MockAggregator.new({ from: managerOwner });
@@ -1246,6 +1240,18 @@ contract('ThalesAMM', accounts => {
 			// console.log(
 			// 	'availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18
 			// );
+		});
+	});
+
+	describe('Retrieve sUSD', () => {
+		it('Retrieves sUSD ', async () => {
+			let sUSDBalanceAmm = await sUSDSynth.balanceOf(thalesAMM.address);
+			let sUSDBalanceOwner = await sUSDSynth.balanceOf(owner);
+			await thalesAMM.retrieveSUSDAmount(owner, sUSDQtyAmm, { from: owner });
+			let sUSDBalanceAmmAfter = await sUSDSynth.balanceOf(thalesAMM.address);
+			let sUSDBalanceOwnerAfter = await sUSDSynth.balanceOf(owner);
+			assert.bnGte(sUSDBalanceOwnerAfter, sUSDBalanceOwner);
+			assert.bnGte(sUSDBalanceAmm, sUSDBalanceAmmAfter);
 		});
 	});
 });

@@ -288,7 +288,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _decrementDeposited(uint value) internal returns (uint _deposited) {
-        // console.log("deposited:", deposited, " || value:", value);
         _deposited = deposited.sub(value);
         deposited = _deposited;
         _manager().decrementTotalDeposited(value);
@@ -423,7 +422,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         // Only pay out the side that won.
         uint payout = (_result() == Side.Home) ? homeBalance : awayBalance;
 
-        // console.log("result: ", result, "|| payout: ", payout);
         if (optionsCount > 2 && _result() != Side.Home) {
             payout = _result() == Side.Away ? awayBalance : drawBalance;
         }
@@ -431,7 +429,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             require(!invalidOdds, "Invalid stamped odds");
             payout = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
         }
-        // console.log("result: ", result, "|| payout: ", payout);
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);
@@ -463,7 +460,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             uint payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
             payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
             payout = payout.add(_drawBalance.mul(drawOddsOnCancellation).div(1e18));
-            // console.log("payout:",payout);
             return payout;
         }
     }

@@ -155,7 +155,7 @@ async function main() {
 	console.log('PositionalMarketData deployed to:', positionalMarketData.address);
 	setTargetAddress('PositionalMarketData', network, positionalMarketData.address);
 
-	let LimitOrderProviderAddress = getTargetAddress('LimitOrderProvider', network);
+	//let LimitOrderProviderAddress = getTargetAddress('LimitOrderProvider', network);
 
 	let tx = await PositionalMarketFactoryDeployed.setPositionalMarketManager(
 		PositionalMarketManagerDeployed.address
@@ -183,12 +183,12 @@ async function main() {
 		console.log('PositionalMarketFactory: setPositionMastercopy');
 	});
 
-	if (LimitOrderProviderAddress) {
-		tx = await PositionalMarketFactoryDeployed.setLimitOrderProvider(LimitOrderProviderAddress);
-		await tx.wait().then(e => {
-			console.log('PositionalMarketFactory: setLimitOrderProvider');
-		});
-	}
+	// if (LimitOrderProviderAddress) {
+	// 	tx = await PositionalMarketFactoryDeployed.setLimitOrderProvider(LimitOrderProviderAddress);
+	// 	await tx.wait().then(e => {
+	// 		console.log('PositionalMarketFactory: setLimitOrderProvider');
+	// 	});
+	// }
 
 	if (network == 'ropsten') {
 		await hre.run('verify:verify', {

@@ -418,11 +418,6 @@
           },
           {
             "internalType": "address",
-            "name": "limitOrderProvider",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
             "name": "thalesAMM",
             "type": "address"
           }

@@ -60,7 +60,6 @@ contract PositionalMarketFactory is Initializable, ProxyOwned {
                 _parameters.initialMint,
                 address(up),
                 address(down),
-                limitOrderProvider,
                 thalesAMM
             )
         );
@@ -96,13 +95,6 @@ contract PositionalMarketFactory is Initializable, ProxyOwned {
         emit PositionMastercopyChanged(_positionMastercopy);
     }
 
-    /// @notice setLimitOrderProvider sets limitOrderProvider value
-    /// @param _limitOrderProvider address of LimitOrderProtocol contract
-    function setLimitOrderProvider(address _limitOrderProvider) external onlyOwner {
-        limitOrderProvider = _limitOrderProvider;
-        emit SetLimitOrderProvider(_limitOrderProvider);
-    }
-
     /// @notice setThalesAMM sets thalesAMM value
     /// @param _thalesAMM address of ThalesAMM contract
     function setThalesAMM(address _thalesAMM) external onlyOwner {
@@ -114,7 +106,6 @@ contract PositionalMarketFactory is Initializable, ProxyOwned {
     event PositionalMarketMastercopyChanged(address _positionalMarketMastercopy);
     event PositionMastercopyChanged(address _positionMastercopy);
     event SetThalesAMM(address _thalesAMM);
-    event SetLimitOrderProvider(address _limitOrderProvider);
     event MarketCreated(
         address market,
         bytes32 indexed oracleKey,

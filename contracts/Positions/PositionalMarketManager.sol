@@ -417,11 +417,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     function _isValidKey(bytes32 oracleKey) internal view returns (bool) {
         // If it has a rate, then it's possibly a valid key
         if (priceFeed.rateForCurrency(oracleKey) != 0) {
-            // But not sUSD
-            if (oracleKey == "sUSD") {
-                return false;
-            }
-
             return true;
         }
 

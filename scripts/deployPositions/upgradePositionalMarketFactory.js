@@ -38,7 +38,7 @@ async function main() {
 	const positionalMarketFactoryImplementation = await getImplementationAddress(ethers.provider, positionalMarketFactoryAddress);
 	setTargetAddress('PositionalMarketFactoryImplementation', network, positionalMarketFactoryImplementation);
 
-	let LimitOrderProviderAddress = getTargetAddress('LimitOrderProvider', network);
+	//let LimitOrderProviderAddress = getTargetAddress('LimitOrderProvider', network);
 	let PositionalMarketManagerDeployed = getTargetAddress('PositionalMarketManager', network);
 	let PositionalMarketMastercopyDeployed = getTargetAddress('PositionalMarketMastercopy', network);
 	let PositionMastercopyDeployed = getTargetAddress('PositionMastercopy', network);
@@ -64,12 +64,12 @@ async function main() {
 		console.log('PositionalMarketFactory: setPositionMastercopy');
 	});
 
-	if (LimitOrderProviderAddress) {
-		tx = await PositionalMarketFactoryDeployed.setLimitOrderProvider(LimitOrderProviderAddress);
-		await tx.wait().then(e => {
-			console.log('PositionalMarketFactory: setLimitOrderProvider');
-		});
-	}
+	// if (LimitOrderProviderAddress) {
+	// 	tx = await PositionalMarketFactoryDeployed.setLimitOrderProvider(LimitOrderProviderAddress);
+	// 	await tx.wait().then(e => {
+	// 		console.log('PositionalMarketFactory: setLimitOrderProvider');
+	// 	});
+	// }
 
 	try {
 		await hre.run('verify:verify', {

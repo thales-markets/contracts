@@ -322,18 +322,6 @@ contract('Position', accounts => {
 				manager
 					.connect(creator)
 					.createMarket(
-						sUSDKey,
-						toUnit(1).toString(),
-						now + 100,
-						toUnit(2).toString()
-					),
-				'Invalid key'
-			);
-
-			await assert.revert(
-				manager
-					.connect(creator)
-					.createMarket(
 						nonRate,
 						toUnit(1).toString(),
 						now + 100,

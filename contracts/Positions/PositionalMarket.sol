@@ -49,7 +49,6 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         uint deposit; // sUSD deposit
         address up;
         address down;
-        address limitOrderProvider;
         address thalesAMM;
     }
 
@@ -93,8 +92,8 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         options.down = Position(_parameters.down);
         // abi.encodePacked("sUP: ", _oracleKey)
         // consider naming the option: sUpBTC>50@2021.12.31
-        options.up.initialize("Position Up", "UP", _parameters.limitOrderProvider, _parameters.thalesAMM);
-        options.down.initialize("Position Down", "DOWN", _parameters.limitOrderProvider, _parameters.thalesAMM);
+        options.up.initialize("Position Up", "UP", _parameters.thalesAMM);
+        options.down.initialize("Position Down", "DOWN", _parameters.thalesAMM);
         _mint(creator, initialMint);
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry

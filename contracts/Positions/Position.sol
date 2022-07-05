@@ -30,7 +30,6 @@ contract Position is IERC20, IPosition {
     // Enforce a 1 cent minimum amount
     uint internal constant _MINIMUM_AMOUNT = 1e16;
 
-    address public limitOrderProvider;
     address public thalesAMM;
 
     bool public initialized = false;
@@ -38,7 +37,6 @@ contract Position is IERC20, IPosition {
     function initialize(
         string calldata _name,
         string calldata _symbol,
-        address _limitOrderProvider,
         address _thalesAMM
     ) external {
         require(!initialized, "Positional Market already initialized");
@@ -46,8 +44,6 @@ contract Position is IERC20, IPosition {
         name = _name;
         symbol = _symbol;
         market = PositionalMarket(msg.sender);
-        // add through constructor
-        limitOrderProvider = _limitOrderProvider;
         thalesAMM = _thalesAMM;
     }
 
@@ -56,8 +52,8 @@ contract Position is IERC20, IPosition {
     /// @param spender address of the spender
     /// @return uint256 number of tokens
     function allowance(address owner, address spender) external view override returns (uint256) {
-        if (spender == limitOrderProvider || spender == thalesAMM) {
-            return 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+        if (spender == thalesAMM) {
+            return type(uint256).max;
         } else {
             return allowances[owner][spender];
         }
@@ -134,7 +130,7 @@ contract Position is IERC20, IPosition {
         address _to,
         uint _value
     ) external override returns (bool success) {
-        if (msg.sender != limitOrderProvider && msg.sender != thalesAMM) {
+        if (msg.sender != thalesAMM) {
             uint fromAllowance = allowances[_from][msg.sender];
             require(_value <= fromAllowance, "Insufficient allowance");
             allowances[_from][msg.sender] = fromAllowance.sub(_value);

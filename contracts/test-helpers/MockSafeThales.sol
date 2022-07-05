@@ -15,5 +15,4 @@ contract MockSafeThales is ERC20 {
     constructor() public {
         _mint(msg.sender, INITIAL_TOTAL_SUPPLY * 1e18);
     }
-
 }

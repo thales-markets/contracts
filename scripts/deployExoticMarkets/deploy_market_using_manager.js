@@ -64,12 +64,12 @@ async function main() {
 		console.log('At address:', event[0].args.marketAddress);
 		marketAddress = event[0].args.marketAddress;
 	});
-	
+
 	await delay(5000);
 
 	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalMarket');
 	const ExoticMarketDeployed = await ExoticMarket.attach(marketAddress);
-	
+
 	try {
 		await hre.run('verify:verify', {
 			address: ExoticMarketDeployed.address,
@@ -77,10 +77,10 @@ async function main() {
 	} catch (e) {
 		console.log(e);
 	}
-	
+
 	await delay(5000);
-	
-	await ExoticMarketDeployed.takeAPosition("1",{
+
+	await ExoticMarketDeployed.takeAPosition('1', {
 		from: owner.address,
 		gasLimit: 5000000,
 	});

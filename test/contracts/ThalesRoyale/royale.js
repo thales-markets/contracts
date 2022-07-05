@@ -2781,4 +2781,75 @@ contract('ThalesRoyale', accounts => {
 			'Competition finished'
 		);
 	});
+
+	it('Sign up on behalf', async () => {
+		await royale.startNewSeason({ from: owner });
+
+		assert.bnEqual(0, await royale.signedUpPlayersCount(season_1));
+
+		await royale.signUpOnBehalf(second, { from: first });
+		await royale.signUpOnBehalf(third, { from: second });
+
+		const firstPassportId = 1;
+		const secondPassportId = 2;
+		const thirdPassportId = 3;
+
+		assert.equal(true, await royale.isTokenAlive(firstPassportId));
+		assert.equal(true, await royale.isTokenAlive(secondPassportId));
+		assert.equal(false, await royale.isTokenAlive(thirdPassportId));
+
+		let totalTokens = await royale.getTokensForSeason(season_1);
+		assert.equal(2, totalTokens.length);
+
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 1)); // round 1
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 1, 2)); // round 1
+
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 6, 1)); // round 6
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 6, 2)); // round 6
+
+		assert.bnEqual(2, await royale.mintedTokensCount(season_1));
+
+		await fastForward(HOUR * 72 + 1);
+		await royale.startRoyaleInASeason();
+
+		await expect(royale.takeAPosition(firstPassportId, 2, { from: first })).to.be.revertedWith(
+			'Not an owner'
+		);
+
+		await royale.takeAPosition(firstPassportId, 2, { from: second });
+		await royale.takeAPosition(secondPassportId, 1, { from: third });
+
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 1, 1)); // round 1
+		assert.equal(1, await royale.positionsPerRoundPerSeason(season_1, 1, 2)); // round 1
+
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 6, 1)); // round 6
+		assert.equal(0, await royale.positionsPerRoundPerSeason(season_1, 6, 2)); // round 6
+
+		await MockPriceFeedDeployed.setPricetoReturn(1100);
+
+		//#1
+		await fastForward(HOUR * 72 + 1);
+		const tx_close_3 = await royale.closeRound();
+
+		let totalTokensInARoundTwo = await royale.totalTokensPerRoundPerSeason(season_1, 2);
+		// equal to 1 - first token
+		assert.equal(1, totalTokensInARoundTwo);
+
+		// check if event is emited
+		assert.eventEqual(tx_close_3.logs[0], 'RoundClosed', {
+			season: season_1,
+			round: 1,
+			result: 2,
+			strikePrice: 1000,
+			finalPrice: 1100,
+			numberOfEliminatedPlayers: 1,
+			numberOfWinningPlayers: 1,
+		});
+
+		assert.eventEqual(tx_close_3.logs[1], 'RoyaleFinished', {
+			season: season_1,
+			numberOfWinners: 1,
+			rewardPerWinner: toUnit(5000),
+		});
+	});
 });

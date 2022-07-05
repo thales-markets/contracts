@@ -3,12 +3,12 @@
 pragma solidity >=0.5.16;
 
 interface IPriceFeed {
-     // Structs
+    // Structs
     struct RateAndUpdatedTime {
         uint216 rate;
         uint40 time;
     }
-    
+
     // Mutative functions
     function addAggregator(bytes32 currencyKey, address aggregatorAddress) external;
 

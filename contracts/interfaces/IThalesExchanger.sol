@@ -10,6 +10,5 @@ interface IThalesExchanger {
 
     function exchangeThalesToOpThales(uint amount) external;
 
-    function exchangeOpThalesToThales(uint amount) external;    
-    
+    function exchangeOpThalesToThales(uint amount) external;
 }

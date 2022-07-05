@@ -12,10 +12,10 @@ pragma experimental ABIEncoderV2;
 // /* Library Imports */
 // import { OVM_CrossDomainEnabled } from "../../../libraries/bridge/OVM_CrossDomainEnabled.sol";
 // import { Lib_PredeployAddresses } from "../../../libraries/constants/Lib_PredeployAddresses.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { SafeMath } from "@openzeppelin/contracts/math/SafeMath.sol";
-import { Address } from "@openzeppelin/contracts/utils/Address.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 /**
  * @title OVM_L1StandardBridge
@@ -37,7 +37,7 @@ contract MockStandardBridgeL1 {
     address public l2TokenBridge;
 
     // Maps L1 token to L2 token to balance of the L1 token deposited
-    mapping(address => mapping (address => uint256)) public deposits;
+    mapping(address => mapping(address => uint256)) public deposits;
 
     /***************
      * Constructor *
@@ -46,7 +46,7 @@ contract MockStandardBridgeL1 {
     // This contract lives behind a proxy, so the constructor parameters will go unused.
     constructor() {}
 
-        // OVM_CrossDomainEnabled(address(0))
+    // OVM_CrossDomainEnabled(address(0))
     /******************
      * Initialization *
      ******************/
@@ -55,12 +55,7 @@ contract MockStandardBridgeL1 {
      * @param _l1messenger L1 Messenger address being used for cross-chain communications.
      * @param _l2TokenBridge L2 standard bridge address.
      */
-    function initialize(
-        address _l1messenger,
-        address _l2TokenBridge
-    )
-        public
-    {
+    function initialize(address _l1messenger, address _l2TokenBridge) public {
         require(messenger == address(0), "Contract has already been initialized.");
         messenger = _l1messenger;
         l2TokenBridge = _l2TokenBridge;
@@ -85,36 +80,15 @@ contract MockStandardBridgeL1 {
      * Since the receive function doesn't take data, a conservative
      * default amount is forwarded to L2.
      */
-    receive()
-        external
-        payable
-        onlyEOA()
-    {
-        _initiateETHDeposit(
-            msg.sender,
-            msg.sender,
-            1_300_000,
-            bytes("")
-        );
+    receive() external payable onlyEOA() {
+        _initiateETHDeposit(msg.sender, msg.sender, 1_300_000, bytes(""));
     }
 
     /**
      * iOVM_L1StandardBridge
      */
-    function depositETH(
-        uint32 _l2Gas,
-        bytes calldata _data
-    )
-        external
-                payable
-        onlyEOA()
-    {
-        _initiateETHDeposit(
-            msg.sender,
-            msg.sender,
-            _l2Gas,
-            _data
-        );
+    function depositETH(uint32 _l2Gas, bytes calldata _data) external payable onlyEOA() {
+        _initiateETHDeposit(msg.sender, msg.sender, _l2Gas, _data);
     }
 
     /**
@@ -124,16 +98,8 @@ contract MockStandardBridgeL1 {
         address _to,
         uint32 _l2Gas,
         bytes calldata _data
-    )
-        external
-                payable
-    {
-        _initiateETHDeposit(
-            msg.sender,
-            _to,
-            _l2Gas,
-            _data
-        );
+    ) external payable {
+        _initiateETHDeposit(msg.sender, _to, _l2Gas, _data);
     }
 
     /**
@@ -151,9 +117,7 @@ contract MockStandardBridgeL1 {
         address _to,
         uint32 _l2Gas,
         bytes memory _data
-    )
-        internal
-    {
+    ) internal {
         // Construct calldata for finalizeDeposit call
         // bytes memory message =
         //     abi.encodeWithSelector(
@@ -187,15 +151,11 @@ contract MockStandardBridgeL1 {
         uint256 _amount,
         uint32 _l2Gas,
         bytes calldata _data
-    )
-        external
-                virtual
-        onlyEOA()
-    {
+    ) external virtual onlyEOA() {
         _initiateERC20Deposit(_l1Token, _l2Token, msg.sender, msg.sender, _amount, _l2Gas, _data);
     }
 
-     /**
+    /**
      * iOVM_L1ERC20Bridge
      */
     function depositERC20To(
@@ -205,10 +165,7 @@ contract MockStandardBridgeL1 {
         uint256 _amount,
         uint32 _l2Gas,
         bytes calldata _data
-    )
-        external
-                virtual
-    {
+    ) external virtual {
         _initiateERC20Deposit(_l1Token, _l2Token, msg.sender, _to, _amount, _l2Gas, _data);
     }
 
@@ -234,24 +191,15 @@ contract MockStandardBridgeL1 {
         uint256 _amount,
         uint32 _l2Gas,
         bytes calldata _data
-    )
-        internal
-    {
+    ) internal {
         // silence compiler warning
         _l2Gas = _l2Gas;
         // When a deposit is initiated on L1, the L1 Bridge transfers the funds to itself for future
         // withdrawals. safeTransferFrom also checks if the contract has code, so this will fail if
         // _from is an EOA or address(0).
-        IERC20(_l1Token).transferFrom(
-            _from,
-            address(this),
-            _amount
-        );
+        IERC20(_l1Token).transferFrom(_from, address(this), _amount);
 
-        IERC20(_l2Token).transfer(
-            _to,
-             _amount
-            );
+        IERC20(_l2Token).transfer(_to, _amount);
         // Construct calldata for _l2Token.finalizeDeposit(_to, _amount)
         // bytes memory message = abi.encodeWithSelector(
         //     iOVM_L2ERC20Bridge.finalizeDeposit.selector,
@@ -279,7 +227,7 @@ contract MockStandardBridgeL1 {
      * Cross-chain Functions *
      *************************/
 
-     /**
+    /**
      * iOVM_L1StandardBridge
      */
     function finalizeETHWithdrawal(
@@ -287,15 +235,13 @@ contract MockStandardBridgeL1 {
         address _to,
         uint256 _amount,
         bytes calldata _data
-    )
-        external
-            {
+    ) external {
         (bool success, ) = _to.call{value: _amount}(new bytes(0));
         require(success, "TransferHelper::safeTransferETH: ETH transfer failed");
 
         emit ETHWithdrawalFinalized(_from, _to, _amount, _data);
     }
-    
+
     // onlyFromCrossDomainAccount(l2TokenBridge)
 
     /**
@@ -308,9 +254,7 @@ contract MockStandardBridgeL1 {
         address _to,
         uint256 _amount,
         bytes calldata _data
-    )
-        external
-            {
+    ) external {
         deposits[_l1Token][_l2Token] = deposits[_l1Token][_l2Token].sub(_amount);
 
         // When a withdrawal is finalized on L1, the L1 Bridge transfers the funds to the withdrawer
@@ -318,11 +262,19 @@ contract MockStandardBridgeL1 {
 
         emit ERC20WithdrawalFinalized(_l1Token, _l2Token, _from, _to, _amount, _data);
     }
-    
+
     event ETHWithdrawalFinalized(address _from, address _to, uint _amount, bytes _data);
     event ETHDepositInitiated(address _from, address _to, uint _amount, bytes _data);
-    event ERC20WithdrawalFinalized(address _l1Token, address _l2Token, address _from, address _to, uint _amount, bytes _data);
+    event ERC20WithdrawalFinalized(
+        address _l1Token,
+        address _l2Token,
+        address _from,
+        address _to,
+        uint _amount,
+        bytes _data
+    );
     event ERC20DepositInitiated(address _l1Token, address _l2Token, address _from, address _to, uint _amount, bytes _data);
+
     // onlyFromCrossDomainAccount(l2TokenBridge)
 
     /*****************************

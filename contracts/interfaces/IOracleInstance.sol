@@ -10,5 +10,4 @@ interface IOracleInstance {
     function getOutcome() external view returns (bool);
 
     function resolvable() external view returns (bool);
-
 }

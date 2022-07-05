@@ -10,7 +10,7 @@ const { setupAllContracts } = require('../../utils/setup');
 
 const { convertToDecimals } = require('../../utils/helpers');
 
-let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
+let factory, manager, addressResolver;
 let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 let market, up, down, position, Synth;
 
@@ -1242,6 +1242,18 @@ contract('ThalesAMM', accounts => {
 			// console.log(
 			// 	'availableToSellToAMMDown post buy decimal is:' + availableToSellToAMMDown / 1e18
 			// );
+		});
+	});
+
+	describe('Retrieve sUSD', () => {
+		it('Retrieves sUSD ', async () => {
+			let sUSDBalanceAmm = await sUSDSynth.balanceOf(thalesAMM.address);
+			let sUSDBalanceOwner = await sUSDSynth.balanceOf(owner);
+			await thalesAMM.retrieveSUSDAmount(owner, sUSDQtyAmm, { from: owner });
+			let sUSDBalanceAmmAfter = await sUSDSynth.balanceOf(thalesAMM.address);
+			let sUSDBalanceOwnerAfter = await sUSDSynth.balanceOf(owner);
+			assert.bnGte(sUSDBalanceOwnerAfter, sUSDBalanceOwner);
+			assert.bnGte(sUSDBalanceAmm, sUSDBalanceAmmAfter);
 		});
 	});
 });

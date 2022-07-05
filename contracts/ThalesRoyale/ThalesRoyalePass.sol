@@ -72,7 +72,6 @@ contract ThalesRoyalePass is ERC721URIStorage, Ownable {
         require(thalesRoyale.getBuyInAmount() <= pricePerPass[tokenId], "Not enough sUSD allocated in the pass");
 
         if (thalesRoyale.getBuyInAmount() < pricePerPass[tokenId]) {
-
             uint diferenceInPrice = pricePerPass[tokenId].sub(thalesRoyale.getBuyInAmount());
 
             // send diference to player

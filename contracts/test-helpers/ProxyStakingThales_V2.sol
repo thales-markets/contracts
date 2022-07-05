@@ -79,7 +79,7 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
     function getVersion() external view returns (uint) {
         return _contractVersion;
     }
-    
+
     function setVersion(uint version) external onlyOwner {
         _contractVersion = version;
     }
@@ -88,7 +88,6 @@ contract ProxyEscrowThales_V2 is IEscrowThales, Initializable, ProxyOwned, Proxy
         require(account != address(0), "Invalid address");
         return totalAccountEscrowedAmount[account].sub(_getVestingNotAvailable(account));
     }
-    
 
     function addToEscrow(address account, uint amount) external {
         require(account != address(0), "Invalid address");

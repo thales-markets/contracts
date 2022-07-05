@@ -73,9 +73,19 @@ async function main() {
 		await transaction.wait().then(e => {
 			console.log('PositionalMarketManager: whitelistedAddresses set');
 		});
+
+		transaction = await PositionalMarketManagerDeployed.setTimeframeBuffer(1);
+		await transaction.wait().then(e => {
+			console.log('PositionalMarketManager: timeframeBuffer set');
+		});
+
+		transaction = await PositionalMarketManagerDeployed.setPriceBuffer(5);
+		await transaction.wait().then(e => {
+			console.log('PositionalMarketManager: priceBuffer set');
+		});
 	}
 
-
+	
 	try {
 		await hre.run('verify:verify', {
 			address: positionalMarketManagerImplementation,

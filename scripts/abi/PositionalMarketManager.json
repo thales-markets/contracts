@@ -5,19 +5,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      }
-    ],
-    "name": "CreatorCapitalRequirementUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "duration",
         "type": "uint256"
       }
@@ -338,6 +325,40 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "oracleKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maturity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "strikePrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "canCreateMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "capitalRequirement",
     "outputs": [
@@ -493,11 +514,6 @@
       {
         "internalType": "uint256",
         "name": "_maxTimeToMaturity",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_creatorCapitalRequirement",
         "type": "uint256"
       }
     ],
@@ -841,19 +857,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_creatorCapitalRequirement",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCreatorCapitalRequirement",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

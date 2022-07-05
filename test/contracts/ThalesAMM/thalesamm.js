@@ -97,8 +97,8 @@ contract('ThalesAMM', accounts => {
 		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
 		await manager.connect(creatorSigner).setTimeframeBuffer(0);
-		await manager.connect(creatorSigner).setPriceBuffer(1); // 1%
-
+		await manager.connect(creatorSigner).setPriceBuffer(toUnit(0.01).toString()); 
+		
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 		aggregator_sETH = await MockAggregator.new({ from: managerOwner });
 		aggregator_sUSD = await MockAggregator.new({ from: managerOwner });
@@ -177,6 +177,8 @@ contract('ThalesAMM', accounts => {
 		});
 
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 	});
 
 	const Position = {

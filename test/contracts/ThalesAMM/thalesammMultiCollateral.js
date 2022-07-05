@@ -172,6 +172,7 @@ contract('ThalesAMM', accounts => {
 			from: owner,
 		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQty);
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 
 		let TestUSDC = artifacts.require('TestUSDC');
 		testUSDC = await TestUSDC.new();

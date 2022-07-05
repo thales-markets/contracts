@@ -177,6 +177,7 @@ contract('ThalesAMM', accounts => {
 			from: owner,
 		});
 		await manager.setNeedsTransformingCollateral(true);
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 
 		const usdcQuantity = toBN(100 * 1e6); //100 USDC
 		const ammusdcQuantity = toBN(10000 * 1e6); //100 USDC

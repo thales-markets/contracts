@@ -104,6 +104,12 @@ async function main() {
 		PositionalMarketManagerImplementation
 	);
 
+	const PositionalMarketData = await ethers.getContractFactory('PositionalMarketData');
+	const positionalMarketData = await PositionalMarketData.deploy();
+
+	console.log('PositionalMarketData deployed to:', positionalMarketData.address);
+	setTargetAddress('PositionalMarketData', network, positionalMarketData.address);
+
 	const thalesAmmAddress = getTargetAddress('ThalesAMM', network);
 	console.log('Found ThalesAMM at:', thalesAmmAddress);
 
@@ -139,6 +145,11 @@ async function main() {
 		address: PositionalMarketMastercopyDeployed.address,
 		constructorArguments: [],
 		contract: 'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
+	});
+
+	await hre.run('verify:verify', {
+		address: positionalMarketData.address,
+		constructorArguments: [],
 	});
 
 	function delay(time) {

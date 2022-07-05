@@ -180,6 +180,7 @@ contract('ThalesAMM', accounts => {
 			from: owner,
 		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 
 		Referrals = artifacts.require('Referrals');
 		referrals = await Referrals.new();

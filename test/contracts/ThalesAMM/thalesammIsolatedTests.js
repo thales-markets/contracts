@@ -169,6 +169,7 @@ contract('ThalesAMM', accounts => {
 			from: owner,
 		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 	});
 
 	const Position = {

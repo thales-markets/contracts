@@ -87,6 +87,7 @@ contract('ThalesAMM', accounts => {
 		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
 		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
+		
 		await factory
 			.connect(ownerSigner)
 			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
@@ -169,6 +170,8 @@ contract('ThalesAMM', accounts => {
 			from: owner,
 		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 	});
 
 	const Position = {

@@ -169,6 +169,7 @@ contract('ThalesAMM', accounts => {
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
 			from: owner,
 		});
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 	});
 

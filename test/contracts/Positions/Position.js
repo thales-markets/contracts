@@ -24,7 +24,8 @@ let PositionalMarket,
 	priceFeed,
 	sUSDSynth,
 	positionalMarketMastercopy,
-	PositionMastercopy;
+	PositionMastercopy,
+	thalesAMM;
 let market, up, down, Position, Synth, addressResolver;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -92,7 +93,27 @@ contract('Position', accounts => {
 		await factory.connect(owner).setPositionMastercopy(PositionMastercopy.address);
 
 		await manager.connect(creator).setTimeframeBuffer(1);
-		await manager.connect(creator).setPriceBuffer(5); // 5%
+		await manager.connect(creator).setPriceBuffer(toUnit(0.05).toString()); 
+
+		let DeciMath = artifacts.require('DeciMath');
+		let deciMath = await DeciMath.new();
+
+		const hour = 60 * 60;
+		let ThalesAMM = artifacts.require('ThalesAMM');
+		thalesAMM = await ThalesAMM.new();
+		await thalesAMM.initialize(
+			owner.address,
+			priceFeed.address,
+			sUSDSynth.address,
+			toUnit(1000),
+			deciMath.address,
+			toUnit(0.01),
+			toUnit(0.05),
+			hour * 2
+		);
+
+		await factory.connect(owner).setThalesAMM(thalesAMM.address);
+
 
 		let aggregatorAUD = await MockAggregator.new({ from: managerOwner });
 		aggregatorAUD.setDecimals('8');
@@ -100,6 +121,8 @@ contract('Position', accounts => {
 		await aggregatorAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
 		await priceFeed.connect(owner).addAggregator(AUDKey, aggregatorAUD.address);
+
+		await thalesAMM.setImpliedVolatilityPerAsset(AUDKey, toUnit(100), { from: owner.address });
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
@@ -113,8 +136,6 @@ contract('Position', accounts => {
 
 	describe('Transfers', () => {
 		it('Can transfer tokens.', async () => {
-			const newValue = toUnit(1);
-			await manager.connect(creator).setCreatorCapitalRequirement(newValue.toString());
 			let now = await currentTime();
 			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), creator);
 			await fastForward(100);

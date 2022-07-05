@@ -9,11 +9,18 @@ const { toBytes32 } = require('../../../index');
 const { setupContract, setupAllContracts } = require('../../utils/setup');
 
 const { getEventByName, convertToDecimals } = require('../../utils/helpers');
+const { toWei } = require('web3-utils');
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 let factory, manager, addressResolver;
-let PositionalMarket, priceFeed, sUSDSynth, Synth, PositionalMarketMastercopy, PositionMastercopy;
+let PositionalMarket,
+	priceFeed,
+	sUSDSynth,
+	Synth,
+	PositionalMarketMastercopy,
+	PositionMastercopy,
+	thalesAMM;
 let market, Position;
 let aggregator_sAUD;
 
@@ -35,12 +42,7 @@ contract('PositionalMarketManager', accounts => {
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
 			.connect(creator)
-			.createMarket(
-				oracleKey,
-				strikePrice.toString(),
-				maturity,
-				initialMint.toString()
-			);
+			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
 			event => event['event'] && event['event'] === 'MarketCreated'
@@ -84,10 +86,31 @@ contract('PositionalMarketManager', accounts => {
 
 		await manager.connect(creator).setPositionalMarketFactory(factory.address);
 		await manager.connect(creator).setTimeframeBuffer(1);
-		await manager.connect(creator).setPriceBuffer(5); // 5%
+		await manager.connect(creator).setPriceBuffer(toUnit(0.05).toString());
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
 		await factory.connect(owner).setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(owner).setPositionMastercopy(PositionMastercopy.address);
+
+		await manager.connect(creator).setMaxTimeToMaturity(30 * DAY);
+
+		let DeciMath = artifacts.require('DeciMath');
+		let deciMath = await DeciMath.new();
+
+		const hour = 60 * 60;
+		let ThalesAMM = artifacts.require('ThalesAMM');
+		thalesAMM = await ThalesAMM.new();
+		await thalesAMM.initialize(
+			owner.address,
+			priceFeed.address,
+			sUSDSynth.address,
+			toUnit(1000),
+			deciMath.address,
+			toUnit(0.01),
+			toUnit(0.05),
+			hour * 2
+		);
+
+		await factory.connect(owner).setThalesAMM(thalesAMM.address);
 
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 		aggregator_sAUD.setDecimals('8');
@@ -97,6 +120,9 @@ contract('PositionalMarketManager', accounts => {
 
 		await priceFeed.connect(owner).addAggregator(sAUDKey, aggregator_sAUD.address);
 		await priceFeed.connect(owner).addAggregator(ETHKey, aggregator_sAUD.address);
+
+		await thalesAMM.setImpliedVolatilityPerAsset(ETHKey, toUnit(100), { from: owner.address });
+		await thalesAMM.setImpliedVolatilityPerAsset(sAUDKey, toUnit(120), { from: owner.address });
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
@@ -110,9 +136,6 @@ contract('PositionalMarketManager', accounts => {
 
 	describe('Market tracking', () => {
 		it('Multiple markets can exist simultaneously, and debt is tracked properly across them. ', async () => {
-			const newValue = toUnit(1);
-			const tx = await manager.connect(creator).setCreatorCapitalRequirement(newValue.toString());
-
 			const now = await currentTime();
 			const markets = await Promise.all(
 				[toUnit(1), toUnit(2), toUnit(3)].map(price =>
@@ -324,16 +347,23 @@ contract('PositionalMarketManager', accounts => {
 		beforeEach(async () => {
 			maturity = (await currentTime()) + DAY;
 			let date = new Date(maturity);
-			date.setHours(0, 0, 0, 0);  
+			date.setHours(0, 0, 0, 0);
 			date = Date.parse(date);
 			strikePrice = 100;
-			await manager.connect(creator).setMaxTimeToMaturity(3 * DAY);
 		});
 
 		it('Cannot create duplicate markets price-wise', async () => {
 			const priceBuffer = await manager.priceBuffer();
-			const strikePriceUpperLimit = strikePrice + (strikePrice * priceBuffer) / 100;
-			const strikePriceLowerLimit = strikePrice - (strikePrice * priceBuffer) / 100 + 0.3;
+			const impliedVolatility = await thalesAMM.impliedVolatilityPerAsset(ETHKey);
+			const strikePriceUpperLimit =
+				strikePrice +
+				(strikePrice * (priceBuffer / Math.pow(10, 18)) * (impliedVolatility / Math.pow(10, 18))) /
+					100;
+			const strikePriceLowerLimit =
+				strikePrice -
+				(strikePrice * (priceBuffer / Math.pow(10, 18)) * (impliedVolatility / Math.pow(10, 18))) /
+					100 +
+				0.3;
 			await createMarket(manager, ETHKey, toUnit(strikePrice), maturity, toUnit(3), creator);
 			await assert.revert(
 				createMarket(manager, ETHKey, toUnit(strikePriceUpperLimit), maturity, toUnit(3), creator),
@@ -343,7 +373,6 @@ contract('PositionalMarketManager', accounts => {
 				createMarket(manager, ETHKey, toUnit(strikePriceLowerLimit), maturity, toUnit(3), creator),
 				'A market already exists within that timeframe and price buffer'
 			);
-
 		});
 
 		it('Cannot create duplicate markets time-wise', async () => {
@@ -369,6 +398,34 @@ contract('PositionalMarketManager', accounts => {
 					creator
 				),
 				'A market already exists within that timeframe and price buffer'
+			);
+		});
+
+		it('Market creation is disabled on timeframe buffer increase', async () => {
+			await manager.connect(creator).setTimeframeBuffer(3);
+			await assert.revert(
+				createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY * 3, toUnit(3), creator),
+				'A market already exists within that timeframe and price buffer'
+			);
+
+			await assert.revert(
+				createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY * 2, toUnit(3), creator),
+				'A market already exists within that timeframe and price buffer'
+			);
+
+			await assert.revert(
+				createMarket(manager, ETHKey, toUnit(strikePrice), maturity + DAY, toUnit(3), creator),
+				'A market already exists within that timeframe and price buffer'
+			);
+
+			// on 4 days appart market can be created
+			await createMarket(
+				manager,
+				ETHKey,
+				toUnit(strikePrice),
+				maturity + 4 * DAY,
+				toUnit(3),
+				creator
 			);
 		});
 	});
@@ -460,12 +517,7 @@ contract('PositionalMarketManager', accounts => {
 			await assert.revert(
 				manager
 					.connect(minterSigner)
-					.createMarket(
-						sAUDKey,
-						toUnit(1).toString(),
-						now + 100,
-						toUnit(5).toString()
-					),
+					.createMarket(sAUDKey, toUnit(1).toString(), now + 100, toUnit(5).toString()),
 				'Only whitelisted addresses can create markets'
 			);
 		});
@@ -478,12 +530,7 @@ contract('PositionalMarketManager', accounts => {
 			await assert.revert(
 				manager
 					.connect(dummySigner)
-					.createMarket(
-						sAUDKey,
-						toUnit(1).toString(),
-						now + 100,
-						toUnit(5).toString()
-					),
+					.createMarket(sAUDKey, toUnit(1).toString(), now + 100, toUnit(5).toString()),
 				'Only whitelisted addresses can create markets'
 			);
 		});
@@ -495,12 +542,7 @@ contract('PositionalMarketManager', accounts => {
 
 			const tx = await manager
 				.connect(creator)
-				.createMarket(
-					sAUDKey,
-					toUnit(10).toString(),
-					now + 100,
-					toUnit(5).toString()
-				);
+				.createMarket(sAUDKey, toUnit(10).toString(), now + 100, toUnit(5).toString());
 			let receipt = await tx.wait();
 			assert.equal(receipt.events.length, 10);
 		});
@@ -511,12 +553,7 @@ contract('PositionalMarketManager', accounts => {
 
 			const tx = await manager
 				.connect(minterSigner)
-				.createMarket(
-					sAUDKey,
-					toUnit(11).toString(),
-					now + 100,
-					toUnit(5).toString()
-				);
+				.createMarket(sAUDKey, toUnit(11).toString(), now + 100, toUnit(5).toString());
 			let receipt = await tx.wait();
 			assert.equal(receipt.events.length, 10);
 		});

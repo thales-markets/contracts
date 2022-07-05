@@ -8,6 +8,8 @@ interface IThalesAMM {
 
     function availableToBuyFromAMM(address market, Position position) external view returns (uint);
 
+    function impliedVolatilityPerAsset(bytes32 oracleKey) external view returns(uint);
+
     function buyFromAmmQuote(
         address market,
         Position position,

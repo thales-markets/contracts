@@ -400,7 +400,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
         curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, susdQuote);
 
-        buyFromAMM(market, position, amount, susdQuote, additionalSlippage);
+        _buyFromAMM(market, position, amount, susdQuote, additionalSlippage);
     }
 
     /// @notice Buy amount of position for market/game from AMM using sUSD
@@ -416,6 +416,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint expectedPayout,
         uint additionalSlippage
     ) public nonReentrant whenNotPaused {
+        _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage);
+    }
+
+    function _buyFromAMM(
+        address market,
+        Position position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage
+    ) internal {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
         require(ISportPositionalMarket(market).optionsCount() > uint(position), "Invalid position");
         uint availableToBuyFromAMMatm = availableToBuyFromAMM(market, position);

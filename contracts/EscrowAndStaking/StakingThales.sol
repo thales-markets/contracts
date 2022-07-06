@@ -604,7 +604,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function mergeAccount(address destAccount) external notPaused {
-        require(destAccount != address(0), "Invalid address");
+        require(destAccount != address(0) && destAccount != msg.sender, "Invalid address");
         require(
             getRewardsAvailable(msg.sender) == 0 && getRewardsAvailable(destAccount) == 0,
             "Cannot merge, claim rewards on both accounts before merging"

@@ -1080,4 +1080,583 @@ contract('StakingThales', accounts => {
 			// }
 		});
 	});
+
+	describe('Account merging:', () => {
+		it('Account merging with first account staker', async () => {
+			let deposit = toUnit(100000);
+			let stake = toUnit(1500);
+			let weeks = 11;
+
+			await StakingThalesDeployed.setFixedPeriodReward(deposit, { from: owner });
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			await sUSDSynth.issue(initialCreator, deposit.mul(toBN(weeks)));
+			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
+				from: initialCreator,
+			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			await ThalesDeployed.transfer(first, stake, { from: owner });
+			await ThalesDeployed.approve(StakingThalesDeployed.address, stake, { from: first });
+			await StakingThalesDeployed.stake(stake, { from: first });
+			let period = 0;
+			while (period < weeks - 1) {
+				await fastForward(WEEK + SECOND);
+				await StakingThalesDeployed.closePeriod({ from: second });
+				await StakingThalesDeployed.claimReward({ from: first });
+				period++;
+			}
+			await fastForward(WEEK + SECOND);
+			await StakingThalesDeployed.closePeriod({ from: second });
+
+			await expect(StakingThalesDeployed.mergeAccount(second, { from: first })).to.be.revertedWith(
+				'Cannot merge, claim rewards on both accounts before merging'
+			);
+			await StakingThalesDeployed.claimReward({ from: first });
+
+			await StakingThalesDeployed.startUnstake(await StakingThalesDeployed.stakedBalanceOf(first), {
+				from: first,
+			});
+			await expect(StakingThalesDeployed.mergeAccount(second, { from: first })).to.be.revertedWith(
+				'Cannot merge, cancel unstaking on both accounts before merging'
+			);
+			await StakingThalesDeployed.cancelUnstake({
+				from: first,
+			});
+
+			await StakingThalesDeployed.mergeAccount(second, { from: first });
+
+			let stakedBalance = await StakingThalesDeployed.stakedBalanceOf(second);
+			assert.bnEqual(stakedBalance, stake);
+			stakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			assert.bnEqual(stakedBalance, toUnit(0));
+
+			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(
+				second
+			);
+			assert.bnEqual(totalAccountEscrowedAmount, deposit.mul(toBN(weeks)));
+			totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
+			assert.bnEqual(totalAccountEscrowedAmount, toUnit(0));
+
+			let claimable = await EscrowThalesDeployed.claimable(second);
+			assert.bnEqual(claimable, deposit);
+			claimable = await EscrowThalesDeployed.claimable(first);
+			assert.bnEqual(claimable, toUnit(0));
+
+			let vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 0);
+			assert.bnEqual(vestingEntryAmount, deposit);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 0);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 5);
+			assert.bnEqual(vestingEntryAmount, deposit);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 5);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			let vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 0);
+			assert.bnEqual(vestingEntryPeriod, 20);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 0);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 5);
+			assert.bnEqual(vestingEntryPeriod, 15);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 5);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+		});
+
+		it('Account merging with both accounts stakers', async () => {
+			let deposit = toUnit(100000);
+			let stake = [toUnit(1500), toUnit(500)];
+			let users = [first, second];
+			let weeks = 11;
+
+			await StakingThalesDeployed.setFixedPeriodReward(deposit, { from: owner });
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			await sUSDSynth.issue(initialCreator, deposit.mul(toBN(weeks)));
+			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
+				from: initialCreator,
+			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			for (let i = 0; i < users.length; i++) {
+				await ThalesDeployed.transfer(users[i], stake[i], { from: owner });
+				await ThalesDeployed.approve(StakingThalesDeployed.address, stake[i], { from: users[i] });
+				await StakingThalesDeployed.stake(stake[i], { from: users[i] });
+			}
+			let period = 0;
+			while (period < weeks) {
+				await fastForward(WEEK + SECOND);
+				await StakingThalesDeployed.closePeriod({ from: second });
+				for (let i = 0; i < users.length; i++) {
+					await StakingThalesDeployed.claimReward({ from: users[i] });
+				}
+				period++;
+			}
+
+			await StakingThalesDeployed.mergeAccount(second, { from: first });
+
+			let stakedBalance = await StakingThalesDeployed.stakedBalanceOf(second);
+			assert.bnEqual(stakedBalance, stake[0].add(stake[1]));
+			stakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			assert.bnEqual(stakedBalance, toUnit(0));
+
+			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(
+				second
+			);
+			assert.bnEqual(totalAccountEscrowedAmount, deposit.mul(toBN(weeks)));
+			totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
+			assert.bnEqual(totalAccountEscrowedAmount, toUnit(0));
+
+			let claimable = await EscrowThalesDeployed.claimable(second);
+			assert.bnEqual(claimable, deposit);
+			claimable = await EscrowThalesDeployed.claimable(first);
+			assert.bnEqual(claimable, toUnit(0));
+
+			let vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 0);
+			assert.bnEqual(vestingEntryAmount, deposit);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 0);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 5);
+			assert.bnEqual(vestingEntryAmount, deposit);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 5);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			let vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 0);
+			assert.bnEqual(vestingEntryPeriod, 20);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 0);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 5);
+			assert.bnEqual(vestingEntryPeriod, 15);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 5);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+		});
+
+		it('Account merging with first account staker, second account only escrow', async () => {
+			let deposit = toUnit(100000);
+			let stake = [toUnit(1500), toUnit(500)];
+			let users = [first, second];
+			let weeks = 11;
+
+			await StakingThalesDeployed.setFixedPeriodReward(deposit, { from: owner });
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			await sUSDSynth.issue(initialCreator, deposit.mul(toBN(weeks)));
+			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
+				from: initialCreator,
+			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			for (let i = 0; i < users.length; i++) {
+				await ThalesDeployed.transfer(users[i], stake[i], { from: owner });
+				await ThalesDeployed.approve(StakingThalesDeployed.address, stake[i], { from: users[i] });
+				await StakingThalesDeployed.stake(stake[i], { from: users[i] });
+			}
+			let period = 0;
+			while (period < weeks) {
+				await fastForward(WEEK + SECOND);
+				await StakingThalesDeployed.closePeriod({ from: second });
+				for (let i = 0; i < users.length; i++) {
+					await StakingThalesDeployed.claimReward({ from: users[i] });
+				}
+				period++;
+			}
+
+			await StakingThalesDeployed.startUnstake(
+				await StakingThalesDeployed.stakedBalanceOf(second),
+				{ from: second }
+			);
+
+			let totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			assert.bnEqual(totalEscrowBalanceNotIncludedInStaking, deposit.mul(toBN(weeks)).div(toBN(4)));
+
+			await fastForward(WEEK + 5 * SECOND);
+
+			StakingThalesDeployed.unstake({ from: second });
+
+			await StakingThalesDeployed.mergeAccount(second, { from: first });
+
+			let stakedBalance = await StakingThalesDeployed.stakedBalanceOf(second);
+			assert.bnEqual(stakedBalance, stake[0]);
+			stakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			assert.bnEqual(stakedBalance, toUnit(0));
+
+			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(
+				second
+			);
+			assert.bnEqual(totalAccountEscrowedAmount, deposit.mul(toBN(weeks)));
+			totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
+			assert.bnEqual(totalAccountEscrowedAmount, toUnit(0));
+
+			let claimable = await EscrowThalesDeployed.claimable(second);
+			assert.bnEqual(claimable, deposit);
+			claimable = await EscrowThalesDeployed.claimable(first);
+			assert.bnEqual(claimable, toUnit(0));
+
+			totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			assert.bnEqual(totalEscrowBalanceNotIncludedInStaking, toUnit(0));
+
+			let vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 0);
+			assert.bnEqual(vestingEntryAmount, deposit);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 0);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 5);
+			assert.bnEqual(vestingEntryAmount, deposit);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 5);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			let vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 0);
+			assert.bnEqual(vestingEntryPeriod, 20);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 0);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 5);
+			assert.bnEqual(vestingEntryPeriod, 15);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 5);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+		});
+
+		it('Account merging with first account only escrow, second account staker', async () => {
+			let deposit = toUnit(100000);
+			let stake = [toUnit(1500), toUnit(500)];
+			let users = [first, second];
+			let weeks = 11;
+
+			await StakingThalesDeployed.setFixedPeriodReward(deposit, { from: owner });
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			await sUSDSynth.issue(initialCreator, deposit.mul(toBN(weeks)));
+			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
+				from: initialCreator,
+			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			for (let i = 0; i < users.length; i++) {
+				await ThalesDeployed.transfer(users[i], stake[i], { from: owner });
+				await ThalesDeployed.approve(StakingThalesDeployed.address, stake[i], { from: users[i] });
+				await StakingThalesDeployed.stake(stake[i], { from: users[i] });
+			}
+			let period = 0;
+			while (period < weeks) {
+				await fastForward(WEEK + SECOND);
+				await StakingThalesDeployed.closePeriod({ from: second });
+				for (let i = 0; i < users.length; i++) {
+					await StakingThalesDeployed.claimReward({ from: users[i] });
+				}
+				period++;
+			}
+
+			await StakingThalesDeployed.startUnstake(await StakingThalesDeployed.stakedBalanceOf(first), {
+				from: first,
+			});
+
+			let totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			assert.bnEqual(
+				totalEscrowBalanceNotIncludedInStaking,
+				deposit
+					.mul(toBN(weeks))
+					.div(toBN(4))
+					.mul(toBN(3))
+			);
+
+			await fastForward(WEEK + 5 * SECOND);
+
+			StakingThalesDeployed.unstake({ from: first });
+
+			await StakingThalesDeployed.mergeAccount(second, { from: first });
+
+			let stakedBalance = await StakingThalesDeployed.stakedBalanceOf(second);
+			assert.bnEqual(stakedBalance, stake[1]);
+			stakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			assert.bnEqual(stakedBalance, toUnit(0));
+
+			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(
+				second
+			);
+			assert.bnEqual(totalAccountEscrowedAmount, deposit.mul(toBN(weeks)));
+			totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
+			assert.bnEqual(totalAccountEscrowedAmount, toUnit(0));
+
+			let claimable = await EscrowThalesDeployed.claimable(second);
+			assert.bnEqual(claimable, deposit);
+			claimable = await EscrowThalesDeployed.claimable(first);
+			assert.bnEqual(claimable, toUnit(0));
+
+			totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			assert.bnEqual(totalEscrowBalanceNotIncludedInStaking, toUnit(0));
+
+			let vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 0);
+			assert.bnEqual(vestingEntryAmount, deposit);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 0);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 5);
+			assert.bnEqual(vestingEntryAmount, deposit);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 5);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			let vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 0);
+			assert.bnEqual(vestingEntryPeriod, 20);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 0);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 5);
+			assert.bnEqual(vestingEntryPeriod, 15);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 5);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+		});
+
+		it('Account merging with both accounts only escrow', async () => {
+			let deposit = toUnit(100000);
+			let stake = [toUnit(1500), toUnit(500)];
+			let users = [first, second];
+			let weeks = 11;
+
+			await StakingThalesDeployed.setFixedPeriodReward(deposit, { from: owner });
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			await sUSDSynth.issue(initialCreator, deposit.mul(toBN(weeks)));
+			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
+				from: initialCreator,
+			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			for (let i = 0; i < users.length; i++) {
+				await ThalesDeployed.transfer(users[i], stake[i], { from: owner });
+				await ThalesDeployed.approve(StakingThalesDeployed.address, stake[i], { from: users[i] });
+				await StakingThalesDeployed.stake(stake[i], { from: users[i] });
+			}
+			let period = 0;
+			while (period < weeks) {
+				await fastForward(WEEK + SECOND);
+				await StakingThalesDeployed.closePeriod({ from: second });
+				for (let i = 0; i < users.length; i++) {
+					await StakingThalesDeployed.claimReward({ from: users[i] });
+				}
+				period++;
+			}
+
+			for (let i = 0; i < users.length; i++) {
+				await StakingThalesDeployed.startUnstake(
+					await StakingThalesDeployed.stakedBalanceOf(users[i]),
+					{
+						from: users[i],
+					}
+				);
+			}
+
+			let totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			assert.bnEqual(totalEscrowBalanceNotIncludedInStaking, deposit.mul(toBN(weeks)));
+
+			await fastForward(WEEK + 5 * SECOND);
+
+			for (let i = 0; i < users.length; i++) {
+				await StakingThalesDeployed.unstake({ from: users[i] });
+			}
+
+			await StakingThalesDeployed.mergeAccount(second, { from: first });
+
+			let stakedBalance = await StakingThalesDeployed.stakedBalanceOf(second);
+			assert.bnEqual(stakedBalance, toUnit(0));
+			stakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			assert.bnEqual(stakedBalance, toUnit(0));
+
+			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(
+				second
+			);
+			assert.bnEqual(totalAccountEscrowedAmount, deposit.mul(toBN(weeks)));
+			totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
+			assert.bnEqual(totalAccountEscrowedAmount, toUnit(0));
+
+			let claimable = await EscrowThalesDeployed.claimable(second);
+			assert.bnEqual(claimable, deposit);
+			claimable = await EscrowThalesDeployed.claimable(first);
+			assert.bnEqual(claimable, toUnit(0));
+
+			totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			assert.bnEqual(totalEscrowBalanceNotIncludedInStaking, deposit.mul(toBN(weeks)));
+
+			let vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 0);
+			assert.bnEqual(vestingEntryAmount, deposit);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 0);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 5);
+			assert.bnEqual(vestingEntryAmount, deposit);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 5);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			let vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 0);
+			assert.bnEqual(vestingEntryPeriod, 20);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 0);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 5);
+			assert.bnEqual(vestingEntryPeriod, 15);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 5);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+		});
+
+		it('Account merging with both accounts stakers, both claim rewards in random weeks', async () => {
+			let claimPeriodsFirst = [5, 6, 7, 12, 14, 18, 20];
+			let claimPeriodsSecond = [1, 4, 7, 8, 13, 14, 16, 20];
+			let deposit = toUnit(500);
+			let stake = [toUnit(750), toUnit(500)];
+			let users = [first, second];
+			let weeks = 21;
+			let numOfPeriods = 10;
+
+			await StakingThalesDeployed.setFixedPeriodReward(deposit, { from: owner });
+			await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
+				from: owner,
+			});
+			await sUSDSynth.issue(initialCreator, deposit.mul(toBN(weeks)));
+			await sUSDSynth.transfer(StakingThalesDeployed.address, deposit.mul(toBN(weeks)), {
+				from: initialCreator,
+			});
+			await ThalesDeployed.transfer(
+				ThalesStakingRewardsPoolDeployed.address,
+				deposit.mul(toBN(weeks)),
+				{
+					from: owner,
+				}
+			);
+			await StakingThalesDeployed.startStakingPeriod({ from: owner });
+			for (let i = 0; i < users.length; i++) {
+				await ThalesDeployed.transfer(users[i], stake[i], { from: owner });
+				await ThalesDeployed.approve(StakingThalesDeployed.address, stake[i], { from: users[i] });
+				await StakingThalesDeployed.stake(stake[i], { from: users[i] });
+			}
+			let period = 0;
+			while (period < weeks) {
+				await fastForward(WEEK + SECOND);
+				await StakingThalesDeployed.closePeriod({ from: second });
+				if (claimPeriodsFirst.includes(period)) {
+					await StakingThalesDeployed.claimReward({ from: first });
+				}
+				if (claimPeriodsSecond.includes(period)) {
+					await StakingThalesDeployed.claimReward({ from: second });
+				}
+				period++;
+			}
+
+			let vestingEntriesFirst = [];
+			let vestingEntriesSecond = [];
+			for (let i = 0; i < numOfPeriods; i++) {
+				let vestingEntryAmountFirst = await EscrowThalesDeployed.getStakerAmounts(first, i);
+				let vestingEntryAmountSecond = await EscrowThalesDeployed.getStakerAmounts(second, i);
+				vestingEntriesFirst.push(vestingEntryAmountFirst);
+				vestingEntriesSecond.push(vestingEntryAmountSecond);
+			}
+
+			let totalAccountEscrowedAmountFirst = await EscrowThalesDeployed.totalAccountEscrowedAmount(
+				first
+			);
+			let totalAccountEscrowedAmountSecond = await EscrowThalesDeployed.totalAccountEscrowedAmount(
+				second
+			);
+
+			let claimableFirst = await EscrowThalesDeployed.claimable(first);
+			let claimableSecond = await EscrowThalesDeployed.claimable(second);
+
+			await StakingThalesDeployed.mergeAccount(second, { from: first });
+
+			let stakedBalance = await StakingThalesDeployed.stakedBalanceOf(second);
+			assert.bnEqual(stakedBalance, stake[0].add(stake[1]));
+			stakedBalance = await StakingThalesDeployed.stakedBalanceOf(first);
+			assert.bnEqual(stakedBalance, toUnit(0));
+
+			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(
+				second
+			);
+			assert.bnEqual(
+				totalAccountEscrowedAmount,
+				totalAccountEscrowedAmountFirst.add(totalAccountEscrowedAmountSecond)
+			);
+			totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
+			assert.bnEqual(totalAccountEscrowedAmount, toUnit(0));
+
+			let claimable = await EscrowThalesDeployed.claimable(second);
+			assert.bnEqual(claimable, claimableFirst.add(claimableSecond));
+			claimable = await EscrowThalesDeployed.claimable(first);
+			assert.bnEqual(claimable, toUnit(0));
+
+			let vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 0);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 1);
+			assert.bnEqual(vestingEntryAmount, vestingEntriesFirst[1].add(vestingEntriesSecond[1]));
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 2);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 3);
+			assert.bnEqual(vestingEntryAmount, vestingEntriesFirst[3]);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 4);
+			assert.bnEqual(vestingEntryAmount, vestingEntriesSecond[4]);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 5);
+			assert.bnEqual(vestingEntryAmount, vestingEntriesFirst[5].add(vestingEntriesSecond[5]));
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 6);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 7);
+			assert.bnEqual(vestingEntryAmount, vestingEntriesSecond[7]);
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 8);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 9);
+			assert.bnEqual(vestingEntryAmount, vestingEntriesFirst[9]);
+
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 0);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+			vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(first, 5);
+			assert.bnEqual(vestingEntryAmount, toUnit(0));
+
+			let vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 0);
+			assert.bnEqual(vestingEntryPeriod, 30);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 0);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 1);
+			assert.bnEqual(vestingEntryPeriod, 31);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 1);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(second, 6);
+			assert.bnEqual(vestingEntryPeriod, 26);
+			vestingEntryPeriod = await EscrowThalesDeployed.getStakerPeriod(first, 6);
+			assert.bnEqual(vestingEntryPeriod, toUnit(0));
+		});
+	});
 });

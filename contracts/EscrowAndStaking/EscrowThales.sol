@@ -96,9 +96,7 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         if (lastPeriodAddedReward[account] == currentVestingPeriod) {
             vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = vestingEntries[account][
                 currentVestingPeriod.mod(NUM_PERIODS)
-            ]
-                .amount
-                .add(amount);
+            ].amount.add(amount);
         } else {
             vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].amount = amount;
         }
@@ -185,6 +183,35 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         vestingEntries[account][currentVestingPeriod.mod(NUM_PERIODS)].vesting_period = currentVestingPeriod.add(
             NUM_PERIODS
         );
+    }
+
+    function mergeAccount(address srcAccount, address destAccount) external {
+        require(msg.sender == address(iStakingThales), "Can only be called from staking contract");
+
+        totalAccountEscrowedAmount[destAccount] = totalAccountEscrowedAmount[destAccount].add(
+            totalAccountEscrowedAmount[srcAccount]
+        );
+        lastPeriodAddedReward[destAccount] = currentVestingPeriod;
+
+        for (uint i = 1; i <= NUM_PERIODS; i++) {
+            uint vestingEntriesIndex = currentVestingPeriod.add(i).mod(NUM_PERIODS);
+            uint vestingEntriesPeriod = currentVestingPeriod.add(i);
+
+            if (vestingEntriesPeriod != vestingEntries[destAccount][vestingEntriesIndex].vesting_period) {
+                vestingEntries[destAccount][vestingEntriesIndex].amount = 0;
+                vestingEntries[destAccount][vestingEntriesIndex].vesting_period = vestingEntriesPeriod;
+            }
+
+            if (vestingEntriesPeriod == vestingEntries[srcAccount][vestingEntriesIndex].vesting_period) {
+                vestingEntries[destAccount][vestingEntriesIndex].amount = vestingEntries[destAccount][vestingEntriesIndex]
+                    .amount
+                    .add(vestingEntries[srcAccount][vestingEntriesIndex].amount);
+            }
+        }
+
+        delete totalAccountEscrowedAmount[srcAccount];
+        delete lastPeriodAddedReward[srcAccount];
+        delete vestingEntries[srcAccount];
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */

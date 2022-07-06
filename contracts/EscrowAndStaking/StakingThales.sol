@@ -136,7 +136,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         return _lastRewardsClaimedPeriod[account];
     }
 
-    function getRewardsAvailable(address account) external view returns (uint) {
+    function getRewardsAvailable(address account) public view returns (uint) {
         return _calculateAvailableRewardsToClaim(account);
     }
 
@@ -599,10 +599,76 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         }
         stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = stakerAMMVolume[account][
             periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-        ]
-            .amount
-            .add(amount);
+        ].amount.add(amount);
         emit AMMVolumeUpdated(account, amount);
+    }
+
+    function mergeAccount(address destAccount) external notPaused {
+        require(destAccount != address(0), "Invalid address");
+        require(
+            getRewardsAvailable(msg.sender) == 0 && getRewardsAvailable(destAccount) == 0,
+            "Cannot merge, claim rewards on both accounts before merging"
+        );
+        require(
+            unstaking[msg.sender] == false && unstaking[destAccount] == false,
+            "Cannot merge, cancel unstaking on both accounts before merging"
+        );
+
+        if (_stakedBalances[msg.sender] == 0 && _stakedBalances[destAccount] > 0) {
+            if (iEscrowThales.totalAccountEscrowedAmount(msg.sender) > 0) {
+                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
+                    iEscrowThales.totalAccountEscrowedAmount(msg.sender)
+                );
+            }
+        }
+        if (_stakedBalances[destAccount] == 0 && _stakedBalances[msg.sender] > 0) {
+            if (iEscrowThales.totalAccountEscrowedAmount(destAccount) > 0) {
+                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
+                    iEscrowThales.totalAccountEscrowedAmount(destAccount)
+                );
+            }
+        }
+
+        _stakedBalances[destAccount] = _stakedBalances[destAccount].add(_stakedBalances[msg.sender]);
+        stakerLifetimeRewardsClaimed[destAccount] = stakerLifetimeRewardsClaimed[destAccount].add(
+            stakerLifetimeRewardsClaimed[msg.sender]
+        );
+        stakerFeesClaimed[destAccount] = stakerFeesClaimed[destAccount].add(stakerFeesClaimed[msg.sender]);
+
+        _lastRewardsClaimedPeriod[destAccount] = periodsOfStaking;
+        _lastStakingPeriod[destAccount] = periodsOfStaking;
+        lastAMMUpdatePeriod[destAccount] = periodsOfStaking;
+
+        for (uint i = 1; i <= AMM_EXTRA_REWARD_PERIODS; i++) {
+            uint stakerAMMVolumeIndex = periodsOfStaking.add(i).mod(AMM_EXTRA_REWARD_PERIODS);
+            uint stakerAMMVolumePeriod = periodsOfStaking.sub(AMM_EXTRA_REWARD_PERIODS.sub(i));
+
+            if (stakerAMMVolumePeriod != stakerAMMVolume[destAccount][stakerAMMVolumeIndex].period) {
+                stakerAMMVolume[destAccount][stakerAMMVolumeIndex].amount = 0;
+                stakerAMMVolume[destAccount][stakerAMMVolumeIndex].period = stakerAMMVolumePeriod;
+            }
+
+            if (stakerAMMVolumePeriod == stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].period) {
+                stakerAMMVolume[destAccount][stakerAMMVolumeIndex].amount = stakerAMMVolume[destAccount][
+                    stakerAMMVolumeIndex
+                ].amount.add(stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].amount);
+            }
+        }
+
+        delete lastUnstakeTime[msg.sender];
+        delete unstaking[msg.sender];
+        delete unstakingAmount[msg.sender];
+        delete _stakedBalances[msg.sender];
+        delete stakerLifetimeRewardsClaimed[msg.sender];
+        delete stakerFeesClaimed[msg.sender];
+        delete _lastRewardsClaimedPeriod[msg.sender];
+        delete _lastStakingPeriod[msg.sender];
+        delete lastAMMUpdatePeriod[msg.sender];
+        delete stakerAMMVolume[msg.sender];
+
+        iEscrowThales.mergeAccount(msg.sender, destAccount);
+
+        emit AccountMerged(msg.sender, destAccount);
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
@@ -720,4 +786,5 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event SNXVolumeRewardsMultiplierChanged(uint ammVolumeRewardsMultiplier);
     event AddressResolverChanged(address addressResolver);
     event ExoticBondsAddressChanged(address exoticBonds);
+    event AccountMerged(address srcAccount, address destAccount);
 }

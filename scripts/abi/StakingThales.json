@@ -37,6 +37,25 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "srcAccount",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "destAccount",
+        "type": "address"
+      }
+    ],
+    "name": "AccountMerged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "addressResolver",
         "type": "address"
       }
@@ -905,7 +924,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_baseRewards",
         "type": "uint256"
       }
     ],
@@ -957,6 +976,27 @@
       {
         "internalType": "uint256",
         "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "getExoticMarketsVolume",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "volumeforAccount",
         "type": "uint256"
       }
     ],
@@ -1149,6 +1189,69 @@
       {
         "internalType": "uint256",
         "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "getSportsAMMVolume",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "volumeforAccount",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "getThalesAMMVolume",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "volumeforAccount",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "getThalesRangedAMMVolume",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "volumeforAccount",
         "type": "uint256"
       }
     ],
@@ -1403,6 +1506,21 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "destAccount",
+        "type": "address"
+      }
+    ],
+    "name": "mergeAccount",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

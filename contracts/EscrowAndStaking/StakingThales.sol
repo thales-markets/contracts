@@ -304,72 +304,59 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         return _getSNXStakedForAccount(account);
     }
 
-    function getBaseReward(address account) public view returns (uint) {
+    function getBaseReward(address account) public view returns (uint _baseRewards) {
         if (
-            (_lastStakingPeriod[account] == periodsOfStaking) ||
-            (_stakedBalances[account] == 0) ||
-            (_lastRewardsClaimedPeriod[account] == periodsOfStaking) ||
-            (totalStakedLastPeriodEnd == 0)
+            !((_lastStakingPeriod[account] == periodsOfStaking) ||
+                (_stakedBalances[account] == 0) ||
+                (_lastRewardsClaimedPeriod[account] == periodsOfStaking) ||
+                (totalStakedLastPeriodEnd == 0))
         ) {
-            return 0;
-        }
-        return
-            _stakedBalances[account]
+            _baseRewards = _stakedBalances[account]
                 .add(iEscrowThales.getStakedEscrowedBalanceForRewards(account))
                 .mul(currentPeriodRewards)
                 .div(totalStakedLastPeriodEnd.add(totalEscrowedLastPeriodEnd));
+        }
     }
 
     function getAMMVolume(address account) external view returns (uint) {
         return _getTotalAMMVolume(account);
     }
 
-    function getThalesAMMVolume(address account) external view returns (uint) {
-        uint volumeforAccount;
-        if (periodsOfStaking >= lastThalesAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS)) {
-            return 0;
+    function getThalesAMMVolume(address account) external view returns (uint volumeforAccount) {
+        if (!(periodsOfStaking >= lastThalesAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
+            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+                if (periodsOfStaking < thalesAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                    volumeforAccount = volumeforAccount.add(thalesAMMVolume[account][i].amount);
+            }
         }
-        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-            if (periodsOfStaking < thalesAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                volumeforAccount = volumeforAccount.add(thalesAMMVolume[account][i].amount);
-        }
-        return volumeforAccount;
     }
 
-    function getThalesRangedAMMVolume(address account) external view returns (uint) {
-        uint volumeforAccount;
-        if (periodsOfStaking >= lastThalesRangedAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS)) {
-            return 0;
+    function getThalesRangedAMMVolume(address account) external view returns (uint volumeforAccount) {
+        if (!(periodsOfStaking >= lastThalesRangedAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
+            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+                if (periodsOfStaking < thalesRangedAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                    volumeforAccount = volumeforAccount.add(thalesRangedAMMVolume[account][i].amount);
+            }
         }
-        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-            if (periodsOfStaking < thalesRangedAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                volumeforAccount = volumeforAccount.add(thalesRangedAMMVolume[account][i].amount);
-        }
-        return volumeforAccount;
     }
 
-    function getExoticMarketsVolume(address account) external view returns (uint) {
+    function getExoticMarketsVolume(address account) external view returns (uint volumeforAccount) {
         uint volumeforAccount;
-        if (periodsOfStaking >= lastExoticMarketsUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS)) {
-            return 0;
+        if (!(periodsOfStaking >= lastExoticMarketsUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
+            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+                if (periodsOfStaking < exoticMarketsVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                    volumeforAccount = volumeforAccount.add(exoticMarketsVolume[account][i].amount);
+            }
         }
-        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-            if (periodsOfStaking < exoticMarketsVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                volumeforAccount = volumeforAccount.add(exoticMarketsVolume[account][i].amount);
-        }
-        return volumeforAccount;
     }
 
-    function getSportsAMMVolume(address account) external view returns (uint) {
-        uint volumeforAccount;
-        if (periodsOfStaking >= lastSportsAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS)) {
-            return 0;
+    function getSportsAMMVolume(address account) external view returns (uint volumeforAccount) {
+        if (!(periodsOfStaking >= lastSportsAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
+            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+                if (periodsOfStaking < sportsAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                    volumeforAccount = volumeforAccount.add(sportsAMMVolume[account][i].amount);
+            }
         }
-        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-            if (periodsOfStaking < sportsAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                volumeforAccount = volumeforAccount.add(sportsAMMVolume[account][i].amount);
-        }
-        return volumeforAccount;
     }
 
     function getSNXBonusPercentage(address account) public view returns (uint) {
@@ -516,11 +503,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function stake(uint amount) external nonReentrant notPaused {
         require(startTimeStamp > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
-        require(
-            stakingToken.allowance(msg.sender, address(this)) >= amount,
-            "No allowance. Please grant StakingThales allowance"
-        );
-        require(unstaking[msg.sender] == false, "Cannot stake, the staker is paused from staking due to unstaking");
+        require(!unstaking[msg.sender], "Cannot stake, the staker is paused from staking due to unstaking");
         // Check if there are not claimable rewards from last period.
         // Claim them, and add new stake
 
@@ -548,11 +531,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function stakeOnBehalf(uint amount, address staker) external nonReentrant onlyOwner {
         require(startTimeStamp > 0, "Staking period has not started");
         require(amount > 0, "Cannot stake 0");
-        require(
-            stakingToken.allowance(msg.sender, address(this)) >= amount,
-            "No allowance. Please grant StakingThales allowance"
-        );
-        require(unstaking[staker] == false, "Cannot stake, the staker is paused from staking due to unstaking");
+        require(!unstaking[staker], "Cannot stake, the staker is paused from staking due to unstaking");
         // Check if there are not claimable rewards from last period.
         // Claim them, and add new stake
         if (_calculateAvailableRewardsToClaim(staker) > 0) {
@@ -602,7 +581,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function cancelUnstake() external notPaused {
-        require(unstaking[msg.sender] == true, "Account is not unstaking");
+        require(unstaking[msg.sender], "Account is not unstaking");
 
         // on revert full unstake remove his escrowed balance from totalEscrowBalanceNotIncludedInStaking
         if (_stakedBalances[msg.sender] == 0) {
@@ -626,7 +605,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function unstake() external notPaused {
-        require(unstaking[msg.sender] == true, "Account has not triggered unstake cooldown");
+        require(unstaking[msg.sender], "Account has not triggered unstake cooldown");
         require(
             lastUnstakeTime[msg.sender] < block.timestamp.sub(unstakeDurationPeriod),
             "Cannot unstake yet, cooldown not expired."
@@ -655,7 +634,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         }
         stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = stakerAMMVolume[account][
             periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-        ].amount.add(amount);
+        ]
+            .amount
+            .add(amount);
 
         if (msg.sender == thalesAMM) {
             if (lastThalesAMMUpdatePeriod[account] < periodsOfStaking) {
@@ -665,7 +646,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             thalesAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = thalesAMMVolume[account][
                 periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-            ].amount.add(amount);
+            ]
+                .amount
+                .add(amount);
         }
 
         if (msg.sender == thalesRangedAMM) {
@@ -676,7 +659,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             thalesRangedAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = thalesRangedAMMVolume[
                 account
-            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
+            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)]
+                .amount
+                .add(amount);
         }
 
         if (msg.sender == exoticBonds) {
@@ -687,7 +672,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             exoticMarketsVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = exoticMarketsVolume[
                 account
-            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
+            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)]
+                .amount
+                .add(amount);
         }
 
         if (msg.sender == sportsAMM) {
@@ -698,7 +685,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             sportsAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = sportsAMMVolume[account][
                 periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-            ].amount.add(amount);
+            ]
+                .amount
+                .add(amount);
         }
 
         emit AMMVolumeUpdated(account, amount);
@@ -711,7 +700,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             "Cannot merge, claim rewards on both accounts before merging"
         );
         require(
-            unstaking[msg.sender] == false && unstaking[destAccount] == false,
+            !unstaking[msg.sender] && !unstaking[destAccount],
             "Cannot merge, cancel unstaking on both accounts before merging"
         );
 
@@ -739,7 +728,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             if (stakerAMMVolumePeriod == stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].period) {
                 stakerAMMVolume[destAccount][stakerAMMVolumeIndex].amount = stakerAMMVolume[destAccount][
                     stakerAMMVolumeIndex
-                ].amount.add(stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].amount);
+                ]
+                    .amount
+                    .add(stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].amount);
             }
         }
 
@@ -813,28 +804,26 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 .div(totalStakedLastPeriodEnd.add(totalEscrowedLastPeriodEnd));
     }
 
-    function _getSNXStakedForAccount(address account) internal view returns (uint) {
+    function _getSNXStakedForAccount(address account) internal view returns (uint snxStaked) {
         uint cRatio = getCRatio(account);
         uint targetRatio = getSNXTargetRatio();
         uint snxPrice = priceFeed.rateForCurrency("SNX");
         uint debt = ISNXRewards(getSNXRewardsAddress()).debtBalanceOf(account, "sUSD");
         if (cRatio < targetRatio) {
-            return (cRatio.mul(cRatio).mul(debt).mul(1e14)).div(targetRatio.mul(snxPrice));
+            snxStaked = (cRatio.mul(cRatio).mul(debt).mul(1e14)).div(targetRatio.mul(snxPrice));
         } else {
-            return (targetRatio.mul(debt).mul(1e14)).div(snxPrice);
+            snxStaked = (targetRatio.mul(debt).mul(1e14)).div(snxPrice);
         }
     }
 
-    function _getTotalAMMVolume(address account) internal view returns (uint) {
+    function _getTotalAMMVolume(address account) internal view returns (uint totalAMMforAccount) {
         uint totalAMMforAccount;
-        if (periodsOfStaking >= lastAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS)) {
-            return 0;
+        if (!(periodsOfStaking >= lastAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
+            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+                if (periodsOfStaking < stakerAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                    totalAMMforAccount = totalAMMforAccount.add(stakerAMMVolume[account][i].amount);
+            }
         }
-        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-            if (periodsOfStaking < stakerAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                totalAMMforAccount = totalAMMforAccount.add(stakerAMMVolume[account][i].amount);
-        }
-        return totalAMMforAccount;
     }
 
     /* ========== EVENTS ========== */

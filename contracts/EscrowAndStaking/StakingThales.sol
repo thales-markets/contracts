@@ -73,6 +73,14 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
     mapping(address => uint) private lastAMMUpdatePeriod;
     mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private stakerAMMVolume;
+    mapping(address => uint) private lastThalesAMMUpdatePeriod;
+    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private thalesAMMVolume;
+    mapping(address => uint) private lastThalesRangedAMMUpdatePeriod;
+    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private thalesRangedAMMVolume;
+    mapping(address => uint) private lastExoticMarketsUpdatePeriod;
+    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private exoticMarketsVolume;
+    mapping(address => uint) private lastSportsAMMUpdatePeriod;
+    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private sportsAMMVolume;
 
     bool public extraRewardsActive;
     IThalesStakingRewardsPool public ThalesStakingRewardsPool;
@@ -314,6 +322,54 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     function getAMMVolume(address account) external view returns (uint) {
         return _getTotalAMMVolume(account);
+    }
+
+    function getThalesAMMVolume(address account) external view returns (uint) {
+        uint volumeforAccount;
+        if (periodsOfStaking >= lastThalesAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS)) {
+            return 0;
+        }
+        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+            if (periodsOfStaking < thalesAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                volumeforAccount = volumeforAccount.add(thalesAMMVolume[account][i].amount);
+        }
+        return volumeforAccount;
+    }
+
+    function getThalesRangedAMMVolume(address account) external view returns (uint) {
+        uint volumeforAccount;
+        if (periodsOfStaking >= lastThalesRangedAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS)) {
+            return 0;
+        }
+        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+            if (periodsOfStaking < thalesRangedAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                volumeforAccount = volumeforAccount.add(thalesRangedAMMVolume[account][i].amount);
+        }
+        return volumeforAccount;
+    }
+
+    function getExoticMarketsVolume(address account) external view returns (uint) {
+        uint volumeforAccount;
+        if (periodsOfStaking >= lastExoticMarketsUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS)) {
+            return 0;
+        }
+        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+            if (periodsOfStaking < exoticMarketsVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                volumeforAccount = volumeforAccount.add(exoticMarketsVolume[account][i].amount);
+        }
+        return volumeforAccount;
+    }
+
+    function getSportsAMMVolume(address account) external view returns (uint) {
+        uint volumeforAccount;
+        if (periodsOfStaking >= lastSportsAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS)) {
+            return 0;
+        }
+        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+            if (periodsOfStaking < sportsAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                volumeforAccount = volumeforAccount.add(sportsAMMVolume[account][i].amount);
+        }
+        return volumeforAccount;
     }
 
     function getSNXBonusPercentage(address account) public view returns (uint) {
@@ -600,6 +656,51 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = stakerAMMVolume[account][
             periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
         ].amount.add(amount);
+
+        if (msg.sender == thalesAMM) {
+            if (lastThalesAMMUpdatePeriod[account] < periodsOfStaking) {
+                thalesAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
+                thalesAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
+                lastThalesAMMUpdatePeriod[account] = periodsOfStaking;
+            }
+            thalesAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = thalesAMMVolume[account][
+                periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
+            ].amount.add(amount);
+        }
+
+        if (msg.sender == thalesRangedAMM) {
+            if (lastThalesRangedAMMUpdatePeriod[account] < periodsOfStaking) {
+                thalesRangedAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
+                thalesRangedAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
+                lastThalesRangedAMMUpdatePeriod[account] = periodsOfStaking;
+            }
+            thalesRangedAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = thalesRangedAMMVolume[
+                account
+            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
+        }
+
+        if (msg.sender == exoticBonds) {
+            if (lastExoticMarketsUpdatePeriod[account] < periodsOfStaking) {
+                exoticMarketsVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
+                exoticMarketsVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
+                lastExoticMarketsUpdatePeriod[account] = periodsOfStaking;
+            }
+            exoticMarketsVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = exoticMarketsVolume[
+                account
+            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
+        }
+
+        if (msg.sender == sportsAMM) {
+            if (lastSportsAMMUpdatePeriod[account] < periodsOfStaking) {
+                sportsAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
+                sportsAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
+                lastSportsAMMUpdatePeriod[account] = periodsOfStaking;
+            }
+            sportsAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = sportsAMMVolume[account][
+                periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
+            ].amount.add(amount);
+        }
+
         emit AMMVolumeUpdated(account, amount);
     }
 

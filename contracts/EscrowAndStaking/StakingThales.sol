@@ -614,20 +614,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             "Cannot merge, cancel unstaking on both accounts before merging"
         );
 
-        if (_stakedBalances[msg.sender] == 0 && _stakedBalances[destAccount] > 0) {
-            if (iEscrowThales.totalAccountEscrowedAmount(msg.sender) > 0) {
-                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
-                    iEscrowThales.totalAccountEscrowedAmount(msg.sender)
-                );
-            }
-        }
-        if (_stakedBalances[destAccount] == 0 && _stakedBalances[msg.sender] > 0) {
-            if (iEscrowThales.totalAccountEscrowedAmount(destAccount) > 0) {
-                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
-                    iEscrowThales.totalAccountEscrowedAmount(destAccount)
-                );
-            }
-        }
+        iEscrowThales.mergeAccount(msg.sender, destAccount);
 
         _stakedBalances[destAccount] = _stakedBalances[destAccount].add(_stakedBalances[msg.sender]);
         stakerLifetimeRewardsClaimed[destAccount] = stakerLifetimeRewardsClaimed[destAccount].add(
@@ -665,8 +652,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         delete _lastStakingPeriod[msg.sender];
         delete lastAMMUpdatePeriod[msg.sender];
         delete stakerAMMVolume[msg.sender];
-
-        iEscrowThales.mergeAccount(msg.sender, destAccount);
 
         emit AccountMerged(msg.sender, destAccount);
     }

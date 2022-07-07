@@ -188,6 +188,21 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
     function mergeAccount(address srcAccount, address destAccount) external {
         require(msg.sender == address(iStakingThales), "Can only be called from staking contract");
 
+        if (iStakingThales.stakedBalanceOf(srcAccount) == 0 && iStakingThales.stakedBalanceOf(destAccount) > 0) {
+            if (totalAccountEscrowedAmount[srcAccount] > 0) {
+                totalEscrowBalanceNotIncludedInStaking = totalEscrowBalanceNotIncludedInStaking.sub(
+                    totalAccountEscrowedAmount[srcAccount]
+                );
+            }
+        }
+        if (iStakingThales.stakedBalanceOf(destAccount) == 0 && iStakingThales.stakedBalanceOf(srcAccount) > 0) {
+            if (totalAccountEscrowedAmount[destAccount] > 0) {
+                totalEscrowBalanceNotIncludedInStaking = totalEscrowBalanceNotIncludedInStaking.sub(
+                    totalAccountEscrowedAmount[destAccount]
+                );
+            }
+        }
+
         totalAccountEscrowedAmount[destAccount] = totalAccountEscrowedAmount[destAccount].add(
             totalAccountEscrowedAmount[srcAccount]
         );

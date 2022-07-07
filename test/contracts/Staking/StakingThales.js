@@ -447,9 +447,6 @@ contract('StakingThales', accounts => {
 			await ThalesDeployed.transfer(ThalesStakingRewardsPoolDeployed.address, 70001, {
 				from: owner,
 			});
-			await expect(StakingThalesDeployed.stake(1000, { from: first })).to.be.revertedWith(
-				'No allowance. Please grant StakingThales allowance'
-			);
 		});
 
 		it('Stake with first account', async () => {

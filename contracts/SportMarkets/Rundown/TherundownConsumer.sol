@@ -198,34 +198,25 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice resolve market for a given game id
     /// @param _gameId game id
     /// @param _outcome outcome of a game (1: home win, 2: away win, 3: draw, 0: cancel market)
-    function resolveGameManually(bytes32 _gameId, uint _outcome) external isAddressWhitelisted canGameBeResolved(_gameId, _outcome) {
-        _resolveMarketManually(marketPerGameId[_gameId], _outcome);
+    /// @param _homeScore score of home team
+    /// @param _awayScore score of away team
+    function resolveGameManually(bytes32 _gameId, uint _outcome, uint8 _homeScore, uint8 _awayScore) external isAddressWhitelisted canGameBeResolved(_gameId, _outcome, _homeScore, _awayScore) {
+        _resolveMarketManually(marketPerGameId[_gameId], _outcome, _homeScore, _awayScore);
     }
 
     /// @notice resolve market for a given market address
     /// @param _market market address
     /// @param _outcome outcome of a game (1: home win, 2: away win, 3: draw, 0: cancel market)
-    function resolveMarketManually(address _market, uint _outcome) external isAddressWhitelisted canGameBeResolved(gameIdPerMarket[_market], _outcome) {
-        _resolveMarketManually(_market, _outcome);
-    }
-
-    /// @notice cancel market for a given game id
-    /// @param _gameId game id
-    function cancelGameManually(bytes32 _gameId) external isAddressWhitelisted canGameBeCanceled(_gameId) {
-        _cancelMarketManually(marketPerGameId[_gameId]);
+    /// @param _homeScore score of home team
+    /// @param _awayScore score of away team
+    function resolveMarketManually(address _market, uint _outcome, uint8 _homeScore, uint8 _awayScore) external isAddressWhitelisted canGameBeResolved(gameIdPerMarket[_market], _outcome, _homeScore, _awayScore) {
+        _resolveMarketManually(_market, _outcome, _homeScore, _awayScore);
     }
 
     /// @notice cancel market for a given market address
     /// @param _market market address
     function cancelMarketManually(address _market) external isAddressWhitelisted canGameBeCanceled(gameIdPerMarket[_market]){
         _cancelMarketManually(_market);
-    }
-
-    /// @notice pause/unpause market for a given game id
-    /// @param _gameId game id
-    /// @param _pause pause = true, unpause = false
-    function pauseOrUnpauseGameManually(bytes32 _gameId, bool _pause) external isAddressWhitelisted canGameBePaused(marketPerGameId[_gameId], _pause) {
-        _pauseOrUnpauseMarketManually(marketPerGameId[_gameId], _pause);
     }
 
     /// @notice pause/unpause market for a given market address
@@ -519,7 +510,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _resolveMarketManually(address _market, uint _outcome) internal {
+    function _resolveMarketManually(address _market, uint _outcome, uint8 _homeScore, uint8 _awayScore) internal {
         uint index = queues.unproccessedGamesIndex(gameIdPerMarket[_market]);
 
         // it can return ZERO index, needs checking
@@ -527,8 +518,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         sportsManager.resolveMarket(_market, _outcome);
         marketResolved[_market] = true;
-        queues.removeItemUnproccessedGames(index);
+        queues.removeItemUnproccessedGames(index);        
+        gameResolved[gameIdPerMarket[_market]] = GameResolve(gameIdPerMarket[_market], _homeScore, _awayScore, isSportTwoPositionsSport(sportsIdPerGame[gameIdPerMarket[_market]]) ? 8 : 11);
 
+        emit GameResolved(gameIdPerMarket[_market], sportsIdPerGame[gameIdPerMarket[_market]], gameIdPerMarket[_market], gameResolved[gameIdPerMarket[_market]], 0);
         emit ResolveSportsMarket(_market, gameIdPerMarket[_market], _outcome);
     }
 
@@ -601,6 +594,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             return _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == CANCELLED;
         } 
         return _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW || _outcome == CANCELLED;
+    }
+
+    function _isValidOutcomeWithResult(uint _outcome, uint _homeScore, uint _awayScore) internal view returns (bool) {
+        if (_outcome == CANCELLED) {
+            return _awayScore == CANCELLED && _homeScore == CANCELLED;
+        } else if (_outcome == HOME_WIN){
+            return _homeScore > _awayScore;
+        }else if (_outcome == AWAY_WIN){
+            return _homeScore < _awayScore;
+        }else{
+            return _homeScore == _awayScore;
+        }
     }
 
     function _calculateAndNormalizeOdds(int[] memory _americanOdds) internal pure returns (uint[] memory) {
@@ -738,10 +743,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         _;
     }        
 
-    modifier canGameBeResolved(bytes32 _gameId, uint _outcome) {
+    modifier canGameBeResolved(bytes32 _gameId, uint _outcome, uint8 _homeScore, uint8 _awayScore) {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         require(marketPerGameId[_gameId] != address(0), "No market created for game");
-        require(_isValidOutcomeForGame(_gameId, _outcome) , "Bad outcome.");
+        require(_isValidOutcomeForGame(_gameId, _outcome), "Bad outcome.");
+        require(_isValidOutcomeWithResult(_outcome, _homeScore, _awayScore) , "Bad result for an outcome");
         _;
     } 
 

@@ -170,12 +170,12 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         )
     {
 
-        (bool canCreate, string memory message) = canCreateMarket(oracleKey, maturity, strikePrice);
-        require(canCreate, message);
-
         if (onlyWhitelistedAddressesCanCreateMarkets) {
             require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
         }
+
+        (bool canCreate, string memory message) = canCreateMarket(oracleKey, maturity, strikePrice);
+        require(canCreate, message);
 
         uint expiry = maturity.add(durations.expiryDuration);
 

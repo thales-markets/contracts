@@ -88,6 +88,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(uint => mapping(uint => bool)) public isSportOnADate;
     mapping(address => bool) public invalidOdds;
     mapping(address => bool) public marketCreated;
+    mapping(uint => mapping(uint => bytes32[])) public gamesPerDatePerSport;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -137,6 +138,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 game.startTime > block.timestamp
             ) {
                 gamesPerDate[_date].push(game.gameId);
+                gamesPerDatePerSport[_sportId][_date].push(game.gameId);
                 _createGameFulfill(_requestId, game, _sportId);
             }
         }

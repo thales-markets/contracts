@@ -129,21 +129,28 @@ contract('StakingThales', accounts => {
 			WEEK,
 			SNXRewardsDeployed.address,
 		]);
-
-		await StakingThalesDeployed.connect(owner).setDistributeFeesEnabled(true);
-		await StakingThalesDeployed.connect(owner).setClaimEnabled(true);
-		await StakingThalesDeployed.connect(owner).setFixedPeriodReward(100000);
-		await StakingThalesDeployed.connect(owner).setThalesRoyale(ThalesRoyaleDeployed.address);
-		await StakingThalesDeployed.connect(owner).setPriceFeed(PriceFeedInstance.address);
-		await StakingThalesDeployed.connect(owner).setMaxSNXRewardsPercentage('15');
-		await StakingThalesDeployed.connect(owner).setMaxAMMVolumeRewardsPercentage('12');
-		await StakingThalesDeployed.connect(owner).setAMMVolumeRewardsMultiplier('10');
-		await StakingThalesDeployed.connect(owner).setSNXVolumeRewardsMultiplier('1');
-		await StakingThalesDeployed.connect(owner).setMaxThalesRoyaleRewardsPercentage('3');
-		await StakingThalesDeployed.connect(owner).setClaimEnabled(true);
-		await StakingThalesDeployed.connect(owner).setFixedPeriodReward(toWei('70000', 'ether'));
-		await StakingThalesDeployed.connect(owner).setPeriodExtraReward(toWei('21000', 'ether'));
-		await StakingThalesDeployed.connect(owner).setAddressResolver(AddressResolverDeployed.address);
+		await StakingThalesDeployed.connect(owner).setStakingParameters(true, true, WEEK, WEEK);
+		await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(
+			toWei('70000', 'ether'),
+			toWei('21000', 'ether'),
+			false,
+			'15',
+			'12',
+			'3',
+			'1',
+			'10'
+		);
+		await StakingThalesDeployed.connect(owner).setAddresses(
+			SNXRewardsDeployed.address,
+			ThalesRoyaleDeployed.address,
+			dummy,
+			dummy,
+			dummy,
+			dummy,
+			PriceFeedInstance.address,
+			dummy,
+			AddressResolverDeployed.address
+		);
 	});
 
 	describe('Without Extra rewards :', () => {
@@ -153,8 +160,15 @@ contract('StakingThales', accounts => {
 			let weeks = 11;
 			let deposit = 200;
 
-			await StakingThalesDeployed.connect(owner).setFixedPeriodReward(
-				toWei(deposit.toString(), 'ether')
+			await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(
+				toWei(deposit.toString(), 'ether'),
+				toWei('21000', 'ether'),
+				false,
+				'15',
+				'12',
+				'3',
+				'1',
+				'10'
 			);
 			await EscrowThalesDeployed.connect(owner).setStakingThalesContract(
 				StakingThalesDeployed.address
@@ -214,8 +228,15 @@ contract('StakingThales', accounts => {
 				(stake[1] / (stake[0] + stake[1])) * deposit,
 			];
 
-			await StakingThalesDeployed.connect(owner).setFixedPeriodReward(
-				toWei(deposit.toString(), 'ether')
+			await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(
+				toWei(deposit.toString(), 'ether'),
+				toWei('21000', 'ether'),
+				false,
+				'15',
+				'12',
+				'3',
+				'1',
+				'10'
 			);
 			await EscrowThalesDeployed.connect(owner).setStakingThalesContract(
 				StakingThalesDeployed.address
@@ -262,7 +283,16 @@ contract('StakingThales', accounts => {
 			let finalCratio = (100 * 100 * 1e18) / cRatio;
 			let SNXrate = '4797000000000000000';
 
-			await StakingThalesDeployed.connect(owner).setExtraRewards(true);
+			await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(
+				toWei('70000', 'ether'),
+				toWei('21000', 'ether'),
+				true,
+				'15',
+				'12',
+				'3',
+				'1',
+				'10'
+			);
 
 			await SNXRewardsDeployed.setCRatio(firstSigner.address, cRatio.toString());
 			await SNXRewardsDeployed.setDebtBalance(firstSigner.address, debt.toString());

@@ -193,152 +193,119 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         return feeToken.balanceOf(address(this));
     }
 
-    /// @notice Update parameter to enable/disable fees distribution
-    /// @param _distributeFeesEnabled enable/disable fees distribution
-    function setDistributeFeesEnabled(bool _distributeFeesEnabled) external onlyOwner {
-        distributeFeesEnabled = _distributeFeesEnabled;
-        emit DistributeFeesEnabled(_distributeFeesEnabled);
-    }
-
-    /// @notice Set amount for weekly base rewards pool
-    /// @param _fixedReward amount for weekly base rewards pool
-    function setFixedPeriodReward(uint _fixedReward) external onlyOwner {
-        fixedPeriodReward = _fixedReward;
-        emit FixedPeriodRewardChanged(_fixedReward);
-    }
-
-    /// @notice Set amount for weekly bonus rewards pool
-    /// @param _extraReward amount for weekly bonus rewards pool
-    function setPeriodExtraReward(uint _extraReward) external onlyOwner {
-        periodExtraReward = _extraReward;
-        emit PeriodExtraRewardChanged(_extraReward);
-    }
-
-    /// @notice Update parameter to enable/disable claim rewards
+    /// @notice Set staking parametars
     /// @param _claimEnabled enable/disable claim rewards
-    function setClaimEnabled(bool _claimEnabled) external onlyOwner {
-        claimEnabled = _claimEnabled;
-        emit ClaimEnabled(_claimEnabled);
-    }
-
-    /// @notice Set duration of the staking period
+    /// @param _distributeFeesEnabled enable/disable fees distribution
     /// @param _durationPeriod duration of the staking period
-    function setDurationPeriod(uint _durationPeriod) external onlyOwner {
+    /// @param _unstakeDurationPeriod duration of the unstaking cooldown period
+    function setStakingParameters(
+        bool _claimEnabled,
+        bool _distributeFeesEnabled,
+        uint _durationPeriod,
+        uint _unstakeDurationPeriod
+    ) external onlyOwner {
+        claimEnabled = _claimEnabled;
+        distributeFeesEnabled = _distributeFeesEnabled;
         durationPeriod = _durationPeriod;
-        emit DurationPeriodChanged(_durationPeriod);
-    }
-
-    /// @notice Set unstaking cooldown period
-    /// @param _unstakeDurationPeriod unstaking cooldown period
-    function setUnstakeDurationPeriod(uint _unstakeDurationPeriod) external onlyOwner {
         unstakeDurationPeriod = _unstakeDurationPeriod;
+
+        emit ClaimEnabled(_claimEnabled);
+        emit DistributeFeesEnabled(_distributeFeesEnabled);
+        emit DurationPeriodChanged(_durationPeriod);
         emit UnstakeDurationPeriodChanged(_unstakeDurationPeriod);
     }
 
-    /// @notice Set address of SNX rewards contract
-    /// @param _snxRewards address of SNX rewards contract
-    function setSNXRewards(address _snxRewards) public onlyOwner {
-        require(_snxRewards != address(0), "Invalid address");
-        SNXRewards = ISNXRewards(_snxRewards);
-        emit SNXRewardsAddressChanged(_snxRewards);
-    }
-
-    /// @notice Update parameter to enable/disable bonus rewards
+    /// @notice Set staking rewards parameters
+    /// @param _fixedReward amount for weekly base rewards pool
+    /// @param _extraReward amount for weekly bonus rewards pool
     /// @param _extraRewardsActive enable/disable bonus rewards
-    function setExtraRewards(bool _extraRewardsActive) public onlyOwner {
-        extraRewardsActive = _extraRewardsActive;
-        emit ExtraRewardsChanged(_extraRewardsActive);
-    }
-
-    /// @notice Set maximum percentage for SNX rewards
     /// @param _maxSNXRewardsPercentage maximum percentage for SNX rewards
-    function setMaxSNXRewardsPercentage(uint _maxSNXRewardsPercentage) public onlyOwner {
-        maxSNXRewardsPercentage = _maxSNXRewardsPercentage;
-        emit MaxSNXRewardsPercentageChanged(_maxSNXRewardsPercentage);
-    }
-
-    /// @notice Set maximum percentage for protocol volume rewards
     /// @param _maxAMMVolumeRewardsPercentage maximum percentage for protocol volume rewards
-    function setMaxAMMVolumeRewardsPercentage(uint _maxAMMVolumeRewardsPercentage) public onlyOwner {
-        maxAMMVolumeRewardsPercentage = _maxAMMVolumeRewardsPercentage;
-        emit MaxAMMVolumeRewardsPercentageChanged(_maxAMMVolumeRewardsPercentage);
-    }
-
-    /// @notice Set multiplier for protocol volume rewards
-    /// @param _AMMVolumeRewardsMultiplier multiplier for protocol volume rewards
-    function setAMMVolumeRewardsMultiplier(uint _AMMVolumeRewardsMultiplier) public onlyOwner {
-        AMMVolumeRewardsMultiplier = _AMMVolumeRewardsMultiplier;
-        emit AMMVolumeRewardsMultiplierChanged(_AMMVolumeRewardsMultiplier);
-    }
-
-    /// @notice Set multiplier for SNX rewards
+    /// @param _maxThalesRoyaleRewardsPercentage maximum percentage for rewards for participation in Thales Royale
     /// @param _SNXVolumeRewardsMultiplier multiplier for SNX rewards
-    function setSNXVolumeRewardsMultiplier(uint _SNXVolumeRewardsMultiplier) public onlyOwner {
+    /// @param _AMMVolumeRewardsMultiplier multiplier for protocol volume rewards
+    function setStakingRewardsParameters(
+        uint _fixedReward,
+        uint _extraReward,
+        bool _extraRewardsActive,
+        uint _maxSNXRewardsPercentage,
+        uint _maxAMMVolumeRewardsPercentage,
+        uint _maxThalesRoyaleRewardsPercentage,
+        uint _SNXVolumeRewardsMultiplier,
+        uint _AMMVolumeRewardsMultiplier
+    ) public onlyOwner {
+        fixedPeriodReward = _fixedReward;
+        periodExtraReward = _extraReward;
+        extraRewardsActive = _extraRewardsActive;
+        maxSNXRewardsPercentage = _maxSNXRewardsPercentage;
+        maxAMMVolumeRewardsPercentage = _maxAMMVolumeRewardsPercentage;
+        maxThalesRoyaleRewardsPercentage = _maxThalesRoyaleRewardsPercentage;
         SNXVolumeRewardsMultiplier = _SNXVolumeRewardsMultiplier;
+        AMMVolumeRewardsMultiplier = _AMMVolumeRewardsMultiplier;
+
+        emit FixedPeriodRewardChanged(_fixedReward);
+        emit PeriodExtraRewardChanged(_extraReward);
+        emit ExtraRewardsChanged(_extraRewardsActive);
+        emit MaxSNXRewardsPercentageChanged(_maxSNXRewardsPercentage);
+        emit MaxAMMVolumeRewardsPercentageChanged(_maxAMMVolumeRewardsPercentage);
+        emit AMMVolumeRewardsMultiplierChanged(_AMMVolumeRewardsMultiplier);
+        emit MaxThalesRoyaleRewardsPercentageChanged(_maxThalesRoyaleRewardsPercentage);
         emit SNXVolumeRewardsMultiplierChanged(_SNXVolumeRewardsMultiplier);
     }
 
-    /// @notice Set maximum percentage for rewards based on participation in Thales Royale
-    /// @param _maxThalesRoyaleRewardsPercentage maximum percentage for rewards for participation in Thales Royale
-    function setMaxThalesRoyaleRewardsPercentage(uint _maxThalesRoyaleRewardsPercentage) public onlyOwner {
-        maxThalesRoyaleRewardsPercentage = _maxThalesRoyaleRewardsPercentage;
-        emit MaxThalesRoyaleRewardsPercentageChanged(_maxThalesRoyaleRewardsPercentage);
-    }
-
-    /// @notice Set address of Thales Royale contract
+    /// @notice Set contract addresses
+    /// @param _snxRewards address of SNX rewards contract
     /// @param _royale address of Thales Royale contract
-    function setThalesRoyale(address _royale) public onlyOwner {
-        require(_royale != address(0), "Invalid address");
-        thalesRoyale = IThalesRoyale(_royale);
-        emit ThalesRoyaleAddressChanged(_royale);
-    }
-
-    /// @notice Set address of Thales AMM contract
     /// @param _thalesAMM address of Thales AMM contract
-    function setThalesAMM(address _thalesAMM) public onlyOwner {
-        require(_thalesAMM != address(0), "Invalid address");
-        thalesAMM = _thalesAMM;
-        emit ThalesAMMAddressChanged(_thalesAMM);
-    }
-
-    /// @notice Set address of Thales ranged AMM contract
     /// @param _thalesRangedAMM address of Thales ranged AMM contract
-    function setThalesRangedAMM(address _thalesRangedAMM) public onlyOwner {
-        require(_thalesRangedAMM != address(0), "Invalid address");
-        thalesRangedAMM = _thalesRangedAMM;
-        emit ThalesRangedAMMAddressChanged(_thalesRangedAMM);
-    }
-
-    /// @notice Set address of sport markets AMM contract
-    /// @param _sportsAMM address of sport markets AMM contract
-    function setThalesSportsAMM(address _sportsAMM) public onlyOwner {
-        require(_sportsAMM != address(0), "Invalid address");
-        sportsAMM = _sportsAMM;
-        emit ThalesSportsAMMAddressChanged(_sportsAMM);
-    }
-
-    /// @notice Set address of exotic markets bonds contract
     /// @param _exoticBonds address of exotic markets bonds contract
-    function setExoticBonds(address _exoticBonds) public onlyOwner {
-        require(_exoticBonds != address(0), "Invalid address");
-        exoticBonds = _exoticBonds;
-        emit ExoticBondsAddressChanged(_exoticBonds);
-    }
-
-    /// @notice Set address of price feed contract
+    /// @param _sportsAMM address of sport markets AMM contract
     /// @param _priceFeed address of price feed contract
-    function setPriceFeed(address _priceFeed) public onlyOwner {
-        require(_priceFeed != address(0), "Invalid address");
-        priceFeed = IPriceFeed(_priceFeed);
-        emit PriceFeedAddressChanged(_priceFeed);
-    }
-
-    /// @notice Set address of Thales staking rewards pool
     /// @param _thalesStakingRewardsPool address of Thales staking rewards pool
-    function setThalesStakingRewardsPool(address _thalesStakingRewardsPool) public onlyOwner {
-        require(_thalesStakingRewardsPool != address(0), "Invalid address");
+    /// @param _addressResolver address of address resolver contract
+    function setAddresses(
+        address _snxRewards,
+        address _royale,
+        address _thalesAMM,
+        address _thalesRangedAMM,
+        address _exoticBonds,
+        address _sportsAMM,
+        address _priceFeed,
+        address _thalesStakingRewardsPool,
+        address _addressResolver
+    ) public onlyOwner {
+        require(
+            _snxRewards != address(0) &&
+                _royale != address(0) &&
+                _thalesAMM != address(0) &&
+                _thalesRangedAMM != address(0) &&
+                _exoticBonds != address(0) &&
+                _sportsAMM != address(0) &&
+                _priceFeed != address(0) &&
+                _thalesStakingRewardsPool != address(0) &&
+                _addressResolver != address(0),
+            "Invalid address"
+        );
+
+        SNXRewards = ISNXRewards(_snxRewards);
+        thalesRoyale = IThalesRoyale(_royale);
+        thalesAMM = _thalesAMM;
+        thalesRangedAMM = _thalesRangedAMM;
+        exoticBonds = _exoticBonds;
+        sportsAMM = _sportsAMM;
+        priceFeed = IPriceFeed(_priceFeed);
         ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);
+        addressResolver = IAddressResolver(_addressResolver);
+
+        emit SNXRewardsAddressChanged(_snxRewards);
+        emit ThalesRoyaleAddressChanged(_royale);
+        emit ThalesAMMAddressChanged(_thalesAMM);
+        emit ThalesRangedAMMAddressChanged(_thalesRangedAMM);
+        emit ExoticBondsAddressChanged(_exoticBonds);
+        emit ThalesSportsAMMAddressChanged(_sportsAMM);
+        emit PriceFeedAddressChanged(_priceFeed);
         emit ThalesStakingRewardsPoolChanged(_thalesStakingRewardsPool);
+        emit AddressResolverChanged(_addressResolver);
     }
 
     /// @notice Set address of Escrow Thales contract
@@ -350,14 +317,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         iEscrowThales = IEscrowThales(_escrowThalesContract);
         stakingToken.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         emit EscrowChanged(_escrowThalesContract);
-    }
-
-    /// @notice Set address of address resolver contract
-    /// @param _addressResolver address of address resolver contract
-    function setAddressResolver(address _addressResolver) external onlyOwner {
-        require(_addressResolver != address(0), "Invalid address");
-        addressResolver = IAddressResolver(_addressResolver);
-        emit AddressResolverChanged(_addressResolver);
     }
 
     /// @notice Get the address of the SNX rewards contract
@@ -405,11 +364,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param account to get the AMM volume for
     /// @return the AMM volume for the account
     function getThalesAMMVolume(address account) external view returns (uint volumeforAccount) {
-        if (!(periodsOfStaking >= lastThalesAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
-            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-                if (periodsOfStaking < thalesAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                    volumeforAccount = volumeforAccount.add(thalesAMMVolume[account][i].amount);
-            }
+        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+            if (periodsOfStaking < thalesAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                volumeforAccount = volumeforAccount.add(thalesAMMVolume[account][i].amount);
         }
     }
 
@@ -417,11 +374,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param account to get the ranged AMM volume for
     /// @return the ranged AMM volume for the account
     function getThalesRangedAMMVolume(address account) external view returns (uint volumeforAccount) {
-        if (!(periodsOfStaking >= lastThalesRangedAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
-            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-                if (periodsOfStaking < thalesRangedAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                    volumeforAccount = volumeforAccount.add(thalesRangedAMMVolume[account][i].amount);
-            }
+        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+            if (periodsOfStaking < thalesRangedAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                volumeforAccount = volumeforAccount.add(thalesRangedAMMVolume[account][i].amount);
         }
     }
 
@@ -429,12 +384,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param account to get exotic markets volume for
     /// @return the exotic markets volume for the account
     function getExoticMarketsVolume(address account) external view returns (uint volumeforAccount) {
-        uint volumeforAccount;
-        if (!(periodsOfStaking >= lastExoticMarketsUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
-            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-                if (periodsOfStaking < exoticMarketsVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                    volumeforAccount = volumeforAccount.add(exoticMarketsVolume[account][i].amount);
-            }
+        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+            if (periodsOfStaking < exoticMarketsVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                volumeforAccount = volumeforAccount.add(exoticMarketsVolume[account][i].amount);
         }
     }
 
@@ -442,11 +394,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param account to get the sport markets AMM volume for
     /// @return the sport markets AMM volume for the account
     function getSportsAMMVolume(address account) external view returns (uint volumeforAccount) {
-        if (!(periodsOfStaking >= lastSportsAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
-            for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
-                if (periodsOfStaking < sportsAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
-                    volumeforAccount = volumeforAccount.add(sportsAMMVolume[account][i].amount);
-            }
+        for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
+            if (periodsOfStaking < sportsAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))
+                volumeforAccount = volumeforAccount.add(sportsAMMVolume[account][i].amount);
         }
     }
 
@@ -629,30 +579,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @notice Stake the amount of staking token to get weekly rewards
     /// @param amount to stake
     function stake(uint amount) external nonReentrant notPaused {
-        require(startTimeStamp > 0, "Staking period has not started");
-        require(amount > 0, "Cannot stake 0");
-        require(!unstaking[msg.sender], "Cannot stake, the staker is paused from staking due to unstaking");
-        // Check if there are not claimable rewards from last period.
-        // Claim them, and add new stake
-
-        if (_calculateAvailableRewardsToClaim(msg.sender) > 0) {
-            _claimReward(msg.sender);
-        }
-        _lastStakingPeriod[msg.sender] = periodsOfStaking;
-
-        // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
-        if (_stakedBalances[msg.sender] == 0) {
-            if (iEscrowThales.totalAccountEscrowedAmount(msg.sender) > 0) {
-                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
-                    iEscrowThales.totalAccountEscrowedAmount(msg.sender)
-                );
-            }
-        }
-
-        _totalStakedAmount = _totalStakedAmount.add(amount);
-        _stakedBalances[msg.sender] = _stakedBalances[msg.sender].add(amount);
-        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
-
+        _stake(amount, msg.sender, msg.sender);
         emit Staked(msg.sender, amount);
     }
 
@@ -660,28 +587,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param amount to stake
     /// @param staker to stake on behalf of
     function stakeOnBehalf(uint amount, address staker) external nonReentrant onlyOwner {
-        require(startTimeStamp > 0, "Staking period has not started");
-        require(amount > 0, "Cannot stake 0");
-        require(!unstaking[staker], "Cannot stake, the staker is paused from staking due to unstaking");
-        // Check if there are not claimable rewards from last period.
-        // Claim them, and add new stake
-        if (_calculateAvailableRewardsToClaim(staker) > 0) {
-            _claimReward(staker);
-        }
-
-        // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
-        if (_stakedBalances[staker] == 0) {
-            if (iEscrowThales.totalAccountEscrowedAmount(staker) > 0) {
-                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
-                    iEscrowThales.totalAccountEscrowedAmount(staker)
-                );
-            }
-        }
-
-        _totalStakedAmount = _totalStakedAmount.add(amount);
-        _stakedBalances[staker] = _stakedBalances[staker].add(amount);
-        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
-
+        _stake(amount, staker, msg.sender);
         emit StakedOnBehalf(msg.sender, staker, amount);
     }
 
@@ -690,7 +596,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function startUnstake(uint amount) external notPaused {
         require(amount > 0, "Cannot unstake 0");
         require(_stakedBalances[msg.sender] >= amount, "Account doesnt have that much staked");
-        require(unstaking[msg.sender] == false, "Account has already triggered unstake cooldown");
+        require(!unstaking[msg.sender], "Account has already triggered unstake cooldown");
 
         if (_calculateAvailableRewardsToClaim(msg.sender) > 0) {
             _claimReward(msg.sender);
@@ -718,13 +624,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(unstaking[msg.sender], "Account is not unstaking");
 
         // on revert full unstake remove his escrowed balance from totalEscrowBalanceNotIncludedInStaking
-        if (_stakedBalances[msg.sender] == 0) {
-            if (iEscrowThales.totalAccountEscrowedAmount(msg.sender) > 0) {
-                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
-                    iEscrowThales.totalAccountEscrowedAmount(msg.sender)
-                );
-            }
-        }
+        _subtractTotalEscrowBalanceNotIncludedInStaking(msg.sender);
 
         if (_calculateAvailableRewardsToClaim(msg.sender) > 0) {
             _claimReward(msg.sender);
@@ -908,6 +808,39 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         _lastRewardsClaimedPeriod[account] = periodsOfStaking;
     }
 
+    function _stake(
+        uint amount,
+        address staker,
+        address sender
+    ) internal {
+        require(startTimeStamp > 0, "Staking period has not started");
+        require(amount > 0, "Cannot stake 0");
+        require(!unstaking[staker], "Cannot stake, the staker is paused from staking due to unstaking");
+        // Check if there are not claimable rewards from last period.
+        // Claim them, and add new stake
+        if (_calculateAvailableRewardsToClaim(staker) > 0) {
+            _claimReward(staker);
+        }
+        _lastStakingPeriod[staker] = periodsOfStaking;
+
+        // if just started staking subtract his escrowed balance from totalEscrowBalanceNotIncludedInStaking
+        _subtractTotalEscrowBalanceNotIncludedInStaking(staker);
+
+        _totalStakedAmount = _totalStakedAmount.add(amount);
+        _stakedBalances[staker] = _stakedBalances[staker].add(amount);
+        stakingToken.safeTransferFrom(sender, address(this), amount);
+    }
+
+    function _subtractTotalEscrowBalanceNotIncludedInStaking(address account) internal {
+        if (_stakedBalances[account] == 0) {
+            if (iEscrowThales.totalAccountEscrowedAmount(account) > 0) {
+                iEscrowThales.subtractTotalEscrowBalanceNotIncludedInStaking(
+                    iEscrowThales.totalAccountEscrowedAmount(account)
+                );
+            }
+        }
+    }
+
     function _calculateAvailableRewardsToClaim(address account) internal view returns (uint) {
         uint baseReward = getBaseReward(account);
         if (baseReward == 0) {
@@ -946,7 +879,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
 
     function _getTotalAMMVolume(address account) internal view returns (uint totalAMMforAccount) {
-        uint totalAMMforAccount;
         if (!(periodsOfStaking >= lastAMMUpdatePeriod[account].add(AMM_EXTRA_REWARD_PERIODS))) {
             for (uint i = 0; i < AMM_EXTRA_REWARD_PERIODS; i++) {
                 if (periodsOfStaking < stakerAMMVolume[account][i].period.add(AMM_EXTRA_REWARD_PERIODS))

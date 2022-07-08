@@ -142,21 +142,34 @@ contract('StakingThales', accounts => {
 			ThalesDeployed.address,
 			EscrowThalesDeployed.address
 		);
-		await StakingThalesDeployed.setThalesStakingRewardsPool(
-			ThalesStakingRewardsPoolDeployed.address,
-			{ from: owner }
-		);
 		await EscrowThalesDeployed.setThalesStakingRewardsPool(
 			ThalesStakingRewardsPoolDeployed.address,
 			{ from: owner }
 		);
-
-		await StakingThalesDeployed.setDistributeFeesEnabled(true, { from: owner });
-		await StakingThalesDeployed.setClaimEnabled(true, { from: owner });
-		await StakingThalesDeployed.setFixedPeriodReward(100000, { from: owner });
-		await StakingThalesDeployed.setAddressResolver(AddressResolverDeployed.address, {
-			from: owner,
-		});
+		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, { from: owner });
+		await StakingThalesDeployed.setStakingRewardsParameters(
+			100000,
+			100000,
+			false,
+			'15',
+			'12',
+			'3',
+			'1',
+			'10',
+			{ from: owner }
+		);
+		await StakingThalesDeployed.setAddresses(
+			SNXRewardsDeployed.address,
+			dummy,
+			dummy,
+			dummy,
+			dummy,
+			dummy,
+			dummy,
+			ThalesStakingRewardsPoolDeployed.address,
+			AddressResolverDeployed.address,
+			{ from: owner }
+		);
 	});
 
 	describe('ProxyUnstaking', () => {

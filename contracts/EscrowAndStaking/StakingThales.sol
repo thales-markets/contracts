@@ -74,14 +74,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     }
     mapping(address => uint) private lastAMMUpdatePeriod;
     mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private stakerAMMVolume;
-    mapping(address => uint) private lastThalesAMMUpdatePeriod;
-    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private thalesAMMVolume;
-    mapping(address => uint) private lastThalesRangedAMMUpdatePeriod;
-    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private thalesRangedAMMVolume;
-    mapping(address => uint) private lastExoticMarketsUpdatePeriod;
-    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private exoticMarketsVolume;
-    mapping(address => uint) private lastSportsAMMUpdatePeriod;
-    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private sportsAMMVolume;
 
     bool public extraRewardsActive;
     IThalesStakingRewardsPool public ThalesStakingRewardsPool;
@@ -106,6 +98,15 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     address public thalesRangedAMM;
     address public sportsAMM;
+
+    mapping(address => uint) private lastThalesAMMUpdatePeriod;
+    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private thalesAMMVolume;
+    mapping(address => uint) private lastThalesRangedAMMUpdatePeriod;
+    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private thalesRangedAMMVolume;
+    mapping(address => uint) private lastExoticMarketsUpdatePeriod;
+    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private exoticMarketsVolume;
+    mapping(address => uint) private lastSportsAMMUpdatePeriod;
+    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private sportsAMMVolume;
 
     /* ========== CONSTRUCTOR ========== */
 

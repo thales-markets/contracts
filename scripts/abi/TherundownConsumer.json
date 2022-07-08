@@ -1096,7 +1096,7 @@
           }
         ],
         "internalType": "struct TherundownConsumer.GameCreate",
-        "name": "",
+        "name": "game",
         "type": "tuple"
       }
     ],
@@ -1183,7 +1183,7 @@
           }
         ],
         "internalType": "struct TherundownConsumer.GameResolve",
-        "name": "",
+        "name": "game",
         "type": "tuple"
       }
     ],

@@ -249,19 +249,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice returns game created based on CL request id and index of a game in a array
     /// @param _requestId request id from CL
     /// @param _idx index in array
-    /// @return GameCreate game create object
-    function getGameCreatedByRequestId(bytes32 _requestId, uint256 _idx) public view returns (GameCreate memory) {
-        GameCreate memory game = abi.decode(requestIdGamesCreated[_requestId][_idx], (GameCreate));
-        return game;
+    /// @return game GameCreate game create object
+    function getGameCreatedByRequestId(bytes32 _requestId, uint256 _idx) public view returns (GameCreate memory game) {
+        game = abi.decode(requestIdGamesCreated[_requestId][_idx], (GameCreate));
     }
 
     /// @notice returns game resolved based on CL request id and index of a game in a array
     /// @param _requestId request id from CL
     /// @param _idx index in array
-    /// @return GameResolve game resolved object
-    function getGameResolvedByRequestId(bytes32 _requestId, uint256 _idx) public view returns (GameResolve memory) {
-        GameResolve memory game = abi.decode(requestIdGamesResolved[_requestId][_idx], (GameResolve));
-        return game;
+    /// @return game GameResolve game resolved object
+    function getGameResolvedByRequestId(bytes32 _requestId, uint256 _idx) public view returns (GameResolve memory game) {
+        game = abi.decode(requestIdGamesResolved[_requestId][_idx], (GameResolve));
     }
 
     /// @notice view function which returns game created object based on id of a game
@@ -432,6 +430,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
             if (sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
+                // TODO: only unpause if it was paused due to invalid odds
                 sportsManager.setMarketPaused(marketPerGameId[_game.gameId], false);
             }
 
@@ -439,6 +438,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         } else {
             if (!sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
                 sportsManager.setMarketPaused(marketPerGameId[_game.gameId], true);
+                //TODO: we need to know that the market was paused due to invalid odds
             }
 
             emit InvalidOddsForMarket(requestId, marketPerGameId[_game.gameId], _game.gameId, _game);

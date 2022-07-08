@@ -1260,7 +1260,7 @@ contract('SportsAMM', accounts => {
 				{ from: first }
 			);
 
-			let marketOdds = await SportsAMM.getMarketDefaultOdds(deployedMarket.address);
+			let marketOdds = await SportsAMM.getMarketDefaultOdds(deployedMarket.address, false);
 			// console.log('market odds: ', marketOdds);
 
 			// await fastForward(await currentTime());

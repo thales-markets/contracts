@@ -637,6 +637,11 @@
         "internalType": "address",
         "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "isSell",
+        "type": "bool"
       }
     ],
     "name": "getMarketDefaultOdds",
@@ -1248,19 +1253,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
-    "name": "testGetMarketDefaultOdds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

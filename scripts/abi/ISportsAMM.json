@@ -5,6 +5,11 @@
         "internalType": "address",
         "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "isSell",
+        "type": "bool"
       }
     ],
     "name": "getMarketDefaultOdds",

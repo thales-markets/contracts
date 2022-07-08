@@ -82,7 +82,7 @@
 		"GamesQueue": "0x5417c847b6ce4163C43116E8D9670395Ba08B503",
 		"GamesQueueImplementation": "0x339e4557cD9c6F7EA0536D80418E692B55B8A33D",
 		"TherundownConsumer": "0x2B91c14Ce9aa828eD124D12541452a017d8a2148",
-		"TherundownConsumerImplementation": "0xA4F794B346c2984175fBa5F410a6c6fa7276926e",
+		"TherundownConsumerImplementation": "0x951159A8c1BC97F70D200fF39fA026Ce31134783",
 		"TherundownConsumerWrapper": "0x1687fDC8A409Be442e2dD3DE42b1fcC974Ac9eE8"
 	},
 	"polygon": {
@@ -279,7 +279,7 @@
 		"GamesQueue": "0x823B2369f5CA3cf54D802665073F2AA238EEA941",
 		"GamesQueueImplementation": "0x17BC6D4aC6cA0D4D8aE22317d2ff0e2e72851A8a",
 		"TherundownConsumer": "0x594FD9E527418Bde7F265aE7D422607C64ad1A8a",
-		"TherundownConsumerImplementation": "0x714E55A258d5e01E66b120Da95cECC5563D32f58",
+		"TherundownConsumerImplementation": "0x246ed3406Ee3a0B339261B5BEE02CC2F1aE17ECf",
 		"TherundownConsumerWrapper": "0x284f92e91EDDe521e6A20e476a8FBa79D059cC2f"
 	},
 	"localhost": {

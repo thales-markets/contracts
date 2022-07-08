@@ -352,8 +352,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @notice Checks the default odds for a `_market`. These odds take into account the price impact.
     /// @param _market The address of the SportPositional market of a game
+    /// @param isSell The address of the SportPositional market of a game
     /// @return Returns the default odds for the `_market` including the price impact.
-    function getMarketDefaultOdds(address _market) public view returns (uint[] memory) {
+    function getMarketDefaultOdds(address _market, bool isSell) public view returns (uint[] memory) {
         uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
         if (isMarketInAMMTrading(_market)) {
             Position position;
@@ -365,7 +366,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 } else {
                     position = Position.Draw;
                 }
-                odds[i] = buyFromAmmQuote(_market, position, ONE);
+                if (isSell) {
+                    odds[i] = sellToAmmQuote(_market, position, ONE);
+                } else {
+                    odds[i] = buyFromAmmQuote(_market, position, ONE);
+                }
             }
         }
         return odds;
@@ -741,11 +746,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             uint previousImpact = max_spread.mul(previousSkew.mul(ONE).div(maxPossibleSkew)).div(ONE);
             return newImpact.add(previousImpact).div(2);
         }
-    }
-
-    function testGetMarketDefaultOdds(address _market) external {
-        getMarketDefaultOdds(_market);
-        uint i = 1;
     }
 
     function _sellPriceImpact(

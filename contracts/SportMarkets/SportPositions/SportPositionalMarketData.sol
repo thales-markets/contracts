@@ -31,7 +31,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         ActiveMarketsOdds[] memory marketOdds = new ActiveMarketsOdds[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             marketOdds[i].market = ISportPositionalMarket(activeMarkets[i]).getGameId();
-            marketOdds[i].odds = ISportsAMM(sportsAMM).getMarketDefaultOdds(activeMarkets[i]);
+            marketOdds[i].odds = ISportsAMM(sportsAMM).getMarketDefaultOdds(activeMarkets[i], false);
         }
         return marketOdds;
     }

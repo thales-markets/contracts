@@ -86,6 +86,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => uint) public oddsLastPulledForGame;
     mapping(uint => bytes32[]) public gamesPerDate;
     mapping(uint => mapping(uint => bool)) public isSportOnADate;
+    mapping(address => bool) public invalidOdds;
+    mapping(address => bool) public marketCreated;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -430,15 +432,16 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
             if (sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
-                // TODO: only unpause if it was paused due to invalid odds
-                sportsManager.setMarketPaused(marketPerGameId[_game.gameId], false);
+                if(invalidOdds[marketPerGameId[_game.gameId]]){
+                    sportsManager.setMarketPaused(marketPerGameId[_game.gameId], false);
+                }
             }
 
             emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
         } else {
             if (!sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
+                invalidOdds[marketPerGameId[_game.gameId]] = true;
                 sportsManager.setMarketPaused(marketPerGameId[_game.gameId], true);
-                //TODO: we need to know that the market was paused due to invalid odds
             }
 
             emit InvalidOddsForMarket(requestId, marketPerGameId[_game.gameId], _game.gameId, _game);
@@ -488,6 +491,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
         marketPerGameId[game.gameId] = marketAddress;
         gameIdPerMarket[marketAddress] = game.gameId;
+        marketCreated[marketAddress] = true;
 
         queues.dequeueGamesCreated();
 

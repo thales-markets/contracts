@@ -662,7 +662,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "odd",
         "type": "uint256"
       }
     ],
@@ -1316,7 +1316,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_result",
         "type": "uint256"
       }
     ],

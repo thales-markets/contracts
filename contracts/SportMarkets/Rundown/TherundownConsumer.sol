@@ -171,8 +171,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         requestIdGamesOdds[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
             GameOdds memory game = abi.decode(_games[i], (GameOdds));
-            // game needs to be fulfilled and market needed to be created 
-            if(gameFulfilledCreated[game.gameId] && marketPerGameId[game.gameId] != address(0)){
+            // game needs to be fulfilled and market needed to be created
+            if (gameFulfilledCreated[game.gameId] && marketPerGameId[game.gameId] != address(0)) {
                 _oddsGameFulfill(_requestId, game);
             }
         }
@@ -200,7 +200,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _outcome outcome of a game (1: home win, 2: away win, 3: draw, 0: cancel market)
     /// @param _homeScore score of home team
     /// @param _awayScore score of away team
-    function resolveGameManually(bytes32 _gameId, uint _outcome, uint8 _homeScore, uint8 _awayScore) external isAddressWhitelisted canGameBeResolved(_gameId, _outcome, _homeScore, _awayScore) {
+    function resolveGameManually(
+        bytes32 _gameId,
+        uint _outcome,
+        uint8 _homeScore,
+        uint8 _awayScore
+    ) external isAddressWhitelisted canGameBeResolved(_gameId, _outcome, _homeScore, _awayScore) {
         _resolveMarketManually(marketPerGameId[_gameId], _outcome, _homeScore, _awayScore);
     }
 
@@ -209,20 +214,33 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _outcome outcome of a game (1: home win, 2: away win, 3: draw, 0: cancel market)
     /// @param _homeScore score of home team
     /// @param _awayScore score of away team
-    function resolveMarketManually(address _market, uint _outcome, uint8 _homeScore, uint8 _awayScore) external isAddressWhitelisted canGameBeResolved(gameIdPerMarket[_market], _outcome, _homeScore, _awayScore) {
+    function resolveMarketManually(
+        address _market,
+        uint _outcome,
+        uint8 _homeScore,
+        uint8 _awayScore
+    ) external isAddressWhitelisted canGameBeResolved(gameIdPerMarket[_market], _outcome, _homeScore, _awayScore) {
         _resolveMarketManually(_market, _outcome, _homeScore, _awayScore);
     }
 
     /// @notice cancel market for a given market address
     /// @param _market market address
-    function cancelMarketManually(address _market) external isAddressWhitelisted canGameBeCanceled(gameIdPerMarket[_market]){
+    function cancelMarketManually(address _market)
+        external
+        isAddressWhitelisted
+        canGameBeCanceled(gameIdPerMarket[_market])
+    {
         _cancelMarketManually(_market);
     }
 
     /// @notice pause/unpause market for a given market address
     /// @param _market market address
     /// @param _pause pause = true, unpause = false
-    function pauseOrUnpauseMarketManually(address _market, bool _pause) external isAddressWhitelisted canGameBePaused(_market, _pause) {
+    function pauseOrUnpauseMarketManually(address _market, bool _pause)
+        external
+        isAddressWhitelisted
+        canGameBePaused(_market, _pause)
+    {
         _pauseOrUnpauseMarketManually(_market, _pause);
     }
 
@@ -356,29 +374,23 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice view function which returns normalized odd based on moneyline odd (Example: -15000)
     /// @param _americanOdd moneyline odd (Example of a param: -15000, +35000, etc.), this param is with two decimal places (-15000 is -150 in moneyline world)
-    /// @return uint odd normalized to a 100
-    function calculateNormalizedOddFromAmerican(int _americanOdd) external pure returns (uint) {
-        uint odd;
-        if (_americanOdd == 0) {
-            odd = 0;
-        } else if (_americanOdd > 0) {
+    /// @return odd normalized to a 100
+    function calculateNormalizedOddFromAmerican(int _americanOdd) external pure returns (uint odd) {
+        if (_americanOdd > 0) {
             odd = uint(_americanOdd);
             odd = ((10000 * 1e18) / (odd + 10000)) * 100;
         } else if (_americanOdd < 0) {
             odd = uint(-_americanOdd);
             odd = ((odd * 1e18) / (odd + 10000)) * 100;
         }
-        return odd;
     }
 
     /// @notice view function which returns outcome of a game based on ID
     /// @param _gameId game id for which result is looking
-    /// @return uint returns 1: home win, 2: away win, 3: draw, 0: cancel
-    function getResult(bytes32 _gameId) external view returns (uint) {
+    /// @return _result returns 1: home win, 2: away win, 3: draw, 0: cancel
+    function getResult(bytes32 _gameId) external view returns (uint _result) {
         if (isGameInResolvedStatus(_gameId)) {
             return _calculateOutcome(getGameResolvedById(_gameId));
-        } else {
-            return 0;
         }
     }
 
@@ -415,19 +427,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
         // if odds are valid store them if not pause market
-        if(_areOddsValid(_game)){
-
+        if (_areOddsValid(_game)) {
             gameOdds[_game.gameId] = _game;
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
-            if(sportsManager.isMarketPaused(marketPerGameId[_game.gameId])){
+            if (sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
                 sportsManager.setMarketPaused(marketPerGameId[_game.gameId], false);
             }
 
             emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
-        }else{
-
-            if(!sportsManager.isMarketPaused(marketPerGameId[_game.gameId])){
+        } else {
+            if (!sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
                 sportsManager.setMarketPaused(marketPerGameId[_game.gameId], true);
             }
 
@@ -500,7 +510,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             _cleanStorageQueue(index);
 
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
-        } else if (_isGameStatusCanceled(game)) {
+        } else if (cancelGameStatuses[game.statusId]) {
             sportsManager.resolveMarket(marketPerGameId[game.gameId], 0);
             marketCanceled[marketPerGameId[game.gameId]] = true;
 
@@ -510,7 +520,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _resolveMarketManually(address _market, uint _outcome, uint8 _homeScore, uint8 _awayScore) internal {
+    function _resolveMarketManually(
+        address _market,
+        uint _outcome,
+        uint8 _homeScore,
+        uint8 _awayScore
+    ) internal {
         uint index = queues.unproccessedGamesIndex(gameIdPerMarket[_market]);
 
         // it can return ZERO index, needs checking
@@ -518,10 +533,21 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
         sportsManager.resolveMarket(_market, _outcome);
         marketResolved[_market] = true;
-        queues.removeItemUnproccessedGames(index);        
-        gameResolved[gameIdPerMarket[_market]] = GameResolve(gameIdPerMarket[_market], _homeScore, _awayScore, isSportTwoPositionsSport(sportsIdPerGame[gameIdPerMarket[_market]]) ? 8 : 11);
+        queues.removeItemUnproccessedGames(index);
+        gameResolved[gameIdPerMarket[_market]] = GameResolve(
+            gameIdPerMarket[_market],
+            _homeScore,
+            _awayScore,
+            isSportTwoPositionsSport(sportsIdPerGame[gameIdPerMarket[_market]]) ? 8 : 11
+        );
 
-        emit GameResolved(gameIdPerMarket[_market], sportsIdPerGame[gameIdPerMarket[_market]], gameIdPerMarket[_market], gameResolved[gameIdPerMarket[_market]], 0);
+        emit GameResolved(
+            gameIdPerMarket[_market],
+            sportsIdPerGame[gameIdPerMarket[_market]],
+            gameIdPerMarket[_market],
+            gameResolved[gameIdPerMarket[_market]],
+            0
+        );
         emit ResolveSportsMarket(_market, gameIdPerMarket[_market], _outcome);
     }
 
@@ -563,15 +589,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _isGameReadyToBeResolved(GameResolve memory _game) internal view returns (bool) {
-        return _isGameStatusResolved(_game) || _isGameStatusCanceled(_game);
+        return _isGameStatusResolved(_game) || cancelGameStatuses[_game.statusId];
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal view returns (bool) {
         return supportResolveGameStatuses[_game.statusId];
-    }
-
-    function _isGameStatusCanceled(GameResolve memory _game) internal view returns (bool) {
-        return cancelGameStatuses[_game.statusId];
     }
 
     function _calculateOutcome(GameResolve memory _game) internal pure returns (uint) {
@@ -582,9 +604,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _areOddsValid(GameOdds memory _game) internal view returns (bool) {
-        if(isSportTwoPositionsSport(sportsIdPerGame[_game.gameId])){
+        if (isSportTwoPositionsSport(sportsIdPerGame[_game.gameId])) {
             return _game.awayOdds != 0 && _game.homeOdds != 0;
-        }else{
+        } else {
             return _game.awayOdds != 0 && _game.homeOdds != 0 && _game.drawOdds != 0;
         }
     }
@@ -592,18 +614,22 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function _isValidOutcomeForGame(bytes32 _gameId, uint _outcome) internal view returns (bool) {
         if (isSportTwoPositionsSport(sportsIdPerGame[_gameId])) {
             return _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == CANCELLED;
-        } 
+        }
         return _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW || _outcome == CANCELLED;
     }
 
-    function _isValidOutcomeWithResult(uint _outcome, uint _homeScore, uint _awayScore) internal view returns (bool) {
+    function _isValidOutcomeWithResult(
+        uint _outcome,
+        uint _homeScore,
+        uint _awayScore
+    ) internal view returns (bool) {
         if (_outcome == CANCELLED) {
             return _awayScore == CANCELLED && _homeScore == CANCELLED;
-        } else if (_outcome == HOME_WIN){
+        } else if (_outcome == HOME_WIN) {
             return _homeScore > _awayScore;
-        }else if (_outcome == AWAY_WIN){
+        } else if (_outcome == AWAY_WIN) {
             return _homeScore < _awayScore;
-        }else{
+        } else {
             return _homeScore == _awayScore;
         }
     }
@@ -741,24 +767,29 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         require(marketPerGameId[_gameId] != address(0), "No market created for game");
         _;
-    }        
+    }
 
-    modifier canGameBeResolved(bytes32 _gameId, uint _outcome, uint8 _homeScore, uint8 _awayScore) {
+    modifier canGameBeResolved(
+        bytes32 _gameId,
+        uint _outcome,
+        uint8 _homeScore,
+        uint8 _awayScore
+    ) {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         require(marketPerGameId[_gameId] != address(0), "No market created for game");
         require(_isValidOutcomeForGame(_gameId, _outcome), "Bad outcome.");
-        require(_isValidOutcomeWithResult(_outcome, _homeScore, _awayScore) , "Bad result for an outcome");
+        require(_isValidOutcomeWithResult(_outcome, _homeScore, _awayScore), "Bad result for an outcome");
         _;
-    } 
+    }
 
     modifier canGameBePaused(address _market, bool _pause) {
         require(_market != address(0), "No market address");
         require(gameFulfilledCreated[gameIdPerMarket[_market]], "Game not existing");
-        require(gameIdPerMarket[_market] != 0 , "Market not existing");
+        require(gameIdPerMarket[_market] != 0, "Market not existing");
         require(!isGameResolvedOrCanceled(gameIdPerMarket[_market]), "Market resoved or canceled");
         require(sportsManager.isMarketPaused(_market) != _pause, "Already paused/unpaused");
         _;
-    } 
+    }
     /* ========== EVENTS ========== */
 
     event GameCreated(

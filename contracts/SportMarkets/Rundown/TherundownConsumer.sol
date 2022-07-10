@@ -273,13 +273,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return gameCreated[_gameId];
     }
 
-    /// @notice view function which returns game start time based on id of a game
-    /// @param _gameId game id
-    /// @return startTime game start time
-    function getGameTime(bytes32 _gameId) public view returns (uint256) {
-        return gameCreated[_gameId].startTime;
-    }
-
     /// @notice view function which returns odds for home team based on id of a game
     /// @param _gameId game id
     /// @return homeOdds moneyline odd in a two decimal places
@@ -306,6 +299,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @return bytes32[] list of games
     function getGamesPerdate(uint _date) public view returns (bytes32[] memory) {
         return gamesPerDate[_date];
+    }
+
+    /// @notice view function which returns games on certan date and sportid
+    /// @param _sportId date
+    /// @param _date date
+    /// @return bytes32[] list of games
+    function getGamesPerDatePerSport(uint _sportId, uint _date) public view returns (bytes32[] memory) {
+        return gamesPerDatePerSport[_sportId][_date];
     }
 
     /// @notice view function which returns game resolved object based on id of a game
@@ -389,7 +390,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice view function which returns outcome of a game based on ID
     /// @param _gameId game id for which result is looking
-    /// @return _result returns 1: home win, 2: away win, 3: draw, 0: cancel
+    /// @return _result returns 1: home win, 2: away win, 3: draw
     function getResult(bytes32 _gameId) external view returns (uint _result) {
         if (isGameInResolvedStatus(_gameId)) {
             return _calculateOutcome(getGameResolvedById(_gameId));
@@ -433,8 +434,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             gameOdds[_game.gameId] = _game;
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
+            // if was paused and paused by invalid odds unpause
             if (sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
                 if(invalidOdds[marketPerGameId[_game.gameId]]){
+                    invalidOdds[marketPerGameId[_game.gameId]] = false;
                     sportsManager.setMarketPaused(marketPerGameId[_game.gameId], false);
                 }
             }

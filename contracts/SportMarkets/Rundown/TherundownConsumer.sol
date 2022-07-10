@@ -245,7 +245,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         isAddressWhitelisted
         canGameBePaused(_market, _pause)
     {
-        _pauseOrUnpauseMarketManually(_market, _pause);
+        _pauseOrUnpauseMarket(_market, _pause);
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -438,7 +438,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             if (sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
                 if(invalidOdds[marketPerGameId[_game.gameId]]){
                     invalidOdds[marketPerGameId[_game.gameId]] = false;
-                    sportsManager.setMarketPaused(marketPerGameId[_game.gameId], false);
+                    _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], false);
                 }
             }
 
@@ -446,7 +446,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         } else {
             if (!sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
                 invalidOdds[marketPerGameId[_game.gameId]] = true;
-                sportsManager.setMarketPaused(marketPerGameId[_game.gameId], true);
+                    _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
             }
 
             emit InvalidOddsForMarket(requestId, marketPerGameId[_game.gameId], _game.gameId, _game);
@@ -511,6 +511,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(_gameId == queues.unproccessedGames(index), "Invalid Game ID");
 
         if (_isGameStatusResolved(game)) {
+            if(invalidOdds[marketPerGameId[game.gameId]]){
+                _pauseOrUnpauseMarket(marketPerGameId[game.gameId], false);
+            }
+            
             uint _outcome = _calculateOutcome(game);
 
             sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
@@ -573,7 +577,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit CancelSportsMarket(_market, gameIdPerMarket[_market]);
     }
 
-    function _pauseOrUnpauseMarketManually(address _market, bool _pause) internal {
+    function _pauseOrUnpauseMarket(address _market, bool _pause) internal {
         sportsManager.setMarketPaused(_market, _pause);
         emit PauseSportsMarket(_market, _pause);
     }

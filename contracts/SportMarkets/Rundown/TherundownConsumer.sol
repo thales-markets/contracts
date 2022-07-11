@@ -102,10 +102,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint[] memory _cancelGameStatuses
     ) external initializer {
         setOwner(_owner);
-        _populateSports(_supportedSportIds);
-        _populateTwoPositionSports(_twoPositionSports);
-        _populateSupportedStatuses(_resolvedStatuses);
-        _populateCancelGameStatuses(_cancelGameStatuses);
+        _populateOnInit(_supportedSportIds, _twoPositionSports, _resolvedStatuses, _cancelGameStatuses);
         sportsManager = ISportPositionalMarketManager(_sportsManager);
         queues = _queues;
         whitelistedAddresses[_owner] = true;
@@ -184,19 +181,35 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice creates market for a given game id
     /// @param _gameId game id
-    function createMarketForGame(bytes32 _gameId) external {
+    function createMarketForGame(bytes32 _gameId) public {
         require(marketPerGameId[_gameId] == address(0), "Market for game already exists");
         require(gameFulfilledCreated[_gameId], "No such game fulfilled, created");
         require(queues.gamesCreateQueue(queues.firstCreated()) == _gameId, "Must be first in a queue");
         _createMarket(_gameId);
     }
 
+    /// @notice creates markets for a given game ids
+    /// @param _gameIds game ids as array
+    function createAllMarketsForGames(bytes32[] memory _gameIds) external {
+        for (uint i; i < _gameIds.length; i++) {
+            createMarketForGame(_gameIds[i]);
+        }
+    }
+
     /// @notice resolve market for a given game id
     /// @param _gameId game id
-    function resolveMarketForGame(bytes32 _gameId) external {
+    function resolveMarketForGame(bytes32 _gameId) public {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         require(gameFulfilledResolved[_gameId], "No such game Fulfilled, resolved");
         _resolveMarket(_gameId);
+    }
+
+    /// @notice resolve all markets for a given game ids
+    /// @param _gameIds game ids as array
+    function resolveAllMarketsForGames(bytes32[] memory _gameIds) external {
+        for (uint i; i < _gameIds.length; i++) {
+            resolveMarketForGame(_gameIds[i]);
+        }
     }
 
     /// @notice resolve market for a given game id
@@ -256,14 +269,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @return game GameCreate game create object
     function getGameCreatedByRequestId(bytes32 _requestId, uint256 _idx) public view returns (GameCreate memory game) {
         game = abi.decode(requestIdGamesCreated[_requestId][_idx], (GameCreate));
-    }
-
-    /// @notice returns game resolved based on CL request id and index of a game in a array
-    /// @param _requestId request id from CL
-    /// @param _idx index in array
-    /// @return game GameResolve game resolved object
-    function getGameResolvedByRequestId(bytes32 _requestId, uint256 _idx) public view returns (GameResolve memory game) {
-        game = abi.decode(requestIdGamesResolved[_requestId][_idx], (GameResolve));
     }
 
     /// @notice view function which returns game created object based on id of a game
@@ -453,25 +458,21 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _populateSports(uint[] memory _supportedSportIds) internal {
+    function _populateOnInit(
+        uint[] memory _supportedSportIds, 
+        uint[] memory _twoPositionSports, 
+        uint[] memory _supportedStatuses, 
+        uint[] memory _cancelStatuses ) internal 
+        {
         for (uint i; i < _supportedSportIds.length; i++) {
             supportedSport[_supportedSportIds[i]] = true;
         }
-    }
-
-    function _populateTwoPositionSports(uint[] memory _twoPositionSports) internal {
         for (uint i; i < _twoPositionSports.length; i++) {
             twoPositionSport[_twoPositionSports[i]] = true;
         }
-    }
-
-    function _populateSupportedStatuses(uint[] memory _supportedStatuses) internal {
         for (uint i; i < _supportedStatuses.length; i++) {
             supportResolveGameStatuses[_supportedStatuses[i]] = true;
         }
-    }
-
-    function _populateCancelGameStatuses(uint[] memory _cancelStatuses) internal {
         for (uint i; i < _cancelStatuses.length; i++) {
             cancelGameStatuses[_cancelStatuses[i]] = true;
         }
@@ -790,8 +791,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     ) {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         require(marketPerGameId[_gameId] != address(0), "No market created for game");
-        require(_isValidOutcomeForGame(_gameId, _outcome), "Bad outcome.");
-        require(_isValidOutcomeWithResult(_outcome, _homeScore, _awayScore), "Bad result for an outcome");
+        require(_isValidOutcomeForGame(_gameId, _outcome) && _isValidOutcomeWithResult(_outcome, _homeScore, _awayScore), "Bad result or outcome");
         _;
     }
 

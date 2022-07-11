@@ -446,7 +446,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         } else {
             if (!sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
                 invalidOdds[marketPerGameId[_game.gameId]] = true;
-                    _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
+                _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
             }
 
             emit InvalidOddsForMarket(requestId, marketPerGameId[_game.gameId], _game.gameId, _game);
@@ -514,7 +514,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             if(invalidOdds[marketPerGameId[game.gameId]]){
                 _pauseOrUnpauseMarket(marketPerGameId[game.gameId], false);
             }
-            
+
             uint _outcome = _calculateOutcome(game);
 
             sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);

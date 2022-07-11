@@ -212,7 +212,18 @@ contract('SportsAMM', accounts => {
 			SNXRewards.address,
 			{ from: owner }
 		);
-		await StakingThales.setThalesAMM(SportsAMM.address, { from: owner });
+		await StakingThales.setAddresses(
+			SNXRewards.address,
+			second,
+			second,
+			second,
+			second,
+			SportsAMM.address,
+			second,
+			second,
+			second,
+			{ from: owner }
+		);
 		await SportsAMM.setMinSupportedPrice(10, { from: owner });
 		await SportsAMM.setMaxSupportedPrice(toUnit(1000), { from: owner });
 		// await SportsAMM.setTestOdds(TestOdds.address, {from:owner});

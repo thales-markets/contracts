@@ -342,6 +342,24 @@
         "internalType": "uint256",
         "name": "unclaimedReward",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "baseRewards",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "snxBonus",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "protocolBonus",
+        "type": "uint256"
       }
     ],
     "name": "RewardsClaimed",

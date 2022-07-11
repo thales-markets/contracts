@@ -803,7 +803,13 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             _totalRewardsClaimed = _totalRewardsClaimed.add(availableRewardsToClaim);
             _totalUnclaimedRewards = _totalUnclaimedRewards.sub(availableRewardsToClaim);
 
-            emit RewardsClaimed(account, availableRewardsToClaim);
+            emit RewardsClaimed(
+                account,
+                availableRewardsToClaim,
+                getBaseReward(account),
+                getSNXBonus(account),
+                getAMMBonus(account)
+            );
         }
         // Update last claiming period
         _lastRewardsClaimedPeriod[account] = periodsOfStaking;
@@ -894,7 +900,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event Staked(address user, uint amount);
     event StakedOnBehalf(address user, address staker, uint amount);
     event ClosedPeriod(uint PeriodOfStaking, uint lastPeriodTimeStamp);
-    event RewardsClaimed(address account, uint unclaimedReward);
+    event RewardsClaimed(address account, uint unclaimedReward, uint baseRewards, uint snxBonus, uint protocolBonus);
     event FeeRewardsClaimed(address account, uint unclaimedFees);
     event UnstakeCooldown(address account, uint cooldownTime, uint amount);
     event CancelUnstake(address account);

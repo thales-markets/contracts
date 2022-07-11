@@ -1036,7 +1036,7 @@ contract('SportsAMM', accounts => {
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
 			// resolve markets
 			// const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
-			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(gameid1, 0, {
+			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(gameid1, 0, 0, 0, {
 				from: owner,
 			});
 			answer = await deployedMarket.result();
@@ -1046,7 +1046,7 @@ contract('SportsAMM', accounts => {
 			console.log('Result theRunDown resolved: ', answer.toString());
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
 			// check if event is emited
-			assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
+			assert.eventEqual(tx_resolve.logs[1], 'ResolveSportsMarket', {
 				_marketAddress: marketAdd,
 				_id: gameid1,
 				_outcome: 0,
@@ -1173,6 +1173,8 @@ contract('SportsAMM', accounts => {
 			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(
 				gameid1,
 				user2_position + 1,
+				1,
+				2,
 				{ from: owner }
 			);
 			answer = await deployedMarket.result();
@@ -1285,6 +1287,8 @@ contract('SportsAMM', accounts => {
 			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(
 				gameid1,
 				user2_position + 1,
+				1,
+				2,
 				{ from: owner }
 			);
 			answer = await deployedMarket.result();
@@ -1809,7 +1813,7 @@ contract('SportsAMM', accounts => {
 				{ from: first }
 			);
 
-			let cancelTx = await TherundownConsumerDeployed.cancelGameManually(gameFootballid1, {
+			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(deployedMarket.address, {
 				from: third,
 			});
 
@@ -1874,7 +1878,7 @@ contract('SportsAMM', accounts => {
 				{ from: first }
 			);
 
-			let cancelTx = await TherundownConsumerDeployed.cancelGameManually(gameFootballid1, {
+			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(deployedMarket.address, {
 				from: third,
 			});
 

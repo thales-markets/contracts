@@ -108,6 +108,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     mapping(address => uint) private lastSportsAMMUpdatePeriod;
     mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private sportsAMMVolume;
 
+    mapping(address => mapping(address => bool)) public canClaimOnBehalf;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -658,6 +660,14 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         _claimReward(msg.sender);
     }
 
+    /// @notice Claim the weekly staking rewards on behalf of the account
+    /// @param account to claim on behalf of
+    function claimRewardOnBehalf(address account) public nonReentrant notPaused {
+        require(account != address(0) && account != msg.sender, "Invalid address");
+        require(canClaimOnBehalf[account][msg.sender], "Cannot claim on behalf");
+        _claimReward(account);
+    }
+
     /// @notice Update the protocol volume for the account
     /// @param account to update the protocol volume for
     /// @param amount to add to the existing protocol volume
@@ -776,6 +786,14 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         delete stakerAMMVolume[msg.sender];
 
         emit AccountMerged(msg.sender, destAccount);
+    }
+
+    /// @notice Set flag to enable/disable claim on behalf of the msg.sender for the account
+    /// @param account to enable/disable claim on behalf of msg.sender
+    /// @param _canClaimOnBehalf enable/disable claim on behalf of the msg.sender for the account
+    function setCanClaimOnBehalf(address account, bool _canClaimOnBehalf) external notPaused {
+        require(account != address(0) && account != msg.sender, "Invalid address");
+        canClaimOnBehalf[msg.sender][account] = _canClaimOnBehalf;
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */

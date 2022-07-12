@@ -211,7 +211,9 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
             maturity,
             expiry,
             address(up),
-            address(down)
+            address(down),
+            false,
+            address(0)
         );
         return market;
     }
@@ -536,7 +538,9 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         uint maturityDate,
         uint expiryDate,
         address up,
-        address down
+        address down,
+        bool customMarket,
+        address customOracle
     );
     event MarketExpired(address market);
     event MarketsMigrated(PositionalMarketManager receivingManager, PositionalMarket[] markets);

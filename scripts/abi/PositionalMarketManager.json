@@ -62,6 +62,18 @@
         "internalType": "address",
         "name": "down",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "customMarket",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "customOracle",
+        "type": "address"
       }
     ],
     "name": "MarketCreated",

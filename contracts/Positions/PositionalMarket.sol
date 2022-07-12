@@ -36,6 +36,8 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         bytes32 key;
         uint strikePrice;
         uint finalPrice;
+        bool customMarket;
+        address iOracleInstanceAddress;
     }
 
     struct PositionalMarketParameters {
@@ -80,7 +82,7 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         priceFeed = _parameters.priceFeed;
         creator = _parameters.creator;
 
-        oracleDetails = OracleDetails(_parameters.oracleKey, _parameters.strikePrice, 0);
+        oracleDetails = OracleDetails(_parameters.oracleKey, _parameters.strikePrice, 0, false, address(0));
 
         times = Times(_parameters.times[0], _parameters.times[1]);
 

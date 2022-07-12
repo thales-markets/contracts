@@ -20,7 +20,9 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     ITherundownConsumer public consumer;
     mapping(bytes32 => uint) public sportIdPerRequestId;
     mapping(bytes32 => uint) public datePerRequest;
-    uint public payment;
+    uint public paymentCreate;
+    uint public paymentResolve;
+    uint public paymentOdds;
     IERC20 public linkToken;
 
     /* ========== CONSTRUCTOR ========== */
@@ -29,12 +31,16 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         address _link,
         address _oracle,
         address _consumer,
-        uint _payment
+        uint _paymentCreate,
+        uint _paymentResolve,
+        uint _paymentOdds
     ) {
         setChainlinkToken(_link);
         setChainlinkOracle(_oracle);
         consumer = ITherundownConsumer(_consumer);
-        payment = _payment;
+        paymentCreate = _paymentCreate;
+        paymentResolve = _paymentResolve;
+        paymentOdds = _paymentOdds;
         linkToken = IERC20(_link);
     }
 
@@ -56,11 +62,14 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         string[] memory _gameIds
     ) public whenNotPaused isValidRequest(_market, _sportId) {
         Chainlink.Request memory req;
+        uint payment;
 
         if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
             req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesCreated.selector);
+            payment = paymentCreate;
         } else {
             req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesResolved.selector);
+            payment = paymentResolve;
         }
 
         req.addUint("date", _date);
@@ -69,7 +78,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         req.addStringArray("statusIds", _statusIds);
         req.addStringArray("gameIds", _gameIds);
 
-        _putLink(msg.sender);
+        _putLink(msg.sender, payment);
 
         bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
@@ -88,18 +97,21 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint256 _date
     ) public whenNotPaused isValidRequest(_market, _sportId) {
         Chainlink.Request memory req;
+        uint payment;
 
         if (keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create"))) {
             req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesCreated.selector);
+            payment = paymentCreate;
         } else {
             req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesResolved.selector);
+            payment = paymentResolve;
         }
 
         req.addUint("date", _date);
         req.add("market", _market);
         req.addUint("sportId", _sportId);
 
-        _putLink(msg.sender);
+        _putLink(msg.sender, payment);
 
         bytes32 requestId = sendChainlinkRequest(req, payment);
         sportIdPerRequestId[requestId] = _sportId;
@@ -129,9 +141,9 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
             req.addStringArray("gameIds", _gameIds);
         }
 
-        _putLink(msg.sender);
+        _putLink(msg.sender, paymentOdds);
 
-        bytes32 requestId = sendChainlinkRequest(req, payment);
+        bytes32 requestId = sendChainlinkRequest(req, paymentOdds);
         sportIdPerRequestId[requestId] = _sportId;
         datePerRequest[requestId] = _date;
     }
@@ -178,20 +190,34 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /* ========== INTERNALS ========== */
 
-    /// @notice send link to this contract, check of allownece and balanceOf is checked in safeTransferFrom
-    /// @param _sender address which pays LINK
-    function _putLink(address _sender) internal {
-        linkToken.safeTransferFrom(_sender, address(this), payment);
+    function _putLink(address _sender, uint _payment) internal {
+        linkToken.safeTransferFrom(_sender, address(this), _payment);
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    /// @notice setting payment
-    /// @param _payment amount of link per request
-    function setPayment(uint _payment) external onlyOwner {
-        require(_payment > 0, "Can not be zero");
-        payment = _payment;
-        emit NewPaymentAmount(_payment);
+    /// @notice setting payment for game creation request
+    /// @param _paymentCreate amount of LINK per request for create games
+    function setPaymentCreate(uint _paymentCreate) external onlyOwner {
+        require(_paymentCreate > 0, "Can not be zero");
+        paymentCreate = _paymentCreate;
+        emit NewPaymentAmountCreate(_paymentCreate);
+    }
+
+    /// @notice setting payment for game resolve request
+    /// @param _paymentResolve amount of LINK per request for resolve games
+    function setPaymentResolve(uint _paymentResolve) external onlyOwner {
+        require(_paymentResolve > 0, "Can not be zero");
+        paymentResolve = _paymentResolve;
+        emit NewPaymentAmountResolve(_paymentResolve);
+    }
+
+    /// @notice setting payment for odds request
+    /// @param _paymentOdds amount of LINK per request for game odds
+    function setPaymentOdds(uint _paymentOdds) external onlyOwner {
+        require(_paymentOdds > 0, "Can not be zero");
+        paymentOdds = _paymentOdds;
+        emit NewPaymentAmountOdds(_paymentOdds);
     }
 
     /// @notice setting new oracle address
@@ -230,7 +256,9 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /* ========== EVENTS ========== */
 
     event NewOracleAddress(address _oracle);
-    event NewPaymentAmount(uint _payment);
+    event NewPaymentAmountCreate(uint _paymentCreate);
+    event NewPaymentAmountResolve(uint _paymentResolve);
+    event NewPaymentAmountOdds(uint _paymentOdds);
     event NewConsumer(address _consumer);
     event NewLinkAddress(address _link);
 }

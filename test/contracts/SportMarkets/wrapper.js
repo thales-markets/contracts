@@ -20,7 +20,9 @@ contract('TherundownConsumerWrapper', accounts => {
 	let consumer;
 	let ThalesDeployed;
 	let MockPriceFeedDeployed;
-	let payment;
+	let paymentCreate;
+	let paymentResolve;
+	let paymentOdds;
 
 	beforeEach(async () => {
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
@@ -34,7 +36,9 @@ contract('TherundownConsumerWrapper', accounts => {
 
 		consumer = await TherundownConsumer.at(TherundownConsumerDeployed.address);
 
-		payment = toUnit(1);
+		paymentCreate = toUnit(1);
+		paymentResolve = toUnit(2);
+		paymentOdds = toUnit(3);
 
 		await consumer.initialize(
 			owner,
@@ -52,7 +56,9 @@ contract('TherundownConsumerWrapper', accounts => {
 			ThalesDeployed.address,
 			ThalesDeployed.address,
 			TherundownConsumerDeployed.address,
-			payment,
+			paymentCreate,
+			paymentResolve,
+			paymentOdds,
 			{ from: owner }
 		);
 
@@ -63,7 +69,9 @@ contract('TherundownConsumerWrapper', accounts => {
 		it('Init checking', async () => {
 			assert.bnEqual(ThalesDeployed.address, await wrapper.getOracleAddress());
 			assert.bnEqual(ThalesDeployed.address, await wrapper.getTokenAddress());
-			assert.bnEqual(payment, await wrapper.payment());
+			assert.bnEqual(paymentCreate, await wrapper.paymentCreate());
+			assert.bnEqual(paymentResolve, await wrapper.paymentResolve());
+			assert.bnEqual(paymentOdds, await wrapper.paymentOdds());
 		});
 
 		it('Contract management', async () => {
@@ -95,17 +103,43 @@ contract('TherundownConsumerWrapper', accounts => {
 
 			const payment = w3utils.toWei('0.3');
 
-			const tx_payment = await wrapper.setPayment(payment, {
+			const tx_payment_c = await wrapper.setPaymentCreate(payment, {
 				from: owner,
 			});
 
-			await expect(wrapper.setPayment(first, { from: first })).to.be.revertedWith(
+			await expect(wrapper.setPaymentCreate(first, { from: first })).to.be.revertedWith(
 				'Ownable: caller is not the owner'
 			);
 
 			// check if event is emited
-			assert.eventEqual(tx_payment.logs[0], 'NewPaymentAmount', {
-				_payment: payment,
+			assert.eventEqual(tx_payment_c.logs[0], 'NewPaymentAmountCreate', {
+				_paymentCreate: payment,
+			});
+
+			const tx_payment_r = await wrapper.setPaymentResolve(payment, {
+				from: owner,
+			});
+
+			await expect(wrapper.setPaymentResolve(first, { from: first })).to.be.revertedWith(
+				'Ownable: caller is not the owner'
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_payment_r.logs[0], 'NewPaymentAmountResolve', {
+				_paymentResolve: payment,
+			});
+
+			const tx_payment_o = await wrapper.setPaymentOdds(payment, {
+				from: owner,
+			});
+
+			await expect(wrapper.setPaymentOdds(first, { from: first })).to.be.revertedWith(
+				'Ownable: caller is not the owner'
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_payment_o.logs[0], 'NewPaymentAmountOdds', {
+				_paymentOdds: payment,
 			});
 
 			const tx_link = await wrapper.setLink(first, {

@@ -83,7 +83,7 @@
 		"GamesQueueImplementation": "0x339e4557cD9c6F7EA0536D80418E692B55B8A33D",
 		"TherundownConsumer": "0x2B91c14Ce9aa828eD124D12541452a017d8a2148",
 		"TherundownConsumerImplementation": "0xa975550C2064b0b2d7F5E5e0175E5E9dCdfA2Ae1",
-		"TherundownConsumerWrapper": "0x1687fDC8A409Be442e2dD3DE42b1fcC974Ac9eE8"
+		"TherundownConsumerWrapper": "0xe7f379DCaD66A5128f44a996D276Cf55E6D8F2c5"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -280,7 +280,7 @@
 		"GamesQueueImplementation": "0x17BC6D4aC6cA0D4D8aE22317d2ff0e2e72851A8a",
 		"TherundownConsumer": "0x594FD9E527418Bde7F265aE7D422607C64ad1A8a",
 		"TherundownConsumerImplementation": "0x1C0252A650cCF589fd441C1Ef6713E01F83b2d03",
-		"TherundownConsumerWrapper": "0x284f92e91EDDe521e6A20e476a8FBa79D059cC2f"
+		"TherundownConsumerWrapper": "0xE14E3427290571f9492fE2602cD0726d34b01D0c"
 	},
 	"localhost": {
 		"Airdrop": "",

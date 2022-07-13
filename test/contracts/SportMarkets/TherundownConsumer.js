@@ -628,7 +628,7 @@ contract('TheRundownConsumer', accounts => {
 			});
 
 			// resolve markets
-			const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
+			const tx_resolve = await TherundownConsumerDeployed.resolveAllMarketsForGames([gameid1]);
 
 			// check if event is emited
 			assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
@@ -686,7 +686,9 @@ contract('TheRundownConsumer', accounts => {
 			});
 
 			// create markets
-			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+			const tx_create = await TherundownConsumerDeployed.createAllMarketsForGames([
+				gameFootballid1,
+			]);
 
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
 

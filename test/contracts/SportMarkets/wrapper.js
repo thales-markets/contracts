@@ -195,6 +195,20 @@ contract('TherundownConsumerWrapper', accounts => {
 					}
 				)
 			).to.be.revertedWith('Market is not supported');
+
+			await expect(
+				wrapper.requestGamesResolveWithFilters(
+					toBytes32('RSX'),
+					'create',
+					5,
+					1655215501,
+					emptyArray,
+					emptyArray,
+					{
+						from: second,
+					}
+				)
+			).to.be.revertedWith('SportId is not supported');
 		});
 	});
 });

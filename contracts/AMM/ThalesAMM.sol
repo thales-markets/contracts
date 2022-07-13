@@ -226,7 +226,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @param market a Positional Market known to Market Manager
     /// @param position UP or DOWN
     /// @return the base price (odds) of a given side of the market
-    function price(address market, Position position) public view returns (uint price) {
+    function price(address market, Position position) public view returns (uint priceToReturn) {
         if (isMarketInAMMTrading(market)) {
             // add price calculation
             IPositionalMarket marketContract = IPositionalMarket(market);
@@ -239,10 +239,15 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             (bytes32 key, uint strikePrice, ) = marketContract.getOracleDetails();
 
             if (position == Position.Up) {
-                price = calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
+                priceToReturn = calculateOdds(
+                    oraclePrice,
+                    strikePrice,
+                    timeLeftToMaturityInDays,
+                    impliedVolatilityPerAsset[key]
+                )
                     .div(1e2);
             } else {
-                price = ONE.sub(
+                priceToReturn = ONE.sub(
                     calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
                         1e2
                     )

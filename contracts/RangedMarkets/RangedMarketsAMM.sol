@@ -477,7 +477,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (position == RangedMarket.Position.Out) {
             quoteWithFees = (summedQuotes * (ONE - rangedAmmFee)) / ONE;
         } else {
-            uint summedQuotes = leftQuote + rightQuote;
             if (amount > leftQuote && amount > rightQuote && summedQuotes > ((amount - leftQuote) + (amount - rightQuote))) {
                 uint quoteWithoutFees = summedQuotes - ((amount - leftQuote) + (amount - rightQuote));
                 quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
@@ -498,9 +497,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         (uint pricePaid, uint leftQuote, uint rightQuote) = sellToAmmQuoteDetailed(rangedMarket, position, amount);
         require(pricePaid > 0 && (expectedPayout * ONE) / pricePaid <= (ONE + additionalSlippage), "Slippage too high");
 
-        (RangedPosition inp, RangedPosition outp) = rangedMarket.positions();
-        address target = position == RangedMarket.Position.Out ? address(outp) : address(inp);
-
         _handleApprovals(rangedMarket);
 
         if (position == RangedMarket.Position.Out) {
@@ -510,7 +506,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _updateSpentOnMarketAndSafeBoxOnSell(amount, rangedMarket, pricePaid);
         }
 
-        amount = position == RangedMarket.Position.Out ? amount : amount / 2;
         _handleSellToAmm(rangedMarket, position, amount, additionalSlippage, leftQuote, rightQuote);
 
         sUSD.safeTransfer(msg.sender, pricePaid);
@@ -521,6 +516,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             stakingThales.updateVolume(msg.sender, pricePaid);
         }
 
+        (RangedPosition inp, RangedPosition outp) = rangedMarket.positions();
+        address target = position == RangedMarket.Position.Out ? address(outp) : address(inp);
         emit SoldToAMM(msg.sender, address(rangedMarket), position, amount, pricePaid, address(sUSD), target);
     }
 
@@ -532,10 +529,11 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint leftQuote,
         uint rightQuote
     ) internal {
+        uint baseAMMAmount = position == RangedMarket.Position.Out ? amount : amount / 2;
         thalesAmm.sellToAMM(
             address(rangedMarket.leftMarket()),
             position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up,
-            amount,
+            baseAMMAmount,
             leftQuote,
             additionalSlippage
         );
@@ -543,7 +541,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         thalesAmm.sellToAMM(
             address(rangedMarket.rightMarket()),
             position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
-            amount,
+            baseAMMAmount,
             rightQuote,
             additionalSlippage
         );

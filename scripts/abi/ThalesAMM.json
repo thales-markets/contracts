@@ -1120,7 +1120,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "price",
+        "name": "priceToReturn",
         "type": "uint256"
       }
     ],

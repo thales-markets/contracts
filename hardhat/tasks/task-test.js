@@ -7,9 +7,9 @@ task('test')
 	.addFlag('gas', 'Compile gas usage')
 	.addFlag('native', 'Compile with the native solc compiler')
 	.addOptionalParam('gasOutputFile', 'Gas reporter output file')
-	.addOptionalParam('grep', 'Filter tests to only those with given logic')
+	// .addOptionalParam('grep', 'Filter tests to only those with given logic')
 	.setAction(async (taskArguments, hre, runSuper) => {
-		const { gas, grep, native, gasOutputFile } = taskArguments;
+		const { gas, native, gasOutputFile } = taskArguments;
 
 		if (native) {
 			hre.config.solc.native = true;
@@ -17,10 +17,10 @@ task('test')
 
 		optimizeIfRequired({ hre, taskArguments });
 
-		if (grep) {
-			console.log(gray('Filtering tests to those containing'), yellow(grep));
-			hre.config.mocha.grep = grep;
-		}
+		// if (grep) {
+		// 	console.log(gray('Filtering tests to those containing'), yellow(grep));
+		// 	hre.config.mocha.grep = grep;
+		// }
 
 		if (gas) {
 			console.log(gray(`Enabling ${yellow('gas')} reports, tests will run slower`));

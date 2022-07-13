@@ -14,6 +14,9 @@ require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 require('hardhat-contract-sizer');
 
+//ZK sync
+require('@matterlabs/hardhat-zksync-deploy');
+require('@matterlabs/hardhat-zksync-solc');
 
 const {
 	constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },
@@ -47,8 +50,24 @@ module.exports = {
 			// polygon
 			polygon: POLYGONSCAN_API_KEY,
 			polygonMumbai: POLYGONSCAN_API_KEY,
-	  },
+		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
+	},
+	zksolc: {
+		version: '0.1.0',
+		compilerSource: 'docker',
+		settings: {
+			optimizer: {
+				enabled: true,
+			},
+			experimental: {
+				dockerImage: 'matterlabs/zksolc',
+			},
+		},
+	},
+	zkSyncDeploy: {
+		zkSyncNetwork: 'https://zksync2-testnet.zksync.dev',
+		ethNetwork: 'goerli', // Can also be the RPC URL of the network (e.g. `https://goerli.infura.io/v3/<API_KEY>`)
 	},
 	GAS_PRICE,
 	// ovm: {
@@ -126,6 +145,7 @@ module.exports = {
 	defaultNetwork: 'hardhat',
 	networks: {
 		hardhat: {
+			zksync: true,
 			gas: 30e6,
 			blockGasLimit: 30e6,
 			allowUnlimitedContractSize: true,
@@ -176,14 +196,14 @@ module.exports = {
 			accounts: [PRIVATE_KEY],
 		},
 		polygonMumbai: {
-			url: "https://polygon-mumbai.infura.io/v3/" + INFURA,
+			url: 'https://polygon-mumbai.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
-			gasPrice: 80000000000
+			gasPrice: 80000000000,
 		},
 		polygon: {
-			url: "https://polygon-mainnet.infura.io/v3/" + INFURA,
+			url: 'https://polygon-mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
-		}, 
+		},
 	},
 	gasReporter: {
 		enabled: process.env.REPORT_GAS ? true : false,

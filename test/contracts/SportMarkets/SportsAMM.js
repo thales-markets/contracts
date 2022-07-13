@@ -131,6 +131,10 @@ contract('SportsAMM', accounts => {
 		SNXRewards,
 		AddressResolver,
 		TestOdds,
+		curveSUSD,
+		testUSDC,
+		testUSDT,
+		testDAI,
 		SportsAMM;
 
 	const game1NBATime = 1646958600;
@@ -140,6 +144,8 @@ contract('SportsAMM', accounts => {
 	const sportId_16 = 16; // CHL
 
 	let gameMarket;
+
+	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
@@ -312,6 +318,34 @@ contract('SportsAMM', accounts => {
 			{ from: owner }
 		);
 		await SportPositionalMarketData.setSportsAMM(SportsAMM.address, { from: owner });
+
+		let TestUSDC = artifacts.require('TestUSDC');
+		testUSDC = await TestUSDC.new();
+		testUSDT = await TestUSDC.new();
+
+		let ERC20token = artifacts.require('Thales');
+		testDAI = await ERC20token.new();
+
+		let CurveSUSD = artifacts.require('MockCurveSUSD');
+		curveSUSD = await CurveSUSD.new(
+			Thales.address,
+			testUSDC.address,
+			testUSDT.address,
+			testDAI.address
+		);
+
+		await SportsAMM.setCurveSUSD(
+			curveSUSD.address,
+			testDAI.address,
+			testUSDC.address,
+			testUSDT.address,
+			true,
+			{ from: owner }
+		);
+
+		await testUSDC.mint(first, toUnit(1000));
+		await testUSDC.mint(curveSUSD.address, toUnit(1000));
+		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
 	});
 
 	describe('Init', () => {
@@ -827,6 +861,92 @@ contract('SportsAMM', accounts => {
 			answer = await Thales.balanceOf(first);
 			console.log('acc sUSD balance after sell : ', fromUnit(answer));
 			console.log('cost buy then sell: ', fromUnit(initial_balance.sub(answer)));
+		});
+
+		it('Multi-collateral buy from amm', async () => {
+			position = 1;
+			value = 100;
+			let odds = [];
+			odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
+			odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
+			odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
+			console.log('Game odds: 0=', fromUnit(odds[0]), ', 1=', fromUnit(odds[1]));
+			let optionsCount = await deployedMarket.optionsCount();
+			console.log('Positions count: ', optionsCount.toString());
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
+			let additionalSlippage = toUnit(0.5);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				position,
+				toUnit(value)
+			);
+			await Thales.approve(SportsAMM.address, toUnit(100000), { from: first });
+			console.log('buyFromAmmQuote decimal is: ', fromUnit(buyFromAmmQuote));
+
+			let buyFromAmmQuoteUSDCCollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				testUSDC.address
+			);
+			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
+			console.log(
+				'buyFromAmmQuoteWithDifferentCollateral USDC: ',
+				buyFromAmmQuoteUSDCCollateral / 1e6
+			);
+
+			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > fromUnit(buyFromAmmQuote), true);
+
+			let buyFromAmmQuoteDAICollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				testDAI.address
+			);
+			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
+			console.log(
+				'buyFromAmmQuoteWithDifferentCollateral DAI: ',
+				buyFromAmmQuoteDAICollateral / 1e18
+			);
+
+			assert.equal(fromUnit(buyFromAmmQuoteDAICollateral) > fromUnit(buyFromAmmQuote), true);
+
+			answer = await Thales.balanceOf(first);
+			let initial_balance = answer;
+			console.log('acc sUSD balance before buy: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			let userBalance = await testUSDC.balanceOf(first);
+			let sportsAMMBalanceUSDC = await testUSDC.balanceOf(SportsAMM.address);
+			let sportsAMMBalance = await Thales.balanceOf(SportsAMM.address);
+			console.log('Balance of USDC for user: ', fromUnit(userBalance));
+			console.log('Balance of USDC for sportsAMM: ', fromUnit(sportsAMMBalanceUSDC));
+			console.log('Balance of sUSD for sportsAMM: ', fromUnit(sportsAMMBalance));
+
+			await SportsAMM.buyFromAMMWithDifferentCollateral(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				buyFromAmmQuoteUSDCCollateral,
+				additionalSlippage,
+				testUSDC.address,
+				{ from: first }
+			);
+
+			userBalance = await testUSDC.balanceOf(first);
+			sportsAMMBalanceUSDC = await testUSDC.balanceOf(SportsAMM.address);
+			sportsAMMBalance = await Thales.balanceOf(SportsAMM.address);
+			console.log('after buy user balance: ', fromUnit(userBalance));
+			console.log('after buy sportsAMM USDC balance: ', fromUnit(sportsAMMBalanceUSDC));
+			console.log('after buy sportsAMM sUSD balance: ', fromUnit(sportsAMMBalance));
 		});
 
 		it('Continous buy position 0, amount: ' + value + ' positions', async () => {
@@ -1891,153 +2011,5 @@ contract('SportsAMM', accounts => {
 			answer = await Thales.balanceOf(SportsAMM.address);
 			console.log('Balance after exercise of SportsAMM: ', fromUnit(answer));
 		});
-
-		// it('Continous buy position 0, amount: ' + value + ' positions', async () => {
-		// 	position = 0;
-		// 	value = 100;
-		// 	let odds = [];
-		// 	odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
-		// 	odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
-		// 	odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
-		// 	console.log(
-		// 		'Game odds: 0=',
-		// 		fromUnit(odds[0]),
-		// 		', 1=',
-		// 		fromUnit(odds[1]),
-		// 		', 2=',
-		// 		fromUnit(odds[2])
-		// 	);
-		// 	let optionsCount = await deployedMarket.optionsCount();
-		// 	console.log('Positions count: ', optionsCount.toString());
-		// 	let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
-		// 	let additionalSlippage = toUnit(0.01);
-		// 	let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
-		// 		deployedMarket.address,
-		// 		position,
-		// 		toUnit(value)
-		// 	);
-		// 	answer = await Thales.balanceOf(first);
-		// 	let initial_balance = answer;
-		// 	console.log('acc sUSD balance before buy: ', fromUnit(answer));
-		// 	console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-		// 	answer = await SportsAMM.buyFromAMM(
-		// 		deployedMarket.address,
-		// 		position,
-		// 		toUnit(value),
-		// 		buyFromAmmQuote,
-		// 		additionalSlippage,
-		// 		{ from: first }
-		// 	);
-		// 	let cost;
-		// 	for (let i = 2; i < 5; i++) {
-		// 		answer = await Thales.balanceOf(first);
-		// 		console.log(i.toString(), 'acc sUSD balance after buy: ', fromUnit(answer));
-		// 		cost = initial_balance.sub(answer);
-		// 		console.log(i.toString(), 'cost in sUSD: ', fromUnit(cost));
-		// 		initial_balance = answer;
-		// 		answer = await SportsAMM.buyFromAMM(
-		// 			deployedMarket.address,
-		// 			position,
-		// 			toUnit(value),
-		// 			buyFromAmmQuote,
-		// 			additionalSlippage,
-		// 			{ from: first }
-		// 		);
-		// 	}
-		// });
-
-		// it(
-		// 	'Continous buy (x12) position ' + position + ', amount: ' + value + ' positions, then continous sell (x12)',
-		// 	async () => {
-		// 		position = 0;
-		// 		value = 100;
-		// 		let odds = [];
-		// 		odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
-		// 		odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
-		// 		odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
-		// 		console.log(
-		// 			'Game odds: 0=',
-		// 			fromUnit(odds[0]),
-		// 			', 1=',
-		// 			fromUnit(odds[1]),
-		// 			', 2=',
-		// 			fromUnit(odds[2])
-		// 		);
-		// 		let optionsCount = await deployedMarket.optionsCount();
-		// 		console.log('Positions count: ', optionsCount.toString());
-		// 		let availableToBuy = await SportsAMM.availableToBuyFromAMM(
-		// 			deployedMarket.address,
-		// 			position
-		// 		);
-		// 		let additionalSlippage = toUnit(0.01);
-		// 		let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
-		// 			deployedMarket.address,
-		// 			position,
-		// 			toUnit(value)
-		// 		);
-		// 		answer = await Thales.balanceOf(first);
-		// 		let startBalance = answer;
-		// 		let initial_balance = answer;
-		// 		console.log('acc sUSD balance before buy: ', fromUnit(answer));
-		// 		console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-		// 		answer = await SportsAMM.buyFromAMM(
-		// 			deployedMarket.address,
-		// 			position,
-		// 			toUnit(value),
-		// 			buyFromAmmQuote,
-		// 			additionalSlippage,
-		// 			{ from: first }
-		// 		);
-		// 		// let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
-		// 		let cost;
-		// 		for (let i = 1; i < 4; i++) {
-		// 			answer = await Thales.balanceOf(first);
-		// 			console.log(i.toString(), 'acc sUSD balance after buy: ', fromUnit(answer));
-		// 			cost = initial_balance.sub(answer);
-		// 			console.log(i.toString(), 'cost in sUSD: ', fromUnit(cost));
-		// 			initial_balance = answer;
-		// 			answer = await SportsAMM.buyFromAMM(
-		// 				deployedMarket.address,
-		// 				position,
-		// 				toUnit(value),
-		// 				buyFromAmmQuote,
-		// 				additionalSlippage,
-		// 				{ from: first }
-		// 			);
-		// 		}
-		// 		let sellToAmmQuote;
-		// 		let options;
-		// 		for (let i = 0; i < 4; i++) {
-		// 			answer = await Thales.balanceOf(first);
-		// 			console.log(i.toString(), 'acc sUSD balance before sell: ', fromUnit(answer));
-		// 			initial_balance = answer;
-		// 			options = await deployedMarket.balancesOf(first);
-		// 			console.log(i.toString(), 'options balance before sell: ', fromUnit(options[position]));
-		// 			sellToAmmQuote = await SportsAMM.sellToAmmQuote(
-		// 				deployedMarket.address,
-		// 				position,
-		// 				toUnit(value)
-		// 			);
-
-		// 			console.log(i.toString(), 'sellQuote in sUSD: ', fromUnit(sellToAmmQuote));
-		// 			answer = await SportsAMM.sellToAMM(
-		// 				deployedMarket.address,
-		// 				position,
-		// 				toUnit(value),
-		// 				sellToAmmQuote,
-		// 				additionalSlippage,
-		// 				{ from: first }
-		// 			);
-		// 			options = await deployedMarket.balancesOf(first);
-		// 			console.log(i.toString(), 'options balance after sell: ', fromUnit(options[position]));
-		// 			answer = await Thales.balanceOf(first);
-		// 			cost = answer.sub(initial_balance);
-		// 			console.log(i.toString(), 'acc sUSD balance after sell: ', fromUnit(answer));
-		// 			console.log(i.toString(), 'cost in sUSD: ', fromUnit(cost));
-		// 		}
-		// 		let balanceDifference = startBalance.sub(answer);
-		// 		console.log('Balance difference in sUSD: ', fromUnit(balanceDifference));
-		// 	}
-		// );
 	});
 });

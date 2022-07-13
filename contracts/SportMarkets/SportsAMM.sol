@@ -395,7 +395,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address collateral
     ) public nonReentrant whenNotPaused {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
+        require(curveIndex > 0 && curveOnrampEnabled, "Unsupported collateral");
 
         (uint collateralQuote, uint susdQuote) =
             buyFromAmmQuoteWithDifferentCollateral(market, position, amount, collateral);
@@ -406,7 +406,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
         curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, susdQuote);
 
-        _buyFromAMM(market, position, amount, susdQuote, additionalSlippage);
+        _buyFromAMM(market, position, amount, susdQuote, additionalSlippage, false, susdQuote);
     }
 
     /// @notice Buy amount of position for market/game from AMM using sUSD
@@ -422,7 +422,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint expectedPayout,
         uint additionalSlippage
     ) public nonReentrant whenNotPaused {
-        _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage);
+        _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
     }
 
     function _buyFromAMM(
@@ -430,19 +430,22 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         Position position,
         uint amount,
         uint expectedPayout,
-        uint additionalSlippage
+        uint additionalSlippage,
+        bool sendSUSD,
+        uint sUSDPaid
     ) internal {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
         require(ISportPositionalMarket(market).optionsCount() > uint(position), "Invalid position");
         uint availableToBuyFromAMMatm = availableToBuyFromAMM(market, position);
         require(amount > ZERO_POINT_ONE && amount <= availableToBuyFromAMMatm, "Not enough liquidity or zero amount.");
 
-        uint sUSDPaid = buyFromAmmQuote(market, position, amount);
-        require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
-        require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
-        require(sUSDPaid.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high");
-
-        sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
+        if (sendSUSD) {
+            sUSDPaid = buyFromAmmQuote(market, position, amount);
+            require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
+            require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
+            require(sUSDPaid.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high");
+            sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
+        }
 
         uint toMint = _getMintableAmount(market, position, amount);
         if (toMint > 0) {

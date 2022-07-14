@@ -343,7 +343,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             if (
                 (home.getBalanceOf(address(this)) > 0) ||
                 (away.getBalanceOf(address(this)) > 0) ||
-                (draw.getBalanceOf(address(this)) > 0)
+                (ISportPositionalMarket(market).optionsCount() > 2 && draw.getBalanceOf(address(this)) > 0)
             ) {
                 return true;
             }

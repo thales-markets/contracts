@@ -759,9 +759,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         _lastStakingPeriod[destAccount] = periodsOfStaking;
         lastAMMUpdatePeriod[destAccount] = periodsOfStaking;
 
+        uint stakerAMMVolumeIndex;
+        uint stakerAMMVolumePeriod;
         for (uint i = 1; i <= AMM_EXTRA_REWARD_PERIODS; i++) {
-            uint stakerAMMVolumeIndex = periodsOfStaking.add(i).mod(AMM_EXTRA_REWARD_PERIODS);
-            uint stakerAMMVolumePeriod = periodsOfStaking.sub(AMM_EXTRA_REWARD_PERIODS.sub(i));
+            stakerAMMVolumeIndex = periodsOfStaking.add(i).mod(AMM_EXTRA_REWARD_PERIODS);
+            stakerAMMVolumePeriod = periodsOfStaking.sub(AMM_EXTRA_REWARD_PERIODS.sub(i));
 
             if (stakerAMMVolumePeriod != stakerAMMVolume[destAccount][stakerAMMVolumeIndex].period) {
                 stakerAMMVolume[destAccount][stakerAMMVolumeIndex].amount = 0;

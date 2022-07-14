@@ -557,5 +557,23 @@ contract('PositionalMarketManager', accounts => {
 			let receipt = await tx.wait();
 			assert.equal(receipt.events.length, 10);
 		});
+
+		it('Enable whitelisted addresses feature', async () => {
+			const now = await currentTime();
+			await manager.connect(creator).enableWhitelistedAddresses();
+
+			await assert.revert(
+				manager
+					.connect(dummySigner)
+					.createMarket(sAUDKey, toUnit(1).toString(), now + 100, toUnit(5).toString()),
+				'Only whitelisted addresses can create markets'
+			);
+		});
+
+		it('Price feed can be set', async () => {
+			await manager.connect(creator).setPriceFeed(priceFeed.address);
+
+			assert.equal(await manager.priceFeed(), priceFeed.address);
+		});
 	});
 });

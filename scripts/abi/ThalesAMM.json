@@ -422,7 +422,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_available",
         "type": "uint256"
       }
     ],
@@ -573,7 +573,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_quote",
         "type": "uint256"
       }
     ],
@@ -1327,7 +1327,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "_available",
+        "name": "_quote",
         "type": "uint256"
       }
     ],

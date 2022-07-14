@@ -257,12 +257,7 @@
       },
       {
         "internalType": "address",
-        "name": "_limitOrderProvider",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_thalesAMM",
+        "name": "_sportsAMM",
         "type": "address"
       }
     ],
@@ -279,19 +274,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "limitOrderProvider",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -343,12 +325,12 @@
   },
   {
     "inputs": [],
-    "name": "symbol",
+    "name": "sportsAMM",
     "outputs": [
       {
-        "internalType": "string",
+        "internalType": "address",
         "name": "",
-        "type": "string"
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -356,12 +338,12 @@
   },
   {
     "inputs": [],
-    "name": "thalesAMM",
+    "name": "symbol",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "string",
         "name": "",
-        "type": "address"
+        "type": "string"
       }
     ],
     "stateMutability": "view",

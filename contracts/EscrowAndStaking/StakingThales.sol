@@ -159,7 +159,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @notice Get the rewards available for the claim for the account
     /// @param account to get the rewards available for the claim for
     /// @return the rewards available for the claim for the account
-    function getRewardsAvailable(address account) public view returns (uint) {
+    function getRewardsAvailable(address account) external view returns (uint) {
         return _calculateAvailableRewardsToClaim(account);
     }
 
@@ -212,10 +212,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         durationPeriod = _durationPeriod;
         unstakeDurationPeriod = _unstakeDurationPeriod;
 
-        emit ClaimEnabled(_claimEnabled);
-        emit DistributeFeesEnabled(_distributeFeesEnabled);
-        emit DurationPeriodChanged(_durationPeriod);
-        emit UnstakeDurationPeriodChanged(_unstakeDurationPeriod);
+        emit StakingParametersChanged(_claimEnabled, _distributeFeesEnabled, durationPeriod, _unstakeDurationPeriod);
     }
 
     /// @notice Set staking rewards parameters
@@ -246,14 +243,16 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         SNXVolumeRewardsMultiplier = _SNXVolumeRewardsMultiplier;
         AMMVolumeRewardsMultiplier = _AMMVolumeRewardsMultiplier;
 
-        emit FixedPeriodRewardChanged(_fixedReward);
-        emit PeriodExtraRewardChanged(_extraReward);
-        emit ExtraRewardsChanged(_extraRewardsActive);
-        emit MaxSNXRewardsPercentageChanged(_maxSNXRewardsPercentage);
-        emit MaxAMMVolumeRewardsPercentageChanged(_maxAMMVolumeRewardsPercentage);
-        emit AMMVolumeRewardsMultiplierChanged(_AMMVolumeRewardsMultiplier);
-        emit MaxThalesRoyaleRewardsPercentageChanged(_maxThalesRoyaleRewardsPercentage);
-        emit SNXVolumeRewardsMultiplierChanged(_SNXVolumeRewardsMultiplier);
+        emit StakingRewardsParametersChanged(
+            _fixedReward,
+            _extraReward,
+            _extraRewardsActive,
+            _maxSNXRewardsPercentage,
+            _maxAMMVolumeRewardsPercentage,
+            _AMMVolumeRewardsMultiplier,
+            _maxThalesRoyaleRewardsPercentage,
+            _SNXVolumeRewardsMultiplier
+        );
     }
 
     /// @notice Set contract addresses
@@ -300,15 +299,17 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);
         addressResolver = IAddressResolver(_addressResolver);
 
-        emit SNXRewardsAddressChanged(_snxRewards);
-        emit ThalesRoyaleAddressChanged(_royale);
-        emit ThalesAMMAddressChanged(_thalesAMM);
-        emit ThalesRangedAMMAddressChanged(_thalesRangedAMM);
-        emit ExoticBondsAddressChanged(_exoticBonds);
-        emit ThalesSportsAMMAddressChanged(_sportsAMM);
-        emit PriceFeedAddressChanged(_priceFeed);
-        emit ThalesStakingRewardsPoolChanged(_thalesStakingRewardsPool);
-        emit AddressResolverChanged(_addressResolver);
+        emit AddressesChanged(
+            _snxRewards,
+            _royale,
+            _thalesAMM,
+            _thalesRangedAMM,
+            _exoticBonds,
+            _sportsAMM,
+            _priceFeed,
+            _thalesStakingRewardsPool,
+            _addressResolver
+        );
     }
 
     /// @notice Set address of Escrow Thales contract
@@ -738,7 +739,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function mergeAccount(address destAccount) external notPaused {
         require(destAccount != address(0) && destAccount != msg.sender, "Invalid address");
         require(
-            getRewardsAvailable(msg.sender) == 0 && getRewardsAvailable(destAccount) == 0,
+            _calculateAvailableRewardsToClaim(msg.sender) == 0 && _calculateAvailableRewardsToClaim(destAccount) == 0,
             "Cannot merge, claim rewards on both accounts before merging"
         );
         require(
@@ -923,29 +924,35 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event UnstakeCooldown(address account, uint cooldownTime, uint amount);
     event CancelUnstake(address account);
     event Unstaked(address account, uint unstakeAmount);
-    event ClaimEnabled(bool enabled);
-    event DistributeFeesEnabled(bool enabled);
-    event FixedPeriodRewardChanged(uint value);
-    event PeriodExtraRewardChanged(uint value);
-    event DurationPeriodChanged(uint value);
-    event UnstakeDurationPeriodChanged(uint value);
+    event StakingParametersChanged(
+        bool claimEnabled,
+        bool distributeFeesEnabled,
+        uint durationPeriod,
+        uint unstakeDurationPeriod
+    );
+    event StakingRewardsParametersChanged(
+        uint fixedPeriodReward,
+        uint periodExtraReward,
+        bool extraRewardsActive,
+        uint maxSNXRewardsPercentage,
+        uint maxAMMVolumeRewardsPercentage,
+        uint maxThalesRoyaleRewardsPercentage,
+        uint SNXVolumeRewardsMultiplier,
+        uint AMMVolumeRewardsMultiplier
+    );
+    event AddressesChanged(
+        address SNXRewards,
+        address thalesRoyale,
+        address thalesAMM,
+        address thalesRangedAMM,
+        address exoticBonds,
+        address sportsAMM,
+        address priceFeed,
+        address ThalesStakingRewardsPool,
+        address addressResolver
+    );
     event EscrowChanged(address newEscrow);
     event StakingPeriodStarted();
-    event SNXRewardsAddressChanged(address snxRewards);
-    event ThalesRoyaleAddressChanged(address royale);
-    event ThalesAMMAddressChanged(address amm);
-    event ThalesRangedAMMAddressChanged(address amm);
-    event ThalesSportsAMMAddressChanged(address amm);
     event AMMVolumeUpdated(address account, uint amount);
-    event ExtraRewardsChanged(bool extrarewardsactive);
-    event PriceFeedAddressChanged(address pricefeed);
-    event MaxSNXRewardsPercentageChanged(uint maxSnxRewardsPercentage);
-    event AMMVolumeRewardsMultiplierChanged(uint ammVolumeRewardsMultiplier);
-    event MaxAMMVolumeRewardsPercentageChanged(uint maxAmmVolumeRewardsPercentage);
-    event MaxThalesRoyaleRewardsPercentageChanged(uint maxThalesRewardsPercentage);
-    event ThalesStakingRewardsPoolChanged(address thalesStakingRewardsPool);
-    event SNXVolumeRewardsMultiplierChanged(uint ammVolumeRewardsMultiplier);
-    event AddressResolverChanged(address addressResolver);
-    event ExoticBondsAddressChanged(address exoticBonds);
     event AccountMerged(address srcAccount, address destAccount);
 }

@@ -4,19 +4,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "ammVolumeRewardsMultiplier",
-        "type": "uint256"
-      }
-    ],
-    "name": "AMMVolumeRewardsMultiplierChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "account",
         "type": "address"
@@ -56,11 +43,59 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "SNXRewards",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "thalesRoyale",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "thalesAMM",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "thalesRangedAMM",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "exoticBonds",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sportsAMM",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "priceFeed",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "ThalesStakingRewardsPool",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "addressResolver",
         "type": "address"
       }
     ],
-    "name": "AddressResolverChanged",
+    "name": "AddressesChanged",
     "type": "event"
   },
   {
@@ -74,19 +109,6 @@
       }
     ],
     "name": "CancelUnstake",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "ClaimEnabled",
     "type": "event"
   },
   {
@@ -113,64 +135,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "DistributeFeesEnabled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      }
-    ],
-    "name": "DurationPeriodChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "newEscrow",
         "type": "address"
       }
     ],
     "name": "EscrowChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "exoticBonds",
-        "type": "address"
-      }
-    ],
-    "name": "ExoticBondsAddressChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "extrarewardsactive",
-        "type": "bool"
-      }
-    ],
-    "name": "ExtraRewardsChanged",
     "type": "event"
   },
   {
@@ -190,58 +160,6 @@
       }
     ],
     "name": "FeeRewardsClaimed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      }
-    ],
-    "name": "FixedPeriodRewardChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "maxAmmVolumeRewardsPercentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "MaxAMMVolumeRewardsPercentageChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "maxSnxRewardsPercentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "MaxSNXRewardsPercentageChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "maxThalesRewardsPercentage",
-        "type": "uint256"
-      }
-    ],
-    "name": "MaxThalesRoyaleRewardsPercentageChanged",
     "type": "event"
   },
   {
@@ -287,32 +205,6 @@
       }
     ],
     "name": "PauseChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      }
-    ],
-    "name": "PeriodExtraRewardChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "pricefeed",
-        "type": "address"
-      }
-    ],
-    "name": "PriceFeedAddressChanged",
     "type": "event"
   },
   {
@@ -371,32 +263,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "snxRewards",
-        "type": "address"
-      }
-    ],
-    "name": "SNXRewardsAddressChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "ammVolumeRewardsMultiplier",
-        "type": "uint256"
-      }
-    ],
-    "name": "SNXVolumeRewardsMultiplierChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "user",
         "type": "address"
       },
@@ -437,6 +303,37 @@
   },
   {
     "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "claimEnabled",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "distributeFeesEnabled",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "durationPeriod",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "unstakeDurationPeriod",
+        "type": "uint256"
+      }
+    ],
+    "name": "StakingParametersChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
     "inputs": [],
     "name": "StakingPeriodStarted",
     "type": "event"
@@ -446,64 +343,54 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "amm",
-        "type": "address"
-      }
-    ],
-    "name": "ThalesAMMAddressChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+        "internalType": "uint256",
+        "name": "fixedPeriodReward",
+        "type": "uint256"
+      },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "amm",
-        "type": "address"
-      }
-    ],
-    "name": "ThalesRangedAMMAddressChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+        "internalType": "uint256",
+        "name": "periodExtraReward",
+        "type": "uint256"
+      },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "royale",
-        "type": "address"
-      }
-    ],
-    "name": "ThalesRoyaleAddressChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+        "internalType": "bool",
+        "name": "extraRewardsActive",
+        "type": "bool"
+      },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "amm",
-        "type": "address"
-      }
-    ],
-    "name": "ThalesSportsAMMAddressChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+        "internalType": "uint256",
+        "name": "maxSNXRewardsPercentage",
+        "type": "uint256"
+      },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "thalesStakingRewardsPool",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "maxAMMVolumeRewardsPercentage",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxThalesRoyaleRewardsPercentage",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "SNXVolumeRewardsMultiplier",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "AMMVolumeRewardsMultiplier",
+        "type": "uint256"
       }
     ],
-    "name": "ThalesStakingRewardsPoolChanged",
+    "name": "StakingRewardsParametersChanged",
     "type": "event"
   },
   {
@@ -529,19 +416,6 @@
       }
     ],
     "name": "UnstakeCooldown",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      }
-    ],
-    "name": "UnstakeDurationPeriodChanged",
     "type": "event"
   },
   {

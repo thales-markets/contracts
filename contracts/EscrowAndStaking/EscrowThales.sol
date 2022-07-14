@@ -245,9 +245,11 @@ contract EscrowThales is IEscrowThales, Initializable, ProxyOwned, ProxyReentran
         );
         lastPeriodAddedReward[destAccount] = currentVestingPeriod;
 
+        uint vestingEntriesIndex;
+        uint vestingEntriesPeriod;
         for (uint i = 1; i <= NUM_PERIODS; i++) {
-            uint vestingEntriesIndex = currentVestingPeriod.add(i).mod(NUM_PERIODS);
-            uint vestingEntriesPeriod = currentVestingPeriod.add(i);
+            vestingEntriesIndex = currentVestingPeriod.add(i).mod(NUM_PERIODS);
+            vestingEntriesPeriod = currentVestingPeriod.add(i);
 
             if (vestingEntriesPeriod != vestingEntries[destAccount][vestingEntriesIndex].vesting_period) {
                 vestingEntries[destAccount][vestingEntriesIndex].amount = 0;

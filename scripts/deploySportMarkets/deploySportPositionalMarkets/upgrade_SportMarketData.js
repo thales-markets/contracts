@@ -2,7 +2,6 @@ const path = require('path');
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
-
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 async function main() {
@@ -14,70 +13,65 @@ async function main() {
 	let PaymentToken;
 
 	if (network == 'homestead') {
-		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
+		console.log(
+			"Error L1 network used! Deploy only on L2 Optimism. \nTry using '--network optimistic'"
+		);
 		return 0;
 	}
 	if (networkObj.chainId == 42) {
 		networkObj.name = 'kovan';
 		network = 'kovan';
-		PaymentToken = getTargetAddress("ExoticUSD", network);;
+		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 	if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		network = 'optimisticKovan';
 		mainnetNetwork = 'kovan';
-		PaymentToken = getTargetAddress("ExoticUSD", network);;
+		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
-		PaymentToken = getTargetAddress("ProxysUSD", network);;
+		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
-	
-    const SportMarketData = await ethers.getContractFactory('SportPositionalMarketData');
-    const SportMarketDataAddress = getTargetAddress("SportPositionalMarketData", network);
+
+	const SportMarketData = await ethers.getContractFactory('SportPositionalMarketData');
+	const SportMarketDataAddress = getTargetAddress('SportPositionalMarketData', network);
 
 	let implementation;
-	if(networkObj.chainId == 10) {
+	if (networkObj.chainId == 10) {
 		implementation = await upgrades.prepareUpgrade(SportMarketDataAddress, SportMarketData);
 	}
 
 	// upgrade if test networks
-	if(networkObj.chainId == 69 || networkObj.chainId == 42) {
-		await upgrades.upgradeProxy(SportMarketFactoryAddress, SportMarketFactory);
+	if (networkObj.chainId == 69 || networkObj.chainId == 42) {
+		await upgrades.upgradeProxy(SportMarketDataAddress, SportMarketData);
 
-		implementation = await getImplementationAddress(
-			ethers.provider,
-			SportMarketFactoryAddress
-		);
-        
+		implementation = await getImplementationAddress(ethers.provider, SportMarketDataAddress);
 	}
-    
-    console.log('SportPositionalMarketData upgraded');
+
+	console.log('SportPositionalMarketData upgraded');
 
 	console.log('SportPositionalMarketDataImplementation: ', implementation);
-    setTargetAddress('SportPositionalMarketDataImplementation', network, implementation);
+	setTargetAddress('SportPositionalMarketDataImplementation', network, implementation);
 
-    await delay(5000);
-    try {
+	await delay(5000);
+	try {
 		await hre.run('verify:verify', {
 			address: implementation,
 		});
 	} catch (e) {
 		console.log(e);
 	}
-
-
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch((error) => {
+	.catch(error => {
 		console.error(error);
 		process.exit(1);
 	});
 
-    
 function delay(time) {
 	return new Promise(function(resolve) {
 		setTimeout(resolve, time);

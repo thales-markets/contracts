@@ -15,6 +15,11 @@
         "internalType": "uint256",
         "name": "_sportsId",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_date",
+        "type": "uint256"
       }
     ],
     "name": "fulfillGamesCreated",
@@ -33,6 +38,11 @@
         "internalType": "bytes[]",
         "name": "_games",
         "type": "bytes[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_date",
+        "type": "uint256"
       }
     ],
     "name": "fulfillGamesOdds",

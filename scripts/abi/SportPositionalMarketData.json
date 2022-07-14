@@ -45,6 +45,32 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_sportsAMM",
+        "type": "address"
+      }
+    ],
+    "name": "SetSportsAMM",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "SportPositionalMarketManagerChanged",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -52,190 +78,25 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "contract SportPositionalMarket",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "getAccountMarketData",
+    "inputs": [],
+    "name": "getOddsForAllActiveMarkets",
     "outputs": [
       {
         "components": [
           {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "home",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "away",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "draw",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct SportPositionalMarketData.OptionValues",
-            "name": "balances",
-            "type": "tuple"
+            "internalType": "bytes32",
+            "name": "market",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "odds",
+            "type": "uint256[]"
           }
         ],
-        "internalType": "struct SportPositionalMarketData.AccountData",
+        "internalType": "struct SportPositionalMarketData.ActiveMarketsOdds[]",
         "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract SportPositionalMarket",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "getMarketData",
-    "outputs": [
-      {
-        "components": [
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "deposited",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct SportPositionalMarketData.Deposits",
-            "name": "deposits",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "internalType": "bool",
-                "name": "resolved",
-                "type": "bool"
-              },
-              {
-                "internalType": "bool",
-                "name": "canResolve",
-                "type": "bool"
-              }
-            ],
-            "internalType": "struct SportPositionalMarketData.Resolution",
-            "name": "resolution",
-            "type": "tuple"
-          },
-          {
-            "internalType": "enum ISportPositionalMarket.Phase",
-            "name": "phase",
-            "type": "uint8"
-          },
-          {
-            "internalType": "enum ISportPositionalMarket.Side",
-            "name": "result",
-            "type": "uint8"
-          },
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "home",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "away",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "draw",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct SportPositionalMarketData.OptionValues",
-            "name": "totalSupplies",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct SportPositionalMarketData.MarketData",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract SportPositionalMarket",
-        "name": "market",
-        "type": "address"
-      }
-    ],
-    "name": "getMarketParameters",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "creator",
-            "type": "address"
-          },
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "maturity",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "expiry",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct SportPositionalMarket.Times",
-            "name": "times",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "poolFee",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "creatorFee",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct SportPositionalMarketManager.Fees",
-            "name": "fees",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct SportPositionalMarketData.MarketParameters",
-        "name": "",
-        "type": "tuple"
+        "type": "tuple[]"
       }
     ],
     "stateMutability": "view",
@@ -262,6 +123,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "manager",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -343,6 +217,45 @@
     "name": "setPaused",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "setSportPositionalMarketManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportsAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setSportsAMM",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sportsAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

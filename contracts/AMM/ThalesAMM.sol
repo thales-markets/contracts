@@ -115,14 +115,14 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @param market a Positional Market known to Market Manager
     /// @param position UP or DOWN
     /// @param amount number of positions to buy with 18 decimals
-    /// @return a quote in sUSD on how much the trader would need to pay to buy the amount of UP or DOWN positions
+    /// @return _quote in sUSD on how much the trader would need to pay to buy the amount of UP or DOWN positions
     function buyFromAmmQuote(
         address market,
         Position position,
         uint amount
-    ) public view returns (uint) {
+    ) public view returns (uint _quote) {
         uint basePrice = price(market, position).add(min_spread);
-        return _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
+        _quote = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
     }
 
     /// @notice get a quote in the collateral of choice (USDC, USDT or DAI) on how much the trader would need to pay to buy the amount of UP or DOWN positions
@@ -168,7 +168,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @param market a Positional Market known to Market Manager
     /// @param position UP or DOWN
     /// @return _available how many positions of that type can be sold
-    function availableToSellToAMM(address market, Position position) public view returns (uint) {
+    function availableToSellToAMM(address market, Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint sell_max_price = _getSellMaxPrice(market, position);
             if (sell_max_price == 0) {
@@ -180,26 +180,26 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
                 ? down.getBalanceOf(address(this))
                 : up.getBalanceOf(address(this));
 
-            // can burn straight away balanceOfTheOtherSide
+            // any balanceOfTheOtherSide will be burned to get sUSD back (1 to 1) at the `willPay` cost
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
             if (_capOnMarket(market).add(balanceOfTheOtherSide) < spentOnMarket[market].add(willPay)) {
                 return 0;
             }
             uint usdAvailable = _capOnMarket(market).add(balanceOfTheOtherSide).sub(spentOnMarket[market]).sub(willPay);
-            return usdAvailable.div(sell_max_price).mul(ONE).add(balanceOfTheOtherSide);
-        } else return 0;
+            _available = usdAvailable.div(sell_max_price).mul(ONE).add(balanceOfTheOtherSide);
+        }
     }
 
     /// @notice get a quote in sUSD on how much the trader would receive as payment to sell the amount of UP or DOWN positions
     /// @param market a Positional Market known to Market Manager
     /// @param position UP or DOWN
     /// @param amount number of positions to buy with 18 decimals
-    /// @return a quote in sUSD on how much the trader would receive as payment to sell the amount of UP or DOWN positions
+    /// @return _quote in sUSD on how much the trader would receive as payment to sell the amount of UP or DOWN positions
     function sellToAmmQuote(
         address market,
         Position position,
         uint amount
-    ) public view returns (uint _available) {
+    ) public view returns (uint _quote) {
         if (!(amount > availableToSellToAMM(market, position))) {
             uint basePrice = price(market, position).sub(min_spread);
 
@@ -208,7 +208,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             );
 
             uint returnQuote = tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
-            _available = IPositionalMarketManager(manager).transformCollateral(returnQuote);
+            _quote = IPositionalMarketManager(manager).transformCollateral(returnQuote);
         }
     }
 
@@ -231,7 +231,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @param market a Positional Market known to Market Manager
     /// @param position UP or DOWN
     /// @return the base price (odds) of a given side of the market
-    function price(address market, Position position) public view returns (uint price) {
+    function price(address market, Position position) public view returns (uint priceToReturn) {
         if (isMarketInAMMTrading(market)) {
             // add price calculation
             IPositionalMarket marketContract = IPositionalMarket(market);
@@ -244,10 +244,15 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             (bytes32 key, uint strikePrice, ) = marketContract.getOracleDetails();
 
             if (position == Position.Up) {
-                price = calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
+                priceToReturn = calculateOdds(
+                    oraclePrice,
+                    strikePrice,
+                    timeLeftToMaturityInDays,
+                    impliedVolatilityPerAsset[key]
+                )
                     .div(1e2);
             } else {
-                price = ONE.sub(
+                priceToReturn = ONE.sub(
                     calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
                         1e2
                     )
@@ -664,7 +669,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         if (balancePosition > 0) {
             uint newPriceForMintedOnes = newImpact.div(2);
             uint tempMultiplier = amount.sub(balancePosition).mul(newPriceForMintedOnes);
-            return tempMultiplier.div(amount);
+            return tempMultiplier.mul(ONE).div(amount).div(ONE);
         } else {
             uint previousSkew = balanceOtherSide;
             uint previousImpact = max_spread.mul(previousSkew.mul(ONE).div(maxPossibleSkew)).div(ONE);

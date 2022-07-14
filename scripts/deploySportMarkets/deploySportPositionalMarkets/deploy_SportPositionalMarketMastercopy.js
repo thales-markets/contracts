@@ -56,7 +56,7 @@ async function main() {
 
 	if (networkObj.chainId == 69 || networkObj.chainId == 42) {
 		await delay(5000);
-		await SportMarketFactoryDeployed.setPositionalMarketMastercopy(
+		await SportMarketFactoryDeployed.setSportPositionalMarketMastercopy(
 			SportPositionalMarketDeployed.address,
 			{ from: owner.address }
 		);

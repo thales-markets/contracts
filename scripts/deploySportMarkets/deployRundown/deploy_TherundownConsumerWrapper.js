@@ -47,6 +47,10 @@ async function main() {
 		network = 'polygon';
 	}
 
+	const paymentCreate = w3utils.toWei('0.2');
+	const paymentResolve = w3utils.toWei('0.2');
+	const paymentOdds = w3utils.toWei('0.15');
+
 	const consumer = await ethers.getContractFactory('TherundownConsumer');
 	let consumerAddress = getTargetAddress('TherundownConsumer', network);
 
@@ -62,7 +66,10 @@ async function main() {
 	const TherundownConsumerWrapperDeployed = await TherundownConsumerWrapper.deploy(
 		chainlink['LINK'],
 		chainlink['ORACLE'],
-		consumerAddress
+		consumerAddress,
+		paymentCreate,
+		paymentResolve,
+		paymentOdds
 	);
 	await TherundownConsumerWrapperDeployed.deployed();
 
@@ -73,7 +80,14 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: TherundownConsumerWrapperDeployed.address,
-			constructorArguments: [chainlink['LINK'], chainlink['ORACLE'], consumerAddress],
+			constructorArguments: [
+				chainlink['LINK'],
+				chainlink['ORACLE'],
+				consumerAddress,
+				paymentCreate,
+				paymentResolve,
+				paymentOdds,
+			],
 		});
 	} catch (e) {
 		console.log(e);

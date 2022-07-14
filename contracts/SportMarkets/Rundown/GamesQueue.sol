@@ -9,9 +9,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
-/* 
-    Storage for games (created or resolved)
-*/
+/// @title Storage for games (created or resolved), calculation for order-making bot processing
+/// @author gruja
 contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     // create games queue
     mapping(uint => bytes32) public gamesCreateQueue;
@@ -19,7 +18,6 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     uint public firstCreated;
     uint public lastCreated;
     mapping(bytes32 => uint) public gameStartPerGameId;
-    mapping(bytes32 => uint) public sportPerGameId;
 
     // resolve games queue
     bytes32[] public unproccessedGames;
@@ -31,6 +29,8 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
 
     address public consumer;
 
+    /// @notice public initialize proxy method
+    /// @param _owner future owner of a contract
     function initialize(address _owner) public initializer {
         setOwner(_owner);
         firstCreated = 1;
@@ -39,6 +39,10 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         lastResolved = 0;
     }
 
+    /// @notice putting game in a crated queue and fill up unprocessed games array
+    /// @param data id of a game in byte32
+    /// @param startTime game start time
+    /// @param sportsId id of a sport (Example: NBA = 4 etc.)
     function enqueueGamesCreated(
         bytes32 data,
         uint startTime,
@@ -51,11 +55,12 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         unproccessedGames.push(data);
         unproccessedGamesIndex[data] = unproccessedGames.length - 1;
         gameStartPerGameId[data] = startTime;
-        sportPerGameId[data] = sportsId;
 
         emit EnqueueGamesCreated(data, sportsId, lastCreated);
     }
 
+    /// @notice removing first game in a queue from created queue
+    /// @return data returns id of a game which is removed
     function dequeueGamesCreated() public onlyConsumer returns (bytes32 data) {
         require(lastCreated >= firstCreated, "No more elements in a queue");
 
@@ -67,6 +72,8 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit DequeueGamesCreated(data, firstResolved - 1);
     }
 
+    /// @notice putting game in a resolved queue
+    /// @param data id of a game in byte32
     function enqueueGamesResolved(bytes32 data) public onlyConsumer {
         lastResolved += 1;
         gamesResolvedQueue[lastResolved] = data;
@@ -75,6 +82,8 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit EnqueueGamesResolved(data, lastCreated);
     }
 
+    /// @notice removing first game in a queue from resolved queue
+    /// @return data returns id of a game which is removed
     function dequeueGamesResolved() public onlyConsumer returns (bytes32 data) {
         require(lastResolved >= firstResolved, "No more elements in a queue");
 
@@ -86,6 +95,8 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit DequeueGamesResolved(data, firstResolved - 1);
     }
 
+    /// @notice removing game from array of unprocessed games
+    /// @param index index in array
     function removeItemUnproccessedGames(uint index) public onlyConsumer {
         require(index < unproccessedGames.length, "No such index in array");
 
@@ -98,10 +109,14 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit GameProcessed(dataProccessed, index);
     }
 
+    /// @notice public function which will return length of unprocessed array
+    /// @return index index in array
     function getLengthUnproccessedGames() public view returns (uint) {
         return unproccessedGames.length;
     }
 
+    /// @notice sets the consumer contract address, which only owner can execute
+    /// @param _consumer address of a consumer contract
     function setConsumerAddress(address _consumer) external onlyOwner {
         require(_consumer != address(0), "Invalid address");
         consumer = _consumer;

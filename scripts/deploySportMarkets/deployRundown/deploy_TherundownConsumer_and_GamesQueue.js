@@ -51,25 +51,27 @@ async function main() {
 
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
+	// if there is sport menager deployed:
+	/*
 	const sportsManager = await ethers.getContractFactory('SportPositionalMarketManager');
 	let sportsManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
 
 	console.log('SportPositionalMarketManager address: ', sportsManagerAddress);
+	*/
 
 	const chainlink = require(`./chainlink/${network}.json`);
 
 	console.log('LINK address:', chainlink['LINK']);
 	console.log('ORACLE address:', chainlink['ORACLE']);
 
-	// NBA: 4
-	// EPL: 11
-	// UEFA Champions League: 16
-	const allowedSports = [4, 11, 16];
+	// MLB: 3
+	// MLS: 10
+	const allowedSports = [3, 10];
 
-	const twoPositionSports = [4];
+	const twoPositionSports = [3];
 
-	const allowedResolvedStatuses = [8, 12];
-	const allowedCancelStatuses = [1, 2];
+	const allowedResolvedStatuses = [8, 11];
+	const allowedCancelStatuses = [1];
 
 	/* ========== DEPLOY CONTRACT ========== */
 
@@ -96,7 +98,7 @@ async function main() {
 	const therundown = await upgrades.deployProxy(TherundownConsumer, [
 		owner.address,
 		allowedSports,
-		sportsManagerAddress,
+		gamesQueue.address, //change for sport manager if deployed!!!
 		twoPositionSports,
 		gamesQueue.address,
 		allowedResolvedStatuses,

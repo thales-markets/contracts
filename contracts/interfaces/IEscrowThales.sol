@@ -29,4 +29,6 @@ interface IEscrowThales {
     function addTotalEscrowBalanceNotIncludedInStaking(uint amount) external;
 
     function subtractTotalEscrowBalanceNotIncludedInStaking(uint amount) external;
+
+    function mergeAccount(address srcAccount, address destAccount) external;
 }

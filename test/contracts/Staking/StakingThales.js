@@ -324,8 +324,6 @@ contract('StakingThales', accounts => {
 			assert.equal(answer, 0);
 			answer = await StakingThalesDeployed.getAlreadyClaimedRewards.call(first);
 			assert.equal(answer, 0);
-			answer = await StakingThalesDeployed.getAlreadyClaimedFees.call(first);
-			assert.equal(answer, 0);
 			answer = await StakingThalesDeployed.getContractRewardFunds.call({ from: owner });
 			assert.equal(answer, 0);
 			answer = await StakingThalesDeployed.getContractFeeFunds.call({ from: owner });

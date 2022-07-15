@@ -179,13 +179,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         return stakerLifetimeRewardsClaimed[account];
     }
 
-    /// @notice Get the total fees claimed for the account until now
-    /// @param account to get the total fees claimed for
-    /// @return the total fees claimed for the account until now
-    function getAlreadyClaimedFees(address account) external view returns (uint) {
-        return stakerFeesClaimed[account];
-    }
-
     /// @notice Get the rewards funds available on the rewards pool
     /// @return the rewards funds available on the rewards pool
     function getContractRewardFunds() external view returns (uint) {
@@ -466,34 +459,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         return baseReward.mul(AMMPercentage).div(ONE);
     }
 
-    /// @notice Get the percentage of rewards based on participation in Thales Royale for the account
-    /// @param account to get the percentage of rewards based on participation in Thales Royale for
-    /// @return the percentage of rewards based on participation in Thales Royale for the account
-    function getThalesRoyaleBonusPercentage(address account) public view returns (uint) {
-        uint baseReward = getBaseReward(account);
-        if (baseReward == 0) {
-            return 0;
-        }
-        return
-            (address(thalesRoyale) != address(0) && thalesRoyale.hasParticipatedInCurrentOrLastRoyale(account))
-                ? maxThalesRoyaleRewardsPercentage.mul(ONE_PERCENT)
-                : 0;
-    }
-
-    /// @notice Get the rewards based on participation in Thales Royale for the account
-    /// @param account to get the rewards based on participation in Thales Royale for
-    /// @return the rewards based on participation in Thales Royale for the account
-    function getThalesRoyaleBonus(address account) public view returns (uint) {
-        uint baseReward = getBaseReward(account);
-        uint RoyalePercentage = getThalesRoyaleBonusPercentage(account);
-        return baseReward.mul(RoyalePercentage).div(ONE);
-    }
-
     function getTotalBonusPercentage(address account) public view returns (uint) {
         uint snxPercentage = getSNXBonusPercentage(account);
         uint ammPercentage = getAMMBonusPercentage(account);
-        uint royalePercentage = getThalesRoyaleBonusPercentage(account);
-        return snxPercentage.add(ammPercentage).add(royalePercentage);
+        return snxPercentage.add(ammPercentage);
     }
 
     /// @notice Get the total bonus rewards for the account
@@ -598,14 +567,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         emit Staked(msg.sender, amount);
     }
 
-    /// @notice Stake on behalf of someone the amount of staking token to get weekly rewards
-    /// @param amount to stake
-    /// @param staker to stake on behalf of
-    function stakeOnBehalf(uint amount, address staker) external nonReentrant onlyOwner {
-        _stake(amount, staker, msg.sender);
-        emit StakedOnBehalf(msg.sender, staker, amount);
-    }
-
     /// @notice Start unstaking cooldown for the amount of staking token
     /// @param amount to unstake
     function startUnstake(uint amount) external notPaused {
@@ -684,11 +645,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param account to update the protocol volume for
     /// @param amount to add to the existing protocol volume
     function updateVolume(address account, uint amount) external {
+        require(account != address(0) && amount > 0, "Invalid params");
         require(
             msg.sender == thalesAMM || msg.sender == exoticBonds || msg.sender == thalesRangedAMM || msg.sender == sportsAMM,
             "Invalid address"
         );
-        require(msg.sender != address(0), "Invalid address");
         if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
@@ -696,7 +657,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         }
         stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = stakerAMMVolume[account][
             periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-        ].amount.add(amount);
+        ]
+            .amount
+            .add(amount);
 
         if (msg.sender == thalesAMM) {
             if (lastThalesAMMUpdatePeriod[account] < periodsOfStaking) {
@@ -706,7 +669,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             thalesAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = thalesAMMVolume[account][
                 periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-            ].amount.add(amount);
+            ]
+                .amount
+                .add(amount);
         }
 
         if (msg.sender == thalesRangedAMM) {
@@ -717,7 +682,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             thalesRangedAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = thalesRangedAMMVolume[
                 account
-            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
+            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)]
+                .amount
+                .add(amount);
         }
 
         if (msg.sender == exoticBonds) {
@@ -728,7 +695,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             exoticMarketsVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = exoticMarketsVolume[
                 account
-            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
+            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)]
+                .amount
+                .add(amount);
         }
 
         if (msg.sender == sportsAMM) {
@@ -739,10 +708,12 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             sportsAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = sportsAMMVolume[account][
                 periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-            ].amount.add(amount);
+            ]
+                .amount
+                .add(amount);
         }
 
-        emit AMMVolumeUpdated(account, amount);
+        emit AMMVolumeUpdated(account, amount, msg.sender);
     }
 
     /// @notice Merge account to transfer all staking amounts to another account
@@ -785,7 +756,9 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             if (stakerAMMVolumePeriod == stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].period) {
                 stakerAMMVolume[destAccount][stakerAMMVolumeIndex].amount = stakerAMMVolume[destAccount][
                     stakerAMMVolumeIndex
-                ].amount.add(stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].amount);
+                ]
+                    .amount
+                    .add(stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].amount);
             }
         }
 
@@ -968,6 +941,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     );
     event EscrowChanged(address newEscrow);
     event StakingPeriodStarted();
-    event AMMVolumeUpdated(address account, uint amount);
+    event AMMVolumeUpdated(address account, uint amount, address source);
     event AccountMerged(address srcAccount, address destAccount);
 }

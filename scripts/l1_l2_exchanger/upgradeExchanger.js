@@ -17,9 +17,7 @@ async function main() {
 		net_optimistic = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 69) {
-		console.log(
-			"Error L2 network used! Deploy only on L1 Mainnet. \nTry using '--network kovan'"
-		);
+		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using '--network kovan'");
 		return 0;
 	}
 	if (networkObj.chainId == 10) {
@@ -59,24 +57,23 @@ async function main() {
 	console.log('Thales on L1: ', ThalesAddress);
 	console.log('OpThales on L1: ', OpThalesL1Address);
 	console.log('OpThales on L2: ', OpThalesL2Address);
-    
+
 	console.log('L1 Standard Bridge on L1: ', L1StandardBridgeAddress);
 	console.log('Exchanger on L1: ', ExchangerAddress);
-    
-    await upgrades.upgradeProxy(ExchangerAddress, NewThalesExchanger);
-    await delay(5000);
-    
-	console.log('Exchanger updated');
-    const ExchangerImplementation = await getImplementationAddress(ethers.provider, ExchangerAddress);
 
-    try {
+	await upgrades.upgradeProxy(ExchangerAddress, NewThalesExchanger);
+	await delay(5000);
+
+	console.log('Exchanger updated');
+	const ExchangerImplementation = await getImplementationAddress(ethers.provider, ExchangerAddress);
+
+	try {
 		await hre.run('verify:verify', {
 			address: ExchangerImplementation,
 		});
 	} catch (e) {
 		console.log(e);
 	}
-
 }
 
 main()

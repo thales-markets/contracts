@@ -12,16 +12,20 @@ async function main() {
 		network = 'kovan';
 	}
 	if (networkObj.chainId == 69) {
-		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
+		console.log(
+			"Error L2 network used! Deploy only on L1 Mainnet. \nTry using '--network mainnet'"
+		);
 		return 0;
 	}
 	if (networkObj.chainId == 10) {
-		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
+		console.log(
+			"Error L2 network used! Deploy only on L1 Mainnet. \nTry using '--network mainnet'"
+		);
 		return 0;
 	}
-	
+
 	const OP_Thales_L1_Address = getTargetAddress('OpThales_L1', network);
-	console.log("Optimistic Thales on L1: ", OP_Thales_L1_Address);
+	console.log('Optimistic Thales on L1: ', OP_Thales_L1_Address);
 
 	try {
 		await hre.run('verify:verify', {
@@ -30,13 +34,11 @@ async function main() {
 	} catch (e) {
 		console.log(e);
 	}
-	
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch((error) => {
+	.catch(error => {
 		console.error(error);
 		process.exit(1);
 	});
-

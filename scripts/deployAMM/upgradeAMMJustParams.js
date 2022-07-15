@@ -70,7 +70,6 @@ async function main() {
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setMinimalTimeLeftToMaturity()');
 	});
-
 }
 
 main()

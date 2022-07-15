@@ -27,7 +27,6 @@ async function main() {
 	await upgrades.admin.transferProxyAdminOwnership('');
 
 	console.log('ThalesAMM proxy admin changed to ' + '');
-
 }
 
 main()

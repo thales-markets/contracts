@@ -2,7 +2,6 @@ const { ethers, upgrades } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
-
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
@@ -32,7 +31,10 @@ async function main() {
 	console.log('Found LPStakingDoubleRewards at:', lpStakingDoubleRewardsAddress);
 
 	const LPStakingDoubleRewards = await ethers.getContractFactory('LPStakingDoubleRewards');
-	const implementation = await upgrades.prepareUpgrade(lpStakingDoubleRewardsAddress, LPStakingDoubleRewards);
+	const implementation = await upgrades.prepareUpgrade(
+		lpStakingDoubleRewardsAddress,
+		LPStakingDoubleRewards
+	);
 
 	console.log('LPStakingDoubleRewards upgraded');
 
@@ -40,7 +42,7 @@ async function main() {
 	setTargetAddress('LPStakingDoubleRewardsImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
-		address: implementation
+		address: implementation,
 	});
 }
 

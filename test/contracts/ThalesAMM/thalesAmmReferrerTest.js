@@ -47,14 +47,7 @@ contract('ThalesAMM', accounts => {
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
 			.connect(creator)
-			.createMarket(
-				oracleKey,
-				strikePrice.toString(),
-				maturity,
-				initialMint.toString(),
-				false,
-				ZERO_ADDRESS
-			);
+			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
 			event => event['event'] && event['event'] === 'MarketCreated'
@@ -182,6 +175,7 @@ contract('ThalesAMM', accounts => {
 			from: owner,
 		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 
 		Referrals = artifacts.require('Referrals');
 		referrals = await Referrals.new();

@@ -12,13 +12,13 @@ async function main() {
 		network = 'mainnet';
 	}
 
-	if(networkObj.chainId == 69) {
-		networkObj.name = "optimisticKovan";
-		network = 'optimisticKovan'
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
 	}
-	if(networkObj.chainId == 10) {
-		networkObj.name = "optimisticEthereum";
-		network = 'optimisticEthereum'		
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 
 	console.log('Account is:' + owner.address);
@@ -28,36 +28,30 @@ async function main() {
 	console.log('Found address resolver at:' + addressResolverAddress);
 	const safeDecimalMathAddress = getTargetAddress('SafeDecimalMath', network);
 	console.log('Found safeDecimalMath at:' + safeDecimalMathAddress);
-	
+
 	const proxysUSDAddress = getTargetAddress('ProxysUSD', network);
 	console.log('Found proxysUSD at:' + proxysUSDAddress);
 
-
-
 	const priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
-	
+
 	const PositionMastercopyAddress = getTargetAddress('PositionMastercopy', network);
 	console.log('Found PositionMastercopy at:' + PositionMastercopyAddress);
-	
+
 	const PositionalMarketMastercopyAddress = getTargetAddress('PositionalMarketMastercopy', network);
 	console.log('Found PositionalMarketMastercopy at:' + PositionalMarketMastercopyAddress);
-	
+
 	const PositionalMarketFactoryAddress = getTargetAddress('PositionalMarketFactory', network);
 	console.log('Found PositionalMarketFactory at:' + PositionalMarketFactoryAddress);
-	
+
 	const PositionalMarketManagerAddress = getTargetAddress('PositionalMarketManager', network);
 	console.log('Found PositionalMarketManager at:' + PositionalMarketManagerAddress);
-	
+
 	const PositionalMarketDataAddress = getTargetAddress('PositionalMarketData', network);
 	console.log('Found PositionalMarketData at:' + PositionalMarketDataAddress);
-	
 
 	const ThalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
 	console.log('Found ThalesRoyale at:' + ThalesRoyaleAddress);
-
-
-
 
 	const day = 24 * 60 * 60;
 	const maxOraclePriceAge = 120 * 60; // Price updates are accepted from up to two hours before maturity to allow for delayed chainlink heartbeats.
@@ -76,20 +70,20 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: PositionMastercopyAddress,
 		constructorArguments: [],
-		contract: "contracts/Positions/PositionMastercopy.sol:PositionMastercopy"
+		contract: 'contracts/Positions/PositionMastercopy.sol:PositionMastercopy',
 	});
 
 	await hre.run('verify:verify', {
 		address: PositionalMarketMastercopyAddress,
 		constructorArguments: [],
-		contract: "contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy",
+		contract: 'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
 	});
 
 	await hre.run('verify:verify', {
 		address: PositionalMarketDataAddress,
 		constructorArguments: [],
 	});
-	
+
 	await hre.run('verify:verify', {
 		address: PositionalMarketManagerAddress,
 		constructorArguments: [
@@ -106,7 +100,7 @@ async function main() {
 		address: ThalesRoyaleAddress,
 		constructorArguments: [
 			owner.address,
-			snx.toBytes32("ETH"),
+			snx.toBytes32('ETH'),
 			priceFeedAddress,
 			w3utils.toWei('10000'),
 			priceFeedAddress,
@@ -121,4 +115,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-	

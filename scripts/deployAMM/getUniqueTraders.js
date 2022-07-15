@@ -39,9 +39,11 @@ async function getUniqueTraders() {
 	}
 	console.log(uniqueTraders);
 
-	fs.writeFileSync('scripts/deployAMM/uniqueTraders.json', JSON.stringify(Array.from(uniqueTraders)), function(
-		err
-	) {
-		if (err) return console.log(err);
-	});
+	fs.writeFileSync(
+		'scripts/deployAMM/uniqueTraders.json',
+		JSON.stringify(Array.from(uniqueTraders)),
+		function(err) {
+			if (err) return console.log(err);
+		}
+	);
 }

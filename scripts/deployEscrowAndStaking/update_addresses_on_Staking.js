@@ -15,7 +15,6 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
-		
 	}
 	if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
@@ -42,120 +41,131 @@ async function main() {
 	console.log('Network name:' + network);
 	console.log('SNXIssuer address: ' + SNXIssuerAddress);
 
-	const maxSNXPercentage = "15";
-	const maxAMMPercentage = "12";
-	const maxRoyalePercentage = "3";
-	const AMMMultiplier = "10";
-	const SNXMultiplier = "1";
-	const fixedReward = w3utils.toWei("70000", "ether")
-	const extraReward = w3utils.toWei("21000", "ether")
+	const maxSNXPercentage = '15';
+	const maxAMMPercentage = '12';
+	const maxRoyalePercentage = '3';
+	const AMMMultiplier = '10';
+	const SNXMultiplier = '1';
+	const fixedReward = w3utils.toWei('70000', 'ether');
+	const extraReward = w3utils.toWei('21000', 'ether');
 
 	const ThalesStakingRewardsPoolAddress = getTargetAddress('ThalesStakingRewardsPool', network);
 
 	const ProxyStaking = await ethers.getContractFactory('StakingThales');
-	let StakingThalesAddress =  getTargetAddress('StakingThales', network);
-	
+	let StakingThalesAddress = getTargetAddress('StakingThales', network);
+
 	const ProxyEscrow = await ethers.getContractFactory('EscrowThales');
-	let EscrowThalesAddress =  getTargetAddress('EscrowThales', network);
+	let EscrowThalesAddress = getTargetAddress('EscrowThales', network);
 
 	const StakingThales = await ProxyStaking.attach(StakingThalesAddress);
-    console.log("StakingThales attached on: ", StakingThales.address);
-	
+	console.log('StakingThales attached on: ', StakingThales.address);
+
 	const EscrowThales = await ProxyEscrow.attach(EscrowThalesAddress);
-    console.log("EscrowThales attached on: ", EscrowThales.address);
+	console.log('EscrowThales attached on: ', EscrowThales.address);
 
-	let ThalesAMMAddress =  getTargetAddress('ThalesAMM', network);
-	let ThalesRoyaleAddress =  getTargetAddress('ThalesRoyale', network);
-	let PriceFeedAddress =  getTargetAddress('PriceFeed', network);
-	let ExoticBondsAddress =  getTargetAddress('ThalesBonds', network);
+	let ThalesAMMAddress = getTargetAddress('ThalesAMM', network);
+	let ThalesRoyaleAddress = getTargetAddress('ThalesRoyale', network);
+	let PriceFeedAddress = getTargetAddress('PriceFeed', network);
+	let ExoticBondsAddress = getTargetAddress('ThalesBonds', network);
 
-	tx = await StakingThales.setThalesAMM(ThalesAMMAddress, {from:owner.address});
+	tx = await StakingThales.setThalesAMM(ThalesAMMAddress, { from: owner.address });
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setThalesRoyale(ThalesRoyaleAddress, {from:owner.address});
+
+	tx = await StakingThales.setThalesRoyale(ThalesRoyaleAddress, { from: owner.address });
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setThalesRoyale ', ThalesRoyaleAddress);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setPriceFeed(PriceFeedAddress, {from:owner.address});
+
+	tx = await StakingThales.setPriceFeed(PriceFeedAddress, { from: owner.address });
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setPriceFeed ',PriceFeedAddress);
+		console.log('Staking Thales: setPriceFeed ', PriceFeedAddress);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setMaxSNXRewardsPercentage(maxSNXPercentage, {from:owner.address});
+
+	tx = await StakingThales.setMaxSNXRewardsPercentage(maxSNXPercentage, { from: owner.address });
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setMaxSNXRewardsPercentage ',maxSNXPercentage);
+		console.log('Staking Thales: setMaxSNXRewardsPercentage ', maxSNXPercentage);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setMaxAMMVolumeRewardsPercentage(maxAMMPercentage, {from:owner.address});
+
+	tx = await StakingThales.setMaxAMMVolumeRewardsPercentage(maxAMMPercentage, {
+		from: owner.address,
+	});
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setMaxAMMVolumeRewardsPercentage ',maxAMMPercentage);
+		console.log('Staking Thales: setMaxAMMVolumeRewardsPercentage ', maxAMMPercentage);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setAMMVolumeRewardsMultiplier(AMMMultiplier, {from:owner.address});
+
+	tx = await StakingThales.setAMMVolumeRewardsMultiplier(AMMMultiplier, { from: owner.address });
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setAMMVolumeRewardsMultiplier ',AMMMultiplier);
+		console.log('Staking Thales: setAMMVolumeRewardsMultiplier ', AMMMultiplier);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setSNXVolumeRewardsMultiplier(SNXMultiplier, {from:owner.address});
+
+	tx = await StakingThales.setSNXVolumeRewardsMultiplier(SNXMultiplier, { from: owner.address });
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setSNXVolumeRewardsMultiplier ',SNXMultiplier);
+		console.log('Staking Thales: setSNXVolumeRewardsMultiplier ', SNXMultiplier);
 	});
 	delay(1000);
-	
-	tx = await EscrowThales.setThalesStakingRewardsPool(ThalesStakingRewardsPoolAddress, {from:owner.address});
+
+	tx = await EscrowThales.setThalesStakingRewardsPool(ThalesStakingRewardsPoolAddress, {
+		from: owner.address,
+	});
 	await tx.wait().then(e => {
-		console.log('Escrow Thales: ThalesStakingRewardsPoolAddress ',ThalesStakingRewardsPoolAddress);
+		console.log('Escrow Thales: ThalesStakingRewardsPoolAddress ', ThalesStakingRewardsPoolAddress);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setMaxThalesRoyaleRewardsPercentage(maxRoyalePercentage, {from:owner.address});
+
+	tx = await StakingThales.setMaxThalesRoyaleRewardsPercentage(maxRoyalePercentage, {
+		from: owner.address,
+	});
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setMaxThalesRoyaleRewardsPercentage ',maxRoyalePercentage);
+		console.log('Staking Thales: setMaxThalesRoyaleRewardsPercentage ', maxRoyalePercentage);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setThalesStakingRewardsPool(ThalesStakingRewardsPoolAddress, {from:owner.address});
+
+	tx = await StakingThales.setThalesStakingRewardsPool(ThalesStakingRewardsPoolAddress, {
+		from: owner.address,
+	});
 	await tx.wait().then(e => {
-		console.log('Staking Thales: ThalesStakingRewardsPoolAddress ',ThalesStakingRewardsPoolAddress);
+		console.log(
+			'Staking Thales: ThalesStakingRewardsPoolAddress ',
+			ThalesStakingRewardsPoolAddress
+		);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setClaimEnabled(true, {from:owner.address});
+
+	tx = await StakingThales.setClaimEnabled(true, { from: owner.address });
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setClaimEnabled ',true);
+		console.log('Staking Thales: setClaimEnabled ', true);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setFixedPeriodReward(fixedReward, {from:owner.address});
+
+	tx = await StakingThales.setFixedPeriodReward(fixedReward, { from: owner.address });
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setFixedPeriodReward ',fixedReward);
+		console.log('Staking Thales: setFixedPeriodReward ', fixedReward);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setPeriodExtraReward(extraReward, {from:owner.address});
+
+	tx = await StakingThales.setPeriodExtraReward(extraReward, { from: owner.address });
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setFixedPeriodReward ',extraReward);
+		console.log('Staking Thales: setFixedPeriodReward ', extraReward);
 	});
 	delay(1000);
-	
-	tx = await StakingThales.setExoticBonds(ExoticBondsAddress, {from:owner.address});
+
+	tx = await StakingThales.setExoticBonds(ExoticBondsAddress, { from: owner.address });
 	await tx.wait().then(e => {
-		console.log('Staking Thales: setExoticBonds ',ExoticBondsAddress);
+		console.log('Staking Thales: setExoticBonds ', ExoticBondsAddress);
 	});
 	delay(1000);
-	
-	tx = await EscrowThales.setStakingThalesContract(StakingThales.address, {from:owner.address});
+
+	tx = await EscrowThales.setStakingThalesContract(StakingThales.address, { from: owner.address });
 	await tx.wait().then(e => {
-		console.log('Escrow Thales: setStakingThalesContract ', StakingThales.address );
+		console.log('Escrow Thales: setStakingThalesContract ', StakingThales.address);
 	});
 	delay(1000);
 }

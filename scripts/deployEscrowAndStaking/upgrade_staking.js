@@ -29,17 +29,14 @@ async function main() {
 	}
 	const StakingAddress = getTargetAddress('StakingThales', network);
 	const StakingContract = await ethers.getContractFactory('StakingThales');
-	console.log("Address of staking: ", StakingAddress);
+	console.log('Address of staking: ', StakingAddress);
 
-	if (networkObj.chainId == 69) { 
+	if (networkObj.chainId == 69) {
 		await upgrades.upgradeProxy(StakingAddress, StakingContract);
 		await delay(5000);
-	
+
 		console.log('Escrow upgraded');
-		StakingImplementation = await getImplementationAddress(
-			ethers.provider,
-			StakingAddress
-			);
+		StakingImplementation = await getImplementationAddress(ethers.provider, StakingAddress);
 	}
 
 	if (networkObj.chainId == 10) {

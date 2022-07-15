@@ -49,11 +49,8 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         uint strikePrice;
         uint[2] times; // [maturity, expiry]
         uint deposit; // sUSD deposit
-        bool customMarket;
-        address iOracleInstanceAddress;
         address up;
         address down;
-        address limitOrderProvider;
         address thalesAMM;
     }
 
@@ -65,9 +62,6 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
     PositionalMarketManager.Fees public override fees;
     IPriceFeed public priceFeed;
     IERC20 public sUSD;
-
-    IOracleInstance public iOracleInstance;
-    bool public customMarket;
 
     // `deposited` tracks the sum of all deposits.
     // This must explicitly be kept, in case tokens are transferred to the contract directly.
@@ -88,15 +82,7 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         priceFeed = _parameters.priceFeed;
         creator = _parameters.creator;
 
-        oracleDetails = OracleDetails(
-            _parameters.oracleKey,
-            _parameters.strikePrice,
-            0,
-            _parameters.customMarket,
-            _parameters.iOracleInstanceAddress
-        );
-        customMarket = _parameters.customMarket;
-        iOracleInstance = IOracleInstance(_parameters.iOracleInstanceAddress);
+        oracleDetails = OracleDetails(_parameters.oracleKey, _parameters.strikePrice, 0, false, address(0));
 
         times = Times(_parameters.times[0], _parameters.times[1]);
 
@@ -108,34 +94,16 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         options.down = Position(_parameters.down);
         // abi.encodePacked("sUP: ", _oracleKey)
         // consider naming the option: sUpBTC>50@2021.12.31
-        options.up.initialize("Position Up", "UP", _parameters.limitOrderProvider, _parameters.thalesAMM);
-        options.down.initialize("Position Down", "DOWN", _parameters.limitOrderProvider, _parameters.thalesAMM);
+        options.up.initialize("Position Up", "UP", _parameters.thalesAMM);
+        options.down.initialize("Position Down", "DOWN", _parameters.thalesAMM);
         _mint(creator, initialMint);
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
         // about initializing its state separately
     }
 
-    /* ---------- External Contracts ---------- */
-
-    function _priceFeed() internal view returns (IPriceFeed) {
-        return priceFeed;
-    }
-
-    function _manager() internal view returns (PositionalMarketManager) {
-        return PositionalMarketManager(owner);
-    }
-
-    /* ---------- Phases ---------- */
-
-    function _matured() internal view returns (bool) {
-        return times.maturity < block.timestamp;
-    }
-
-    function _expired() internal view returns (bool) {
-        return resolved && (times.expiry < block.timestamp || deposited == 0);
-    }
-
+    /// @notice phase returns market phase
+    /// @return Phase
     function phase() external view override returns (Phase) {
         if (!_matured()) {
             return Phase.Trading;
@@ -146,74 +114,58 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         return Phase.Expiry;
     }
 
-    /* ---------- Market Resolution ---------- */
-
-    function _oraclePrice() internal view returns (uint price) {
-        return _priceFeed().rateForCurrency(oracleDetails.key);
-    }
-
-    function _oraclePriceAndTimestamp() internal view returns (uint price, uint updatedAt) {
-        return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
-    }
-
+    /// @notice oraclePriceAndTimestamp returns oracle key price and last updated timestamp
+    /// @return price updatedAt
     function oraclePriceAndTimestamp() external view override returns (uint price, uint updatedAt) {
         return _oraclePriceAndTimestamp();
     }
 
+    /// @notice oraclePrice returns oracle key price
+    /// @return price
     function oraclePrice() external view override returns (uint price) {
         return _oraclePrice();
     }
 
+    /// @notice canResolve checks if market can be resolved
+    /// @return bool
     function canResolve() public view override returns (bool) {
-        if (customMarket) {
-            return !resolved && _matured() && iOracleInstance.resolvable();
-        } else {
-            return !resolved && _matured();
-        }
+        return !resolved && _matured();
     }
 
-    function _result() internal view returns (Side) {
-        if (customMarket) {
-            return iOracleInstance.getOutcome() ? Side.Up : Side.Down;
-        } else {
-            uint price;
-            if (resolved) {
-                price = oracleDetails.finalPrice;
-            } else {
-                price = _oraclePrice();
-            }
-
-            return oracleDetails.strikePrice <= price ? Side.Up : Side.Down;
-        }
-    }
-
+    /// @notice result calculates market result based on market strike price
+    /// @return Side
     function result() external view override returns (Side) {
         return _result();
     }
 
-    /* ---------- Option Balances and Mints ---------- */
-
-    function _balancesOf(address account) internal view returns (uint up, uint down) {
-        return (options.up.getBalanceOf(account), options.down.getBalanceOf(account));
-    }
-
+    /// @notice balancesOf returns balances of an account
+    /// @return up down
     function balancesOf(address account) external view override returns (uint up, uint down) {
         return _balancesOf(account);
     }
 
+    /// @notice totalSupplies returns total supplies of op and down options
+    /// @return up down
     function totalSupplies() external view override returns (uint up, uint down) {
         return (options.up.totalSupply(), options.down.totalSupply());
     }
 
+    /// @notice getMaximumBurnable returns maximum burnable amount of an account
+    /// @param account address of the account
+    /// @return amount
     function getMaximumBurnable(address account) external view override returns (uint amount) {
         return _getMaximumBurnable(account);
     }
 
+    /// @notice getOptions returns up and down positions
+    /// @return up down
     function getOptions() external view override returns (IPosition up, IPosition down) {
         up = options.up;
         down = options.down;
     }
 
+    /// @notice getOracleDetails returns data from oracle source
+    /// @return key strikePrice finalPrice
     function getOracleDetails()
         external
         view
@@ -229,37 +181,13 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         finalPrice = oracleDetails.finalPrice;
     }
 
-    function _getMaximumBurnable(address account) internal view returns (uint amount) {
-        (uint upBalance, uint downBalance) = _balancesOf(account);
-        return (upBalance > downBalance) ? downBalance : upBalance;
-    }
-
-    /* ---------- Utilities ---------- */
-
-    function _incrementDeposited(uint value) internal returns (uint _deposited) {
-        _deposited = deposited.add(value);
-        deposited = _deposited;
-        _manager().incrementTotalDeposited(value);
-    }
-
-    function _decrementDeposited(uint value) internal returns (uint _deposited) {
-        _deposited = deposited.sub(value);
-        deposited = _deposited;
-        _manager().decrementTotalDeposited(value);
-    }
-
-    function _requireManagerNotPaused() internal view {
-        require(!_manager().paused(), "This action cannot be performed while the contract is paused");
-    }
-
+    /// @notice requireUnpaused ensures that manager is not paused
     function requireUnpaused() external view {
         _requireManagerNotPaused();
     }
 
-    /* ========== MUTATIVE FUNCTIONS ========== */
-
-    /* ---------- Minting ---------- */
-
+    /// @notice mint mints up and down tokens
+    /// @param value to mint options for
     function mint(uint value) external override duringMinting {
         if (value == 0) {
             return;
@@ -271,73 +199,31 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         _manager().transferSusdTo(msg.sender, address(this), _manager().transformCollateral(value));
     }
 
-    function _mint(address minter, uint amount) internal {
-        options.up.mint(minter, amount);
-        options.down.mint(minter, amount);
-
-        emit Mint(Side.Up, minter, amount);
-        emit Mint(Side.Down, minter, amount);
-    }
-
+    /// @notice burnOptionsMaximum burns option tokens based on maximum burnable account amount
     function burnOptionsMaximum() external override {
         _burnOptions(msg.sender, _getMaximumBurnable(msg.sender));
     }
 
+    /// @notice burnOptions burns option tokens based on amount
     function burnOptions(uint amount) external override {
         _burnOptions(msg.sender, amount);
     }
 
-    function _burnOptions(address account, uint amount) internal {
-        require(amount > 0, "Can not burn zero amount!");
-        require(_getMaximumBurnable(account) >= amount, "There is not enough options!");
-
-        // decrease deposit
-        _decrementDeposited(amount);
-
-        // decrease up and down options
-        options.up.exerciseWithAmount(account, amount);
-        options.down.exerciseWithAmount(account, amount);
-
-        // transfer balance
-        sUSD.transfer(account, _manager().transformCollateral(amount));
-
-        // emit events
-        emit OptionsBurned(account, amount);
-    }
-
-    /* ---------- Custom oracle configuration ---------- */
-    function setIOracleInstance(address _address) external onlyOwner {
-        iOracleInstance = IOracleInstance(_address);
-        emit SetIOracleInstance(_address);
-    }
-
-    function setPriceFeed(address _address) external onlyOwner {
-        priceFeed = IPriceFeed(_address);
-        emit SetPriceFeed(_address);
-    }
-
-    function setsUSD(address _address) external onlyOwner {
-        sUSD = IERC20(_address);
-        emit SetsUSD(_address);
-    }
-
-    /* ---------- Market Resolution ---------- */
-
+    /// @notice resolve function for resolving market if possible
     function resolve() external onlyOwner afterMaturity managerNotPaused {
         require(canResolve(), "Can not resolve market");
         uint price;
         uint updatedAt;
-        if (!customMarket) {
-            (price, updatedAt) = _oraclePriceAndTimestamp();
-            oracleDetails.finalPrice = price;
-        }
+
+        (price, updatedAt) = _oraclePriceAndTimestamp();
+        oracleDetails.finalPrice = price;
+
         resolved = true;
 
         emit MarketResolved(_result(), price, updatedAt, deposited, 0, 0);
     }
 
-    /* ---------- Claiming and Exercising Options ---------- */
-
+    /// @notice exerciseOptions is used for exercising options from resolved market
     function exerciseOptions() external override afterMaturity returns (uint) {
         // The market must be resolved if it has not been.
         if (!resolved) {
@@ -366,8 +252,133 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         return payout;
     }
 
-    /* ---------- Market Expiry ---------- */
+    /// @notice expire is used for exercising options from resolved market
+    function expire(address payable beneficiary) external onlyOwner {
+        require(_expired(), "Unexpired options remaining");
+        emit Expired(beneficiary);
+        _selfDestruct(beneficiary);
+    }
 
+    /// @notice _priceFeed internal function returns PriceFeed contract address
+    /// @return IPriceFeed
+    function _priceFeed() internal view returns (IPriceFeed) {
+        return priceFeed;
+    }
+
+    /// @notice _manager internal function returns PositionalMarketManager contract address
+    /// @return PositionalMarketManager
+    function _manager() internal view returns (PositionalMarketManager) {
+        return PositionalMarketManager(owner);
+    }
+
+    /// @notice _matured internal function checks if market is matured
+    /// @return bool
+    function _matured() internal view returns (bool) {
+        return times.maturity < block.timestamp;
+    }
+
+    /// @notice _expired internal function checks if market is expired
+    /// @return bool
+    function _expired() internal view returns (bool) {
+        return resolved && (times.expiry < block.timestamp || deposited == 0);
+    }
+
+    /// @notice _oraclePrice internal function returns oracle key price from source
+    /// @return price
+    function _oraclePrice() internal view returns (uint price) {
+        return _priceFeed().rateForCurrency(oracleDetails.key);
+    }
+
+    /// @notice _oraclePriceAndTimestamp internal function returns oracle key price and last updated timestamp from source
+    /// @return price updatedAt
+    function _oraclePriceAndTimestamp() internal view returns (uint price, uint updatedAt) {
+        return _priceFeed().rateAndUpdatedTime(oracleDetails.key);
+    }
+
+    /// @notice _result internal function calculates market result based on market strike price
+    /// @return Side
+    function _result() internal view returns (Side) {
+        uint price;
+        if (resolved) {
+            price = oracleDetails.finalPrice;
+        } else {
+            price = _oraclePrice();
+        }
+
+        return oracleDetails.strikePrice <= price ? Side.Up : Side.Down;
+    }
+
+    /// @notice _balancesOf internal function gets account balances of up and down tokens
+    /// @param account address of an account
+    /// @return up down
+    function _balancesOf(address account) internal view returns (uint up, uint down) {
+        return (options.up.getBalanceOf(account), options.down.getBalanceOf(account));
+    }
+
+    /// @notice _getMaximumBurnable internal function gets account maximum burnable amount
+    /// @param account address of an account
+    /// @return amount
+    function _getMaximumBurnable(address account) internal view returns (uint amount) {
+        (uint upBalance, uint downBalance) = _balancesOf(account);
+        return (upBalance > downBalance) ? downBalance : upBalance;
+    }
+
+    /// @notice _incrementDeposited internal function increments deposited value
+    /// @param value increment value
+    /// @return _deposited
+    function _incrementDeposited(uint value) internal returns (uint _deposited) {
+        _deposited = deposited.add(value);
+        deposited = _deposited;
+        _manager().incrementTotalDeposited(value);
+    }
+
+    /// @notice _decrementDeposited internal function decrements deposited value
+    /// @param value decrement value
+    /// @return _deposited
+    function _decrementDeposited(uint value) internal returns (uint _deposited) {
+        _deposited = deposited.sub(value);
+        deposited = _deposited;
+        _manager().decrementTotalDeposited(value);
+    }
+
+    /// @notice _requireManagerNotPaused internal function ensures that manager is not paused
+    function _requireManagerNotPaused() internal view {
+        require(!_manager().paused(), "This action cannot be performed while the contract is paused");
+    }
+
+    /// @notice _mint internal function mints up and down tokens
+    /// @param amount value to mint options for
+    function _mint(address minter, uint amount) internal {
+        options.up.mint(minter, amount);
+        options.down.mint(minter, amount);
+
+        emit Mint(Side.Up, minter, amount);
+        emit Mint(Side.Down, minter, amount);
+    }
+
+    /// @notice _burnOptions internal function for burning up and down tokens
+    /// @param account address of an account
+    /// @param amount burning amount
+    function _burnOptions(address account, uint amount) internal {
+        require(amount > 0, "Can not burn zero amount!");
+        require(_getMaximumBurnable(account) >= amount, "There is not enough options!");
+
+        // decrease deposit
+        _decrementDeposited(amount);
+
+        // decrease up and down options
+        options.up.exerciseWithAmount(account, amount);
+        options.down.exerciseWithAmount(account, amount);
+
+        // transfer balance
+        sUSD.transfer(account, _manager().transformCollateral(amount));
+
+        // emit events
+        emit OptionsBurned(account, amount);
+    }
+
+    /// @notice _selfDestruct internal function for market self desctruct
+    /// @param beneficiary address of a market
     function _selfDestruct(address payable beneficiary) internal {
         uint _deposited = deposited;
         if (_deposited != 0) {
@@ -386,14 +397,6 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         options.down.expire(beneficiary);
         selfdestruct(beneficiary);
     }
-
-    function expire(address payable beneficiary) external onlyOwner {
-        require(_expired(), "Unexpired options remaining");
-        emit Expired(beneficiary);
-        _selfDestruct(beneficiary);
-    }
-
-    /* ========== MODIFIERS ========== */
 
     modifier duringMinting() {
         require(!_matured(), "Minting inactive");
@@ -424,10 +427,5 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
 
     event OptionsExercised(address indexed account, uint value);
     event OptionsBurned(address indexed account, uint value);
-    event SetZeroExAddress(address _zeroExAddress);
-    event SetZeroExAddressAtInit(address _zeroExAddress);
-    event SetsUSD(address _address);
-    event SetPriceFeed(address _address);
-    event SetIOracleInstance(address _address);
     event Expired(address beneficiary);
 }

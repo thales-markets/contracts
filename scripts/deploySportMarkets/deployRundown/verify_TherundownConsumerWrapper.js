@@ -51,21 +51,12 @@ async function main() {
 	const consumer = await ethers.getContractFactory('TherundownConsumer');
 	let consumerAddress = getTargetAddress('TherundownConsumer', network);
 
-	console.log(
-		'TherundownConsumer address: ',
-		consumerAddress
-	);
+	console.log('TherundownConsumer address: ', consumerAddress);
 
 	const chainlink = require(`./chainlink/${network}.json`);
 
-	console.log(
-		'LINK address: ',
-		chainlink["LINK"]
-	);
-	console.log(
-		'ORACLE address: ',
-		chainlink["ORACLE"]
-	);
+	console.log('LINK address: ', chainlink['LINK']);
+	console.log('ORACLE address: ', chainlink['ORACLE']);
 
 	const TherundownConsumerWrapper = getTargetAddress('TherundownConsumerWrapper', network);
 	console.log('TherundownConsumerWrapper: ', TherundownConsumerWrapper);
@@ -73,11 +64,7 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: TherundownConsumerWrapper,
-			constructorArguments: [
-				chainlink["LINK"],
-				chainlink["ORACLE"],
-				consumerAddress
-			]
+			constructorArguments: [chainlink['LINK'], chainlink['ORACLE'], consumerAddress],
 		});
 	} catch (e) {
 		console.log(e);

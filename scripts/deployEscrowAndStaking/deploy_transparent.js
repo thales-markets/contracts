@@ -103,7 +103,7 @@ async function main() {
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
 	});
-	
+
 	tx = await ProxyStaking_deployed.setPriceFeed(PriceFeedAddress, { from: owner.address });
 	await tx.wait().then(e => {
 		console.log('Staking Thales: setPriceFeed ', PriceFeedAddress);

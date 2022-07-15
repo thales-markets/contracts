@@ -45,12 +45,8 @@ contract('SafeBox', async accounts => {
 			[tokenAddressA, tokenAddressB] = [tokenAddressB, tokenAddressA];
 
 		const MockUniswapV3Pool = await ethers.getContractFactory('MockUniswapV3Pool');
-	 	await uniswapFactory.createPool(tokenAddressA, tokenAddressB, 3000);
-		const poolAddress = await uniswapFactory.getPool(
-			tokenAddressA,
-			tokenAddressB,
-			3000
-		);
+		await uniswapFactory.createPool(tokenAddressA, tokenAddressB, 3000);
+		const poolAddress = await uniswapFactory.getPool(tokenAddressA, tokenAddressB, 3000);
 		let pool = MockUniswapV3Pool.attach(poolAddress);
 		let price = BigNumber.from(encodePriceSqrt(1, 1));
 		await pool.initialize(price);
@@ -70,14 +66,20 @@ contract('SafeBox', async accounts => {
 		thalesToken = await Thales.new({ from: owner });
 		mockWethToken = await Thales.new({ from: owner });
 		mocksUSDToken = await Thales.new({ from: owner });
-		swapRouter = await SwapRouter.new(uniswapFactory.address, mockWethToken.address, { from: owner });
+		swapRouter = await SwapRouter.new(uniswapFactory.address, mockWethToken.address, {
+			from: owner,
+		});
 
 		ProxySafeBoxDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
 		SafeBoxImplementation = await SafeBox.new({ from: owner });
 
 		SafeBoxDeployed = await SafeBox.at(ProxySafeBoxDeployed.address);
 
-		initializeData = encodeCall('initialize', ['address', 'address'], [owner, mocksUSDToken.address]);
+		initializeData = encodeCall(
+			'initialize',
+			['address', 'address'],
+			[owner, mocksUSDToken.address]
+		);
 		await ProxySafeBoxDeployed.upgradeToAndCall(SafeBoxImplementation.address, initializeData, {
 			from: initialCreator,
 		});

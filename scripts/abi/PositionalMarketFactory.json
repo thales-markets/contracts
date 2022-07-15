@@ -37,18 +37,6 @@
         "internalType": "uint256",
         "name": "initialMint",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "customMarket",
-        "type": "bool"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "customOracle",
-        "type": "address"
       }
     ],
     "name": "MarketCreated",
@@ -131,19 +119,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_limitOrderProvider",
-        "type": "address"
-      }
-    ],
-    "name": "SetLimitOrderProvider",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "_thalesAMM",
         "type": "address"
       }
@@ -196,16 +171,6 @@
             "internalType": "uint256",
             "name": "initialMint",
             "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "customMarket",
-            "type": "bool"
-          },
-          {
-            "internalType": "address",
-            "name": "customOracle",
-            "type": "address"
           }
         ],
         "internalType": "struct PositionalMarketFactory.PositionCreationMarketParameters",
@@ -326,19 +291,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_limitOrderProvider",
-        "type": "address"
-      }
-    ],
-    "name": "setLimitOrderProvider",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

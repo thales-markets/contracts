@@ -2,7 +2,6 @@ const { ethers, upgrades } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
-
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
@@ -40,7 +39,7 @@ async function main() {
 	setTargetAddress('LPStakingRewardsImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
-		address: implementation
+		address: implementation,
 	});
 }
 

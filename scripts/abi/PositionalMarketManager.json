@@ -5,19 +5,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      }
-    ],
-    "name": "CreatorCapitalRequirementUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "duration",
         "type": "uint256"
       }
@@ -219,12 +206,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "priceBuffer",
+        "type": "uint256"
       }
     ],
-    "name": "SetCustomMarketCreationEnabled",
+    "name": "PriceBufferChanged",
     "type": "event"
   },
   {
@@ -293,6 +280,19 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timeframeBuffer",
+        "type": "uint256"
+      }
+    ],
+    "name": "TimeframeBufferChanged",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -337,6 +337,40 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "oracleKey",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maturity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "strikePrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "canCreateMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "capitalRequirement",
     "outputs": [
@@ -370,16 +404,6 @@
         "internalType": "uint256",
         "name": "initialMint",
         "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "customMarket",
-        "type": "bool"
-      },
-      {
-        "internalType": "address",
-        "name": "customOracle",
-        "type": "address"
       }
     ],
     "name": "createMarket",
@@ -503,11 +527,6 @@
         "internalType": "uint256",
         "name": "_maxTimeToMaturity",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_creatorCapitalRequirement",
-        "type": "uint256"
       }
     ],
     "name": "initialize",
@@ -582,6 +601,54 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "marketsPerOracleKey",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "marketsStrikePrice",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "index",
         "type": "uint256"
@@ -601,29 +668,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract PositionalMarketManager",
-        "name": "receivingManager",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
-      },
-      {
-        "internalType": "contract PositionalMarket[]",
-        "name": "marketsToMigrate",
-        "type": "address[]"
-      }
-    ],
-    "name": "migrateMarkets",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -745,6 +789,19 @@
   },
   {
     "inputs": [],
+    "name": "priceBuffer",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "priceFeed",
     "outputs": [
       {
@@ -754,24 +811,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
-      },
-      {
-        "internalType": "contract PositionalMarket[]",
-        "name": "marketsToReceive",
-        "type": "address[]"
-      }
-    ],
-    "name": "receiveMarkets",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -836,32 +875,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_creatorCapitalRequirement",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCreatorCapitalRequirement",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "setCustomMarketCreationEnabled",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "_expiryDuration",
         "type": "uint256"
       }
@@ -893,19 +906,6 @@
       }
     ],
     "name": "setMaxTimeToMaturity",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract PositionalMarketManager",
-        "name": "manager",
-        "type": "address"
-      }
-    ],
-    "name": "setMigratingManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -965,12 +965,38 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_priceBuffer",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPriceBuffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_address",
         "type": "address"
       }
     ],
     "name": "setPriceFeed",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_timeframeBuffer",
+        "type": "uint256"
+      }
+    ],
+    "name": "setTimeframeBuffer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -999,6 +1025,19 @@
     "name": "setsUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "timeframeBuffer",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

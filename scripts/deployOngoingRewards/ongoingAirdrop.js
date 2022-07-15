@@ -5,10 +5,7 @@ const Big = require('big.js');
 
 const { getAllClaimers } = require('../snx-data/L2/ongoingClaims');
 
-const {
-	numberExponentToLarge,
-	getTargetAddress
-} = require('../helpers.js');
+const { numberExponentToLarge, getTargetAddress } = require('../helpers.js');
 
 const ongoingRewards = require('../snx-data/ongoing_distribution.json');
 
@@ -63,7 +60,6 @@ async function ongoingAirdrop() {
 		const stakingTimestamp = await stakingThales.startTimeStamp();
 		if (stakingTimestamp.toString() > 0) {
 			try {
-
 				if (includeStakingRewards) {
 					const stakedEvents = await stakingThalesContract.getPastEvents('Staked', {
 						fromBlock: 0,

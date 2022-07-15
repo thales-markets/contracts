@@ -3,7 +3,6 @@ const { ethers, upgrades } = require('hardhat');
 const w3utils = require('web3-utils');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
-
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
@@ -14,7 +13,9 @@ async function main() {
 	let mainnetNetwork = 'mainnet';
 
 	if (network == 'homestead') {
-		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
+		console.log(
+			"Error L1 network used! Deploy only on L2 Optimism. \nTry using '--network optimistic'"
+		);
 		return 0;
 	}
 	if (networkObj.chainId == 42) {
@@ -30,27 +31,29 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
-	
-	
-    const ExoticMarketMastercopyAddress = getTargetAddress("ExoticMarketMasterCopy", network);
-    const ExoticMarketManagerAddress = getTargetAddress("ExoticMarketManager", network);
-    const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
-    
+
+	const ExoticMarketMastercopyAddress = getTargetAddress('ExoticMarketMasterCopy', network);
+	const ExoticMarketManagerAddress = getTargetAddress('ExoticMarketManager', network);
+	const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
+
 	if (networkObj.chainId == 69) {
 		await upgrades.upgradeProxy(ExoticMarketManagerAddress, ExoticMarketManager);
 		await delay(5000);
-	
+
 		console.log('ExoticMarketManager upgraded');
-	
-		  const ExoticMarketManagerImplementation = await getImplementationAddress(
+
+		const ExoticMarketManagerImplementation = await getImplementationAddress(
 			ethers.provider,
 			ExoticMarketManagerAddress
 		);
-	
+
 		console.log('Implementation ExoticMarketManager: ', ExoticMarketManagerImplementation);
-		setTargetAddress('ExoticMarketManagerImplementation', network, ExoticMarketManagerImplementation);
-	
-		
+		setTargetAddress(
+			'ExoticMarketManagerImplementation',
+			network,
+			ExoticMarketManagerImplementation
+		);
+
 		try {
 			await hre.run('verify:verify', {
 				address: ExoticMarketManagerImplementation,
@@ -61,7 +64,10 @@ async function main() {
 	}
 
 	if (networkObj.chainId == 10) {
-		const implementation = await upgrades.prepareUpgrade(ExoticMarketManagerAddress, ExoticMarketManager);
+		const implementation = await upgrades.prepareUpgrade(
+			ExoticMarketManagerAddress,
+			ExoticMarketManager
+		);
 		await delay(5000);
 
 		console.log('ExoticMarketManager upgraded');
@@ -69,7 +75,6 @@ async function main() {
 		console.log('Implementation ExoticMarketManager: ', implementation);
 		setTargetAddress('ExoticMarketManagerImplementation', network, implementation);
 
-		
 		try {
 			await hre.run('verify:verify', {
 				address: implementation,
@@ -78,17 +83,15 @@ async function main() {
 			console.log(e);
 		}
 	}
-
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch((error) => {
+	.catch(error => {
 		console.error(error);
 		process.exit(1);
 	});
 
-    
 function delay(time) {
 	return new Promise(function(resolve) {
 		setTimeout(resolve, time);

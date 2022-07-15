@@ -13,13 +13,11 @@ const { BigNumber } = require('ethers');
 const { numberExponentToLarge } = require('../../scripts/helpers');
 
 module.exports = {
-
-	encodeCall(name, arguments, values) {
-		const methodId = abi.methodID(name, arguments).toString('hex');
-		const params = abi.rawEncode(arguments, values).toString('hex');
+	encodeCall(name, argument, values) {
+		const methodId = abi.methodID(name, argument).toString('hex');
+		const params = abi.rawEncode(argument, values).toString('hex');
 		return '0x' + methodId + params;
 	},
-
 
 	/**
 	 * the truffle transaction does not return all events logged, only those from the invoked
@@ -297,12 +295,14 @@ module.exports = {
 		return tx.logs.find(({ event }) => event === name);
 	},
 	// returns the sqrt price as a 64x96
-    encodePriceSqrt(reserve1, reserve0) {
-		return numberExponentToLarge(Big(reserve1)
-			.div(reserve0)
-			.sqrt()
-			.mul(Big(2).pow(96))
-			.round()
-			.toString());
-  	}
+	encodePriceSqrt(reserve1, reserve0) {
+		return numberExponentToLarge(
+			Big(reserve1)
+				.div(reserve0)
+				.sqrt()
+				.mul(Big(2).pow(96))
+				.round()
+				.toString()
+		);
+	},
 };

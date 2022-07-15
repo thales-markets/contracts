@@ -37,14 +37,7 @@ contract('ThalesAMM', accounts => {
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
 			.connect(creator)
-			.createMarket(
-				oracleKey,
-				strikePrice.toString(),
-				maturity,
-				initialMint.toString(),
-				false,
-				ZERO_ADDRESS
-			);
+			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
 			event => event['event'] && event['event'] === 'MarketCreated'
@@ -90,6 +83,7 @@ contract('ThalesAMM', accounts => {
 		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
 		await factory.connect(ownerSigner).setPositionalMarketManager(manager.address);
+
 		await factory
 			.connect(ownerSigner)
 			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
@@ -176,6 +170,8 @@ contract('ThalesAMM', accounts => {
 			from: owner,
 		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 	});
 
 	const Position = {
@@ -289,7 +285,7 @@ contract('ThalesAMM', accounts => {
 				manager,
 				sETHKey,
 				toUnit(strike),
-				now + day * 10,
+				now + day * 12,
 				toUnit(10),
 				creatorSigner
 			);

@@ -401,7 +401,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     function exerciseOptions() external override {
         // The market must be resolved if it has not been.
-        // the first one to exercise pays the gas fees. Might be worth splitting it home.
         require(resolved, "Unresolved");
         require(!paused, "Paused");
         // If the account holds no options, revert.

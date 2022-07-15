@@ -168,7 +168,7 @@ contract('StakingThales', accounts => {
 			from: owner,
 		});
 		await SNXRewardsDeployed.setIssuanceRatio('1666666666666666666'.toString());
-		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, { from: owner });
+		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, { from: owner });
 		await StakingThalesDeployed.setAddresses(
 			SNXRewardsDeployed.address,
 			dummy,

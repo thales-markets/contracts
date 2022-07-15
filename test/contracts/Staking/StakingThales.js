@@ -240,7 +240,7 @@ contract('StakingThales', accounts => {
 			{ from: owner }
 		);
 		await SNXRewardsDeployed.setIssuanceRatio('1666666666666666666'.toString());
-		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, { from: owner });
+		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, { from: owner });
 		await StakingThalesDeployed.setStakingRewardsParameters(
 			100000,
 			100000,
@@ -1358,6 +1358,16 @@ contract('StakingThales', accounts => {
 			}
 			await fastForward(WEEK + SECOND);
 			await StakingThalesDeployed.closePeriod({ from: second });
+
+			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, false, {
+				from: owner,
+			});
+			await expect(StakingThalesDeployed.mergeAccount(second, { from: first })).to.be.revertedWith(
+				'Merge account is disabled'
+			);
+			await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, {
+				from: owner,
+			});
 
 			await expect(StakingThalesDeployed.mergeAccount(second, { from: first })).to.be.revertedWith(
 				'Cannot merge, claim rewards on both accounts before merging'

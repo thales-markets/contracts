@@ -327,6 +327,12 @@
         "internalType": "uint256",
         "name": "unstakeDurationPeriod",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "mergeAccountEnabled",
+        "type": "bool"
       }
     ],
     "name": "StakingParametersChanged",
@@ -1703,6 +1709,11 @@
         "internalType": "uint256",
         "name": "_unstakeDurationPeriod",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_mergeAccountEnabled",
+        "type": "bool"
       }
     ],
     "name": "setStakingParameters",

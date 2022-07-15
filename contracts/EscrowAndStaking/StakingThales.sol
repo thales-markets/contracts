@@ -110,6 +110,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     mapping(address => mapping(address => bool)) public canClaimOnBehalf;
 
+    bool public mergeAccountEnabled;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -201,18 +203,27 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param _distributeFeesEnabled enable/disable fees distribution
     /// @param _durationPeriod duration of the staking period
     /// @param _unstakeDurationPeriod duration of the unstaking cooldown period
+    /// @param _mergeAccountEnabled enable/disable account merging
     function setStakingParameters(
         bool _claimEnabled,
         bool _distributeFeesEnabled,
         uint _durationPeriod,
-        uint _unstakeDurationPeriod
+        uint _unstakeDurationPeriod,
+        bool _mergeAccountEnabled
     ) external onlyOwner {
         claimEnabled = _claimEnabled;
         distributeFeesEnabled = _distributeFeesEnabled;
         durationPeriod = _durationPeriod;
         unstakeDurationPeriod = _unstakeDurationPeriod;
+        mergeAccountEnabled = _mergeAccountEnabled;
 
-        emit StakingParametersChanged(_claimEnabled, _distributeFeesEnabled, durationPeriod, _unstakeDurationPeriod);
+        emit StakingParametersChanged(
+            _claimEnabled,
+            _distributeFeesEnabled,
+            _durationPeriod,
+            _unstakeDurationPeriod,
+            _mergeAccountEnabled
+        );
     }
 
     /// @notice Set staking rewards parameters
@@ -737,6 +748,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @notice Merge account to transfer all staking amounts to another account
     /// @param destAccount to merge into
     function mergeAccount(address destAccount) external notPaused {
+        require(mergeAccountEnabled, "Merge account is disabled");
         require(destAccount != address(0) && destAccount != msg.sender, "Invalid address");
         require(
             _calculateAvailableRewardsToClaim(msg.sender) == 0 && _calculateAvailableRewardsToClaim(destAccount) == 0,
@@ -930,7 +942,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         bool claimEnabled,
         bool distributeFeesEnabled,
         uint durationPeriod,
-        uint unstakeDurationPeriod
+        uint unstakeDurationPeriod,
+        bool mergeAccountEnabled
     );
     event StakingRewardsParametersChanged(
         uint fixedPeriodReward,

@@ -89,6 +89,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public invalidOdds;
     mapping(address => bool) public marketCreated;
     mapping(uint => mapping(uint => bytes32[])) public gamesPerDatePerSport;
+    mapping(address => bool) public isPausedByCanceldStatus;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -278,25 +279,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return gameCreated[_gameId];
     }
 
-    /// @notice view function which returns odds for home team based on id of a game
+    /// @notice view function which returns odds
     /// @param _gameId game id
     /// @return homeOdds moneyline odd in a two decimal places
-    function getOddsHomeTeam(bytes32 _gameId) public view returns (int24) {
-        return gameOdds[_gameId].homeOdds;
-    }
-
-    /// @notice view function which returns odds for awway team based on id of a game
-    /// @param _gameId game id
-    /// @return awayOdds moneyline odd in a two decimal places
-    function getOddsAwayTeam(bytes32 _gameId) public view returns (int24) {
-        return gameOdds[_gameId].awayOdds;
-    }
-
-    /// @notice view function which returns odds for draw based on id of a game (if game can have draw result if not return is 0)
-    /// @param _gameId game id
     /// @return drawOdds moneyline odd in a two decimal places
-    function getOddsDraw(bytes32 _gameId) public view returns (int24) {
-        return gameOdds[_gameId].drawOdds;
+    /// @return awayOdds moneyline odd in a two decimal places
+    function getOddsForGame(bytes32 _gameId) external view returns (int24, int24, int24) {
+        return (gameOdds[_gameId].homeOdds, gameOdds[_gameId].drawOdds, gameOdds[_gameId].awayOdds);
     }
 
     /// @notice view function which returns games on certan date
@@ -441,8 +430,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             // if was paused and paused by invalid odds unpause
             if (sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
-                if(invalidOdds[marketPerGameId[_game.gameId]]){
+                if(invalidOdds[marketPerGameId[_game.gameId]] || isPausedByCanceldStatus[marketPerGameId[_game.gameId]]){
                     invalidOdds[marketPerGameId[_game.gameId]] = false;
+                    isPausedByCanceldStatus[marketPerGameId[_game.gameId]] = false;
                     _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], false);
                 }
             }
@@ -506,6 +496,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _resolveMarket(bytes32 _gameId) internal {
         GameResolve memory game = getGameResolvedById(_gameId);
+        GameCreate memory gameCreated = getGameCreatedById(_gameId);
         uint index = queues.unproccessedGamesIndex(_gameId);
 
         // it can return ZERO index, needs checking
@@ -525,10 +516,16 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
         } else if (cancelGameStatuses[game.statusId]) {
-            sportsManager.resolveMarket(marketPerGameId[game.gameId], 0);
-            marketCanceled[marketPerGameId[game.gameId]] = true;
+            if(gameCreated.startTime > block.timestamp){
+                isPausedByCanceldStatus[marketPerGameId[game.gameId]] = true;
+                _pauseOrUnpauseMarket(marketPerGameId[game.gameId], true);
+            }else{
+                sportsManager.resolveMarket(marketPerGameId[game.gameId], 0);
+                marketCanceled[marketPerGameId[game.gameId]] = true;
 
-            _cleanStorageQueue(index);
+                _cleanStorageQueue(index);
+            }
+            
 
             emit CancelSportsMarket(marketPerGameId[game.gameId], game.gameId);
         }
@@ -579,8 +576,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _pauseOrUnpauseMarket(address _market, bool _pause) internal {
-        sportsManager.setMarketPaused(_market, _pause);
-        emit PauseSportsMarket(_market, _pause);
+        if (sportsManager.isMarketPaused(_market) != _pause) {
+            sportsManager.setMarketPaused(_market, _pause);
+            emit PauseSportsMarket(_market, _pause);
+        }
     }
 
     function _cleanStorageQueue(uint index) internal {
@@ -698,7 +697,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _sportId sport id which needs to be supported or not
     /// @param _isSupported true/false (supported or not)
     function setSupportedSport(uint _sportId, bool _isSupported) external onlyOwner {
-        require(supportedSport[_sportId] != _isSupported, "Already set to that value");
+        require(supportedSport[_sportId] != _isSupported, "Already set");
         supportedSport[_sportId] = _isSupported;
         emit SupportedSportsChanged(_sportId, _isSupported);
     }
@@ -707,7 +706,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _status status ID which needs to be supported or not
     /// @param _isSupported true/false (supported or not)
     function setSupportedResolvedStatuses(uint _status, bool _isSupported) external onlyOwner {
-        require(supportResolveGameStatuses[_status] != _isSupported, "Already set to that value");
+        require(supportResolveGameStatuses[_status] != _isSupported, "Already set");
         supportResolveGameStatuses[_status] = _isSupported;
         emit SupportedResolvedStatusChanged(_status, _isSupported);
     }
@@ -716,7 +715,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _status ststus ID which needs to be supported or not
     /// @param _isSupported true/false (supported or not)
     function setSupportedCancelStatuses(uint _status, bool _isSupported) external onlyOwner {
-        require(cancelGameStatuses[_status] != _isSupported, "Already set to that value");
+        require(cancelGameStatuses[_status] != _isSupported, "Already set");
         cancelGameStatuses[_status] = _isSupported;
         emit SupportedCancelStatusChanged(_status, _isSupported);
     }
@@ -725,34 +724,23 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _sportId sport ID which is two positional
     /// @param _isTwoPosition true/false (two positional sport or not)
     function setTwoPositionSport(uint _sportId, bool _isTwoPosition) external onlyOwner {
-        require(supportedSport[_sportId], "Sport must be supported");
-        require(twoPositionSport[_sportId] != _isTwoPosition, "Already set to that value");
+        require(supportedSport[_sportId] && twoPositionSport[_sportId] != _isTwoPosition, "Invalid input");
         twoPositionSport[_sportId] = _isTwoPosition;
         emit TwoPositionSportChanged(_sportId, _isTwoPosition);
     }
 
-    /// @notice sets manager for market creation
-    /// @param _sportsManager sport manager address
-    function setSportsManager(address _sportsManager) external onlyOwner {
-        require(_sportsManager != address(0), "Invalid address");
-        sportsManager = ISportPositionalMarketManager(_sportsManager);
-        emit NewSportsMarketManager(_sportsManager);
-    }
-
-    /// @notice sets wrapper address
+    /// @notice sets wrapper, manager, queue  address
     /// @param _wrapperAddress wrapper address
-    function setWrapperAddress(address _wrapperAddress) external onlyOwner {
-        require(_wrapperAddress != address(0), "Invalid address");
-        wrapperAddress = _wrapperAddress;
-        emit NewWrapperAddress(_wrapperAddress);
-    }
-
-    /// @notice sets queue address
     /// @param _queues queue address
-    function setQueueAddress(GamesQueue _queues) external onlyOwner {
-        require(address(_queues) != address(0), "Invalid address");
+    /// @param _sportsManager sport manager address
+    function setSportContracts(address _wrapperAddress, GamesQueue _queues, address _sportsManager) external onlyOwner {
+        require(_wrapperAddress != address(0) || address(_queues) != address(0) || _sportsManager != address(0), "Invalid addreses");
+        
+        sportsManager = ISportPositionalMarketManager(_sportsManager);
         queues = _queues;
-        emit NewQueueAddress(_queues);
+        wrapperAddress = _wrapperAddress;
+
+        emit NewSportContracts(_wrapperAddress, _queues, _sportsManager);
     }
 
     /// @notice adding/removing whitelist address depending on a flag
@@ -824,8 +812,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event SupportedResolvedStatusChanged(uint _status, bool _isSupported);
     event SupportedCancelStatusChanged(uint _status, bool _isSupported);
     event TwoPositionSportChanged(uint _sportId, bool _isTwoPosition);
-    event NewSportsMarketManager(address _sportsManager);
-    event NewWrapperAddress(address _wrapperAddress);
-    event NewQueueAddress(GamesQueue _queues);
+    event NewSportsMarketManager(address _sportsManager);  // deprecated
+    event NewWrapperAddress(address _wrapperAddress);  // deprecated
+    event NewQueueAddress(GamesQueue _queues); // deprecated
+    event NewSportContracts(address _wrapperAddress, GamesQueue _queues, address _sportsManager);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 }

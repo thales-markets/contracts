@@ -89,7 +89,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public invalidOdds;
     mapping(address => bool) public marketCreated;
     mapping(uint => mapping(uint => bytes32[])) public gamesPerDatePerSport;
-    mapping(address => bool) public isPausedByCanceldStatus;
+    mapping(address => bool) public isPausedByCanceledStatus;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -430,9 +430,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             // if was paused and paused by invalid odds unpause
             if (sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
-                if(invalidOdds[marketPerGameId[_game.gameId]] || isPausedByCanceldStatus[marketPerGameId[_game.gameId]]){
+                if(invalidOdds[marketPerGameId[_game.gameId]] || isPausedByCanceledStatus[marketPerGameId[_game.gameId]]){
                     invalidOdds[marketPerGameId[_game.gameId]] = false;
-                    isPausedByCanceldStatus[marketPerGameId[_game.gameId]] = false;
+                    isPausedByCanceledStatus[marketPerGameId[_game.gameId]] = false;
                     _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], false);
                 }
             }
@@ -517,7 +517,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
         } else if (cancelGameStatuses[game.statusId]) {
             if(gameCreated.startTime > block.timestamp){
-                isPausedByCanceldStatus[marketPerGameId[game.gameId]] = true;
+                isPausedByCanceledStatus[marketPerGameId[game.gameId]] = true;
                 _pauseOrUnpauseMarket(marketPerGameId[game.gameId], true);
             }else{
                 sportsManager.resolveMarket(marketPerGameId[game.gameId], 0);

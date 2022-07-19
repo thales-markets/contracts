@@ -282,10 +282,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice view function which returns odds
     /// @param _gameId game id
     /// @return homeOdds moneyline odd in a two decimal places
-    /// @return drawOdds moneyline odd in a two decimal places
     /// @return awayOdds moneyline odd in a two decimal places
+    /// @return drawOdds moneyline odd in a two decimal places
     function getOddsForGame(bytes32 _gameId) external view returns (int24, int24, int24) {
-        return (gameOdds[_gameId].homeOdds, gameOdds[_gameId].drawOdds, gameOdds[_gameId].awayOdds);
+        return (gameOdds[_gameId].homeOdds, gameOdds[_gameId].awayOdds, gameOdds[_gameId].drawOdds);
     }
 
     /// @notice view function which returns games on certan date

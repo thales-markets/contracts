@@ -16,6 +16,7 @@ const DAY = 86400;
 const WEEK = 604800;
 
 const YEAR = 31556926;
+const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const {
 	fastForward,
@@ -1501,6 +1502,10 @@ contract('TheRundownConsumer', accounts => {
 				TherundownConsumerDeployed.setSupportedResolvedStatuses(15, false, { from: wrapper })
 			).to.be.revertedWith('Only the contract owner may perform this action');
 
+			await expect(
+				TherundownConsumerDeployed.setSupportedResolvedStatuses(15, true, { from: owner })
+			).to.be.revertedWith('Already set');
+
 			// check if event is emited
 			assert.eventEqual(tx_SupportedResolvedStatuses.logs[0], 'SupportedResolvedStatusChanged', {
 				_status: 15,
@@ -1519,6 +1524,10 @@ contract('TheRundownConsumer', accounts => {
 				TherundownConsumerDeployed.setSupportedCancelStatuses(15, false, { from: wrapper })
 			).to.be.revertedWith('Only the contract owner may perform this action');
 
+			await expect(
+				TherundownConsumerDeployed.setSupportedCancelStatuses(15, true, { from: owner })
+			).to.be.revertedWith('Already set');
+
 			// check if event is emited
 			assert.eventEqual(tx_SupportedCancelStatuses.logs[0], 'SupportedCancelStatusChanged', {
 				_status: 15,
@@ -1532,6 +1541,10 @@ contract('TheRundownConsumer', accounts => {
 			await expect(
 				TherundownConsumerDeployed.setTwoPositionSport(15, false, { from: wrapper })
 			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				TherundownConsumerDeployed.setTwoPositionSport(15, true, { from: owner })
+			).to.be.revertedWith('Invalid input');
 
 			// check if event is emited
 			assert.eventEqual(tx_twoPositionSport.logs[0], 'TwoPositionSportChanged', {
@@ -1551,6 +1564,12 @@ contract('TheRundownConsumer', accounts => {
 			await expect(
 				TherundownConsumerDeployed.setSportContracts(wrapper, wrapper, wrapper, { from: wrapper })
 			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				TherundownConsumerDeployed.setSportContracts(ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid addreses');
 
 			// check if event is emited
 			assert.eventEqual(tx_SportsManager.logs[0], 'NewSportContracts', {

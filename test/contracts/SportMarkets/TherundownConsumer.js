@@ -334,9 +334,6 @@ contract('TheRundownConsumer', accounts => {
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 
-			assert.bnEqual(gameid1, await TherundownConsumerDeployed.gamesPerDate(game1NBATime, 0));
-			let getGamesPerdate = await TherundownConsumerDeployed.getGamesPerdate(game1NBATime);
-			assert.bnEqual(2, getGamesPerdate.length);
 			let getGamesPerdatepersport = await TherundownConsumerDeployed.getGamesPerDatePerSport(
 				4,
 				game1NBATime
@@ -1393,10 +1390,6 @@ contract('TheRundownConsumer', accounts => {
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
-
-			assert.bnEqual(gameid1, await TherundownConsumerDeployed.gamesPerDate(game1NBATime, 0));
-			let getGamesPerdate = await TherundownConsumerDeployed.getGamesPerdate(game1NBATime);
-			assert.bnEqual(2, getGamesPerdate.length);
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));

@@ -84,7 +84,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     // game
     GamesQueue public queues;
     mapping(bytes32 => uint) public oddsLastPulledForGame;
-    mapping(uint => bytes32[]) public gamesPerDate;
+    mapping(uint => bytes32[]) public gamesPerDate; // deprecated use gamesPerDatePerSport
     mapping(uint => mapping(uint => bool)) public isSportOnADate;
     mapping(address => bool) public invalidOdds;
     mapping(address => bool) public marketCreated;
@@ -135,7 +135,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 !isSameTeamOrTBD(game.homeTeam, game.awayTeam) &&
                 game.startTime > block.timestamp
             ) {
-                gamesPerDate[_date].push(game.gameId);
                 gamesPerDatePerSport[_sportId][_date].push(game.gameId);
                 _createGameFulfill(_requestId, game, _sportId);
             }
@@ -286,13 +285,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @return drawOdds moneyline odd in a two decimal places
     function getOddsForGame(bytes32 _gameId) external view returns (int24, int24, int24) {
         return (gameOdds[_gameId].homeOdds, gameOdds[_gameId].awayOdds, gameOdds[_gameId].drawOdds);
-    }
-
-    /// @notice view function which returns games on certan date
-    /// @param _date date
-    /// @return bytes32[] list of games
-    function getGamesPerdate(uint _date) public view returns (bytes32[] memory) {
-        return gamesPerDate[_date];
     }
 
     /// @notice view function which returns games on certan date and sportid

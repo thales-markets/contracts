@@ -784,30 +784,6 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         canClaimOnBehalf[msg.sender][account] = _canClaimOnBehalf;
     }
 
-    function decreaseVolume(address account, uint amount) external {
-        require(
-            msg.sender == thalesAMM || msg.sender == exoticBonds || msg.sender == thalesRangedAMM || msg.sender == sportsAMM,
-            "Invalid address"
-        );
-        require(msg.sender != address(0), "Invalid address");
-        if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
-            stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
-            stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
-            lastAMMUpdatePeriod[account] = periodsOfStaking;
-        } else {
-            if (stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount <= amount) {
-                stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
-            } else {
-                stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = stakerAMMVolume[account][
-                    periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-                ]
-                    .amount
-                    .sub(amount);
-            }
-        }
-        emit AMMVolumeDecreased(account, amount);
-    }
-
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _claimReward(address account) internal notPaused {

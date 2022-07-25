@@ -237,15 +237,6 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         }
     }
 
-    function decreaseCreatorVolume(address _market) external onlyOracleCouncilManagerAndOwner nonReentrant {
-        require(marketManager.isActiveMarket(_market), "Invalid address");
-        require(marketBond[_market].creatorBond > 0, "Creator bond 0");
-        uint amount = marketBond[_market].creatorBond.add(IExoticPositionalMarket(_market).fixedTicketPrice());
-        if (address(stakingThales) != address(0)) {
-            stakingThales.decreaseVolume(marketManager.creatorAddress(_market), amount);
-        }
-    }
-
     function transferCreatorToResolverBonds(address _market) external onlyOracleCouncilManagerAndOwner nonReentrant {
         require(marketManager.isActiveMarket(_market), "Invalid address");
         require(marketBond[_market].creatorBond > 0, "Creator bond 0");

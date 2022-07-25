@@ -16,6 +16,8 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const ExoticPositionalMarketContract = artifacts.require('ExoticPositionalFixedMarket');
 const ExoticPositionalOpenBidMarketContract = artifacts.require('ExoticPositionalOpenBidMarket');
 const ExoticPositionalMarketManagerContract = artifacts.require('ExoticPositionalMarketManager');
+const ExoticMarketDataContract = artifacts.require('ExoticPositionalMarketData');
+const ExoticRewardsContract = artifacts.require('ExoticRewards');
 const ThalesOracleCouncilContract = artifacts.require('ThalesOracleCouncil');
 const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 const ThalesBondsContract = artifacts.require('ThalesBonds');
@@ -25,6 +27,8 @@ let ExoticPositionalOpenBidMarket;
 let ExoticPositionalMarketManager;
 let ExoticPositionalTags;
 let ThalesOracleCouncil;
+let ExoticMarketData;
+let ExoticRewards;
 let Thales;
 let ThalesBonds;
 let answer;
@@ -75,6 +79,14 @@ contract('Exotic Positional market', async accounts => {
 		await ThalesBonds.initialize(manager, { from: manager });
 
 		await ExoticPositionalMarketManager.initialize(manager, { from: manager });
+		ExoticMarketData = await ExoticMarketDataContract.new();
+		ExoticRewards = await ExoticRewardsContract.new();
+		await ExoticMarketData.initialize(manager, ExoticPositionalMarketManager.address, {
+			from: manager,
+		});
+		await ExoticRewards.initialize(manager, ExoticPositionalMarketManager.address, {
+			from: manager,
+		});
 		fixedBondAmount = toUnit(100);
 		disputePrice = toUnit(10);
 		let maxOpenBidPositon = toUnit(1000);
@@ -86,8 +98,8 @@ contract('Exotic Positional market', async accounts => {
 			Thales.address,
 			ExoticPositionalTags.address,
 			owner,
-			owner,
-			owner,
+			ExoticMarketData.address,
+			ExoticRewards.address,
 			safeBox,
 			{ from: manager }
 		);
@@ -140,6 +152,9 @@ contract('Exotic Positional market', async accounts => {
 
 	describe('test setters', function() {
 		it('addresses', async function() {
+			await ExoticRewards.setMarketManager(ExoticPositionalMarketManager.address, {
+				from: manager,
+			});
 			await ExoticPositionalMarketManager.setAddresses(
 				ExoticPositionalMarket.address,
 				ExoticPositionalOpenBidMarket.address,
@@ -443,6 +458,13 @@ contract('Exotic Positional market', async accounts => {
 			assert.equal(answer, true);
 			answer = await deployedOpenBidMarket.endOfPositioning();
 			assert.equal(answer.toString(), endOfPositioning);
+		});
+
+		it('get all market data', async function() {
+			answer = await ExoticMarketData.getAllMarketData(deployedOpenBidMarket.address);
+			answer = await ExoticMarketData.setMarketManager(ExoticPositionalMarketManager.address, {
+				from: manager,
+			});
 		});
 
 		it('manager owner', async function() {

@@ -7,8 +7,6 @@ import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "./SportPosition.sol";
 import "./SportPositionalMarket.sol";
 import "./SportPositionalMarketFactory.sol";
-import "../../interfaces/IPriceFeed.sol";
-import "../../interfaces/IPositionalMarket.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -20,8 +18,7 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
     address public positionalMarketMastercopy;
     address public positionMastercopy;
 
-    address public limitOrderProvider;
-    address public thalesAMM;
+    address public sportsAMM;
 
     struct SportPositionCreationMarketParameters {
         address creator;
@@ -65,8 +62,7 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
                 _parameters.times,
                 _parameters.initialMint,
                 _parameters.theRundownConsumer,
-                limitOrderProvider,
-                thalesAMM,
+                sportsAMM,
                 _parameters.positionCount,
                 positions,
                 _parameters.tags
@@ -86,35 +82,30 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
     }
 
     /* ========== SETTERS ========== */
-    function setPositionalMarketManager(address _positionalMarketManager) external onlyOwner {
+    function setSportPositionalMarketManager(address _positionalMarketManager) external onlyOwner {
         positionalMarketManager = _positionalMarketManager;
-        emit PositionalMarketManagerChanged(_positionalMarketManager);
+        emit SportPositionalMarketManagerChanged(_positionalMarketManager);
     }
 
-    function setPositionalMarketMastercopy(address _positionalMarketMastercopy) external onlyOwner {
+    function setSportPositionalMarketMastercopy(address _positionalMarketMastercopy) external onlyOwner {
         positionalMarketMastercopy = _positionalMarketMastercopy;
-        emit PositionalMarketMastercopyChanged(_positionalMarketMastercopy);
+        emit SportPositionalMarketMastercopyChanged(_positionalMarketMastercopy);
     }
 
-    function setPositionMastercopy(address _positionMastercopy) external onlyOwner {
+    function setSportPositionMastercopy(address _positionMastercopy) external onlyOwner {
         positionMastercopy = _positionMastercopy;
-        emit PositionMastercopyChanged(_positionMastercopy);
+        emit SportPositionMastercopyChanged(_positionMastercopy);
     }
 
-    function setLimitOrderProvider(address _limitOrderProvider) external onlyOwner {
-        limitOrderProvider = _limitOrderProvider;
-        emit SetLimitOrderProvider(_limitOrderProvider);
+    function setSportsAMM(address _sportsAMM) external onlyOwner {
+        sportsAMM = _sportsAMM;
+        emit SetSportsAMM(_sportsAMM);
     }
 
-    function setThalesAMM(address _thalesAMM) external onlyOwner {
-        thalesAMM = _thalesAMM;
-        emit SetThalesAMM(_thalesAMM);
-    }
-
-    event PositionalMarketManagerChanged(address _positionalMarketManager);
-    event PositionalMarketMastercopyChanged(address _positionalMarketMastercopy);
-    event PositionMastercopyChanged(address _positionMastercopy);
-    event SetThalesAMM(address _thalesAMM);
+    event SportPositionalMarketManagerChanged(address _positionalMarketManager);
+    event SportPositionalMarketMastercopyChanged(address _positionalMarketMastercopy);
+    event SportPositionMastercopyChanged(address _positionMastercopy);
+    event SetSportsAMM(address _sportsAMM);
     event SetLimitOrderProvider(address _limitOrderProvider);
     event MarketCreated(
         address market,

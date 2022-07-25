@@ -45,9 +45,9 @@ async function main() {
 
 	// upgrade if test networks
 	if (networkObj.chainId == 69 || networkObj.chainId == 42) {
-		await upgrades.upgradeProxy(SportMarketFactoryAddress, SportMarketFactory);
+		await upgrades.upgradeProxy(SportMarketDataAddress, SportMarketData);
 
-		implementation = await getImplementationAddress(ethers.provider, SportMarketFactoryAddress);
+		implementation = await getImplementationAddress(ethers.provider, SportMarketDataAddress);
 	}
 
 	console.log('SportPositionalMarketData upgraded');

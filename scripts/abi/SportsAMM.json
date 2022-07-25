@@ -98,50 +98,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
         "internalType": "uint256",
-        "name": "_cap",
+        "name": "_defaultCapPerGame",
         "type": "uint256"
       }
     ],
-    "name": "SetCapPerAsset",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_capPerMarket",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetCapPerMarket",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_impliedVolatility",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetImpliedVolatilityPerAsset",
+    "name": "SetDefaultCapPerGame",
     "type": "event"
   },
   {
@@ -155,6 +117,19 @@
       }
     ],
     "name": "SetMaxSpread",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_spread",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMaxSupportedOdds",
     "type": "event"
   },
   {
@@ -193,7 +168,7 @@
         "type": "uint256"
       }
     ],
-    "name": "SetMinSupportedPrice",
+    "name": "SetMinSupportedOdds",
     "type": "event"
   },
   {
@@ -207,19 +182,6 @@
       }
     ],
     "name": "SetMinimalTimeLeftToMaturity",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_manager",
-        "type": "address"
-      }
-    ],
-    "name": "SetPositionalMarketManager",
     "type": "event"
   },
   {
@@ -259,6 +221,19 @@
       }
     ],
     "name": "SetSafeBoxImpact",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "SetSportsPositionalMarketManager",
     "type": "event"
   },
   {
@@ -351,19 +326,6 @@
   },
   {
     "inputs": [],
-    "name": "MAX_APPROVAL",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -407,35 +369,6 @@
       }
     ],
     "name": "availableToSellToAMM",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "enum SportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "balancePosition",
     "outputs": [
       {
         "internalType": "uint256",
@@ -635,19 +568,6 @@
   },
   {
     "inputs": [],
-    "name": "capPerMarket",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "curveOnrampEnabled",
     "outputs": [
       {
@@ -686,6 +606,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "defaultCapPerGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -701,28 +634,14 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getCapPerAsset",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "isSell",
+        "type": "bool"
       }
     ],
     "name": "getMarketDefaultOdds",
@@ -757,7 +676,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_capPerMarket",
+        "name": "_defaultCapPerGame",
         "type": "uint256"
       },
       {
@@ -815,7 +734,7 @@
   },
   {
     "inputs": [],
-    "name": "maxSupportedPrice",
+    "name": "maxSupportedOdds",
     "outputs": [
       {
         "internalType": "uint256",
@@ -841,7 +760,7 @@
   },
   {
     "inputs": [],
-    "name": "minSupportedPrice",
+    "name": "minSupportedOdds",
     "outputs": [
       {
         "internalType": "uint256",
@@ -929,25 +848,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "oddsInTesting",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -971,43 +871,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "enum SportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
-      }
-    ],
-    "name": "price",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address payable",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "retrieveSUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1161,37 +1024,6 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "asset",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_cap",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCapPerAsset",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_capPerMarket",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCapPerMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_curveSUSD",
         "type": "address"
@@ -1226,6 +1058,19 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_defaultCapPerGame",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDefaultCapPerGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_spread",
         "type": "uint256"
       }
@@ -1239,11 +1084,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_maxSupportedPrice",
+        "name": "_maxSupportedOdds",
         "type": "uint256"
       }
     ],
-    "name": "setMaxSupportedPrice",
+    "name": "setMaxSupportedOdds",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1265,11 +1110,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_minSupportedPrice",
+        "name": "_minSupportedOdds",
         "type": "uint256"
       }
     ],
-    "name": "setMinSupportedPrice",
+    "name": "setMinSupportedOdds",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1296,19 +1141,6 @@
       }
     ],
     "name": "setOwner",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_manager",
-        "type": "address"
-      }
-    ],
-    "name": "setPositionalMarketManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1355,48 +1187,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "setSportsPositionalMarketManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
       }
     ],
     "name": "setStakingThales",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_homeOdds",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_awayOdds",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_drawOdds",
-        "type": "uint256"
-      }
-    ],
-    "name": "setTestOdds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "_testing",
-        "type": "bool"
-      }
-    ],
-    "name": "setTesting",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1418,29 +1227,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "setWhitelistedAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "",
         "type": "address"
       }
     ],
-    "name": "spentOnMarket",
+    "name": "spentOnGame",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1459,32 +1250,6 @@
         "internalType": "contract IStakingThales",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "testOdds",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "testingOdds",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1537,25 +1302,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "whitelistedAddresses",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",

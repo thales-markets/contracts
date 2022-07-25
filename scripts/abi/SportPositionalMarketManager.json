@@ -244,21 +244,8 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "SetCustomMarketCreationEnabled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
-        "name": "manager",
+        "name": "migratingManager",
         "type": "address"
       }
     ],
@@ -271,24 +258,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_positionalMarketFactory",
+        "name": "_sportPositionalMarketFactory",
         "type": "address"
       }
     ],
-    "name": "SetPositionalMarketFactory",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "SetPriceFeed",
+    "name": "SetSportPositionalMarketFactory",
     "type": "event"
   },
   {
@@ -302,19 +276,6 @@
       }
     ],
     "name": "SetTherundownConsumer",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_zeroExAddress",
-        "type": "address"
-      }
-    ],
-    "name": "SetZeroExAddress",
     "type": "event"
   },
   {
@@ -356,32 +317,6 @@
         "internalType": "address[]",
         "name": "",
         "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "addWhitelistedAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "capitalRequirement",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -458,38 +393,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "disableWhitelistedAddresses",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "durations",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "expiryDuration",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "maxTimeToMaturity",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "enableWhitelistedAddresses",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address[]",
@@ -500,6 +403,19 @@
     "name": "expireMarkets",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "expiryDuration",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -591,6 +507,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "isMarketPaused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "lastPauseTime",
     "outputs": [
@@ -638,29 +573,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract SportPositionalMarketManager",
-        "name": "receivingManager",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
-      },
-      {
-        "internalType": "contract SportPositionalMarket[]",
-        "name": "marketsToMigrate",
-        "type": "address[]"
-      }
-    ],
-    "name": "migrateMarkets",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -730,19 +642,6 @@
   },
   {
     "inputs": [],
-    "name": "onlyWhitelistedAddressesCanCreateMarkets",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -765,50 +664,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "positionalMarketFactory",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "active",
-        "type": "bool"
-      },
-      {
-        "internalType": "contract SportPositionalMarket[]",
-        "name": "marketsToReceive",
-        "type": "address[]"
-      }
-    ],
-    "name": "receiveMarkets",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "removeWhitelistedAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -893,32 +748,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_creatorCapitalRequirement",
-        "type": "uint256"
-      }
-    ],
-    "name": "setCreatorCapitalRequirement",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
-      }
-    ],
-    "name": "setCustomMarketCreationEnabled",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "_expiryDuration",
         "type": "uint256"
       }
@@ -944,25 +773,17 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_maxTimeToMaturity",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMaxTimeToMaturity",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract SportPositionalMarketManager",
-        "name": "manager",
+        "internalType": "address",
+        "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_paused",
+        "type": "bool"
       }
     ],
-    "name": "setMigratingManager",
+    "name": "setMarketPaused",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -997,11 +818,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_positionalMarketFactory",
+        "name": "_sportPositionalMarketFactory",
         "type": "address"
       }
     ],
-    "name": "setPositionalMarketFactory",
+    "name": "setSportPositionalMarketFactory",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1022,19 +843,6 @@
   {
     "inputs": [
       {
-        "internalType": "address[]",
-        "name": "_whitelistedAddresses",
-        "type": "address[]"
-      }
-    ],
-    "name": "setWhitelistedAddresses",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_address",
         "type": "address"
@@ -1043,6 +851,19 @@
     "name": "setsUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sportPositionalMarketFactory",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1121,25 +942,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "whitelistedAddresses",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",

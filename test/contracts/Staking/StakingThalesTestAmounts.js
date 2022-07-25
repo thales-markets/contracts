@@ -9,9 +9,9 @@ const { toBytes32 } = require('../../../index');
 const { expect } = require('chai');
 const { setupAllContracts } = require('../../utils/setup');
 
-const { fastForward, toUnit } = require('../../utils')();
-
-const { encodeCall } = require('../../utils/helpers');
+const { fastForward, toUnit, currentTime } = require('../../utils')();
+const { encodeCall, convertToDecimals } = require('../../utils/helpers');
+const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 contract('StakingThales', accounts => {
 	const [first, second, third, owner] = accounts;
@@ -39,6 +39,12 @@ contract('StakingThales', accounts => {
 	let manager, factory, addressResolver;
 	let sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 
+	const SNX = toBytes32('SNX');
+	let PriceFeedInstance;
+	let aggregatorSNX;
+	let timestamp;
+	let newRate = 4.797;
+
 	before(async () => {
 		({
 			PositionalMarketManager: manager,
@@ -47,6 +53,7 @@ contract('StakingThales', accounts => {
 			PositionMastercopy: PositionMastercopy,
 			AddressResolver: addressResolver,
 			SynthsUSD: sUSDSynth,
+			PriceFeed: PriceFeedInstance,
 		} = await setupAllContracts({
 			accounts,
 			synths: ['sUSD'],
@@ -59,6 +66,9 @@ contract('StakingThales', accounts => {
 		}));
 
 		const [creatorSigner, ownerSigner] = await ethers.getSigners();
+
+		aggregatorSNX = await MockAggregator.new({ from: managerOwner });
+		await aggregatorSNX.setDecimals('8');
 
 		await manager.connect(creatorSigner).setPositionalMarketFactory(factory.address);
 
@@ -79,6 +89,7 @@ contract('StakingThales', accounts => {
 	});
 
 	beforeEach(async () => {
+		const [creatorSigner, ownerSigner] = await ethers.getSigners();
 		let Thales = artifacts.require('Thales');
 		let EscrowThales = artifacts.require('EscrowThales');
 		let StakingThales = artifacts.require('StakingThales');
@@ -97,6 +108,11 @@ contract('StakingThales', accounts => {
 			toBytes32('random'),
 			{ from: owner }
 		);
+		//Price feed setup
+		await PriceFeedInstance.connect(ownerSigner).addAggregator(SNX, aggregatorSNX.address);
+		timestamp = await currentTime();
+
+		await aggregatorSNX.setLatestAnswer(convertToDecimals(newRate, 8), timestamp);
 
 		ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
 		ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
@@ -144,24 +160,27 @@ contract('StakingThales', accounts => {
 			ThalesDeployed.address,
 			EscrowThalesDeployed.address
 		);
-		await StakingThalesDeployed.setThalesStakingRewardsPool(
-			ThalesStakingRewardsPoolDeployed.address,
-			{ from: owner }
-		);
 		await EscrowThalesDeployed.setThalesStakingRewardsPool(
 			ThalesStakingRewardsPoolDeployed.address,
 			{ from: owner }
 		);
-
-		await StakingThalesDeployed.setDistributeFeesEnabled(true, { from: owner });
-		await StakingThalesDeployed.setClaimEnabled(true, { from: owner });
-		await StakingThalesDeployed.setAddressResolver(AddressResolverDeployed.address, {
-			from: owner,
-		});
-
 		await EscrowThalesDeployed.setStakingThalesContract(StakingThalesDeployed.address, {
 			from: owner,
 		});
+		await SNXRewardsDeployed.setIssuanceRatio('1666666666666666666'.toString());
+		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, { from: owner });
+		await StakingThalesDeployed.setAddresses(
+			SNXRewardsDeployed.address,
+			dummy,
+			dummy,
+			dummy,
+			dummy,
+			dummy,
+			PriceFeedInstance.address,
+			ThalesStakingRewardsPoolDeployed.address,
+			AddressResolverDeployed.address,
+			{ from: owner }
+		);
 		await StakingThalesDeployed.startStakingPeriod({ from: owner });
 	});
 
@@ -200,7 +219,17 @@ contract('StakingThales', accounts => {
 				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, toUnit(70000));
-				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
+				await StakingThalesDeployed.setStakingRewardsParameters(
+					fixedReward,
+					100000,
+					false,
+					'15',
+					'12',
+					'3',
+					'1',
+					'10',
+					{ from: owner }
+				);
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
 
@@ -291,7 +320,18 @@ contract('StakingThales', accounts => {
 				});
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, toUnit(70000));
-				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
+
+				await StakingThalesDeployed.setStakingRewardsParameters(
+					fixedReward,
+					100000,
+					false,
+					'15',
+					'12',
+					'3',
+					'1',
+					'10',
+					{ from: owner }
+				);
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
 
@@ -399,7 +439,17 @@ contract('StakingThales', accounts => {
 				await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 				let answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, toUnit(70000));
-				await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
+				await StakingThalesDeployed.setStakingRewardsParameters(
+					fixedReward,
+					100000,
+					false,
+					'15',
+					'12',
+					'3',
+					'1',
+					'10',
+					{ from: owner }
+				);
 				answer = await StakingThalesDeployed.fixedPeriodReward.call();
 				assert.bnEqual(answer, fixedReward);
 
@@ -543,7 +593,17 @@ contract('StakingThales', accounts => {
 					await sUSDSynth.transfer(StakingThalesDeployed.address, sUSD, { from: initialCreator });
 					let answer = await StakingThalesDeployed.fixedPeriodReward.call();
 					assert.bnEqual(answer, toUnit(70000));
-					await StakingThalesDeployed.setFixedPeriodReward(fixedReward, { from: owner });
+					await StakingThalesDeployed.setStakingRewardsParameters(
+						fixedReward,
+						100000,
+						false,
+						'15',
+						'12',
+						'3',
+						'1',
+						'10',
+						{ from: owner }
+					);
 					answer = await StakingThalesDeployed.fixedPeriodReward.call();
 					assert.bnEqual(answer, fixedReward);
 

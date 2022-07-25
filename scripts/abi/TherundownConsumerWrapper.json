@@ -15,23 +15,25 @@
         "internalType": "address",
         "name": "_consumer",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_paymentCreate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_paymentResolve",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_paymentOdds",
+        "type": "uint256"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_whitelistAddress",
-        "type": "address"
-      }
-    ],
-    "name": "AddedIntoWhitelist",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -91,11 +93,63 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_link",
+        "type": "address"
+      }
+    ],
+    "name": "NewLinkAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_oracle",
         "type": "address"
       }
     ],
     "name": "NewOracleAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_paymentCreate",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewPaymentAmountCreate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_paymentOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewPaymentAmountOdds",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_paymentResolve",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewPaymentAmountResolve",
     "type": "event"
   },
   {
@@ -144,19 +198,6 @@
     "type": "event"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_whitelistAddress",
-        "type": "address"
-      }
-    ],
-    "name": "addToWhitelist",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "consumer",
     "outputs": [
@@ -164,6 +205,25 @@
         "internalType": "contract ITherundownConsumer",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "datePerRequest",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -251,6 +311,19 @@
   },
   {
     "inputs": [],
+    "name": "linkToken",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -277,6 +350,45 @@
   },
   {
     "inputs": [],
+    "name": "paymentCreate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paymentOdds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paymentResolve",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -288,11 +400,6 @@
         "internalType": "bytes32",
         "name": "_specId",
         "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_payment",
-        "type": "uint256"
       },
       {
         "internalType": "string",
@@ -321,11 +428,6 @@
         "internalType": "bytes32",
         "name": "_specId",
         "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_payment",
-        "type": "uint256"
       },
       {
         "internalType": "string",
@@ -367,11 +469,6 @@
       },
       {
         "internalType": "uint256",
-        "name": "_payment",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
       },
@@ -408,11 +505,63 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_link",
+        "type": "address"
+      }
+    ],
+    "name": "setLink",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_oracle",
         "type": "address"
       }
     ],
     "name": "setOracle",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_paymentCreate",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPaymentCreate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_paymentOdds",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPaymentOdds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_paymentResolve",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPaymentResolve",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -445,32 +594,6 @@
       }
     ],
     "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "whitelistedAddresses",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "withdrawLink",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

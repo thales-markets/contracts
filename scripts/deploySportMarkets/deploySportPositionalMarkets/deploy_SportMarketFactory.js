@@ -62,14 +62,16 @@ async function main() {
 
 	await delay(5000);
 
-	await SportMarketManagerDeployed.setPositionalMarketFactory(SportMarketFactoryDeployed.address, {
-		from: owner.address,
-	});
+	await SportMarketManagerDeployed.setSportPositionalMarketFactory(
+		SportMarketFactoryDeployed.address,
+		{ from: owner.address }
+	);
 	console.log('Factory set in Manager');
 	await delay(5000);
-	await SportMarketFactoryDeployed.setPositionalMarketManager(SportMarketManagerDeployed.address, {
-		from: owner.address,
-	});
+	await SportMarketFactoryDeployed.setSportPositionalMarketManager(
+		SportMarketManagerDeployed.address,
+		{ from: owner.address }
+	);
 	console.log('Manager set in Factory');
 
 	await delay(5000);

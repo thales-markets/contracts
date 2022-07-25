@@ -17,17 +17,7 @@ interface ITherundownConsumer {
     function getResult(bytes32 _gameId) external view returns (uint);
 
     // write functions
-    function fulfillGamesCreated(
-        bytes32 _requestId,
-        bytes[] memory _games,
-        uint _sportsId
-    ) external;
-
-    function fulfillGamesResolved(
-        bytes32 _requestId,
-        bytes[] memory _games,
-        uint _sportsId
-    ) external;
-
-    function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external;
+    function fulfillGamesCreated(bytes32 _requestId, bytes[] memory _games, uint _sportsId, uint _date) external;
+    function fulfillGamesResolved(bytes32 _requestId, bytes[] memory _games, uint _sportsId) external;
+    function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games, uint _date) external;
 }

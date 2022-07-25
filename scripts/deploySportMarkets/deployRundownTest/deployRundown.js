@@ -20,16 +20,22 @@ async function main() {
 	console.log('Network name:' + networkObj.name);
 
 	if (networkObj.chainId == 10) {
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	} else if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 	}
 
+	const chainlink = require(`../deployRundown/chainlink/${network}.json`);
+
+	console.log('LINK address: ', chainlink['LINK']);
+	console.log('ORACLE address: ', chainlink['ORACLE']);
+
 	// We get the contract to deploy
 	let TherundownConsumerContract = await ethers.getContractFactory('TherundownConsumerTest');
 	const therundownConsumerContractDeployed = await TherundownConsumerContract.deploy(
-		'0xa36085F69e2889c224210F603D836748e7dC0088',
-		'0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd'
+		chainlink['LINK'],
+		chainlink['ORACLE']
 	);
 	await therundownConsumerContractDeployed.deployed();
 
@@ -40,10 +46,7 @@ async function main() {
 
 	await hre.run('verify:verify', {
 		address: therundownConsumerContractDeployed.address,
-		constructorArguments: [
-			'0xa36085F69e2889c224210F603D836748e7dC0088',
-			'0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd',
-		],
+		constructorArguments: [chainlink['LINK'], chainlink['ORACLE']],
 		contract:
 			'contracts/test-helpers/RundownTest/TherundownConsumerTest.sol:TherundownConsumerTest',
 	});

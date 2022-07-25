@@ -92,45 +92,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_positionMastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "PositionMastercopyChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_positionalMarketManager",
-        "type": "address"
-      }
-    ],
-    "name": "PositionalMarketManagerChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_positionalMarketMastercopy",
-        "type": "address"
-      }
-    ],
-    "name": "PositionalMarketMastercopyChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "_limitOrderProvider",
         "type": "address"
       }
@@ -144,11 +105,50 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_thalesAMM",
+        "name": "_sportsAMM",
         "type": "address"
       }
     ],
-    "name": "SetThalesAMM",
+    "name": "SetSportsAMM",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_positionMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "SportPositionMastercopyChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_positionalMarketManager",
+        "type": "address"
+      }
+    ],
+    "name": "SportPositionalMarketManagerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_positionalMarketMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "SportPositionalMarketMastercopyChanged",
     "type": "event"
   },
   {
@@ -238,19 +238,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "limitOrderProvider",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -332,19 +319,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_limitOrderProvider",
-        "type": "address"
-      }
-    ],
-    "name": "setLimitOrderProvider",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_owner",
         "type": "address"
       }
@@ -362,7 +336,7 @@
         "type": "address"
       }
     ],
-    "name": "setPositionMastercopy",
+    "name": "setSportPositionMastercopy",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -375,7 +349,7 @@
         "type": "address"
       }
     ],
-    "name": "setPositionalMarketManager",
+    "name": "setSportPositionalMarketManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -388,7 +362,7 @@
         "type": "address"
       }
     ],
-    "name": "setPositionalMarketMastercopy",
+    "name": "setSportPositionalMarketMastercopy",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -397,18 +371,18 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_thalesAMM",
+        "name": "_sportsAMM",
         "type": "address"
       }
     ],
-    "name": "setThalesAMM",
+    "name": "setSportsAMM",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [],
-    "name": "thalesAMM",
+    "name": "sportsAMM",
     "outputs": [
       {
         "internalType": "address",

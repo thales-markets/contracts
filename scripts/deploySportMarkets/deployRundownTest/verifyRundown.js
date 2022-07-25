@@ -20,17 +20,20 @@ async function main() {
 	console.log('Network name:' + networkObj.name);
 
 	if (networkObj.chainId == 10) {
-		network = 'optimistic';
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	} else if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 	}
 
+	const chainlink = require(`../deployRundown/chainlink/${network}.json`);
+
+	console.log('LINK address: ', chainlink['LINK']);
+	console.log('ORACLE address: ', chainlink['ORACLE']);
+
 	await hre.run('verify:verify', {
-		address: '0xe8e8093d44f84be11974E3183d219e94fc9c36D7',
-		constructorArguments: [
-			'0xa36085F69e2889c224210F603D836748e7dC0088',
-			'0xfF07C97631Ff3bAb5e5e5660Cdf47AdEd8D4d4Fd',
-		],
+		address: '0xd34CBF2178E5BE0cB96B67B1b01768D0D084f6db',
+		constructorArguments: [chainlink['LINK'], chainlink['ORACLE']],
 		contract:
 			'contracts/test-helpers/RundownTest/TherundownConsumerTest.sol:TherundownConsumerTest',
 	});

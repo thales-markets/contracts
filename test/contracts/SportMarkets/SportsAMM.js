@@ -315,7 +315,14 @@ contract('SportsAMM', accounts => {
 		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
 		// 	TherundownConsumerDeployed.address
 		// );
-		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
+		await TherundownConsumerDeployed.setSportContracts(
+			wrapper,
+			gamesQueue.address,
+			SportPositionalMarketManager.address,
+			{
+				from: owner,
+			}
+		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
 		await SportsAMM.setTherundownConsumer(TherundownConsumerDeployed.address, { from: owner });
 
@@ -476,8 +483,9 @@ contract('SportsAMM', accounts => {
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
 
-			assert.bnEqual(-20700, await TherundownConsumerDeployed.getOddsHomeTeam(gameid1));
-			assert.bnEqual(17700, await TherundownConsumerDeployed.getOddsAwayTeam(gameid1));
+			let result = await TherundownConsumerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-20700, result[0]);
+			assert.bnEqual(17700, result[1]);
 
 			assert.equal(
 				game_1_create,
@@ -641,15 +649,10 @@ contract('SportsAMM', accounts => {
 		});
 
 		it('Get american odds', async () => {
-			answer = await TherundownConsumerDeployed.getOddsHomeTeam(gameid1);
-			let sumOfOdds = answer;
-			console.log('American Odds for pos 0: ', fromUnit(answer));
-			answer = await TherundownConsumerDeployed.getOddsAwayTeam(gameid1);
-			sumOfOdds = sumOfOdds.add(answer);
-			console.log('American Odds for pos 1: ', fromUnit(answer));
-			answer = await TherundownConsumerDeployed.getOddsDraw(gameid1);
-			sumOfOdds = sumOfOdds.add(answer);
-			console.log('American Odds for pos 2: ', fromUnit(answer));
+			answer = await TherundownConsumerDeployed.getOddsForGame(gameid1);
+			let sumOfOdds = answer[0];
+			sumOfOdds = sumOfOdds.add(answer[1]);
+			sumOfOdds = sumOfOdds.add(answer[2]);
 		});
 
 		it('Get price', async () => {

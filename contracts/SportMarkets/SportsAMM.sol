@@ -123,8 +123,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @notice Returns the available position options to buy from AMM for specific market/game
     /// @param market The address of the SportPositional market created for a game
     /// @param position The position (home/away/draw) to check availability
-    /// @return The amount of position options (tokens) available to buy from AMM.
-    function availableToBuyFromAMM(address market, Position position) public view returns (uint) {
+    /// @return _available The amount of position options (tokens) available to buy from AMM.
+    function availableToBuyFromAMM(address market, Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint baseOdds = obtainOdds(market, position);
             // ignore extremes
@@ -144,9 +144,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             }
             uint availableUntilCapSUSD = defaultCapPerGame.add(additionalBufferFromSelling).sub(spentOnGame[market]);
 
-            return balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
-        } else {
-            return 0;
+            _available = balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
         }
     }
 
@@ -251,14 +249,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         } else return 0;
     }
 
-    function _getSellMaxPrice(address market, Position position) internal view returns (uint) {
+    function _getSellMaxPrice(address market, Position position) internal view returns (uint sell_max_price) {
         uint baseOdds = obtainOdds(market, position);
         // ignore extremes
         if (baseOdds <= minSupportedOdds || baseOdds >= maxSupportedOdds) {
             return 0;
         }
-        uint sell_max_price = baseOdds.sub(min_spread).mul(ONE.sub(max_spread.div(2))).div(ONE);
-        return sell_max_price;
+        sell_max_price = baseOdds.sub(min_spread).mul(ONE.sub(max_spread.div(2))).div(ONE);
     }
 
     /// @notice Calculate the sUSD to receive for selling the position amount to AMM for specific market/game
@@ -705,27 +702,23 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address market,
         Position position,
         uint amount
-    ) internal view returns (uint) {
+    ) internal view returns (uint _buyPrice) {
         // take the balanceOtherSideMaximum
         (uint balancePosition, uint balanceOtherSide, ) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
         uint balanceOtherSideAfter =
             balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
 
-        if (balancePosition >= amount) {
-            //minimal price impact as it will balance the AMM exposure
-            return 0;
-        } else {
-            return
-                _buyPriceImpactElse(
-                    market,
-                    position,
-                    amount,
-                    balanceOtherSide,
-                    balancePosition,
-                    balanceOtherSideAfter,
-                    balancePositionAfter
-                );
+        if (!(balancePosition >= amount)) {
+            _buyPrice = _buyPriceImpactElse(
+                market,
+                position,
+                amount,
+                balanceOtherSide,
+                balancePosition,
+                balanceOtherSideAfter,
+                balancePositionAfter
+            );
         }
     }
 

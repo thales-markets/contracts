@@ -348,7 +348,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_available",
         "type": "uint256"
       }
     ],

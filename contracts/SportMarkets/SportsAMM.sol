@@ -605,89 +605,72 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     // setters
-
-    /// @notice Setting the minimal time left until the market is active for AMM trading, before the market is mature.
+    /// @notice Setting all key parameters for AMM
     /// @param _minimalTimeLeftToMaturity The time period in seconds.
-    function setMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity) public onlyOwner {
-        minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
-        emit SetMinimalTimeLeftToMaturity(_minimalTimeLeftToMaturity);
-    }
-
-    /// @notice Setting the minimal spread amount
-    /// @param _spread Percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
-    function setMinSpread(uint _spread) public onlyOwner {
-        min_spread = _spread;
-        emit SetMinSpread(_spread);
-    }
-
-    /// @notice Setting the safeBox price impact
-    /// @param _safeBoxImpact Percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
-    function setSafeBoxImpact(uint _safeBoxImpact) public onlyOwner {
-        safeBoxImpact = _safeBoxImpact;
-        emit SetSafeBoxImpact(_safeBoxImpact);
-    }
-
-    /// @notice Setting the safeBox address
-    /// @param _safeBox Address of the Safe Box
-    function setSafeBox(address _safeBox) public onlyOwner {
-        safeBox = _safeBox;
-        emit SetSafeBox(_safeBox);
-    }
-
-    /// @notice Setting the maximum spread amount
-    /// @param _spread Percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
-    function setMaxSpread(uint _spread) public onlyOwner {
-        max_spread = _spread;
-        emit SetMaxSpread(_spread);
-    }
-
-    /// @notice Setting the minimum supported oracle odd.
+    /// @param _minSpread Minimum spread percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
+    /// @param _maxSpread Maximum spread percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
     /// @param _minSupportedOdds Minimal oracle odd in ether unit (18 decimals)
-    function setMinSupportedOdds(uint _minSupportedOdds) public onlyOwner {
-        minSupportedOdds = _minSupportedOdds;
-        emit SetMinSupportedOdds(_minSupportedOdds);
-    }
-
-    /// @notice Setting the maximum supported oracle odds.
     /// @param _maxSupportedOdds Maximum oracle odds in ether unit (18 decimals)
-    function setMaxSupportedOdds(uint _maxSupportedOdds) public onlyOwner {
-        maxSupportedOdds = _maxSupportedOdds;
-        emit SetMaxSupportedOdds(_maxSupportedOdds);
-    }
-
-    /// @notice Setting the default cap in sUSD for each market/game
     /// @param _defaultCapPerGame Default sUSD cap per market (18 decimals)
-    function setDefaultCapPerGame(uint _defaultCapPerGame) public onlyOwner {
-        defaultCapPerGame = _defaultCapPerGame;
-        emit SetDefaultCapPerGame(_defaultCapPerGame);
-    }
-
-    /// @notice Setting the sUSD address
-    /// @param _sUSD Address of the sUSD
-    function setSUSD(IERC20Upgradeable _sUSD) public onlyOwner {
-        sUSD = _sUSD;
-        emit SetSUSD(address(sUSD));
-    }
-
-    /// @notice Setting Therundown consumer address
-    /// @param _theRundownConsumer Address of Therundown consumer
-    function setTherundownConsumer(address _theRundownConsumer) public onlyOwner {
-        theRundownConsumer = _theRundownConsumer;
-        emit SetTherundownConsumer(_theRundownConsumer);
-    }
-
-    /// @notice Setting Staking contract address
-    /// @param _stakingThales Address of Staking contract
-    /// @param _referrals contract for referrals storage
+    /// @param _safeBoxImpact Percentage expressed in ether unit (uses 18 decimals -> 1% = 0.01*1e18)
     /// @param _referrerFee how much of a fee to pay to referrers
-    function setStakingThalesAndReferrals(
-        IStakingThales _stakingThales,
-        address _referrals,
+    function setParameters(
+        uint _minimalTimeLeftToMaturity,
+        uint _minSpread,
+        uint _maxSpread,
+        uint _minSupportedOdds,
+        uint _maxSupportedOdds,
+        uint _defaultCapPerGame,
+        uint _safeBoxImpact,
         uint _referrerFee
     ) external onlyOwner {
+        minimalTimeLeftToMaturity = _minimalTimeLeftToMaturity;
+        min_spread = _minSpread;
+        max_spread = _maxSpread;
+        minSupportedOdds = _minSupportedOdds;
+        maxSupportedOdds = _maxSupportedOdds;
+        defaultCapPerGame = _defaultCapPerGame;
+        safeBoxImpact = _safeBoxImpact;
+        referrerFee = _referrerFee;
+
+        emit ParametersUpdated(
+            _minimalTimeLeftToMaturity, 
+            _minSpread, 
+            _maxSpread, 
+            _minSupportedOdds, 
+            _maxSupportedOdds,
+            _defaultCapPerGame,
+            _safeBoxImpact,
+            _referrerFee
+            );
+    }
+
+    /// @notice Setting the main addresses for SportsAMM
+    /// @param _safeBox Address of the Safe Box
+    /// @param _sUSD Address of the sUSD
+    /// @param _theRundownConsumer Address of Therundown consumer
+    /// @param _stakingThales Address of Staking contract
+    /// @param _referrals contract for referrals storage
+    function setAddresses(
+        address _safeBox,
+        IERC20Upgradeable _sUSD,
+        address _theRundownConsumer,
+        IStakingThales _stakingThales,
+        address _referrals
+    ) external onlyOwner {
+        safeBox = _safeBox;
+        sUSD = _sUSD;
+        theRundownConsumer = _theRundownConsumer;
         stakingThales = _stakingThales;
         referrals = _referrals;
-        referrerFee = _referrerFee;
+
+        emit AddressesUpdated(
+            _safeBox,
+            _sUSD,
+            _theRundownConsumer,
+            _stakingThales,
+            _referrals
+        );
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -1008,18 +991,25 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address asset
     );
 
+    event ParametersUpdated(
+            uint _minimalTimeLeftToMaturity, 
+            uint _minSpread, 
+            uint _maxSpread, 
+            uint _minSupportedOdds, 
+            uint _maxSupportedOdds,
+            uint _defaultCapPerGame,
+            uint _safeBoxImpact,
+            uint _referrerFee
+            );
+    event AddressesUpdated(
+            address _safeBox,
+            IERC20Upgradeable _sUSD,
+            address _theRundownConsumer,
+            IStakingThales _stakingThales,
+            address _referrals
+        );
+
     event SetSportsPositionalMarketManager(address _manager);
-    event SetSUSD(address sUSD);
-    event SetDefaultCapPerGame(uint _defaultCapPerGame);
-    event SetMaxSpread(uint _spread);
-    event SetMinSpread(uint _spread);
-    event SetSafeBoxImpact(uint _safeBoxImpact);
-    event SetSafeBox(address _safeBox);
-    event SetMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity);
-    event SetMinSupportedOdds(uint _spread);
-    event SetMaxSupportedOdds(uint _spread);
-    event SetMaxSupportedPrice(uint _spread);
-    event SetTherundownConsumer(address _theRundownConsumer);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
 
 }

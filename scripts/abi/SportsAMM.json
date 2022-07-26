@@ -5,6 +5,43 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_safeBox",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "contract IERC20Upgradeable",
+        "name": "_sUSD",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_theRundownConsumer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "contract IStakingThales",
+        "name": "_stakingThales",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_referrals",
+        "type": "address"
+      }
+    ],
+    "name": "AddressesUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "buyer",
         "type": "address"
       },
@@ -85,6 +122,61 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_minimalTimeLeftToMaturity",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minSpread",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxSpread",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minSupportedOdds",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_maxSupportedOdds",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_defaultCapPerGame",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_safeBoxImpact",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_referrerFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "ParametersUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "account",
         "type": "address"
@@ -129,155 +221,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "_defaultCapPerGame",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetDefaultCapPerGame",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaxSpread",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaxSupportedOdds",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaxSupportedPrice",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMinSpread",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMinSupportedOdds",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_minimalTimeLeftToMaturity",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMinimalTimeLeftToMaturity",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "sUSD",
-        "type": "address"
-      }
-    ],
-    "name": "SetSUSD",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_safeBox",
-        "type": "address"
-      }
-    ],
-    "name": "SetSafeBox",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_safeBoxImpact",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetSafeBoxImpact",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "_manager",
         "type": "address"
       }
     ],
     "name": "SetSportsPositionalMarketManager",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_theRundownConsumer",
-        "type": "address"
-      }
-    ],
-    "name": "SetTherundownConsumer",
     "type": "event"
   },
   {
@@ -1150,6 +1099,39 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_safeBox",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20Upgradeable",
+        "name": "_sUSD",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_theRundownConsumer",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IStakingThales",
+        "name": "_stakingThales",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrals",
+        "type": "address"
+      }
+    ],
+    "name": "setAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_curveSUSD",
         "type": "address"
       },
@@ -1182,84 +1164,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_defaultCapPerGame",
-        "type": "uint256"
-      }
-    ],
-    "name": "setDefaultCapPerGame",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMaxSpread",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_maxSupportedOdds",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMaxSupportedOdds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMinSpread",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_minSupportedOdds",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMinSupportedOdds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_minimalTimeLeftToMaturity",
-        "type": "uint256"
-      }
-    ],
-    "name": "setMinimalTimeLeftToMaturity",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -1273,38 +1177,47 @@
   {
     "inputs": [
       {
-        "internalType": "contract IERC20Upgradeable",
-        "name": "_sUSD",
-        "type": "address"
-      }
-    ],
-    "name": "setSUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
+        "internalType": "uint256",
+        "name": "_minimalTimeLeftToMaturity",
+        "type": "uint256"
+      },
       {
-        "internalType": "address",
-        "name": "_safeBox",
-        "type": "address"
-      }
-    ],
-    "name": "setSafeBox",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
+        "internalType": "uint256",
+        "name": "_minSpread",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxSpread",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minSupportedOdds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxSupportedOdds",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_defaultCapPerGame",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "_safeBoxImpact",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_referrerFee",
+        "type": "uint256"
       }
     ],
-    "name": "setSafeBoxImpact",
+    "name": "setParameters",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1318,42 +1231,6 @@
       }
     ],
     "name": "setSportsPositionalMarketManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IStakingThales",
-        "name": "_stakingThales",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_referrals",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_referrerFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "setStakingThalesAndReferrals",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_theRundownConsumer",
-        "type": "address"
-      }
-    ],
-    "name": "setTherundownConsumer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

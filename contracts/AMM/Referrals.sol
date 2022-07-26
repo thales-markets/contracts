@@ -23,6 +23,11 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     mapping(address => uint) public referralStarted;
 
     mapping(address => bool) public tradedBefore;
+    
+    mapping(address => address) public sportReferrals;
+    mapping(address => uint) public sportReferralStarted;
+    mapping(address => bool) public sportTradedBefore;
+    address public sportsAMM;
 
     function initialize(
         address _owner,
@@ -42,10 +47,19 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner set referrers"
         );
-        if (!tradedBefore[referred] && referrals[referred] == address(0)) {
-            referrals[referred] = referrer;
-            referralStarted[referred] = block.timestamp;
-            emit ReferralAdded(referrer, referred, block.timestamp);
+        if(msg.sender == sportsAMM) {
+            if (!sportTradedBefore[referred] && sportReferrals[referred] == address(0)) {
+                sportReferrals[referred] = referrer;
+                sportReferralStarted[referred] = block.timestamp;
+                emit SportReferralAdded(referrer, referred, block.timestamp);
+            }
+        }
+        else {
+            if (!tradedBefore[referred] && referrals[referred] == address(0)) {
+                referrals[referred] = referrer;
+                referralStarted[referred] = block.timestamp;
+                emit ReferralAdded(referrer, referred, block.timestamp);
+            }
         }
     }
 
@@ -62,6 +76,14 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         }
     }
 
+    function setSportsAMM(address _sportsAMM, bool enabled) external onlyOwner {
+        require(whitelistedAddresses[_sportsAMM] != enabled, "Address already enabled/disabled");
+        whitelistedAddresses[_sportsAMM] = enabled;
+        sportsAMM = _sportsAMM;
+        emit SetWhitelistedAddress(_sportsAMM, enabled);
+    }
+
+    event SportReferralAdded(address referrer, address referred, uint timeStarted);
     event ReferralAdded(address referrer, address referred, uint timeStarted);
     event TradedBefore(address trader);
     event SetWhitelistedAddress(address whitelisted, bool enabled);

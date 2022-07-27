@@ -57,6 +57,16 @@
         "internalType": "uint256",
         "name": "initialMint",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "customMarket",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "customOracle",
+        "type": "address"
       }
     ],
     "name": "createMarket",

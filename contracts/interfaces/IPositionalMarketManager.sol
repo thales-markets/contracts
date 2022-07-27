@@ -37,7 +37,9 @@ interface IPositionalMarketManager {
         bytes32 oracleKey,
         uint strikePrice,
         uint maturity,
-        uint initialMint // initial sUSD to mint options for,
+        uint initialMint, // initial sUSD to mint options for,
+        bool customMarket,
+        address customOracle
     ) external returns (IPositionalMarket);
 
     function resolveMarket(address market) external;

@@ -160,7 +160,9 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         bytes32 oracleKey,
         uint strikePrice,
         uint maturity,
-        uint initialMint
+        uint initialMint,
+        bool customMarket,
+        address customOracle
     )
         external
         override

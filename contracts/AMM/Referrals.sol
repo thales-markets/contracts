@@ -78,7 +78,7 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     function setSportTradedBefore(address[] calldata _addresses) external onlyOwner {
         for (uint256 index = 0; index < _addresses.length; index++) {
             sportTradedBefore[_addresses[index]] = true;
-            emit TradedBefore(_addresses[index]);
+            emit SportTradedBefore(_addresses[index]);
         }
     }
 
@@ -93,5 +93,6 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     event SportReferralAdded(address referrer, address referred, uint timeStarted);
     event ReferralAdded(address referrer, address referred, uint timeStarted);
     event TradedBefore(address trader);
+    event SportTradedBefore(address trader);
     event SetWhitelistedAddress(address whitelisted, bool enabled);
 }

@@ -57,6 +57,8 @@ contract('SportsAMM', accounts => {
 	const SNXRewardsContract = artifacts.require('SNXRewards');
 	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	const TestOddsContract = artifacts.require('TestOdds');
+	const ReferralsContract = artifacts.require('Referrals');
+
 	let ExoticPositionalMarket;
 	let ExoticPositionalOpenBidMarket;
 	let ExoticPositionalMarketManager;
@@ -135,6 +137,7 @@ contract('SportsAMM', accounts => {
 		testUSDC,
 		testUSDT,
 		testDAI,
+		Referrals,
 		SportsAMM;
 
 	const game1NBATime = 1646958600;
@@ -193,6 +196,8 @@ contract('SportsAMM', accounts => {
 			SportPositionalMarketFactory.address,
 			{ from: manager }
 		);
+		Referrals = await ReferralsContract.new();
+		await Referrals.initialize(owner, SportsAMM.address, SportsAMM.address, { from: manager });
 
 		await SportsAMM.initialize(
 			owner,
@@ -204,10 +209,22 @@ contract('SportsAMM', accounts => {
 			{ from: owner }
 		);
 
+		await SportsAMM.setParameters(
+			DAY,
+			toUnit('0.02'),
+			toUnit('0.2'),
+			toUnit('0.001'),
+			toUnit('0.9'),
+			toUnit('5000'),
+			toUnit('0.01'),
+			toUnit('0.005'),
+			{ from: owner }
+		);
+
 		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
 			from: owner,
 		});
-		await SportsAMM.setStakingThales(StakingThales.address, { from: owner });
+
 		await SportPositionalMarketData.initialize(owner, { from: owner });
 		await StakingThales.initialize(
 			owner,
@@ -231,8 +248,6 @@ contract('SportsAMM', accounts => {
 			second,
 			{ from: owner }
 		);
-		await SportsAMM.setMinSupportedOdds(10, { from: owner });
-		await SportsAMM.setMaxSupportedOdds(toUnit(0.9), { from: owner });
 
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
@@ -324,7 +339,6 @@ contract('SportsAMM', accounts => {
 			}
 		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
-		await SportsAMM.setTherundownConsumer(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
@@ -358,6 +372,15 @@ contract('SportsAMM', accounts => {
 			testUSDC.address,
 			testUSDT.address,
 			true,
+			{ from: owner }
+		);
+
+		await SportsAMM.setAddresses(
+			owner,
+			Thales.address,
+			TherundownConsumerDeployed.address,
+			StakingThales.address,
+			Referrals.address,
 			{ from: owner }
 		);
 
@@ -615,18 +638,17 @@ contract('SportsAMM', accounts => {
 		});
 
 		it('Setters testing', async () => {
-			answer = await SportsAMM.setMinimalTimeLeftToMaturity(toUnit(1), { from: owner });
-			answer = await SportsAMM.setMinSpread(toUnit(1), { from: owner });
-			answer = await SportsAMM.setSafeBoxImpact(toUnit(1), { from: owner });
-			answer = await SportsAMM.setSafeBox(third, { from: owner });
-			answer = await SportsAMM.setMaxSpread(toUnit(1), { from: owner });
-			answer = await SportsAMM.setMinSupportedOdds(toUnit(1), { from: owner });
-			answer = await SportsAMM.setMaxSupportedOdds(toUnit(1), { from: owner });
-			answer = await SportsAMM.setDefaultCapPerGame(toUnit(1), { from: owner });
-			answer = await SportsAMM.setSUSD(Thales.address, { from: owner });
-			answer = await SportsAMM.setTherundownConsumer(third, { from: owner });
-			answer = await SportsAMM.setStakingThales(third, { from: owner });
-			answer = await SportsAMM.setSportsPositionalMarketManager(third, { from: owner });
+			answer = await SportsAMM.setParameters(
+				DAY,
+				toUnit('0.02'),
+				toUnit('0.2'),
+				toUnit('0.001'),
+				toUnit('0.9'),
+				toUnit('5000'),
+				toUnit('0.01'),
+				toUnit('0.005'),
+				{ from: owner }
+			);
 		});
 		// }); //// COMMENT here
 

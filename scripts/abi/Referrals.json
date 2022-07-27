@@ -316,11 +316,6 @@
         "internalType": "address",
         "name": "_sportsAMM",
         "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "enabled",
-        "type": "bool"
       }
     ],
     "name": "setSportsAMM",

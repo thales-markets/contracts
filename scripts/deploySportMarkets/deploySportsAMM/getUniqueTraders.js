@@ -25,7 +25,7 @@ async function getUniqueTraders() {
 			});
 		}
 	}
-	console.log('UNIQUE TRADERS: ', uniqueTraders.length);
+	console.log('_UNIQUE TRADERS: ', uniqueTraders.length);
 	console.log(uniqueTraders);
 
 	fs.writeFileSync(

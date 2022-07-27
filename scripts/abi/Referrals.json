@@ -123,6 +123,19 @@
         "type": "address"
       }
     ],
+    "name": "SportTradedBefore",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "trader",
+        "type": "address"
+      }
+    ],
     "name": "TradedBefore",
     "type": "event"
   },

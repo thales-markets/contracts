@@ -83,7 +83,7 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     }
 
     function setSportsAMM(address _sportsAMM) external onlyOwner {
-        require(whitelistedAddresses[_sportsAMM] == false, "Address already enabled");
+        require(!whitelistedAddresses[_sportsAMM], "Address already enabled");
         whitelistedAddresses[sportsAMM] = false;
         whitelistedAddresses[_sportsAMM] = true;
         sportsAMM = _sportsAMM;

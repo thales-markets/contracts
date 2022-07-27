@@ -75,6 +75,12 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             emit TradedBefore(_addresses[index]);
         }
     }
+    function setSportTradedBefore(address[] calldata _addresses) external onlyOwner {
+        for (uint256 index = 0; index < _addresses.length; index++) {
+            sportTradedBefore[_addresses[index]] = true;
+            emit TradedBefore(_addresses[index]);
+        }
+    }
 
     function setSportsAMM(address _sportsAMM) external onlyOwner {
         require(whitelistedAddresses[_sportsAMM] == false, "Address already enabled");

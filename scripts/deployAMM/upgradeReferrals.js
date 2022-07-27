@@ -40,14 +40,18 @@ async function main() {
 	console.log('Found Referrals at:', referralsAddress);
 
 	const Referrals = await ethers.getContractFactory('Referrals');
-	// const implementation = await upgrades.prepareUpgrade(referralsAddress, Referrals);
-	await upgrades.upgradeProxy(referralsAddress, Referrals);
+	let ReferralsImplementation;
+	if (networkObj.chainId == 10) {
+		ReferralsImplementation = await upgrades.prepareUpgrade(referralsAddress, Referrals);
+	} else {
+		await upgrades.upgradeProxy(referralsAddress, Referrals);
+		await delay(2000);
+		ReferralsImplementation = await getImplementationAddress(ethers.provider, referralsAddress);
+	}
+
 	console.log('Referrals upgraded');
-	await delay(10000);
-
-	const ReferralsImplementation = await getImplementationAddress(ethers.provider, referralsAddress);
-
 	console.log('Implementation Referrals: ', ReferralsImplementation);
+	await delay(1000);
 
 	setTargetAddress('ReferralsImplementation', network, ReferralsImplementation);
 

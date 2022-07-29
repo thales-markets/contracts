@@ -782,6 +782,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function setCanClaimOnBehalf(address account, bool _canClaimOnBehalf) external notPaused {
         require(account != address(0) && account != msg.sender, "Invalid address");
         canClaimOnBehalf[msg.sender][account] = _canClaimOnBehalf;
+        emit CanClaimOnBehalfChanged(msg.sender, account, _canClaimOnBehalf);
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
@@ -943,4 +944,5 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event StakingPeriodStarted();
     event AMMVolumeUpdated(address account, uint amount, address source);
     event AccountMerged(address srcAccount, address destAccount);
+    event CanClaimOnBehalfChanged(address sender, address account, bool canClaimOnBehalf);
 }

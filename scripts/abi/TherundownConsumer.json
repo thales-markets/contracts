@@ -308,6 +308,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint8",
+        "name": "version",
+        "type": "uint8"
+      }
+    ],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bytes32",
         "name": "_requestId",
         "type": "bytes32"
@@ -367,6 +380,31 @@
       }
     ],
     "name": "NewQueueAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_wrapperAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "contract GamesQueue",
+        "name": "_queues",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_sportsManager",
+        "type": "address"
+      }
+    ],
+    "name": "NewSportContracts",
     "type": "event"
   },
   {
@@ -1213,25 +1251,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_date",
-        "type": "uint256"
-      }
-    ],
-    "name": "getGamesPerdate",
-    "outputs": [
-      {
-        "internalType": "bytes32[]",
-        "name": "",
-        "type": "bytes32[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"
@@ -1256,46 +1275,18 @@
         "type": "bytes32"
       }
     ],
-    "name": "getOddsAwayTeam",
+    "name": "getOddsForGame",
     "outputs": [
       {
         "internalType": "int24",
         "name": "",
         "type": "int24"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getOddsDraw",
-    "outputs": [
+      },
       {
         "internalType": "int24",
         "name": "",
         "type": "int24"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getOddsHomeTeam",
-    "outputs": [
+      },
       {
         "internalType": "int24",
         "name": "",
@@ -1414,6 +1405,25 @@
       }
     ],
     "name": "isGameResolvedOrCanceled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "isPausedByCanceledStatus",
     "outputs": [
       {
         "internalType": "bool",
@@ -1930,25 +1940,22 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_wrapperAddress",
+        "type": "address"
+      },
+      {
         "internalType": "contract GamesQueue",
         "name": "_queues",
         "type": "address"
-      }
-    ],
-    "name": "setQueueAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
+      },
       {
         "internalType": "address",
         "name": "_sportsManager",
         "type": "address"
       }
     ],
-    "name": "setSportsManager",
+    "name": "setSportContracts",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -2021,19 +2028,6 @@
       }
     ],
     "name": "setTwoPositionSport",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_wrapperAddress",
-        "type": "address"
-      }
-    ],
-    "name": "setWrapperAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

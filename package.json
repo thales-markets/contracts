@@ -75,6 +75,7 @@
 		"openzeppelin-solidity-2.3.0": "npm:openzeppelin-solidity@2.3.0",
 		"synthetix-2.50.4-ovm": "npm:synthetix@2.50.4-ovm",
 		"synthetix-data": "^2.1.43",
+		"thales-data": "^1.0.68",
 		"web3-utils": "1.2.2"
 	},
 	"husky": {

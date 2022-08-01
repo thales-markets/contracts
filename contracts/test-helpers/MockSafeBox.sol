@@ -32,7 +32,7 @@ contract MockSafeBox is ProxyOwned, Initializable {
     }
 
     /// @notice executeBuyback buys THALES tokens for predefined amount of sUSD stored in sUSDperTick value
-    /// @dev executeBuyback can be called if at least 1 tickLength has passed since last buyback, 
+    /// @dev executeBuyback can be called if at least 1 tickLength has passed since last buyback,
     /// it then calculates how many ticks passes and executes buyback via Uniswap V3 integrated contract.
     function executeBuyback() external {
         // check zero addresses
@@ -41,14 +41,15 @@ contract MockSafeBox is ProxyOwned, Initializable {
         require(ticksFromLastBuyBack > 0, "Not enough ticks have passed since last buyback");
 
         // buy THALES via Uniswap
-        uint256 amountThales = _swapExactInput(sUSDperTick * ticksFromLastBuyBack, address(sUSD), address(thalesToken), 3000);
+        uint256 amountThales =
+            _swapExactInput(sUSDperTick * ticksFromLastBuyBack, address(sUSD), address(thalesToken), 3000);
 
         lastBuyback = block.timestamp;
         emit BuybackExecuted(sUSDperTick, amountThales);
     }
 
-    /// @notice setTickRate sets sUSDperTick amount 
-    /// @param _sUSDperTick New sUSDperTick value 
+    /// @notice setTickRate sets sUSDperTick amount
+    /// @param _sUSDperTick New sUSDperTick value
     function setTickRate(uint256 _sUSDperTick) external onlyOwner {
         sUSDperTick = _sUSDperTick;
         emit TickRateChanged(_sUSDperTick);
@@ -107,9 +108,7 @@ contract MockSafeBox is ProxyOwned, Initializable {
     ) internal returns (uint256 amountOut) {
         // Approve the router to spend tokenIn.
         // TransferHelper.safeApprove(tokenIn, address(swapRouter), amountIn);
-
         // uint256 ratio = _getRatio(tokenIn, tokenOut, poolFee);
-
         // // Multiple pool swaps are encoded through bytes called a `path`. A path is a sequence of token addresses and poolFees that define the pools used in the swaps.
         // // The format for pool encoding is (tokenIn, fee, tokenOut/tokenIn, fee, tokenOut) where tokenIn/tokenOut parameter is the shared token across the pools.
         //  ISwapRouter.ExactInputParams memory params =
@@ -120,13 +119,15 @@ contract MockSafeBox is ProxyOwned, Initializable {
         //         amountIn: amountIn,
         //         amountOutMinimum: amountIn * ratio * 99 / 100
         //     });
-
-
         // // The call to `exactInput` executes the swap.
         // amountOut = swapRouter.exactInput(params);
     }
 
-    function _getRatio(address tokenA, address tokenB, uint24 poolFee) internal view returns (uint256 ratio) {
+    function _getRatio(
+        address tokenA,
+        address tokenB,
+        uint24 poolFee
+    ) internal view returns (uint256 ratio) {
         uint256 ratioA = _getWETHPoolRatio(tokenA, poolFee);
         uint256 ratioB = _getWETHPoolRatio(tokenB, poolFee);
 
@@ -136,12 +137,13 @@ contract MockSafeBox is ProxyOwned, Initializable {
     function _getWETHPoolRatio(address token, uint24 poolFee) internal view returns (uint256 ratio) {
         address pool = IUniswapV3Factory(uniswapFactory).getPool(WETH9, token, poolFee);
         (uint160 sqrtPriceX96token, , , , , , ) = IUniswapV3Pool(pool).slot0();
-        if(IUniswapV3Pool(pool).token0() == WETH9) {
+        if (IUniswapV3Pool(pool).token0() == WETH9) {
             ratio = 1 / _getPriceFromSqrtPrice(sqrtPriceX96token);
         } else {
             ratio = _getPriceFromSqrtPrice(sqrtPriceX96token);
         }
     }
+
     function _getPriceFromSqrtPrice(uint160 sqrtPriceX96) internal pure returns (uint256 priceX96) {
         uint256 price = UniswapMath.mulDiv(sqrtPriceX96, sqrtPriceX96, UniswapMath.Q96);
         return UniswapMath.mulDiv(price, 10**18, UniswapMath.Q96);

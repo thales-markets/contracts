@@ -11,8 +11,7 @@ contract TestUSDC is ERC20 {
 
     uint private INITIAL_TOTAL_SUPPLY = 100000000;
 
-    constructor() public {
-    }
+    constructor() public {}
 
     function mint(address receiver, uint value) external {
         _mint(receiver, value);

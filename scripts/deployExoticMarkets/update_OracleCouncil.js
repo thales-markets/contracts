@@ -2,7 +2,6 @@ const path = require('path');
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
-
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
@@ -14,11 +13,15 @@ async function main() {
 	let OracleCouncilImplementation;
 
 	if (network == 'homestead') {
-		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimistic\'")
+		console.log(
+			"Error L1 network used! Deploy only on L2 Optimism. \nTry using '--network optimistic'"
+		);
 		return 0;
 	}
 	if (networkObj.chainId == 42) {
-		console.log("Error L1 network used! Deploy only on L2 Optimism. \nTry using \'--network optimisticKovan\'")
+		console.log(
+			"Error L1 network used! Deploy only on L2 Optimism. \nTry using '--network optimisticKovan'"
+		);
 		return 0;
 	}
 	if (networkObj.chainId == 69) {
@@ -30,17 +33,16 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
-	
-    const OracleCouncilContract = await ethers.getContractFactory('ThalesOracleCouncil');
-	const OracleCouncilAddress = getTargetAddress("ThalesOracleCouncil", network);
+
+	const OracleCouncilContract = await ethers.getContractFactory('ThalesOracleCouncil');
+	const OracleCouncilAddress = getTargetAddress('ThalesOracleCouncil', network);
 
 	if (networkObj.chainId == 69) {
-    
 		await upgrades.upgradeProxy(OracleCouncilAddress, OracleCouncilContract);
 		await delay(5000);
 
 		console.log('OracleCouncil upgraded');
-		
+
 		OracleCouncilImplementation = await getImplementationAddress(
 			ethers.provider,
 			OracleCouncilAddress
@@ -48,38 +50,36 @@ async function main() {
 
 		console.log('Implementation OracleCouncil: ', OracleCouncilImplementation);
 		setTargetAddress('ThalesOracleCouncilImplementation', network, OracleCouncilImplementation);
-		
 	}
-	
+
 	if (networkObj.chainId == 10) {
-		OracleCouncilImplementation = await upgrades.prepareUpgrade(OracleCouncilAddress, OracleCouncilContract);
+		OracleCouncilImplementation = await upgrades.prepareUpgrade(
+			OracleCouncilAddress,
+			OracleCouncilContract
+		);
 		await delay(5000);
-		
+
 		console.log('OracleCouncil upgraded');
 		console.log('Implementation OracleCouncil: ', OracleCouncilImplementation);
 		setTargetAddress('ThalesOracleCouncilImplementation', network, OracleCouncilImplementation);
-
 	}
 
-    try {
+	try {
 		await hre.run('verify:verify', {
 			address: OracleCouncilImplementation,
 		});
 	} catch (e) {
 		console.log(e);
 	}
-
-
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch((error) => {
+	.catch(error => {
 		console.error(error);
 		process.exit(1);
 	});
 
-    
 function delay(time) {
 	return new Promise(function(resolve) {
 		setTimeout(resolve, time);

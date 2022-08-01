@@ -3,7 +3,6 @@ const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
-	
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
@@ -39,11 +38,11 @@ async function main() {
 
 	const implementation = await getImplementationAddress(ethers.provider, gamesQueueAddress);
 	console.log('GamesQueueImplementation: ', implementation);
-    setTargetAddress('GamesQueueImplementation', network, implementation);
+	setTargetAddress('GamesQueueImplementation', network, implementation);
 
-    await hre.run('verify:verify', {
-        address: implementation
-    });
+	await hre.run('verify:verify', {
+		address: implementation,
+	});
 }
 
 main()

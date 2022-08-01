@@ -7,6 +7,19 @@
         "type": "address"
       }
     ],
+    "name": "decreaseCreatorVolume",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
     "name": "getClaimableBondAmountForMarket",
     "outputs": [
       {

@@ -2,10 +2,7 @@ const { ethers } = require('hardhat');
 const w3utils = require('web3-utils');
 const Big = require('big.js');
 const fs = require('fs');
-const {
-	numberExponentToLarge,
-	getTargetAddress,
-} = require('../helpers.js');
+const { numberExponentToLarge, getTargetAddress } = require('../helpers.js');
 
 const TOTAL_AMOUNT = w3utils.toWei('15000000'); //15m
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';

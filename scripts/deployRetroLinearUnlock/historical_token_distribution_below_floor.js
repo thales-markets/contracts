@@ -1,11 +1,6 @@
 const { ethers } = require('hardhat');
 const fs = require('fs');
-const {
-	numberExponentToLarge,
-	txLog,
-	getTargetAddress,
-} = require('../helpers.js');
-
+const { numberExponentToLarge, txLog, getTargetAddress } = require('../helpers.js');
 
 const INPUT_SIZE = 100;
 

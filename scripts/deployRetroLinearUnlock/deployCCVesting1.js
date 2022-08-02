@@ -1,9 +1,6 @@
 const { ethers } = require('hardhat');
 const fs = require('fs');
-const {
-	txLog,
-	getTargetAddress,
-} = require('../helpers.js');
+const { txLog, getTargetAddress } = require('../helpers.js');
 
 const VESTING_PERIOD = 86400 * 7 * 156; //156 weeks
 

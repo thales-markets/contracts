@@ -23,13 +23,13 @@ async function main() {
 	}
 
 	await hre.run('verify:verify', {
-		address: "0xC6e9c95823D7CC98A92D73de89D69548E2774cd8",
+		address: '0xC6e9c95823D7CC98A92D73de89D69548E2774cd8',
 		constructorArguments: [],
 		contract: 'contracts/Positions/PositionMastercopy.sol:PositionMastercopy',
 	});
 
 	await hre.run('verify:verify', {
-		address: "0xEcA7A1b229BB6Ad5c96FeeCdBF095750A71889ac",
+		address: '0xEcA7A1b229BB6Ad5c96FeeCdBF095750A71889ac',
 		constructorArguments: [],
 		contract: 'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
 	});

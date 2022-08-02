@@ -151,71 +151,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "SetIOracleInstance",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "SetPriceFeed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_zeroExAddress",
-        "type": "address"
-      }
-    ],
-    "name": "SetZeroExAddress",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_zeroExAddress",
-        "type": "address"
-      }
-    ],
-    "name": "SetZeroExAddressAtInit",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "SetsUSD",
-    "type": "event"
-  },
-  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
@@ -287,19 +222,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "customMarket",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -424,19 +346,6 @@
   },
   {
     "inputs": [],
-    "name": "iOracleInstance",
-    "outputs": [
-      {
-        "internalType": "contract IOracleInstance",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "initialMint",
     "outputs": [
       {
@@ -493,16 +402,6 @@
             "type": "uint256"
           },
           {
-            "internalType": "bool",
-            "name": "customMarket",
-            "type": "bool"
-          },
-          {
-            "internalType": "address",
-            "name": "iOracleInstanceAddress",
-            "type": "address"
-          },
-          {
             "internalType": "address",
             "name": "up",
             "type": "address"
@@ -510,11 +409,6 @@
           {
             "internalType": "address",
             "name": "down",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "limitOrderProvider",
             "type": "address"
           },
           {
@@ -757,45 +651,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "setIOracleInstance",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "setPriceFeed",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
-      }
-    ],
-    "name": "setsUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

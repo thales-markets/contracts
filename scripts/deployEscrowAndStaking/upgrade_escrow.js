@@ -30,14 +30,11 @@ async function main() {
 
 	let EscrowImplementation;
 
-	if (networkObj.chainId == 69) { 
+	if (networkObj.chainId == 69) {
 		await upgrades.upgradeProxy(EscrowAddress, EscrowThales);
 		await delay(5000);
 		console.log('Escrow upgraded');
-		EscrowImplementation = await getImplementationAddress(
-			ethers.provider,
-			EscrowAddress
-			);
+		EscrowImplementation = await getImplementationAddress(ethers.provider, EscrowAddress);
 	}
 
 	if (networkObj.chainId == 10) {
@@ -46,7 +43,6 @@ async function main() {
 		console.log('Escrow upgraded');
 	}
 
-	
 	console.log('Implementation Escrow: ', EscrowImplementation);
 	setTargetAddress('EscrowThalesImplementation', network, EscrowImplementation);
 

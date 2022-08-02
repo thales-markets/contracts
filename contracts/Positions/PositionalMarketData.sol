@@ -49,11 +49,13 @@ contract PositionalMarketData {
         OptionValues balances;
     }
 
+    /// @notice getMarketParameters returns market details
+    /// @param market PositionalMarket
+    /// @return MarketParameters
     function getMarketParameters(PositionalMarket market) external view returns (MarketParameters memory) {
         (Position up, Position down) = market.options();
         (uint maturityDate, uint expiryDate) = market.times();
-        (bytes32 key, uint strikePrice, uint finalPrice, bool customMarket, address iOracleInstanceAddress) = market
-            .oracleDetails();
+        (bytes32 key, uint strikePrice, uint finalPrice, bool customMarket, address iOracleInstanceAddress) = market.oracleDetails();
         (uint poolFee, uint creatorFee) = market.fees();
 
         MarketParameters memory data = MarketParameters(
@@ -67,6 +69,9 @@ contract PositionalMarketData {
         return data;
     }
 
+    /// @notice getMarketData returns market details
+    /// @param market PositionalMarket
+    /// @return MarketData
     function getMarketData(PositionalMarket market) external view returns (MarketData memory) {
         (uint price, uint updatedAt) = market.oraclePriceAndTimestamp();
         (uint upSupply, uint downSupply) = market.totalSupplies();
@@ -82,6 +87,10 @@ contract PositionalMarketData {
             );
     }
 
+    /// @notice getAccountMarketData returns account balances
+    /// @param market PositionalMarket
+    /// @param account address of an account
+    /// @return AccountData
     function getAccountMarketData(PositionalMarket market, address account) external view returns (AccountData memory) {
         (uint upBalance, uint downBalance) = market.balancesOf(account);
 

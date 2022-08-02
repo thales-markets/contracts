@@ -5,9 +5,9 @@ const { getTargetAddress, setTargetAddress } = require('../helpers');
 
 async function main() {
 	let networkObj = await ethers.provider.getNetwork();
-    let network = networkObj.name;
+	let network = networkObj.name;
 	let net_optimistic = '';
-	
+
 	if (network == 'homestead') {
 		network = 'mainnet';
 		net_optimistic = 'optimisticEthereum';
@@ -17,24 +17,35 @@ async function main() {
 		net_optimistic = 'optimisticKovan';
 	}
 	if (networkObj.chainId == 69) {
-		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
+		console.log(
+			"Error L2 network used! Deploy only on L1 Mainnet. \nTry using '--network mainnet'"
+		);
 		return 0;
 	}
 	if (networkObj.chainId == 10) {
-		console.log("Error L2 network used! Deploy only on L1 Mainnet. \nTry using \'--network mainnet\'");
+		console.log(
+			"Error L2 network used! Deploy only on L1 Mainnet. \nTry using '--network mainnet'"
+		);
 		return 0;
 	}
 
 	const ProxyThalesExchanger_deployed = getTargetAddress('ProxyThalesExchanger', network);
-	const ProxyThalesExchangerImplementation = await getImplementationAddress(ethers.provider, ProxyThalesExchanger_deployed);
+	const ProxyThalesExchangerImplementation = await getImplementationAddress(
+		ethers.provider,
+		ProxyThalesExchanger_deployed
+	);
 
-	console.log("Implementation ProxyThalesExchanger: ", ProxyThalesExchangerImplementation);
-	setTargetAddress('ProxyThalesExchangerImplementation', network, ProxyThalesExchangerImplementation);
+	console.log('Implementation ProxyThalesExchanger: ', ProxyThalesExchangerImplementation);
+	setTargetAddress(
+		'ProxyThalesExchangerImplementation',
+		network,
+		ProxyThalesExchangerImplementation
+	);
 
 	try {
 		await hre.run('verify:verify', {
 			address: ProxyThalesExchangerImplementation,
-			constructorArguments: []
+			constructorArguments: [],
 		});
 	} catch (e) {
 		console.log(e);
@@ -43,8 +54,7 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch((error) => {
+	.catch(error => {
 		console.error(error);
 		process.exit(1);
 	});
-

@@ -54,7 +54,7 @@ async function main() {
 	let ProxyStaking_deployed = await upgrades.deployProxy(ProxyStaking, [
 		owner.address,
 		thalesAddress,
-        opTokenAddress,
+		opTokenAddress,
 		gUNIPoolAddress,
 		WEEK * 10,
 	]);

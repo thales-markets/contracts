@@ -456,9 +456,9 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         uint maturity
     ) internal view returns (bool) {
         uint date = _getDateFromTimestamp(maturity);
-        uint buffer = (priceBuffer * _getImpliedVolatility(oracleKey)) / 10**36;
-        uint upperPriceLimit = strikePrice + (strikePrice * buffer) / 100;
-        uint lowerPriceLimit = strikePrice - (strikePrice * buffer) / 100;
+        uint buffer = (priceBuffer * _getImpliedVolatility(oracleKey)) / 1e18;
+        uint upperPriceLimit = strikePrice + (strikePrice * buffer) / 1e20;
+        uint lowerPriceLimit = strikePrice - (strikePrice * buffer) / 1e20;
 
         for (uint day = 1; day <= timeframeBuffer; day++) {
             uint upperDateLimit = DateTime.addDays(date, day);

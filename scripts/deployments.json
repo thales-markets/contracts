@@ -36,7 +36,7 @@
 		"VestingEscrowCC": "0x5179A757a3B29d2665a0638651F2D3C6C945d062",
 		"VestingEscrowCCImplementation": "0x2d385352674cBb8468723Bc01efC00998c10fc96",
 		"PositionalMarketManager": "0x9227334352A890e51e980BeB7A56Bbdd01499B54",
-		"PositionalMarketManagerImplementation": "0x8eF3a39a2d1362FCF62213012618C4d463B2a0cC",
+		"PositionalMarketManagerImplementation": "0x02668a6d9B8c9D4c8AeF7916270E945C3bFBBbAe",
 		"PositionalMarketFactory": "0xdb5a5475002F3A09A033DCF21327c81E5cDD86fb",
 		"PositionalMarketFactoryImplementation": "0xFaE0177f052c9F020e6e984aCCF98241Ae35FACd",
 		"PositionalMarketData": "0xe840E8e7BEf7783F8F51908eF9e77044C1D4C58c",

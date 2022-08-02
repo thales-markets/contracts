@@ -13,11 +13,9 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
 contract ParlayMarket {
     using SafeERC20 for IERC20;
 
-    enum Position {Home, Away, Draw}
-
     ISportPositionalMarket[] public sportMarket;
 
-    ParlayPosition[] public parlayPosition;
+    ParlayPosition public parlayPositionToken;
 
     ParlayMarketsAMM public parlayMarketsAMM;
 
@@ -37,7 +35,6 @@ contract ParlayMarket {
 
     function mint(
         uint value,
-        Position _position,
         address minter
     ) external onlyAMM {
         if (value == 0) {
@@ -49,7 +46,6 @@ contract ParlayMarket {
     function _mint(
         address minter,
         uint amount,
-        Position _position
     ) internal {
         emit Mint(minter, amount, _position);
     }
@@ -66,6 +62,7 @@ contract ParlayMarket {
         if (!resolved) {
             resolveMarket();
         }
+        require(!paused, "Market paused");
 
         // Each option only needs to be exercised if the account holds any of it.
 
@@ -74,10 +71,16 @@ contract ParlayMarket {
 
     function canResolve() external view returns (bool canBeResolved) {
         // The markets must be resolved
+        if(!paused){
+            canBeResolved = true;
+        }
         
     }
 
     function resolveMarket() public {
+        if(!paused){
+            resolved = true;
+        }
         emit Resolved(result());
     }
 

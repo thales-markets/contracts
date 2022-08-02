@@ -10,6 +10,7 @@ const { setupAllContracts } = require('../../utils/setup');
 
 const { convertToDecimals } = require('../../utils/helpers');
 const { exchanger } = require('synthetix-data');
+const { current } = require('@openzeppelin/test-helpers/src/balance');
 
 let factory, manager, addressResolver;
 let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
@@ -21,7 +22,7 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-contract('ThalesVault', accounts => {
+contract('Vault', accounts => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
 	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
@@ -278,11 +279,78 @@ contract('ThalesVault', accounts => {
 
 			assert.equal((await sUSDSynth.balanceOf(vault.address)).toString(), toUnit(300).toString());
 		});
+
+		it('can deposit multiple times before round starts', async () => {
+			assert.equal(await vault.roundStarted(), false);
+			const round = await vault.round();
+
+			await sUSDSynth.approve(vault.address, toUnit(150), { from: minter });
+			await vault.deposit(toUnit(50), { from: minter });
+			await vault.deposit(toUnit(50), { from: minter });
+			await vault.deposit(toUnit(50), { from: minter });
+
+			assert.equal(
+				(await vault.getBalancesPerRound(round, minter)).toString(),
+				toUnit(150).toString()
+			);
+		});
 	});
 
 	describe('Start round', () => {
-		it('check', async () => {
+		let round;
+		beforeEach(async () => {
+			assert.equal(await vault.roundStarted(), false);
+			round = await vault.round();
+
+			await sUSDSynth.approve(vault.address, toUnit(100), { from: minter });
+			await sUSDSynth.approve(vault.address, toUnit(200), { from: dummy });
+			await vault.deposit(toUnit(100), { from: minter });
+			await vault.deposit(toUnit(200), { from: dummy });
+
+			assert.equal(
+				(await vault.getBalancesPerRound(round, minter)).toString(),
+				toUnit(100).toString()
+			);
+			assert.equal(
+				(await vault.getBalancesPerRound(round, dummy)).toString(),
+				toUnit(200).toString()
+			);
+
 			assert.equal((await sUSDSynth.balanceOf(vault.address)).toString(), toUnit(300).toString());
+		});
+
+		it('should start round', async () => {
+			assert.equal(await vault.allocationPerRound(round), 0);
+
+			const tx = await vault.startRound({ from: owner });
+			const now = await currentTime();
+
+			assert.equal(
+				(await sUSDSynth.balanceOf(vault.address)).toString(),
+				(await vault.allocationPerRound(round)).toString()
+			);
+			assert.equal(await vault.roundStarted(), true);
+			assert.equal((await vault.roundStartTime(round)).toString(), now);
+			assert.equal((await vault.roundEndTime(round)).toString(), now + week);
+
+			assert.eventEqual(tx.logs[0], 'RoundStarted', {
+				round: round,
+			});
+		});
+
+		it('should not call startRound if round has started', async () => {
+			const REVERT = 'Round has already started';
+			await vault.startRound({ from: owner });
+
+			await assert.revert(vault.startRound({ from: owner }), REVERT);
+		});
+
+		it('should not deposit if round has started', async () => {
+			const REVERT = 'Round has already started';
+			await vault.startRound({ from: owner });
+
+			await sUSDSynth.approve(vault.address, toUnit(100), { from: minter });
+			await assert.revert(vault.deposit(toUnit(100), { from: minter }), REVERT);
 		});
 	});
 });

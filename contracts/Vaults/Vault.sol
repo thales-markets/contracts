@@ -79,6 +79,8 @@ contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentranc
     }
 
     function startRound() external onlyOwner {
+        require(!roundStarted, "Round has already started");
+
         roundStartTime[round] = block.timestamp;
         roundEndTime[round] = roundStartTime[round] + roundLength;
         roundStarted = true;
@@ -121,8 +123,8 @@ contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentranc
     }
 
     function calculateBalanceInARound(address user, uint _round) internal returns (uint) {
-        if (_round + 1 == 1) {
-            return 0;
+        if (_round == 0 || _round == 1) {
+            return balancesPerRound[1][user];
         } else {
             for (uint i = 2; i <= _round; i++) {
                 if (!claimedPerRound[i][user]) {
@@ -203,12 +205,12 @@ contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentranc
         }
     }
 
-    function getBalancesPerRound(uint round, address user) external view returns (uint) {
-        return balancesPerRound[round][user];
+    function getBalancesPerRound(uint _round, address user) external view returns (uint) {
+        return balancesPerRound[_round][user];
     }
 
-    function getClaimedPerRound(uint round, address user) external view returns (bool) {
-        return claimedPerRound[round][user];
+    function getClaimedPerRound(uint _round, address user) external view returns (bool) {
+        return claimedPerRound[_round][user];
     }
 
     function setRoundLength(uint _roundLength) external onlyOwner {

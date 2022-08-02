@@ -32,17 +32,7 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
-		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
-	//Constants
-	const capPerMarket = '5000000000000000000000';
-	const min_spread = '20000000000000000';
-	const max_spread = '200000000000000000';
-	const minimalTimeLeftToMaturity = '86400';
-
-	const SportMarketFactory = await ethers.getContractFactory('SportPositionalMarketFactory');
-	const SportMarketFactoryAddress = getTargetAddress('SportPositionalMarketFactory', network);
-	const SportMarketFactoryDeployed = await SportMarketFactory.attach(SportMarketFactoryAddress);
 
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
 	const SportsAMM = await ethers.getContractFactory('SportsAMM');

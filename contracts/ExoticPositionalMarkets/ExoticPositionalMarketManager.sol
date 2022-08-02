@@ -88,6 +88,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     function createExoticMarket(
         string memory _marketQuestion,
         string memory _marketSource,
+        string memory _additionalInfo,
         uint _endOfPositioning,
         uint _fixedTicketPrice,
         bool _withdrawalAllowed,
@@ -171,6 +172,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             exoticMarket.initialize(
                 _marketQuestion,
                 _marketSource,
+                _additionalInfo,
                 _endOfPositioning,
                 _fixedTicketPrice,
                 _withdrawalAllowed,
@@ -197,65 +199,67 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
         }
     }
 
-    function createCLMarket(
-        string memory _marketQuestion,
-        string memory _marketSource,
-        uint _endOfPositioning,
-        uint _fixedTicketPrice,
-        bool _withdrawalAllowed,
-        uint[] memory _tags,
-        uint _positionCount,
-        uint[] memory _positionsOfCreator,
-        string[] memory _positionPhrases
-    ) external nonReentrant whenNotPaused {
-        require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low");
-        require(theRundownConsumerAddress != address(0), "Invalid theRundownConsumer");
-        require(msg.sender == theRundownConsumerAddress, "Invalid creator");
-        require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
-        require(keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")), "Invalid question");
-        require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid source");
-        require(_positionCount == _positionPhrases.length, "Invalid posCount");
-        require(bytes(_marketQuestion).length < 110, "Q exceeds length");
-        require(thereAreNonEqualPositions(_positionPhrases), "Equal pos phrases");
-        require(_positionsOfCreator.length == _positionCount, "Creator deposits wrong");
-        uint totalCreatorDeposit;
-        uint[] memory creatorPositions = new uint[](_positionCount);
-        for (uint i = 0; i < _positionCount; i++) {
-            totalCreatorDeposit = totalCreatorDeposit.add(_positionsOfCreator[i]);
-            creatorPositions[i] = i + 1;
-        }
-        require(IERC20(paymentToken).balanceOf(msg.sender) >= totalCreatorDeposit, "Low creation amount");
-        require(IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= totalCreatorDeposit, "No allowance.");
+    // function createCLMarket(
+    //     string memory _marketQuestion,
+    //     string memory _marketSource,
+    //     string memory _additionalInfo,
+    //     uint _endOfPositioning,
+    //     uint _fixedTicketPrice,
+    //     bool _withdrawalAllowed,
+    //     uint[] memory _tags,
+    //     uint _positionCount,
+    //     uint[] memory _positionsOfCreator,
+    //     string[] memory _positionPhrases
+    // ) external nonReentrant whenNotPaused {
+    //     require(_endOfPositioning >= block.timestamp.add(minimumPositioningDuration), "endOfPositioning too low");
+    //     require(theRundownConsumerAddress != address(0), "Invalid theRundownConsumer");
+    //     require(msg.sender == theRundownConsumerAddress, "Invalid creator");
+    //     require(_tags.length > 0 && _tags.length <= maxNumberOfTags);
+    //     require(keccak256(abi.encode(_marketQuestion)) != keccak256(abi.encode("")), "Invalid question");
+    //     require(keccak256(abi.encode(_marketSource)) != keccak256(abi.encode("")), "Invalid source");
+    //     require(_positionCount == _positionPhrases.length, "Invalid posCount");
+    //     require(bytes(_marketQuestion).length < 110, "Q exceeds length");
+    //     require(thereAreNonEqualPositions(_positionPhrases), "Equal pos phrases");
+    //     require(_positionsOfCreator.length == _positionCount, "Creator deposits wrong");
+    //     uint totalCreatorDeposit;
+    //     uint[] memory creatorPositions = new uint[](_positionCount);
+    //     for (uint i = 0; i < _positionCount; i++) {
+    //         totalCreatorDeposit = totalCreatorDeposit.add(_positionsOfCreator[i]);
+    //         creatorPositions[i] = i + 1;
+    //     }
+    //     require(IERC20(paymentToken).balanceOf(msg.sender) >= totalCreatorDeposit, "Low creation amount");
+    //     require(IERC20(paymentToken).allowance(msg.sender, thalesBonds) >= totalCreatorDeposit, "No allowance.");
 
-        ExoticPositionalOpenBidMarket exoticMarket =
-            ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
-        exoticMarket.initialize(
-            _marketQuestion,
-            _marketSource,
-            _endOfPositioning,
-            _fixedTicketPrice,
-            _withdrawalAllowed,
-            _tags,
-            _positionCount,
-            _positionPhrases
-        );
-        isChainLinkMarket[address(exoticMarket)] = true;
-        creatorAddress[address(exoticMarket)] = msg.sender;
-        _activeMarkets.add(address(exoticMarket));
-        exoticMarket.takeCreatorInitialOpenBidPositions(creatorPositions, _positionsOfCreator);
-        emit CLMarketCreated(
-            address(exoticMarket),
-            _marketQuestion,
-            _marketSource,
-            _endOfPositioning,
-            _fixedTicketPrice,
-            _withdrawalAllowed,
-            _tags,
-            _positionCount,
-            _positionPhrases,
-            msg.sender
-        );
-    }
+    //     ExoticPositionalOpenBidMarket exoticMarket =
+    //         ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
+    //     exoticMarket.initialize(
+    //         _marketQuestion,
+    //         _marketSource,
+    //         _additionalInfo,
+    //         _endOfPositioning,
+    //         _fixedTicketPrice,
+    //         _withdrawalAllowed,
+    //         _tags,
+    //         _positionCount,
+    //         _positionPhrases
+    //     );
+    //     isChainLinkMarket[address(exoticMarket)] = true;
+    //     creatorAddress[address(exoticMarket)] = msg.sender;
+    //     _activeMarkets.add(address(exoticMarket));
+    //     exoticMarket.takeCreatorInitialOpenBidPositions(creatorPositions, _positionsOfCreator);
+    //     emit CLMarketCreated(
+    //         address(exoticMarket),
+    //         _marketQuestion,
+    //         _marketSource,
+    //         _endOfPositioning,
+    //         _fixedTicketPrice,
+    //         _withdrawalAllowed,
+    //         _tags,
+    //         _positionCount,
+    //         _positionPhrases,
+    //         msg.sender
+    //     );
+    // }
 
     function resolveMarket(address _marketAddress, uint _outcomePosition) external whenNotPaused {
         require(isActiveMarket(_marketAddress), "NotActive");
@@ -323,6 +327,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             if (!IThalesOracleCouncil(oracleCouncilAddress).isMarketClosedForDisputes(_marketAddress)) {
                 IThalesOracleCouncil(oracleCouncilAddress).closeMarketForDisputes(_marketAddress);
             }
+            IThalesBonds(thalesBonds).decreaseCreatorVolume(_marketAddress);
         }
         if (IExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "only pDAO");

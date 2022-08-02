@@ -63,7 +63,7 @@ contract MockPriceFeed is Owned, IPriceFeed {
         rates = new uint[](aggregatorKeys.length);
         for (uint i = 0; i < aggregatorKeys.length; i++) {
             bytes32 currencyKey = aggregatorKeys[i];
-            rates[count++] =_getRateAndUpdatedTime(currencyKey).rate;
+            rates[count++] = _getRateAndUpdatedTime(currencyKey).rate;
         }
     }
 
@@ -102,8 +102,10 @@ contract MockPriceFeed is Owned, IPriceFeed {
 
     function _getRateAndUpdatedTime(bytes32 currencyKey) internal view returns (RateAndUpdatedTime memory) {
         return
-            RateAndUpdatedTime({rate:  uint216(_formatAggregatorAnswer(currencyKey, int256(priceToReturn))), time: uint40(timestampToReturn)});
-        
+            RateAndUpdatedTime({
+                rate: uint216(_formatAggregatorAnswer(currencyKey, int256(priceToReturn))),
+                time: uint40(timestampToReturn)
+            });
     }
 
     function setPricetoReturn(uint priceToSet) external {

@@ -64,10 +64,12 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     uint[] public tags;
     string public marketQuestion;
     string public marketSource;
+    string public additionalInfo;
 
     function initialize(
         string memory _marketQuestion,
         string memory _marketSource,
+        string memory _additionalInfo,
         uint _endOfPositioning,
         uint _fixedTicketPrice,
         bool _withdrawalAllowed,
@@ -98,6 +100,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
                 _addPosition(_positionPhrases[i]);
             }
         }
+        additionalInfo = _additionalInfo;
         maxAmountForOpenBidPosition = marketManager.maxAmountForOpenBidPosition();
         maxWithdrawPercentage = marketManager.maxFinalWithdrawPercentage();
         fixedBondAmount = marketManager.fixedBondAmount();

@@ -7,13 +7,13 @@ interface ICurveSUSD {
         int128 j,
         uint256 _dx,
         uint256 _min_dy
-    ) external returns (uint256 );
+    ) external returns (uint256);
 
     function get_dy_underlying(
         int128 i,
         int128 j,
         uint256 _dx
-    ) external view returns (uint256 );
+    ) external view returns (uint256);
 
     //    @notice Perform an exchange between two underlying coins
     //    @param i Index value for the underlying coin to send

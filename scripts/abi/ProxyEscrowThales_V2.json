@@ -415,6 +415,26 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "srcAccount",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "destAccount",
+        "type": "address"
+      }
+    ],
+    "name": "mergeAccount",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_owner",
         "type": "address"
       }

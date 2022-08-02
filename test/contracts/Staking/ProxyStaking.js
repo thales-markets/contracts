@@ -103,11 +103,28 @@ contract('StakingThales', accounts => {
 			WEEK,
 			SNXRewardsDeployed.address,
 		]);
-
-		await StakingThalesDeployed.connect(owner).setDistributeFeesEnabled(true);
-		await StakingThalesDeployed.connect(owner).setClaimEnabled(true);
-		await StakingThalesDeployed.connect(owner).setFixedPeriodReward(100000);
-		await StakingThalesDeployed.connect(owner).setAddressResolver(AddressResolverDeployed.address);
+		await StakingThalesDeployed.connect(owner).setStakingParameters(true, true, WEEK, WEEK, true);
+		await StakingThalesDeployed.connect(owner).setStakingRewardsParameters(
+			100000,
+			100000,
+			false,
+			'15',
+			'12',
+			'3',
+			'1',
+			'10'
+		);
+		await StakingThalesDeployed.connect(owner).setAddresses(
+			SNXRewardsDeployed.address,
+			dummy,
+			dummy,
+			dummy,
+			dummy,
+			dummy,
+			dummy,
+			dummy,
+			AddressResolverDeployed.address
+		);
 	});
 
 	describe('EscrowThales basic check', () => {

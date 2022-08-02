@@ -4,8 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/IThalesRoyale.sol";
 
-contract TestThalesRoyale is IThalesRoyale { 
-
+contract TestThalesRoyale is IThalesRoyale {
     bool public participatedInLastRoyale;
     uint public buyInAmount;
     uint public override season;
@@ -21,9 +20,10 @@ contract TestThalesRoyale is IThalesRoyale {
     mapping(uint => IPassportPosition.Position[]) public tokenPositions;
 
     constructor() {}
+
     /* ========== VIEWS / VARIABLES ========== */
 
-    function hasParticipatedInCurrentOrLastRoyale(address player) external view override returns (bool){
+    function hasParticipatedInCurrentOrLastRoyale(address player) external view override returns (bool) {
         // to silence compiler warning
         player = player;
         return participatedInLastRoyale;
@@ -42,7 +42,7 @@ contract TestThalesRoyale is IThalesRoyale {
         participatedInLastRoyale = _participated;
     }
 
-    function getBuyInAmount() external view override returns (uint){
+    function getBuyInAmount() external view override returns (uint) {
         return buyInAmount;
     }
 
@@ -50,8 +50,7 @@ contract TestThalesRoyale is IThalesRoyale {
         buyInAmount = _buyIn;
     }
 
-    function getTokenPositions(uint tokenId) public override view returns (IPassportPosition.Position[] memory) {
+    function getTokenPositions(uint tokenId) public view override returns (IPassportPosition.Position[] memory) {
         return tokenPositions[tokenId];
     }
-   
 }

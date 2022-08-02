@@ -57,6 +57,8 @@ contract('SportsAMM', accounts => {
 	const SNXRewardsContract = artifacts.require('SNXRewards');
 	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	const TestOddsContract = artifacts.require('TestOdds');
+	const ReferralsContract = artifacts.require('Referrals');
+
 	let ExoticPositionalMarket;
 	let ExoticPositionalOpenBidMarket;
 	let ExoticPositionalMarketManager;
@@ -135,6 +137,7 @@ contract('SportsAMM', accounts => {
 		testUSDC,
 		testUSDT,
 		testDAI,
+		Referrals,
 		SportsAMM;
 
 	const game1NBATime = 1646958600;
@@ -193,6 +196,8 @@ contract('SportsAMM', accounts => {
 			SportPositionalMarketFactory.address,
 			{ from: manager }
 		);
+		Referrals = await ReferralsContract.new();
+		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
 		await SportsAMM.initialize(
 			owner,
@@ -204,10 +209,22 @@ contract('SportsAMM', accounts => {
 			{ from: owner }
 		);
 
+		await SportsAMM.setParameters(
+			DAY,
+			toUnit('0.02'),
+			toUnit('0.2'),
+			toUnit('0.001'),
+			toUnit('0.9'),
+			toUnit('5000'),
+			toUnit('0.01'),
+			toUnit('0.005'),
+			{ from: owner }
+		);
+
 		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
 			from: owner,
 		});
-		await SportsAMM.setStakingThales(StakingThales.address, { from: owner });
+
 		await SportPositionalMarketData.initialize(owner, { from: owner });
 		await StakingThales.initialize(
 			owner,
@@ -219,9 +236,18 @@ contract('SportsAMM', accounts => {
 			SNXRewards.address,
 			{ from: owner }
 		);
-		await StakingThales.setThalesAMM(SportsAMM.address, { from: owner });
-		await SportsAMM.setMinSupportedOdds(10, { from: owner });
-		await SportsAMM.setMaxSupportedOdds(toUnit(0.9), { from: owner });
+		await StakingThales.setAddresses(
+			SNXRewards.address,
+			second,
+			second,
+			second,
+			second,
+			SportsAMM.address,
+			second,
+			second,
+			second,
+			{ from: owner }
+		);
 
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
@@ -304,9 +330,15 @@ contract('SportsAMM', accounts => {
 		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
 		// 	TherundownConsumerDeployed.address
 		// );
-		await TherundownConsumerDeployed.setWrapperAddress(wrapper, { from: owner });
+		await TherundownConsumerDeployed.setSportContracts(
+			wrapper,
+			gamesQueue.address,
+			SportPositionalMarketManager.address,
+			{
+				from: owner,
+			}
+		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
-		await SportsAMM.setTherundownConsumer(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
@@ -340,6 +372,15 @@ contract('SportsAMM', accounts => {
 			testUSDC.address,
 			testUSDT.address,
 			true,
+			{ from: owner }
+		);
+
+		await SportsAMM.setAddresses(
+			owner,
+			Thales.address,
+			TherundownConsumerDeployed.address,
+			StakingThales.address,
+			Referrals.address,
 			{ from: owner }
 		);
 
@@ -465,8 +506,9 @@ contract('SportsAMM', accounts => {
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
 
-			assert.bnEqual(-20700, await TherundownConsumerDeployed.getOddsHomeTeam(gameid1));
-			assert.bnEqual(17700, await TherundownConsumerDeployed.getOddsAwayTeam(gameid1));
+			let result = await TherundownConsumerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-20700, result[0]);
+			assert.bnEqual(17700, result[1]);
 
 			assert.equal(
 				game_1_create,
@@ -596,18 +638,17 @@ contract('SportsAMM', accounts => {
 		});
 
 		it('Setters testing', async () => {
-			answer = await SportsAMM.setMinimalTimeLeftToMaturity(toUnit(1), { from: owner });
-			answer = await SportsAMM.setMinSpread(toUnit(1), { from: owner });
-			answer = await SportsAMM.setSafeBoxImpact(toUnit(1), { from: owner });
-			answer = await SportsAMM.setSafeBox(third, { from: owner });
-			answer = await SportsAMM.setMaxSpread(toUnit(1), { from: owner });
-			answer = await SportsAMM.setMinSupportedOdds(toUnit(1), { from: owner });
-			answer = await SportsAMM.setMaxSupportedOdds(toUnit(1), { from: owner });
-			answer = await SportsAMM.setDefaultCapPerGame(toUnit(1), { from: owner });
-			answer = await SportsAMM.setSUSD(Thales.address, { from: owner });
-			answer = await SportsAMM.setTherundownConsumer(third, { from: owner });
-			answer = await SportsAMM.setStakingThales(third, { from: owner });
-			answer = await SportsAMM.setSportsPositionalMarketManager(third, { from: owner });
+			answer = await SportsAMM.setParameters(
+				DAY,
+				toUnit('0.02'),
+				toUnit('0.2'),
+				toUnit('0.001'),
+				toUnit('0.9'),
+				toUnit('5000'),
+				toUnit('0.01'),
+				toUnit('0.005'),
+				{ from: owner }
+			);
 		});
 		// }); //// COMMENT here
 
@@ -630,15 +671,10 @@ contract('SportsAMM', accounts => {
 		});
 
 		it('Get american odds', async () => {
-			answer = await TherundownConsumerDeployed.getOddsHomeTeam(gameid1);
-			let sumOfOdds = answer;
-			console.log('American Odds for pos 0: ', fromUnit(answer));
-			answer = await TherundownConsumerDeployed.getOddsAwayTeam(gameid1);
-			sumOfOdds = sumOfOdds.add(answer);
-			console.log('American Odds for pos 1: ', fromUnit(answer));
-			answer = await TherundownConsumerDeployed.getOddsDraw(gameid1);
-			sumOfOdds = sumOfOdds.add(answer);
-			console.log('American Odds for pos 2: ', fromUnit(answer));
+			answer = await TherundownConsumerDeployed.getOddsForGame(gameid1);
+			let sumOfOdds = answer[0];
+			sumOfOdds = sumOfOdds.add(answer[1]);
+			sumOfOdds = sumOfOdds.add(answer[2]);
 		});
 
 		it('Get price', async () => {
@@ -2010,6 +2046,184 @@ contract('SportsAMM', accounts => {
 			answer = await SportsAMM.exerciseMaturedMarket(deployedMarket.address);
 			answer = await Thales.balanceOf(SportsAMM.address);
 			console.log('Balance after exercise of SportsAMM: ', fromUnit(answer));
+		});
+	});
+
+	describe('Testing referrals', () => {
+		let deployedMarket;
+		let answer;
+		beforeEach(async () => {
+			let _currentTime = await currentTime();
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+
+			// check if event is emited
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			// console.log("Active market: ", answer.toString());
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+		});
+
+		let position = 0;
+		let value = 100;
+
+		it('SportsAMM not set in referrals', async () => {
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				position,
+				toUnit(value)
+			);
+			await expect(
+				SportsAMM.buyFromAMMWithReferrer(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					buyFromAmmQuote,
+					additionalSlippage,
+					second,
+					{ from: first }
+				)
+			).to.be.revertedWith('Only whitelisted addresses or owner set referrers');
+		});
+
+		it('Buy with referrals', async () => {
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				position,
+				toUnit(value)
+			);
+			let balanceOfReferrer = await Thales.balanceOf(second);
+			await Referrals.setSportsAMM(SportsAMM.address, { from: owner });
+			answer = await SportsAMM.buyFromAMMWithReferrer(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				buyFromAmmQuote,
+				additionalSlippage,
+				second,
+				{ from: first }
+			);
+			answer = await Thales.balanceOf(second);
+
+			assert.bnGt(answer, balanceOfReferrer);
+			console.log('Referrer change: ', fromUnit(balanceOfReferrer), fromUnit(answer));
+		});
+		it('Multi-collateral buy from AMM using referrals', async () => {
+			position = 1;
+			value = 100;
+
+			let additionalSlippage = toUnit(0.5);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				position,
+				toUnit(value)
+			);
+			await Thales.approve(SportsAMM.address, toUnit(100000), { from: first });
+			console.log('buyFromAmmQuote decimal is: ', fromUnit(buyFromAmmQuote));
+
+			let buyFromAmmQuoteUSDCCollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				testUSDC.address
+			);
+			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
+			console.log(
+				'buyFromAmmQuoteWithDifferentCollateral USDC: ',
+				buyFromAmmQuoteUSDCCollateral / 1e6
+			);
+
+			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > fromUnit(buyFromAmmQuote), true);
+
+			let buyFromAmmQuoteDAICollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				testDAI.address
+			);
+			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
+			console.log(
+				'buyFromAmmQuoteWithDifferentCollateral DAI: ',
+				buyFromAmmQuoteDAICollateral / 1e18
+			);
+
+			assert.equal(fromUnit(buyFromAmmQuoteDAICollateral) > fromUnit(buyFromAmmQuote), true);
+
+			answer = await Thales.balanceOf(first);
+			let initial_balance = answer;
+			console.log('acc sUSD balance before buy: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			let userBalance = await testUSDC.balanceOf(first);
+			let sportsAMMBalanceUSDC = await testUSDC.balanceOf(SportsAMM.address);
+			let sportsAMMBalance = await Thales.balanceOf(SportsAMM.address);
+			console.log('Balance of USDC for user: ', fromUnit(userBalance));
+			console.log('Balance of USDC for sportsAMM: ', fromUnit(sportsAMMBalanceUSDC));
+			console.log('Balance of sUSD for sportsAMM: ', fromUnit(sportsAMMBalance));
+
+			let balanceOfReferrer = await Thales.balanceOf(second);
+			await Referrals.setSportsAMM(SportsAMM.address, { from: owner });
+
+			await SportsAMM.buyFromAMMWithDifferentCollateralAndReferrer(
+				deployedMarket.address,
+				position,
+				toUnit(value),
+				buyFromAmmQuoteUSDCCollateral,
+				additionalSlippage,
+				testUSDC.address,
+				second,
+				{ from: first }
+			);
+
+			answer = await Thales.balanceOf(second);
+
+			assert.bnGt(answer, balanceOfReferrer);
+			console.log('Referrer change: ', fromUnit(balanceOfReferrer), fromUnit(answer));
+
+			userBalance = await testUSDC.balanceOf(first);
+			sportsAMMBalanceUSDC = await testUSDC.balanceOf(SportsAMM.address);
+			sportsAMMBalance = await Thales.balanceOf(SportsAMM.address);
+			console.log('after buy user balance: ', fromUnit(userBalance));
+			console.log('after buy sportsAMM USDC balance: ', fromUnit(sportsAMMBalanceUSDC));
+			console.log('after buy sportsAMM sUSD balance: ', fromUnit(sportsAMMBalance));
+		});
+		it('Whitelist and set traded before', async () => {
+			await Referrals.setWhitelistedAddress(owner, true, {
+				from: owner,
+			});
+
+			let traders = new Array();
+			traders.push(owner);
+			await Referrals.setSportTradedBefore(traders, {
+				from: owner,
+			});
+
+			let isOwnerWhitelisted = await Referrals.whitelistedAddresses(owner);
+			assert.equal(isOwnerWhitelisted, true);
+
+			let isOwnerPrevtrader = await Referrals.sportTradedBefore(owner);
+			assert.equal(isOwnerPrevtrader, true);
 		});
 	});
 });

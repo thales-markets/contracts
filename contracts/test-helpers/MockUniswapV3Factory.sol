@@ -8,7 +8,6 @@ import "./MockUniswapV3PoolDeployer.sol";
 
 import "./MockUniswapV3Pool.sol";
 
-
 /// @title Canonical Uniswap V3 factory
 /// @notice Deploys Uniswap V3 pools and manages ownership and control over pool protocol fees
 contract MockUniswapV3Factory is IUniswapV3Factory, MockUniswapV3PoolDeployer, NoDelegateCall {

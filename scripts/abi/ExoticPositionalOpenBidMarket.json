@@ -280,6 +280,19 @@
   },
   {
     "inputs": [],
+    "name": "additionalInfo",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "arbitraryRewardForDisputor",
     "outputs": [
       {
@@ -942,6 +955,11 @@
       {
         "internalType": "string",
         "name": "_marketSource",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_additionalInfo",
         "type": "string"
       },
       {

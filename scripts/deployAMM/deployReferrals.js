@@ -34,6 +34,11 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 42) {
+		networkObj.name = 'kovan';
+		network = 'kovan';
+	}
+
 	if (networkObj.chainId == 10) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else if (networkObj.chainId == 69) {
@@ -59,8 +64,8 @@ async function main() {
 	const Referrals = await ethers.getContractFactory('Referrals');
 	let ReferralsDeployed = await upgrades.deployProxy(Referrals, [
 		owner.address,
-		thalesAMM,
-		rangedAMM,
+		owner.address,
+		owner.address,
 	]);
 	await ReferralsDeployed.deployed();
 

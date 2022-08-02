@@ -52,7 +52,7 @@ contract MockSwapRouter is
         uint24 fee
     ) public view returns (IUniswapV3Pool) {
         //return IUniswapV3Pool(PoolAddress.computeAddress(factory, PoolAddress.getPoolKey(tokenA, tokenB, fee)));
-        if(tokenA > tokenB) {
+        if (tokenA > tokenB) {
             return IUniswapV3Pool(pools[tokenB][tokenA]);
         }
 
@@ -84,9 +84,7 @@ contract MockSwapRouter is
         CallbackValidation.verifyCallback(factory, tokenIn, tokenOut, fee);
 
         (bool isExactInput, uint256 amountToPay) =
-            amount0Delta > 0
-                ? (tokenIn < tokenOut, uint256(amount0Delta))
-                : (tokenOut < tokenIn, uint256(amount1Delta));
+            amount0Delta > 0 ? (tokenIn < tokenOut, uint256(amount0Delta)) : (tokenOut < tokenIn, uint256(amount1Delta));
         if (isExactInput) {
             pay(tokenIn, data.payer, msg.sender, amountToPay);
         } else {
@@ -121,9 +119,7 @@ contract MockSwapRouter is
                 recipient,
                 zeroForOne,
                 amountIn.toInt256(),
-                sqrtPriceLimitX96 == 0
-                    ? (zeroForOne ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1)
-                    : sqrtPriceLimitX96,
+                sqrtPriceLimitX96 == 0 ? (zeroForOne ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1) : sqrtPriceLimitX96,
                 abi.encode(data)
             );
 
@@ -203,9 +199,7 @@ contract MockSwapRouter is
                 recipient,
                 zeroForOne,
                 -amountOut.toInt256(),
-                sqrtPriceLimitX96 == 0
-                    ? (zeroForOne ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1)
-                    : sqrtPriceLimitX96,
+                sqrtPriceLimitX96 == 0 ? (zeroForOne ? MIN_SQRT_RATIO + 1 : MAX_SQRT_RATIO - 1) : sqrtPriceLimitX96,
                 abi.encode(data)
             );
 
@@ -249,12 +243,7 @@ contract MockSwapRouter is
     {
         // it's okay that the payer is fixed to msg.sender here, as they're only paying for the "final" exact output
         // swap, which happens first, and subsequent swaps are paid for within nested callback frames
-        exactOutputInternal(
-            params.amountOut,
-            params.recipient,
-            0,
-            SwapCallbackData({path: params.path, payer: msg.sender})
-        );
+        exactOutputInternal(params.amountOut, params.recipient, 0, SwapCallbackData({path: params.path, payer: msg.sender}));
 
         amountIn = amountInCached;
         require(amountIn <= params.amountInMaximum, "Too much requested");

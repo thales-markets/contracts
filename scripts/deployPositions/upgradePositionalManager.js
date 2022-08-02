@@ -53,7 +53,7 @@ async function main() {
 		PositionalMarketManager
 	);
 
-	await upgrades.upgradeProxy(positionalManagerAddress, PositionalMarketManager);
+	//await upgrades.upgradeProxy(positionalManagerAddress, PositionalMarketManager);
 
 	console.log(
 		'Implementation PositionalMarketManagerImplementation: ',

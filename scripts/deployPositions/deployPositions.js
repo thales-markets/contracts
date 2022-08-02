@@ -35,7 +35,8 @@ async function main() {
 	} else if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	}if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+	}
+	if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
@@ -88,10 +89,6 @@ async function main() {
 	const day = 24 * 60 * 60;
 	const expiryDuration = 26 * 7 * day; // Six months to exercise options before the market is destructible.
 	const maxTimeToMaturity = 730 * day; // Markets may not be deployed more than two years in the future.
-	let creatorCapitalRequirement = w3utils.toWei('1'); // 1 sUSD is required to create a new market for testnet, 1000 for mainnet.
-	if (network == 'mainnet') {
-		creatorCapitalRequirement = w3utils.toWei('1000');
-	}
 
 	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
 	const PositionalMarketManagerDeployed = await upgrades.deployProxy(PositionalMarketManager, [
@@ -100,7 +97,6 @@ async function main() {
 		priceFeedAddress,
 		expiryDuration,
 		maxTimeToMaturity,
-		creatorCapitalRequirement,
 	]);
 	await PositionalMarketManagerDeployed.deployed();
 
@@ -119,11 +115,11 @@ async function main() {
 	);
 
 	// set whitelisted addresses for L2
-	if (networkObj.chainId === 10 || networkObj.chainId === 69|| networkObj.chainId === 137) {
+	if (networkObj.chainId === 10 || networkObj.chainId === 69 || networkObj.chainId === 137) {
 		const whitelistedAddresses = [
 			'0x9841484A4a6C0B61C4EEa71376D76453fd05eC9C',
 			'0x461783A831E6dB52D68Ba2f3194F6fd1E0087E04',
-			'0x5027ce356c375a934b4d1de9240ba789072a5af1'
+			'0x5027ce356c375a934b4d1de9240ba789072a5af1',
 		];
 
 		let transaction = await PositionalMarketManagerDeployed.setWhitelistedAddresses(
@@ -160,7 +156,7 @@ async function main() {
 	console.log('PositionalMarketData deployed to:', positionalMarketData.address);
 	setTargetAddress('PositionalMarketData', network, positionalMarketData.address);
 
-	let LimitOrderProviderAddress = getTargetAddress('LimitOrderProvider', network);
+	//let LimitOrderProviderAddress = getTargetAddress('LimitOrderProvider', network);
 
 	let tx = await PositionalMarketFactoryDeployed.setPositionalMarketManager(
 		PositionalMarketManagerDeployed.address
@@ -188,12 +184,12 @@ async function main() {
 		console.log('PositionalMarketFactory: setPositionMastercopy');
 	});
 
-	if (LimitOrderProviderAddress) {
-		tx = await PositionalMarketFactoryDeployed.setLimitOrderProvider(LimitOrderProviderAddress);
-		await tx.wait().then(e => {
-			console.log('PositionalMarketFactory: setLimitOrderProvider');
-		});
-	}
+	// if (LimitOrderProviderAddress) {
+	// 	tx = await PositionalMarketFactoryDeployed.setLimitOrderProvider(LimitOrderProviderAddress);
+	// 	await tx.wait().then(e => {
+	// 		console.log('PositionalMarketFactory: setLimitOrderProvider');
+	// 	});
+	// }
 
 	if (network == 'ropsten') {
 		await hre.run('verify:verify', {

@@ -2,7 +2,6 @@ const { ethers } = require('hardhat');
 const { setTargetAddress } = require('../helpers');
 
 async function main() {
-
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
@@ -31,7 +30,6 @@ async function main() {
 
 	setTargetAddress('ThalesAMMImplementation', network, ThalesAMMDeployed.address);
 
-
 	try {
 		await hre.run('verify:verify', {
 			address: ThalesAMMDeployed.address,
@@ -39,7 +37,6 @@ async function main() {
 	} catch (e) {
 		console.log(e);
 	}
-
 }
 
 main()

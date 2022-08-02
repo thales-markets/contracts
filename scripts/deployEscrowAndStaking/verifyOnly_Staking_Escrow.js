@@ -12,19 +12,19 @@ async function main() {
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
-	if(networkObj.chainId == 10) {
-		network = 'optimisticEthereum'		
+	if (networkObj.chainId == 10) {
+		network = 'optimisticEthereum';
 	}
 	const owner = new ethers.Wallet(user_key1, ethers.provider);
 
 	console.log('Owner is:' + owner.address);
 	console.log('Network name:' + network);
-	
+
 	const StakingImplementation = getTargetAddress('StakingThalesImplementation', network);
 	const EscrowImplementation = getTargetAddress('EscrowThalesImplementation', network);
 	const ProxyStaking = getTargetAddress('StakingThales', network);
 	const ProxyEscrow = getTargetAddress('EscrowThales', network);
-	
+
 	console.log('Implementation Escrow: ', EscrowImplementation);
 	console.log('Implementation Staking: ', StakingImplementation);
 	console.log('Escrow proxy:', ProxyEscrow);

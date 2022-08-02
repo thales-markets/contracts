@@ -7,19 +7,16 @@ async function deploy_ongoing_airdrop() {
 	let THALES, Thales;
 	if (network === 'homestead') {
 		network = 'mainnet';
-	}
-	else if (networkObj.chainId == 69) {
+	} else if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 		THALES = getTargetAddress('OpThales_L2', network);
-		Thales = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');;
-	}
-	else if (networkObj.chainId == 10) {
+		Thales = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');
+	} else if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 		THALES = getTargetAddress('OpThales_L2', network);
-		Thales = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');;
-	}
-	else if (network === 'unknown') {
+		Thales = await ethers.getContractFactory('/contracts/Token/OpThales_L2.sol:OpThales');
+	} else if (network === 'unknown') {
 		network = 'localhost';
 		THALES = getTargetAddress('Thales', network);
 		Thales = await ethers.getContractFactory('Thales');
@@ -27,7 +24,6 @@ async function deploy_ongoing_airdrop() {
 	console.log('Network name:' + network);
 
 	let owner = accounts[0];
-
 
 	// deploy EscrowThales
 	const OngoingAirdrop = await ethers.getContractFactory('OngoingAirdrop');
@@ -44,18 +40,16 @@ async function deploy_ongoing_airdrop() {
 	// setTargetAddress('EscrowThales', network, escrowThales.address);
 
 	// set OngoingAirdrop address
-	let tx = await escrowThales.setAirdropContract(ongoingAirdrop.address, {from:owner.address});
+	let tx = await escrowThales.setAirdropContract(ongoingAirdrop.address, { from: owner.address });
 	await tx.wait().then(e => {
 		console.log('EscrowThales: setAirdropContract');
 	});
 
 	// set EscrowThales address
-	await ongoingAirdrop.setEscrow(escrowThales.address, {from:owner.address});
+	await ongoingAirdrop.setEscrow(escrowThales.address, { from: owner.address });
 	await tx.wait().then(e => {
 		console.log('OngoingAirdrop: setEscrow');
 	});
-
-	
 }
 
 deploy_ongoing_airdrop()

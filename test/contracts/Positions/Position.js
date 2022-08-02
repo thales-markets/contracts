@@ -4,12 +4,7 @@ const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
 const { assert } = require('../../utils/common');
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-} = require('../../utils')();
+const { fastForward, toUnit, currentTime, multiplyDecimalRound } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupAllContracts } = require('../../utils/setup');
 
@@ -24,10 +19,12 @@ let PositionalMarket,
 	priceFeed,
 	sUSDSynth,
 	positionalMarketMastercopy,
-	PositionMastercopy;
+	PositionMastercopy,
+	thalesAMM;
 let market, up, down, Position, Synth, addressResolver;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
+const DAY = 24 * 60 * 60;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
@@ -38,16 +35,13 @@ contract('Position', accounts => {
 	const AUDKey = toBytes32('sAUD');
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
-		const tx = await man.connect(creator).createMarket(
-			oracleKey,
-			strikePrice.toString(),
-			maturity,
-			initialMint.toString(),
-			false,
-			ZERO_ADDRESS
-		);
+		const tx = await man
+			.connect(creator)
+			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
-		const marketEvent = receipt.events.find((event) => event['event'] && event['event'] === 'MarketCreated');
+		const marketEvent = receipt.events.find(
+			event => event['event'] && event['event'] === 'MarketCreated'
+		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
 
@@ -85,12 +79,34 @@ contract('Position', accounts => {
 			],
 		}));
 
-	    [creator, owner] = await ethers.getSigners();
+		[creator, owner] = await ethers.getSigners();
 
 		await manager.connect(creator).setPositionalMarketFactory(factory.address);
 		await factory.connect(owner).setPositionalMarketManager(manager.address);
 		await factory.connect(owner).setPositionalMarketMastercopy(positionalMarketMastercopy.address);
 		await factory.connect(owner).setPositionMastercopy(PositionMastercopy.address);
+
+		await manager.connect(creator).setTimeframeBuffer(1);
+		await manager.connect(creator).setPriceBuffer(toUnit(0.05).toString());
+
+		let DeciMath = artifacts.require('DeciMath');
+		let deciMath = await DeciMath.new();
+
+		const hour = 60 * 60;
+		let ThalesAMM = artifacts.require('ThalesAMM');
+		thalesAMM = await ThalesAMM.new();
+		await thalesAMM.initialize(
+			owner.address,
+			priceFeed.address,
+			sUSDSynth.address,
+			toUnit(1000),
+			deciMath.address,
+			toUnit(0.01),
+			toUnit(0.05),
+			hour * 2
+		);
+
+		await factory.connect(owner).setThalesAMM(thalesAMM.address);
 
 		let aggregatorAUD = await MockAggregator.new({ from: managerOwner });
 		aggregatorAUD.setDecimals('8');
@@ -98,6 +114,8 @@ contract('Position', accounts => {
 		await aggregatorAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
 		await priceFeed.connect(owner).addAggregator(AUDKey, aggregatorAUD.address);
+
+		await thalesAMM.setImpliedVolatilityPerAsset(AUDKey, toUnit(100), { from: owner.address });
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
@@ -111,8 +129,6 @@ contract('Position', accounts => {
 
 	describe('Transfers', () => {
 		it('Can transfer tokens.', async () => {
-			const newValue = toUnit(1);
-			await manager.connect(creator).setCreatorCapitalRequirement(newValue.toString());
 			let now = await currentTime();
 			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), creator);
 			await fastForward(100);
@@ -227,7 +243,7 @@ contract('Position', accounts => {
 
 		it('Can transferFrom tokens.', async () => {
 			let now = await currentTime();
-			market = await createMarket(manager, AUDKey, toUnit(1), now + 200, toUnit(2), creator);
+			market = await createMarket(manager, AUDKey, toUnit(1), now + 2 * DAY, toUnit(2), creator);
 			await fastForward(100);
 
 			const options = await market.options();
@@ -263,10 +279,7 @@ contract('Position', accounts => {
 
 		it('Transfers and approvals cannot go to invalid addresses.', async () => {
 			await assert.revert(up.transfer(ZERO_ADDRESS, toBN(0)), 'Invalid address');
-			await assert.revert(
-				up.transferFrom(ZERO_ADDRESS, ZERO_ADDRESS, toBN(0)),
-				'Invalid address'
-			);
+			await assert.revert(up.transferFrom(ZERO_ADDRESS, ZERO_ADDRESS, toBN(0)), 'Invalid address');
 			await assert.revert(up.approve(ZERO_ADDRESS, toBN(100)));
 		});
 	});
@@ -274,7 +287,7 @@ contract('Position', accounts => {
 	describe('Exercising Options', () => {
 		it('Exercising options updates balances properly', async () => {
 			const totalSupply = await down.totalSupply();
-			await fastForward(200);
+			await fastForward(2 * DAY);
 			await market.exerciseOptions({ from: minter });
 			await assertAllBnEqual([down.balanceOf(minter), down.totalSupply()], [toBN(0), toUnit(1)]);
 		});
@@ -282,17 +295,16 @@ contract('Position', accounts => {
 
 	describe('Exercising Options with amount', () => {
 		it('Exercising options with provided amount zero', async () => {
-	
 			let value_1 = toUnit(1);
 			let value_2 = toUnit(2);
-	
+
 			const totalSupplyDown = await down.totalSupply(); // 1
 			const totalSupplyUp = await up.totalSupply(); // 2
 			assert.bnEqual(totalSupplyDown, value_1);
 			assert.bnEqual(totalSupplyUp, value_2);
-	
+
 			await fastForward(200);
-	
+
 			await assert.revert(
 				market.burnOptions(toUnit(0), { from: minter }),
 				'Can not burn zero amount!'
@@ -300,47 +312,45 @@ contract('Position', accounts => {
 		});
 
 		it('Exercising options with provided amount  which exides MAX sUP', async () => {
-	
 			let value_1 = toUnit(1);
 			let value_2 = toUnit(2);
-	
+
 			const totalSupplyDown = await down.totalSupply(); // 1
 			const totalSupplyUp = await up.totalSupply(); // 2
 			assert.bnEqual(totalSupplyDown, value_1);
 			assert.bnEqual(totalSupplyUp, value_2);
-	
+
 			await fastForward(200);
-	
+
 			await assert.revert(
 				market.burnOptions(value_2, { from: minter }),
 				'There is not enough options!'
 			);
-	
 		});
-			
+
 		it('Exercising options with max amount updates balances properly', async () => {
-	
 			let value_1 = toUnit(1);
 			let value_2 = toUnit(2);
-	
+
 			const totalSupplyDown = await down.totalSupply(); // 1
 			const totalSupplyUp = await up.totalSupply(); // 2
 			assert.bnEqual(totalSupplyDown, value_1);
 			assert.bnEqual(totalSupplyUp, value_2);
-				
+
 			let minimum = await market.getMaximumBurnable(initialCreator);
 			assert.bnEqual(minimum, value_1); // 1
-	
-			await fastForward(200);
-	
-			const tx = await market.burnOptions(minimum, { from: initialCreator });
-	
-			await assertAllBnEqual([down.balanceOf(initialCreator), up.balanceOf(initialCreator)], [toBN(0), value_1]);
-	
-		});
-	
-		it('Exercising options with provided amount which exides MAX sDOWN', async () => {
 
+			await fastForward(200);
+
+			const tx = await market.burnOptions(minimum, { from: initialCreator });
+
+			await assertAllBnEqual(
+				[down.balanceOf(initialCreator), up.balanceOf(initialCreator)],
+				[toBN(0), value_1]
+			);
+		});
+
+		it('Exercising options with provided amount which exides MAX sDOWN', async () => {
 			let value_0 = toUnit(0);
 			let value_1 = toUnit(1);
 
@@ -355,7 +365,6 @@ contract('Position', accounts => {
 				market.burnOptions(value_1, { from: initialCreator }),
 				'There is not enough options!'
 			);
-
 		});
 	});
 

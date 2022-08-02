@@ -115,10 +115,7 @@ async function main() {
 
 	await delay(5000);
 
-	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
-		toBytes32('BTC'),
-		w3utils.toWei('85')
-	);
+	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(toBytes32('BTC'), w3utils.toWei('85'));
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BTC, 85)');
 	});

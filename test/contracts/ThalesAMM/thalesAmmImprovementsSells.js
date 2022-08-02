@@ -37,14 +37,7 @@ contract('ThalesAMM', accounts => {
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
 			.connect(creator)
-			.createMarket(
-				oracleKey,
-				strikePrice.toString(),
-				maturity,
-				initialMint.toString(),
-				false,
-				ZERO_ADDRESS
-			);
+			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
 			event => event['event'] && event['event'] === 'MarketCreated'
@@ -171,6 +164,7 @@ contract('ThalesAMM', accounts => {
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
 			from: owner,
 		});
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 	});
 

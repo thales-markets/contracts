@@ -43,7 +43,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     uint public minimalTimeLeftToMaturity;
 
-    enum Position {Up, Down}
+    enum Position {
+        Up,
+        Down
+    }
 
     mapping(address => uint) public spentOnMarket;
 
@@ -173,8 +176,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             }
 
             (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
-            uint balanceOfTheOtherSide =
-                position == Position.Up ? down.getBalanceOf(address(this)) : up.getBalanceOf(address(this));
+            uint balanceOfTheOtherSide = position == Position.Up
+                ? down.getBalanceOf(address(this))
+                : up.getBalanceOf(address(this));
 
             // any balanceOfTheOtherSide will be burned to get sUSD back (1 to 1) at the `willPay` cost
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
@@ -199,8 +203,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         if (!(amount > availableToSellToAMM(market, position))) {
             uint basePrice = price(market, position).sub(min_spread);
 
-            uint tempAmount =
-                amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(ONE);
+            uint tempAmount = amount.mul(basePrice.mul(ONE.sub(_sellPriceImpact(market, position, amount))).div(ONE)).div(
+                ONE
+            );
 
             uint returnQuote = tempAmount.mul(ONE.sub(safeBoxImpact)).div(ONE);
             _quote = IPositionalMarketManager(manager).transformCollateral(returnQuote);
@@ -376,8 +381,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
-        (uint collateralQuote, uint susdQuote) =
-            buyFromAmmQuoteWithDifferentCollateral(market, position, amount, collateral);
+        (uint collateralQuote, uint susdQuote) = buyFromAmmQuoteWithDifferentCollateral(
+            market,
+            position,
+            amount,
+            collateral
+        );
 
         require(collateralQuote.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high!");
 
@@ -431,10 +440,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         //transfer options first to have max burn available
         IERC20(address(target)).safeTransferFrom(msg.sender, address(this), amount);
 
-        uint sUSDFromBurning =
-            IPositionalMarketManager(manager).transformCollateral(
-                IPositionalMarket(market).getMaximumBurnable(address(this))
-            );
+        uint sUSDFromBurning = IPositionalMarketManager(manager).transformCollateral(
+            IPositionalMarket(market).getMaximumBurnable(address(this))
+        );
         if (sUSDFromBurning > 0) {
             IPositionalMarket(market).burnOptionsMaximum();
         }
@@ -626,8 +634,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) internal view returns (uint) {
         (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
-        uint balanceOtherSideAfter =
-            balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
+        uint balanceOtherSideAfter = balancePosition > amount
+            ? balanceOtherSide
+            : balanceOtherSide.add(amount.sub(balancePosition));
         if (balancePositionAfter >= balanceOtherSideAfter) {
             //minimal price impact as it will balance the AMM exposure
             return 0;
@@ -686,10 +695,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint amount
     ) internal view returns (uint _sellImpact) {
         (uint _balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
-        uint balancePositionAfter =
-            _balancePosition > 0 ? _balancePosition.add(amount) : balanceOtherSide > amount
-                ? 0
-                : amount.sub(balanceOtherSide);
+        uint balancePositionAfter = _balancePosition > 0 ? _balancePosition.add(amount) : balanceOtherSide > amount
+            ? 0
+            : amount.sub(balanceOtherSide);
         uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide.sub(amount) : 0;
         if (!(balancePositionAfter < balanceOtherSideAfter)) {
             _sellImpact = _sellPriceImpactElse(

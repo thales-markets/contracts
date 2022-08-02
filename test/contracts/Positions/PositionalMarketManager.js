@@ -121,7 +121,7 @@ contract('PositionalMarketManager', accounts => {
 		await priceFeed.connect(owner).addAggregator(sAUDKey, aggregator_sAUD.address);
 		await priceFeed.connect(owner).addAggregator(ETHKey, aggregator_sAUD.address);
 
-		await thalesAMM.setImpliedVolatilityPerAsset(ETHKey, toUnit(100), { from: owner.address });
+		await thalesAMM.setImpliedVolatilityPerAsset(ETHKey, toUnit(134), { from: owner.address });
 		await thalesAMM.setImpliedVolatilityPerAsset(sAUDKey, toUnit(120), { from: owner.address });
 
 		await Promise.all([
@@ -349,22 +349,23 @@ contract('PositionalMarketManager', accounts => {
 			let date = new Date(maturity);
 			date.setHours(0, 0, 0, 0);
 			date = Date.parse(date);
-			strikePrice = 100;
+			strikePrice = 2100;
 		});
 
 		it('Cannot create duplicate markets price-wise', async () => {
 			const priceBuffer = await manager.priceBuffer();
 			const impliedVolatility = await thalesAMM.impliedVolatilityPerAsset(ETHKey);
-			const strikePriceUpperLimit =
+
+			let strikePriceUpperLimit =
 				strikePrice +
 				(strikePrice * (priceBuffer / Math.pow(10, 18)) * (impliedVolatility / Math.pow(10, 18))) /
 					100;
 			const strikePriceLowerLimit =
 				strikePrice -
 				(strikePrice * (priceBuffer / Math.pow(10, 18)) * (impliedVolatility / Math.pow(10, 18))) /
-					100 +
-				0.3;
+					100;
 			await createMarket(manager, ETHKey, toUnit(strikePrice), maturity, toUnit(3), creator);
+
 			await assert.revert(
 				createMarket(manager, ETHKey, toUnit(strikePriceUpperLimit), maturity, toUnit(3), creator),
 				'A market already exists within that timeframe and price buffer'

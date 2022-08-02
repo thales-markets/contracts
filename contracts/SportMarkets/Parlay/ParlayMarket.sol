@@ -6,31 +6,44 @@ import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
 // Internal references
 import "./ParlayPosition.sol";
-import "./ParlayMarketsAMM.sol";
+import "../../interfaces/IParlayMarketsAMM.sol";
+import "../SportPositions/SportPosition.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 
 contract ParlayMarket {
     using SafeERC20 for IERC20;
 
+    enum Position {Home, Away, Draw}
+
     ISportPositionalMarket[] public sportMarket;
+
+    SportPosition[] public sportPosition;
 
     ParlayPosition public parlayPositionToken;
 
-    ParlayMarketsAMM public parlayMarketsAMM;
+    IParlayMarketsAMM public parlayMarketsAMM;
 
-    bool public resolved = false;
+    bool public resolved;
+    bool public paused;
 
     /* ========== CONSTRUCTOR ========== */
 
     bool public initialized = false;
 
     function initialize(
+        ISportPositionalMarket[] calldata _sportMarkets,
+        SportPosition[] calldata _positionPerMarket,
         address _parlayMarketsAMM
     ) external {
         require(!initialized, "Parlay Market already initialized");
         initialized = true;
-        parlayMarketsAMM = ParlayMarketsAMM(_parlayMarketsAMM);
+        parlayMarketsAMM = IParlayMarketsAMM(_parlayMarketsAMM);
+        require(_sportMarkets.length == _positionPerMarket.length 
+                && parlayMarketsAMM.parlaySize() == _sportMarkets.length, 
+                "Lengths not matching");
+        sportMarket = _sportMarkets;
+        sportPosition = _positionPerMarket;
     }
 
     function mint(
@@ -40,14 +53,14 @@ contract ParlayMarket {
         if (value == 0) {
             return;
         }
-        _mint(minter, value, _position);
+        _mint(minter, value);
     }
 
     function _mint(
         address minter,
-        uint amount,
+        uint amount
     ) internal {
-        emit Mint(minter, amount, _position);
+        emit Mint(minter, amount);
     }
 
     function burn(uint value, address claimant) external onlyAMM {
@@ -55,7 +68,15 @@ contract ParlayMarket {
     }
 
     function canExercisePositions() external view returns (bool canBeExercised) {
-        
+        canBeExercised = true;
+        for(uint i=0; i<sportMarket.length; i++) {
+            if(!sportMarket[i].resolved() && !sportMarket[i].canResolve()) {
+                canBeExercised = false;
+            }
+        }
+        if(parlayPositionToken.balanceOf(msg.sender) == 0) {
+            canBeExercised = false;
+        }
     }
 
     function exercisePositions() external {
@@ -96,8 +117,8 @@ contract ParlayMarket {
         _;
     }
 
-    event Mint(address minter, uint amount, Position _position);
-    event Burn(address burner, uint amount, Position _position);
-    event Exercised(address exerciser, uint amount, Position _position);
+    event Mint(address minter, uint amount);
+    event Burn(address burner, uint amount);
+    event Exercised(address exerciser, uint amount);
     event Resolved(Position winningPosition);
 }

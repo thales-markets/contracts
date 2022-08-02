@@ -33,10 +33,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
+    uint private constant DEFAULT_PARLAY_SIZE = 4;
 
     ISportsAMM public sportsAmm;
 
     uint public parlayAmmFee;
+    uint public parlaySize = DEFAULT_PARLAY_SIZE;
 
     mapping(address => mapping(address => address)) public createdParlayMarkets;
     AddressSetLib.AddressSet internal _knownMarkets;
@@ -50,18 +52,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     // IMPORTANT: AMM risks only half or the payout effectively, but it risks the whole amount on price movements
     uint public capPerMarket;
-
     uint public minSupportedPrice;
     uint public maxSupportedPrice;
 
     address public safeBox;
     uint public safeBoxImpact;
 
+    uint public maximalDifBetweenStrikes;
     uint public minimalDifBetweenStrikes;
 
     IStakingThales public stakingThales;
-
-    uint public maximalDifBetweenStrikes;
 
     address public referrals;
     uint public referrerFee;

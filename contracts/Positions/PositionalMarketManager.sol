@@ -427,16 +427,19 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
     /// @notice _checkStrikePrice checks if markets strike prices are between given price values
     /// @param markets list of markets to be checked
-    /// @param upperPriceLimit upper strike price limit
-    /// @param lowerPriceLimit lower strike price limit
+    /// @param strikePrice market strike price
+    /// @param oracleKey market oracle key
     /// @return bool - true if there are no markets between given price values, otherwise false
     function _checkStrikePrice(
         address[] memory markets,
-        uint upperPriceLimit,
-        uint lowerPriceLimit
+        uint strikePrice,
+        bytes32 oracleKey
     ) internal view returns (bool) {
+         uint buffer = (priceBuffer * _getImpliedVolatility(oracleKey)) / 1e18;
         for (uint i = 0; i < markets.length; i++) {
-            if (marketsStrikePrice[markets[i]] <= upperPriceLimit && marketsStrikePrice[markets[i]] >= lowerPriceLimit) {
+            uint upperPriceLimit = marketsStrikePrice[markets[i]] + (marketsStrikePrice[markets[i]] * buffer) / 1e20;
+            uint lowerPriceLimit = marketsStrikePrice[markets[i]] - (marketsStrikePrice[markets[i]] * buffer) / 1e20;
+            if (strikePrice <= upperPriceLimit && strikePrice >= lowerPriceLimit) {
                 return false;
             }
         }
@@ -456,9 +459,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         uint maturity
     ) internal view returns (bool) {
         uint date = _getDateFromTimestamp(maturity);
-        uint buffer = (priceBuffer * _getImpliedVolatility(oracleKey)) / 10**36;
-        uint upperPriceLimit = strikePrice + (strikePrice * buffer) / 100;
-        uint lowerPriceLimit = strikePrice - (strikePrice * buffer) / 100;
 
         for (uint day = 1; day <= timeframeBuffer; day++) {
             uint upperDateLimit = DateTime.addDays(date, day);
@@ -468,8 +468,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
             address[] memory marketsDateBefore = _getMarketsPerOracleKey(oracleKey, lowerDateLimit);
 
             if (
-                !(_checkStrikePrice(marketsDateAfter, upperPriceLimit, lowerPriceLimit) &&
-                    _checkStrikePrice(marketsDateBefore, upperPriceLimit, lowerPriceLimit))
+                !(_checkStrikePrice(marketsDateAfter, strikePrice, oracleKey) &&
+                    _checkStrikePrice(marketsDateBefore, strikePrice, oracleKey))
             ) {
                 return false;
             }
@@ -477,7 +477,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
 
         address[] memory marketsOnDate = _getMarketsPerOracleKey(oracleKey, date);
 
-        return _checkStrikePrice(marketsOnDate, upperPriceLimit, lowerPriceLimit);
+        return _checkStrikePrice(marketsOnDate, strikePrice, oracleKey);
     }
 
     /// @notice _getMarketsPerOracleKey returns list of markets with same oracle key and maturity date

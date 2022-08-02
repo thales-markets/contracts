@@ -102,7 +102,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function canCreateParlayMarket(address[] calldata _sportMarkets) public view returns (bool canBeCreated) {
-        
+        // check the games existance
+        // check the odds
+        // calculate
+        // confirm
     }
 
     function availableToBuyFromAMM(ParlayMarket parlayMarket)

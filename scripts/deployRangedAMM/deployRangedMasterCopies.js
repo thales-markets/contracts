@@ -73,18 +73,12 @@ async function main() {
 	const RangedMarketAMMDeployer = await RangedMarketAMM.attach(RangedMarketAMMAddress);
 
 	await delay(10000);
-	let tx = await RangedMarketAMMDeployer.setRangedMarketMastercopy(
-		RangedMarketMastercopyDeployed.address
-	);
-	await tx.wait().then(e => {
-		console.log('RangedMarketAMMDeployer: setRangedMarketMastercopy');
-	});
-	await delay(10000);
-	tx = await RangedMarketAMMDeployer.setRangedPositionMastercopy(
+	let tx = await RangedMarketAMMDeployer.setRangedMarketMastercopies(
+		RangedMarketMastercopyDeployed.address,
 		RangedPositionMastercopyDeployed.address
 	);
 	await tx.wait().then(e => {
-		console.log('RangedMarketAMMDeployer: setRangedPositionMastercopy');
+		console.log('RangedMarketAMMDeployer: setRangedMarketMastercopies');
 	});
 
 	try {

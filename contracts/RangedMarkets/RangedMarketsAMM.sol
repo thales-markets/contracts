@@ -651,24 +651,20 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         maxSupportedPrice = _maxSupportedPrice;
         minimalDifBetweenStrikes = _minDiffBetweenStrikes;
         maximalDifBetweenStrikes = _maxDiffBetweenStrikes;
-        emit SetMinSupportedPrice(minSupportedPrice);
-        emit SetMaxSupportedPrice(maxSupportedPrice);
-        emit SetMinimalDifBetweenStrikes(minimalDifBetweenStrikes);
-        emit SetMaxinalDifBetweenStrikes(maximalDifBetweenStrikes);
+        emit SetMinMaxSupportedPrice(minSupportedPrice, maxSupportedPrice);
+        emit SetMinimalMaximalDifBetweenStrikes(minimalDifBetweenStrikes, maximalDifBetweenStrikes);
     }
 
     function setSafeBoxData(address _safeBox, uint _safeBoxImpact) external onlyOwner {
         safeBoxImpact = _safeBoxImpact;
         safeBox = _safeBox;
-        emit SetSafeBoxImpact(_safeBoxImpact);
-        emit SetSafeBox(_safeBox);
+        emit SafeBoxChanged(_safeBoxImpact, _safeBox);
     }
 
     function setCapPerMarketAndRangedAMMFee(uint _capPerMarket, uint _rangedAMMFee) external onlyOwner {
         capPerMarket = _capPerMarket;
         rangedAmmFee = _rangedAMMFee;
-        emit SetCapPerMarket(capPerMarket);
-        emit SetRangedAmmFee(rangedAmmFee);
+        emit SetCapPerMarketAndRangedFee(capPerMarket, rangedAmmFee);
     }
 
     function setThalesAMMStakingThalesAndReferrals(
@@ -727,16 +723,10 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address asset
     );
 
-    event SetSUSD(address sUSD);
     event RangedMarketCreated(address market, address leftMarket, address rightMarket);
-    event SetSafeBoxImpact(uint _safeBoxImpact);
-    event SetSafeBox(address _safeBox);
-    event SetMinSupportedPrice(uint _spread);
-    event SetMaxSupportedPrice(uint _spread);
-    event SetMinimalDifBetweenStrikes(uint _spread);
-    event SetMaxinalDifBetweenStrikes(uint _spread);
-    event SetCapPerMarket(uint capPerMarket);
-    event SetRangedAmmFee(uint rangedAmmFee);
-    event SetStakingThales(address _stakingThales);
+    event SafeBoxChanged(uint _safeBoxImpact, address _safeBox);
+    event SetMinMaxSupportedPrice(uint minSupportedPrice, uint maxSupportedPrice);
+    event SetMinimalMaximalDifBetweenStrikes(uint minSupportedPrice, uint maxSupportedPrice);
+    event SetCapPerMarketAndRangedFee(uint capPerMarket, uint rangedAmmFee);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
 }

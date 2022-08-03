@@ -156,7 +156,10 @@ contract RangedMarket {
         // Only pay out the side that won.
         uint payout = (curResult == Position.In) ? inBalance : outBalance;
         if (payout != 0) {
-            rangedMarketsAMM.transferSusdTo(msg.sender, IPositionalMarketManager(thalesAmm().manager()).transformCollateral(payout));
+            rangedMarketsAMM.transferSusdTo(
+                msg.sender,
+                IPositionalMarketManager(thalesAmm().manager()).transformCollateral(payout)
+            );
         }
         emit Exercised(msg.sender, payout, curResult);
     }

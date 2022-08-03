@@ -177,11 +177,11 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         knownRangedMarket(address(rangedMarket))
         returns (uint availableRangedAmm)
     {
-        uint minPrice = minInPrice(rangedMarket);
+        uint minPrice = IPositionalMarketManager(thalesAmm.manager()).reverseTransformCollateral(minInPrice(rangedMarket));
         if (minPrice <= minSupportedPrice || minPrice >= maxSupportedPrice) {
             return 0;
         }
-        uint rangedAMMRisk = ONE - minInPrice(rangedMarket);
+        uint rangedAMMRisk = ONE - minPrice;
         availableRangedAmm = ((capPerMarket - spentOnMarket[address(rangedMarket)]) * ONE) / rangedAMMRisk;
     }
 
@@ -477,8 +477,13 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (position == RangedMarket.Position.Out) {
             quoteWithFees = (summedQuotes * (ONE - rangedAmmFee)) / ONE;
         } else {
-            if (amount > leftQuote && amount > rightQuote && summedQuotes > ((amount - leftQuote) + (amount - rightQuote))) {
-                uint quoteWithoutFees = summedQuotes - ((amount - leftQuote) + (amount - rightQuote));
+            uint amountTransformed = IPositionalMarketManager(thalesAmm.manager()).transformCollateral(amount);
+            if (
+                amountTransformed > leftQuote &&
+                amountTransformed > rightQuote &&
+                summedQuotes > ((amountTransformed - leftQuote) + (amountTransformed - rightQuote))
+            ) {
+                uint quoteWithoutFees = summedQuotes - ((amountTransformed - leftQuote) + (amountTransformed - rightQuote));
                 quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
             }
         }
@@ -591,7 +596,10 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             sUSD.transfer(safeBox, safeBoxShare);
         }
 
-        spentOnMarket[rangedMarket] = spentOnMarket[rangedMarket] + amount + safeBoxShare - sUSDPaid;
+        spentOnMarket[rangedMarket] =
+            spentOnMarket[rangedMarket] +
+            amount -
+            IPositionalMarketManager(thalesAmm.manager()).reverseTransformCollateral(sUSDPaid - safeBoxShare);
     }
 
     function _updateSpentOnMarketAndSafeBoxOnSell(
@@ -606,10 +614,13 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             sUSD.transfer(safeBox, safeBoxShare);
         }
 
-        if (amount > (spentOnMarket[address(rangedMarket)] + sUSDPaid + safeBoxShare)) {
+        uint intermediateSum =
+            IPositionalMarketManager(thalesAmm.manager()).reverseTransformCollateral(sUSDPaid + safeBoxShare);
+
+        if (amount > (spentOnMarket[address(rangedMarket)] + intermediateSum)) {
             spentOnMarket[address(rangedMarket)] = 0;
         } else {
-            spentOnMarket[address(rangedMarket)] = spentOnMarket[address(rangedMarket)] + sUSDPaid + safeBoxShare - amount;
+            spentOnMarket[address(rangedMarket)] = spentOnMarket[address(rangedMarket)] + intermediateSum - amount;
         }
     }
 

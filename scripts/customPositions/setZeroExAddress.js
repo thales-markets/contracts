@@ -24,26 +24,24 @@ async function main() {
 
 	const priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
-	
+
 	const ZeroExAddress = getTargetAddress('ZeroEx', network);
 	console.log('Found 0x at:' + ZeroExAddress);
-	
+
 	const PositionalMarketManagerAddress = getTargetAddress('PositionalMarketManager', network);
 	console.log('Found PositionalMarketManager at:' + PositionalMarketManagerAddress);
 
-
 	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
-	
-	const positionalMarketManagerDeployed = await PositionalMarketManager.attach(PositionalMarketManagerAddress);
-	
 
+	const positionalMarketManagerDeployed = await PositionalMarketManager.attach(
+		PositionalMarketManagerAddress
+	);
 
 	let tx = await positionalMarketManagerDeployed.setZeroExAddress(ZeroExAddress);
 
 	await tx.wait().then(e => {
 		console.log('PositionalMarketFactory: setZeroExAddress');
 	});
-	
 }
 
 main()
@@ -53,9 +51,8 @@ main()
 		process.exit(1);
 	});
 
-
 function delay(time) {
-	return new Promise(function (resolve) {
+	return new Promise(function(resolve) {
 		setTimeout(resolve, time);
 	});
 }

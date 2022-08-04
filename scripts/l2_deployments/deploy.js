@@ -41,38 +41,42 @@ async function main() {
 	let accounts = await ethers.getSigners();
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
-	console.log(networkObj)
+	console.log(networkObj);
 	let network = networkObj.name;
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
-	if(networkObj.chainId == 69) {
-		networkObj.name = "optimisticKovan";
-		network = 'optimisticKovan'
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
 	}
-	if(networkObj.chainId == 10) {
-		networkObj.name = "optimisticEthereum";
-		network = 'optimisticEthereum'		
+	if (networkObj.chainId == 10) {
+		networkObj.name = 'optimisticEthereum';
+		network = 'optimisticEthereum';
 	}
 
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + network);
 
-	
-
 	const addressResolverAddress = getTargetAddress('AddressResolver', network);
 	const safeDecimalMathAddress = getTargetAddress('SafeDecimalMath', network);
 	const proxysUSDAddress = getTargetAddress('ProxysUSD', network);
-	
+
 	const ZeroExAddress = getTargetAddress('ZeroEx', network);
 	console.log('Found 0x at:' + ZeroExAddress);
-	
+
 	console.log(addressResolverAddress);
 	console.log(safeDecimalMathAddress);
 
-	const addressResolverContract = await ethers.getContractFactory('synthetix-2.50.4-ovm/contracts/AddressResolver.sol:AddressResolver');
-	const safeDecimalMathContract = await ethers.getContractFactory('synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol:SafeDecimalMath');
-	const proxysUSDContract = await ethers.getContractFactory('synthetix-2.50.4-ovm/contracts/ProxyERC20.sol:ProxyERC20');
+	const addressResolverContract = await ethers.getContractFactory(
+		'synthetix-2.50.4-ovm/contracts/AddressResolver.sol:AddressResolver'
+	);
+	const safeDecimalMathContract = await ethers.getContractFactory(
+		'synthetix-2.50.4-ovm/contracts/SafeDecimalMath.sol:SafeDecimalMath'
+	);
+	const proxysUSDContract = await ethers.getContractFactory(
+		'synthetix-2.50.4-ovm/contracts/ProxyERC20.sol:ProxyERC20'
+	);
 
 	let addressResolver = await addressResolverContract.attach(addressResolverAddress);
 	let safeDecimalMath = await safeDecimalMathContract.attach(safeDecimalMathAddress);
@@ -85,22 +89,19 @@ async function main() {
 
 	//Price feed deployment
 	const priceFeed = await ethers.getContractFactory('PriceFeed');
-	let PriceFeedDeployed; 
+	let PriceFeedDeployed;
 
-	if(network == 'ropsten') {
+	if (network == 'ropsten') {
 		const ropstenPriceFeed = await ethers.getContractFactory('MockPriceFeed');
 		PriceFeedDeployed = await ropstenPriceFeed.deploy(owner.address);
 		await PriceFeedDeployed.deployed();
 		setTargetAddress('PriceFeed', network, PriceFeedDeployed.address);
 		console.log('MockPriceFeed deployed to:', PriceFeedDeployed.address);
 		await PriceFeedDeployed.setPricetoReturn(1000);
-	}
-	else {
+	} else {
 		priceFeedAddress = getTargetAddress('PriceFeed', network);
 		console.log('Found PriceFeed at:' + priceFeedAddress);
 	}
-	
-
 
 	// We get the contract to deploy
 	// 1. Deployment Position Mastercopy
@@ -111,25 +112,27 @@ async function main() {
 	setTargetAddress('PositionMastercopy', network, PositionMastercopyDeployed.address);
 
 	console.log('PositionMastercopy deployed to:', PositionMastercopyDeployed.address);
-	
+
 	// 2. Deployment Position Market Mastercopy
-	const PositionalMarketMastercopy = await ethers.getContractFactory(
-		'PositionalMarketMastercopy'
-	);
+	const PositionalMarketMastercopy = await ethers.getContractFactory('PositionalMarketMastercopy');
 	const PositionalMarketMastercopyDeployed = await PositionalMarketMastercopy.deploy();
 	await PositionalMarketMastercopyDeployed.deployed();
-	
-	setTargetAddress('PositionalMarketMastercopy', network, PositionalMarketMastercopyDeployed.address);
+
+	setTargetAddress(
+		'PositionalMarketMastercopy',
+		network,
+		PositionalMarketMastercopyDeployed.address
+	);
 	console.log(
-			'PositionalMarketMastercopy deployed to:',
-			PositionalMarketMastercopyDeployed.address
-			);
+		'PositionalMarketMastercopy deployed to:',
+		PositionalMarketMastercopyDeployed.address
+	);
 
 	// 3. Deployment Position Market Factory
 	const PositionalMarketFactory = await ethers.getContractFactory('PositionalMarketFactory');
 	const PositionalMarketFactoryDeployed = await PositionalMarketFactory.deploy(owner.address);
 	await PositionalMarketFactoryDeployed.deployed();
-	
+
 	setTargetAddress('PositionalMarketFactory', network, PositionalMarketFactoryDeployed.address);
 	console.log('PositionalMarketFactory deployed to:', PositionalMarketFactoryDeployed.address);
 
@@ -142,7 +145,7 @@ async function main() {
 	if (network == 'mainnet') {
 		creatorCapitalRequirement = w3utils.toWei('1000');
 	}
-	
+
 	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
 	const PositionalMarketManagerDeployed = await PositionalMarketManager.deploy(
 		owner.address,
@@ -156,7 +159,7 @@ async function main() {
 
 	setTargetAddress('PositionalMarketManager', network, PositionalMarketManagerDeployed.address);
 	console.log('PositionalMarketManager deployed to:', PositionalMarketManagerDeployed.address);
-	
+
 	console.log('Done setting Position Market Manager');
 	const PositionalMarketData = await ethers.getContractFactory('PositionalMarketData');
 	const positionalMarketData = await PositionalMarketData.deploy();
@@ -171,9 +174,7 @@ async function main() {
 	await PositionalMarketFactoryDeployed.setPositionalMarketMastercopy(
 		PositionalMarketMastercopyDeployed.address
 	);
-	await PositionalMarketFactoryDeployed.setPositionMastercopy(
-		PositionMastercopyDeployed.address
-	);
+	await PositionalMarketFactoryDeployed.setPositionMastercopy(PositionMastercopyDeployed.address);
 
 	await PositionalMarketManagerDeployed.setPositionalMarketFactory(
 		PositionalMarketFactoryDeployed.address
@@ -216,8 +217,7 @@ async function main() {
 	await hre.run('verify:verify', {
 		address: PositionalMarketMastercopyDeployed.address,
 		constructorArguments: [],
-		contract:
-			'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
+		contract: 'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
 	});
 
 	await hre.run('verify:verify', {
@@ -245,9 +245,8 @@ main()
 		process.exit(1);
 	});
 
-
 function delay(time) {
-	return new Promise(function (resolve) {
+	return new Promise(function(resolve) {
 		setTimeout(resolve, time);
 	});
 }

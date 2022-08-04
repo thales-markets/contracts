@@ -8,9 +8,7 @@ const {
 	bn,
 } = require('../../../scripts/snx-data/xsnx-snapshot/helpers');
 
-const {
-	encodeCall,
-} = require('../../utils/helpers');
+const { encodeCall } = require('../../utils/helpers');
 
 // snapshot of user addresses balances of SNX
 const snapshot = require('../../../scripts/snx-data/ongoing_distribution.json');
@@ -59,21 +57,18 @@ const deploymentFixture = async () => {
 	let StakingThales = artifacts.require('StakingThales');
 	let SNXRewards = artifacts.require('SNXRewards');
 	let SNXRewardsDeployed = await SNXRewards.new();
-	let EscrowImplementation = await EscrowThales.new({from:admin.address});
-	let StakingImplementation = await StakingThales.new({from:admin.address});
+	let EscrowImplementation = await EscrowThales.new({ from: admin.address });
+	let StakingImplementation = await StakingThales.new({ from: admin.address });
 	let StakingThalesDeployed = await StakingThales.at(ProxyStakingDeployed.address);
 	const escrowThales = await EscrowThales.at(ProxyEscrowDeployed.address);
 
 	let initializeEscrowData = encodeCall(
 		'initialize',
 		['address', 'address'],
-		[
-			admin.address,
-			thales.address
-		]
+		[admin.address, thales.address]
 	);
 	await ProxyEscrowDeployed.upgradeToAndCall(EscrowImplementation.address, initializeEscrowData, {
-		from: proxyOwner.address ,
+		from: proxyOwner.address,
 	});
 
 	initializeStalkingData = encodeCall(
@@ -86,13 +81,17 @@ const deploymentFixture = async () => {
 			thales.address,
 			604800,
 			604800,
-			SNXRewardsDeployed.address
+			SNXRewardsDeployed.address,
 		]
 	);
 
-	await ProxyStakingDeployed.upgradeToAndCall(StakingImplementation.address, initializeStalkingData, {
-		from: proxyOwner.address,
-	});
+	await ProxyStakingDeployed.upgradeToAndCall(
+		StakingImplementation.address,
+		initializeStalkingData,
+		{
+			from: proxyOwner.address,
+		}
+	);
 
 	await escrowThales.setAirdropContract(ongoingAirdrop.address);
 	await escrowThales.enableTestMode({ from: admin.address });

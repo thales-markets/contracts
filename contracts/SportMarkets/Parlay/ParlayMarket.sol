@@ -11,16 +11,26 @@ import "../SportPositions/SportPosition.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 
-contract ParlayMarket {
+contract ParlayMarket{
     using SafeERC20 for IERC20;
 
-    enum Position {Home, Away, Draw}
+    // string public name;
+    // string public symbol;
+    // uint8 public constant decimals = 18;
 
-    ISportPositionalMarket[] public sportMarket;
+    // mapping(address => uint) public override balanceOf;
+    // uint public override totalSupply;
 
-    SportPosition[] public sportPosition;
+    // // The argument order is allowance[owner][spender]
+    // mapping(address => mapping(address => uint)) public override allowance;
 
-    ParlayPosition public parlayPositionToken;
+    address[] public sportMarket;
+
+    uint[] public sportPosition;
+    uint public amount;
+    uint public sUSDPaid;
+    uint[] public proportionalAmounts;
+    uint[] public marketQuotes;
 
     ParlayMarketsAMM public parlayMarketsAMM;
 
@@ -32,8 +42,10 @@ contract ParlayMarket {
     bool public initialized = false;
 
     function initialize(
-        ISportPositionalMarket[] calldata _sportMarkets,
-        SportPosition[] calldata _positionPerMarket,
+        address[] calldata _sportMarkets,
+        uint[] calldata _positionPerMarket,
+        uint _amount,
+        uint _sUSDPaid,
         address _parlayMarketsAMM
     ) external {
         require(!initialized, "Parlay Market already initialized");
@@ -44,8 +56,12 @@ contract ParlayMarket {
                 "Lengths not matching");
         sportMarket = _sportMarkets;
         sportPosition = _positionPerMarket;
+        amount = _amount;
+        sUSDPaid = _sUSDPaid;
         //add odds
     }
+
+    
 
     function mint(
         uint value,
@@ -69,15 +85,12 @@ contract ParlayMarket {
     }
 
     function canExercisePositions() external view returns (bool canBeExercised) {
-        canBeExercised = true;
-        for(uint i=0; i<sportMarket.length; i++) {
-            if(!sportMarket[i].resolved() && !sportMarket[i].canResolve()) {
-                canBeExercised = false;
-            }
-        }
-        if(parlayPositionToken.balanceOf(msg.sender) == 0) {
-            canBeExercised = false;
-        }
+        // canBeExercised = true;
+        // for(uint i=0; i<sportMarket.length; i++) {
+        //     if(!sportMarket[i].resolved() && !sportMarket[i].canResolve()) {
+        //         canBeExercised = false;
+        //     }
+        // }
     }
 
     function exercisePositions() external {
@@ -106,7 +119,7 @@ contract ParlayMarket {
         emit Resolved(result());
     }
 
-    function result() public view returns (Position resultToReturn) {
+    function result() public view returns (uint resultToReturn) {
     }
 
     function withdrawCollateral(address recipient) external onlyAMM {
@@ -121,5 +134,5 @@ contract ParlayMarket {
     event Mint(address minter, uint amount);
     event Burn(address burner, uint amount);
     event Exercised(address exerciser, uint amount);
-    event Resolved(Position winningPosition);
+    event Resolved(uint winningPosition);
 }

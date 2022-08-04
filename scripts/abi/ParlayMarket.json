@@ -61,13 +61,26 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "enum ParlayMarket.Position",
+        "internalType": "uint256",
         "name": "winningPosition",
-        "type": "uint8"
+        "type": "uint256"
       }
     ],
     "name": "Resolved",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "amount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [
@@ -123,14 +136,24 @@
   {
     "inputs": [
       {
-        "internalType": "contract ISportPositionalMarket[]",
+        "internalType": "address[]",
         "name": "_sportMarkets",
         "type": "address[]"
       },
       {
-        "internalType": "contract SportPosition[]",
+        "internalType": "uint256[]",
         "name": "_positionPerMarket",
-        "type": "address[]"
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sUSDPaid",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -151,6 +174,25 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "marketQuotes",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -189,25 +231,31 @@
   },
   {
     "inputs": [],
-    "name": "parlayPositionToken",
-    "outputs": [
-      {
-        "internalType": "contract ParlayPosition",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "paused",
     "outputs": [
       {
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "proportionalAmounts",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -238,9 +286,22 @@
     "name": "result",
     "outputs": [
       {
-        "internalType": "enum ParlayMarket.Position",
+        "internalType": "uint256",
         "name": "resultToReturn",
-        "type": "uint8"
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sUSDPaid",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -257,7 +318,7 @@
     "name": "sportMarket",
     "outputs": [
       {
-        "internalType": "contract ISportPositionalMarket",
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -276,9 +337,9 @@
     "name": "sportPosition",
     "outputs": [
       {
-        "internalType": "contract SportPosition",
+        "internalType": "uint256",
         "name": "",
-        "type": "address"
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

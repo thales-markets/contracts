@@ -338,230 +338,39 @@
   {
     "inputs": [
       {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
-      }
-    ],
-    "name": "availableToBuyFromAMM",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
-      }
-    ],
-    "name": "availableToSellToAMM",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "available",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
       },
       {
-        "internalType": "contract ParlayPosition",
-        "name": "position",
-        "type": "address"
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
       },
       {
         "internalType": "uint256",
-        "name": "amount",
+        "name": "_amount",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "expectedPayout",
+        "name": "_sUSDPaid",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "additionalSlippage",
+        "name": "_additionalSlippage",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_sendSUSD",
+        "type": "bool"
       }
     ],
-    "name": "buyFromAMM",
+    "name": "buyParlay",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "contract ParlayPosition",
-        "name": "position",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "expectedPayout",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "additionalSlippage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "collateral",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_referrer",
-        "type": "address"
-      }
-    ],
-    "name": "buyFromAMMWithDifferentCollateralAndReferrer",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "expectedPayout",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "additionalSlippage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "referrer",
-        "type": "address"
-      }
-    ],
-    "name": "buyFromAMMWithReferrer",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "buyFromAmmQuote",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "sUSDPaid",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "buyFromAmmQuoteDetailed",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "quoteWithFees",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "collateral",
-        "type": "address"
-      }
-    ],
-    "name": "buyFromAmmQuoteWithDifferentCollateral",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "collateralQuote",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "sUSDToPay",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -570,6 +379,11 @@
         "internalType": "address[]",
         "name": "_sportMarkets",
         "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
       }
     ],
     "name": "canCreateParlayMarket",
@@ -594,19 +408,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_sportMarkets",
-        "type": "address[]"
-      }
-    ],
-    "name": "createParlayMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -867,6 +668,19 @@
   },
   {
     "inputs": [],
+    "name": "parlaySize",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -955,87 +769,6 @@
       {
         "internalType": "uint256",
         "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "contract ParlayPosition",
-        "name": "position",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "expectedPayout",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "additionalSlippage",
-        "type": "uint256"
-      }
-    ],
-    "name": "sellToAMM",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "sellToAmmQuote",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "pricePaid",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract ParlayMarket",
-        "name": "parlayMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "sellToAmmQuoteDetailed",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "quoteWithFees",
         "type": "uint256"
       }
     ],

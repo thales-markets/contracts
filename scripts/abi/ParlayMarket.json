@@ -13,12 +13,6 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum ParlayMarket.Position",
-        "name": "_position",
-        "type": "uint8"
       }
     ],
     "name": "Burn",
@@ -38,12 +32,6 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum ParlayMarket.Position",
-        "name": "_position",
-        "type": "uint8"
       }
     ],
     "name": "Exercised",
@@ -63,12 +51,6 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum ParlayMarket.Position",
-        "name": "_position",
-        "type": "uint8"
       }
     ],
     "name": "Mint",
@@ -141,6 +123,16 @@
   {
     "inputs": [
       {
+        "internalType": "contract ISportPositionalMarket[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "contract SportPosition[]",
+        "name": "_positionPerMarket",
+        "type": "address[]"
+      },
+      {
         "internalType": "address",
         "name": "_parlayMarketsAMM",
         "type": "address"
@@ -172,11 +164,6 @@
         "type": "uint256"
       },
       {
-        "internalType": "enum ParlayMarket.Position",
-        "name": "_position",
-        "type": "uint8"
-      },
-      {
         "internalType": "address",
         "name": "minter",
         "type": "address"
@@ -201,19 +188,26 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "parlayPosition",
+    "inputs": [],
+    "name": "parlayPositionToken",
     "outputs": [
       {
         "internalType": "contract ParlayPosition",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "paused",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -264,6 +258,25 @@
     "outputs": [
       {
         "internalType": "contract ISportPositionalMarket",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "sportPosition",
+    "outputs": [
+      {
+        "internalType": "contract SportPosition",
         "name": "",
         "type": "address"
       }

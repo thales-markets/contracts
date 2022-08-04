@@ -24,6 +24,10 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);

@@ -64,7 +64,7 @@ async function main() {
 	const Referrals = await ethers.getContractFactory('Referrals');
 	let ReferralsDeployed = await upgrades.deployProxy(Referrals, [
 		owner.address,
-		owner.address,
+		thalesAMM,
 		owner.address,
 	]);
 	await ReferralsDeployed.deployed();

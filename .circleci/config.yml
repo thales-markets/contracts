@@ -7,6 +7,7 @@ version: 2.1 # using 2.1 provides access to orbs and other features
 jobs:
   build-and-test:
     parallelism: 8
+    resource_class: large
     executor: node/default
     steps:
       - checkout

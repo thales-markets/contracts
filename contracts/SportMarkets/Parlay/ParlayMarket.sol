@@ -25,6 +25,7 @@ contract ParlayMarket{
     // mapping(address => mapping(address => uint)) public override allowance;
 
     address[] public sportMarket;
+    mapping(address => bool) private _alreadyExercisedSportMarket;
 
     uint[] public sportPosition;
     uint public amount;
@@ -33,6 +34,8 @@ contract ParlayMarket{
     uint[] public marketQuotes;
 
     ParlayMarketsAMM public parlayMarketsAMM;
+
+    address public parlayOwner;
 
     bool public resolved;
     bool public paused;
@@ -46,7 +49,8 @@ contract ParlayMarket{
         uint[] calldata _positionPerMarket,
         uint _amount,
         uint _sUSDPaid,
-        address _parlayMarketsAMM
+        address _parlayMarketsAMM,
+        address _parlayOwner
     ) external {
         require(!initialized, "Parlay Market already initialized");
         initialized = true;
@@ -58,10 +62,28 @@ contract ParlayMarket{
         sportPosition = _positionPerMarket;
         amount = _amount;
         sUSDPaid = _sUSDPaid;
+        parlayOwner = _parlayOwner;
         //add odds
     }
 
-    
+    function exerciseWiningSportMarkets() external {
+        uint numOfSportMarkets = sportMarket.length;
+        for(uint i=0; i<numOfSportMarkets; i++) {
+            if(!_alreadyExercisedSportMarket[sportMarket[i]] && _isWinningSportMarket(sportMarket[i], sportPosition[i])) {
+                // exercise options
+                ISportPositionalMarket(sportMarket[i]).exerciseOptions();
+                _alreadyExercisedSportMarket[sportMarket[i]] = true;
+            }
+        }
+    }
+
+    function _isWinningSportMarket(address _sportMarket, uint _position) internal view returns(bool isWinning) {
+        if(ISportPositionalMarket(_sportMarket).resolved() 
+        && (uint(ISportPositionalMarket(_sportMarket).result()) == _position 
+        || ISportPositionalMarket(_sportMarket).result() == ISportPositionalMarket.Side.Cancelled)) {
+            isWinning =  true;
+        }
+    }
 
     function mint(
         uint value,

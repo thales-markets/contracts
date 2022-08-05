@@ -82,7 +82,7 @@
         "type": "address"
       }
     ],
-    "name": "addTicketForGamePosition",
+    "name": "addParlayForGamePosition",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -234,6 +234,29 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_game",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "removeParlayForGamePosition",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

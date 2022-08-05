@@ -43,14 +43,20 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "leftMarket",
+        "name": "account",
         "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "rightMarket",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "sUSDPaid",
+        "type": "uint256"
       }
     ],
     "name": "ParlayMarketCreated",
@@ -119,50 +125,17 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_spread",
+        "name": "min_spread",
         "type": "uint256"
-      }
-    ],
-    "name": "SetMaxSupportedPrice",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_spread",
+        "name": "max_spread",
         "type": "uint256"
       }
     ],
-    "name": "SetMaxinalDifBetweenStrikes",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMinSupportedPrice",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMinimalDifBetweenStrikes",
+    "name": "SetMinMaxSupportedPrice",
     "type": "event"
   },
   {
@@ -497,33 +470,7 @@
   },
   {
     "inputs": [],
-    "name": "maximalDifBetweenStrikes",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "minSupportedPrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "minimalDifBetweenStrikes",
     "outputs": [
       {
         "internalType": "uint256",
@@ -581,6 +528,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parlayMarketData",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -783,16 +743,6 @@
         "internalType": "uint256",
         "name": "_maxSupportedPrice",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_minDiffBetweenStrikes",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxDiffBetweenStrikes",
-        "type": "uint256"
       }
     ],
     "name": "setMinMaxSupportedPrice",
@@ -883,6 +833,11 @@
         "internalType": "uint256",
         "name": "_referrerFee",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayMarketData",
+        "type": "address"
       }
     ],
     "name": "setThalesAMMStakingThalesAndReferrals",

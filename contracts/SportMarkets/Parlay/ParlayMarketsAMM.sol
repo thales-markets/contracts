@@ -22,6 +22,7 @@ import "../../utils/libraries/AddressSetLib.sol";
 
 import "./ParlayPosition.sol";
 import "./ParlayMarket.sol";
+import "../../interfaces/IParlayMarketData.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
@@ -51,6 +52,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     mapping(address => uint) public spentOnMarket;
 
+    address public parlayMarketData;
+
     // IMPORTANT: AMM risks only half or the payout effectively, but it risks the whole amount on price movements
     uint public capPerMarket;
     uint public minSupportedPrice;
@@ -58,9 +61,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     address public safeBox;
     uint public safeBoxImpact;
-
-    uint public maximalDifBetweenStrikes;
-    uint public minimalDifBetweenStrikes;
 
     IStakingThales public stakingThales;
 
@@ -194,9 +194,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 _additionalSlippage
             ); 
             _sendPositionsToMarket(_sportMarkets[i], _positions[i], _parlayMarket, _proportionalAmounts[i]);
+            _updateMarketData(_sportMarkets[i], _positions[i], _parlayMarket);
         }
     }
 
+    function _updateMarketData(address _market, uint _position, address _parlayMarket) internal {
+        IParlayMarketData(parlayMarketData).addTicketForGamePosition(_market, _position, _parlayMarket);
+    }
 
     function _sendPositionsToMarket(address _sportMarket, uint _position, address _parlayMarket, uint _amount) internal {
         if(_position == 0) {
@@ -304,18 +308,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function setMinMaxSupportedPrice(
         uint _minSupportedPrice,
-        uint _maxSupportedPrice,
-        uint _minDiffBetweenStrikes,
-        uint _maxDiffBetweenStrikes
+        uint _maxSupportedPrice
     ) public onlyOwner {
         minSupportedPrice = _minSupportedPrice;
         maxSupportedPrice = _maxSupportedPrice;
-        minimalDifBetweenStrikes = _minDiffBetweenStrikes;
-        maximalDifBetweenStrikes = _maxDiffBetweenStrikes;
-        emit SetMinSupportedPrice(minSupportedPrice);
-        emit SetMaxSupportedPrice(maxSupportedPrice);
-        emit SetMinimalDifBetweenStrikes(minimalDifBetweenStrikes);
-        emit SetMaxinalDifBetweenStrikes(maximalDifBetweenStrikes);
+        emit SetMinMaxSupportedPrice(minSupportedPrice, maxSupportedPrice);
     }
 
     function setSafeBoxData(address _safeBox, uint _safeBoxImpact) external onlyOwner {
@@ -336,13 +333,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address _thalesAMM,
         IStakingThales _stakingThales,
         address _referrals,
-        uint _referrerFee
+        uint _referrerFee,
+        address _parlayMarketData
     ) external onlyOwner {
         sportsAmm = ISportsAMM(_thalesAMM);
         sUSD.approve(address(sportsAmm), type(uint256).max);
         stakingThales = _stakingThales;
         referrals = _referrals;
         referrerFee = _referrerFee;
+        parlayMarketData = _parlayMarketData;
     }
 
     function setCurveSUSD(
@@ -378,10 +377,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event ParlayMarketCreated(address market, address account, uint amount, uint sUSDPaid);
     event SetSafeBoxImpact(uint _safeBoxImpact);
     event SetSafeBox(address _safeBox);
-    event SetMinSupportedPrice(uint _spread);
-    event SetMaxSupportedPrice(uint _spread);
-    event SetMinimalDifBetweenStrikes(uint _spread);
-    event SetMaxinalDifBetweenStrikes(uint _spread);
+    event SetMinMaxSupportedPrice(uint min_spread, uint max_spread);
     event SetCapPerMarket(uint capPerMarket);
     event SetParlayAmmFee(uint parlayAmmFee);
     event SetStakingThales(address _stakingThales);

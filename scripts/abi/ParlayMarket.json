@@ -134,6 +134,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "exerciseWiningSportMarkets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address[]",
@@ -158,6 +165,11 @@
       {
         "internalType": "address",
         "name": "_parlayMarketsAMM",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayOwner",
         "type": "address"
       }
     ],
@@ -222,6 +234,19 @@
     "outputs": [
       {
         "internalType": "contract ParlayMarketsAMM",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parlayOwner",
+    "outputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }

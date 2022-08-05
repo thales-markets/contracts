@@ -21,5 +21,34 @@
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlay",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_game",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position",
+        "type": "uint256"
+      }
+    ],
+    "name": "hasParlayGamePosition",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "containsParlay",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ]

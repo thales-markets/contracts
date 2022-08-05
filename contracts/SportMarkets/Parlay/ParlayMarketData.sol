@@ -7,16 +7,18 @@ import "../../interfaces/ISportPositionalMarket.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../../utils/libraries/AddressSetLib.sol";
 
 contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
-
-    struct ParlayTicketDetails {
+    using AddressSetLib for AddressSetLib.AddressSet;
+    AddressSetLib.AddressSet internal _knownMarkets;
+    struct ParlayDetails {
         uint amount;
         uint sUSDPaid;
     }
 
-    mapping(address => mapping(uint => address[])) public ticketsGamePosition;
-    mapping(address => ParlayTicketDetails) public ticketDetails;
+    mapping(address => mapping(uint => AddressSetLib.AddressSet)) internal _parlaysInGamePosition;
+    mapping(address => ParlayDetails) public parlayDetails;
 
     address public parlayMarketsAMM;
 
@@ -24,9 +26,17 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         setOwner(_owner);
     }
 
-    function addTicketForGamePosition(address _game, uint _position, address _ticket) external {
+    function addParlayForGamePosition(address _game, uint _position, address _parlayMarket) external {
         require(msg.sender == parlayMarketsAMM, "Invalid sender");
-        ticketsGamePosition[_game][_position].push(_ticket);
+        _parlaysInGamePosition[_game][_position].add(_parlayMarket);
+    }
+    function removeParlayForGamePosition(address _game, uint _position, address _parlayMarket) external {
+        require(msg.sender == parlayMarketsAMM, "Invalid sender");
+        _parlaysInGamePosition[_game][_position].remove(_parlayMarket);
+    }
+
+    function hasParlayGamePosition(address _parlay, address _game, uint _position) external view returns(bool containsParlay) {
+        containsParlay = _parlaysInGamePosition[_game][_position].contains(_parlay);
     }
     
     function setParlayMarketsAMM(address _parlayMarketsAMM) external onlyOwner {

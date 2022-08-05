@@ -126,8 +126,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         {
             if(canCreateParlayMarket(_sportMarkets, _positions)) {
                 uint numOfMarkets = _sportMarkets.length;
-                uint[] memory marketQuotes = new uint[](numOfMarkets);
-                uint[] memory proportionalAmounts = new uint[](numOfMarkets);
+                marketQuotes = new uint[](numOfMarkets);
+                proportionalAmounts = new uint[](numOfMarkets);
                 (marketQuotes, proportionalAmounts) = _getQuotesAndAmounts(_sportMarkets, _positions, _amount);
             }
     }
@@ -146,12 +146,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         // apply all checks
         require(canCreateParlayMarket(_sportMarkets, _positions), "Can't create this parlay market!");
         
+        // checks for cretion missing
+
         if (_sendSUSD) {
             sUSD.safeTransferFrom(msg.sender, address(this), _sUSDPaid);
         }
-        // require(basePrice > minSupportedPrice && basePrice < ONE, "Invalid price");
-        // require((_sUSDPaid * ONE) / expectedPayout <= (ONE + additionalSlippage), "Slippage too high");
-        
+
         // mint the stateful token  (ERC-20)
         // clone a parlay market
         ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
@@ -199,7 +199,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function _updateMarketData(address _market, uint _position, address _parlayMarket) internal {
-        IParlayMarketData(parlayMarketData).addTicketForGamePosition(_market, _position, _parlayMarket);
+        IParlayMarketData(parlayMarketData).addParlayForGamePosition(_market, _position, _parlayMarket);
     }
 
     function _sendPositionsToMarket(address _sportMarket, uint _position, address _parlayMarket, uint _amount) internal {

@@ -190,9 +190,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         else {
             ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
             require(parlayMarket.parlayOwner() == msg.sender, "Not ParlayOwner");
-            if(!parlayMarket.resolved() && parlayMarket.canResolve()) {
-                parlayMarket.resolveMarket();
-            }
             require(parlayMarket.resolved(), "Not resolved");
             _exerciseResovedWinningSportMarkets(_parlayMarket);
             sUSD.safeTransfer(msg.sender, ParlayMarket(_parlayMarket).amount());

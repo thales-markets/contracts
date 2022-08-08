@@ -27,9 +27,8 @@ contract ParlayMarket{
     address[] public sportMarket;
     mapping(address => bool) private _alreadyExercisedSportMarket;
     uint private _numOfAlreadyExercisedSportMarkets;
-    uint private _numOfResolvedSportMarkets;
-    bool public parlayAlreadyLost;
 
+    uint public numOfResolvedSportMarkets;
     uint[] public sportPosition;
     uint public amount;
     uint public sUSDPaid;
@@ -42,7 +41,7 @@ contract ParlayMarket{
 
     bool public resolved;
     bool public paused;
-    bool public isWinningParlay;
+    bool public parlayAlreadyLost;
     
 
     /* ========== CONSTRUCTOR ========== */
@@ -71,40 +70,61 @@ contract ParlayMarket{
         //add odds
     }
 
-    function numOfGamesMissingResolution() external view returns(uint numOfGames) {
-        numOfGames = sportMarket.length - _numOfResolvedSportMarkets;
-    }
-    
-    function numOfResolvedSportMarkets() external view returns(uint numOfGames) {
-        numOfGames = _numOfResolvedSportMarkets;
-    }
 
     function exerciseWiningSportMarkets() external {
-        uint numOfSportMarkets = sportMarket.length;
+        (uint resolvedPositionsMap, uint winningPositionsMap, uint numOfSportMarkets) = _getResolvedAndWinningPositions(); 
         require(_numOfAlreadyExercisedSportMarkets < numOfSportMarkets 
-                && _numOfResolvedSportMarkets < numOfSportMarkets, "Already exercised all markets");
+                && numOfResolvedSportMarkets < numOfSportMarkets && resolvedPositionsMap > 0, "Already exercised all markets");
         for(uint i=0; i<numOfSportMarkets; i++) {
-            if(!_alreadyExercisedSportMarket[sportMarket[i]]) {
-                (bool isWinning, bool isResolved) = _isWinningSportMarket(sportMarket[i], sportPosition[i]);
-                if(isWinning) {
+            if(!_alreadyExercisedSportMarket[sportMarket[i]] && (resolvedPositionsMap%(10**i)) > 0) {
+                if((winningPositionsMap%(10**i)) > 0) {
                     // exercise options
                         ISportPositionalMarket(sportMarket[i]).exerciseOptions();
                         _alreadyExercisedSportMarket[sportMarket[i]] = true;
                         _numOfAlreadyExercisedSportMarkets++;
-                        _numOfResolvedSportMarkets++;
+                        numOfResolvedSportMarkets++;
+                        if(_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
+                            resolved = true;
+                            emit Resolved(!parlayAlreadyLost);
+                        }
                 }
-                else if(isResolved){
-                    if(!parlayAlreadyLost) {
+                else {
+                    if(!parlayAlreadyLost && !resolved) {
                         parlayAlreadyLost = true;
                         resolved = true;
+                        emit Resolved(!parlayAlreadyLost);
                     }
-                    _numOfResolvedSportMarkets++;
+                    numOfResolvedSportMarkets++;
                 }
 
             }
         }
     }
 
+    function isAnySportMarketExercisable() external view returns(bool) {
+        ( , uint winningPositionsMap, ) = _getResolvedAndWinningPositions();
+        return winningPositionsMap > 0;
+    }
+    
+    function isAnySportMarketResolved() external view returns(bool) {
+        (uint resolvedPositionsMap, , ) = _getResolvedAndWinningPositions();
+        return resolvedPositionsMap > 0;
+    }
+
+
+    function _getResolvedAndWinningPositions() internal view returns (uint resolvedPositionsMap, uint winningPositionsMap, uint numOfSportMarkets) {
+        numOfSportMarkets = sportMarket.length;
+        for(uint i=0; i<numOfSportMarkets; i++) {
+            (bool exercizable, bool resolvedPosition) = _isWinningSportMarket(sportMarket[i], sportPosition[i]);
+            if(resolvedPosition){
+                resolvedPositionsMap = resolvedPositionsMap + 10**i;
+            }
+            if(exercizable){
+                winningPositionsMap = winningPositionsMap + 10**i;
+            }
+        }
+    }
+   
     function _isWinningSportMarket(address _sportMarket, uint _position) internal view returns(bool isWinning, bool isResolved) {
         ISportPositionalMarket currentSportMarket = ISportPositionalMarket(_sportMarket);
         if(currentSportMarket.resolved()) {
@@ -116,44 +136,10 @@ contract ParlayMarket{
         }
     }
 
-    function canExercisePositions() external view returns (bool canBeExercised) {
-        // canBeExercised = true;
-        // for(uint i=0; i<sportMarket.length; i++) {
-        //     if(!sportMarket[i].resolved() && !sportMarket[i].canResolve()) {
-        //         canBeExercised = false;
-        //     }
-        // }
-    }
-
-    function exercisePositions() external {
-        if (!resolved) {
-            resolveMarket();
+    function isUserTheWinner() public view returns (bool finalResult) {
+        if(resolved) {
+            finalResult = !parlayAlreadyLost;
         }
-        require(!paused, "Market paused");
-
-        // Each option only needs to be exercised if the account holds any of it.
-
-        // emit Exercised(msg.sender, payout, curResult);
-    }
-
-    function canResolve() public view returns (bool canBeResolved) {
-        // The markets must be resolved
-        if(!paused && !resolved){
-            if(_numOfAlreadyExercisedSportMarkets == sportMarket.length) {
-                canBeResolved = true;
-            }
-        }
-        
-    }
-
-    function resolveMarket() public {
-        if(!paused && canResolve()){
-            resolved = true;
-        }
-        emit Resolved(result());
-    }
-
-    function result() public view returns (uint resultToReturn) {
     }
 
     function withdrawCollateral(address recipient) external onlyAMM {
@@ -165,8 +151,5 @@ contract ParlayMarket{
         _;
     }
 
-    event Mint(address minter, uint amount);
-    event Burn(address burner, uint amount);
-    event Exercised(address exerciser, uint amount);
-    event Resolved(uint winningPosition);
+    event Resolved(bool isUserTheWinner);
 }

@@ -9,66 +9,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "burner",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "Burn",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "exerciser",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "Exercised",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "minter",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "Mint",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "winningPosition",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "isUserTheWinner",
+        "type": "bool"
       }
     ],
     "name": "Resolved",
@@ -85,57 +28,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "value",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "claimant",
-        "type": "address"
-      }
-    ],
-    "name": "burn",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "canExercisePositions",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "canBeExercised",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "canResolve",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "canBeResolved",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "exercisePositions",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -198,11 +90,11 @@
   },
   {
     "inputs": [],
-    "name": "isLosingParlay",
+    "name": "isAnySportMarketExercisable",
     "outputs": [
       {
         "internalType": "bool",
-        "name": "isLosing",
+        "name": "",
         "type": "bool"
       }
     ],
@@ -211,11 +103,24 @@
   },
   {
     "inputs": [],
-    "name": "isWinningParlay",
+    "name": "isAnySportMarketResolved",
     "outputs": [
       {
         "internalType": "bool",
         "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isUserTheWinner",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "finalResult",
         "type": "bool"
       }
     ],
@@ -242,21 +147,29 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "numOfResolvedSportMarkets",
+    "outputs": [
       {
         "internalType": "uint256",
-        "name": "value",
+        "name": "",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "minter",
-        "type": "address"
       }
     ],
-    "name": "mint",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parlayAlreadyLost",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -319,32 +232,12 @@
   },
   {
     "inputs": [],
-    "name": "resolveMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "resolved",
     "outputs": [
       {
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "result",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "resultToReturn",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",

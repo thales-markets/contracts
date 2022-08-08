@@ -101,6 +101,16 @@ contract ParlayMarket{
         }
     }
 
+    function manualExerciseSportMarket(address _sportMarket) external onlyAMM {
+        require(ISportPositionalMarket(_sportMarket).resolved(), "Not resolved");
+        (uint home, uint away, uint draw) = ISportPositionalMarket(_sportMarket).balancesOf(address(this));
+        uint sum = home+away+draw;
+        if(sum > 0) {
+            ISportPositionalMarket(_sportMarket).exerciseOptions();
+            parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), sum);
+        }
+    }
+
     function isAnySportMarketExercisable() external view returns(bool) {
         ( , uint winningPositionsMap, ) = _getResolvedAndWinningPositions();
         return winningPositionsMap > 0;

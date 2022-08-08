@@ -72,6 +72,7 @@ contract ParlayMarket{
 
 
     function exerciseWiningSportMarkets() external {
+        require(!paused, "Market paused");
         (uint resolvedPositionsMap, uint winningPositionsMap, uint numOfSportMarkets) = _getResolvedAndWinningPositions(); 
         require(_numOfAlreadyExercisedSportMarkets < numOfSportMarkets 
                 && numOfResolvedSportMarkets < numOfSportMarkets && resolvedPositionsMap > 0, "Already exercised all markets");
@@ -110,7 +111,14 @@ contract ParlayMarket{
             _alreadyExercisedSportMarket[_sportMarket] = true;
             _numOfAlreadyExercisedSportMarkets++;
             numOfResolvedSportMarkets++;
-            parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), sum);
+            if(numOfResolvedSportMarkets == sportMarket.length) {
+                if(_numOfAlreadyExercisedSportMarkets == sportMarket.length && !parlayAlreadyLost) {
+                    parlayMarketsAMM.sUSD().transfer(parlayOwner, sum);
+                }
+                else if(parlayAlreadyLost || numOfResolvedSportMarkets == sportMarket.length){
+                    parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), sum);
+                }
+            }   
         }
     }
 

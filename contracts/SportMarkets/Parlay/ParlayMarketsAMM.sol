@@ -188,14 +188,19 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _exerciseResovedWinningSportMarkets(_parlayMarket);
         }
         else {
-            require(ParlayMarket(_parlayMarket).parlayOwner() == msg.sender, "Not ParlayOwner");
+            ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
+            require(parlayMarket.parlayOwner() == msg.sender, "Not ParlayOwner");
+            if(!parlayMarket.resolved() && parlayMarket.canResolve()) {
+                parlayMarket.resolveMarket();
+            }
+            require(parlayMarket.resolved(), "Not resolved");
             _exerciseResovedWinningSportMarkets(_parlayMarket);
             sUSD.safeTransfer(msg.sender, ParlayMarket(_parlayMarket).amount());
         }
     }
 
     function _isLosingParlay(address _parlayMarket) internal view returns(bool isLosing) {
-
+        isLosing = ParlayMarket(_parlayMarket).parlayAlreadyLost();
     }
 
     function _exerciseResovedWinningSportMarkets(address _parlayMarket) internal {

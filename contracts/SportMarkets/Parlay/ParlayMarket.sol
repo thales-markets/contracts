@@ -26,6 +26,9 @@ contract ParlayMarket{
 
     address[] public sportMarket;
     mapping(address => bool) private _alreadyExercisedSportMarket;
+    uint private _numOfAlreadyExercisedSportMarkets;
+    uint private _numOfResolvedSportMarkets;
+    bool public parlayAlreadyLost;
 
     uint[] public sportPosition;
     uint public amount;
@@ -39,6 +42,8 @@ contract ParlayMarket{
 
     bool public resolved;
     bool public paused;
+    bool public isWinningParlay;
+    
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -66,44 +71,49 @@ contract ParlayMarket{
         //add odds
     }
 
+    function numOfGamesMissingResolution() external view returns(uint numOfGames) {
+        numOfGames = sportMarket.length - _numOfResolvedSportMarkets;
+    }
+    
+    function numOfResolvedSportMarkets() external view returns(uint numOfGames) {
+        numOfGames = _numOfResolvedSportMarkets;
+    }
+
     function exerciseWiningSportMarkets() external {
         uint numOfSportMarkets = sportMarket.length;
+        require(_numOfAlreadyExercisedSportMarkets < numOfSportMarkets 
+                && _numOfResolvedSportMarkets < numOfSportMarkets, "Already exercised all markets");
         for(uint i=0; i<numOfSportMarkets; i++) {
-            if(!_alreadyExercisedSportMarket[sportMarket[i]] && _isWinningSportMarket(sportMarket[i], sportPosition[i])) {
-                // exercise options
-                ISportPositionalMarket(sportMarket[i]).exerciseOptions();
-                _alreadyExercisedSportMarket[sportMarket[i]] = true;
+            if(!_alreadyExercisedSportMarket[sportMarket[i]]) {
+                (bool isWinning, bool isResolved) = _isWinningSportMarket(sportMarket[i], sportPosition[i]);
+                if(isWinning) {
+                    // exercise options
+                        ISportPositionalMarket(sportMarket[i]).exerciseOptions();
+                        _alreadyExercisedSportMarket[sportMarket[i]] = true;
+                        _numOfAlreadyExercisedSportMarkets++;
+                        _numOfResolvedSportMarkets++;
+                }
+                else if(isResolved){
+                    if(!parlayAlreadyLost) {
+                        parlayAlreadyLost = true;
+                        resolved = true;
+                    }
+                    _numOfResolvedSportMarkets++;
+                }
+
             }
         }
     }
 
-    function _isWinningSportMarket(address _sportMarket, uint _position) internal view returns(bool isWinning) {
-        if(ISportPositionalMarket(_sportMarket).resolved() 
-        && (uint(ISportPositionalMarket(_sportMarket).result()) == _position 
-        || ISportPositionalMarket(_sportMarket).result() == ISportPositionalMarket.Side.Cancelled)) {
+    function _isWinningSportMarket(address _sportMarket, uint _position) internal view returns(bool isWinning, bool isResolved) {
+        ISportPositionalMarket currentSportMarket = ISportPositionalMarket(_sportMarket);
+        if(currentSportMarket.resolved()) {
+            isResolved = true;
+        } 
+        if(isResolved && (uint(currentSportMarket.result()) == _position 
+        || currentSportMarket.result() == ISportPositionalMarket.Side.Cancelled)) {
             isWinning =  true;
         }
-    }
-
-    function mint(
-        uint value,
-        address minter
-    ) external onlyAMM {
-        if (value == 0) {
-            return;
-        }
-        _mint(minter, value);
-    }
-
-    function _mint(
-        address minter,
-        uint amount
-    ) internal {
-        emit Mint(minter, amount);
-    }
-
-    function burn(uint value, address claimant) external onlyAMM {
-        // emit Burn(claimant, value, Position.In);
     }
 
     function canExercisePositions() external view returns (bool canBeExercised) {
@@ -126,16 +136,18 @@ contract ParlayMarket{
         // emit Exercised(msg.sender, payout, curResult);
     }
 
-    function canResolve() external view returns (bool canBeResolved) {
+    function canResolve() public view returns (bool canBeResolved) {
         // The markets must be resolved
-        if(!paused){
-            canBeResolved = true;
+        if(!paused && !resolved){
+            if(_numOfAlreadyExercisedSportMarkets == sportMarket.length) {
+                canBeResolved = true;
+            }
         }
         
     }
 
     function resolveMarket() public {
-        if(!paused){
+        if(!paused && canResolve()){
             resolved = true;
         }
         emit Resolved(result());

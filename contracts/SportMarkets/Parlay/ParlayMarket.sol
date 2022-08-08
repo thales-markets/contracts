@@ -107,6 +107,9 @@ contract ParlayMarket{
         uint sum = home+away+draw;
         if(sum > 0) {
             ISportPositionalMarket(_sportMarket).exerciseOptions();
+            _alreadyExercisedSportMarket[_sportMarket] = true;
+            _numOfAlreadyExercisedSportMarkets++;
+            numOfResolvedSportMarkets++;
             parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), sum);
         }
     }

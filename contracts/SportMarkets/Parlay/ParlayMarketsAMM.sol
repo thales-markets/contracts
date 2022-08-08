@@ -181,6 +181,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
     
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused {
+        require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
         if(_isLosingParlay(_parlayMarket)) {
             if(!losingParlay[_parlayMarket]) {
                 losingParlay[_parlayMarket] = true;
@@ -192,7 +193,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             require(parlayMarket.parlayOwner() == msg.sender, "Not ParlayOwner");
             require(parlayMarket.resolved(), "Not resolved");
             _exerciseResovedWinningSportMarkets(_parlayMarket);
+            // do additional checks
             sUSD.safeTransfer(msg.sender, ParlayMarket(_parlayMarket).amount());
+        }
+    }
+
+    function canExerciseAnySportPositionOnParlay(address _parlayMarket) external view returns(bool canExercise) {
+        if(_knownMarkets.contains(_parlayMarket)) {
+            canExercise = ParlayMarket(_parlayMarket).isAnySportMarketExercisable();
         }
     }
 
@@ -201,11 +209,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function _exerciseResovedWinningSportMarkets(address _parlayMarket) internal {
-        _knownMarkets.contains(_parlayMarket);
-        ParlayMarket(_parlayMarket).exerciseWiningSportMarkets();
-        if(ParlayMarket(_parlayMarket).resolved()) {
-            resolvedParlay[_parlayMarket] = true;
-            _knownMarkets.remove(_parlayMarket);
+        if(_knownMarkets.contains(_parlayMarket)) {
+            ParlayMarket(_parlayMarket).exerciseWiningSportMarkets();
+            if(ParlayMarket(_parlayMarket).resolved()) {
+                resolvedParlay[_parlayMarket] = true;
+                _knownMarkets.remove(_parlayMarket);
+            }
         }
     }
 

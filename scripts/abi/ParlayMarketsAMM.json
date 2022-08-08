@@ -317,6 +317,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "canExerciseAnySportPositionOnParlay",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "canExercise",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "capPerMarket",
     "outputs": [

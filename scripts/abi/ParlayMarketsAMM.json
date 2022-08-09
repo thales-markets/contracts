@@ -86,6 +86,25 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_parlayOwner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_userWon",
+        "type": "bool"
+      }
+    ],
+    "name": "ParlayResolved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "bool",
         "name": "isPaused",
         "type": "bool"
@@ -243,7 +262,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "_totalQuotesAmount",
         "type": "uint256"
       },
       {
@@ -291,7 +310,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "_amountSUSD",
         "type": "uint256"
       }
     ],
@@ -306,6 +325,11 @@
         "internalType": "uint256[]",
         "name": "proportionalAmounts",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalQuotes",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1029,6 +1053,24 @@
       }
     ],
     "name": "transferSusdTo",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_userWon",
+        "type": "bool"
+      }
+    ],
+    "name": "triggerResolvedEvent",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

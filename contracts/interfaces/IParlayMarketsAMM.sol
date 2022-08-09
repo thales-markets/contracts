@@ -10,4 +10,6 @@ interface IParlayMarketsAMM {
     function sUSD() external view returns(IERC20Upgradeable);
 
     function transferRestOfSUSDAmount(address receiver, uint amount, bool dueToCancellation) external;
+    function triggerResolvedEvent(address _account, bool _userWon) external;
+
 }

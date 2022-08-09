@@ -102,11 +102,22 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function canCreateParlayMarket(address[] calldata _sportMarkets, uint[] calldata _positions) public view returns (bool canBeCreated) {
         uint numOfMarkets = _sportMarkets.length;
         uint numOfPositions = _positions.length;
+
         if(numOfMarkets == numOfPositions) {
             canBeCreated = true;
             for(uint i = 0; i< numOfMarkets; i++) {
                 if(_positions[i] == 0 || _positions[i] > 2) {
                     canBeCreated = false;
+                    break;
+                }
+                // two markets can't be equal:
+                for(uint j=0; j<i; j++) {
+                    if(_sportMarkets[i] == _sportMarkets[j]) {
+                        canBeCreated = false;
+                        break;
+                    }
+                }
+                if(!canBeCreated) {
                     break;
                 }
                 uint[] memory marketOdds = sportsAmm.getMarketDefaultOdds(_sportMarkets[i], false);
@@ -121,24 +132,25 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function buyQuoteParlay(
         address[] calldata _sportMarkets, 
         uint[] calldata _positions,
-        uint _amount
+        uint _amountSUSD
     ) public view returns(
         uint[] memory marketQuotes, 
-        uint[] memory proportionalAmounts
+        uint[] memory proportionalAmounts,
+        uint totalQuotes
         )
         {
             if(canCreateParlayMarket(_sportMarkets, _positions)) {
                 uint numOfMarkets = _sportMarkets.length;
                 marketQuotes = new uint[](numOfMarkets);
                 proportionalAmounts = new uint[](numOfMarkets);
-                (marketQuotes, proportionalAmounts) = _getQuotesAndAmounts(_sportMarkets, _positions, _amount);
+                (marketQuotes, proportionalAmounts, totalQuotes) = _getQuotesAndAmounts(_sportMarkets, _positions, _amountSUSD);
             }
     }
 
     function buyParlay(
         address[] calldata _sportMarkets, 
         uint[] calldata _positions,
-        uint _amount,
+        uint _totalQuotesAmount,
         uint[] calldata _marketQuotes, 
         uint[] calldata _proportionalAmounts, 
         uint _sUSDPaid,
@@ -161,7 +173,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         parlayMarket.initialize(
                     _sportMarkets,
                     _positions, 
-                    _amount, 
+                    _totalQuotesAmount, 
                     _sUSDPaid, 
                     address(this), 
                     msg.sender
@@ -177,24 +189,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _additionalSlippage,
             address(parlayMarket)
         );
-        emit ParlayMarketCreated(address(parlayMarket), msg.sender, _amount, _sUSDPaid);
+        emit ParlayMarketCreated(address(parlayMarket), msg.sender, _totalQuotesAmount, _sUSDPaid);
     }
     
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused {
         require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
-        if(_isLosingParlay(_parlayMarket)) {
-            if(!losingParlay[_parlayMarket]) {
-                losingParlay[_parlayMarket] = true;
-            }
-            _exerciseResovedWinningSportMarkets(_parlayMarket);
-        }
-        else {
-            ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
-            require(parlayMarket.parlayOwner() == msg.sender, "Not ParlayOwner");
-            require(parlayMarket.resolved(), "Not resolved");
-            _exerciseResovedWinningSportMarkets(_parlayMarket);
-            // do additional checks
-            sUSD.safeTransfer(msg.sender, ParlayMarket(_parlayMarket).amount());
+        ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
+        parlayMarket.exerciseWiningSportMarkets();
+        if(parlayMarket.resolved()) {
+            resolvedParlay[_parlayMarket] = true;
+            _knownMarkets.remove(_parlayMarket);
         }
     }
 
@@ -204,18 +208,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function _isLosingParlay(address _parlayMarket) internal view returns(bool isLosing) {
-        isLosing = ParlayMarket(_parlayMarket).parlayAlreadyLost();
-    }
-
-    function _exerciseResovedWinningSportMarkets(address _parlayMarket) internal {
-        if(_knownMarkets.contains(_parlayMarket)) {
-            ParlayMarket(_parlayMarket).exerciseWiningSportMarkets();
-            if(ParlayMarket(_parlayMarket).resolved()) {
-                resolvedParlay[_parlayMarket] = true;
-                _knownMarkets.remove(_parlayMarket);
-            }
-        }
+    function triggerResolvedEvent(address _account, bool _userWon) external {
+        require(_knownMarkets.contains(msg.sender), "Not valid Parlay");
+        emit ParlayResolved(_account, _userWon);
     }
 
     function _buyPositionsFromSportAMM(
@@ -274,15 +269,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _amount) 
         internal view returns(
             uint[] memory marketQuotes, 
-            uint[] memory proportionalAmounts
+            uint[] memory proportionalAmounts,
+            uint totalQuotes
             ) 
         {
             uint numOfMarkets = _sportMarkets.length;
             uint[] memory quotes = new uint[](numOfMarkets);
-            quotes = _getQuotes(_sportMarkets, _positions);
+            (quotes, totalQuotes) = _getQuotes(_sportMarkets, _positions);
             quotes = _reverseAndNormalize(quotes);
             for(uint i=0; i < numOfMarkets; i++) {
-                proportionalAmounts[i] = quotes[i].mul(_amount);
+                proportionalAmounts[i] = quotes[i].mul(_amount).mul(totalQuotes);
 
                 marketQuotes[i] = sportsAmm.buyFromAmmQuote(
                     _sportMarkets[i],
@@ -293,13 +289,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             }
     }
 
-    function _getQuotes(address[] calldata _sportMarkets, uint[] calldata _positions) internal view returns(uint[] memory quotes) {
+    function _getQuotes(address[] calldata _sportMarkets, uint[] calldata _positions) internal view returns(uint[] memory quotes, uint totalQuotes) {
         uint length = _sportMarkets.length;
         quotes = new uint[](length);
         uint[] memory odds;
         for(uint i=0; i < length; i++) {
             odds = sportsAmm.getMarketDefaultOdds(_sportMarkets[i], false);
             quotes[i] = odds[_positions[i]];
+            totalQuotes = totalQuotes.mul(odds[_positions[i]]);
         }
     }
 
@@ -433,5 +430,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event SetStakingThales(address _stakingThales);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event ExtraAmountTransferredDueToCancellation(address receiver, uint amount);
+    event ParlayResolved(address _parlayOwner, bool _userWon);
+
 
 }

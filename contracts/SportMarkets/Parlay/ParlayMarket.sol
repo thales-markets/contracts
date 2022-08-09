@@ -128,6 +128,7 @@ contract ParlayMarket{
     function _resolve(bool _userWon) internal {
         parlayAlreadyLost = !_userWon;
         resolved = true;
+        parlayMarketsAMM.triggerResolvedEvent(parlayOwner, _userWon);
         emit Resolved(_userWon);
     }
 

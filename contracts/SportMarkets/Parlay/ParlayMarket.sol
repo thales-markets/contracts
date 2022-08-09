@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
 // Internal references
 import "./ParlayPosition.sol";
-import "./ParlayMarketsAMM.sol";
+import "../../interfaces/IParlayMarketsAMM.sol";
 import "../SportPositions/SportPosition.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
@@ -27,7 +27,7 @@ contract ParlayMarket{
     uint public sUSDPaid;
     uint public numOfResolvedSportMarkets;
 
-    ParlayMarketsAMM public parlayMarketsAMM;
+    IParlayMarketsAMM public parlayMarketsAMM;
 
     address public parlayOwner;
 
@@ -50,7 +50,7 @@ contract ParlayMarket{
     ) external {
         require(!initialized, "Parlay Market already initialized");
         initialized = true;
-        parlayMarketsAMM = ParlayMarketsAMM(_parlayMarketsAMM);
+        parlayMarketsAMM = IParlayMarketsAMM(_parlayMarketsAMM);
         require(_sportMarkets.length == _positionPerMarket.length 
                 && parlayMarketsAMM.parlaySize() == _sportMarkets.length, 
                 "Lengths not matching");

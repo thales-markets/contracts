@@ -185,7 +185,7 @@
     "name": "parlayMarketsAMM",
     "outputs": [
       {
-        "internalType": "contract ParlayMarketsAMM",
+        "internalType": "contract IParlayMarketsAMM",
         "name": "",
         "type": "address"
       }

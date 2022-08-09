@@ -14,26 +14,18 @@ import "../../interfaces/ISportPositionalMarketManager.sol";
 contract ParlayMarket{
     using SafeERC20 for IERC20;
 
-    // string public name;
-    // string public symbol;
-    // uint8 public constant decimals = 18;
-
-    // mapping(address => uint) public override balanceOf;
-    // uint public override totalSupply;
-
-    // // The argument order is allowance[owner][spender]
-    // mapping(address => mapping(address => uint)) public override allowance;
-
     address[] public sportMarket;
+    mapping(address => uint) private _sportMarketIndex;
     mapping(address => bool) private _alreadyExercisedSportMarket;
-    uint private _numOfAlreadyExercisedSportMarkets;
 
-    uint public numOfResolvedSportMarkets;
     uint[] public sportPosition;
-    uint public amount;
-    uint public sUSDPaid;
     uint[] public proportionalAmounts;
     uint[] public marketQuotes;
+    
+    uint private _numOfAlreadyExercisedSportMarkets;
+    uint public amount;
+    uint public sUSDPaid;
+    uint public numOfResolvedSportMarkets;
 
     ParlayMarketsAMM public parlayMarketsAMM;
 
@@ -80,46 +72,70 @@ contract ParlayMarket{
             if(!_alreadyExercisedSportMarket[sportMarket[i]] && (resolvedPositionsMap%(10**i)) > 0) {
                 if((winningPositionsMap%(10**i)) > 0) {
                     // exercise options
-                        ISportPositionalMarket(sportMarket[i]).exerciseOptions();
-                        _alreadyExercisedSportMarket[sportMarket[i]] = true;
-                        _numOfAlreadyExercisedSportMarkets++;
-                        numOfResolvedSportMarkets++;
-                        if(_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
-                            resolved = true;
-                            emit Resolved(!parlayAlreadyLost);
+                    _exerciseSportMarket(sportMarket[i]);
+                    if(_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
+                        _resolve(true);
+                        uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
+                        if(totalSUSDamount < amount) {
+                            parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+                            parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (amount-totalSUSDamount), true);
                         }
+                        else {
+                            parlayMarketsAMM.sUSD().transfer(parlayOwner, amount);
+                        }
+                    }
+                    else if(parlayAlreadyLost) {
+                        parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), proportionalAmounts[i]);
+                    }
                 }
                 else {
                     if(!parlayAlreadyLost && !resolved) {
-                        parlayAlreadyLost = true;
-                        resolved = true;
-                        emit Resolved(!parlayAlreadyLost);
+                        _resolve(false);
                     }
                     numOfResolvedSportMarkets++;
                 }
-
             }
         }
     }
-
+    
     function manualExerciseSportMarket(address _sportMarket) external onlyAMM {
         require(ISportPositionalMarket(_sportMarket).resolved(), "Not resolved");
-        (uint home, uint away, uint draw) = ISportPositionalMarket(_sportMarket).balancesOf(address(this));
-        uint sum = home+away+draw;
-        if(sum > 0) {
-            ISportPositionalMarket(_sportMarket).exerciseOptions();
-            _alreadyExercisedSportMarket[_sportMarket] = true;
-            _numOfAlreadyExercisedSportMarkets++;
-            numOfResolvedSportMarkets++;
-            if(numOfResolvedSportMarkets == sportMarket.length) {
-                if(_numOfAlreadyExercisedSportMarkets == sportMarket.length && !parlayAlreadyLost) {
-                    parlayMarketsAMM.sUSD().transfer(parlayOwner, sum);
+        uint exercisedAmount = proportionalAmounts[_sportMarketIndex[_sportMarket]];
+        ISportPositionalMarket.Side sideResult = ISportPositionalMarket(_sportMarket).result();
+        if(uint(sideResult) == sportPosition[_sportMarketIndex[_sportMarket]] || sideResult == ISportPositionalMarket.Side.Cancelled) {
+            _exerciseSportMarket(_sportMarket);
+            if(parlayAlreadyLost) { 
+                parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), exercisedAmount);
+            }
+            else if(_numOfAlreadyExercisedSportMarkets == sportMarket.length) {
+                _resolve(true);
+                uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
+                if(totalSUSDamount < amount) {
+                    parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+                    parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (amount-totalSUSDamount), true);
                 }
-                else if(parlayAlreadyLost || numOfResolvedSportMarkets == sportMarket.length){
-                    parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), sum);
+                else {
+                    parlayMarketsAMM.sUSD().transfer(parlayOwner, amount);
                 }
-            }   
+            }
         }
+        else {
+            _resolve(false);
+            numOfResolvedSportMarkets++;
+        }
+    }
+
+    function _resolve(bool _userWon) internal {
+        parlayAlreadyLost = !_userWon;
+        resolved = true;
+        emit Resolved(_userWon);
+    }
+
+    function _exerciseSportMarket(address _sportMarket) internal {
+        ISportPositionalMarket(_sportMarket).exerciseOptions();
+        _alreadyExercisedSportMarket[_sportMarket] = true;
+        _numOfAlreadyExercisedSportMarkets++;
+        numOfResolvedSportMarkets++;
     }
 
     function isAnySportMarketExercisable() external view returns(bool) {

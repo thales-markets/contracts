@@ -331,6 +331,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     
+    function transferRestOfSUSDAmount(address receiver, uint amount, bool dueToCancellation) external {
+        require(_knownMarkets.contains(msg.sender), "Not a known parlay market");
+        if(dueToCancellation) {
+            emit ExtraAmountTransferredDueToCancellation(receiver, amount);
+        }
+        sUSD.safeTransfer(receiver, amount);
+    }
+
     function transferSusdTo(address receiver, uint amount) external {
         require(_knownMarkets.contains(msg.sender), "Not a known parlay market");
         sUSD.safeTransfer(receiver, amount);
@@ -424,4 +432,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     event SetParlayAmmFee(uint parlayAmmFee);
     event SetStakingThales(address _stakingThales);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
+    event ExtraAmountTransferredDueToCancellation(address receiver, uint amount);
+
 }

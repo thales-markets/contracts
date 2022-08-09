@@ -8,7 +8,9 @@ interface ISportsAMM {
 
     function getMarketDefaultOdds(address _market, bool isSell) external view returns (uint[] memory);
     function isMarketInAMMTrading(address _market) external view returns (bool);
-    
+    function availableToBuyFromAMM(address market, Position position) external view returns (uint _available);
+
+
     function buyFromAMM(
         address market,
         Position position,

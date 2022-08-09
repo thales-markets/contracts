@@ -171,6 +171,12 @@
         "internalType": "uint256",
         "name": "max_spread",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "max_odds",
+        "type": "uint256"
       }
     ],
     "name": "SetMinMaxSupportedPrice",
@@ -259,6 +265,30 @@
         "internalType": "uint256[]",
         "name": "_positions",
         "type": "uint256[]"
+      }
+    ],
+    "name": "availableToBuyFromSportAMM",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "availableAmounts",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
       },
       {
         "internalType": "uint256",
@@ -310,7 +340,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_amountSUSD",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
@@ -329,6 +359,11 @@
       {
         "internalType": "uint256",
         "name": "totalQuotes",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sUSDToPay",
         "type": "uint256"
       }
     ],
@@ -544,6 +579,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxSupportedOdds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -855,6 +903,11 @@
       {
         "internalType": "uint256",
         "name": "_maxSupportedPrice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxSupportedOdds",
         "type": "uint256"
       }
     ],

@@ -87,6 +87,13 @@ contract('TheRundownConsumer', accounts => {
 	let gamesQueue;
 	let game_1_create;
 	let game_1_resolve;
+	let fightId;
+	let fight_create;
+	let fightCreated;
+	let game_fight_resolve;
+	let gamesFightResolved;
+	let reqIdFightCreate;
+	let reqIdFightResolve;
 	let gameid1;
 	let oddsid;
 	let oddsResult;
@@ -129,9 +136,11 @@ contract('TheRundownConsumer', accounts => {
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
+	const fightTime = 1660089600;
 
 	const sportId_4 = 4; // NBA
 	const sportId_16 = 16; // CHL
+	const sportId_7 = 7; // UFC
 
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
@@ -184,6 +193,27 @@ contract('TheRundownConsumer', accounts => {
 		// ids
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';
 		gameid2 = '0x3937346533663036386233333764313239656435633133646632376133326662';
+		fightId = '0x3234376564326334663865313462396538343833353636353361373863393962';
+
+		// create game props
+		game_1_create =
+			'0x0000000000000000000000000000000000000000000000000000000000000020653630636661373830383436616636383937386234393537396535636633393600000000000000000000000000000000000000000000000000000000625755f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf240000000000000000000000000000000000000000000000000000000000004524ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf2400000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000000d41746c616e7461204861776b73000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011436861726c6f74746520486f726e657473000000000000000000000000000000';
+		game_2_create =
+			'0x0000000000000000000000000000000000000000000000000000000000000020393734653366303638623333376431323965643563313364663237613332666200000000000000000000000000000000000000000000000000000000625755f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf240000000000000000000000000000000000000000000000000000000000004524ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaf2400000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000000d41746c616e7461204861776b73000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011436861726c6f74746520486f726e657473000000000000000000000000000000';
+		gamesCreated = [game_1_create, game_2_create];
+		reqIdCreate = '0x65da2443ccd66b09d4e2693933e8fb9aab9addf46fb93300bd7c1d70c5e21666';
+
+		// create fight props
+		fight_create =
+			'0x000000000000000000000000000000000000000000000000000000000000002032343765643263346638653134623965383438333536363533613738633939620000000000000000000000000000000000000000000000000000000062f2f500ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5f100000000000000000000000000000000000000000000000000000000000007c9c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000011436c6179746f6e2043617270656e746572000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d4564676172204368616972657a00000000000000000000000000000000000000';
+		fightCreated = [fight_create];
+		reqIdFightCreate = '0x1e4ef9996d321a4445068689e63fe393a5860cc98a0df22da1ac877d8cfd37d3';
+
+		// resolve game props
+		reqIdFightResolve = '0x6b5d983afa1e2da68d49e1e1e5d963cb7d93e971329e4dac36a9697234584c68';
+		game_fight_resolve =
+			'0x3234376564326334663865313462396538343833353636353361373863393962000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008';
+		gamesFightResolved = [game_fight_resolve];
 
 		// create game props
 		game_1_create =
@@ -242,9 +272,9 @@ contract('TheRundownConsumer', accounts => {
 
 		await TherundownConsumerDeployed.initialize(
 			owner,
-			[sportId_4, sportId_16],
+			[sportId_4, sportId_16, sportId_7],
 			SportPositionalMarketManager.address,
-			[sportId_4],
+			[sportId_4, sportId_7],
 			gamesQueue.address,
 			[8, 11, 12], // resolved statuses
 			[1, 2], // cancel statuses
@@ -268,13 +298,15 @@ contract('TheRundownConsumer', accounts => {
 	describe('Init', () => {
 		it('Check init', async () => {
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
 			assert.equal(false, await TherundownConsumerDeployed.isSupportedSport(0));
 			assert.equal(false, await TherundownConsumerDeployed.isSupportedSport(1));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
-			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(7));
+			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(8));
 
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarketType('create'));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarketType('resolve'));
@@ -868,6 +900,101 @@ contract('TheRundownConsumer', accounts => {
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
+		});
+		it('Fulfill Games Resolved - UFC, create market, resolve market, check results', async () => {
+			await fastForward(fightTime - (await currentTime()) - SECOND);
+
+			// req games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFightCreate,
+				fightCreated,
+				sportId_7,
+				fightTime,
+				{ from: wrapper }
+			);
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
+
+			assert.equal(
+				fight_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
+			);
+
+			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
+			assert.equal('Clayton Carpenter', fight.homeTeam);
+			assert.equal('Edgar Chairez', fight.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdFightCreate,
+				_sportId: sportId_7,
+				_id: fightId,
+				_game: fight,
+			});
+
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(fightId);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: fightId,
+				_game: fight,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9007, await deployedMarket.tags(0));
+
+			await expect(
+				TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
+			).to.be.revertedWith('Market for game already exists');
+
+			await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
+
+			assert.equal(true, await deployedMarket.canResolve());
+
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdFightResolve,
+				gamesFightResolved,
+				sportId_7,
+				{ from: wrapper }
+			);
+
+			assert.equal(
+				game_fight_resolve,
+				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightResolve, 0)
+			);
+
+			let fightR = await TherundownConsumerDeployed.gameResolved(fightId);
+			assert.equal(1, fightR.homeScore);
+			assert.equal(0, fightR.awayScore);
+			assert.equal(8, fightR.statusId);
+
+			assert.eventEqual(tx_2.logs[0], 'GameResolved', {
+				_requestId: reqIdFightResolve,
+				_sportId: sportId_7,
+				_id: fightId,
+				_game: fightR,
+			});
+
+			// resolve markets
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
+
+			// check if event is emited
+			assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: fightId,
+				_outcome: 1,
+			});
+
+			await expect(
+				TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
+			).to.be.revertedWith('Market resoved or canceled');
 		});
 	});
 

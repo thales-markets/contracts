@@ -58,6 +58,13 @@ contract('ParlayAMM', (accounts) => {
 	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
+	const ParlayAMMContract = artifacts.require('ParlayMarketsAMM');
+	const ParlayMarketContract = artifacts.require('ParlayMarketMastercopy');
+	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
+
+	let ParlayAMM;
+	let ParlayMarket;
+	let ParlayMarketData;
 
 	let ExoticPositionalMarket;
 	let ExoticPositionalOpenBidMarket;
@@ -159,6 +166,10 @@ contract('ParlayAMM', (accounts) => {
 	const sportId_7 = 7; // UFC
 
 	let gameMarket;
+
+	let parlayAMMfee = '0.1';
+	let safeBoxImpact = '0.1';
+	let capPerMarket = '20000';
 
 	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 
@@ -422,6 +433,19 @@ contract('ParlayAMM', (accounts) => {
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
+
+		ParlayAMM = await ParlayAMMContract.new({ from: manager });
+
+		await ParlayAMM.initialize(
+			owner,
+			SportsAMM.address,
+			toUnit(parlayAMMfee),
+			toUnit(capPerMarket),
+			Thales.address,
+			safeBox,
+			toUnit(safeBoxImpact),
+			{ from: owner }
+		);
 	});
 
 	describe('Init', () => {
@@ -825,4 +849,6 @@ contract('ParlayAMM', (accounts) => {
 			).to.be.revertedWith('Market resoved or canceled');
 		});
 	});
+
+	describe('Check ParlayAMM data', () => {});
 });

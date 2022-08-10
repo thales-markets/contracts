@@ -812,17 +812,17 @@ contract('ParlayAMM', (accounts) => {
 			});
 
 			// resolve markets
-			// const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
 
-			// // check if event is emited
-			// assert.eventEqual(tx_resolve.logs[0], 'CancelSportsMarket', {
-			// 	_marketAddress: marketAdd,
-			// 	_id: fightId,
-			// });
+			// check if event is emited
+			assert.eventEqual(tx_resolve.logs[0], 'CancelSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: fightId,
+			});
 
-			// await expect(
-			// 	TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
-			// ).to.be.revertedWith('Market resoved or canceled');
+			await expect(
+				TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
+			).to.be.revertedWith('Market resoved or canceled');
 		});
 	});
 });

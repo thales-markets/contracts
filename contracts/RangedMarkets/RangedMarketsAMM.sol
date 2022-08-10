@@ -236,19 +236,23 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
             amount
         );
-        uint summedQuotes = leftQuote + rightQuote;
-        if (position == RangedMarket.Position.Out) {
-            quoteWithFees = (summedQuotes * (rangedAmmFee + ONE)) / ONE;
+        if (leftQuote == 0 || rightQuote == 0) {
+            quoteWithFees = 0;
         } else {
-            if (
-                summedQuotes >
-                ((_transformCollateral(amount, false) - leftQuote) + (_transformCollateral(amount, false) - rightQuote))
-            ) {
-                uint quoteWithoutFees =
-                    summedQuotes -
-                        (_transformCollateral(amount, false) - leftQuote) -
-                        (_transformCollateral(amount, false) - rightQuote);
-                quoteWithFees = (quoteWithoutFees * (rangedAmmFee + safeBoxImpact + ONE)) / ONE;
+            uint summedQuotes = leftQuote + rightQuote;
+            if (position == RangedMarket.Position.Out) {
+                quoteWithFees = (summedQuotes * (rangedAmmFee + ONE)) / ONE;
+            } else {
+                if (
+                    summedQuotes >
+                    ((_transformCollateral(amount, false) - leftQuote) + (_transformCollateral(amount, false) - rightQuote))
+                ) {
+                    uint quoteWithoutFees =
+                        summedQuotes -
+                            (_transformCollateral(amount, false) - leftQuote) -
+                            (_transformCollateral(amount, false) - rightQuote);
+                    quoteWithFees = (quoteWithoutFees * (rangedAmmFee + safeBoxImpact + ONE)) / ONE;
+                }
             }
         }
     }
@@ -484,18 +488,23 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down,
             amount
         );
-        uint summedQuotes = leftQuote + rightQuote;
-        if (position == RangedMarket.Position.Out) {
-            quoteWithFees = (summedQuotes * (ONE - rangedAmmFee)) / ONE;
+        if (leftQuote == 0 || rightQuote == 0) {
+            quoteWithFees = 0;
         } else {
-            uint amountTransformed = _transformCollateral(amount, false);
-            if (
-                amountTransformed > leftQuote &&
-                amountTransformed > rightQuote &&
-                summedQuotes > ((amountTransformed - leftQuote) + (amountTransformed - rightQuote))
-            ) {
-                uint quoteWithoutFees = summedQuotes - ((amountTransformed - leftQuote) + (amountTransformed - rightQuote));
-                quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
+            uint summedQuotes = leftQuote + rightQuote;
+            if (position == RangedMarket.Position.Out) {
+                quoteWithFees = (summedQuotes * (ONE - rangedAmmFee)) / ONE;
+            } else {
+                uint amountTransformed = _transformCollateral(amount, false);
+                if (
+                    amountTransformed > leftQuote &&
+                    amountTransformed > rightQuote &&
+                    summedQuotes > ((amountTransformed - leftQuote) + (amountTransformed - rightQuote))
+                ) {
+                    uint quoteWithoutFees =
+                        summedQuotes - ((amountTransformed - leftQuote) + (amountTransformed - rightQuote));
+                    quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
+                }
             }
         }
     }

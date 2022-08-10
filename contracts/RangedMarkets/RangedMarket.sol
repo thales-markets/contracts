@@ -156,7 +156,10 @@ contract RangedMarket {
         // Only pay out the side that won.
         uint payout = (curResult == Position.In) ? inBalance : outBalance;
         if (payout != 0) {
-            rangedMarketsAMM.transferSusdTo(msg.sender, payout);
+            rangedMarketsAMM.transferSusdTo(
+                msg.sender,
+                IPositionalMarketManager(rangedMarketsAMM.thalesAmm().manager()).transformCollateral(payout)
+            );
         }
         emit Exercised(msg.sender, payout, curResult);
     }
@@ -199,12 +202,11 @@ contract RangedMarket {
         emit Resolved(result(), finalPrice);
     }
 
-    function result() public view returns (Position) {
-        Position resultToReturn = Position.Out;
+    function result() public view returns (Position resultToReturn) {
+        resultToReturn = Position.Out;
         if ((leftMarket.result() == IPositionalMarket.Side.Up) && (rightMarket.result() == IPositionalMarket.Side.Down)) {
             resultToReturn = Position.In;
         }
-        return resultToReturn;
     }
 
     function withdrawCollateral(address recipient) external onlyAMM {

@@ -306,7 +306,7 @@
     "outputs": [
       {
         "internalType": "enum RangedMarket.Position",
-        "name": "",
+        "name": "resultToReturn",
         "type": "uint8"
       }
     ],

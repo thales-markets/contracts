@@ -1,6 +1,6 @@
 const { request, gql } = require('graphql-request');
 
-let url = 'https://api.thegraph.com/subgraphs/name/thales-markets/thales-optimism';
+let url = 'https://api.thegraph.com/subgraphs/name/thales-markets/thales-polygon';
 const fs = require('fs');
 
 getUniqueTraders();
@@ -40,7 +40,7 @@ async function getUniqueTraders() {
 	console.log(uniqueTraders);
 
 	fs.writeFileSync(
-		'scripts/deployAMM/uniqueTraders.json',
+		'scripts/deployAMM/uniqueTradersPolygon.json',
 		JSON.stringify(Array.from(uniqueTraders)),
 		function(err) {
 			if (err) return console.log(err);

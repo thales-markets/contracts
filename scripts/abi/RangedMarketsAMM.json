@@ -155,94 +155,9 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "capPerMarket",
+        "name": "_safeBoxImpact",
         "type": "uint256"
-      }
-    ],
-    "name": "SetCapPerMarket",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaxSupportedPrice",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMaxinalDifBetweenStrikes",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMinSupportedPrice",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMinimalDifBetweenStrikes",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "rangedAmmFee",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetRangedAmmFee",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "sUSD",
-        "type": "address"
-      }
-    ],
-    "name": "SetSUSD",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
       {
         "indexed": false,
         "internalType": "address",
@@ -250,7 +165,7 @@
         "type": "address"
       }
     ],
-    "name": "SetSafeBox",
+    "name": "SafeBoxChanged",
     "type": "event"
   },
   {
@@ -259,11 +174,17 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_safeBoxImpact",
+        "name": "capPerMarket",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "rangedAmmFee",
         "type": "uint256"
       }
     ],
-    "name": "SetSafeBoxImpact",
+    "name": "SetCapPerMarketAndRangedFee",
     "type": "event"
   },
   {
@@ -271,12 +192,37 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "minSupportedPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxSupportedPrice",
+        "type": "uint256"
       }
     ],
-    "name": "SetStakingThales",
+    "name": "SetMinMaxSupportedPrice",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minSupportedPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxSupportedPrice",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMinimalMaximalDifBetweenStrikes",
     "type": "event"
   },
   {

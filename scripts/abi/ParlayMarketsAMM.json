@@ -292,7 +292,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_totalQuotesAmount",
+        "name": "_amount",
         "type": "uint256"
       },
       {
@@ -358,7 +358,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "totalQuotes",
+        "name": "totalQuote",
         "type": "uint256"
       },
       {

@@ -103,6 +103,143 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function canCreateParlayMarket(address[] calldata _sportMarkets, uint[] calldata _positions) external view returns (bool canBeCreated) {
         canBeCreated = _canCreateParlayMarket(_sportMarkets, _positions);
     }
+    
+
+    function availableToBuyFromSportAMM(address[] calldata _sportMarkets, uint[] calldata _positions) external view returns(uint[] memory availableAmounts) {
+        availableAmounts = _availableToBuyFromSportAMM(_sportMarkets, _positions);
+    }
+
+    function _availableToBuyFromSportAMM(address[] calldata _sportMarkets, uint[] calldata _positions) internal view returns(uint[] memory availableAmounts) {
+        uint numOfMarkets = _sportMarkets.length;
+        availableAmounts = new uint[](_sportMarkets.length);
+        for(uint i = 0; i< numOfMarkets; i++) {
+            availableAmounts[i] = sportsAmm.availableToBuyFromAMM(_sportMarkets[i], _obtainSportsAMMPosition(_positions[i]));
+        }
+    }
+    
+    
+    function buyQuoteParlay(
+        address[] calldata _sportMarkets, 
+        uint[] calldata _positions,
+        uint _amount
+    ) public view returns(
+        uint[] memory marketQuotes, 
+        uint[] memory proportionalAmounts,
+        uint totalQuote,
+        uint sUSDToPay
+        )
+        {
+            if(_canCreateParlayMarket(_sportMarkets, _positions)) {
+                uint numOfMarkets = _sportMarkets.length;
+                marketQuotes = new uint[](numOfMarkets);
+                proportionalAmounts = new uint[](numOfMarkets);
+                (marketQuotes, proportionalAmounts, totalQuote, sUSDToPay) = _getQuotesAndAmounts(_sportMarkets, _positions, _amount);
+                proportionalAmounts = _checkPositionAvailability(proportionalAmounts, _availableToBuyFromSportAMM(_sportMarkets, _positions));
+            }
+    }
+
+    function buyParlay(
+        address[] calldata _sportMarkets, 
+        uint[] calldata _positions,
+        uint _amount,
+        uint[] calldata _marketQuotes, 
+        uint[] calldata _proportionalAmounts, 
+        uint _sUSDPaid,
+        uint _additionalSlippage,
+        bool _sendSUSD
+        ) 
+        external nonReentrant notPaused {
+        // apply all checks
+        require(_canCreateParlayMarket(_sportMarkets, _positions), "Can't create this parlay market!");
+        
+        // checks for cretion missing
+
+        if (_sendSUSD) {
+            sUSD.safeTransferFrom(msg.sender, address(this), _sUSDPaid);
+        }
+
+        // mint the stateful token  (ERC-20)
+        // clone a parlay market
+        ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
+        parlayMarket.initialize(
+                    _sportMarkets,
+                    _positions, 
+                    _amount, 
+                    _sUSDPaid, 
+                    address(this), 
+                    msg.sender
+                    );
+        _knownMarkets.add(address(parlayMarket));
+
+        // buy the positions
+        _buyPositionsFromSportAMM(
+            _sportMarkets,
+            _positions,
+            _proportionalAmounts,
+            _marketQuotes, 
+            _additionalSlippage,
+            address(parlayMarket)
+        );
+        emit ParlayMarketCreated(address(parlayMarket), msg.sender, _amount, _sUSDPaid);
+    }
+    
+    function exerciseParlay(address _parlayMarket) external nonReentrant notPaused {
+        require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
+        ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
+        parlayMarket.exerciseWiningSportMarkets();
+        if(parlayMarket.resolved()) {
+            resolvedParlay[_parlayMarket] = true;
+            _knownMarkets.remove(_parlayMarket);
+        }
+    }
+
+    function canExerciseAnySportPositionOnParlay(address _parlayMarket) external view returns(bool canExercise) {
+        if(_knownMarkets.contains(_parlayMarket)) {
+            canExercise = ParlayMarket(_parlayMarket).isAnySportMarketExercisable();
+        }
+    }
+
+    function triggerResolvedEvent(address _account, bool _userWon) external {
+        require(_knownMarkets.contains(msg.sender), "Not valid Parlay");
+        emit ParlayResolved(_account, _userWon);
+    }
+
+     function transferRestOfSUSDAmount(address receiver, uint amount, bool dueToCancellation) external {
+        require(_knownMarkets.contains(msg.sender), "Not a known parlay market");
+        if(dueToCancellation) {
+            emit ExtraAmountTransferredDueToCancellation(receiver, amount);
+        }
+        sUSD.safeTransfer(receiver, amount);
+    }
+
+    function transferSusdTo(address receiver, uint amount) external {
+        require(_knownMarkets.contains(msg.sender), "Not a known parlay market");
+        sUSD.safeTransfer(receiver, amount);
+    }
+
+    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        sUSD.safeTransfer(account, amount);
+    }
+
+    // INTERNAL FUNCTIONS
+
+    function _checkPositionAvailability(uint[] memory _amounts, uint[] memory _availableAmounts) internal pure returns(uint[] memory) {
+        bool amountsExceeded;
+        for(uint i=0; i<_amounts.length; i++) {
+            if(_amounts[i] > _availableAmounts[i]) {
+                amountsExceeded = true;
+                break;
+            }
+        }
+        if(amountsExceeded) {
+            uint[] memory newAmounts = new uint[](_amounts.length);
+            return newAmounts;
+        }
+        else {
+            return _amounts;
+        }
+    }
+
     function _canCreateParlayMarket(address[] calldata _sportMarkets, uint[] calldata _positions) internal view returns (bool canBeCreated) {
         uint numOfMarkets = _sportMarkets.length;
         uint numOfPositions = _positions.length;
@@ -134,112 +271,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function availableToBuyFromSportAMM(address[] calldata _sportMarkets, uint[] calldata _positions) external view returns(uint[] memory availableAmounts) {
-        availableAmounts = _availableToBuyFromSportAMM(_sportMarkets, _positions);
-    }
-
-    function _availableToBuyFromSportAMM(address[] calldata _sportMarkets, uint[] calldata _positions) internal view returns(uint[] memory availableAmounts) {
-        uint numOfMarkets = _sportMarkets.length;
-        availableAmounts = new uint[](_sportMarkets.length);
-        for(uint i = 0; i< numOfMarkets; i++) {
-            availableAmounts[i] = sportsAmm.availableToBuyFromAMM(_sportMarkets[i], _obtainSportsAMMPosition(_positions[i]));
-        }
-    }
-    
-    
-    function buyQuoteParlay(
-        address[] calldata _sportMarkets, 
-        uint[] calldata _positions,
-        uint _amount
-    ) public view returns(
-        uint[] memory marketQuotes, 
-        uint[] memory proportionalAmounts,
-        uint totalQuotes,
-        uint sUSDToPay
-        )
-        {
-            if(_canCreateParlayMarket(_sportMarkets, _positions)) {
-                uint numOfMarkets = _sportMarkets.length;
-                marketQuotes = new uint[](numOfMarkets);
-                proportionalAmounts = new uint[](numOfMarkets);
-                (marketQuotes, proportionalAmounts, totalQuotes, sUSDToPay) = _getQuotesAndAmounts(_sportMarkets, _positions, _amount);
-                proportionalAmounts = _checkPositionAvailability(proportionalAmounts, _availableToBuyFromSportAMM(_sportMarkets, _positions));
-            }
-    }
-
-    function _checkPositionAvailability(uint[] memory _amounts, uint[] memory _availableAmounts) internal pure returns(uint[] memory newAmounts) {
-        for(uint i=0; i<_amounts.length; i++) {
-            if(_amounts[i] <= _availableAmounts[i]) {
-                newAmounts[i] = _amounts[i];
-            }
-        }
-    }
-    function buyParlay(
-        address[] calldata _sportMarkets, 
-        uint[] calldata _positions,
-        uint _totalQuotesAmount,
-        uint[] calldata _marketQuotes, 
-        uint[] calldata _proportionalAmounts, 
-        uint _sUSDPaid,
-        uint _additionalSlippage,
-        bool _sendSUSD
-        ) 
-        external nonReentrant notPaused {
-        // apply all checks
-        require(_canCreateParlayMarket(_sportMarkets, _positions), "Can't create this parlay market!");
-        
-        // checks for cretion missing
-
-        if (_sendSUSD) {
-            sUSD.safeTransferFrom(msg.sender, address(this), _sUSDPaid);
-        }
-
-        // mint the stateful token  (ERC-20)
-        // clone a parlay market
-        ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
-        parlayMarket.initialize(
-                    _sportMarkets,
-                    _positions, 
-                    _totalQuotesAmount, 
-                    _sUSDPaid, 
-                    address(this), 
-                    msg.sender
-                    );
-        _knownMarkets.add(address(parlayMarket));
-
-        // buy the positions
-        _buyPositionsFromSportAMM(
-            _sportMarkets,
-            _positions,
-            _proportionalAmounts,
-            _marketQuotes, 
-            _additionalSlippage,
-            address(parlayMarket)
-        );
-        emit ParlayMarketCreated(address(parlayMarket), msg.sender, _totalQuotesAmount, _sUSDPaid);
-    }
-    
-    function exerciseParlay(address _parlayMarket) external nonReentrant notPaused {
-        require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
-        ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
-        parlayMarket.exerciseWiningSportMarkets();
-        if(parlayMarket.resolved()) {
-            resolvedParlay[_parlayMarket] = true;
-            _knownMarkets.remove(_parlayMarket);
-        }
-    }
-
-    function canExerciseAnySportPositionOnParlay(address _parlayMarket) external view returns(bool canExercise) {
-        if(_knownMarkets.contains(_parlayMarket)) {
-            canExercise = ParlayMarket(_parlayMarket).isAnySportMarketExercisable();
-        }
-    }
-
-    function triggerResolvedEvent(address _account, bool _userWon) external {
-        require(_knownMarkets.contains(msg.sender), "Not valid Parlay");
-        emit ParlayResolved(_account, _userWon);
-    }
-
     function _buyPositionsFromSportAMM(
         address[] calldata _sportMarkets, 
         uint[] calldata _positions,
@@ -250,6 +281,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     ) internal {
         uint numOfMarkets = _sportMarkets.length;
         for(uint i=0; i < numOfMarkets; i++) {
+           require(_proportionalAmounts[i] < sportsAmm.availableToBuyFromAMM(_sportMarkets[i], _obtainSportsAMMPosition(_positions[i])), "BuyFromSportAMM amount exceeded");
            sportsAmm.buyFromAMM(
                 _sportMarkets[i],
                 _obtainSportsAMMPosition(_positions[i]),
@@ -355,23 +387,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         return 0;
     }
 
-    
-    function transferRestOfSUSDAmount(address receiver, uint amount, bool dueToCancellation) external {
-        require(_knownMarkets.contains(msg.sender), "Not a known parlay market");
-        if(dueToCancellation) {
-            emit ExtraAmountTransferredDueToCancellation(receiver, amount);
-        }
-        sUSD.safeTransfer(receiver, amount);
-    }
-
-    function transferSusdTo(address receiver, uint amount) external {
-        require(_knownMarkets.contains(msg.sender), "Not a known parlay market");
-        sUSD.safeTransfer(receiver, amount);
-    }
-
-    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
-        sUSD.safeTransfer(account, amount);
-    }
+    // SETTERS
 
     function setParlayMarketMastercopies(address _parlayMarketMastercopy, address _parlayPositionMastercopy)
         external
@@ -439,6 +455,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         //sUSD.approve(_curveSUSD, type(uint256).max);
         curveOnrampEnabled = _curveOnrampEnabled;
     }
+
+    // MODIFIERS
 
     modifier knownParlayMarket(address market) {
         _knownParlayMarket(market);

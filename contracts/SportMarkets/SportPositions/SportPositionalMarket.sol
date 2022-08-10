@@ -145,6 +145,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function setPaused(bool _paused) external override onlyOwner managerNotPaused {
+
         require(paused != _paused, "State not changed");
         paused = _paused;
         emit PauseUpdated(_paused);

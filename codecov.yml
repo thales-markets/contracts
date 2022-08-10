@@ -10,9 +10,6 @@ coverage:
     project:
       default:
         target: 80% #overall project/ repo coverage
-    patch:
-      default:
-        target: 65%  
 
 ignore:
   - "**/*Buyback*.sol"

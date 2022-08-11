@@ -236,10 +236,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     totalResultQuote = 0;
                     break;
                 }
-                (totalResultQuote, totalAmount, amountsToBuy[i], quoteAmounts[i]) = _addGameToParlay(_sportMarkets[i], _positions[i], i, totalResultQuote, _totalSUSDToPay);
+                (totalResultQuote, totalAmount, quoteAmounts[i], ) = _addGameToParlay(_sportMarkets[i], _positions[i], i, totalResultQuote, _totalSUSDToPay);
                 // not ideal if the first amount is the lowest quote
-                amountsToBuy[i] = amountsToBuy[i].sub(previousAmount);
-                previousAmount = amountsToBuy[i];
+                amountsToBuy[i] = totalAmount.sub(previousAmount);
+                previousAmount = totalAmount;
                 if(totalResultQuote == 0 ){
                     totalResultQuote = 0;
                     break;
@@ -282,8 +282,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     ) internal view returns(
         uint totalResultQuote,
         uint totalAmount,
-        uint availableToBuy,
-        uint oddForPosition
+        uint oddForPosition,
+        uint availableToBuy
     ){
         if(_totalQuote >= maxSupportedOdds && _gamesCount < parlaySize) {
             uint[] memory marketOdds = sportsAmm.getMarketDefaultOdds(_sportMarket, false);

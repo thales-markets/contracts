@@ -265,45 +265,6 @@
         "internalType": "uint256[]",
         "name": "_positions",
         "type": "uint256[]"
-      }
-    ],
-    "name": "availableToBuyFromSportAMM",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "availableAmounts",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_sportMarkets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_positions",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_marketQuotes",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_proportionalAmounts",
-        "type": "uint256[]"
       },
       {
         "internalType": "uint256",
@@ -340,80 +301,8 @@
       },
       {
         "internalType": "uint256",
-        "name": "_sUSDPaid",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_additionalSlippage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "_sendSUSD",
-        "type": "bool"
-      }
-    ],
-    "name": "buyParlay2",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_sportMarkets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_positions",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "buyQuoteParlay",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "marketQuotes",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "proportionalAmounts",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalQuote",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
         "name": "sUSDToPay",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_sportMarkets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_positions",
-        "type": "uint256[]"
       }
     ],
     "name": "canCreateParlayMarket",

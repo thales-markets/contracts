@@ -312,11 +312,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             totalResultQuote = _totalQuote == 0 ? oddForPosition :_totalQuote.mul(oddForPosition).div(ONE);
             totalAmount = ONE.mul(ONE).mul(_totalSUSDToPay).div(totalResultQuote).div(ONE);
             availableToBuy = sportsAmm.availableToBuyFromAMM(_sportMarket, _obtainSportsAMMPosition(_position));
-            if(_gamesCount != 0 && availableToBuy < totalAmount.sub(_previousTotalAmount)) {
+            if(availableToBuy < totalAmount.sub(_previousTotalAmount)) {
                 totalResultQuote = 0;
                 totalAmount = 0;
-                availableToBuy = 0;
-                oddForPosition = 0;
             }
         }
     }

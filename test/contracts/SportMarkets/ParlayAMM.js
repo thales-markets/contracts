@@ -1019,7 +1019,7 @@ contract('ParlayAMM', (accounts) => {
 			answer = await SportPositionalMarketManager.numActiveMarkets();
 			assert.equal(answer.toString(), '4');
 			let parlaySize = await ParlayAMM.parlaySize();
-			console.log('Parlay size: ', fromUnit(parlaySize));
+			console.log('Parlay size: ', parlaySize.toString());
 			parlaySize = await ParlayAMM.sportsAmm();
 			console.log('SportsAMM: ', parlaySize);
 			let availableToBuy = [];

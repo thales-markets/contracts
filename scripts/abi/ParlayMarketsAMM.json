@@ -274,6 +274,65 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_sportMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_gamesCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_previousTotalAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalSUSDToPay",
+        "type": "uint256"
+      }
+    ],
+    "name": "canAddToParlay",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalResultQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "oddForPosition",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "availableToBuy",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "_sportMarkets",
         "type": "address[]"

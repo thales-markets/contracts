@@ -27,6 +27,7 @@ import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
+// import "hardhat/console.sol";
 
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
@@ -102,7 +103,24 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         sUSD.approve(address(sportsAmm), type(uint256).max);
     }
 
-    
+     function canAddToParlay(
+        address _sportMarket,
+        uint _position,
+        uint _gamesCount,
+        uint _totalQuote,
+        uint _previousTotalAmount,
+        uint _totalSUSDToPay
+    ) external view returns(
+        uint totalResultQuote,
+        uint totalAmount,
+        uint oddForPosition,
+        uint availableToBuy
+    ) {
+        (totalResultQuote,
+            totalAmount,
+            oddForPosition,
+            availableToBuy) = _addGameToParlay(_sportMarket, _position, _gamesCount, _totalQuote, _previousTotalAmount, _totalSUSDToPay);
+    }
     
     function canCreateParlayMarket(address[] calldata _sportMarkets, uint[] calldata _positions, uint sUSDToPay) external view returns (bool canBeCreated) {
         (uint totalQuote , , , )= _canCreateParlayMarket(_sportMarkets, _positions, sUSDToPay);
@@ -238,7 +256,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     totalResultQuote = 0;
                     break;
                 }
-                (totalResultQuote, totalAmount, quoteAmounts[i], ) = _addGameToParlay(_sportMarkets[i], _positions[i], i, totalResultQuote, _totalSUSDToPay);
+                (totalResultQuote, totalAmount, quoteAmounts[i], ) = _addGameToParlay(_sportMarkets[i], _positions[i], i, totalResultQuote, previousAmount, _totalSUSDToPay);
                 // not ideal if the first amount is the lowest quote
                 amountsToBuy[i] = totalAmount.sub(previousAmount);
                 previousAmount = totalAmount;
@@ -280,6 +298,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _position,
         uint _gamesCount,
         uint _totalQuote,
+        uint _previousTotalAmount,
         uint _totalSUSDToPay
     ) internal view returns(
         uint totalResultQuote,
@@ -287,15 +306,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint oddForPosition,
         uint availableToBuy
     ){
-        if(_totalQuote >= maxSupportedOdds && _gamesCount < parlaySize) {
+        if((_gamesCount == 0 || _totalQuote >= maxSupportedOdds) && _gamesCount < parlaySize) {
             uint[] memory marketOdds = sportsAmm.getMarketDefaultOdds(_sportMarket, false);
             oddForPosition = marketOdds[_position];
-            uint sumQuotes = _totalQuote.add(oddForPosition);
-            uint portion = ONE.mul(oddForPosition).div(sumQuotes).div(ONE);
-            totalResultQuote = _totalQuote.mul(oddForPosition);
-            totalAmount = _totalSUSDToPay.mul(totalResultQuote);
+            totalResultQuote = _totalQuote == 0 ? oddForPosition :_totalQuote.mul(oddForPosition).div(ONE);
+            totalAmount = ONE.mul(ONE).mul(_totalSUSDToPay).div(totalResultQuote).div(ONE);
             availableToBuy = sportsAmm.availableToBuyFromAMM(_sportMarket, _obtainSportsAMMPosition(_position));
-            if(sportsAmm.availableToBuyFromAMM(_sportMarket, _obtainSportsAMMPosition(_position)) < ONE.mul(portion).mul(totalAmount).div(ONE)) {
+            if(_gamesCount != 0 && availableToBuy < totalAmount.sub(_previousTotalAmount)) {
                 totalResultQuote = 0;
                 totalAmount = 0;
                 availableToBuy = 0;

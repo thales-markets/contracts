@@ -58,9 +58,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     address public parlayMarketData;
 
     // IMPORTANT: AMM risks only half or the payout effectively, but it risks the whole amount on price movements
-    uint public capPerMarket;
-    uint public minSupportedPrice;
-    uint public maxSupportedPrice;
+    // uint public capPerMarket;
+    // uint public minSupportedPrice;
+    uint public maxSupportedAmount;
     uint public maxSupportedOdds;
 
     address public safeBox;
@@ -83,7 +83,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address _owner,
         ISportsAMM _sportsAmm,
         uint _parlayAmmFee,
-        uint _capPerMarket,
+        uint _maxSupportedAmount,
+        uint _maxSupportedOdds,
         IERC20Upgradeable _sUSD,
         address _safeBox,
         uint _safeBoxImpact
@@ -91,7 +92,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         setOwner(_owner);
         initNonReentrant();
         sportsAmm = _sportsAmm;
-        capPerMarket = _capPerMarket;
+        maxSupportedAmount = _maxSupportedAmount;
+        maxSupportedOdds = _maxSupportedOdds;
         parlayAmmFee = _parlayAmmFee;
         sUSD = _sUSD;
         safeBox = _safeBox;
@@ -427,44 +429,36 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         parlayPositionMastercopy = _parlayPositionMastercopy;
     }
 
-    function setMinMaxSupportedPrice(
-        uint _minSupportedPrice,
-        uint _maxSupportedPrice,
-        uint _maxSupportedOdds
+    function setAmounts(
+        uint _maxSupportedAmount,
+        uint _maxSupportedOdds,
+        uint _parlayAMMFee,
+        uint _safeBoxImpact,
+        uint _referrerFee
     ) public onlyOwner {
-        minSupportedPrice = _minSupportedPrice;
-        maxSupportedPrice = _maxSupportedPrice;
+        maxSupportedAmount = _maxSupportedAmount;
         maxSupportedOdds = _maxSupportedOdds;
-        emit SetMinMaxSupportedPrice(minSupportedPrice, maxSupportedPrice, maxSupportedOdds);
-    }
-
-    function setSafeBoxData(address _safeBox, uint _safeBoxImpact) external onlyOwner {
-        safeBoxImpact = _safeBoxImpact;
-        safeBox = _safeBox;
-        emit SetSafeBoxImpact(_safeBoxImpact);
-        emit SetSafeBox(_safeBox);
-    }
-
-    function setCapPerMarketAndParlayAMMFee(uint _capPerMarket, uint _parlayAMMFee) external onlyOwner {
-        capPerMarket = _capPerMarket;
         parlayAmmFee = _parlayAMMFee;
-        emit SetCapPerMarket(capPerMarket);
-        emit SetParlayAmmFee(parlayAmmFee);
+        safeBoxImpact = _safeBoxImpact;
+        referrerFee = _referrerFee;
+        emit SetAmounts(_maxSupportedAmount, maxSupportedOdds, _parlayAMMFee, _safeBoxImpact, _referrerFee);
     }
 
-    function setThalesAMMStakingThalesAndReferrals(
+
+    function setAddresses(
         address _thalesAMM,
         IStakingThales _stakingThales,
+        address _safeBox,
         address _referrals,
-        uint _referrerFee,
         address _parlayMarketData
     ) external onlyOwner {
         sportsAmm = ISportsAMM(_thalesAMM);
         sUSD.approve(address(sportsAmm), type(uint256).max);
         stakingThales = _stakingThales;
+        safeBox = _safeBox;
         referrals = _referrals;
-        referrerFee = _referrerFee;
         parlayMarketData = _parlayMarketData;
+        emit AddressesSet(_thalesAMM, address(_stakingThales), _safeBox, _referrals, _parlayMarketData);
     }
 
     function setCurveSUSD(
@@ -500,15 +494,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     event SetSUSD(address sUSD);
     event ParlayMarketCreated(address market, address account, uint amount, uint sUSDPaid);
-    event SetSafeBoxImpact(uint _safeBoxImpact);
-    event SetSafeBox(address _safeBox);
-    event SetMinMaxSupportedPrice(uint min_spread, uint max_spread, uint max_odds);
-    event SetCapPerMarket(uint capPerMarket);
-    event SetParlayAmmFee(uint parlayAmmFee);
-    event SetStakingThales(address _stakingThales);
+    event SetAmounts(uint max_amount, uint max_odds, uint _parlayAMMFee, uint _safeBoxImpact, uint _referrerFee);
+    event AddressesSet(address _thalesAMM, address _stakingThales, address _safeBox, address _referrals, address _parlayMarketData);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event ExtraAmountTransferredDueToCancellation(address receiver, uint amount);
     event ParlayResolved(address _parlayOwner, bool _userWon);
-
-
 }

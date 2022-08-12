@@ -79,7 +79,7 @@
 		"GamesQueue": "0x5417c847b6ce4163C43116E8D9670395Ba08B503",
 		"GamesQueueImplementation": "0x339e4557cD9c6F7EA0536D80418E692B55B8A33D",
 		"TherundownConsumer": "0x2B91c14Ce9aa828eD124D12541452a017d8a2148",
-		"TherundownConsumerImplementation": "0xC3650F57dd14aC5e5Ca86B350Ea7C73dEe36ECd3",
+		"TherundownConsumerImplementation": "0xdF9dd5c11C87bb5e1Cb90ee07C3037981E2AA1E9",
 		"TherundownConsumerWrapper": "0xe7f379DCaD66A5128f44a996D276Cf55E6D8F2c5"
 	},
 	"polygon": {
@@ -282,7 +282,7 @@
 		"GamesQueue": "0x823B2369f5CA3cf54D802665073F2AA238EEA941",
 		"GamesQueueImplementation": "0x17BC6D4aC6cA0D4D8aE22317d2ff0e2e72851A8a",
 		"TherundownConsumer": "0x594FD9E527418Bde7F265aE7D422607C64ad1A8a",
-		"TherundownConsumerImplementation": "0x860C632C3b16eD638A21d366FcfA4500591367B7",
+		"TherundownConsumerImplementation": "0x298bFd874bf04a2C2c7Ac9fA8B798A318EF98b58",
 		"TherundownConsumerWrapper": "0xE14E3427290571f9492fE2602cD0726d34b01D0c",
 		"Referrals": "0xCEA46e50A4D7617AB315780f7a0077AC11C2832a",
 		"ReferralsImplementation": "0xbf68e99ec4e83dC88dccBfD190f229fA84b1DD5a"

@@ -1331,7 +1331,7 @@ contract('ParlayAMM', (accounts) => {
 						'\nBalance after: ',
 						fromUnit(balanceAfter)
 					);
-					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+					assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
 				});
 			});
 		});

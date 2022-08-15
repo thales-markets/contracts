@@ -70,8 +70,10 @@ contract ParlayMarket{
         require(_numOfAlreadyExercisedSportMarkets < numOfSportMarkets 
                 && numOfResolvedSportMarkets < numOfSportMarkets && resolvedPositionsMap > 0, "Already exercised all markets");
         for(uint i=0; i<numOfSportMarkets; i++) {
-            if(!_alreadyExercisedSportMarket[sportMarket[i]] && (resolvedPositionsMap%(10**i)) > 0) {
-                if((winningPositionsMap%(10**i)) > 0) {
+            // console.log("resolvedMap: ", resolvedPositionsMap, "index", ((resolvedPositionsMap >> i)%2));
+            if(!_alreadyExercisedSportMarket[sportMarket[i]] && ((resolvedPositionsMap >> i)%2 > 0)) {
+                if(((winningPositionsMap>>i)%2 > 0)) {
+                    // console.log("winningPositionsMap: ", winningPositionsMap, " idx: ", i);
                     // exercise options
                     _exerciseSportMarket(sportMarket[i]);
                     if(_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
@@ -85,11 +87,6 @@ contract ParlayMarket{
                             parlayMarketsAMM.sUSD().transfer(parlayOwner, amount);
                         }
                     }
-                    else if(parlayAlreadyLost) {
-                        uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
-                        console.log("sUSD amount: ", totalSUSDamount);
-                        parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), totalSUSDamount);
-                    }
                 }
                 else {
                     if(!parlayAlreadyLost && !resolved) {
@@ -98,6 +95,10 @@ contract ParlayMarket{
                     numOfResolvedSportMarkets++;
                 }
             }
+        }
+        if(parlayAlreadyLost) {
+            uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
+            parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), totalSUSDamount);
         }
     }
     
@@ -158,10 +159,16 @@ contract ParlayMarket{
         for(uint i=0; i<numOfSportMarkets; i++) {
             (bool exercizable, bool resolvedPosition) = _isWinningSportMarket(sportMarket[i], sportPosition[i]);
             if(resolvedPosition){
-                resolvedPositionsMap = resolvedPositionsMap + 10**i;
+                resolvedPositionsMap = (resolvedPositionsMap << 1) + 1;
+            }
+            else {
+                resolvedPositionsMap = (resolvedPositionsMap << 1) + 0;
             }
             if(exercizable){
-                winningPositionsMap = winningPositionsMap + 10**i;
+                winningPositionsMap = (winningPositionsMap << 1) + 1;
+            }
+            else {
+                winningPositionsMap = (winningPositionsMap << 1) + 0;
             }
         }
     }

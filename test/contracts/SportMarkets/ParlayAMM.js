@@ -185,6 +185,8 @@ contract('ParlayAMM', (accounts) => {
 	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 	let parlayMarkets = [];
 	let parlayPositions = [];
+	let parlaySingleMarketAddress;
+	let parlaySingleMarket;
 
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
@@ -1155,8 +1157,7 @@ contract('ParlayAMM', (accounts) => {
 		});
 
 		describe('Exercise Parlay', () => {
-			let parlaySingleMarketAddress;
-			let parlaySingleMarket;
+			
 			beforeEach(async () => {
 				await fastForward(game1NBATime - (await currentTime()) - SECOND);
 				// await fastForward((await currentTime()) - SECOND);
@@ -1180,7 +1181,6 @@ contract('ParlayAMM', (accounts) => {
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
 				parlaySingleMarketAddress = activeParlays[0];
 				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
-				console.log('Parlay address', parlaySingleMarket.address);
 			});
 			it('Get active parlay address', async () => {
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
@@ -1216,12 +1216,12 @@ contract('ParlayAMM', (accounts) => {
 			it('All games resolved', async () => {
 				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
 				let canResolve;
-				for (let i = 0; i < parlayMarkets.length; i++) {
-					deployedMarket = await SportPositionalMarketContract.at(parlayMarkets[i].address);
-					canResolve = await deployedMarket.canResolve();
-					console.log(i, 'can resolve: ', canResolve);
-					assert.equal(true, canResolve);
-				}
+				// for (let i = 0; i < parlayMarkets.length; i++) {
+				// 	deployedMarket = await SportPositionalMarketContract.at(parlayMarkets[i].address);
+				// 	canResolve = await deployedMarket.canResolve();
+				// 	console.log(i, 'can resolve: ', canResolve);
+				// 	assert.equal(true, canResolve);
+				// }
 
 				const tx_1 = await TherundownConsumerDeployed.fulfillGamesResolved(
 					reqIdFightResolve,
@@ -1262,17 +1262,74 @@ contract('ParlayAMM', (accounts) => {
 					{ from: owner }
 				);
 
-				for (let i = 0; i < parlayMarkets.length; i++) {
-					deployedMarket = await SportPositionalMarketContract.at(parlayMarkets[i].address);
-					canResolve = await deployedMarket.resolved();
-					console.log(i, 'resolved: ', canResolve);
-					assert.equal(true, canResolve);
-				}
+				// for (let i = 0; i < parlayMarkets.length; i++) {
+				// 	deployedMarket = await SportPositionalMarketContract.at(parlayMarkets[i].address);
+				// 	canResolve = await deployedMarket.resolved();
+				// 	console.log(i, 'resolved: ', canResolve);
+				// 	assert.equal(true, canResolve);
+				// }
 
 				let answer = await parlaySingleMarket.isAnySportMarketResolved();
 				let result = await ParlayAMM.isAnySportPositionResolvedOnParlay(parlaySingleMarket.address);
 				assert.equal(answer, true);
 				assert.equal(result, true);
+			});
+
+			describe('Exercise whole parlay', () => {
+				beforeEach(async () => {
+					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
+	
+					const tx_1 = await TherundownConsumerDeployed.fulfillGamesResolved(
+						reqIdFightResolve,
+						gamesFightResolved,
+						sportId_7,
+						{ from: wrapper }
+					);
+					// resolve markets
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
+	
+					const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+						reqIdResolve,
+						gamesResolved,
+						sportId_4,
+						{ from: wrapper }
+					);
+					// resolve markets
+					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
+					const tx_resolve_3 = await TherundownConsumerDeployed.resolveMarketForGame(gameid2);
+	
+					const tx_3 = await TherundownConsumerDeployed.fulfillGamesResolved(
+						reqIdResolveFoodball,
+						gamesResolvedFootball,
+						sportId_16,
+						{ from: wrapper }
+					);
+	
+					assert.equal(
+						game_2_football_resolve,
+						await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 1)
+					);
+					let gameid4 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[3].address);
+					const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
+						gameid4,
+						'1',
+						'5',
+						'3',
+						{ from: owner }
+					);
+				});
+				it('Parlay exercised', async () => {
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					assert.equal(await ParlayAMM.resolvedParlay(parlaySingleMarket.address), true );
+				});
+				it('Parlay exercised', async () => {
+					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
+					console.log("Balance before: ", fromUnit(balanceBefore), "\nBalance after: ", fromUnit(balanceAfter));
+					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+				});
+				
 			});
 		});
 	});

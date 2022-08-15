@@ -75,8 +75,8 @@ contract ParlayMarket{
                     // exercise options
                     _exerciseSportMarket(sportMarket[i]);
                     if(_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
-                        _resolve(true);
                         uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
+                        _resolve(true);
                         if(totalSUSDamount < amount) {
                             parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
                             parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (amount-totalSUSDamount), true);
@@ -86,7 +86,9 @@ contract ParlayMarket{
                         }
                     }
                     else if(parlayAlreadyLost) {
-                        parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), proportionalAmounts[i]);
+                        uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
+                        console.log("sUSD amount: ", totalSUSDamount);
+                        parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), totalSUSDamount);
                     }
                 }
                 else {

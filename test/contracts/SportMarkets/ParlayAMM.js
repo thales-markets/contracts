@@ -1266,7 +1266,7 @@ contract('ParlayAMM', (accounts) => {
 					deployedMarket = await SportPositionalMarketContract.at(parlayMarkets[i].address);
 					canResolve = await deployedMarket.resolved();
 					console.log(i, 'resolved: ', canResolve);
-					// assert.equal(true, canResolve);
+					assert.equal(true, canResolve);
 				}
 
 				let answer = await parlaySingleMarket.isAnySportMarketResolved();

@@ -10,6 +10,7 @@ import "../../interfaces/IParlayMarketsAMM.sol";
 import "../SportPositions/SportPosition.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
+import "hardhat/console.sol";
 
 contract ParlayMarket{
     using SafeERC20 for IERC20;

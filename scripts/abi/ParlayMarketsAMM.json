@@ -241,6 +241,30 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pageSize",
+        "type": "uint256"
+      }
+    ],
+    "name": "activeParlayMarkets",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "_sportMarkets",
         "type": "address[]"
@@ -371,7 +395,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "canExercise",
+        "name": "isExercisable",
         "type": "bool"
       }
     ],
@@ -507,6 +531,44 @@
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "isActiveParlay",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isActiveParlayMarket",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "isAnySportPositionResolvedOnParlay",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isAnyResolvable",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -790,7 +852,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_thalesAMM",
+        "name": "_sportsAMM",
         "type": "address"
       },
       {
@@ -903,11 +965,6 @@
       {
         "internalType": "address",
         "name": "_parlayMarketMastercopy",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlayPositionMastercopy",
         "type": "address"
       }
     ],

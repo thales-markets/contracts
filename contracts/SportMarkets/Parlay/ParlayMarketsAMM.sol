@@ -102,8 +102,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         sUSD.approve(address(sportsAmm), type(uint256).max);
     }
+    
+    function isActiveParlay(address _parlayMarket) external view returns(bool isActiveParlayMarket) {
+        isActiveParlayMarket = _knownMarkets.contains(_parlayMarket);
+    }
 
-     function canAddToParlay(
+    function activeParlayMarkets(uint index, uint pageSize) external view returns (address[] memory) {
+        return _knownMarkets.getPage(index, pageSize);
+    }
+
+    function canAddToParlay(
         address _sportMarket,
         uint _position,
         uint _gamesCount,
@@ -185,9 +193,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function canExerciseAnySportPositionOnParlay(address _parlayMarket) external view returns(bool canExercise) {
+    function canExerciseAnySportPositionOnParlay(address _parlayMarket) external view returns(bool isExercisable) {
         if(_knownMarkets.contains(_parlayMarket)) {
-            canExercise = ParlayMarket(_parlayMarket).isAnySportMarketExercisable();
+            isExercisable = ParlayMarket(_parlayMarket).isAnySportMarketExercisable();
+        }
+    }
+    function isAnySportPositionResolvedOnParlay(address _parlayMarket) external view returns(bool isAnyResolvable) {
+        if(_knownMarkets.contains(_parlayMarket)) {
+            isAnyResolvable = ParlayMarket(_parlayMarket).isAnySportMarketResolved();
         }
     }
 
@@ -436,12 +449,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     // SETTERS
 
-    function setParlayMarketMastercopies(address _parlayMarketMastercopy, address _parlayPositionMastercopy)
+    function setParlayMarketMastercopies(address _parlayMarketMastercopy)
         external
         onlyOwner
     {
         parlayMarketMastercopy = _parlayMarketMastercopy;
-        parlayPositionMastercopy = _parlayPositionMastercopy;
     }
 
     function setAmounts(
@@ -461,19 +473,19 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
 
     function setAddresses(
-        address _thalesAMM,
+        address _sportsAMM,
         IStakingThales _stakingThales,
         address _safeBox,
         address _referrals,
         address _parlayMarketData
     ) external onlyOwner {
-        sportsAmm = ISportsAMM(_thalesAMM);
+        sportsAmm = ISportsAMM(_sportsAMM);
         sUSD.approve(address(sportsAmm), type(uint256).max);
         stakingThales = _stakingThales;
         safeBox = _safeBox;
         referrals = _referrals;
         parlayMarketData = _parlayMarketData;
-        emit AddressesSet(_thalesAMM, address(_stakingThales), _safeBox, _referrals, _parlayMarketData);
+        emit AddressesSet(_sportsAMM, address(_stakingThales), _safeBox, _referrals, _parlayMarketData);
     }
 
     function setCurveSUSD(

@@ -22,15 +22,16 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
 
     address public parlayMarketsAMM;
 
-    function initialize(address _owner, address parlayMarketsAMM) external initializer {
+    function initialize(address _owner, address _parlayMarketsAMM) external initializer {
         setOwner(_owner);
+        parlayMarketsAMM = _parlayMarketsAMM;
     }
 
-    function addParlayForGamePosition(address _game, uint _position, address _parlayMarket) external {
+    function addParlayForGamePosition(address _game, uint _position, address _parlayMarket) external onlyParlayAMM {
         require(msg.sender == parlayMarketsAMM, "Invalid sender");
         _parlaysInGamePosition[_game][_position].add(_parlayMarket);
     }
-    function removeParlayForGamePosition(address _game, uint _position, address _parlayMarket) external {
+    function removeParlayForGamePosition(address _game, uint _position, address _parlayMarket) external onlyParlayAMM{
         require(msg.sender == parlayMarketsAMM, "Invalid sender");
         _parlaysInGamePosition[_game][_position].remove(_parlayMarket);
     }
@@ -43,6 +44,17 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         parlayMarketsAMM = _parlayMarketsAMM;
         emit SetParlayMarketsAMM(_parlayMarketsAMM);
     }
+
+    modifier onlyParlayAMM() {
+        _onlyParlayAMM();
+        _;
+    }
+
+    function _onlyParlayAMM() internal view {
+        require(msg.sender == parlayMarketsAMM, "Not ParlayAMM");
+    }
+
+
 
     event SetParlayMarketsAMM(address _parlayMarketsAMM);
 }

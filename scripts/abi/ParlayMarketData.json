@@ -125,7 +125,7 @@
       },
       {
         "internalType": "address",
-        "name": "parlayMarketsAMM",
+        "name": "_parlayMarketsAMM",
         "type": "address"
       }
     ],

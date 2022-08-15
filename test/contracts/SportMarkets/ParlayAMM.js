@@ -1157,7 +1157,6 @@ contract('ParlayAMM', (accounts) => {
 		});
 
 		describe('Exercise Parlay', () => {
-			
 			beforeEach(async () => {
 				await fastForward(game1NBATime - (await currentTime()) - SECOND);
 				// await fastForward((await currentTime()) - SECOND);
@@ -1278,7 +1277,7 @@ contract('ParlayAMM', (accounts) => {
 			describe('Exercise whole parlay', () => {
 				beforeEach(async () => {
 					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-	
+
 					const tx_1 = await TherundownConsumerDeployed.fulfillGamesResolved(
 						reqIdFightResolve,
 						gamesFightResolved,
@@ -1287,7 +1286,7 @@ contract('ParlayAMM', (accounts) => {
 					);
 					// resolve markets
 					const tx_resolve_1 = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
-	
+
 					const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 						reqIdResolve,
 						gamesResolved,
@@ -1297,14 +1296,14 @@ contract('ParlayAMM', (accounts) => {
 					// resolve markets
 					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
 					const tx_resolve_3 = await TherundownConsumerDeployed.resolveMarketForGame(gameid2);
-	
+
 					const tx_3 = await TherundownConsumerDeployed.fulfillGamesResolved(
 						reqIdResolveFoodball,
 						gamesResolvedFootball,
 						sportId_16,
 						{ from: wrapper }
 					);
-	
+
 					assert.equal(
 						game_2_football_resolve,
 						await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 1)
@@ -1320,16 +1319,20 @@ contract('ParlayAMM', (accounts) => {
 				});
 				it('Parlay exercised', async () => {
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
-					assert.equal(await ParlayAMM.resolvedParlay(parlaySingleMarket.address), true );
+					assert.equal(await ParlayAMM.resolvedParlay(parlaySingleMarket.address), true);
 				});
 				it('Parlay exercised', async () => {
 					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
 					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
-					console.log("Balance before: ", fromUnit(balanceBefore), "\nBalance after: ", fromUnit(balanceAfter));
+					console.log(
+						'Balance before: ',
+						fromUnit(balanceBefore),
+						'\nBalance after: ',
+						fromUnit(balanceAfter)
+					);
 					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
 				});
-				
 			});
 		});
 	});

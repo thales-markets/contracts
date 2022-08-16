@@ -458,7 +458,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param market The address of the SportPositional market of a game
     /// @param position The position (home/away/draw) to buy from AMM
     /// @param amount The position amount to buy from AMM
-    /// @param expectedPayout The sUSD amount expected to pay for buyuing the position amount. Obtained by buyAMMQuote.
+    /// @param expectedPayout The sUSD amount expected to pay for buying the position amount. Obtained by buyAMMQuote.
     /// @param additionalSlippage The slippage percentage for the payout
     function buyFromAMMWithReferrer(
         address market,

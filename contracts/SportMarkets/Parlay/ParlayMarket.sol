@@ -63,6 +63,14 @@ contract ParlayMarket{
         //add odds
     }
 
+    function getParlayBalances() external view returns (uint[] memory balances) {
+        uint[] memory allBalancesPerMarket = new uint[](3);
+        balances = new uint[](sportMarket.length);
+        for(uint i=0; i < sportMarket.length; i++) {
+            (allBalancesPerMarket[0], allBalancesPerMarket[1], allBalancesPerMarket[2]) = ISportPositionalMarket(sportMarket[i]).balancesOf(address(this));
+            balances[i] = allBalancesPerMarket[sportPosition[i]];
+        }
+    }
 
     function exerciseWiningSportMarkets() external {
         require(!paused, "Market paused");
@@ -70,14 +78,15 @@ contract ParlayMarket{
         require(_numOfAlreadyExercisedSportMarkets < numOfSportMarkets 
                 && numOfResolvedSportMarkets < numOfSportMarkets && resolvedPositionsMap > 0, "Already exercised all markets");
         for(uint i=0; i<numOfSportMarkets; i++) {
-            // console.log("resolvedMap: ", resolvedPositionsMap, "index", ((resolvedPositionsMap >> i)%2));
-            if(!_alreadyExercisedSportMarket[sportMarket[i]] && ((resolvedPositionsMap >> i)%2 > 0)) {
-                if(((winningPositionsMap>>i)%2 > 0)) {
-                    // console.log("winningPositionsMap: ", winningPositionsMap, " idx: ", i);
+            console.log("resolvedMap: ", resolvedPositionsMap, "index", ((resolvedPositionsMap >> i)%2));
+            if(!_alreadyExercisedSportMarket[sportMarket[i]] && ((resolvedPositionsMap >>((numOfSportMarkets-1)-i))%2 > 0)) {
+                console.log("winningPositionsMap: ", winningPositionsMap, " idx: ", i);
+                if(((winningPositionsMap>>((numOfSportMarkets-1)-i))%2 > 0)) {
                     // exercise options
                     _exerciseSportMarket(sportMarket[i]);
                     if(_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
                         uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
+                        console.log("total sUSD: ", totalSUSDamount);
                         _resolve(true);
                         if(totalSUSDamount < amount) {
                             parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
@@ -157,28 +166,18 @@ contract ParlayMarket{
     function _getResolvedAndWinningPositions() internal view returns (uint resolvedPositionsMap, uint winningPositionsMap, uint numOfSportMarkets) {
         numOfSportMarkets = sportMarket.length;
         for(uint i=0; i<numOfSportMarkets; i++) {
-            (bool exercizable, bool resolvedPosition) = _isWinningSportMarket(sportMarket[i], sportPosition[i]);
-            if(resolvedPosition){
-                resolvedPositionsMap = (resolvedPositionsMap << 1) + 1;
-            }
-            else {
-                resolvedPositionsMap = (resolvedPositionsMap << 1) + 0;
-            }
-            if(exercizable){
-                winningPositionsMap = (winningPositionsMap << 1) + 1;
-            }
-            else {
-                winningPositionsMap = (winningPositionsMap << 1) + 0;
-            }
+            (bool exercizable, bool resolvedPosition) = _isWinningSportMarket(sportMarket[i], sportPosition[i]+1);
+            resolvedPositionsMap = resolvedPosition ? ((resolvedPositionsMap << 1) + 1) : (resolvedPositionsMap << 1);
+            winningPositionsMap = exercizable ? ((winningPositionsMap << 1) + 1) : (winningPositionsMap << 1);
         }
     }
    
-    function _isWinningSportMarket(address _sportMarket, uint _position) internal view returns(bool isWinning, bool isResolved) {
+    function _isWinningSportMarket(address _sportMarket, uint _winningResult) internal view returns(bool isWinning, bool isResolved) {
         ISportPositionalMarket currentSportMarket = ISportPositionalMarket(_sportMarket);
         if(currentSportMarket.resolved()) {
             isResolved = true;
         } 
-        if(isResolved && (uint(currentSportMarket.result()) == _position 
+        if(isResolved && (uint(currentSportMarket.result()) == _winningResult 
         || currentSportMarket.result() == ISportPositionalMarket.Side.Cancelled)) {
             isWinning =  true;
         }
@@ -199,5 +198,6 @@ contract ParlayMarket{
         _;
     }
 
+    event WinningSportMarketExercised(address _market, address );
     event Resolved(bool isUserTheWinner);
 }

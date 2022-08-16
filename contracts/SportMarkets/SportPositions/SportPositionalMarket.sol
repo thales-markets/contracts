@@ -13,6 +13,8 @@ import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "./SportPositionalMarketManager.sol";
 import "./SportPosition.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
+import "hardhat/console.sol";
+
 
 contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ========== LIBRARIES ========== */
@@ -418,6 +420,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             options.draw.exercise(msg.sender);
         }
         uint result = uint(_result());
+        console.log("result: ", result);
+        console.log("homeBalance: ", homeBalance, "awayBalance: ", awayBalance);
         // Only pay out the side that won.
         uint payout = (_result() == Side.Home) ? homeBalance : awayBalance;
 
@@ -429,6 +433,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             payout = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
         }
         emit OptionsExercised(msg.sender, payout);
+        console.log("payout: ", payout);
         if (payout != 0) {
             _decrementDeposited(payout);
             sUSD.transfer(msg.sender, payout);

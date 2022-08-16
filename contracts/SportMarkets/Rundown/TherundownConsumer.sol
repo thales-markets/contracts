@@ -413,11 +413,12 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         GameResolve memory _game,
         uint _sportId
     ) internal {
-        GameCreate memory gameCreated = getGameCreatedById(_game.gameId);
+        GameCreate memory singleGameCreated = getGameCreatedById(_game.gameId);
 
         // if status is resolved OR (status is canceled AND start time has passed fulfill game to be resolved)
         if (
-            _isGameStatusResolved(_game) || (cancelGameStatuses[_game.statusId] && gameCreated.startTime < block.timestamp)
+            _isGameStatusResolved(_game) ||
+            (cancelGameStatuses[_game.statusId] && singleGameCreated.startTime < block.timestamp)
         ) {
             gameResolved[_game.gameId] = _game;
             queues.enqueueGamesResolved(_game.gameId);
@@ -426,7 +427,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             emit GameResolved(requestId, _sportId, _game.gameId, _game, queues.lastResolved());
         }
         // if status is canceled AND start time has not passed only pause market
-        else if (cancelGameStatuses[_game.statusId] && gameCreated.startTime >= block.timestamp) {
+        else if (cancelGameStatuses[_game.statusId] && singleGameCreated.startTime >= block.timestamp) {
             isPausedByCanceledStatus[marketPerGameId[_game.gameId]] = true;
             _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
         }
@@ -506,7 +507,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _resolveMarket(bytes32 _gameId) internal {
         GameResolve memory game = getGameResolvedById(_gameId);
-        GameCreate memory gameCreated = getGameCreatedById(_gameId);
+        GameCreate memory singleGameCreated = getGameCreatedById(_gameId);
         uint index = queues.unproccessedGamesIndex(_gameId);
 
         // it can return ZERO index, needs checking
@@ -531,7 +532,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
             }
             // if status is canceled and start time of a game passed cancel market
-        } else if (cancelGameStatuses[game.statusId] && gameCreated.startTime < block.timestamp) {
+        } else if (cancelGameStatuses[game.statusId] && singleGameCreated.startTime < block.timestamp) {
             _cancelMarket(game.gameId, index);
         }
     }

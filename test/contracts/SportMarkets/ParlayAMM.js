@@ -1256,7 +1256,7 @@ contract('ParlayAMM', (accounts) => {
 			describe('Exercise whole parlay', () => {
 				beforeEach(async () => {
 					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-					let resolveMatrix = ['2', '1', '2', '2'];
+					let resolveMatrix = ['2', '2', '2', '2'];
 					console.log('Games resolved: ', resolveMatrix, '\n');
 					// parlayPositions = ['0', '0', '0', '0'];
 					let gameId;
@@ -1292,6 +1292,7 @@ contract('ParlayAMM', (accounts) => {
 						sum = sum.add(balances[i]);
 					}
 					console.log('total balance: ', fromUnit(sum));
+					assert.bnEqual(sum, await parlaySingleMarket.amount());
 				});
 				it('Parlay exercised', async () => {
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);

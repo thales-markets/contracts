@@ -89,6 +89,25 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
+    "name": "canExerciseMaturedMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_market",
         "type": "address"
       },

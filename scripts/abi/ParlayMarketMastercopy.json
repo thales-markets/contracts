@@ -58,11 +58,11 @@
   },
   {
     "inputs": [],
-    "name": "getParlayBalances",
+    "name": "getSportMarketBalances",
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "balances",
+        "name": "allBalances",
         "type": "uint256[]"
       }
     ],

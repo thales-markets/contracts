@@ -63,13 +63,22 @@ contract ParlayMarket{
         //add odds
     }
 
-    function getParlayBalances() external view returns (uint[] memory balances) {
+    function getSportMarketBalances() external view returns (uint[] memory allBalances) {
+        allBalances = new uint[](sportMarket.length);
+        ( , , allBalances, , ) = _marketPositionsAndBalances();
+    }
+
+    function _marketPositionsAndBalances() internal view returns(address[] memory sportMarkets, uint[] memory positions, uint[] memory balances, uint totalAmount, uint sUSDdeposited) {
         uint[] memory allBalancesPerMarket = new uint[](3);
         balances = new uint[](sportMarket.length);
         for(uint i=0; i < sportMarket.length; i++) {
             (allBalancesPerMarket[0], allBalancesPerMarket[1], allBalancesPerMarket[2]) = ISportPositionalMarket(sportMarket[i]).balancesOf(address(this));
             balances[i] = allBalancesPerMarket[sportPosition[i]];
+            totalAmount = totalAmount + balances[i];
         }
+        sportMarkets = sportMarket;
+        positions = sportPosition;
+        sUSDdeposited = sUSDPaid;
     }
 
     function exerciseWiningSportMarkets() external {
@@ -78,23 +87,18 @@ contract ParlayMarket{
         require(_numOfAlreadyExercisedSportMarkets < numOfSportMarkets 
                 && numOfResolvedSportMarkets < numOfSportMarkets && resolvedPositionsMap > 0, "Already exercised all markets");
         for(uint i=0; i<numOfSportMarkets; i++) {
-            console.log("resolvedMap: ", resolvedPositionsMap, "index", ((resolvedPositionsMap >> i)%2));
+            // console.log("resolvedMap: ", resolvedPositionsMap, "index", ((resolvedPositionsMap >> i)%2));
             if(!_alreadyExercisedSportMarket[sportMarket[i]] && ((resolvedPositionsMap >>((numOfSportMarkets-1)-i))%2 > 0)) {
-                console.log("winningPositionsMap: ", winningPositionsMap, " idx: ", i);
+                // console.log("winningPositionsMap: ", winningPositionsMap, " idx: ", i);
                 if(((winningPositionsMap>>((numOfSportMarkets-1)-i))%2 > 0)) {
                     // exercise options
                     _exerciseSportMarket(sportMarket[i]);
                     if(_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
                         uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
-                        console.log("total sUSD: ", totalSUSDamount);
+                        // console.log("total sUSD: ", totalSUSDamount);
                         _resolve(true);
-                        if(totalSUSDamount < amount) {
-                            parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
-                            parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (amount-totalSUSDamount), true);
-                        }
-                        else {
-                            parlayMarketsAMM.sUSD().transfer(parlayOwner, amount);
-                        }
+                        require(totalSUSDamount == amount, "Low funds");
+                        parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
                     }
                 }
                 else {
@@ -112,30 +116,30 @@ contract ParlayMarket{
     }
     
     function manualExerciseSportMarket(address _sportMarket) external onlyAMM {
-        require(ISportPositionalMarket(_sportMarket).resolved(), "Not resolved");
-        uint exercisedAmount = proportionalAmounts[_sportMarketIndex[_sportMarket]];
-        ISportPositionalMarket.Side sideResult = ISportPositionalMarket(_sportMarket).result();
-        if(uint(sideResult) == sportPosition[_sportMarketIndex[_sportMarket]] || sideResult == ISportPositionalMarket.Side.Cancelled) {
-            _exerciseSportMarket(_sportMarket);
-            if(parlayAlreadyLost) { 
-                parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), exercisedAmount);
-            }
-            else if(_numOfAlreadyExercisedSportMarkets == sportMarket.length) {
-                _resolve(true);
-                uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
-                if(totalSUSDamount < amount) {
-                    parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
-                    parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (amount-totalSUSDamount), true);
-                }
-                else {
-                    parlayMarketsAMM.sUSD().transfer(parlayOwner, amount);
-                }
-            }
-        }
-        else {
-            _resolve(false);
-            numOfResolvedSportMarkets++;
-        }
+        // require(ISportsAMM(parlayMarketsAMM.sportsAmm()).canExerciseMaturedMarket(_sportMarket), "Unable to exercise");
+        // uint exercisedAmount = proportionalAmounts[_sportMarketIndex[_sportMarket]];
+        // ISportPositionalMarket.Side sideResult = ISportPositionalMarket(_sportMarket).result();
+        // if(uint(sideResult) == sportPosition[_sportMarketIndex[_sportMarket]] || sideResult == ISportPositionalMarket.Side.Cancelled) {
+        //     _exerciseSportMarket(_sportMarket);
+        //     if(parlayAlreadyLost) { 
+        //         parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), exercisedAmount);
+        //     }
+        //     else if(_numOfAlreadyExercisedSportMarkets == sportMarket.length) {
+        //         _resolve(true);
+        //         uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
+        //         if(totalSUSDamount < amount) {
+        //             parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+        //             parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (amount-totalSUSDamount), true);
+        //         }
+        //         else {
+        //             parlayMarketsAMM.sUSD().transfer(parlayOwner, amount);
+        //         }
+        //     }
+        // }
+        // else {
+        //     _resolve(false);
+        //     numOfResolvedSportMarkets++;
+        // }
     }
 
     function _resolve(bool _userWon) internal {

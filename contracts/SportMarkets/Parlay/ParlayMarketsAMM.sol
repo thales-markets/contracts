@@ -195,7 +195,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function getParlayBalances(address _parlayMarket) external view returns (uint[] memory balances) {
         if(_knownMarkets.contains(_parlayMarket)) {
-            balances = ParlayMarket(_parlayMarket).getParlayBalances();
+            balances = ParlayMarket(_parlayMarket).getSportMarketBalances();
         }
     }
 

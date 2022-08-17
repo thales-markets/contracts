@@ -338,7 +338,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "newItemId",
         "type": "uint256"
       }
     ],
@@ -406,6 +406,24 @@
   {
     "inputs": [],
     "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "retrieveSUSDAmount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

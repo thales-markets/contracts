@@ -65,18 +65,16 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
 
     /* ========== TRV ========== */
 
-    function mint(address recipient, uint amount) external returns (uint) {
+    function mint(address recipient, uint amount) external returns (uint newItemId) {
         require(!paused, "Cant mint while paused");
 
         require(amount == TWENTY || amount == FIFTY || amount == HUNDRED || amount == TWO_HUNDRED, "Invalid amount");
 
-        // pay for pass
-        _payForPass(msg.sender, amount);
+        sUSD.safeTransferFrom(msg.sender, address(this), amount);
 
-        // check sUSD
         _tokenIds.increment();
 
-        uint newItemId = _tokenIds.current();
+        newItemId = _tokenIds.current();
 
         _mint(recipient, newItemId);
 
@@ -87,7 +85,7 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
                 : tokenURITwoHundred
         );
 
-        return newItemId;
+        amountInVoucher[newItemId] = amount;
     }
 
     function buyFromAMMWithVoucher(
@@ -116,11 +114,14 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
 
     /* ========== INTERNALS ========== */
 
-    function _payForPass(address _sender, uint _amount) internal {
-        sUSD.safeTransferFrom(_sender, address(this), _amount);
-    }
-
     /* ========== CONTRACT MANAGEMENT ========== */
+
+    /// @notice Retrieve sUSD from the contract
+    /// @param account whom to send the sUSD
+    /// @param amount how much sUSD to retrieve
+    function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
+        sUSD.safeTransfer(account, amount);
+    }
 
     function setTokenUris(
         string memory _tokenURITwenty,

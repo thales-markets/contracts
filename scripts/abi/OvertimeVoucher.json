@@ -27,6 +27,16 @@
         "type": "string"
       },
       {
+        "internalType": "string",
+        "name": "_tokenURIFiveHundred",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_tokenURIThousand",
+        "type": "string"
+      },
+      {
         "internalType": "address",
         "name": "_sportsamm",
         "type": "address"
@@ -557,6 +567,16 @@
         "internalType": "string",
         "name": "_tokenURITwoHundred",
         "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_tokenURIFiveHundred",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_tokenURIThousand",
+        "type": "string"
       }
     ],
     "name": "setTokenUris",
@@ -643,7 +663,33 @@
   },
   {
     "inputs": [],
+    "name": "tokenURIFiveHundred",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "tokenURIHundred",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "tokenURIThousand",
     "outputs": [
       {
         "internalType": "string",

@@ -380,7 +380,16 @@ contract('SportsAMM', accounts => {
 
 			let OvertimeVoucher = artifacts.require('OvertimeVoucher');
 
-			voucher = await OvertimeVoucher.new(Thales.address, '', '', '', '', SportsAMM.address);
+			voucher = await OvertimeVoucher.new(
+				Thales.address,
+				'',
+				'',
+				'',
+				'',
+				'',
+				'',
+				SportsAMM.address
+			);
 
 			position = artifacts.require('SportPosition');
 		});
@@ -451,6 +460,33 @@ contract('SportsAMM', accounts => {
 					from: first,
 				})
 			).to.be.revertedWith('You are not the voucher owner!');
+
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(65));
+			console.log('65 Quote is ' + buyFromAmmQuote / 1e18);
+
+			let secondBalanceBeforeBurn = await voucher.balanceOf(second);
+			console.log('Second balance before burn is ' + secondBalanceBeforeBurn);
+
+			await voucher.buyFromAMMWithVoucher(deployedMarket.address, 1, toUnit(65), id, {
+				from: second,
+			});
+
+			home = await position.at(options.home);
+			away = await position.at(options.away);
+
+			balanceHome = await home.balanceOf(second);
+			console.log('Balance Home = ' + balanceHome);
+
+			balanceAway = await away.balanceOf(second);
+			console.log('Balance Away = ' + balanceAway);
+
+			balanceOfVoucher = await Thales.balanceOf(voucher.address);
+			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
+
+			let secondBalanceAfterBurn = await voucher.balanceOf(second);
+			console.log('Second balance after burn is ' + secondBalanceAfterBurn);
+
+			assert.bnEqual(0, secondBalanceAfterBurn);
 		});
 
 		// it('Buy from SportsAMM, position 1, value: 100', async () => {

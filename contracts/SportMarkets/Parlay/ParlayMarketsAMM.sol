@@ -192,6 +192,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _knownMarkets.remove(_parlayMarket);
         }
     }
+    
+    function exerciseSpecificParlay(address _parlayMarket, address _sportMarket) external nonReentrant notPaused {
+        require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
+        ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
+        parlayMarket.exerciseSpecificSportMarket(_sportMarket);
+        if(parlayMarket.resolved()) {
+            resolvedParlay[_parlayMarket] = true;
+            _knownMarkets.remove(_parlayMarket);
+        }
+    }
 
     function getParlayBalances(address _parlayMarket) external view returns (uint[] memory balances) {
         if(_knownMarkets.contains(_parlayMarket)) {

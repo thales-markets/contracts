@@ -45,6 +45,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportMarket",
+        "type": "address"
+      }
+    ],
+    "name": "exerciseSpecificSportMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "exerciseWiningSportMarkets",
     "outputs": [],
@@ -152,19 +165,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_sportMarket",
-        "type": "address"
-      }
-    ],
-    "name": "manualExerciseSportMarket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

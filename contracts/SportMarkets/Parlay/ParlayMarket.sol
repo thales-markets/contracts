@@ -60,6 +60,9 @@ contract ParlayMarket{
         amount = _amount;
         sUSDPaid = _sUSDPaid;
         parlayOwner = _parlayOwner;
+        for(uint i=0; i<sportMarket.length; i++){
+            _sportMarketIndex[_sportMarkets[i]]=i+1;
+        }
         //add odds
     }
 
@@ -83,9 +86,10 @@ contract ParlayMarket{
 
     function exerciseWiningSportMarkets() external {
         require(!paused, "Market paused");
-        (uint resolvedPositionsMap, uint winningPositionsMap, uint numOfSportMarkets) = _getResolvedAndWinningPositions(); 
+        (uint resolvedPositionsMap, uint winningPositionsMap, uint numOfExercisable) = _getResolvedAndWinningPositions(); 
+        uint numOfSportMarkets = sportMarket.length;
         require(_numOfAlreadyExercisedSportMarkets < numOfSportMarkets 
-                && numOfResolvedSportMarkets < numOfSportMarkets && resolvedPositionsMap > 0, "Already exercised all markets");
+                && numOfResolvedSportMarkets < numOfSportMarkets && numOfExercisable > 0, "Already exercised all markets");
         for(uint i=0; i<numOfSportMarkets; i++) {
             // console.log("resolvedMap: ", resolvedPositionsMap, "index", ((resolvedPositionsMap >> i)%2));
             if(!_alreadyExercisedSportMarket[sportMarket[i]] && ((resolvedPositionsMap >>((numOfSportMarkets-1)-i))%2 > 0)) {
@@ -95,7 +99,6 @@ contract ParlayMarket{
                     _exerciseSportMarket(sportMarket[i]);
                     if(_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
                         uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
-                        // console.log("total sUSD: ", totalSUSDamount);
                         _resolve(true);
                         require(totalSUSDamount == amount, "Low funds");
                         parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
@@ -115,31 +118,25 @@ contract ParlayMarket{
         }
     }
     
-    function manualExerciseSportMarket(address _sportMarket) external onlyAMM {
-        // require(ISportsAMM(parlayMarketsAMM.sportsAmm()).canExerciseMaturedMarket(_sportMarket), "Unable to exercise");
-        // uint exercisedAmount = proportionalAmounts[_sportMarketIndex[_sportMarket]];
-        // ISportPositionalMarket.Side sideResult = ISportPositionalMarket(_sportMarket).result();
-        // if(uint(sideResult) == sportPosition[_sportMarketIndex[_sportMarket]] || sideResult == ISportPositionalMarket.Side.Cancelled) {
-        //     _exerciseSportMarket(_sportMarket);
-        //     if(parlayAlreadyLost) { 
-        //         parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), exercisedAmount);
-        //     }
-        //     else if(_numOfAlreadyExercisedSportMarkets == sportMarket.length) {
-        //         _resolve(true);
-        //         uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
-        //         if(totalSUSDamount < amount) {
-        //             parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
-        //             parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (amount-totalSUSDamount), true);
-        //         }
-        //         else {
-        //             parlayMarketsAMM.sUSD().transfer(parlayOwner, amount);
-        //         }
-        //     }
-        // }
-        // else {
-        //     _resolve(false);
-        //     numOfResolvedSportMarkets++;
-        // }
+    function exerciseSpecificSportMarket(address _sportMarket) external onlyAMM {
+        require(!_alreadyExercisedSportMarket[_sportMarket] && _sportMarketIndex[_sportMarket] > 0, "Invalid market");
+        (bool exercizable, bool resolvedPosition) = _isWinningSportMarket(_sportMarket, sportPosition[_sportMarketIndex[_sportMarket]-1]);
+        require(resolvedPosition, "Not resolved");
+        if(exercizable) {
+            _exerciseSportMarket(_sportMarket);
+            console.log("--> market exercised");
+            if(_numOfAlreadyExercisedSportMarkets == sportMarket.length && !parlayAlreadyLost) {
+                uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
+                _resolve(true);
+                require(totalSUSDamount == amount, "Low funds");
+                parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+            }
+        }
+        else {
+            if(!parlayAlreadyLost) {
+                _resolve(false);
+            }
+        }
     }
 
     function _resolve(bool _userWon) internal {
@@ -157,8 +154,8 @@ contract ParlayMarket{
     }
 
     function isAnySportMarketExercisable() external view returns(bool) {
-        ( , uint winningPositionsMap, ) = _getResolvedAndWinningPositions();
-        return winningPositionsMap > 0;
+        ( , , uint numOfExercisable) = _getResolvedAndWinningPositions();
+        return numOfExercisable > _numOfAlreadyExercisedSportMarkets;
     }
     
     function isAnySportMarketResolved() external view returns(bool) {
@@ -167,21 +164,22 @@ contract ParlayMarket{
     }
 
 
-    function _getResolvedAndWinningPositions() internal view returns (uint resolvedPositionsMap, uint winningPositionsMap, uint numOfSportMarkets) {
-        numOfSportMarkets = sportMarket.length;
+    function _getResolvedAndWinningPositions() internal view returns (uint resolvedPositionsMap, uint winningPositionsMap, uint numOfExercisable) {
+        uint numOfSportMarkets = sportMarket.length;
         for(uint i=0; i<numOfSportMarkets; i++) {
-            (bool exercizable, bool resolvedPosition) = _isWinningSportMarket(sportMarket[i], sportPosition[i]+1);
+            (bool exercizable, bool resolvedPosition) = _isWinningSportMarket(sportMarket[i], sportPosition[i]);
             resolvedPositionsMap = resolvedPosition ? ((resolvedPositionsMap << 1) + 1) : (resolvedPositionsMap << 1);
             winningPositionsMap = exercizable ? ((winningPositionsMap << 1) + 1) : (winningPositionsMap << 1);
+            numOfExercisable = exercizable ? (numOfExercisable+1) : numOfExercisable;
         }
     }
    
-    function _isWinningSportMarket(address _sportMarket, uint _winningResult) internal view returns(bool isWinning, bool isResolved) {
+    function _isWinningSportMarket(address _sportMarket, uint _userPosition) internal view returns(bool isWinning, bool isResolved) {
         ISportPositionalMarket currentSportMarket = ISportPositionalMarket(_sportMarket);
         if(currentSportMarket.resolved()) {
             isResolved = true;
         } 
-        if(isResolved && (uint(currentSportMarket.result()) == _winningResult 
+        if(isResolved && (uint(currentSportMarket.result()) == (_userPosition+1) 
         || currentSportMarket.result() == ISportPositionalMarket.Side.Cancelled)) {
             isWinning =  true;
         }

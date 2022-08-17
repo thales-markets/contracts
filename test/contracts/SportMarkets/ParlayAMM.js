@@ -1253,6 +1253,45 @@ contract('ParlayAMM', (accounts) => {
 				assert.equal(result, true);
 			});
 
+			describe('Exercise single market of the parlay', () => {
+				beforeEach(async () => {
+					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
+					let resolveMatrix = [ '2' ];
+					// parlayPositions = ['0', '0', '0', '0']
+					let gameId;
+					let homeResult = '0';
+					let awayResult = '0';
+					for (let i = 0; i < resolveMatrix.length; i++) {
+						deployedMarket = await SportPositionalMarketContract.at(parlayMarkets[i].address);
+						homeResult = '0';
+						awayResult = '0';
+						gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
+						if (resolveMatrix[i] == '1') {
+							homeResult = '1';
+						} else if (resolveMatrix[i] == '2') {
+							awayResult = '1';
+						} else if (resolveMatrix[i] == '3') {
+							homeResult = '1';
+							awayResult = '1';
+						}
+						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
+							gameId,
+							resolveMatrix[i],
+							homeResult,
+							awayResult,
+							{ from: owner }
+						);
+					}
+				});
+				it('Excercise specific parlay', async () => {
+					assert.equal(await ParlayAMM.isAnySportPositionResolvedOnParlay(parlaySingleMarket.address), true);
+					assert.equal(await parlaySingleMarket.isAnySportMarketExercisable(), true);
+					await ParlayAMM.exerciseSpecificParlay(parlaySingleMarket.address, parlayMarkets[0].address);
+					assert.equal(await ParlayAMM.canExerciseAnySportPositionOnParlay(parlaySingleMarket.address), false);
+				});
+			});
+			
 			describe('Exercise whole parlay', () => {
 				beforeEach(async () => {
 					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);

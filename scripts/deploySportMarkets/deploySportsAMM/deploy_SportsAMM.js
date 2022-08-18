@@ -35,6 +35,11 @@ async function main() {
 		network = 'optimisticEthereum';
 		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
+	if (networkObj.chainId == 5) {
+		networkObj.name = 'goerli';
+		network = 'goerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 
 	// min_spread = 0.01
 	// max_spread = 0.05
@@ -64,6 +69,11 @@ async function main() {
 	const SportsAMM = await ethers.getContractFactory('SportsAMM');
 
 	if (networkObj.chainId == 42) {
+		PaymentAddress = getTargetAddress('ExoticUSD', network);
+		minimalTimeLeftToMaturity = '60';
+	}
+
+	if (networkObj.chainId == 5) {
 		PaymentAddress = getTargetAddress('ExoticUSD', network);
 		minimalTimeLeftToMaturity = '60';
 	}

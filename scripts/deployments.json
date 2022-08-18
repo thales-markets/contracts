@@ -287,6 +287,24 @@
 		"Referrals": "0xCEA46e50A4D7617AB315780f7a0077AC11C2832a",
 		"ReferralsImplementation": "0xbf68e99ec4e83dC88dccBfD190f229fA84b1DD5a"
 	},
+	"goerli": {
+		"GamesQueue": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
+		"GamesQueueImplementation": "0xece0eEFFF3003d23e366C917104C6CF5Cdb404F1",
+		"TherundownConsumer": "0x4dB7AfB6b777fB47101C86Bdeb56669ffA8cD656",
+		"TherundownConsumerImplementation": "0x85b827d133FEDC36B844b20f4a198dA583B25BAA",
+		"TherundownConsumerWrapper": "0xB72f87AA15E8FE50Ed364eB4A94486A578fc1556",
+		"ExoticUSD": "0x2851715A8d25e176413A77b495762435D5dDBd0d",
+		"SportPositionalMarketManager": "0x7465c5d60d3d095443CF9991Da03304A30D42Eae",
+		"SportPositionalMarketManagerImplementation": "0x67A01b4F95476a5b39A9F8cb6d426F0eb3e34Fba",
+		"SportPositionalMarketFactory": "0x75c7671d046268c11b5f55bA75DF2B6d14774B1C",
+		"SportPositionalMarketFactoryImplementation": "0x261C4500a87f0203cE5EB6706645f7f1bd614B5d",
+		"SportPositionalMarketMastercopy": "0xf854caE2ED8ab612262b07472173A432fd59028B",
+		"SportPositionMastercopy": "0x9e7769409E3e5A6821eeDcF33371FCA929fE6A48",
+		"SportsAMM": "0x707075f0B619acF5A614Efb54FA8aC9B2FB55188",
+		"SportsAMMImplementation": "0x0aBdaF0c4cFF91F96F817809d4735929fCA75B80",
+		"SportPositionalMarketData": "0xC7D8c34048D8bf6eB24FC76c7A61F47754990c81",
+		"SportPositionalMarketDataImplementation": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10"
+	},
 	"localhost": {
 		"Airdrop": "",
 		"OngoingAirdrop": "0xB74DD224F1652672Fc5d18404Fe5AF120e1e0991",

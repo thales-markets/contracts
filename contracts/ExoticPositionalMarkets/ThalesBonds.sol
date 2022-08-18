@@ -17,6 +17,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../interfaces/IExoticPositionalMarketManager.sol";
 import "../interfaces/IExoticPositionalMarket.sol";
 import "../interfaces/IStakingThales.sol";
+import "../interfaces/ICurveSUSD.sol";
 
 contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
@@ -35,6 +36,16 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
 
     mapping(address => MarketBond) public marketBond;
     mapping(address => uint) public marketFunds;
+
+    uint private constant MAX_APPROVAL = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+    uint private constant ONE = 1e18;
+    uint private constant ONE_PERCENT = 1e16;
+
+    bool public curveOnrampEnabled;
+    ICurveSUSD public curveSUSD;
+    address public usdc;
+    address public usdt;
+    address public dai;
 
     uint private constant CREATOR_BOND = 101;
     uint private constant RESOLVER_BOND = 102;
@@ -245,13 +256,29 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         emit BondTransferredFromCreatorToResolver(_market, marketBond[_market].resolverBond);
     }
 
-    function transferToMarket(address _account, uint _amount) external whenNotPaused {
+    function transferToMarket(
+        address _account,
+        uint _amount,
+        address collateral
+    ) external whenNotPaused {
         require(marketManager.isActiveMarket(msg.sender), "Not active market.");
         marketFunds[msg.sender] = marketFunds[msg.sender].add(_amount);
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(_account, _amount);
         }
-        transferToMarketBond(_account, _amount);
+
+        if (collateral == marketManager.paymentToken()) {
+            transferToMarketBond(_account, _amount);
+        } else {
+            int128 curveIndex = _mapCollateralToCurveIndex(collateral);
+            require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
+
+            uint collateralQuote = getCurveQuoteForDifferentCollateral(_amount, collateral);
+
+            IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
+            collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
+            curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, _amount);
+        }
     }
 
     function transferFromMarket(address _account, uint _amount) external whenNotPaused {
@@ -291,6 +318,62 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         require(address(marketManager) != address(0), "Invalid Manager");
         require(marketManager.oracleCouncilAddress() != address(0), "Invalid OC");
         _;
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _curveSUSD curve sUSD pool exchanger contract
+    /// @param _dai DAI address
+    /// @param _usdc USDC address
+    /// @param _usdt USDT addresss
+    /// @param _curveOnrampEnabled whether AMM supports curve onramp
+    function setCurveSUSD(
+        address _curveSUSD,
+        address _dai,
+        address _usdc,
+        address _usdt,
+        bool _curveOnrampEnabled
+    ) external onlyOwner {
+        curveSUSD = ICurveSUSD(_curveSUSD);
+        dai = _dai;
+        usdc = _usdc;
+        usdt = _usdt;
+        IERC20Upgradeable(dai).approve(_curveSUSD, MAX_APPROVAL);
+        IERC20Upgradeable(usdc).approve(_curveSUSD, MAX_APPROVAL);
+        IERC20Upgradeable(usdt).approve(_curveSUSD, MAX_APPROVAL);
+        // not needed unless selling into different collateral is enabled
+        //sUSD.approve(_curveSUSD, MAX_APPROVAL);
+        curveOnrampEnabled = _curveOnrampEnabled;
+    }
+
+    function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
+        if (collateral == dai) {
+            return 1;
+        }
+        if (collateral == usdc) {
+            return 2;
+        }
+        if (collateral == usdt) {
+            return 3;
+        }
+        return 0;
+    }
+
+    /// @notice get a quote in the collateral of choice (USDC, USDT or DAI) on how much the trader would need to pay to get sUSD
+    /// @param amount number of positions to buy with 18 decimals
+    /// @param collateral USDT, USDC or DAI address
+    /// @return collateralQuote quote in collateral on how much the trader would need to pay to get sUSD
+    function getCurveQuoteForDifferentCollateral(uint amount, address collateral)
+        public
+        view
+        returns (uint collateralQuote)
+    {
+        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
+        if (curveIndex == 0 || !curveOnrampEnabled) {
+            return (0);
+        }
+        //cant get a quote on how much collateral is needed from curve for sUSD,
+        //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
+        collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, amount).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
     }
 
     event CreatorBondSent(address market, address creator, uint amount);

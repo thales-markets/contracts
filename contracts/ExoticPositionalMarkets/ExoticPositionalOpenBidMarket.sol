@@ -15,7 +15,10 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     using SafeMath for uint;
     using SafeERC20 for IERC20;
 
-    enum TicketType {FIXED_TICKET_PRICE, FLEXIBLE_BID}
+    enum TicketType {
+        FIXED_TICKET_PRICE,
+        FLEXIBLE_BID
+    }
     uint private constant HUNDRED = 100;
     uint private constant ONE_PERCENT = 1e16;
     uint private constant HUNDRED_PERCENT = 1e18;
@@ -111,7 +114,11 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         minPosAmount = marketManager.minFixedTicketPrice();
     }
 
-    function takeCreatorInitialOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external onlyOwner {
+    function takeCreatorInitialOpenBidPositions(
+        uint[] memory _positions,
+        uint[] memory _amounts,
+        address collateral
+    ) external onlyOwner {
         require(_positions.length > 0 && _positions.length <= positionCount, "Invalid posNum");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
         uint totalDepositedAmount = 0;
@@ -137,11 +144,15 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         totalOpenBidAmount = totalOpenBidAmount.add(totalDepositedAmount);
         totalUserPlacedAmount[creatorAddress] = totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount);
         totalUsersTakenPositions = totalUsersTakenPositions.add(1);
-        transferToMarket(creatorAddress, totalDepositedAmount);
+        transferToMarket(creatorAddress, totalDepositedAmount, collateral);
         emit NewOpenBidsForPositions(creatorAddress, _positions, _amounts);
     }
 
-    function takeOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external notPaused nonReentrant {
+    function takeOpenBidPositions(
+        uint[] memory _positions,
+        uint[] memory _amounts,
+        address collateral
+    ) external notPaused nonReentrant {
         require(_positions.length > 0, "Invalid posNum");
         require(_positions.length <= positionCount, "Exceeds count");
         require(canUsersPlacePosition(), "Market resolved");
@@ -184,7 +195,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             totalOpenBidAmount = totalOpenBidAmount.add(amountToBeAdded);
             totalUserPlacedAmount[msg.sender] = totalUserPlacedAmount[msg.sender].add(amountToBeAdded);
             totalUsersTakenPositions = firstTime ? totalUsersTakenPositions.add(1) : totalUsersTakenPositions;
-            transferToMarket(msg.sender, amountToBeAdded);
+            transferToMarket(msg.sender, amountToBeAdded, collateral);
         }
         emit NewOpenBidsForPositions(msg.sender, _positions, _amounts);
     }
@@ -344,14 +355,18 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit MarketDisputed(false);
     }
 
-    function transferToMarket(address _sender, uint _amount) internal notPaused {
+    function transferToMarket(
+        address _sender,
+        uint _amount,
+        address collateral
+    ) internal notPaused {
         require(_sender != address(0), "Invalid sender address");
         require(IERC20(marketManager.paymentToken()).balanceOf(_sender) >= _amount, "Sender balance low");
         require(
             IERC20(marketManager.paymentToken()).allowance(_sender, marketManager.thalesBonds()) >= _amount,
             "No allowance."
         );
-        IThalesBonds(marketManager.thalesBonds()).transferToMarket(_sender, _amount);
+        IThalesBonds(marketManager.thalesBonds()).transferToMarket(_sender, _amount, collateral);
     }
 
     // SETTERS ///////////////////////////////////////////////////////
@@ -534,12 +549,12 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         return
             (value)
                 .mul(
-                HUNDRED.sub(
-                    marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(
-                        marketManager.resolverPercentage()
+                    HUNDRED.sub(
+                        marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(
+                            marketManager.resolverPercentage()
+                        )
                     )
                 )
-            )
                 .mul(ONE_PERCENT)
                 .div(HUNDRED_PERCENT);
     }

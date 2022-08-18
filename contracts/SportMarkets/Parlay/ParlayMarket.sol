@@ -26,6 +26,7 @@ contract ParlayMarket{
     uint private _numOfAlreadyExercisedSportMarkets;
     uint public amount;
     uint public sUSDPaid;
+    uint public totalResultQuote;
     uint public numOfResolvedSportMarkets;
 
     IParlayMarketsAMM public parlayMarketsAMM;
@@ -39,6 +40,7 @@ contract ParlayMarket{
 
     /* ========== CONSTRUCTOR ========== */
 
+                     
     bool public initialized = false;
 
     function initialize(
@@ -64,6 +66,11 @@ contract ParlayMarket{
             _sportMarketIndex[_sportMarkets[i]]=i+1;
         }
         //add odds
+    }
+
+    function updateQuotes(uint[] calldata _marketQuotes, uint _totalResultQuote) external onlyAMM {
+        marketQuotes = _marketQuotes;
+        totalResultQuote = _totalResultQuote;
     }
 
     function getSportMarketBalances() external view returns (uint[] memory allBalances) {

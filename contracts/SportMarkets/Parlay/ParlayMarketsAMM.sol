@@ -132,7 +132,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     
     function canCreateParlayMarket(address[] calldata _sportMarkets, uint[] calldata _positions, uint sUSDToPay) external view returns (bool canBeCreated) {
         (uint totalQuote , , , )= _canCreateParlayMarket(_sportMarkets, _positions, sUSDToPay);
-        canBeCreated = totalQuote > 0;
+        canBeCreated = totalQuote > maxSupportedOdds;
     }
     
     function buyParlay(
@@ -150,7 +150,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint[] memory marketQuotes = new uint[](_sportMarkets.length);
         (totalResultQuote, totalAmount, amountsToBuy, marketQuotes) = _canCreateParlayMarket(_sportMarkets, _positions, _sUSDPaid);
         // apply all checks
-        require(totalResultQuote > 0, "Can't create this parlay market!");
+        require(totalResultQuote > maxSupportedOdds, "Can't create this parlay market!");
         
         // checks for cretion missing
 
@@ -170,6 +170,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     msg.sender
                     );
         _knownMarkets.add(address(parlayMarket));
+        parlayMarket.updateQuotes(marketQuotes, totalResultQuote);
 
         // buy the positions
         _buyPositionsFromSportAMM(

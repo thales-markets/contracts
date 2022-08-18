@@ -98,7 +98,11 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
             newItemId,
             amount == TWENTY ? tokenURITwenty : amount == FIFTY ? tokenURIFifty : amount == HUNDRED
                 ? tokenURIHundred
-                : tokenURITwoHundred
+                : amount == TWO_HUNDRED
+                ? tokenURITwoHundred
+                : amount == FIVE_HUNDRED
+                ? tokenURIFiveHundred
+                : tokenURIThousand
         );
 
         amountInVoucher[newItemId] = amount;
@@ -116,7 +120,6 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         uint quote = sportsAMM.buyFromAmmQuote(market, position, amount);
         require(quote < amountInVoucher[tokenId], "Insufficient amount in voucher");
 
-        uint balanceBefore = sUSD.balanceOf(address(this));
         sportsAMM.buyFromAMM(market, position, amount, quote, 0);
         amountInVoucher[tokenId] = amountInVoucher[tokenId] - quote;
 

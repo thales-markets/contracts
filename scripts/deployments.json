@@ -81,7 +81,7 @@
 		"TherundownConsumer": "0x2B91c14Ce9aa828eD124D12541452a017d8a2148",
 		"TherundownConsumerImplementation": "0xe8e8093d44f84be11974E3183d219e94fc9c36D7",
 		"TherundownConsumerWrapper": "0xe7f379DCaD66A5128f44a996D276Cf55E6D8F2c5",
-		"OvertimeVoucher": "0xbAC6c6e28bd000a72fA18735CC24CeEe49F51069"
+		"OvertimeVoucher": "0x5442fF0573Fd54A4F6C02A7a0d8E22BdC1a3C671"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -287,7 +287,7 @@
 		"TherundownConsumerWrapper": "0xE14E3427290571f9492fE2602cD0726d34b01D0c",
 		"Referrals": "0xCEA46e50A4D7617AB315780f7a0077AC11C2832a",
 		"ReferralsImplementation": "0xbf68e99ec4e83dC88dccBfD190f229fA84b1DD5a",
-		"OvertimeVoucher": "0xcD61541716B119de3c9EdEa1AdbD0d993dB13802"
+		"OvertimeVoucher": "0x4987427a26ccd74Cf30FE485566D8A1A0154Efcc"
 	},
 	"localhost": {
 		"Airdrop": "",

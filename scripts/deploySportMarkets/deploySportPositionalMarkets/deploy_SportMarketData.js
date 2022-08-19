@@ -34,6 +34,11 @@ async function main() {
 		network = 'optimisticEthereum';
 		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
+	if (networkObj.chainId == 5) {
+		networkObj.name = 'goerli';
+		network = 'goerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 
 	const SportMarketData = await ethers.getContractFactory('SportPositionalMarketData');
 	const SportMarketManagerAddress = getTargetAddress('SportPositionalMarketManager', network);

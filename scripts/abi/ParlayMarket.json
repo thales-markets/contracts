@@ -168,14 +168,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "marketQuotes",
+    "inputs": [],
+    "name": "numOfResolvedSportMarkets",
     "outputs": [
       {
         "internalType": "uint256",
@@ -188,7 +182,7 @@
   },
   {
     "inputs": [],
-    "name": "numOfResolvedSportMarkets",
+    "name": "numOfSportMarkets",
     "outputs": [
       {
         "internalType": "uint256",
@@ -252,25 +246,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "proportionalAmounts",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "resolved",
     "outputs": [
@@ -308,26 +283,32 @@
     "outputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "sportAddress",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
+      },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "position",
         "type": "uint256"
-      }
-    ],
-    "name": "sportPosition",
-    "outputs": [
+      },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "odd",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "resolved",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "exercised",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "result",
         "type": "uint256"
       }
     ],

@@ -21,9 +21,11 @@ contract ParlayMarket{
         address sportAddress;
         uint position;
         uint odd;
+        uint result;
         bool resolved;
         bool exercised;
-        uint result;
+        bool hasWon;
+        bool isCancelled;
     }
 
     uint private _numOfAlreadyExercisedSportMarkets;
@@ -119,21 +121,19 @@ contract ParlayMarket{
     }
 
     function _updateSportMarketParameters(address _sportMarket, uint _idx) internal {
-        uint result;
-        bool isResolved;
-       (
-            isResolved, 
-            result
-        ) = _getResolvedAndResult(
-                _sportMarket
-            );
+        ISportPositionalMarket currentSportMarket = ISportPositionalMarket(_sportMarket);
+        uint result = uint(currentSportMarket.result());
+        bool isResolved = currentSportMarket.resolved();
         sportMarket[_idx].resolved = isResolved;
-        console.log("isResolved: ", isResolved);
-        console.log("result: ", result);
-        numOfResolvedSportMarkets++;
         sportMarket[_idx].result = result;
+        sportMarket[_idx].hasWon = result == (sportMarket[_idx].position+1);
+        numOfResolvedSportMarkets++;
         if(isResolved && result == 0) {
-            totalResultQuote = ((ONE*totalResultQuote)/sportMarket[_idx].odd)/ONE;
+            console.log("--> 1. totalResult: ", totalResultQuote);
+            console.log("--> 2. odd: ", sportMarket[_idx].odd);
+            totalResultQuote = ((totalResultQuote*ONE*ONE)/sportMarket[_idx].odd) / ONE;
+            sportMarket[_idx].isCancelled = true;
+            console.log("--> 3. totalResult: ", totalResultQuote);
         }
     }
 
@@ -153,16 +153,30 @@ contract ParlayMarket{
     function _exerciseSpecificSportMarket(address _sportMarket, uint _idx) internal {
         require(!sportMarket[_idx].exercised, "Invalid market");
         require(sportMarket[_idx].resolved, "Unresolved");
-        bool exercizable = sportMarket[_idx].resolved && _isWiningPosition(_idx) && !sportMarket[_idx].exercised ? true : false;
+        bool exercizable = sportMarket[_idx].resolved && (sportMarket[_idx].hasWon || sportMarket[_idx].isCancelled) && !sportMarket[_idx].exercised ? true : false;
         if(exercizable) {
             ISportPositionalMarket(_sportMarket).exerciseOptions();
             _numOfAlreadyExercisedSportMarkets++;
             console.log("--> market exercised");
             if(_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
                 uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
+                uint calculatedAmount = _recalculateAmount();
                 _resolve(true);
-                require(totalSUSDamount == amount, "Low funds");
-                parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+                if(calculatedAmount == totalSUSDamount) {
+                    console.log("equal");
+                    parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+                }                
+                else if(calculatedAmount > totalSUSDamount) {
+                    console.log("calculated > total");
+                    parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
+                    parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (calculatedAmount-totalSUSDamount), true);
+
+                }
+                else {
+                    console.log("calculated < total");
+                    parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
+                    parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount-calculatedAmount));
+                }
             }
         }
         else {
@@ -170,6 +184,10 @@ contract ParlayMarket{
                 _resolve(false);
             }
         }
+    }
+
+    function _recalculateAmount() internal view returns(uint recalculated) {
+        recalculated = ((sUSDPaid*ONE*ONE)/totalResultQuote)/ONE;
     }
 
     function _resolve(bool _userWon) internal {
@@ -197,11 +215,6 @@ contract ParlayMarket{
             winningPositionsMap = exercizable ? ((winningPositionsMap << 1) + 1) : (winningPositionsMap << 1);
             numOfExercisable = exercizable ? (numOfExercisable+1) : numOfExercisable;
         }
-    }
-   
-    function _getResolvedAndResult(address _sportMarket) internal view returns(bool , uint) {
-        ISportPositionalMarket currentSportMarket = ISportPositionalMarket(_sportMarket);
-        return(currentSportMarket.resolved(),  uint(currentSportMarket.result()) );
     }
 
     function _isWinningSportMarket(address _sportMarket, uint _userPosition) internal view returns(bool isWinning, bool isResolved) {

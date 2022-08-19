@@ -302,6 +302,11 @@
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "result",
+        "type": "uint256"
+      },
+      {
         "internalType": "bool",
         "name": "resolved",
         "type": "bool"
@@ -312,9 +317,14 @@
         "type": "bool"
       },
       {
-        "internalType": "uint256",
-        "name": "result",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "hasWon",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "isCancelled",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

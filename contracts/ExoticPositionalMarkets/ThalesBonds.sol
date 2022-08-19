@@ -273,7 +273,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
             int128 curveIndex = _mapCollateralToCurveIndex(collateral);
             require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
-            uint collateralQuote = getCurveQuoteForDifferentCollateral(_amount, collateral);
+            uint collateralQuote = getCurveQuoteForDifferentCollateral(_amount, collateral, true);
 
             IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
             collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
@@ -281,11 +281,29 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         }
     }
 
-    function transferFromMarket(address _account, uint _amount) external whenNotPaused {
+    function transferFromMarket(
+        address _account,
+        uint _amount,
+        address collateral
+    ) external whenNotPaused {
         require(marketManager.isActiveMarket(msg.sender), "Not active market.");
         require(marketFunds[msg.sender] >= _amount, "Low funds.");
         marketFunds[msg.sender] = marketFunds[msg.sender].sub(_amount);
-        transferBondFromMarket(_account, _amount);
+
+        if (collateral == marketManager.paymentToken()) {
+            transferBondFromMarket(_account, _amount);
+        } else {
+            int128 curveIndex = _mapCollateralToCurveIndex(collateral);
+            require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
+
+            // getting Quote to exchange sUSD for collateral and proceeding with the swap
+            uint collateralQuote = getCurveQuoteForDifferentCollateral(_amount, collateral, false);
+            curveSUSD.exchange_underlying(0, curveIndex, _amount, collateralQuote);
+
+            // sending minimum received collateral(by curve) to user
+            IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
+            collateralToken.safeTransferFrom(address(this), msg.sender, collateralQuote);
+        }
     }
 
     function transferToMarketBond(address _account, uint _amount) internal whenNotPaused {
@@ -361,19 +379,26 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     /// @notice get a quote in the collateral of choice (USDC, USDT or DAI) on how much the trader would need to pay to get sUSD
     /// @param amount number of positions to buy with 18 decimals
     /// @param collateral USDT, USDC or DAI address
+    /// @param toSUSD flag that determines should we get a quote for swapping to sUSD or from sUSD
     /// @return collateralQuote quote in collateral on how much the trader would need to pay to get sUSD
-    function getCurveQuoteForDifferentCollateral(uint amount, address collateral)
-        public
-        view
-        returns (uint collateralQuote)
-    {
+    function getCurveQuoteForDifferentCollateral(
+        uint amount,
+        address collateral,
+        bool toSUSD
+    ) public view returns (uint collateralQuote) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         if (curveIndex == 0 || !curveOnrampEnabled) {
             return (0);
         }
-        //cant get a quote on how much collateral is needed from curve for sUSD,
-        //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, amount).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
+
+        if (toSUSD) {
+            //cant get a quote on how much collateral is needed from curve for sUSD,
+            //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
+            collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, amount).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
+        } else {
+            // decreasing the amount by 0.1% due to possible slippage
+            collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, amount).mul(ONE.sub(ONE_PERCENT.div(10))).div(ONE);
+        }
     }
 
     event CreatorBondSent(address market, address creator, uint amount);

@@ -222,6 +222,12 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         require(msg.sender == theRundownConsumer || msg.sender == owner, "Invalid resolver");
         require(_activeMarkets.contains(market), "Not an active market");
         SportPositionalMarket(market).resolve(_outcome);
+
+        // unpause if paused
+        if (ISportPositionalMarket(_market).paused()) {
+            ISportPositionalMarket(_market).setPaused(false);
+        }
+
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
     }

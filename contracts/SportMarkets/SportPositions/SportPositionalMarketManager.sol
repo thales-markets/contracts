@@ -224,8 +224,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         SportPositionalMarket(market).resolve(_outcome);
 
         // unpause if paused
-        if (ISportPositionalMarket(_market).paused()) {
-            ISportPositionalMarket(_market).setPaused(false);
+        if (ISportPositionalMarket(market).paused()) {
+            ISportPositionalMarket(market).setPaused(false);
         }
 
         _activeMarkets.remove(market);

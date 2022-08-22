@@ -102,14 +102,14 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         withdrawalPeriod = _endOfPositioning.sub(marketManager.withdrawalTimePeriod());
     }
 
-    function takeCreatorInitialPosition(uint _position, address collateral) external onlyOwner {
+    function takeCreatorInitialPosition(uint _position) external onlyOwner {
         require(_position > 0 && _position <= positionCount, "Value invalid");
         require(ticketType == TicketType.FIXED_TICKET_PRICE, "Not Fixed type");
         address creatorAddress = marketManager.creatorAddress(address(this));
         totalUsersTakenPositions = totalUsersTakenPositions.add(1);
         ticketsPerPosition[_position] = ticketsPerPosition[_position].add(1);
         userPosition[creatorAddress] = _position;
-        transferToMarket(creatorAddress, fixedTicketPrice, collateral);
+        transferToMarket(creatorAddress, fixedTicketPrice, marketManager.paymentToken());
         emit NewPositionTaken(creatorAddress, _position, fixedTicketPrice);
     }
 

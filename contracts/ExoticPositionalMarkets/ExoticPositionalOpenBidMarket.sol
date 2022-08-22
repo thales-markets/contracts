@@ -114,11 +114,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         minPosAmount = marketManager.minFixedTicketPrice();
     }
 
-    function takeCreatorInitialOpenBidPositions(
-        uint[] memory _positions,
-        uint[] memory _amounts,
-        address collateral
-    ) external onlyOwner {
+    function takeCreatorInitialOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external onlyOwner {
         require(_positions.length > 0 && _positions.length <= positionCount, "Invalid posNum");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
         uint totalDepositedAmount = 0;
@@ -144,7 +140,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         totalOpenBidAmount = totalOpenBidAmount.add(totalDepositedAmount);
         totalUserPlacedAmount[creatorAddress] = totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount);
         totalUsersTakenPositions = totalUsersTakenPositions.add(1);
-        transferToMarket(creatorAddress, totalDepositedAmount, collateral);
+        transferToMarket(creatorAddress, totalDepositedAmount, marketManager.paymentToken());
         emit NewOpenBidsForPositions(creatorAddress, _positions, _amounts);
     }
 

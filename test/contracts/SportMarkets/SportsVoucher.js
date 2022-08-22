@@ -391,6 +391,10 @@ contract('SportsAMM', accounts => {
 				SportsAMM.address
 			);
 
+			await voucher.setSportsAMM(SportsAMM.address);
+			await voucher.setPaused(false);
+			await voucher.setTokenUris('', '', '', '', '', '');
+
 			position = artifacts.require('SportPosition');
 		});
 		let position = 0;

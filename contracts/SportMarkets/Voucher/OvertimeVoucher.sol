@@ -155,7 +155,7 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         string memory _tokenURITwoHundred,
         string memory _tokenURIFiveHundred,
         string memory _tokenURIThousand
-    ) public onlyOwner {
+    ) external onlyOwner {
         tokenURITwenty = _tokenURITwenty;
         tokenURIFifty = _tokenURIFifty;
         tokenURIHundred = _tokenURIHundred;
@@ -164,12 +164,12 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         tokenURIThousand = _tokenURIThousand;
     }
 
-    function setPause(bool _state) public onlyOwner {
+    function setPause(bool _state) external onlyOwner {
         paused = _state;
         emit Paused(_state);
     }
 
-    function setSportsAMM(address _sportsAMM) public onlyOwner {
+    function setSportsAMM(address _sportsAMM) external onlyOwner {
         if (address(_sportsAMM) != address(0)) {
             sUSD.approve(address(sportsAMM), 0);
         }

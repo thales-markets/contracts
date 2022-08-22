@@ -355,11 +355,12 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         dai = _dai;
         usdc = _usdc;
         usdt = _usdt;
+
         IERC20Upgradeable(dai).approve(_curveSUSD, MAX_APPROVAL);
         IERC20Upgradeable(usdc).approve(_curveSUSD, MAX_APPROVAL);
         IERC20Upgradeable(usdt).approve(_curveSUSD, MAX_APPROVAL);
-        // not needed unless selling into different collateral is enabled
-        //sUSD.approve(_curveSUSD, MAX_APPROVAL);
+        IERC20Upgradeable(marketManager.paymentToken()).approve(_curveSUSD, MAX_APPROVAL);
+
         curveOnrampEnabled = _curveOnrampEnabled;
     }
 

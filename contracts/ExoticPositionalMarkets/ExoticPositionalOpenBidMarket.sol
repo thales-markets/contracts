@@ -53,7 +53,9 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     bool public feesAndBondsClaimed;
     bool public withdrawalAllowed;
 
+    address public creatorAddress;
     address public resolverAddress;
+    address public paymentToken;
     TicketType public ticketType;
     IExoticPositionalMarketManager public marketManager;
     IThalesBonds public thalesBonds;
@@ -112,13 +114,14 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
         withdrawalPeriod = _endOfPositioning.sub(marketManager.withdrawalTimePeriod());
         minPosAmount = marketManager.minFixedTicketPrice();
+        paymentToken = marketManager.paymentToken();
+        creatorAddress = marketManager.creatorAddress(address(this));
     }
 
     function takeCreatorInitialOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external onlyOwner {
         require(_positions.length > 0 && _positions.length <= positionCount, "Invalid posNum");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
         uint totalDepositedAmount = 0;
-        address creatorAddress = marketManager.creatorAddress(address(this));
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
@@ -140,7 +143,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         totalOpenBidAmount = totalOpenBidAmount.add(totalDepositedAmount);
         totalUserPlacedAmount[creatorAddress] = totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount);
         totalUsersTakenPositions = totalUsersTakenPositions.add(1);
-        transferToMarket(creatorAddress, totalDepositedAmount, marketManager.paymentToken());
+        transferToMarket(creatorAddress, totalDepositedAmount, paymentToken);
         emit NewOpenBidsForPositions(creatorAddress, _positions, _amounts);
     }
 
@@ -200,7 +203,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         require(withdrawalAllowed, "Not allowed");
         require(canUsersPlacePosition(), "Market resolved");
         require(block.timestamp <= withdrawalPeriod, "Withdrawal expired");
-        require(msg.sender != marketManager.creatorAddress(address(this)), "Creator forbidden");
+        require(msg.sender != creatorAddress, "Creator forbidden");
         uint totalToWithdraw;
         if (_openBidPosition == 0) {
             for (uint i = 1; i <= positionCount; i++) {
@@ -234,12 +237,8 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
         totalUserPlacedAmount[msg.sender] = totalUserPlacedAmount[msg.sender].sub(totalToWithdraw);
         uint withdrawalFee = totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
-        thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2), marketManager.paymentToken());
-        thalesBonds.transferFromMarket(
-            marketManager.creatorAddress(address(this)),
-            withdrawalFee.div(2),
-            marketManager.paymentToken()
-        );
+        thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2), paymentToken);
+        thalesBonds.transferFromMarket(creatorAddress, withdrawalFee.div(2), paymentToken);
         thalesBonds.transferFromMarket(msg.sender, totalToWithdraw.sub(withdrawalFee), collateral);
         emit OpenBidUserWithdrawn(msg.sender, _openBidPosition, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
     }
@@ -325,13 +324,9 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         require(canUsersClaim() || marketManager.cancelledByCreator(address(this)), "Not finalized");
         require(!feesAndBondsClaimed, "Fees claimed");
         if (winningPosition != CANCELED) {
-            thalesBonds.transferFromMarket(
-                marketManager.creatorAddress(address(this)),
-                getAdditionalCreatorAmount(),
-                marketManager.paymentToken()
-            );
-            thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount(), marketManager.paymentToken());
-            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount(), marketManager.paymentToken());
+            thalesBonds.transferFromMarket(creatorAddress, getAdditionalCreatorAmount(), paymentToken);
+            thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount(), paymentToken);
+            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount(), paymentToken);
         }
         marketManager.issueBondsBackToCreatorAndResolver(address(this));
         feesAndBondsClaimed = true;
@@ -365,11 +360,8 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         address collateral
     ) internal notPaused {
         require(_sender != address(0), "Invalid sender address");
-        require(IERC20(marketManager.paymentToken()).balanceOf(_sender) >= _amount, "Sender balance low");
-        require(
-            IERC20(marketManager.paymentToken()).allowance(_sender, marketManager.thalesBonds()) >= _amount,
-            "No allowance."
-        );
+        require(IERC20(paymentToken).balanceOf(_sender) >= _amount, "Sender balance low");
+        require(IERC20(paymentToken).allowance(_sender, marketManager.thalesBonds()) >= _amount, "No allowance.");
         IThalesBonds(marketManager.thalesBonds()).transferToMarket(_sender, _amount, collateral);
     }
 
@@ -436,7 +428,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     }
 
     function canUserWithdraw(address _account) public view returns (bool) {
-        if (_account == marketManager.creatorAddress(address(this))) {
+        if (_account == creatorAddress) {
             return false;
         }
         return

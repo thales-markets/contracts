@@ -1,30 +1,14 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-
-import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
-import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "./BaseVault.sol";
 
 import "../interfaces/IThalesAMM.sol";
 import "../interfaces/IPositionalMarket.sol";
 
-contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
-    using SafeERC20 for IERC20;
-
+contract Vault is BaseVault {
+    /* ========== CONSTANTS ========== */
     uint private constant HUNDRED = 1e20;
-    uint public round;
-    uint public roundLength;
-    mapping(uint => uint) public roundStartTime;
-    mapping(uint => uint) public roundEndTime;
-    bool public roundStarted;
-
-    IThalesAMM public thalesAMM;
-    IERC20 public sUSD;
 
     enum Asset {
         ETH,
@@ -32,11 +16,7 @@ contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentranc
         Other
     }
 
-    mapping(uint => mapping(address => uint)) public balancesPerRound;
-
-    mapping(uint => address[]) public usersPerRound;
-
-    mapping(uint => uint) public allocationPerRound;
+    /* ========== STATE VARIABLES ========== */
 
     mapping(Asset => uint) public allocationLimits;
     mapping(uint => mapping(Asset => uint)) public allocationSpentPerRound;
@@ -45,11 +25,7 @@ contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentranc
     uint public priceUpperLimit;
     uint public skewImpactLimit;
 
-    mapping(uint => address[]) public tradingMarketsPerRound;
-    mapping(uint => mapping(address => bool)) public isTradingMarketInARound;
-
-    mapping(uint => uint) public profitAndLossPerRound;
-    mapping(uint => mapping(address => bool)) public claimedPerRound;
+    /* ========== CONSTRUCTOR ========== */
 
     function initialize(
         address _owner,
@@ -63,95 +39,20 @@ contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentranc
         uint _allocationLimitETH,
         uint _allocationLimitOtherAssets
     ) external initializer {
-        setOwner(_owner);
-        initNonReentrant();
-        thalesAMM = IThalesAMM(_thalesAmm);
-        sUSD = _sUSD;
-        roundLength = _roundLength;
+        __BaseVault_init(_owner, _thalesAmm, _sUSD, _roundLength);
         priceLowerLimit = _priceLowerLimit;
         priceUpperLimit = _priceUpperLimit;
         skewImpactLimit = _skewImpactLimit;
         allocationLimits[Asset.ETH] = _allocationLimitETH;
         allocationLimits[Asset.BTC] = _allocationLimitBTC;
         allocationLimits[Asset.Other] = _allocationLimitOtherAssets;
-
-        round = 1;
     }
 
-    function startRound() external onlyOwner {
-        require(!roundStarted, "Round has already started");
-
-        roundStartTime[round] = block.timestamp;
-        roundEndTime[round] = roundStartTime[round] + roundLength;
-        roundStarted = true;
-
-        // include unclaimed amounts in next round allocation
-        allocationPerRound[round] = sUSD.balanceOf(address(this));
-
-        emit RoundStarted(round);
-    }
-
-    function closeRound() external onlyOwner {
-        require(block.timestamp > (roundStartTime[round] + roundLength), "Can't close round yet");
-        roundStarted = false;
-
-        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            IPositionalMarket(tradingMarketsPerRound[round][i]).exerciseOptions();
-        }
-
-        uint currentVaultBalance = sUSD.balanceOf(address(this));
-        // calculate PnL
-        profitAndLossPerRound[round] = (currentVaultBalance * 1e18) / allocationPerRound[round];
-
-        round = round + 1;
-        emit RoundClosed(round);
-    }
-
-    function deposit(uint amount) external canDeposit(amount) {
-        sUSD.safeTransferFrom(msg.sender, address(this), amount);
-
-        uint balanceInARound = calculateBalanceInARound(msg.sender, round - 1);
-
-        if (balancesPerRound[round][msg.sender] == 0) {
-            usersPerRound[round].push(msg.sender);
-        }
-
-        balancesPerRound[round][msg.sender] = balanceInARound + amount;
-        //allocationPerRound[round] += amount;
-
-        emit Deposited(msg.sender, amount);
-    }
-
-    function calculateBalanceInARound(address user, uint _round) internal returns (uint) {
-        if (_round == 0 || _round == 1) {
-            return balancesPerRound[1][user];
-        } else {
-            for (uint i = 2; i <= _round; i++) {
-                if (!claimedPerRound[i][user]) {
-                    // double check decimals !!!!!
-                    balancesPerRound[i][user] = (balancesPerRound[i - 1][user] * profitAndLossPerRound[i]) / 1e18;
-                    claimedPerRound[i][user] = true;
-                } else {
-                    continue;
-                }
-            }
-            return balancesPerRound[_round][user];
-        }
-    }
-
-    function claim() external nonReentrant {
-        require(!roundStarted, "Cannot claim in a round");
-        require(!claimedPerRound[round][msg.sender], "User already claimed");
-
-        uint amount = calculateBalanceInARound(msg.sender, round);
-        require(amount > 0, "Nothing to claim");
-
-        sUSD.safeTransfer(msg.sender, amount);
-        emit Claimed(msg.sender, amount);
-    }
-
-    function trade(address market, uint amount) external {
-        require(roundStarted, "Round has not started");
+    /// @notice Buy market options from Thales AMM
+    /// @param market address of a market
+    /// @param amount number of options to be bought
+    function trade(address market, uint amount) external nonReentrant whenNotPaused {
+        require(vaultStarted, "Vault has not started");
 
         IPositionalMarket marketContract = IPositionalMarket(market);
         (bytes32 key, , ) = marketContract.getOracleDetails();
@@ -167,6 +68,8 @@ contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentranc
             _buyFromAmm(market, _getAsset(key), IThalesAMM.Position.Up, amount);
         } else if (priceDown >= priceLowerLimit && priceDown <= priceUpperLimit && priceDownImpact < skewImpactLimit) {
             _buyFromAmm(market, _getAsset(key), IThalesAMM.Position.Down, amount);
+        } else {
+            revert("Market not valid");
         }
 
         if (!isTradingMarketInARound[round][market]) {
@@ -175,59 +78,10 @@ contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentranc
         }
     }
 
-    function _buyFromAmm(
-        address market,
-        Asset asset,
-        IThalesAMM.Position position,
-        uint amount
-    ) internal {
-        uint quote = thalesAMM.buyFromAmmQuote(market, position, amount);
-        uint allocationAsset = (allocationPerRound[round] * allocationLimits[asset]) / HUNDRED; //  divide by 100 and 10^18 - check!!!!
-        require(
-            quote + allocationSpentPerRound[round][asset] < allocationAsset,
-            "Weekly allocation already spent for asset"
-        );
-
-        thalesAMM.buyFromAMM(market, position, amount, quote, 500000000000000000);
-
-        allocationSpentPerRound[round][asset] = allocationSpentPerRound[round][asset] + quote;
-
-        emit TradeExecuted(market, position, asset, amount, quote);
-    }
-
-    function _getAsset(bytes32 key) internal view returns (Asset asset) {
-        if (key == "ETH") {
-            asset = Asset.ETH;
-        } else if (key == "BTC") {
-            asset = Asset.BTC;
-        } else {
-            asset = Asset.Other;
-        }
-    }
-
-    function getBalancesPerRound(uint _round, address user) external view returns (uint) {
-        return balancesPerRound[_round][user];
-    }
-
-    function getClaimedPerRound(uint _round, address user) external view returns (bool) {
-        return claimedPerRound[_round][user];
-    }
-
-    function setRoundLength(uint _roundLength) external onlyOwner {
-        roundLength = _roundLength;
-        emit RoundLengthChanged(_roundLength);
-    }
-
-    function setThalesAMM(IThalesAMM _thalesAMM) external onlyOwner {
-        thalesAMM = _thalesAMM;
-        emit ThalesAMMChanged(address(_thalesAMM));
-    }
-
-    function setSUSD(IERC20 _sUSD) external onlyOwner {
-        sUSD = _sUSD;
-        emit SetSUSD(address(sUSD));
-    }
-
+    /// @notice Set allocation limits for assets to be spent in one round
+    /// @param _allocationETH allocation for ETH in percent
+    /// @param _allocationBTC allocation for BTC in percent
+    /// @param _allocationOtherAssets allocation for other assets in percent
     function setAllocationLimits(
         uint _allocationETH,
         uint _allocationBTC,
@@ -240,6 +94,9 @@ contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentranc
         emit SetAllocationLimits(_allocationETH, _allocationBTC, _allocationOtherAssets);
     }
 
+    /// @notice Set price limit for options to be bought from AMM
+    /// @param _priceLowerLimit lower limit
+    /// @param _priceUpperLimit upper limit
     function setPriceLimits(uint _priceLowerLimit, uint _priceUpperLimit) external onlyOwner {
         require(_priceLowerLimit < _priceUpperLimit, "Invalid price limit values");
         priceLowerLimit = _priceLowerLimit;
@@ -247,27 +104,73 @@ contract Vault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentranc
         emit SetPriceLimits(_priceLowerLimit, _priceUpperLimit);
     }
 
+    /// @notice Set skew impact limit for AMM
+    /// @param _skewImpactLimit limit in percents
     function setSkewImpactLimit(uint _skewImpactLimit) external onlyOwner {
         skewImpactLimit = _skewImpactLimit;
         emit SetSkewImpactLimit(_skewImpactLimit);
     }
 
-    modifier canDeposit(uint amount) {
-        require(sUSD.balanceOf(msg.sender) >= amount, "No enough sUSD");
-        require(sUSD.allowance(msg.sender, address(this)) >= amount, "No allowance");
-        require(!roundStarted, "Round has already started");
-        _;
+    /* ========== INTERNAL FUNCTIONS ========== */
+
+    /// @notice Buy options from AMM
+    /// @param market address of a market
+    /// @param asset market asset
+    /// @param position position to be bought
+    /// @param amount amount of positions to be bought
+    function _buyFromAmm(
+        address market,
+        Asset asset,
+        IThalesAMM.Position position,
+        uint amount
+    ) internal {
+        uint quote = thalesAMM.buyFromAmmQuote(market, position, amount);
+        uint allocationAsset = (allocationPerRound[round] * allocationLimits[asset]) / HUNDRED;
+        require(
+            (quote + allocationSpentPerRound[round][asset]) < allocationAsset,
+            "Amount exceeds available allocation for asset"
+        );
+
+        uint balanceBeforeTrade = sUSD.balanceOf(address(this));
+
+        thalesAMM.buyFromAMM(market, position, amount, quote, 500000000000000000);
+
+        uint balanceAfterTrade = sUSD.balanceOf(address(this));
+
+        uint totalAmountSpent = balanceBeforeTrade - balanceAfterTrade;
+
+        allocationSpentPerRound[round][asset] += totalAmountSpent;
+
+        emit TradeExecuted(market, position, asset, amount, totalAmountSpent);
     }
 
-    event RoundStarted(uint round);
-    event RoundClosed(uint round);
-    event RoundLengthChanged(uint roundLength);
-    event ThalesAMMChanged(address thalesAmm);
-    event SetSUSD(address sUSD);
+    /// @notice Get asset number based on asset key
+    /// @param key asset key
+    /// @return asset
+    function _getAsset(bytes32 key) public pure returns (Asset asset) {
+        if (key == "ETH") {
+            asset = Asset.ETH;
+        } else if (key == "BTC") {
+            asset = Asset.BTC;
+        } else {
+            asset = Asset.Other;
+        }
+    }
+
+    /* ========== VIEWS ========== */
+
+    /// @notice Get amount spent on given asset in a round
+    /// @param _round number of round
+    /// @param asset asset to fetch spent allocation for
+    /// @return uint
+    function getAllocationSpentPerRound(uint _round, Asset asset) external view returns (uint) {
+        return allocationSpentPerRound[_round][asset];
+    }
+
+    /* ========== EVENTS ========== */
+
     event SetAllocationLimits(uint allocationETH, uint allocationBTC, uint allocationOtherAssets);
     event SetPriceLimits(uint priceLowerLimit, uint priceUpperLimit);
     event SetSkewImpactLimit(uint skewImpact);
     event TradeExecuted(address market, IThalesAMM.Position position, Asset asset, uint amount, uint quote);
-    event Deposited(address user, uint amount);
-    event Claimed(address user, uint amount);
 }

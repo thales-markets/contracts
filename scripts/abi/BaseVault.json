@@ -113,50 +113,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "allocationETH",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "allocationBTC",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "allocationOtherAssets",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetAllocationLimits",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "priceLowerLimit",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "priceUpperLimit",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetPriceLimits",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "sUSD",
         "type": "address"
@@ -170,62 +126,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "skewImpact",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetSkewImpactLimit",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "thalesAmm",
         "type": "address"
       }
     ],
     "name": "ThalesAMMChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum IThalesAMM.Position",
-        "name": "position",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "enum Vault.Asset",
-        "name": "asset",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "quote",
-        "type": "uint256"
-      }
-    ],
-    "name": "TradeExecuted",
     "type": "event"
   },
   {
@@ -261,48 +167,10 @@
     "type": "event"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "key",
-        "type": "bytes32"
-      }
-    ],
-    "name": "_getAsset",
-    "outputs": [
-      {
-        "internalType": "enum Vault.Asset",
-        "name": "asset",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "enum Vault.Asset",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "name": "allocationLimits",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -314,30 +182,6 @@
       }
     ],
     "name": "allocationPerRound",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "enum Vault.Asset",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "name": "allocationSpentPerRound",
     "outputs": [
       {
         "internalType": "uint256",
@@ -469,30 +313,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_round",
-        "type": "uint256"
-      },
-      {
-        "internalType": "enum Vault.Asset",
-        "name": "asset",
-        "type": "uint8"
-      }
-    ],
-    "name": "getAllocationSpentPerRound",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "user",
         "type": "address"
@@ -560,64 +380,6 @@
   {
     "inputs": [],
     "name": "initNonReentrant",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IThalesAMM",
-        "name": "_thalesAmm",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IERC20",
-        "name": "_sUSD",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_roundLength",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_priceLowerLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_priceUpperLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_skewImpactLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_allocationLimitBTC",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_allocationLimitETH",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_allocationLimitOtherAssets",
-        "type": "uint256"
-      }
-    ],
-    "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -693,32 +455,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "priceLowerLimit",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "priceUpperLimit",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -823,53 +559,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_allocationETH",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_allocationBTC",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_allocationOtherAssets",
-        "type": "uint256"
-      }
-    ],
-    "name": "setAllocationLimits",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
       }
     ],
     "name": "setOwner",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_priceLowerLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_priceUpperLimit",
-        "type": "uint256"
-      }
-    ],
-    "name": "setPriceLimits",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -903,19 +598,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_skewImpactLimit",
-        "type": "uint256"
-      }
-    ],
-    "name": "setSkewImpactLimit",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "contract IThalesAMM",
         "name": "_thalesAMM",
         "type": "address"
@@ -924,19 +606,6 @@
     "name": "setThalesAMM",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "skewImpactLimit",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -957,24 +626,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "market",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "trade",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

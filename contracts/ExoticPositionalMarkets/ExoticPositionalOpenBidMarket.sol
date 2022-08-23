@@ -53,7 +53,6 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     bool public feesAndBondsClaimed;
     bool public withdrawalAllowed;
 
-    address public creatorAddress;
     address public resolverAddress;
     address public paymentToken;
     TicketType public ticketType;
@@ -115,13 +114,13 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         withdrawalPeriod = _endOfPositioning.sub(marketManager.withdrawalTimePeriod());
         minPosAmount = marketManager.minFixedTicketPrice();
         paymentToken = marketManager.paymentToken();
-        creatorAddress = marketManager.creatorAddress(address(this));
     }
 
     function takeCreatorInitialOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external onlyOwner {
         require(_positions.length > 0 && _positions.length <= positionCount, "Invalid posNum");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
         uint totalDepositedAmount = 0;
+        address creator = marketManager.creatorAddress(address(this));
         for (uint i = 0; i < _positions.length; i++) {
             require(_positions[i] > 0, "Non-zero expected");
             require(_positions[i] <= positionCount, "Value invalid");
@@ -129,22 +128,21 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
                 _amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition),
                 "Amounts exceed"
             );
+
             totalOpenBidAmountPerPosition[_positions[i]] = totalOpenBidAmountPerPosition[_positions[i]].add(_amounts[i]);
-            userOpenBidPosition[creatorAddress][_positions[i]] = userOpenBidPosition[creatorAddress][_positions[i]].add(
-                _amounts[i]
-            );
+            userOpenBidPosition[creator][_positions[i]] = userOpenBidPosition[creator][_positions[i]].add(_amounts[i]);
             totalDepositedAmount = totalDepositedAmount.add(_amounts[i]);
         }
         require(
-            totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) >= minPosAmount &&
-                totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount) <= maxAmountForOpenBidPosition,
+            totalUserPlacedAmount[creator].add(totalDepositedAmount) >= minPosAmount &&
+                totalUserPlacedAmount[creator].add(totalDepositedAmount) <= maxAmountForOpenBidPosition,
             "Amounts exceed"
         );
         totalOpenBidAmount = totalOpenBidAmount.add(totalDepositedAmount);
-        totalUserPlacedAmount[creatorAddress] = totalUserPlacedAmount[creatorAddress].add(totalDepositedAmount);
+        totalUserPlacedAmount[creator] = totalUserPlacedAmount[creator].add(totalDepositedAmount);
         totalUsersTakenPositions = totalUsersTakenPositions.add(1);
-        transferToMarket(creatorAddress, totalDepositedAmount, paymentToken);
-        emit NewOpenBidsForPositions(creatorAddress, _positions, _amounts);
+        transferToMarket(creator, totalDepositedAmount, paymentToken);
+        emit NewOpenBidsForPositions(creator, _positions, _amounts);
     }
 
     function takeOpenBidPositions(
@@ -203,7 +201,8 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         require(withdrawalAllowed, "Not allowed");
         require(canUsersPlacePosition(), "Market resolved");
         require(block.timestamp <= withdrawalPeriod, "Withdrawal expired");
-        require(msg.sender != creatorAddress, "Creator forbidden");
+        address creator = marketManager.creatorAddress(address(this));
+        require(msg.sender != creator, "Creator forbidden");
         uint totalToWithdraw;
         if (_openBidPosition == 0) {
             for (uint i = 1; i <= positionCount; i++) {
@@ -238,7 +237,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         totalUserPlacedAmount[msg.sender] = totalUserPlacedAmount[msg.sender].sub(totalToWithdraw);
         uint withdrawalFee = totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
         thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2), paymentToken);
-        thalesBonds.transferFromMarket(creatorAddress, withdrawalFee.div(2), paymentToken);
+        thalesBonds.transferFromMarket(creator, withdrawalFee.div(2), paymentToken);
         thalesBonds.transferFromMarket(msg.sender, totalToWithdraw.sub(withdrawalFee), collateral);
         emit OpenBidUserWithdrawn(msg.sender, _openBidPosition, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
     }
@@ -324,7 +323,11 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         require(canUsersClaim() || marketManager.cancelledByCreator(address(this)), "Not finalized");
         require(!feesAndBondsClaimed, "Fees claimed");
         if (winningPosition != CANCELED) {
-            thalesBonds.transferFromMarket(creatorAddress, getAdditionalCreatorAmount(), paymentToken);
+            thalesBonds.transferFromMarket(
+                marketManager.creatorAddress(address(this)),
+                getAdditionalCreatorAmount(),
+                paymentToken
+            );
             thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount(), paymentToken);
             thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount(), paymentToken);
         }
@@ -428,7 +431,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     }
 
     function canUserWithdraw(address _account) public view returns (bool) {
-        if (_account == creatorAddress) {
+        if (_account == marketManager.creatorAddress(address(this))) {
             return false;
         }
         return

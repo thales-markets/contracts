@@ -96,6 +96,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             IPositionalMarket(tradingMarketsPerRound[round][i]).exerciseOptions();
         }
 
+        // TODO: exclude sUSD that was sent directly to contract
         // balance in next round does not affect PnL in a current round
         uint currentVaultBalance = sUSD.balanceOf(address(this)) - allocationPerRound[round + 1];
         // calculate PnL
@@ -279,10 +280,10 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             if (claimedPerRound[round][user] == true) return 0;
             return balancesPerRound[round - 1][user];
         } else {
-            uint initialBalance = (balancesPerRound[depositReceipt.round - 1][user] *
-                profitAndLossPerRound[depositReceipt.round - 1]) /
-                1e18 +
-                balancesPerRound[depositReceipt.round][user];
+            uint initialBalance =
+                (balancesPerRound[depositReceipt.round - 1][user] * profitAndLossPerRound[depositReceipt.round - 1]) /
+                    1e18 +
+                    balancesPerRound[depositReceipt.round][user];
 
             return (initialBalance * _cumulativePnLBetweenRounds(depositReceipt.round, round - 1)) / 1e18;
         }

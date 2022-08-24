@@ -1327,7 +1327,7 @@ contract('TheRundownConsumer', accounts => {
 				_id: fightId,
 			});
 
-			assert.equal(true, await deployedMarket.paused());
+			assert.equal(false, await deployedMarket.paused());
 			assert.equal(true, await deployedMarket.cancelled());
 
 			await expect(

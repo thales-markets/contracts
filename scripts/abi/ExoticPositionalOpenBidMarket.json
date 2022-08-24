@@ -323,7 +323,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "result",
         "type": "bool"
       }
     ],
@@ -454,7 +454,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      }
+    ],
     "name": "claimWinningTicket",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -465,6 +471,11 @@
       {
         "internalType": "address",
         "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
         "type": "address"
       }
     ],
@@ -912,7 +923,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "amount",
         "type": "uint256"
       }
     ],
@@ -1222,6 +1233,19 @@
   },
   {
     "inputs": [],
+    "name": "paymentToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "positionCount",
     "outputs": [
       {
@@ -1416,6 +1440,11 @@
         "internalType": "uint256[]",
         "name": "_amounts",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
       }
     ],
     "name": "takeOpenBidPositions",
@@ -1588,6 +1617,11 @@
         "internalType": "uint256",
         "name": "_openBidPosition",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
       }
     ],
     "name": "withdraw",

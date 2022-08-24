@@ -15,10 +15,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     using SafeMath for uint;
     using SafeERC20 for IERC20;
 
-    enum TicketType {
-        FIXED_TICKET_PRICE,
-        FLEXIBLE_BID
-    }
+    enum TicketType {FIXED_TICKET_PRICE, FLEXIBLE_BID}
     uint private constant HUNDRED = 100;
     uint private constant ONE_PERCENT = 1e16;
     uint private constant HUNDRED_PERCENT = 1e18;
@@ -122,8 +119,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         uint totalDepositedAmount = 0;
         address creator = marketManager.creatorAddress(address(this));
         for (uint i = 0; i < _positions.length; i++) {
-            require(_positions[i] > 0, "Non-zero expected");
-            require(_positions[i] <= positionCount, "Value invalid");
+            require(_positions[i] > 0 && _positions[i] <= positionCount, "Value invalid");
             require(
                 _amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition),
                 "Amounts exceed"
@@ -150,8 +146,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         uint[] memory _amounts,
         address collateral
     ) external notPaused nonReentrant {
-        require(_positions.length > 0, "Invalid posNum");
-        require(_positions.length <= positionCount, "Exceeds count");
+        require(_positions.length > 0 && _positions.length <= positionCount, "Invalid posNum");
         require(canUsersPlacePosition(), "Market resolved");
         require(ticketType == TicketType.FLEXIBLE_BID, "Not OpenBid");
         if (block.timestamp.add(1 days) > endOfPositioning) {
@@ -166,8 +161,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         uint totalDepositedAmount = 0;
         bool firstTime = true;
         for (uint i = 0; i < _positions.length; i++) {
-            require(_positions[i] > 0, "Non-zero expected");
-            require(_positions[i] <= positionCount, "Value invalid");
+            require(_positions[i] > 0 && _positions[i] <= positionCount, "Position value invalid");
             require(
                 _amounts[i] == 0 || (_amounts[i] >= minPosAmount && _amounts[i] <= maxAmountForOpenBidPosition),
                 "Amounts exceed"
@@ -198,9 +192,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     }
 
     function withdraw(uint _openBidPosition, address collateral) external notPaused nonReentrant {
-        require(withdrawalAllowed, "Not allowed");
-        require(canUsersPlacePosition(), "Market resolved");
-        require(block.timestamp <= withdrawalPeriod, "Withdrawal expired");
+        require(withdrawalAllowed && canUsersPlacePosition() && block.timestamp <= withdrawalPeriod, "Not allowed");
         address creator = marketManager.creatorAddress(address(this));
         require(msg.sender != creator, "Creator forbidden");
         uint totalToWithdraw;
@@ -402,16 +394,9 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             canMarketBeResolvedByOwner() && block.timestamp >= endOfPositioning.add(marketManager.pDAOResolveTimePeriod());
     }
 
-    function canCreatorCancelMarket() external view returns (bool) {
-        if (disputed) {
-            return false;
-        } else if (totalUsersTakenPositions == 1) {
-            return true;
-        } else {
-            return false;
-            // return totalOpenBidAmount == getUserOpenBidTotalPlacedAmount(marketManager.creatorAddress(address(this)))
-            //         ? true
-            //         : false;
+    function canCreatorCancelMarket() external view returns (bool result) {
+        if (!disputed && totalUsersTakenPositions == 1) {
+            result = true;
         }
     }
 
@@ -479,8 +464,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
 
     /// FLEXIBLE BID FUNCTIONS
 
-    function getUserOpenBidTotalPlacedAmount(address _account) public view returns (uint) {
-        uint amount = 0;
+    function getUserOpenBidTotalPlacedAmount(address _account) public view returns (uint amount) {
         for (uint i = 1; i <= positionCount; i++) {
             amount = amount.add(userOpenBidPosition[_account][i]);
         }
@@ -548,12 +532,12 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         return
             (value)
                 .mul(
-                    HUNDRED.sub(
-                        marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(
-                            marketManager.resolverPercentage()
-                        )
+                HUNDRED.sub(
+                    marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(
+                        marketManager.resolverPercentage()
                     )
                 )
+            )
                 .mul(ONE_PERCENT)
                 .div(HUNDRED_PERCENT);
     }

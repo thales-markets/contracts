@@ -410,7 +410,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      }
+    ],
     "name": "claimWinningTicket",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -421,6 +427,11 @@
       {
         "internalType": "address",
         "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
         "type": "address"
       }
     ],
@@ -1110,6 +1121,19 @@
   },
   {
     "inputs": [],
+    "name": "paymentToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "positionCount",
     "outputs": [
       {
@@ -1281,6 +1305,11 @@
         "internalType": "uint256",
         "name": "_position",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
       }
     ],
     "name": "takeAPosition",
@@ -1424,7 +1453,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      }
+    ],
     "name": "withdraw",
     "outputs": [],
     "stateMutability": "nonpayable",

@@ -15,10 +15,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     using SafeMath for uint;
     using SafeERC20 for IERC20;
 
-    enum TicketType {
-        FIXED_TICKET_PRICE,
-        FLEXIBLE_BID
-    }
+    enum TicketType {FIXED_TICKET_PRICE, FLEXIBLE_BID}
     uint private constant HUNDRED = 100;
     uint private constant ONE_PERCENT = 1e16;
     uint private constant HUNDRED_PERCENT = 1e18;
@@ -139,9 +136,8 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         require(userPosition[msg.sender] > 0, "Not a ticket holder");
         address creator = marketManager.creatorAddress(address(this));
         require(msg.sender != creator, "Can not withdraw");
-        uint withdrawalFee = fixedTicketPrice.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(
-            HUNDRED_PERCENT
-        );
+        uint withdrawalFee =
+            fixedTicketPrice.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
         totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
         ticketsPerPosition[userPosition[msg.sender]] = ticketsPerPosition[userPosition[msg.sender]].sub(1);
         userPosition[msg.sender] = 0;
@@ -469,9 +465,10 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
                 return
                     applyDeduction(getTotalPlacedAmount().add(fixedTicketPrice)).div(ticketsPerPosition[_position].add(1));
             } else {
-                uint calculatedPositions = userHasAlreadyTakenThisPosition && ticketsPerPosition[_position] > 0
-                    ? ticketsPerPosition[_position]
-                    : ticketsPerPosition[_position].add(1);
+                uint calculatedPositions =
+                    userHasAlreadyTakenThisPosition && ticketsPerPosition[_position] > 0
+                        ? ticketsPerPosition[_position]
+                        : ticketsPerPosition[_position].add(1);
                 return applyDeduction(getTotalPlacedAmount()).div(calculatedPositions);
             }
         }
@@ -495,12 +492,12 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         return
             (value)
                 .mul(
-                    HUNDRED.sub(
-                        marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(
-                            marketManager.resolverPercentage()
-                        )
+                HUNDRED.sub(
+                    marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(
+                        marketManager.resolverPercentage()
                     )
                 )
+            )
                 .mul(ONE_PERCENT)
                 .div(HUNDRED_PERCENT);
     }

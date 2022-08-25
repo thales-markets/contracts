@@ -10,6 +10,10 @@ const SECOND = 1;
 const HOUR = 3600;
 const DAY = 86400;
 
+const additionalSlippage = toUnit(0.02);
+const { toBN } = web3.utils;
+const usdcQuantity = toBN(10000 * 1e6); //100 USDC
+
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 // contracts
@@ -53,7 +57,11 @@ let marketQuestion,
 	totalAmount12,
 	totalAmount13,
 	totalAmount23,
-	totalAmount123;
+	totalAmount123,
+	testUSDC,
+	testDAI,
+	testUSDT,
+	curveSUSD;
 
 contract('Exotic Positional market', async accounts => {
 	const [
@@ -917,6 +925,86 @@ contract('Exotic Positional market', async accounts => {
 						});
 					});
 				});
+			});
+		});
+		describe('user takes position with different collateral', async () => {
+			before('Set different collateral tokens and mint for user', async () => {
+				let TestUSDC = artifacts.require('TestUSDC');
+				testUSDC = await TestUSDC.new();
+				testUSDT = await TestUSDC.new();
+
+				let ERC20token = artifacts.require('Thales');
+				testDAI = await ERC20token.new();
+
+				let CurveSUSD = artifacts.require('MockCurveSUSD');
+
+				curveSUSD = await CurveSUSD.new(
+					Thales.address,
+					testUSDC.address,
+					testUSDT.address,
+					testDAI.address
+				);
+
+				console.log('minting');
+				await testUSDC.mint(userOne, positionAmount1);
+				await testUSDC.mint(curveSUSD.address, positionAmount1);
+				await testUSDC.approve(ThalesBonds.address, positionAmount1, { from: userOne });
+				console.log('done minting');
+			});
+			it('user takes positions with USDC when onramp disabled', async () => {
+				await ThalesBonds.setCurveSUSD(
+					curveSUSD.address,
+					testDAI.address,
+					testUSDC.address,
+					testUSDT.address,
+					false,
+					{ from: manager }
+				);
+
+				const collateralQuote = await ThalesBonds.getCurveQuoteForDifferentCollateral(
+					positionAmount1,
+					testUSDC.address,
+					true
+				);
+
+				await expect(
+					deployedOpenBidMarket.takeOpenBidPositions(
+						[outcomePosition],
+						[positionAmount1],
+						testUSDC.address,
+						collateralQuote,
+						additionalSlippage,
+						{ from: userOne }
+					)
+				).to.be.revertedWith('unsupported collateral');
+			});
+
+			it('user takes positions with USDC when onramp enabled', async () => {
+				await ThalesBonds.setCurveSUSD(
+					curveSUSD.address,
+					testDAI.address,
+					testUSDC.address,
+					testUSDT.address,
+					true,
+					{ from: manager }
+				);
+
+				const collateralQuote = await ThalesBonds.getCurveQuoteForDifferentCollateral(
+					positionAmount1,
+					testUSDC.address,
+					true
+				);
+
+				await testUSDC.approve(ThalesBonds.address, collateralQuote, { from: userOne });
+
+				answer = await deployedOpenBidMarket.takeOpenBidPositions(
+					[outcomePosition],
+					[positionAmount1],
+					testUSDC.address,
+					collateralQuote,
+					additionalSlippage,
+					{ from: userOne }
+				);
 			});
 		});
 	});

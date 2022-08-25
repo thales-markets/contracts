@@ -306,31 +306,6 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         transferBondFromMarket(_account, _amount);
     }
 
-    function transferFromMarket(
-        address _account,
-        uint _amount,
-        address collateral
-    ) external whenNotPaused {
-        require(marketManager.isActiveMarket(msg.sender), "Not active market.");
-        require(marketFunds[msg.sender] >= _amount, "Low funds.");
-        marketFunds[msg.sender] = marketFunds[msg.sender].sub(_amount);
-
-        if (collateral == marketManager.paymentToken()) {
-            transferBondFromMarket(_account, _amount);
-        } else {
-            int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-            require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
-
-            // getting Quote to exchange sUSD for collateral and proceeding with the swap
-            uint collateralQuote = getCurveQuoteForDifferentCollateral(_amount, collateral, false);
-            curveSUSD.exchange_underlying(0, curveIndex, _amount, collateralQuote);
-
-            // sending minimum received collateral(by curve) to user
-            IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
-            collateralToken.safeTransferFrom(address(this), msg.sender, collateralQuote);
-        }
-    }
-
     function transferToMarketBond(address _account, uint _amount) internal whenNotPaused {
         IERC20Upgradeable(marketManager.paymentToken()).safeTransferFrom(_account, address(this), _amount);
     }

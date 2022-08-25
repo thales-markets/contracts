@@ -196,7 +196,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit NewOpenBidsForPositions(msg.sender, _positions, _amounts);
     }
 
-    function withdraw(uint _openBidPosition, address collateral) external notPaused nonReentrant {
+    function withdraw(uint _openBidPosition) external notPaused nonReentrant {
         require(withdrawalAllowed && canUsersPlacePosition() && block.timestamp <= withdrawalPeriod, "Not allowed");
         address creator = marketManager.creatorAddress(address(this));
         require(msg.sender != creator, "Creator forbidden");
@@ -233,9 +233,9 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         totalOpenBidAmount = totalOpenBidAmount.sub(totalToWithdraw);
         totalUserPlacedAmount[msg.sender] = totalUserPlacedAmount[msg.sender].sub(totalToWithdraw);
         uint withdrawalFee = totalToWithdraw.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
-        thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2), paymentToken);
-        thalesBonds.transferFromMarket(creator, withdrawalFee.div(2), paymentToken);
-        thalesBonds.transferFromMarket(msg.sender, totalToWithdraw.sub(withdrawalFee), collateral);
+        thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), withdrawalFee.div(2));
+        thalesBonds.transferFromMarket(creator, withdrawalFee.div(2));
+        thalesBonds.transferFromMarket(msg.sender, totalToWithdraw.sub(withdrawalFee));
         emit OpenBidUserWithdrawn(msg.sender, _openBidPosition, totalToWithdraw.sub(withdrawalFee), totalOpenBidAmount);
     }
 
@@ -284,13 +284,13 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit MarketResolved(CANCELED, msg.sender, noWinners);
     }
 
-    function claimWinningTicket(address collateral) external notPaused nonReentrant {
+    function claimWinningTicket() external notPaused nonReentrant {
         require(canUsersClaim(), "Market not finalized");
         uint amount = getUserClaimableAmount(msg.sender);
         require(amount > 0, "Claimable amount is zero.");
         claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
         resetForUserAllPositionsToZero(msg.sender);
-        thalesBonds.transferFromMarket(msg.sender, amount, collateral);
+        thalesBonds.transferFromMarket(msg.sender, amount);
         if (!feesAndBondsClaimed) {
             _issueFees();
         }
@@ -298,13 +298,13 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         emit WinningOpenBidAmountClaimed(msg.sender, amount);
     }
 
-    function claimWinningTicketOnBehalf(address _user, address collateral) external onlyOwner {
+    function claimWinningTicketOnBehalf(address _user) external onlyOwner {
         require(canUsersClaim() || marketManager.cancelledByCreator(address(this)), "Market not finalized");
         uint amount = getUserClaimableAmount(_user);
         require(amount > 0, "Claimable amount is zero.");
         claimableOpenBidAmount = claimableOpenBidAmount.sub(amount);
         resetForUserAllPositionsToZero(_user);
-        thalesBonds.transferFromMarket(_user, amount, collateral);
+        thalesBonds.transferFromMarket(_user, amount);
         if (!feesAndBondsClaimed) {
             _issueFees();
         }
@@ -320,13 +320,9 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         require(canUsersClaim() || marketManager.cancelledByCreator(address(this)), "Not finalized");
         require(!feesAndBondsClaimed, "Fees claimed");
         if (winningPosition != CANCELED) {
-            thalesBonds.transferFromMarket(
-                marketManager.creatorAddress(address(this)),
-                getAdditionalCreatorAmount(),
-                paymentToken
-            );
-            thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount(), paymentToken);
-            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount(), paymentToken);
+            thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
+            thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());
+            thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
         }
         marketManager.issueBondsBackToCreatorAndResolver(address(this));
         feesAndBondsClaimed = true;

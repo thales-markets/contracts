@@ -78,11 +78,7 @@ interface IThalesBonds {
         uint additionalSlippage
     ) external;
 
-    function transferFromMarket(
-        address _account,
-        uint _amount,
-        address collateral
-    ) external;
+    function transferFromMarket(address _account, uint _amount) external;
 
     function transferCreatorToResolverBonds(address _market) external;
 

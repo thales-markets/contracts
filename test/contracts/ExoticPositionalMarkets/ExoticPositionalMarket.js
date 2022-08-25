@@ -564,6 +564,8 @@ contract('Exotic Positional market', async accounts => {
 						[outcomePosition],
 						[positionAmount1],
 						Thales.address,
+						0,
+						0,
 						{ from: userOne }
 					);
 				});
@@ -670,6 +672,8 @@ contract('Exotic Positional market', async accounts => {
 						[outcomePosition, outcomePosition2],
 						[positionAmount1, positionAmount2],
 						Thales.address,
+						0,
+						0,
 						{ from: userOne }
 					);
 				});
@@ -776,12 +780,16 @@ contract('Exotic Positional market', async accounts => {
 						[outcomePosition, outcomePosition2],
 						[positionAmount1, positionAmount2],
 						Thales.address,
+						0,
+						0,
 						{ from: userOne }
 					);
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition2, outcomePosition3],
 						[positionAmount2, positionAmount3],
 						Thales.address,
+						0,
+						0,
 						{ from: userTwo }
 					);
 				});
@@ -1069,7 +1077,7 @@ contract('Exotic Positional market', async accounts => {
 
 			describe('userOne takes position', async function() {
 				beforeEach(async () => {
-					answer = await deployedMarket.takeAPosition(outcomePosition, Thales.address, {
+					answer = await deployedMarket.takeAPosition(outcomePosition, Thales.address, 0, 0, {
 						from: userOne,
 					});
 				});
@@ -1190,7 +1198,7 @@ contract('Exotic Positional market', async accounts => {
 
 			describe('userOne takes position', async function() {
 				beforeEach(async () => {
-					answer = await deployedMarket.takeAPosition(outcomePosition, Thales.address, {
+					answer = await deployedMarket.takeAPosition(outcomePosition, Thales.address, 0, 0, {
 						from: userOne,
 					});
 				});
@@ -1577,13 +1585,13 @@ contract('Exotic Positional market', async accounts => {
 									assert.equal(answer, true);
 								});
 								it('3 ticket purchases with 3 different positions', async function() {
-									answer = await deployedMarket.takeAPosition('1', Thales.address, {
+									answer = await deployedMarket.takeAPosition('1', Thales.address, 0, 0, {
 										from: userOne,
 									});
-									answer = await deployedMarket.takeAPosition('2', Thales.address, {
+									answer = await deployedMarket.takeAPosition('2', Thales.address, 0, 0, {
 										from: userTwo,
 									});
-									answer = await deployedMarket.takeAPosition('3', Thales.address, {
+									answer = await deployedMarket.takeAPosition('3', Thales.address, 0, 0, {
 										from: userThree,
 									});
 									answer = await deployedMarket.totalUsersTakenPositions();
@@ -1591,13 +1599,13 @@ contract('Exotic Positional market', async accounts => {
 								});
 								describe('ACCEPT_SLASH (Code 1)', function() {
 									beforeEach(async () => {
-										answer = await deployedMarket.takeAPosition('1', Thales.address, {
+										answer = await deployedMarket.takeAPosition('1', Thales.address, 0, 0, {
 											from: userOne,
 										});
-										answer = await deployedMarket.takeAPosition('2', Thales.address, {
+										answer = await deployedMarket.takeAPosition('2', Thales.address, 0, 0, {
 											from: userTwo,
 										});
-										answer = await deployedMarket.takeAPosition('3', Thales.address, {
+										answer = await deployedMarket.takeAPosition('3', Thales.address, 0, 0, {
 											from: userThree,
 										});
 										answer = await ThalesOracleCouncil.voteForDispute(
@@ -1658,13 +1666,13 @@ contract('Exotic Positional market', async accounts => {
 									beforeEach(async () => {
 										creatorBalance = await Thales.balanceOf(owner);
 										disputorBalance = await Thales.balanceOf(userTwo);
-										answer = await deployedMarket.takeAPosition('1', Thales.address, {
+										answer = await deployedMarket.takeAPosition('1', Thales.address, 0, 0, {
 											from: userOne,
 										});
-										answer = await deployedMarket.takeAPosition('2', Thales.address, {
+										answer = await deployedMarket.takeAPosition('2', Thales.address, 0, 0, {
 											from: userTwo,
 										});
-										answer = await deployedMarket.takeAPosition('3', Thales.address, {
+										answer = await deployedMarket.takeAPosition('3', Thales.address, 0, 0, {
 											from: userThree,
 										});
 
@@ -1736,13 +1744,13 @@ contract('Exotic Positional market', async accounts => {
 									beforeEach(async () => {
 										creatorBalance = await Thales.balanceOf(owner);
 										disputorBalance = await Thales.balanceOf(userTwo);
-										answer = await deployedMarket.takeAPosition('1', Thales.address, {
+										answer = await deployedMarket.takeAPosition('1', Thales.address, 0, 0, {
 											from: userOne,
 										});
-										answer = await deployedMarket.takeAPosition('2', Thales.address, {
+										answer = await deployedMarket.takeAPosition('2', Thales.address, 0, 0, {
 											from: userTwo,
 										});
-										answer = await deployedMarket.takeAPosition('3', Thales.address, {
+										answer = await deployedMarket.takeAPosition('3', Thales.address, 0, 0, {
 											from: userThree,
 										});
 
@@ -1809,9 +1817,13 @@ contract('Exotic Positional market', async accounts => {
 								answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 									from: owner,
 								});
-								answer = await deployedMarket.takeAPosition('1', Thales.address, { from: userOne });
-								answer = await deployedMarket.takeAPosition('2', Thales.address, { from: userTwo });
-								answer = await deployedMarket.takeAPosition('3', Thales.address, {
+								answer = await deployedMarket.takeAPosition('1', Thales.address, 0, 0, {
+									from: userOne,
+								});
+								answer = await deployedMarket.takeAPosition('2', Thales.address, 0, 0, {
+									from: userTwo,
+								});
+								answer = await deployedMarket.takeAPosition('3', Thales.address, 0, 0, {
 									from: userThree,
 								});
 								await fastForward(DAY + SECOND);

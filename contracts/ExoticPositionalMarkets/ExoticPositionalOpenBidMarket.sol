@@ -15,7 +15,10 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     using SafeMath for uint;
     using SafeERC20 for IERC20;
 
-    enum TicketType {FIXED_TICKET_PRICE, FLEXIBLE_BID}
+    enum TicketType {
+        FIXED_TICKET_PRICE,
+        FLEXIBLE_BID
+    }
     uint private constant HUNDRED = 100;
     uint private constant ONE_PERCENT = 1e16;
     uint private constant HUNDRED_PERCENT = 1e18;
@@ -137,14 +140,16 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         totalOpenBidAmount = totalOpenBidAmount.add(totalDepositedAmount);
         totalUserPlacedAmount[creator] = totalUserPlacedAmount[creator].add(totalDepositedAmount);
         totalUsersTakenPositions = totalUsersTakenPositions.add(1);
-        transferToMarket(creator, totalDepositedAmount, paymentToken);
+        IThalesBonds(marketManager.thalesBonds()).transferToMarket(creator, totalDepositedAmount);
         emit NewOpenBidsForPositions(creator, _positions, _amounts);
     }
 
     function takeOpenBidPositions(
         uint[] memory _positions,
         uint[] memory _amounts,
-        address collateral
+        address collateral,
+        uint expectedPayout,
+        uint additionalSlippage
     ) external notPaused nonReentrant {
         require(_positions.length > 0 && _positions.length <= positionCount, "Invalid posNum");
         require(canUsersPlacePosition(), "Market resolved");
@@ -186,7 +191,7 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
             totalOpenBidAmount = totalOpenBidAmount.add(amountToBeAdded);
             totalUserPlacedAmount[msg.sender] = totalUserPlacedAmount[msg.sender].add(amountToBeAdded);
             totalUsersTakenPositions = firstTime ? totalUsersTakenPositions.add(1) : totalUsersTakenPositions;
-            transferToMarket(msg.sender, amountToBeAdded, collateral);
+            transferToMarket(msg.sender, amountToBeAdded, collateral, expectedPayout, additionalSlippage);
         }
         emit NewOpenBidsForPositions(msg.sender, _positions, _amounts);
     }
@@ -352,12 +357,18 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     function transferToMarket(
         address _sender,
         uint _amount,
-        address collateral
+        address collateral,
+        uint expectedPayout,
+        uint additionalSlippage
     ) internal notPaused {
         require(_sender != address(0), "Invalid sender address");
-        require(IERC20(paymentToken).balanceOf(_sender) >= _amount, "Sender balance low");
-        require(IERC20(paymentToken).allowance(_sender, marketManager.thalesBonds()) >= _amount, "No allowance.");
-        IThalesBonds(marketManager.thalesBonds()).transferToMarket(_sender, _amount, collateral);
+        IThalesBonds(marketManager.thalesBonds()).transferToMarket(
+            _sender,
+            _amount,
+            collateral,
+            expectedPayout,
+            additionalSlippage
+        );
     }
 
     // SETTERS ///////////////////////////////////////////////////////
@@ -532,12 +543,12 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         return
             (value)
                 .mul(
-                HUNDRED.sub(
-                    marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(
-                        marketManager.resolverPercentage()
+                    HUNDRED.sub(
+                        marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(
+                            marketManager.resolverPercentage()
+                        )
                     )
                 )
-            )
                 .mul(ONE_PERCENT)
                 .div(HUNDRED_PERCENT);
     }

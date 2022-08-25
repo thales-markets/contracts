@@ -256,10 +256,21 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         emit BondTransferredFromCreatorToResolver(_market, marketBond[_market].resolverBond);
     }
 
+    function transferToMarket(address _account, uint _amount) external whenNotPaused {
+        require(marketManager.isActiveMarket(msg.sender), "Not active market.");
+        marketFunds[msg.sender] = marketFunds[msg.sender].add(_amount);
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(_account, _amount);
+        }
+        transferToMarketBond(_account, _amount);
+    }
+
     function transferToMarket(
         address _account,
         uint _amount,
-        address collateral
+        address collateral,
+        uint expectedPayout,
+        uint additionalSlippage
     ) external whenNotPaused {
         require(marketManager.isActiveMarket(msg.sender), "Not active market.");
         marketFunds[msg.sender] = marketFunds[msg.sender].add(_amount);
@@ -274,11 +285,25 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
             require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
             uint collateralQuote = getCurveQuoteForDifferentCollateral(_amount, collateral, true);
+            require(collateralQuote.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high!");
+            require(IERC20Upgradeable(collateral).balanceOf(_account) >= collateralQuote, "Sender balance low");
+            require(
+                IERC20Upgradeable(collateral).allowance(_account, marketManager.thalesBonds()) >= collateralQuote,
+                "No allowance."
+            );
 
             IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
-            collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
+            collateralToken.safeTransferFrom(_account, address(this), collateralQuote);
             curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, _amount);
         }
+    }
+
+    function transferFromMarket(address _account, uint _amount) external whenNotPaused {
+        require(marketManager.isActiveMarket(msg.sender), "Not active market.");
+        require(marketFunds[msg.sender] >= _amount, "Low funds.");
+        marketFunds[msg.sender] = marketFunds[msg.sender].sub(_amount);
+
+        transferBondFromMarket(_account, _amount);
     }
 
     function transferFromMarket(

@@ -15,7 +15,10 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     using SafeMath for uint;
     using SafeERC20 for IERC20;
 
-    enum TicketType {FIXED_TICKET_PRICE, FLEXIBLE_BID}
+    enum TicketType {
+        FIXED_TICKET_PRICE,
+        FLEXIBLE_BID
+    }
     uint private constant HUNDRED = 100;
     uint private constant ONE_PERCENT = 1e16;
     uint private constant HUNDRED_PERCENT = 1e18;
@@ -108,18 +111,23 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         address creator = marketManager.creatorAddress(address(this));
         ticketsPerPosition[_position] = ticketsPerPosition[_position].add(1);
         userPosition[creator] = _position;
-        transferToMarket(creator, fixedTicketPrice, paymentToken);
+        IThalesBonds(marketManager.thalesBonds()).transferToMarket(creator, fixedTicketPrice);
         emit NewPositionTaken(creator, _position, fixedTicketPrice);
     }
 
-    function takeAPosition(uint _position, address collateral) external notPaused nonReentrant {
+    function takeAPosition(
+        uint _position,
+        address collateral,
+        uint expectedPayout,
+        uint additionalSlippage
+    ) external notPaused nonReentrant {
         require(_position > 0, "Invalid position");
         require(_position <= positionCount, "Position value invalid");
         require(canUsersPlacePosition(), "Positioning finished/market resolved");
         //require(same position)
         require(ticketType == TicketType.FIXED_TICKET_PRICE, "Not Fixed type");
         if (userPosition[msg.sender] == 0) {
-            transferToMarket(msg.sender, fixedTicketPrice, collateral);
+            transferToMarket(msg.sender, fixedTicketPrice, collateral, expectedPayout, additionalSlippage);
             totalUsersTakenPositions = totalUsersTakenPositions.add(1);
         } else {
             ticketsPerPosition[userPosition[msg.sender]] = ticketsPerPosition[userPosition[msg.sender]].sub(1);
@@ -136,8 +144,9 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         require(userPosition[msg.sender] > 0, "Not a ticket holder");
         address creator = marketManager.creatorAddress(address(this));
         require(msg.sender != creator, "Can not withdraw");
-        uint withdrawalFee =
-            fixedTicketPrice.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(HUNDRED_PERCENT);
+        uint withdrawalFee = fixedTicketPrice.mul(marketManager.withdrawalPercentage()).mul(ONE_PERCENT).div(
+            HUNDRED_PERCENT
+        );
         totalUsersTakenPositions = totalUsersTakenPositions.sub(1);
         ticketsPerPosition[userPosition[msg.sender]] = ticketsPerPosition[userPosition[msg.sender]].sub(1);
         userPosition[msg.sender] = 0;
@@ -293,12 +302,18 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     function transferToMarket(
         address _sender,
         uint _amount,
-        address collateral
+        address collateral,
+        uint expectedPayout,
+        uint additionalSlippage
     ) internal notPaused {
         require(_sender != address(0), "Invalid sender");
-        require(IERC20(paymentToken).balanceOf(_sender) >= _amount, "Sender balance low");
-        require(IERC20(paymentToken).allowance(_sender, marketManager.thalesBonds()) >= _amount, "No allowance.");
-        IThalesBonds(marketManager.thalesBonds()).transferToMarket(_sender, _amount, collateral);
+        IThalesBonds(marketManager.thalesBonds()).transferToMarket(
+            _sender,
+            _amount,
+            collateral,
+            expectedPayout,
+            additionalSlippage
+        );
     }
 
     // SETTERS ///////////////////////////////////////////////////////
@@ -465,10 +480,9 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
                 return
                     applyDeduction(getTotalPlacedAmount().add(fixedTicketPrice)).div(ticketsPerPosition[_position].add(1));
             } else {
-                uint calculatedPositions =
-                    userHasAlreadyTakenThisPosition && ticketsPerPosition[_position] > 0
-                        ? ticketsPerPosition[_position]
-                        : ticketsPerPosition[_position].add(1);
+                uint calculatedPositions = userHasAlreadyTakenThisPosition && ticketsPerPosition[_position] > 0
+                    ? ticketsPerPosition[_position]
+                    : ticketsPerPosition[_position].add(1);
                 return applyDeduction(getTotalPlacedAmount()).div(calculatedPositions);
             }
         }
@@ -492,12 +506,12 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         return
             (value)
                 .mul(
-                HUNDRED.sub(
-                    marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(
-                        marketManager.resolverPercentage()
+                    HUNDRED.sub(
+                        marketManager.safeBoxPercentage().add(marketManager.creatorPercentage()).add(
+                            marketManager.resolverPercentage()
+                        )
                     )
                 )
-            )
                 .mul(ONE_PERCENT)
                 .div(HUNDRED_PERCENT);
     }

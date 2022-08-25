@@ -68,10 +68,14 @@ interface IThalesBonds {
 
     function issueBondsBackToCreatorAndResolver(address _market) external;
 
+    function transferToMarket(address _account, uint _amount) external;
+
     function transferToMarket(
         address _account,
         uint _amount,
-        address collateral
+        address collateral,
+        uint expectedPayout,
+        uint additionalSlippage
     ) external;
 
     function transferFromMarket(

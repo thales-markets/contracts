@@ -14,7 +14,7 @@ let factory, manager, addressResolver;
 let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 let market, up, down, position, Synth;
 
-let aggregator_SNX, aggregator_ETH, aggregator_sUSD, aggregator_BTC;
+let aggregator_SNX, aggregator_ETH, aggregator_sUSD, aggregator_BTC, aggregator_sAUD;
 
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
@@ -41,14 +41,7 @@ contract('Vault', accounts => {
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
 			.connect(creator)
-			.createMarket(
-				oracleKey,
-				strikePrice.toString(),
-				maturity,
-				initialMint.toString(),
-				false,
-				ZERO_ADDRESS
-			);
+			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
 			event => event['event'] && event['event'] === 'MarketCreated'
@@ -103,21 +96,27 @@ contract('Vault', accounts => {
 		aggregator_ETH = await MockAggregator.new({ from: managerOwner });
 		aggregator_BTC = await MockAggregator.new({ from: managerOwner });
 		aggregator_sUSD = await MockAggregator.new({ from: managerOwner });
+		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 		aggregator_SNX.setDecimals('8');
 		aggregator_ETH.setDecimals('8');
 		aggregator_sUSD.setDecimals('8');
 		aggregator_BTC.setDecimals('8');
+		aggregator_sAUD.setDecimals('8');
 		const timestamp = await currentTime();
 
 		await aggregator_SNX.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 		await aggregator_ETH.setLatestAnswer(convertToDecimals(10000, 8), timestamp);
 		await aggregator_BTC.setLatestAnswer(convertToDecimals(30000, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
+		await aggregator_sAUD.setLatestAnswer(convertToDecimals(10000, 8), timestamp);
+		await manager.connect(creatorSigner).setTimeframeBuffer(1);
+		await manager.connect(creatorSigner).setPriceBuffer(toUnit(0.01).toString());
 
 		await priceFeed.connect(ownerSigner).addAggregator(SNXkey, aggregator_SNX.address);
 		await priceFeed.connect(ownerSigner).addAggregator(ETHkey, aggregator_ETH.address);
 		await priceFeed.connect(ownerSigner).addAggregator(BTCkey, aggregator_BTC.address);
 		await priceFeed.connect(ownerSigner).addAggregator(sUSDKey, aggregator_sUSD.address);
+		await priceFeed.connect(ownerSigner).addAggregator(sAUDKey, aggregator_sAUD.address);
 
 		await Promise.all([
 			sUSDSynth.issue(initialCreator, sUSDQty),
@@ -179,10 +178,13 @@ contract('Vault', accounts => {
 		await thalesAMM.setImpliedVolatilityPerAsset(ETHkey, toUnit(120), { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(BTCkey, toUnit(120), { from: owner });
 		await thalesAMM.setImpliedVolatilityPerAsset(SNXkey, toUnit(120), { from: owner });
+		await thalesAMM.setImpliedVolatilityPerAsset(sAUDKey, toUnit(120), { from: owner });
 		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
 			from: owner,
 		});
+
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 
@@ -630,6 +632,9 @@ contract('Vault', accounts => {
 			);
 
 			await assert.revert(vault.trade(market.address, toUnit(50).toString()), REVERT);
+
+			fastForward(week);
+			await vault.closeRound();
 		});
 
 		it('should not execute trade if amount exceeds available allocation', async () => {
@@ -678,25 +683,30 @@ contract('Vault', accounts => {
 			console.log('eth spent', (await vault.getAllocationSpentPerRound(round, Asset.ETH)) / 1e18);
 
 			await assert.revert(vault.trade(market1.address, toUnit(150).toString()), REVERT);
+
+			fastForward(week);
+			await vault.closeRound();
 		});
 
 		it('should not execute trade if allocation spent for asset', async () => {
 			let now = await currentTime();
 			let market1 = await createMarket(
 				manager,
-				ETHkey,
+				sAUDKey,
 				toUnit(12000),
-				now + day * 5,
+				now + day * 4,
 				toUnit(10),
 				creatorSigner
 			);
 
 			const REVERT = 'Amount exceeds available allocation for asset';
-			await vault.trade(market1.address, toUnit(130).toString());
-			await assert.revert(vault.trade(market1.address, toUnit(150).toString()), REVERT);
+			await vault.trade(market1.address, toUnit(50).toString());
+			await assert.revert(vault.trade(market1.address, toUnit(50).toString()), REVERT);
 		});
 
 		it('should execute trade and distribute amounts properly after one round', async () => {
+			//fastForward(week);
+
 			let now = await currentTime();
 			let market1 = await createMarket(
 				manager,

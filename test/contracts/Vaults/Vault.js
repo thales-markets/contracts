@@ -109,7 +109,7 @@ contract('Vault', accounts => {
 		await aggregator_BTC.setLatestAnswer(convertToDecimals(30000, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(10000, 8), timestamp);
-		await manager.connect(creatorSigner).setTimeframeBuffer(0);
+		await manager.connect(creatorSigner).setTimeframeBuffer(1);
 		await manager.connect(creatorSigner).setPriceBuffer(toUnit(0.01).toString());
 
 		await priceFeed.connect(ownerSigner).addAggregator(SNXkey, aggregator_SNX.address);
@@ -632,6 +632,9 @@ contract('Vault', accounts => {
 			);
 
 			await assert.revert(vault.trade(market.address, toUnit(50).toString()), REVERT);
+
+			fastForward(week);
+			await vault.closeRound();
 		});
 
 		it('should not execute trade if amount exceeds available allocation', async () => {
@@ -680,6 +683,9 @@ contract('Vault', accounts => {
 			console.log('eth spent', (await vault.getAllocationSpentPerRound(round, Asset.ETH)) / 1e18);
 
 			await assert.revert(vault.trade(market1.address, toUnit(150).toString()), REVERT);
+
+			fastForward(week);
+			await vault.closeRound();
 		});
 
 		it('should not execute trade if allocation spent for asset', async () => {
@@ -699,7 +705,7 @@ contract('Vault', accounts => {
 		});
 
 		it('should execute trade and distribute amounts properly after one round', async () => {
-			fastForward(week);
+			//fastForward(week);
 
 			let now = await currentTime();
 			let market1 = await createMarket(

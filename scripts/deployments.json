@@ -107,6 +107,27 @@
 		"RangedPositionMastercopy": "0xff9d1B34f369CAf91c6b69761e2A06f78ed3cd9d",
 		"RangedMarketMastercopy": "0x75c7671d046268c11b5f55bA75DF2B6d14774B1C"
 	},
+	"bsc": {
+		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+		"SafeBox": "0xCd9c0E99396627C7746b4363B880939Ac2828d3E",
+		"SafeBoxImplementation": "0x6B33b99E3D3213DF963375E6d94aBa968351f803",
+		"PriceFeed": "0x4A5A6f3a79589305786DA6d4e03D82b95942602A",
+		"PriceFeedImplementation": "0xfA891c76C3e08f5d06d9840034770397993b5DcC",
+		"PositionMastercopy": "0x95d93c88c1b5190fA7FA4350844e0663e5a11fF0",
+		"PositionalMarketMastercopy": "0xE0B31640B07E4BCFAFc190d7DDE951BA3286Dd63",
+		"PositionalMarketManager": "0x3124A11216273018C8F37181b4505d36573D9701",
+		"PositionalMarketManagerImplementation": "0xE2881cAd27db4C27fB3814AD97ccA694B80c0fA0",
+		"PositionalMarketFactory": "0x9A10967bc67b635BC79691ce69fE29C865D49C8c",
+		"PositionalMarketFactoryImplementation": "0x8Eb4eB483f0DfB0910d24351d11b4D098d82080D",
+		"PositionalMarketData": "0x308C5B6E489B693e1e582157aaBaF2d6df187aa1",
+		"DeciMath": "0xC6e9c95823D7CC98A92D73de89D69548E2774cd8",
+		"ThalesAMM": "0x85f1B57A1D3Ac7605de3Df8AdA056b3dB9676eCE",
+		"ThalesAMMImplementation": "0xEcA7A1b229BB6Ad5c96FeeCdBF095750A71889ac",
+		"RangedAMM": "0xda5Bd4aBAFbE249bdC5684eAD594B0ac379687fd",
+		"RangedAMMImplementation": "0x8Fc9310EC4c6d090Bd6Ad90025B47927399aDad6",
+		"Referrals": "0x8ba51d5b8C2693ecC4c355dC778b6a0Ae775A776",
+		"ReferralsImplementation": "0x22d23b6ba1086D495fd950Ed503e89158318136A"
+	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",
 		"L1StandardBridge": "0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1",
@@ -307,7 +328,9 @@
 		"SportsAMMImplementation": "0x0aBdaF0c4cFF91F96F817809d4735929fCA75B80",
 		"SportPositionalMarketData": "0xC7D8c34048D8bf6eB24FC76c7A61F47754990c81",
 		"SportPositionalMarketDataImplementation": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
-		"OvertimeVoucher": "0xD1fe5a0256AcaeA497ecD30dc0b816cce95e23E9"
+		"OvertimeVoucher": "0xD1fe5a0256AcaeA497ecD30dc0b816cce95e23E9",
+		"Referrals": "0xA59727442212227BBdCFEC1E883677A930707412",
+		"ReferralsImplementation": "0xd965c4192933a7cCF9BFD5C2a9f09DB9470e5485"
 	},
 	"localhost": {
 		"Airdrop": "",

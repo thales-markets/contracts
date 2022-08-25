@@ -36,6 +36,11 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 	console.log('Network id:' + networkObj.chainId);

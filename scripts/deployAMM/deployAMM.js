@@ -35,6 +35,11 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
+
 	if (networkObj.chainId == 10) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else if (networkObj.chainId == 69) {
@@ -42,6 +47,8 @@ async function main() {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
+	} else if (networkObj.chainId == 56) {
+		ProxyERC20sUSDaddress = getTargetAddress('BUSD', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
 		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
@@ -72,11 +79,11 @@ async function main() {
 		owner.address,
 		priceFeedAddress,
 		ProxyERC20sUSDaddress,
-		w3utils.toWei('30'),
+		w3utils.toWei('100'),
 		deciMath.address,
 		w3utils.toWei('0.02'),
 		w3utils.toWei('0.20'),
-		hour * 8,
+		hour * 24,
 	]);
 	await ThalesAMM_deployed.deployed();
 
@@ -107,50 +114,27 @@ async function main() {
 
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
 		toBytes32('ETH'),
-		w3utils.toWei('120')
+		w3utils.toWei('130')
 	);
 	await tx.wait().then(e => {
-		console.log('ThalesAMM: setImpliedVolatilityPerAsset(ETH, 120)');
+		console.log('ThalesAMM: setImpliedVolatilityPerAsset(ETH, 130)');
+	});
+
+	await delay(5000);
+
+	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(toBytes32('BTC'), w3utils.toWei('96'));
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BTC, 96)');
 	});
 
 	await delay(5000);
 
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
-		toBytes32('BTC'),
-		w3utils.toWei('120')
+		toBytes32('BNB'),
+		w3utils.toWei('106')
 	);
 	await tx.wait().then(e => {
-		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BTC, 120)');
-	});
-
-	await delay(5000);
-
-	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
-		toBytes32('LINK'),
-		w3utils.toWei('120')
-	);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setImpliedVolatilityPerAsset(LINK, 120)');
-	});
-
-	await delay(5000);
-
-	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
-		toBytes32('SNX'),
-		w3utils.toWei('120')
-	);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setImpliedVolatilityPerAsset(SNX, 120)');
-	});
-
-	await delay(5000);
-
-	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
-		toBytes32('MATIC'),
-		w3utils.toWei('120')
-	);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setImpliedVolatilityPerAsset(MATIC, 120)');
+		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BNB, 106)');
 	});
 
 	await delay(5000);

@@ -35,6 +35,11 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
+
 	if (networkObj.chainId == 10) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else if (networkObj.chainId == 69) {
@@ -42,6 +47,8 @@ async function main() {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
+	} else if (networkObj.chainId == 56) {
+		ProxyERC20sUSDaddress = getTargetAddress('BUSD', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
 		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;

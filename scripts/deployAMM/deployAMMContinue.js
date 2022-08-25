@@ -73,39 +73,92 @@ async function main() {
 	priceFeedAddress = getTargetAddress('PriceFeed', network);
 	console.log('Found PriceFeed at:' + priceFeedAddress);
 
-	let thalesAMMAddress = getTargetAddress('ThalesAMM', network);
-	console.log('Found ThalesAMM at:' + thalesAMMAddress);
+	const DeciMath = await ethers.getContractFactory('DeciMath');
+	const deciMath = await DeciMath.attach(getTargetAddress('DeciMath', network));
 
-	let safeBoxAddress = getTargetAddress('SafeBox', network);
-	console.log('Found safeBoxAddress at:' + safeBoxAddress);
+	await delay(5000);
 
-	const RangedAMM = await ethers.getContractFactory('RangedMarketsAMM');
-	let RangedAMM_deployed = await upgrades.deployProxy(RangedAMM, [
-		owner.address,
-		thalesAMMAddress,
-		w3utils.toWei('0.01'),
-		w3utils.toWei('100'),
-		ProxyERC20sUSDaddress,
-		safeBoxAddress,
-		w3utils.toWei('0.01'),
-	]);
-	await RangedAMM_deployed.deployed();
+	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
+	let ThalesAMM_deployed = ThalesAMM.attach(getTargetAddress('ThalesAMM', network));
+	let managerAddress = getTargetAddress('PositionalMarketManager', network);
 
-	console.log('RangedAMM_deployed proxy:', RangedAMM_deployed.address);
+	const PositionalMarketFactory = await ethers.getContractFactory('PositionalMarketFactory');
+	let factoryAddress = getTargetAddress('PositionalMarketFactory', network);
+	const PositionalMarketFactoryInstance = await PositionalMarketFactory.attach(factoryAddress);
 
-	const RangedAMMImplementation = await getImplementationAddress(
-		ethers.provider,
-		RangedAMM_deployed.address
-	);
+	await delay(5000);
 
-	console.log('Implementation RangedAMM: ', RangedAMMImplementation);
+	let tx = await PositionalMarketFactoryInstance.setThalesAMM(ThalesAMM_deployed.address);
+	await tx.wait().then(e => {
+		console.log('PositionalMarketFactoryInstance: setThalesAMM');
+	});
 
-	setTargetAddress('RangedAMM', network, RangedAMM_deployed.address);
-	setTargetAddress('RangedAMMImplementation', network, RangedAMMImplementation);
+	await delay(5000);
+	//setLookupTables
+	tx = await deciMath.setLUT1();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT1');
+	});
+
+	await delay(5000);
+	tx = await deciMath.setLUT2();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT2');
+	});
+
+	await delay(5000);
+	tx = await deciMath.setLUT3_1();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT3_1');
+	});
+
+	await delay(5000);
+	tx = await deciMath.setLUT3_2();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT3_2');
+	});
+
+	await delay(5000);
+	tx = await deciMath.setLUT3_3();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT3_3');
+	});
+
+	await delay(5000);
+	tx = await deciMath.setLUT3_4();
+	await tx.wait().then(e => {
+		console.log('deciMath: setLUT3_4');
+	});
+
+	await delay(5000);
+	const stakingThales = getTargetAddress('StakingThales', network);
+	if (stakingThales) {
+		tx = await ThalesAMM_deployed.setStakingThales(stakingThales);
+		await tx.wait().then(e => {
+			console.log('ThalesAMM: setStakingThales()');
+		});
+	}
+	await delay(5000);
+	const safeBox = getTargetAddress('SafeBox', network);
+	tx = await ThalesAMM_deployed.setSafeBox(safeBox);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setSafeBox()');
+	});
+
+	await delay(5000);
+	const safeBoxImpact = w3utils.toWei('0.02');
+	tx = await ThalesAMM_deployed.setSafeBoxImpact(safeBoxImpact);
+	await tx.wait().then(e => {
+		console.log('ThalesAMM: setSafeBoxImpact()');
+	});
+	await delay(5000);
+	await hre.run('verify:verify', {
+		address: deciMath.address,
+	});
 
 	try {
 		await hre.run('verify:verify', {
-			address: RangedAMMImplementation,
+			address: getTargetAddress('ThalesAMMImplementation', network),
 		});
 	} catch (e) {
 		console.log(e);

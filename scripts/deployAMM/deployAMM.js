@@ -40,12 +40,21 @@ async function main() {
 		network = 'bsc';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	if (networkObj.chainId == 10) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else if (networkObj.chainId == 69) {
 		networkObj.name = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	} else if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+	} else if (
+		networkObj.chainId == 80001 ||
+		networkObj.chainId == 137 ||
+		networkObj.chainId == 42161
+	) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
 	} else if (networkObj.chainId == 56) {
 		ProxyERC20sUSDaddress = getTargetAddress('BUSD', network);
@@ -125,16 +134,6 @@ async function main() {
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(toBytes32('BTC'), w3utils.toWei('96'));
 	await tx.wait().then(e => {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BTC, 96)');
-	});
-
-	await delay(5000);
-
-	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
-		toBytes32('BNB'),
-		w3utils.toWei('106')
-	);
-	await tx.wait().then(e => {
-		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BNB, 106)');
 	});
 
 	await delay(5000);

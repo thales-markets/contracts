@@ -22,7 +22,7 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-contract('ThalesAMM', accounts => {
+contract('ThalesAMM', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
 	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
@@ -43,7 +43,7 @@ contract('ThalesAMM', accounts => {
 			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
-			event => event['event'] && event['event'] === 'MarketCreated'
+			(event) => event['event'] && event['event'] === 'MarketCreated'
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
@@ -191,6 +191,7 @@ contract('ThalesAMM', accounts => {
 			testUSDC.address,
 			testUSDT.address,
 			true,
+			toUnit(0.02),
 			{ from: owner }
 		);
 
@@ -232,22 +233,24 @@ contract('ThalesAMM', accounts => {
 			);
 			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
-			let buyFromAmmQuoteUSDCCollateralObject = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18 - 1),
-				testUSDC.address
-			);
+			let buyFromAmmQuoteUSDCCollateralObject =
+				await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18 - 1),
+					testUSDC.address
+				);
 			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
 
 			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > buyFromAmmQuote / 1e18, true);
 
-			let buyFromAmmQuoteDAICollateralObject = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMM / 1e18 - 1),
-				testDAI.address
-			);
+			let buyFromAmmQuoteDAICollateralObject =
+				await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18 - 1),
+					testDAI.address
+				);
 			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
 
 			assert.equal(buyFromAmmQuoteDAICollateral / 1e18 > buyFromAmmQuote / 1e18, true);
@@ -256,12 +259,13 @@ contract('ThalesAMM', accounts => {
 
 			let ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
 
-			let buyFromAmmQuoteUSDCCollateralObjectSlippagedObject = await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
-				newMarket.address,
-				Position.UP,
-				toUnit(0.9 * (availableToBuyFromAMM / 1e18 - 1)),
-				testUSDC.address
-			);
+			let buyFromAmmQuoteUSDCCollateralObjectSlippagedObject =
+				await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
+					newMarket.address,
+					Position.UP,
+					toUnit(0.9 * (availableToBuyFromAMM / 1e18 - 1)),
+					testUSDC.address
+				);
 			let buyFromAmmQuoteUSDCCollateralObjectSlippaged =
 				buyFromAmmQuoteUSDCCollateralObjectSlippagedObject[0];
 			console.log(
@@ -335,6 +339,7 @@ contract('ThalesAMM', accounts => {
 				testUSDC.address,
 				testUSDT.address,
 				false,
+				toUnit(0.02),
 				{ from: owner }
 			);
 
@@ -350,6 +355,168 @@ contract('ThalesAMM', accounts => {
 					{ from: minter }
 				)
 			).to.be.revertedWith('unsupported collateral');
+		});
+
+		it('buying test max peg allowed', async () => {
+			let CurveSUSD = artifacts.require('MockCurveSUSDBreakingPeg');
+			curveSUSD = await CurveSUSD.new(
+				sUSDSynth.address,
+				testUSDC.address,
+				testUSDT.address,
+				testDAI.address
+			);
+
+			await thalesAMM.setCurveSUSD(
+				curveSUSD.address,
+				testDAI.address,
+				testUSDC.address,
+				testUSDT.address,
+				true,
+				toUnit(0.05),
+				{ from: owner }
+			);
+
+			let now = await currentTime();
+			let newMarket = await createMarket(
+				manager,
+				sETHKey,
+				toUnit(10000),
+				now + day * 20,
+				toUnit(10),
+				creatorSigner
+			);
+
+			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.UP
+			);
+
+			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 1e18 - 1)
+			);
+			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+
+			let buyFromAmmQuoteUSDCCollateralObject =
+				await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18 - 1),
+					testUSDC.address
+				);
+			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
+
+			console.log(
+				'buyFromAmmQuoteUSDCCollateral decimal is:' + buyFromAmmQuoteUSDCCollateral / 1e6
+			);
+
+			let minterUSDC = await testUSDC.balanceOf(minter);
+
+			let ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+
+			await thalesAMM.buyFromAMMWithDifferentCollateralAndReferrer(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 1e18 - 1),
+				buyFromAmmQuoteUSDCCollateral,
+				additionalSlippage,
+				testUSDC.address,
+				ZERO_ADDRESS,
+				{ from: minter }
+			);
+			console.log(
+				'Bought  ' +
+					(availableToBuyFromAMM / 1e18 - 1) +
+					' for ' +
+					buyFromAmmQuoteUSDCCollateral / 1e6 +
+					' sUSD'
+			);
+
+			minterUSDC = await testUSDC.balanceOf(minter);
+			console.log('minterUSDC post buy decimal is:' + minterUSDC / 1e6);
+
+			ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
+			console.log('ammSusdBalance post buy decimal is:' + ammSusdBalance / 1e18);
+
+			let options = await newMarket.options();
+			up = await position.at(options.up);
+			down = await position.at(options.down);
+
+			let minterUps = await up.balanceOf(minter);
+			console.log('minterUps post buy:' + minterUps / 1e18);
+		});
+
+		it('buying test max peg breaking', async () => {
+			let CurveSUSD = artifacts.require('MockCurveSUSDBreakingPeg');
+			curveSUSD = await CurveSUSD.new(
+				sUSDSynth.address,
+				testUSDC.address,
+				testUSDT.address,
+				testDAI.address
+			);
+
+			await thalesAMM.setCurveSUSD(
+				curveSUSD.address,
+				testDAI.address,
+				testUSDC.address,
+				testUSDT.address,
+				true,
+				toUnit(0.02),
+				{ from: owner }
+			);
+
+			let now = await currentTime();
+			let newMarket = await createMarket(
+				manager,
+				sETHKey,
+				toUnit(10000),
+				now + day * 30,
+				toUnit(10),
+				creatorSigner
+			);
+
+			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.UP
+			);
+
+			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMM / 1e18 - 1)
+			);
+			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+
+			let buyFromAmmQuoteUSDCCollateralObject =
+				await thalesAMM.buyFromAmmQuoteWithDifferentCollateral(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18 - 1),
+					testUSDC.address
+				);
+			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
+
+			console.log(
+				'buyFromAmmQuoteUSDCCollateral decimal is:' + buyFromAmmQuoteUSDCCollateral / 1e6
+			);
+
+			await expect(
+				thalesAMM.buyFromAMMWithDifferentCollateralAndReferrer(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18 - 1),
+					buyFromAmmQuoteUSDCCollateral,
+					additionalSlippage,
+					testUSDC.address,
+					ZERO_ADDRESS,
+					{ from: minter }
+				)
+			).to.be.revertedWith('Amount below max allowed peg slippage');
 		});
 	});
 });

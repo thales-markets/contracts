@@ -77,6 +77,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     bool public curveOnrampEnabled;
 
+    uint public maxAllowedPegSlippagePercentage;
+
     function initialize(
         address _owner,
         IPriceFeed _priceFeed,
@@ -249,8 +251,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
                     strikePrice,
                     timeLeftToMaturityInDays,
                     impliedVolatilityPerAsset[key]
-                )
-                    .div(1e2);
+                ).div(1e2);
             } else {
                 priceToReturn = ONE.sub(
                     calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
@@ -388,6 +389,15 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             collateral
         );
 
+        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
+            ? collateralQuote.mul(1e12)
+            : collateralQuote;
+        require(
+            maxAllowedPegSlippagePercentage > 0 &&
+                transformedCollateralForPegCheck >= susdQuote.mul(ONE.sub(maxAllowedPegSlippagePercentage)).div(ONE),
+            "Amount below max allowed peg slippage"
+        );
+
         require(collateralQuote.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high!");
 
         IERC20 collateralToken = IERC20(collateral);
@@ -483,6 +493,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
             return 0;
         }
+        basePrice = basePrice.add(min_spread);
 
         uint balance = _balanceOfPositionOnMarket(market, position);
         uint midImpactPriceIncrease = ONE.sub(basePrice).mul(max_spread.div(2)).div(ONE);
@@ -508,6 +519,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         if (amount < 1 || amount > _availableToBuyFromAMMWithBasePrice(market, position, basePrice)) {
             return 0;
         }
+        basePrice = basePrice.add(min_spread);
         uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount)).div(ONE);
         // add 2% to the price increase to avoid edge cases on the extremes
         impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
@@ -535,7 +547,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) internal {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
-        uint basePrice = price(market, position).add(min_spread);
+        uint basePrice = price(market, position);
 
         uint availableToBuyFromAMMatm = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
         require(amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
@@ -848,11 +860,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) external onlyOwner {
         minSupportedPrice = _minSupportedPrice;
         maxSupportedPrice = _maxSupportedPrice;
-        emit SetMinSupportedPrice(_minSupportedPrice);
-        emit SetMaxSupportedPrice(_maxSupportedPrice);
-
         capPerMarket = _capPerMarket;
-        emit SetCapPerMarket(_capPerMarket);
+        emit SetMinMaxSupportedPriceCapPerMarket(_minSupportedPrice, _maxSupportedPrice, _capPerMarket);
     }
 
     /// @notice Updates contract parametars. Can be set by owner or whitelisted addresses. In the future try to get it as a feed from Chainlink.
@@ -911,12 +920,14 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @param _usdc USDC address
     /// @param _usdt USDT addresss
     /// @param _curveOnrampEnabled whether AMM supports curve onramp
+    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
     function setCurveSUSD(
         address _curveSUSD,
         address _dai,
         address _usdc,
         address _usdt,
-        bool _curveOnrampEnabled
+        bool _curveOnrampEnabled,
+        uint _maxAllowedPegSlippagePercentage
     ) external onlyOwner {
         curveSUSD = ICurveSUSD(_curveSUSD);
         dai = _dai;
@@ -928,6 +939,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         // not needed unless selling into different collateral is enabled
         //sUSD.approve(_curveSUSD, MAX_APPROVAL);
         curveOnrampEnabled = _curveOnrampEnabled;
+        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
     /// @notice Updates contract parametars
@@ -961,7 +973,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     event SetPositionalMarketManager(address _manager);
     event SetSUSD(address sUSD);
     event SetPriceFeed(address _priceFeed);
-    event SetCapPerMarket(uint _capPerMarket);
     event SetImpliedVolatilityPerAsset(bytes32 asset, uint _impliedVolatility);
     event SetCapPerAsset(bytes32 asset, uint _cap);
     event SetMaxSpread(uint _spread);
@@ -969,7 +980,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     event SetSafeBoxImpact(uint _safeBoxImpact);
     event SetSafeBox(address _safeBox);
     event SetMinimalTimeLeftToMaturity(uint _minimalTimeLeftToMaturity);
-    event SetMinSupportedPrice(uint _spread);
-    event SetMaxSupportedPrice(uint _spread);
+    event SetMinMaxSupportedPriceCapPerMarket(uint minPrice, uint maxPrice, uint capPerMarket);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
 }

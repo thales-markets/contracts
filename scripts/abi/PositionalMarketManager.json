@@ -232,6 +232,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "_SetOnlyAMMMintingAndBurning",
+        "type": "bool"
+      }
+    ],
+    "name": "SetOnlyAMMMintingAndBurning",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_positionalMarketFactory",
         "type": "address"
@@ -489,6 +502,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getThalesAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -737,6 +763,19 @@
   },
   {
     "inputs": [],
+    "name": "onlyAMMMintingAndBurning",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "onlyWhitelistedAddressesCanCreateMarkets",
     "outputs": [
       {
@@ -919,6 +958,19 @@
       }
     ],
     "name": "setNeedsTransformingCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_onlyAMMMintingAndBurning",
+        "type": "bool"
+      }
+    ],
+    "name": "setOnlyAMMMintingAndBurning",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

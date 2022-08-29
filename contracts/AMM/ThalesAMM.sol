@@ -575,7 +575,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, sUSDPaid);
         }
-        _updateSpentOnOnMarketOnBuy(market, sUSDPaid, msg.sender);
+        _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
 
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
     }
@@ -611,7 +611,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
     }
 
-    function _updateSpentOnOnMarketOnBuy(
+    function _updateSpentOnMarketOnBuy(
         address market,
         uint sUSDPaid,
         address buyer

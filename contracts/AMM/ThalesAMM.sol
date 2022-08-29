@@ -108,7 +108,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @return _available how many positions of that type can be bought
     function availableToBuyFromAMM(address market, Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
-            uint basePrice = price(market, position).add(min_spread);
+            uint basePrice = price(market, position);
             _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
         }
     }
@@ -123,7 +123,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         Position position,
         uint amount
     ) public view returns (uint _quote) {
-        uint basePrice = price(market, position).add(min_spread);
+        uint basePrice = price(market, position);
         _quote = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
     }
 

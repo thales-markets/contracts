@@ -139,7 +139,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "isExercisable",
         "type": "bool"
       }
     ],
@@ -152,7 +152,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "isResolved",
         "type": "bool"
       }
     ],

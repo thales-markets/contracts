@@ -1290,7 +1290,7 @@ contract('ParlayAMM', (accounts) => {
 						true
 					);
 					assert.equal(await parlaySingleMarket.isAnySportMarketExercisable(), true);
-					await ParlayAMM.exerciseSpecificParlay(
+					await ParlayAMM.exerciseSportMarketInParlay(
 						parlaySingleMarket.address,
 						parlayMarkets[0].address
 					);

@@ -194,7 +194,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
     
-    function exerciseSpecificParlay(address _parlayMarket, address _sportMarket) external nonReentrant notPaused {
+    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket) external nonReentrant notPaused {
         require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseSpecificSportMarket(_sportMarket);
@@ -308,21 +308,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function _sortPositions(address[] calldata _sportMarkets, uint[] calldata _positions) internal view returns(address[] memory sortedAddresses, uint[] memory sortedPositions) {
-        uint[] memory a = new uint[](3);
-        uint[] memory b = new uint[](3);
-        for(uint i=0; i<_sportMarkets.length; i++) {
-            a = sportsAmm.getMarketDefaultOdds(_sportMarkets[i], false);
-            for(uint j=i+1; j<_sportMarkets.length; j++) {
-                b = sportsAmm.getMarketDefaultOdds(_sportMarkets[j], false);
-                if(a[_positions[i]] < b[_positions[j]]) {
-                    sortedAddresses[i] = _sportMarkets[j];
-                    sortedPositions[i] = _positions[j];
-                }
-            }
-        }
-    }
-
     function _addGameToParlay(
         address _sportMarket,
         uint _position,
@@ -405,57 +390,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         else{
             position = _position == 1 ? ISportsAMM.Position.Away : ISportsAMM.Position.Draw;
         }
-    }
-
-    function _getQuotesAndAmounts(
-        address[] calldata _sportMarkets, 
-        uint[] calldata _positions, 
-        uint _amount) 
-        internal view returns(
-            uint[] memory marketQuotes, 
-            uint[] memory proportionalAmounts,
-            uint totalQuote, 
-            uint sUSDToPay
-            ) 
-        {
-            uint numOfMarkets = _sportMarkets.length;
-            uint[] memory quotes = new uint[](numOfMarkets);
-            (quotes, totalQuote) = _getQuotes(_sportMarkets, _positions);
-            sUSDToPay = _amount.mul(totalQuote);
-            quotes = _reverseAndNormalize(quotes);
-            for(uint i=0; i < numOfMarkets; i++) {
-                proportionalAmounts[i] = quotes[i].mul(_amount);
-
-                marketQuotes[i] = sportsAmm.buyFromAmmQuote(
-                    _sportMarkets[i],
-                    _obtainSportsAMMPosition(_positions[i]),
-                    proportionalAmounts[i]
-                );
-                
-            }
-    }
-
-    function _getQuotes(address[] calldata _sportMarkets, uint[] calldata _positions) internal view returns(uint[] memory quotes, uint totalQuotes) {
-        uint length = _sportMarkets.length;
-        quotes = new uint[](length);
-        uint[] memory odds;
-        for(uint i=0; i < length; i++) {
-            odds = sportsAmm.getMarketDefaultOdds(_sportMarkets[i], false);
-            quotes[i] = odds[_positions[i]];
-            totalQuotes = ONE.mul(totalQuotes).mul(odds[_positions[i]]).div(ONE);
-        }
-    }
-
-    function _reverseAndNormalize(uint[] memory _quotes) internal pure returns(uint[] memory) {
-        uint length = _quotes.length;
-        uint sum;
-        for(uint i=0; i < length; i++) {
-            sum = sum.add(_quotes[i]);
-        }
-        for(uint i=0; i < length; i++) {
-            _quotes[i] = ONE.sub(ONE.mul(_quotes[i]).div(sum).div(ONE));
-        }
-        return _quotes;
     }
 
     

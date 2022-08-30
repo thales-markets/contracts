@@ -10,7 +10,7 @@ const { toUnit } = require('../../utils')();
 
 const { toBytes32 } = require('../../../index');
 
-contract('TherundownConsumerWrapper', accounts => {
+contract('TherundownConsumerWrapper', (accounts) => {
 	const [first, owner, second, third] = accounts;
 	let TherundownConsumerWrapper;
 	let TherundownConsumerWrapperDeployed;

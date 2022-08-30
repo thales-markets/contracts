@@ -47,25 +47,25 @@ async function main() {
 	const ThalesAMMDProxyeployed = ThalesAMM.connect(owner).attach(ThalesAMMaddress);
 
 	let tx = await ThalesAMMDProxyeployed.setMinSpread(w3utils.toWei('0.01'));
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('ThalesAMM: setMinSpread(0.01)');
 	});
 
 	tx = await ThalesAMMDProxyeployed.setMaxSpread(w3utils.toWei('0.05'));
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('ThalesAMM: setMaxSpread(0.05)');
 	});
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

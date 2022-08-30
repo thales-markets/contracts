@@ -26,11 +26,11 @@ async function getUniqueTraders() {
 		const variables = {
 			lastRootTimestamp: lastRootTimestamp,
 		};
-		await request(url, getClaims, variables).then(data => {
+		await request(url, getClaims, variables).then((data) => {
 			if (data.trades.length < 100) {
 				continueQuery = false;
 			}
-			data.trades.forEach(d => {
+			data.trades.forEach((d) => {
 				uniqueTraders.add(d.maker);
 				uniqueTraders.add(d.taker);
 			});
@@ -42,7 +42,7 @@ async function getUniqueTraders() {
 	fs.writeFileSync(
 		'scripts/deployAMM/uniqueTradersPolygon.json',
 		JSON.stringify(Array.from(uniqueTraders)),
-		function(err) {
+		function (err) {
 			if (err) return console.log(err);
 		}
 	);

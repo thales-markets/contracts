@@ -29,15 +29,29 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
+
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	if (networkObj.chainId == 10) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-		network = 'optimisticEthereum';
 	} else if (networkObj.chainId == 69) {
-		network = 'optimisticKovan';
+		networkObj.name = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	}
-	if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+	} else if (
+		networkObj.chainId == 80001 ||
+		networkObj.chainId == 137 ||
+		networkObj.chainId == 42161
+	) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
+	} else if (networkObj.chainId == 56) {
+		ProxyERC20sUSDaddress = getTargetAddress('BUSD', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
 		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
@@ -125,7 +139,7 @@ async function main() {
 		let transaction = await PositionalMarketManagerDeployed.setWhitelistedAddresses(
 			whitelistedAddresses
 		);
-		await transaction.wait().then(e => {
+		await transaction.wait().then((e) => {
 			console.log('PositionalMarketManager: whitelistedAddresses set');
 		});
 	}
@@ -161,26 +175,26 @@ async function main() {
 	let tx = await PositionalMarketFactoryDeployed.setPositionalMarketManager(
 		PositionalMarketManagerDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionalMarketManager');
 	});
 	tx = await PositionalMarketManagerDeployed.setPositionalMarketFactory(
 		PositionalMarketFactoryDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketManager: setPositionalMarketFactory');
 	});
 
 	tx = await PositionalMarketFactoryDeployed.setPositionalMarketMastercopy(
 		PositionalMarketMastercopyDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionalMarketMastercopy');
 	});
 	tx = await PositionalMarketFactoryDeployed.setPositionMastercopy(
 		PositionMastercopyDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactory: setPositionMastercopy');
 	});
 
@@ -252,7 +266,7 @@ async function main() {
 	});
 
 	function delay(time) {
-		return new Promise(function(resolve) {
+		return new Promise(function (resolve) {
 			setTimeout(resolve, time);
 		});
 	}
@@ -260,7 +274,7 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

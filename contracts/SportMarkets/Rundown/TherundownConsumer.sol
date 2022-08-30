@@ -413,12 +413,23 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         GameResolve memory _game,
         uint _sportId
     ) internal {
-        if (_isGameReadyToBeResolved(_game)) {
+        GameCreate memory singleGameCreated = getGameCreatedById(_game.gameId);
+
+        // if status is resolved OR (status is canceled AND start time has passed fulfill game to be resolved)
+        if (
+            _isGameStatusResolved(_game) ||
+            (cancelGameStatuses[_game.statusId] && singleGameCreated.startTime < block.timestamp)
+        ) {
             gameResolved[_game.gameId] = _game;
             queues.enqueueGamesResolved(_game.gameId);
             gameFulfilledResolved[_game.gameId] = true;
 
             emit GameResolved(requestId, _sportId, _game.gameId, _game, queues.lastResolved());
+        }
+        // if status is canceled AND start time has not passed only pause market
+        else if (cancelGameStatuses[_game.statusId] && singleGameCreated.startTime >= block.timestamp) {
+            isPausedByCanceledStatus[marketPerGameId[_game.gameId]] = true;
+            _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
         }
     }
 
@@ -496,7 +507,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _resolveMarket(bytes32 _gameId) internal {
         GameResolve memory game = getGameResolvedById(_gameId);
-        GameCreate memory gameCreated = getGameCreatedById(_gameId);
+        GameCreate memory singleGameCreated = getGameCreatedById(_gameId);
         uint index = queues.unproccessedGamesIndex(_gameId);
 
         // it can return ZERO index, needs checking
@@ -509,8 +520,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             uint _outcome = _calculateOutcome(game);
 
-            // if result is draw and game is UFC, cancel market
-            if (_outcome == RESULT_DRAW && sportsIdPerGame[game.gameId] == 7) {
+            // if result is draw and game is UFC or NFL, cancel market
+            if (_outcome == RESULT_DRAW && _isDrawForCancelationBySport(sportsIdPerGame[game.gameId])) {
                 _cancelMarket(game.gameId, index);
             } else {
                 sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
@@ -520,13 +531,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
                 emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
             }
-        } else if (cancelGameStatuses[game.statusId]) {
-            if (gameCreated.startTime > block.timestamp) {
-                isPausedByCanceledStatus[marketPerGameId[game.gameId]] = true;
-                _pauseOrUnpauseMarket(marketPerGameId[game.gameId], true);
-            } else {
-                _cancelMarket(game.gameId, index);
-            }
+            // if status is canceled and start time of a game passed cancel market
+        } else if (cancelGameStatuses[game.statusId] && singleGameCreated.startTime < block.timestamp) {
+            _cancelMarket(game.gameId, index);
         }
     }
 
@@ -541,6 +548,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // it can return ZERO index, needs checking
         require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "Invalid Game ID");
 
+        _pauseOrUnpauseMarket(_market, false);
         sportsManager.resolveMarket(_market, _outcome);
         marketResolved[_market] = true;
         queues.removeItemUnproccessedGames(index);
@@ -567,6 +575,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // it can return ZERO index, needs checking
         require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "Invalid Game ID");
 
+        _pauseOrUnpauseMarket(_market, false);
         sportsManager.resolveMarket(_market, 0);
         marketCanceled[_market] = true;
         queues.removeItemUnproccessedGames(index);
@@ -611,6 +620,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _isGameReadyToBeResolved(GameResolve memory _game) internal view returns (bool) {
         return _isGameStatusResolved(_game) || cancelGameStatuses[_game.statusId];
+    }
+
+    function _isDrawForCancelationBySport(uint _sportsId) internal view returns (bool) {
+        // UFC or NFL
+        return _sportsId == 7 || _sportsId == 2;
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal view returns (bool) {

@@ -33,7 +33,7 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
-contract('SportsAMM', accounts => {
+contract('SportsAMM', (accounts) => {
 	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);

@@ -46,7 +46,7 @@ async function main() {
 	const aggregators = require(`./aggregators/${network}.json`);
 	for (let [key, aggregator] of Object.entries(aggregators)) {
 		let tx = await priceFeed.addAggregator(toBytes32(key), aggregator);
-		await tx.wait().then(e => {
+		await tx.wait().then((e) => {
 			console.log('PriceFeed update: addAggregator for', key);
 		});
 	}
@@ -54,7 +54,7 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

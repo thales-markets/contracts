@@ -41,4 +41,10 @@ interface IThalesAMM {
     ) external;
 
     function isMarketInAMMTrading(address market) external view returns (bool);
+    function price(address market, Position position) external view returns (uint);
+    function buyPriceImpact(
+        address market,
+        Position position,
+        uint amount
+    ) external view returns (uint);
 }

@@ -14,7 +14,6 @@ require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 require('hardhat-contract-sizer');
 
-
 const {
 	constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },
 } = require('.');
@@ -28,6 +27,8 @@ const INFURA_POLYGON = process.env.INFURA_POLYGON;
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY;
 const OP_ETHERSCAN_KEY = process.env.OP_ETHERSCAN_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
+const BSC_API_KEY = process.env.BSC_API_KEY;
+const ARBITRUM_API_KEY = process.env.ARBITRUM_API_KEY;
 const PRIVATE_KEY_OPTIMISTIC_KOVAN = process.env.PRIVATE_KEY_OPTIMISTIC_KOVAN;
 const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : 'http://127.0.0.1:8545';
 
@@ -47,7 +48,9 @@ module.exports = {
 			// polygon
 			polygon: POLYGONSCAN_API_KEY,
 			polygonMumbai: POLYGONSCAN_API_KEY,
-	  },
+			bsc: BSC_API_KEY,
+			arbitrumOne: ARBITRUM_API_KEY,
+		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
 	GAS_PRICE,
@@ -176,14 +179,26 @@ module.exports = {
 			accounts: [PRIVATE_KEY],
 		},
 		polygonMumbai: {
-			url: "https://polygon-mumbai.infura.io/v3/" + INFURA,
+			url: 'https://polygon-mumbai.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
-			gasPrice: 80000000000
+			gasPrice: 80000000000,
 		},
 		polygon: {
-			url: "https://polygon-mainnet.infura.io/v3/" + INFURA,
+			url: 'https://polygon-mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
-		}, 
+		},
+		bsc: {
+			url: 'https://bsc-dataseed.binance.org/',
+			chainId: 56,
+			//gasPrice: 5000000000,
+			accounts: [PRIVATE_KEY],
+		},
+		arbitrumOne: {
+			url: 'https://arbitrum-mainnet.infura.io/v3/' + INFURA,
+			chainId: 42161,
+			//gasPrice: 5000000000,
+			accounts: [PRIVATE_KEY],
+		},
 	},
 	gasReporter: {
 		enabled: process.env.REPORT_GAS ? true : false,

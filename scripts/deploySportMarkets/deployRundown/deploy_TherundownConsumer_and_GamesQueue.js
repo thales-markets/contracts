@@ -64,14 +64,12 @@ async function main() {
 	console.log('LINK address:', chainlink['LINK']);
 	console.log('ORACLE address:', chainlink['ORACLE']);
 
-	// MLB: 3
-	// MLS: 10
-	const allowedSports = [3, 10];
+	const allowedSports = [2, 3, 4, 6, 7, 10, 11, 12, 13, 14, 15];
 
-	const twoPositionSports = [3];
+	const twoPositionSports = [2, 3, 4, 6, 7];
 
 	const allowedResolvedStatuses = [8, 11];
-	const allowedCancelStatuses = [1];
+	const allowedCancelStatuses = [1, 2, 15, 22];
 
 	/* ========== DEPLOY CONTRACT ========== */
 
@@ -114,8 +112,10 @@ async function main() {
 	console.log('TherundownConsumerImplementation: ', implementation);
 	setTargetAddress('TherundownConsumerImplementation', network, implementation);
 
-	await therundown.setQueueAddress(gamesQueue.address);
+	/*
+	await therundown.setSportContracts('', gamesQueue.address, '');
 	console.log('GamesQueue address set in TherundownConsumer');
+	*/
 
 	await gamesQueue.setConsumerAddress(therundown.address);
 	console.log('TherundownConsumer address set in GamesQueue');
@@ -130,14 +130,14 @@ async function main() {
 }
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

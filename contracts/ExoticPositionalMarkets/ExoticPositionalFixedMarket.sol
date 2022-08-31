@@ -62,10 +62,12 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     uint[] public tags;
     string public marketQuestion;
     string public marketSource;
+    string public additionalInfo;
 
     function initialize(
         string memory _marketQuestion,
         string memory _marketSource,
+        string memory _additionalInfo,
         uint _endOfPositioning,
         uint _fixedTicketPrice,
         bool _withdrawalAllowed,
@@ -84,6 +86,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         _initializeWithTwoParameters(
             _marketQuestion,
             _marketSource,
+            _additionalInfo,
             _endOfPositioning,
             _fixedTicketPrice,
             _withdrawalAllowed,
@@ -217,22 +220,18 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         emit MarketResolved(CANCELED, msg.sender, noWinners);
     }
 
-    function claimWinningTicket(address collateral) external notPaused nonReentrant {
+    function claimWinningTicket() external notPaused nonReentrant {
         require(canUsersClaim(), "Not finalized.");
         uint amount = getUserClaimableAmount(msg.sender);
         require(amount > 0, "Zero claimable.");
         claimableTicketsCount = claimableTicketsCount.sub(1);
         userPosition[msg.sender] = 0;
-        thalesBonds.transferFromMarket(msg.sender, amount, collateral);
+        thalesBonds.transferFromMarket(msg.sender, amount);
         if (!feesAndBondsClaimed) {
             if (winningPosition != CANCELED) {
-                thalesBonds.transferFromMarket(
-                    marketManager.creatorAddress(address(this)),
-                    getAdditionalCreatorAmount(),
-                    paymentToken
-                );
-                thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount(), paymentToken);
-                thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount(), paymentToken);
+                thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
+                thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());
+                thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
             }
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
             feesAndBondsClaimed = true;
@@ -242,13 +241,13 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         emit WinningTicketClaimed(msg.sender, amount);
     }
 
-    function claimWinningTicketOnBehalf(address _user, address collateral) external onlyOwner {
+    function claimWinningTicketOnBehalf(address _user) external onlyOwner {
         require(canUsersClaim() || marketManager.cancelledByCreator(address(this)), "Not finalized.");
         uint amount = getUserClaimableAmount(_user);
         require(amount > 0, "Zero claimable.");
         claimableTicketsCount = claimableTicketsCount.sub(1);
         userPosition[_user] = 0;
-        thalesBonds.transferFromMarket(_user, amount, collateral);
+        thalesBonds.transferFromMarket(_user, amount);
         if (
             winningPosition == CANCELED &&
             marketManager.cancelledByCreator(address(this)) &&
@@ -258,13 +257,9 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
             feesAndBondsClaimed = true;
         } else if (!feesAndBondsClaimed) {
             if (winningPosition != CANCELED) {
-                thalesBonds.transferFromMarket(
-                    marketManager.creatorAddress(address(this)),
-                    getAdditionalCreatorAmount(),
-                    paymentToken
-                );
-                thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount(), paymentToken);
-                thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount(), paymentToken);
+                thalesBonds.transferFromMarket(marketManager.creatorAddress(address(this)), getAdditionalCreatorAmount());
+                thalesBonds.transferFromMarket(resolverAddress, getAdditionalResolverAmount());
+                thalesBonds.transferFromMarket(marketManager.safeBoxAddress(), getSafeBoxAmount());
             }
             marketManager.issueBondsBackToCreatorAndResolver(address(this));
             feesAndBondsClaimed = true;
@@ -565,6 +560,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     function _initializeWithTwoParameters(
         string memory _marketQuestion,
         string memory _marketSource,
+        string memory _additionalInfo,
         uint _endOfPositioning,
         uint _fixedTicketPrice,
         bool _withdrawalAllowed,
@@ -575,6 +571,7 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         creationTime = block.timestamp;
         marketQuestion = _marketQuestion;
         marketSource = _marketSource;
+        additionalInfo = _additionalInfo;
         endOfPositioning = _endOfPositioning;
         // Ticket Type can be determined based on ticket price
         ticketType = _fixedTicketPrice > 0 ? TicketType.FIXED_TICKET_PRICE : TicketType.FLEXIBLE_BID;

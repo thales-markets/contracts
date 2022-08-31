@@ -153,9 +153,10 @@ contract ParlayMarket{
                 uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
                 uint calculatedAmount = _recalculateAmount();
                 _resolve(true);
-                if(calculatedAmount == totalSUSDamount) {
-                    console.log("equal");
-                    parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+                if(calculatedAmount < totalSUSDamount) {
+                    console.log("calculated < total");
+                    parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
+                    parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount-calculatedAmount));
                 }                
                 else if(calculatedAmount > totalSUSDamount) {
                     console.log("calculated > total");
@@ -164,9 +165,8 @@ contract ParlayMarket{
 
                 }
                 else {
-                    console.log("calculated < total");
-                    parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
-                    parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount-calculatedAmount));
+                    console.log("equal");
+                    parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
                 }
             }
         }

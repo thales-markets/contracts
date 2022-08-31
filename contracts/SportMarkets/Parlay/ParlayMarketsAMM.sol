@@ -139,11 +139,54 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address[] calldata _sportMarkets, 
         uint[] calldata _positions,
         uint _sUSDPaid,
+        uint _additionalSlippage
+        ) 
+        external nonReentrant notPaused {
+            _buyParlay(_sportMarkets,
+            _positions,
+            _sUSDPaid,
+            _additionalSlippage,
+            true
+            );
+        }
+
+    function buyParlayWithDifferentCollateralAndReferrer(
+        address[] calldata _sportMarkets, 
+        uint[] calldata _positions,
+        uint _sUSDPaid,
         uint _additionalSlippage,
-        bool _sendSUSD
+        address collateral,
+        address _referrer
         ) 
         external nonReentrant notPaused {
 
+        if (_referrer != address(0)) {
+            IReferrals(referrals).setReferrer(_referrer, msg.sender);
+        }
+        int128 curveIndex = _mapCollateralToCurveIndex(collateral);
+        require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
+
+        //cant get a quote on how much collateral is needed from curve for sUSD,
+        //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
+        uint collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
+        require(collateralQuote.mul(ONE).div(_sUSDPaid) <= ONE.add(_additionalSlippage), "Slippage too high!");
+
+        IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
+        collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
+        curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, _sUSDPaid);
+
+
+        _buyParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, false);
+    }
+
+    function _buyParlay(
+        address[] calldata _sportMarkets, 
+        uint[] calldata _positions,
+        uint _sUSDPaid,
+        uint _additionalSlippage,
+        bool _sendSUSD
+        ) 
+        internal {
         uint totalResultQuote;
         uint totalAmount;
         uint[] memory amountsToBuy = new uint[](_sportMarkets.length);
@@ -158,6 +201,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (_sendSUSD) {
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDAfterFees);
             sUSD.safeTransferFrom(msg.sender, safeBox, _sUSDPaid.sub(sUSDAfterFees));
+        }
+        else {
+            sUSD.safeTransfer(safeBox, _sUSDPaid.sub(sUSDAfterFees));
         }
 
         // mint the stateful token  (ERC-20)
@@ -475,7 +521,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         _;
     }
 
-    function _knownParlayMarket(address _market) internal {
+    function _knownParlayMarket(address _market) internal view {
         require(_knownMarkets.contains(_market), "Not a known parlay market");
     }
 

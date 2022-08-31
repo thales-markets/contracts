@@ -744,7 +744,6 @@ contract('ParlayAMM', (accounts) => {
 				parlayPositions,
 				totalSUSDToPay,
 				slippage,
-				true,
 				{ from: first }
 			);
 			// console.log("event: \n", buyParlayTX.logs[0]);
@@ -773,7 +772,6 @@ contract('ParlayAMM', (accounts) => {
 					parlayPositions,
 					totalSUSDToPay,
 					slippage,
-					true,
 					{ from: first }
 				);
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');

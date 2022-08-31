@@ -289,14 +289,47 @@
         "internalType": "uint256",
         "name": "_additionalSlippage",
         "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "_sendSUSD",
-        "type": "bool"
       }
     ],
     "name": "buyParlay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sUSDPaid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_additionalSlippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_referrer",
+        "type": "address"
+      }
+    ],
+    "name": "buyParlayWithDifferentCollateralAndReferrer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

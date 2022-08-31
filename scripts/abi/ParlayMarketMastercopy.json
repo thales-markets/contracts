@@ -18,25 +18,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "WinningSportMarketExercised",
-    "type": "event"
-  },
-  {
     "inputs": [],
     "name": "amount",
     "outputs": [

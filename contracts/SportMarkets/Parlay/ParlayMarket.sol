@@ -247,6 +247,5 @@ contract ParlayMarket{
         _;
     }
 
-    event WinningSportMarketExercised(address _market, address );
     event Resolved(bool isUserTheWinner);
 }

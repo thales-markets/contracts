@@ -50,7 +50,6 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
     bool public withdrawalAllowed;
 
     address public resolverAddress;
-    address public paymentToken;
     TicketType public ticketType;
     IExoticPositionalMarketManager public marketManager;
     IThalesBonds public thalesBonds;
@@ -104,7 +103,6 @@ contract ExoticPositionalFixedMarket is Initializable, ProxyOwned, OraclePausabl
         safeBoxLowAmount = marketManager.safeBoxLowAmount();
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
         withdrawalPeriod = _endOfPositioning.sub(marketManager.withdrawalTimePeriod());
-        paymentToken = marketManager.paymentToken();
     }
 
     function takeCreatorInitialPosition(uint _position) external onlyOwner {

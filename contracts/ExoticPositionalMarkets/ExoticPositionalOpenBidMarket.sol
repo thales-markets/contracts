@@ -54,7 +54,6 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
     bool public withdrawalAllowed;
 
     address public resolverAddress;
-    address public paymentToken;
     TicketType public ticketType;
     IExoticPositionalMarketManager public marketManager;
     IThalesBonds public thalesBonds;
@@ -113,7 +112,6 @@ contract ExoticPositionalOpenBidMarket is Initializable, ProxyOwned, OraclePausa
         arbitraryRewardForDisputor = marketManager.arbitraryRewardForDisputor();
         withdrawalPeriod = _endOfPositioning.sub(marketManager.withdrawalTimePeriod());
         minPosAmount = marketManager.minFixedTicketPrice();
-        paymentToken = marketManager.paymentToken();
     }
 
     function takeCreatorInitialOpenBidPositions(uint[] memory _positions, uint[] memory _amounts) external onlyOwner {

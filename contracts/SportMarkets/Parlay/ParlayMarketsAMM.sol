@@ -148,14 +148,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint totalAmount;
         uint[] memory amountsToBuy = new uint[](_sportMarkets.length);
         uint[] memory marketQuotes = new uint[](_sportMarkets.length);
-        (totalResultQuote, totalAmount, amountsToBuy, marketQuotes) = _canCreateParlayMarket(_sportMarkets, _positions, _sUSDPaid);
+        uint sUSDAfterFees = _sUSDPaid.mul(ONE.sub(safeBoxImpact.mul(ONE_PERCENT))).div(ONE);
+        (totalResultQuote, totalAmount, amountsToBuy, marketQuotes) = _canCreateParlayMarket(_sportMarkets, _positions, sUSDAfterFees);
         // apply all checks
         require(totalResultQuote > maxSupportedOdds, "Can't create this parlay market!");
         
-        // checks for cretion missing
+        // checks for creation missing
 
         if (_sendSUSD) {
-            sUSD.safeTransferFrom(msg.sender, address(this), _sUSDPaid);
+            sUSD.safeTransferFrom(msg.sender, address(this), sUSDAfterFees);
+            sUSD.safeTransferFrom(msg.sender, safeBox, _sUSDPaid.sub(sUSDAfterFees));
         }
 
         // mint the stateful token  (ERC-20)
@@ -165,7 +167,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     _sportMarkets,
                     _positions, 
                     totalAmount, 
-                    _sUSDPaid, 
+                    sUSDAfterFees, 
                     address(this), 
                     msg.sender
                     );
@@ -181,7 +183,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _additionalSlippage,
             address(parlayMarket)
         );
-        emit ParlayMarketCreated(address(parlayMarket), msg.sender, totalAmount, _sUSDPaid);
+        emit ParlayMarketCreated(address(parlayMarket), msg.sender, totalAmount, _sUSDPaid, sUSDAfterFees);
     }
     
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused {
@@ -479,7 +481,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
 
     event SetSUSD(address sUSD);
-    event ParlayMarketCreated(address market, address account, uint amount, uint sUSDPaid);
+    event ParlayMarketCreated(address market, address account, uint amount, uint sUSDPaid, uint sUSDAfterFees);
     event SetAmounts(uint max_amount, uint max_odds, uint _parlayAMMFee, uint _safeBoxImpact, uint _referrerFee);
     event AddressesSet(address _thalesAMM, address _stakingThales, address _safeBox, address _referrals, address _parlayMarketData);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);

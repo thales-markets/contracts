@@ -177,8 +177,8 @@ contract('ParlayAMM', (accounts) => {
 
 	let gameMarket;
 
-	let parlayAMMfee = '0.1';
-	let safeBoxImpact = '0.1';
+	let parlayAMMfee = '5';
+	let safeBoxImpact = '5';
 	let maxSupportedAmount = '20000';
 	let maxSupportedOdd = '0.005';
 
@@ -462,12 +462,12 @@ contract('ParlayAMM', (accounts) => {
 		await ParlayAMM.initialize(
 			owner,
 			SportsAMM.address,
-			toUnit(parlayAMMfee),
+			parlayAMMfee,
 			toUnit(maxSupportedAmount),
 			toUnit(maxSupportedOdd),
 			Thales.address,
 			safeBox,
-			toUnit(safeBoxImpact),
+			safeBoxImpact,
 			{ from: owner }
 		);
 

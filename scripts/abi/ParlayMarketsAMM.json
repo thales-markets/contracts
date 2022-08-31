@@ -113,6 +113,12 @@
         "internalType": "uint256",
         "name": "sUSDPaid",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "sUSDAfterFees",
+        "type": "uint256"
       }
     ],
     "name": "ParlayMarketCreated",

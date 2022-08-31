@@ -9,6 +9,7 @@ interface IParlayMarketsAMM {
     function parlaySize() external view returns (uint);
     function sUSD() external view returns(IERC20Upgradeable);
     function sportsAmm() external view returns(address);
+    function parlayAmmFee() external view returns(uint);
 
     function transferRestOfSUSDAmount(address receiver, uint amount, bool dueToCancellation) external;
     function triggerResolvedEvent(address _account, bool _userWon) external;

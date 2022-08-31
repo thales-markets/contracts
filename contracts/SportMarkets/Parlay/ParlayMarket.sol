@@ -16,6 +16,7 @@ contract ParlayMarket{
     using SafeERC20 for IERC20;
 
     uint private constant ONE = 1e18;
+    uint private constant ONE_PERCENT = 1e16;
 
     struct SportMarkets {
         address sportAddress;
@@ -204,6 +205,8 @@ contract ParlayMarket{
 
     function _recalculateAmount() internal view returns(uint recalculated) {
         recalculated = ((sUSDPaid*ONE*ONE)/totalResultQuote)/ONE;
+        // apply AMM fees
+        recalculated = ((ONE-(ONE_PERCENT*parlayMarketsAMM.parlayAmmFee())) * recalculated)/ONE;
     }
 
     function _resolve(bool _userWon) internal {

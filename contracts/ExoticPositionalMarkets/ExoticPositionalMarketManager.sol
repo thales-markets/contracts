@@ -129,6 +129,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             exoticMarket.initialize(
                 _marketQuestion,
                 _marketSource,
+                _additionalInfo,
                 _endOfPositioning,
                 _fixedTicketPrice,
                 _withdrawalAllowed,
@@ -140,10 +141,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
             _activeMarkets.add(address(exoticMarket));
             exoticMarket.takeCreatorInitialPosition(_positionsOfCreator[0]);
-            emit MarketCreated(
+            emit MarketCreatedWithDescription(
                 address(exoticMarket),
                 _marketQuestion,
                 _marketSource,
+                _additionalInfo,
                 _endOfPositioning,
                 _fixedTicketPrice,
                 _withdrawalAllowed,
@@ -166,8 +168,9 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
                 "No allowance."
             );
 
-            ExoticPositionalOpenBidMarket exoticMarket =
-                ExoticPositionalOpenBidMarket(Clones.clone(exoticMarketOpenBidMastercopy));
+            ExoticPositionalOpenBidMarket exoticMarket = ExoticPositionalOpenBidMarket(
+                Clones.clone(exoticMarketOpenBidMastercopy)
+            );
 
             exoticMarket.initialize(
                 _marketQuestion,
@@ -184,10 +187,11 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             IThalesBonds(thalesBonds).sendCreatorBondToMarket(address(exoticMarket), msg.sender, fixedBondAmount);
             _activeMarkets.add(address(exoticMarket));
             exoticMarket.takeCreatorInitialOpenBidPositions(creatorPositions, _positionsOfCreator);
-            emit MarketCreated(
+            emit MarketCreatedWithDescription(
                 address(exoticMarket),
                 _marketQuestion,
                 _marketSource,
+                _additionalInfo,
                 _endOfPositioning,
                 _fixedTicketPrice,
                 _withdrawalAllowed,
@@ -758,10 +762,25 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
     event PauserAddressRemoved(address pauserAddress);
     event NewThalesBonds(address thalesBondsAddress);
 
+    // used for old markets without description
     event MarketCreated(
         address marketAddress,
         string marketQuestion,
         string marketSource,
+        uint endOfPositioning,
+        uint fixedTicketPrice,
+        bool withdrawalAllowed,
+        uint[] tags,
+        uint positionCount,
+        string[] positionPhrases,
+        address marketOwner
+    );
+
+    event MarketCreatedWithDescription(
+        address marketAddress,
+        string marketQuestion,
+        string marketSource,
+        string additionalInfo,
         uint endOfPositioning,
         uint fixedTicketPrice,
         bool withdrawalAllowed,

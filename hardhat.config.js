@@ -14,7 +14,6 @@ require('@nomiclabs/hardhat-ethers');
 require('@openzeppelin/hardhat-upgrades');
 require('hardhat-contract-sizer');
 
-
 const {
 	constants: { inflationStartTimestampInSecs, AST_FILENAME, AST_FOLDER, BUILD_FOLDER },
 } = require('.');
@@ -33,6 +32,17 @@ const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : 'http
 
 module.exports = {
 	etherscan: {
+		// not supported by default by hardhat
+		customChains: [
+			{
+				network: 'optimisticGoerli',
+				chainId: 420,
+				urls: {
+					apiURL: 'https://api-goerli-optimism.etherscan.io/api',
+					browserURL: 'https://goerli-optimism.etherscan.io/',
+				},
+			},
+		],
 		// Your API key for Etherscan
 		// Obtain one at https://etherscan.io/
 		apiKey: {
@@ -44,10 +54,11 @@ module.exports = {
 			// optimism
 			optimisticEthereum: OP_ETHERSCAN_KEY,
 			optimisticKovan: OP_ETHERSCAN_KEY,
+			optimisticGoerli: OP_ETHERSCAN_KEY,
 			// polygon
 			polygon: POLYGONSCAN_API_KEY,
 			polygonMumbai: POLYGONSCAN_API_KEY,
-	  },
+		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
 	GAS_PRICE,
@@ -175,16 +186,22 @@ module.exports = {
 			url: 'https://optimism-kovan.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
-		polygonMumbai: {
-			url: "https://polygon-mumbai.infura.io/v3/" + INFURA,
+		optimisticGoerli: {
+			gasPrice: 10000,
+			url: 'https://goerli.optimism.io',
 			accounts: [PRIVATE_KEY],
-			gasPrice: 80000000000
+		},
+		polygonMumbai: {
+			url: 'https://polygon-mumbai.infura.io/v3/' + INFURA,
+			accounts: [PRIVATE_KEY],
+			gasPrice: 80000000000,
 		},
 		polygon: {
-			url: "https://polygon-mainnet.infura.io/v3/" + INFURA,
+			url: 'https://polygon-mainnet.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
-		}, 
+		},
 	},
+
 	gasReporter: {
 		enabled: process.env.REPORT_GAS ? true : false,
 		showTimeSpent: true,

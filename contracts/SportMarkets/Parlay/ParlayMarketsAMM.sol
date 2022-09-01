@@ -20,7 +20,6 @@ import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../../utils/libraries/AddressSetLib.sol";
 
-import "./ParlayPosition.sol";
 import "./ParlayMarket.sol";
 import "../../interfaces/IParlayMarketData.sol";
 import "../../interfaces/ISportPositionalMarket.sol";

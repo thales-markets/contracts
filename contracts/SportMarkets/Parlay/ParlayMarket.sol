@@ -5,7 +5,6 @@ import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
 // Internal references
-import "./ParlayPosition.sol";
 import "../../interfaces/IParlayMarketsAMM.sol";
 import "../SportPositions/SportPosition.sol";
 import "../../interfaces/ISportPositionalMarket.sol";

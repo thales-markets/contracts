@@ -355,7 +355,8 @@
 		"SportPositionalMarketDataImplementation": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
 		"OvertimeVoucher": "0xD1fe5a0256AcaeA497ecD30dc0b816cce95e23E9",
 		"Referrals": "0xA59727442212227BBdCFEC1E883677A930707412",
-		"ReferralsImplementation": "0xd965c4192933a7cCF9BFD5C2a9f09DB9470e5485"
+		"ReferralsImplementation": "0xd965c4192933a7cCF9BFD5C2a9f09DB9470e5485",
+		"ApexConsumer": "0xF9aa70FB15F09d8deB5bC5Eb19F8386d3Fc3FAD4"
 	},
 	"localhost": {
 		"Airdrop": "",

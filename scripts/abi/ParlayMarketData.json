@@ -91,35 +91,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_parlay",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_game",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_position",
-        "type": "uint256"
-      }
-    ],
-    "name": "hasParlayGamePosition",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "containsParlay",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_owner",
         "type": "address"
       },
@@ -132,6 +103,64 @@
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_game",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlay",
+        "type": "address"
+      }
+    ],
+    "name": "isGameInParlay",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "containsParlay",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "position",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_game",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlay",
+        "type": "address"
+      }
+    ],
+    "name": "isGamePositionInParlay",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "containsParlay",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

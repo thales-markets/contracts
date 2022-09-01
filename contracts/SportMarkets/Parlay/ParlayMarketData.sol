@@ -36,7 +36,15 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         _parlaysInGamePosition[_game][_position].remove(_parlayMarket);
     }
 
-    function hasParlayGamePosition(address _parlay, address _game, uint _position) external view returns(bool containsParlay) {
+    function isGameInParlay(address _game, address _parlay) external view returns(bool containsParlay, uint position) {
+        for(uint i=0; i<3; i++) {
+            if(_parlaysInGamePosition[_game][i].contains(_parlay)) {
+                containsParlay = true;
+                position = i;
+            }
+        }
+    }
+    function isGamePositionInParlay(address _game, uint _position, address _parlay) public view returns(bool containsParlay) {
         containsParlay = _parlaysInGamePosition[_game][_position].contains(_parlay);
     }
     

@@ -492,6 +492,30 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.transfer(ParlayAMM.address, toUnit('20000'), { from: owner });
 	});
 
+	describe('Parlay AMM setters', () => {
+		it('SetAmounts', async () => {
+			await ParlayAMM.setAmounts(toUnit(0.1), toUnit(0.1), toUnit(0.1), toUnit(0.1), toUnit(0.1), {
+				from: owner,
+			});
+		});
+		it('set Addresses', async () => {
+			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, { from: owner });
+		});
+		it('ParlayMarketData', async () => {
+			await ParlayMarketData.setParlayMarketsAMM(third, { from: owner });
+
+			await ParlayMarketData.addParlayForGamePosition(first, '1', second, { from: third });
+			let hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
+			assert.equal(hasData, true);
+			hasData = await ParlayMarketData.isGameInParlay(first, second);
+			assert.equal(hasData[0], true);
+			assert.equal(hasData[1].toString(), '1');
+			await ParlayMarketData.removeParlayForGamePosition(first, '1', second, { from: third });
+			hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
+			assert.equal(hasData, false);
+		});
+	});
+
 	describe('Check ParlayAMM data', () => {
 		beforeEach(async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);

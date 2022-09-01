@@ -40,7 +40,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     ISportsAMM public sportsAmm;
 
     uint public parlayAmmFee;
-    uint public parlaySize = DEFAULT_PARLAY_SIZE;
+    uint public parlaySize;
 
     mapping(address => mapping(address => address)) public createdParlayMarkets;
     AddressSetLib.AddressSet internal _knownMarkets;
@@ -49,17 +49,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     mapping(address => bool) public resolvedParlay;
 
     address public parlayMarketMastercopy;
-    address public parlayPositionMastercopy;
 
     IERC20Upgradeable public sUSD;
-
-    mapping(address => uint) public spentOnMarket;
 
     address public parlayMarketData;
 
     // IMPORTANT: AMM risks only half or the payout effectively, but it risks the whole amount on price movements
-    // uint public capPerMarket;
-    // uint public minSupportedPrice;
     uint public maxSupportedAmount;
     uint public maxSupportedOdds;
 
@@ -98,7 +93,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         sUSD = _sUSD;
         safeBox = _safeBox;
         safeBoxImpact = _safeBoxImpact;
-
+        parlaySize = DEFAULT_PARLAY_SIZE;
         sUSD.approve(address(sportsAmm), type(uint256).max);
     }
     

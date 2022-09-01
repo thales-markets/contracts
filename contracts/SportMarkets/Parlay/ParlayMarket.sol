@@ -9,7 +9,7 @@ import "../../interfaces/IParlayMarketsAMM.sol";
 import "../SportPositions/SportPosition.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract ParlayMarket{
     using SafeERC20 for IERC20;
@@ -147,24 +147,24 @@ contract ParlayMarket{
             ISportPositionalMarket(_sportMarket).exerciseOptions();
             sportMarket[_idx].exercised = true;
             _numOfAlreadyExercisedSportMarkets++;
-            console.log("--> market exercised");
+            // console.log("--> market exercised");
             if(_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
                 uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
                 uint calculatedAmount = _recalculateAmount();
                 _resolve(true);
                 if(calculatedAmount < totalSUSDamount) {
-                    console.log("calculated < total");
+                    // console.log("calculated < total");
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
                     parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount-calculatedAmount));
                 }                
                 else if(calculatedAmount > totalSUSDamount) {
-                    console.log("calculated > total");
+                    // console.log("calculated > total");
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
                     parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (calculatedAmount-totalSUSDamount), true);
 
                 }
                 else {
-                    console.log("equal");
+                    // console.log("equal");
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
                 }
             }
@@ -185,11 +185,11 @@ contract ParlayMarket{
         sportMarket[_idx].hasWon = result == (sportMarket[_idx].position+1);
         numOfResolvedSportMarkets++;
         if(isResolved && result == 0) {
-            console.log("--> 1. totalResult: ", totalResultQuote);
-            console.log("--> 2. odd: ", sportMarket[_idx].odd);
+            // console.log("--> 1. totalResult: ", totalResultQuote);
+            // console.log("--> 2. odd: ", sportMarket[_idx].odd);
             totalResultQuote = ((totalResultQuote*ONE*ONE)/sportMarket[_idx].odd) / ONE;
             sportMarket[_idx].isCancelled = true;
-            console.log("--> 3. totalResult: ", totalResultQuote);
+            // console.log("--> 3. totalResult: ", totalResultQuote);
         }
     }
 
@@ -219,7 +219,7 @@ contract ParlayMarket{
         for(uint i=0; i<numOfSportMarkets; i++) {
             if(sportMarket[i].exercised)
             (anyExercisable, anyResolved) = _isWinningSportMarket(sportMarket[i].sportAddress, sportMarket[i].position);
-            console.log(">>>> exercisable: ",anyExercisable , "| resolved: ", anyResolved);
+            // console.log(">>>> exercisable: ",anyExercisable , "| resolved: ", anyResolved);
             if(anyExercisable) {
                 break;
             }

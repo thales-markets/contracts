@@ -287,6 +287,23 @@
 		"Referrals": "0xCEA46e50A4D7617AB315780f7a0077AC11C2832a",
 		"ReferralsImplementation": "0xbf68e99ec4e83dC88dccBfD190f229fA84b1DD5a"
 	},
+	"optimisticGoerli": {
+		"ExoticUSD": "0xE1ceaa829525a08C1d39A5CEBe4b42aF58d77198",
+		"ExoticMarketManager": "0x42aE885508cc7155fbf747d5ACD8BAbDa1b5d9f0",
+		"ExoticMarketManagerImplementation": "0x5EE98B5d88Fb7AFFe62e1f791A564A6B7925c777",
+		"ThalesOracleCouncil": "0x385ac1100d82B88467e0Cdc375c15AC2239a795C",
+		"ThalesOracleCouncilImplementation": "0x95d8b66DAE162C0C803C62d230e23579c2401a02",
+		"ThalesBonds": "0xc1B3523a8AbF8D01CD19730Ab9F09de23C257B6B",
+		"ThalesBondsImplementation": "0x477d33813Cc569447F558480d2Df8b3738eE2684",
+		"ExoticMarketMasterCopy": "0x4c22b24BBce18AaD041D0e370Aaa91D6c07a986b",
+		"ExoticMarketOpenBidMastercopy": "0x307Bb1b395e411Be31C985C146F3EB00F0fab4Ff",
+		"ExoticRewards": "0x8be9A35e394F2a98E3f41d4856C895498474A66F",
+		"ExoticRewardsImplementation": "0xbC7940FAf27D0c7e79574769C5424C7878b34D02",
+		"ExoticPositionalMarketData": "0x2f1e736F41E494ED2C73b40ceFc659c5A4D0f194",
+		"ExoticPositionalMarketDataImplementation": "0x1c66CAAB523A120053824e4ac942857Db346c2c6",
+		"ExoticPositionalTags": "0xc9279B0a3D7794D4423bc748f2218c3C7107D5Ed",
+		"ExoticPositionalTagsImplementation": "0x3c92C586348f59C00C58FCE3eB055899022ED95a"
+	},
 	"goerli": {
 		"GamesQueue": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
 		"GamesQueueImplementation": "0xece0eEFFF3003d23e366C917104C6CF5Cdb404F1",

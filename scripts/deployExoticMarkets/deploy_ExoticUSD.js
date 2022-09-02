@@ -38,12 +38,17 @@ async function main() {
 		network = 'goerli';
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
+
 	const ExoticUSDContract = await ethers.getContractFactory('ExoticUSD');
-	const ExoticMarketManagerAddress = getTargetAddress('ExoticMarketManager', network);
-	const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
+	// const ExoticMarketManagerAddress = getTargetAddress('ExoticMarketManager', network);
+	// const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
 
 	const ExoticUSDDeployed = await ExoticUSDContract.deploy();
-	await ExoticUSDDeployed.deployed;
+	await ExoticUSDDeployed.deployed();
 
 	console.log('ExoticUSD Deployed on', ExoticUSDDeployed.address);
 	setTargetAddress('ExoticUSD', network, ExoticUSDDeployed.address);

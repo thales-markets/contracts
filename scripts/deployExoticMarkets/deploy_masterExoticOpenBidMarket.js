@@ -64,6 +64,20 @@ async function main() {
 		FixedBidMastercopy = getTargetAddress('ExoticMarketMasterCopy', network);
 		TheRundownConsumer = addressZero;
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		mainnetNetwork = 'Goerli';
+		PaymentTokenAddress = getTargetAddress('ExoticUSD', network);
+		SafeBoxAddress = owner.address;
+		OracleCouncilAddress = getTargetAddress('ThalesOracleCouncil', network);
+		ThalesBondsAddress = getTargetAddress('ThalesBonds', network);
+		ExoticTagsAddress = getTargetAddress('ExoticPositionalTags', network);
+		MarketDataAddress = getTargetAddress('ExoticPositionalMarketData', network);
+		ExoticRewardsAddress = getTargetAddress('ExoticRewards', network);
+		OpenBidMastercopy = getTargetAddress('ExoticMarketOpenBidMastercopy', network);
+		FixedBidMastercopy = getTargetAddress('ExoticMarketMasterCopy', network);
+	}
 
 	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalOpenBidMarket');
 	const ExoticMarketDeployed = await ExoticMarket.deploy();

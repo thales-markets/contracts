@@ -328,7 +328,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
         if(numOfMarkets == numOfPositions) {
             for(uint i = 0; i< numOfMarkets; i++) {
-                if(_positions[i] == 0 || _positions[i] > 2) {
+                if(_positions[i] > 2) {
                     totalResultQuote = 0;
                     break;
                 }

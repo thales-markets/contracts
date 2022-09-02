@@ -36,6 +36,7 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         bool resolved,
         bool parlayPaused,
         bool alreadyLost,
+        bool fundsIssued,
         address[] memory markets,
         uint[] memory positions,
         uint[] memory oddsOnCreation,
@@ -52,6 +53,7 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
             resolved = parlay.resolved();
             parlayPaused = parlay.paused();
             alreadyLost = parlay.parlayAlreadyLost();
+            fundsIssued = parlay.fundsIssued();
             markets = new address[](numOfSportMarkets);
             positions = new uint[](numOfSportMarkets);
             oddsOnCreation = new uint[](numOfSportMarkets);

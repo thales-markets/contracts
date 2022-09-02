@@ -43,6 +43,7 @@ contract ParlayMarket is OwnedWithInit {
     bool public paused;
     bool public parlayAlreadyLost;
     bool public initialized;
+    bool public fundsIssued;
 
     address public parlayOwner;
     
@@ -125,11 +126,14 @@ contract ParlayMarket is OwnedWithInit {
                 && numOfResolvedSportMarkets < numOfSportMarkets, "Already exercised all markets");
         for(uint i=0; i<numOfSportMarkets; i++) {
             _updateSportMarketParameters(sportMarket[i].sportAddress, i);
-            _exerciseSpecificSportMarket(sportMarket[i].sportAddress, i);
+            if(!sportMarket[i].exercised && sportMarket[i].resolved) {
+                _exerciseSpecificSportMarket(sportMarket[i].sportAddress, i);
+            }
         }
-        if(parlayAlreadyLost) {
+        if(parlayAlreadyLost && !fundsIssued) {
             uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
             parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), totalSUSDamount);
+            fundsIssued = true;
         }
     }
 
@@ -141,7 +145,7 @@ contract ParlayMarket is OwnedWithInit {
     }
     
     function _exerciseSpecificSportMarket(address _sportMarket, uint _idx) internal {
-        require(!sportMarket[_idx].exercised, "Invalid market");
+        require(!sportMarket[_idx].exercised, "Exercised");
         require(sportMarket[_idx].resolved, "Unresolved");
         bool exercizable = sportMarket[_idx].resolved && (sportMarket[_idx].hasWon || sportMarket[_idx].isCancelled) && !sportMarket[_idx].exercised ? true : false;
         if(exercizable) {
@@ -157,16 +161,19 @@ contract ParlayMarket is OwnedWithInit {
                     // console.log("calculated < total");
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
                     parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount-calculatedAmount));
+                    fundsIssued = true;
                 }                
                 else if(calculatedAmount > totalSUSDamount) {
                     // console.log("calculated > total");
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
                     parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (calculatedAmount-totalSUSDamount), true);
+                    fundsIssued = true;
 
                 }
                 else {
                     // console.log("equal");
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+                    fundsIssued = true;
                 }
             }
         }

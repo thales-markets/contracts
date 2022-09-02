@@ -133,6 +133,11 @@
         "type": "bool"
       },
       {
+        "internalType": "bool",
+        "name": "fundsIssued",
+        "type": "bool"
+      },
+      {
         "internalType": "address[]",
         "name": "markets",
         "type": "address[]"

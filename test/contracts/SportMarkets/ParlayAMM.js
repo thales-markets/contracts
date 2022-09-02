@@ -772,7 +772,7 @@ contract('ParlayAMM', (accounts) => {
 			);
 			// console.log("event: \n", buyParlayTX.logs[0]);
 
-			assert.eventEqual(buyParlayTX.logs[0], 'ParlayMarketCreated', {
+			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
 			});

@@ -132,30 +132,39 @@ async function main() {
 
 	await delay(5000);
 
-	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(toBytes32('BNB'), w3utils.toWei('96'));
-	await tx.wait().then((e) => {
-		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BNB, 96)');
-	});
-
-	await delay(5000);
-
 	tx = await PositionalMarketFactoryInstance.setThalesAMM(ThalesAMM_deployed.address);
 	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactoryInstance: setThalesAMM');
 	});
 
 	await delay(5000);
+	const safeBoxImpact = w3utils.toWei('0.01');
 	const safeBox = getTargetAddress('SafeBox', network);
-	tx = await ThalesAMM_deployed.setSafeBox(safeBox);
+	tx = await ThalesAMM_deployed.setSafeBoxData(safeBox, safeBoxImpact);
 	await tx.wait().then((e) => {
 		console.log('ThalesAMM: setSafeBox()');
 	});
 
 	await delay(5000);
-	const safeBoxImpact = w3utils.toWei('0.01');
-	tx = await ThalesAMM_deployed.setSafeBoxImpact(safeBoxImpact);
+
+	tx = await ThalesAMM_deployed.setMinMaxSupportedPriceAndCap(
+		w3utils.toWei('0.1'),
+		w3utils.toWei('0.9'),
+		w3utils.toWei('5000')
+	);
 	await tx.wait().then((e) => {
-		console.log('ThalesAMM: setSafeBoxImpact()');
+		console.log('ThalesAMM: setMinMaxSupportedPriceAndCap()');
+	});
+
+	const referralImpact = w3utils.toWei('0.01');
+	const referrals = getTargetAddress('Referrals', network);
+	tx = await ThalesAMM_deployed.setStakingThalesAndReferrals(
+		ZERO_ADDRESS,
+		referrals,
+		referralImpact
+	);
+	await tx.wait().then((e) => {
+		console.log('ThalesAMM: setStakingThalesAndReferrals()');
 	});
 	await delay(5000);
 	try {

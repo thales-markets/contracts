@@ -132,7 +132,8 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
     /// @param position UP or DOWN
     /// @param amount number of positions to buy with 18 decimals
     /// @param collateral USDT, USDC or DAI address
-    /// @return a quote in collateral on how much the trader would need to pay to buy the amount of UP or DOWN positions
+    /// @return collateralQuote a quote in collateral on how much the trader would need to pay to buy the amount of UP or DOWN positions
+    /// @return sUSDToPay a quote in sUSD on how much the trader would need to pay to buy the amount of UP or DOWN positions
     function buyFromAmmQuoteWithDifferentCollateral(
         address market,
         Position position,
@@ -140,31 +141,30 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
         address collateral
     ) public view returns (uint collateralQuote, uint sUSDToPay) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        if (curveIndex == 0 || !curveOnrampEnabled) {
-            return (0, 0);
+        if (curveIndex > 0 && curveOnrampEnabled) {
+            sUSDToPay = buyFromAmmQuote(market, position, amount);
+            //cant get a quote on how much collateral is needed from curve for sUSD,
+            //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
+            collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay).mul(ONE.add(ONE_PERCENT.div(5))).div(
+                ONE
+            );
         }
-
-        sUSDToPay = buyFromAmmQuote(market, position, amount);
-        //cant get a quote on how much collateral is needed from curve for sUSD,
-        //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
     }
 
     /// @notice get the skew impact applied to that side of the market on buy
     /// @param market a Positional Market known to Market Manager
     /// @param position UP or DOWN
     /// @param amount number of positions to buy with 18 decimals
-    /// @return the skew impact applied to that side of the market
+    /// @return _available the skew impact applied to that side of the market
     function buyPriceImpact(
         address market,
         Position position,
         uint amount
-    ) public view returns (uint) {
+    ) public view returns (uint _available) {
         uint _availableToBuyFromAMM = availableToBuyFromAMM(market, position);
-        return
-            (amount == 0 || amount > _availableToBuyFromAMM)
-                ? 0
-                : _buyPriceImpact(market, position, amount, _availableToBuyFromAMM);
+        if (amount > 0 && amount <= _availableToBuyFromAMM) {
+            _available = _buyPriceImpact(market, position, amount, _availableToBuyFromAMM);
+        }
     }
 
     /// @notice get how many positions of a certain type (UP or DOWN) can be sold for the given positional market
@@ -204,7 +204,7 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
         uint amount
     ) public view returns (uint _impact) {
         uint _available = availableToSellToAMM(market, position);
-        if (!(amount > _available)) {
+        if (amount <= _available) {
             _impact = _sellPriceImpact(market, position, amount, _available);
         }
     }

@@ -266,15 +266,6 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         }
     }
 
-    function calculateOddsGas(
-        uint _price,
-        uint strike,
-        uint timeLeftInDays,
-        uint volatility
-    ) public returns (uint) {
-        return calculateOdds(_price, strike, timeLeftInDays, volatility);
-    }
-
     /// @notice check if market is supported by the AMM
     /// @param market positional market known to manager
     /// @return isTrading is market supported by the AMM

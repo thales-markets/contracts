@@ -1,6 +1,7 @@
 const path = require('path');
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
+const w3utils = require('web3-utils');
 
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
@@ -11,6 +12,7 @@ async function main() {
 	let network = networkObj.name;
 	let mainnetNetwork = 'mainnet';
 	let PaymentToken;
+	let SportsAMMContract;
 
 	if (network == 'homestead') {
 		console.log(
@@ -38,64 +40,32 @@ async function main() {
 		networkObj.name = 'goerli';
 		network = 'goerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
+		SportsAMMContract = getTargetAddress('SportsAMM', network);
 	}
 
-	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
+	const parlayAMMfee = '5';
+	const maxSupportedAmount = w3utils.toWei('20000');
+	const maxSupportedOdds = w3utils.toWei('0.005');
+	const safeBoxImpact = '5';
+
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
-	const ParlayAMMDeployed = await ParlayAMM.attach(ParlayAMMAddress);
 
-	// const ParlayMarketDataAddress = getTargetAddress('ParlayMarketData', network);
-	// const SportsAMMContract = getTargetAddress('SportsAMM', network);
+	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 
-	// await ParlayAMMDeployed.setAddresses(
-	// 	SportsAMMContract,
-	// 	owner.address,
-	// 	owner.address,
-	// 	owner.address,
-	// 	ParlayMarketDataAddress,
-	// 	{ from: owner.address }
-	// );
+	await upgrades.upgradeProxy(ParlayAMMAddress, ParlayAMM);
 
-	const ParlayMarketData = await ethers.getContractFactory('ParlayMarketData');
+	await delay(60000);
 
-	const ParlayMarketDataDeployed = await upgrades.deployProxy(ParlayMarketData, [
-		owner.address,
-		ParlayAMMAddress,
-	]);
-	await ParlayMarketDataDeployed.deployed;
-	await delay(10000);
+	const ParlayAMMImplementation = await getImplementationAddress(ethers.provider, ParlayAMMAddress);
 
-	console.log('ParlayMarketData Deployed on', ParlayMarketDataDeployed.address);
-	setTargetAddress('ParlayMarketData', network, ParlayMarketDataDeployed.address);
+	console.log('Implementation ParlayAMM: ', ParlayAMMImplementation);
+	setTargetAddress('ParlayAMMImplementation', network, ParlayAMMImplementation);
 
-	await delay(65000);
-	const ParlayMarketDataImplementation = await getImplementationAddress(
-		ethers.provider,
-		ParlayMarketDataDeployed.address
-	);
-
-	await delay(5000);
-	console.log('Implementation ParlayMarketData: ', ParlayMarketDataImplementation);
-	setTargetAddress('ParlayMarketDataImplementation', network, ParlayMarketDataImplementation);
-
-	await delay(5000);
-
-	const SportsAMMContract = getTargetAddress('SportsAMM', network);
-
-	await ParlayAMMDeployed.setAddresses(
-		SportsAMMContract,
-		owner.address,
-		owner.address,
-		owner.address,
-		ParlayMarketDataDeployed.address,
-		{ from: owner.address }
-	);
-
-	await delay(65000);
+	await delay(2000);
 
 	try {
 		await hre.run('verify:verify', {
-			address: ParlayMarketDataImplementation,
+			address: ParlayAMMImplementation,
 		});
 	} catch (e) {
 		console.log(e);

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "../../OwnedWithInit.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
@@ -11,7 +12,7 @@ import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 // import "hardhat/console.sol";
 
-contract ParlayMarket{
+contract ParlayMarket is OwnedWithInit {
     using SafeERC20 for IERC20;
 
     uint private constant ONE = 1e18;
@@ -61,9 +62,9 @@ contract ParlayMarket{
     ) external {
         require(!initialized, "Parlay Market already initialized");
         initialized = true;
+        initOwner(msg.sender);
         parlayMarketsAMM = IParlayMarketsAMM(_parlayMarketsAMM);
-        require(_sportMarkets.length == _positionPerMarket.length 
-                && parlayMarketsAMM.parlaySize() == _sportMarkets.length, 
+        require(_sportMarkets.length == _positionPerMarket.length, 
                 "Lengths not matching");
         numOfSportMarkets = _sportMarkets.length;
         for(uint i=0; i<numOfSportMarkets; i++) {

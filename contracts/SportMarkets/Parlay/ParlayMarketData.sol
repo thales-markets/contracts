@@ -8,6 +8,7 @@ import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../../utils/libraries/AddressSetLib.sol";
+import "./ParlayMarket.sol";
 
 contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -25,6 +26,42 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
         setOwner(_owner);
         parlayMarketsAMM = _parlayMarketsAMM;
+    }
+
+    function getParlayDetails(address _parlayMarket) external view returns(
+        uint numOfSportMarkets,
+        uint amount,
+        uint sUSDPaid,
+        uint totalResultQuote,
+        bool resolved,
+        bool parlayPaused,
+        bool alreadyLost,
+        address[] memory markets,
+        uint[] memory positions,
+        uint[] memory oddsOnCreation,
+        uint[] memory marketResults,
+        bool[] memory resolvedMarkets,
+        bool[] memory exercisedMarkets
+    ) {
+        ParlayMarket parlay = ParlayMarket(_parlayMarket);
+        if(parlay.initialized()) {
+            numOfSportMarkets = parlay.numOfSportMarkets();
+            amount = parlay.amount();
+            sUSDPaid = parlay.sUSDPaid();
+            totalResultQuote = parlay.totalResultQuote();
+            resolved = parlay.resolved();
+            parlayPaused = parlay.paused();
+            alreadyLost = parlay.parlayAlreadyLost();
+            markets = new address[](numOfSportMarkets);
+            positions = new uint[](numOfSportMarkets);
+            oddsOnCreation = new uint[](numOfSportMarkets);
+            marketResults = new uint[](numOfSportMarkets);
+            resolvedMarkets = new bool[](numOfSportMarkets);
+            exercisedMarkets = new bool[](numOfSportMarkets);
+            for(uint i=0; i<numOfSportMarkets; i++) {
+                (markets[i],positions[i],oddsOnCreation[i] , marketResults[i], resolvedMarkets[i], exercisedMarkets[i], , ) = parlay.sportMarket(i);
+            }
+        }
     }
 
     function addParlayForGamePosition(address _game, uint _position, address _parlayMarket) external onlyParlayAMM {

@@ -62,6 +62,7 @@ async function main() {
 	]);
 	await ParlayAMMDeployed.deployed;
 
+	await delay(10000);
 	console.log('ParlayAMM Deployed on', ParlayAMMDeployed.address);
 	setTargetAddress('ParlayAMM', network, ParlayAMMDeployed.address);
 	await delay(60000);

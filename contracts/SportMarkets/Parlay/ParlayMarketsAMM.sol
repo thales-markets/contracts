@@ -203,6 +203,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         // mint the stateful token  (ERC-20)
         // clone a parlay market
         ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
+
         parlayMarket.initialize(
                     _sportMarkets,
                     _positions, 
@@ -211,6 +212,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     address(this), 
                     msg.sender
                     );
+
+        emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
+        
         _knownMarkets.add(address(parlayMarket));
         parlayMarket.updateQuotes(marketQuotes, totalResultQuote);
 
@@ -521,6 +525,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
 
     event SetSUSD(address sUSD);
+    event NewParlayMarket(address market, address[] markets, uint[] positions, uint amount, uint sUSDpaid);
     event ParlayMarketCreated(address market, address account, uint amount, uint sUSDPaid, uint sUSDAfterFees);
     event SetAmounts(uint max_amount, uint max_odds, uint _parlayAMMFee, uint _safeBoxImpact, uint _referrerFee);
     event AddressesSet(address _thalesAMM, address _stakingThales, address _safeBox, address _referrals, address _parlayMarketData);

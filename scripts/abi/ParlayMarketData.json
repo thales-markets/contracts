@@ -91,6 +91,85 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "getParlayDetails",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "numOfSportMarkets",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sUSDPaid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalResultQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "resolved",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "parlayPaused",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "alreadyLost",
+        "type": "bool"
+      },
+      {
+        "internalType": "address[]",
+        "name": "markets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "positions",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "oddsOnCreation",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "marketResults",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "resolvedMarkets",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "exercisedMarkets",
+        "type": "bool[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_owner",
         "type": "address"
       },

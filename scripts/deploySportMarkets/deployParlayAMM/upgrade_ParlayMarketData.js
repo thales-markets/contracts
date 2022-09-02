@@ -40,58 +40,22 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
-	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
-	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
-	const ParlayAMMDeployed = await ParlayAMM.attach(ParlayAMMAddress);
-
-	// const ParlayMarketDataAddress = getTargetAddress('ParlayMarketData', network);
-	// const SportsAMMContract = getTargetAddress('SportsAMM', network);
-
-	// await ParlayAMMDeployed.setAddresses(
-	// 	SportsAMMContract,
-	// 	owner.address,
-	// 	owner.address,
-	// 	owner.address,
-	// 	ParlayMarketDataAddress,
-	// 	{ from: owner.address }
-	// );
-
+	const ParlayMarketDataAddress = getTargetAddress('ParlayMarketData', network);
 	const ParlayMarketData = await ethers.getContractFactory('ParlayMarketData');
 
-	const ParlayMarketDataDeployed = await upgrades.deployProxy(ParlayMarketData, [
-		owner.address,
-		ParlayAMMAddress,
-	]);
-	await ParlayMarketDataDeployed.deployed;
-	await delay(10000);
+	await upgrades.upgradeProxy(ParlayMarketDataAddress, ParlayMarketData);
 
-	console.log('ParlayMarketData Deployed on', ParlayMarketDataDeployed.address);
-	setTargetAddress('ParlayMarketData', network, ParlayMarketDataDeployed.address);
+	await delay(60000);
 
-	await delay(65000);
 	const ParlayMarketDataImplementation = await getImplementationAddress(
 		ethers.provider,
-		ParlayMarketDataDeployed.address
+		ParlayMarketDataAddress
 	);
 
-	await delay(5000);
 	console.log('Implementation ParlayMarketData: ', ParlayMarketDataImplementation);
 	setTargetAddress('ParlayMarketDataImplementation', network, ParlayMarketDataImplementation);
 
-	await delay(5000);
-
-	const SportsAMMContract = getTargetAddress('SportsAMM', network);
-
-	await ParlayAMMDeployed.setAddresses(
-		SportsAMMContract,
-		owner.address,
-		owner.address,
-		owner.address,
-		ParlayMarketDataDeployed.address,
-		{ from: owner.address }
-	);
-
-	await delay(65000);
+	await delay(2000);
 
 	try {
 		await hre.run('verify:verify', {

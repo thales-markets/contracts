@@ -676,40 +676,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_price",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "strike",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timeLeftInDays",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "volatility",
-        "type": "uint256"
-      }
-    ],
-    "name": "calculateOddsGas",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "market",
         "type": "address"

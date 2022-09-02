@@ -132,6 +132,13 @@ async function main() {
 
 	await delay(5000);
 
+	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(toBytes32('BNB'), w3utils.toWei('96'));
+	await tx.wait().then((e) => {
+		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BNB, 96)');
+	});
+
+	await delay(5000);
+
 	tx = await PositionalMarketFactoryInstance.setThalesAMM(ThalesAMM_deployed.address);
 	await tx.wait().then((e) => {
 		console.log('PositionalMarketFactoryInstance: setThalesAMM');

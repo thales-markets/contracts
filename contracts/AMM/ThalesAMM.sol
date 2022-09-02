@@ -139,7 +139,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         address collateral
     ) public view returns (uint collateralQuote, uint sUSDToPay) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        if (curveIndex == 0 && curveOnrampEnabled) {
+        if (curveIndex > 0 && curveOnrampEnabled) {
             sUSDToPay = buyFromAmmQuote(market, position, amount);
             //cant get a quote on how much collateral is needed from curve for sUSD,
             //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that

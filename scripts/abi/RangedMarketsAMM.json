@@ -771,25 +771,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "contract RangedMarket",
-        "name": "rangedMarket",
-        "type": "address"
-      }
-    ],
-    "name": "minInPrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "quotedPrice",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "minSupportedPrice",
     "outputs": [

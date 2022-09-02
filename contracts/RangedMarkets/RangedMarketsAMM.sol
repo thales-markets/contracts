@@ -165,36 +165,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             return availableLeft < availableRight ? availableLeft : availableRight;
         } else {
             uint availableThalesAMM = (availableLeft < availableRight ? availableLeft : availableRight) * 2;
-            uint availableRangedAmm = _availableToBuyFromAMMOnlyRangedIN(rangedMarket);
-            return availableThalesAMM > availableRangedAmm ? availableRangedAmm : availableThalesAMM;
-        }
-    }
-
-    function _availableToBuyFromAMMOnlyRangedIN(RangedMarket rangedMarket)
-        internal
-        view
-        knownRangedMarket(address(rangedMarket))
-        returns (uint availableRangedAmm)
-    {
-        uint minPrice = _transformCollateral(minInPrice(rangedMarket), true);
-        if (minPrice <= minSupportedPrice || minPrice >= maxSupportedPrice) {
-            return 0;
-        }
-        uint rangedAMMRisk = ONE - minPrice;
-        availableRangedAmm = ((capPerMarket - spentOnMarket[address(rangedMarket)]) * ONE) / rangedAMMRisk;
-    }
-
-    function minInPrice(RangedMarket rangedMarket)
-        public
-        view
-        knownRangedMarket(address(rangedMarket))
-        returns (uint quotedPrice)
-    {
-        uint leftQuote = thalesAmm.buyFromAmmQuote(address(rangedMarket.leftMarket()), IThalesAMM.Position.Up, ONE);
-        uint rightQuote = thalesAmm.buyFromAmmQuote(address(rangedMarket.rightMarket()), IThalesAMM.Position.Down, ONE);
-        uint oneTransformed = _transformCollateral(ONE, false);
-        if ((leftQuote + rightQuote) > ((oneTransformed - leftQuote) + (oneTransformed - rightQuote))) {
-            quotedPrice = ((leftQuote + rightQuote) - ((oneTransformed - leftQuote) + (oneTransformed - rightQuote))) / 2;
+            return availableThalesAMM;
         }
     }
 
@@ -345,10 +316,10 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint additionalSlippage,
         bool sendSUSD
     ) internal {
-        require(
-            position == RangedMarket.Position.Out || amount <= _availableToBuyFromAMMOnlyRangedIN(rangedMarket),
-            "Not enough liquidity"
-        );
+        //        require(
+        //            position == RangedMarket.Position.Out || amount <= _availableToBuyFromAMMOnlyRangedIN(rangedMarket),
+        //            "Not enough liquidity"
+        //        );
 
         (uint sUSDPaid, uint leftQuote, uint rightQuote) = buyFromAmmQuoteDetailed(rangedMarket, position, amount);
         require(sUSDPaid > 0 && ((sUSDPaid * ONE) / expectedPayout <= (ONE + additionalSlippage)), "Slippage too high");
@@ -369,7 +340,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         } else {
             target = address(inp);
             _buyIN(rangedMarket, amount, leftQuote, rightQuote, additionalSlippage);
-            _updateSpentOnMarketAndSafeBoxOnBuy(address(rangedMarket), amount, sUSDPaid);
+            _handleSafeBoxFeeOnBuy(address(rangedMarket), amount, sUSDPaid);
         }
 
         rangedMarket.mint(amount, position, msg.sender);
@@ -535,7 +506,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             rangedMarket.burnOut(amount, msg.sender);
         } else {
             rangedMarket.burnIn(amount, msg.sender);
-            _updateSpentOnMarketAndSafeBoxOnSell(amount, rangedMarket, pricePaid);
+            _handleSafeBoxFeeOnSell(amount, rangedMarket, pricePaid);
         }
 
         _handleSellToAmm(rangedMarket, position, amount, additionalSlippage, leftQuote, rightQuote);
@@ -612,7 +583,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         return 0;
     }
 
-    function _updateSpentOnMarketAndSafeBoxOnBuy(
+    function _handleSafeBoxFeeOnBuy(
         address rangedMarket,
         uint amount,
         uint sUSDPaid
@@ -622,14 +593,9 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             safeBoxShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + safeBoxImpact));
             sUSD.transfer(safeBox, safeBoxShare);
         }
-
-        spentOnMarket[rangedMarket] =
-            spentOnMarket[rangedMarket] +
-            amount -
-            _transformCollateral(sUSDPaid - safeBoxShare, true);
     }
 
-    function _updateSpentOnMarketAndSafeBoxOnSell(
+    function _handleSafeBoxFeeOnSell(
         uint amount,
         RangedMarket rangedMarket,
         uint sUSDPaid
@@ -639,14 +605,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         if (safeBoxImpact > 0) {
             safeBoxShare = ((sUSDPaid * ONE) / (ONE - safeBoxImpact)) - sUSDPaid;
             sUSD.transfer(safeBox, safeBoxShare);
-        }
-
-        uint intermediateSum = _transformCollateral(sUSDPaid + safeBoxShare, true);
-
-        if (amount > (spentOnMarket[address(rangedMarket)] + intermediateSum)) {
-            spentOnMarket[address(rangedMarket)] = 0;
-        } else {
-            spentOnMarket[address(rangedMarket)] = spentOnMarket[address(rangedMarket)] + intermediateSum - amount;
         }
     }
 

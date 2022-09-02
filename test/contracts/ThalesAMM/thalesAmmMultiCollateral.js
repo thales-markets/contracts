@@ -241,6 +241,9 @@ contract('ThalesAMM', (accounts) => {
 					testUSDC.address
 				);
 			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
+			console.log(
+				'buyFromAmmQuoteUSDCCollateral decimal is:' + buyFromAmmQuoteUSDCCollateral / 1e18
+			);
 
 			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > buyFromAmmQuote / 1e18, true);
 

@@ -4,13 +4,8 @@ const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
 const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../utils')();
+const { fastForward, toUnit, currentTime, multiplyDecimalRound, divideDecimalRound } =
+	require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupContract, setupAllContracts } = require('../../utils/setup');
 
@@ -45,7 +40,7 @@ const Phase = {
 	Expiry: toBN(2),
 };
 
-contract('RangedAMM', accounts => {
+contract('RangedAMM', (accounts) => {
 	const [
 		initialCreator,
 		managerOwner,
@@ -60,7 +55,7 @@ contract('RangedAMM', accounts => {
 	let creatorSigner, ownerSigner;
 
 	const sUSDQty = toUnit(100000);
-	const sUSDQtyAmm = toUnit(1000);
+	const sUSDQtyAmm = toUnit(100000);
 
 	const hour = 60 * 60;
 	const day = 24 * 60 * 60;
@@ -98,7 +93,7 @@ contract('RangedAMM', accounts => {
 			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
-			event => event['event'] && event['event'] === 'MarketCreated'
+			(event) => event['event'] && event['event'] === 'MarketCreated'
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
@@ -333,63 +328,12 @@ contract('RangedAMM', accounts => {
 				'leftMarketAddressFromCreatedRangedMarket is ' + leftMarketAddressFromCreatedRangedMarket
 			);
 
-			let minInPrice = await rangedMarketsAMM.minInPrice(rangedMarket.address);
-			console.log('minInPrice is:' + minInPrice / 1e18);
-			//
-			// let availableToBuyFromAMMLeft = await thalesAMM.availableToBuyFromAMM(
-			// 	leftMarket.address,
-			// 	Position.DOWN
-			// );
-			// console.log('availableToBuyFromAMM leftMarket is:' + availableToBuyFromAMMLeft / 1e18);
-			//
-			// let availableToBuyFromAMMRight = await thalesAMM.availableToBuyFromAMM(
-			// 	rightMarket.address,
-			// 	Position.UP
-			// );
-			// console.log('availableToBuyFromAMM rightMarket is:' + availableToBuyFromAMMRight / 1e18);
-			//
-			// let availableToBuyFromAMMOut = await rangedMarketsAMM.availableToBuyFromAMM(
-			// 	leftMarket.address,
-			// 	rightMarket.address,
-			// 	RangedPosition.OUT
-			// );
-			//
-			// console.log('availableToBuyFromAMMOut is:' + availableToBuyFromAMMOut / 1e18);
-			//
-			// availableToBuyFromAMMLeft = await thalesAMM.availableToBuyFromAMM(
-			// 	leftMarket.address,
-			// 	Position.UP
-			// );
-			// console.log('availableToBuyFromAMM IN leftMarket  is:' + availableToBuyFromAMMLeft / 1e18);
-			//
-			// availableToBuyFromAMMRight = await thalesAMM.availableToBuyFromAMM(
-			// 	rightMarket.address,
-			// 	Position.DOWN
-			// );
-			// console.log('availableToBuyFromAMM IN rightMarket is:' + availableToBuyFromAMMRight / 1e18);
-			//
 			let availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
 				rangedMarket.address,
 				RangedPosition.IN
 			);
 
 			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
-
-			//
-			// buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
-			// 	rangedMarket.address,
-			// 	RangedPosition.IN,
-			// 	toUnit('1000')
-			// );
-			//
-			// console.log('buyInQuote 1000 is :' + buyInQuote / 1e18);
-			//
-			// buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
-			// 	rangedMarket.address,
-			// 	RangedPosition.IN,
-			// 	toUnit(availableToBuyFromAMMIn / 1e18 + '')
-			// );
-			// console.log('buyInQuote availableToBuyFromAMMIn is :' + buyInQuote / 1e18);
 
 			console.log('BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
 
@@ -652,17 +596,6 @@ contract('RangedAMM', accounts => {
 			);
 
 			console.log('buyInQuote is:' + buyInQuote / 1e18);
-
-			await expect(
-				rangedMarketsAMM.buyFromAMM(
-					rangedMarket.address,
-					RangedPosition.IN,
-					toUnit(availableToBuyFromAMMIn / 1e18 + 1),
-					buyInQuote,
-					additionalSlippage,
-					{ from: minter }
-				)
-			).to.be.revertedWith('Not enough liquidity');
 
 			console.log('BUY MAXIMUM IN!!!!!!!!!');
 			availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(

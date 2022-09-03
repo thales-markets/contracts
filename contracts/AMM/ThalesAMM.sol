@@ -388,8 +388,8 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
-    ) public nonReentrant notPaused {
-        _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
+    ) public nonReentrant notPaused returns (uint) {
+        return _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
     }
 
     /// @notice sell positions of the defined type of a given market to the AMM
@@ -404,7 +404,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
-    ) public nonReentrant notPaused {
+    ) public nonReentrant notPaused returns (uint) {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         uint basePrice = price(market, position);
@@ -437,6 +437,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         _updateSpentOnMarketOnSell(market, pricePaid, sUSDFromBurning, msg.sender);
 
         emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), address(target));
+        return pricePaid;
     }
 
     /// @notice Exercise positions on a certain matured market to retrieve sUSD
@@ -556,7 +557,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         uint additionalSlippage,
         bool sendSUSD,
         uint sUSDPaid
-    ) internal {
+    ) internal returns (uint) {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         uint basePrice = price(market, position);
@@ -590,6 +591,8 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
 
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
+
+        return sUSDPaid;
     }
 
     function _updateSpentOnMarketOnSell(

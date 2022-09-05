@@ -125,8 +125,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
     
     function canCreateParlayMarket(address[] calldata _sportMarkets, uint[] calldata _positions, uint sUSDToPay) external view returns (bool canBeCreated) {
-        (uint totalQuote , , , )= _canCreateParlayMarket(_sportMarkets, _positions, sUSDToPay);
-        canBeCreated = totalQuote > maxSupportedOdds;
+        (uint totalQuote , uint totalAmount, , )= _canCreateParlayMarket(_sportMarkets, _positions, sUSDToPay);
+        canBeCreated = totalQuote > maxSupportedOdds && totalAmount <= maxSupportedAmount;
     }
     
     function buyParlay(
@@ -189,7 +189,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         (totalResultQuote, totalAmount, amountsToBuy, marketQuotes) = _canCreateParlayMarket(_sportMarkets, _positions, sUSDAfterFees);
         // apply all checks
         require(totalResultQuote > maxSupportedOdds, "Can't create this parlay market!");
-        
+        require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
         // checks for creation missing
 
         if (_sendSUSD) {

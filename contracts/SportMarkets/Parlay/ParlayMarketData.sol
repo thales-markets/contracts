@@ -28,24 +28,28 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         parlayMarketsAMM = _parlayMarketsAMM;
     }
 
-    function getParlayDetails(address _parlayMarket) external view returns(
-        uint numOfSportMarkets,
-        uint amount,
-        uint sUSDPaid,
-        uint totalResultQuote,
-        bool resolved,
-        bool parlayPaused,
-        bool alreadyLost,
-        bool fundsIssued,
-        address[] memory markets,
-        uint[] memory positions,
-        uint[] memory oddsOnCreation,
-        uint[] memory marketResults,
-        bool[] memory resolvedMarkets,
-        bool[] memory exercisedMarkets
-    ) {
+    function getParlayDetails(address _parlayMarket)
+        external
+        view
+        returns (
+            uint numOfSportMarkets,
+            uint amount,
+            uint sUSDPaid,
+            uint totalResultQuote,
+            bool resolved,
+            bool parlayPaused,
+            bool alreadyLost,
+            bool fundsIssued,
+            address[] memory markets,
+            uint[] memory positions,
+            uint[] memory oddsOnCreation,
+            uint[] memory marketResults,
+            bool[] memory resolvedMarkets,
+            bool[] memory exercisedMarkets
+        )
+    {
         ParlayMarket parlay = ParlayMarket(_parlayMarket);
-        if(parlay.initialized()) {
+        if (parlay.initialized()) {
             numOfSportMarkets = parlay.numOfSportMarkets();
             amount = parlay.amount();
             sUSDPaid = parlay.sUSDPaid();
@@ -60,33 +64,56 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
             marketResults = new uint[](numOfSportMarkets);
             resolvedMarkets = new bool[](numOfSportMarkets);
             exercisedMarkets = new bool[](numOfSportMarkets);
-            for(uint i=0; i<numOfSportMarkets; i++) {
-                (markets[i],positions[i],oddsOnCreation[i] , marketResults[i], resolvedMarkets[i], exercisedMarkets[i], , ) = parlay.sportMarket(i);
+            for (uint i = 0; i < numOfSportMarkets; i++) {
+                (
+                    markets[i],
+                    positions[i],
+                    oddsOnCreation[i],
+                    marketResults[i],
+                    resolvedMarkets[i],
+                    exercisedMarkets[i],
+                    ,
+
+                ) = parlay.sportMarket(i);
             }
         }
     }
 
-    function addParlayForGamePosition(address _game, uint _position, address _parlayMarket) external onlyParlayAMM {
+    function addParlayForGamePosition(
+        address _game,
+        uint _position,
+        address _parlayMarket
+    ) external onlyParlayAMM {
         require(msg.sender == parlayMarketsAMM, "Invalid sender");
         _parlaysInGamePosition[_game][_position].add(_parlayMarket);
     }
-    function removeParlayForGamePosition(address _game, uint _position, address _parlayMarket) external onlyParlayAMM{
+
+    function removeParlayForGamePosition(
+        address _game,
+        uint _position,
+        address _parlayMarket
+    ) external onlyParlayAMM {
         require(msg.sender == parlayMarketsAMM, "Invalid sender");
         _parlaysInGamePosition[_game][_position].remove(_parlayMarket);
     }
 
-    function isGameInParlay(address _game, address _parlay) external view returns(bool containsParlay, uint position) {
-        for(uint i=0; i<3; i++) {
-            if(_parlaysInGamePosition[_game][i].contains(_parlay)) {
+    function isGameInParlay(address _game, address _parlay) external view returns (bool containsParlay, uint position) {
+        for (uint i = 0; i < 3; i++) {
+            if (_parlaysInGamePosition[_game][i].contains(_parlay)) {
                 containsParlay = true;
                 position = i;
             }
         }
     }
-    function isGamePositionInParlay(address _game, uint _position, address _parlay) public view returns(bool containsParlay) {
+
+    function isGamePositionInParlay(
+        address _game,
+        uint _position,
+        address _parlay
+    ) public view returns (bool containsParlay) {
         containsParlay = _parlaysInGamePosition[_game][_position].contains(_parlay);
     }
-    
+
     function setParlayMarketsAMM(address _parlayMarketsAMM) external onlyOwner {
         parlayMarketsAMM = _parlayMarketsAMM;
         emit SetParlayMarketsAMM(_parlayMarketsAMM);
@@ -100,8 +127,6 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     function _onlyParlayAMM() internal view {
         require(msg.sender == parlayMarketsAMM, "Not ParlayAMM");
     }
-
-
 
     event SetParlayMarketsAMM(address _parlayMarketsAMM);
 }

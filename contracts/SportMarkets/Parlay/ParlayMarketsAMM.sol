@@ -73,6 +73,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     address public dai;
 
     bool public curveOnrampEnabled;
+    bool public sortingEnabled;
 
     function initialize(
         address _owner,
@@ -174,8 +175,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function _buyParlay(
-        address[] calldata _sportMarkets, 
-        uint[] calldata _positions,
+        address[] memory _sportMarkets, 
+        uint[] memory _positions,
         uint _sUSDPaid,
         uint _additionalSlippage,
         bool _sendSUSD
@@ -187,6 +188,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint[] memory marketQuotes = new uint[](_sportMarkets.length);
         uint sUSDAfterFees = _sUSDPaid.mul(ONE.sub(safeBoxImpact.mul(ONE_PERCENT))).div(ONE);
         (totalResultQuote, totalAmount, amountsToBuy, marketQuotes) = _canCreateParlayMarket(_sportMarkets, _positions, sUSDAfterFees);
+       
         // apply all checks
         require(totalResultQuote > maxSupportedOdds, "Can't create this parlay market!");
         require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
@@ -199,7 +201,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         else {
             sUSD.safeTransfer(safeBox, _sUSDPaid.sub(sUSDAfterFees));
         }
-
+        if(sortingEnabled) {
+            (_sportMarkets, _positions, amountsToBuy, marketQuotes) = _sortPositions(_sportMarkets, _positions, amountsToBuy, marketQuotes);
+        }
         // mint the stateful token  (ERC-20)
         // clone a parlay market
         ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
@@ -308,8 +312,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function _canCreateParlayMarket(
-        address[] calldata _sportMarkets, 
-        uint[] calldata _positions,
+        address[] memory _sportMarkets, 
+        uint[] memory _positions,
         uint _totalSUSDToPay
         ) internal view returns (
             uint totalResultQuote,
@@ -378,10 +382,35 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             }
         }
     }
+
+    function _sortPositions(address[] memory _sportMarkets, uint[] memory _positions, uint[] memory _amountsToBuy, uint[] memory _marketQuotes) 
+    internal 
+    view 
+    returns(
+        address[] memory sortedAddresses, 
+        uint[] memory sortedPositions,
+        uint[] memory sortedAmountsToBuy, 
+        uint[] memory sortedMarketQuotes) 
+        {
+        sortedAddresses = new address[](_sportMarkets.length);
+        sortedPositions = new uint[](_sportMarkets.length);
+        sortedAmountsToBuy = new uint[](_sportMarkets.length);
+        sortedMarketQuotes = new uint[](_sportMarkets.length);
+        for(uint i=0; i<_sportMarkets.length; i++) {
+            for(uint j=i+1; j<_sportMarkets.length; j++) {
+                if(_marketQuotes[i] < _marketQuotes[j]) {
+                    sortedAddresses[i] = _sportMarkets[j];
+                    sortedPositions[i] = _positions[j];
+                    sortedAmountsToBuy[i] = _amountsToBuy[j];
+                    sortedMarketQuotes[i] = _marketQuotes[j];
+                }
+            }
+        }
+    }
     
     function _buyPositionsFromSportAMM(
-        address[] calldata _sportMarkets, 
-        uint[] calldata _positions,
+        address[] memory _sportMarkets, 
+        uint[] memory _positions,
         uint[] memory _proportionalAmounts,
         uint _additionalSlippage, 
         address _parlayMarket
@@ -459,13 +488,19 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         parlayMarketMastercopy = _parlayMarketMastercopy;
     }
 
+    function setParameters(
+        bool _sortingEnabled
+    ) external onlyOwner {
+        sortingEnabled = _sortingEnabled;
+    }
+
     function setAmounts(
         uint _maxSupportedAmount,
         uint _maxSupportedOdds,
         uint _parlayAMMFee,
         uint _safeBoxImpact,
         uint _referrerFee
-    ) public onlyOwner {
+    ) external onlyOwner {
         maxSupportedAmount = _maxSupportedAmount;
         maxSupportedOdds = _maxSupportedOdds;
         parlayAmmFee = _parlayAMMFee;

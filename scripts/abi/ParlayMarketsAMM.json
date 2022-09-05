@@ -1063,6 +1063,19 @@
   {
     "inputs": [
       {
+        "internalType": "bool",
+        "name": "_sortingEnabled",
+        "type": "bool"
+      }
+    ],
+    "name": "setParameters",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_parlayMarketMastercopy",
         "type": "address"
@@ -1084,6 +1097,19 @@
     "name": "setPaused",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sortingEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

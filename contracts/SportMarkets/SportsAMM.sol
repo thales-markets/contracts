@@ -104,6 +104,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return Default referrer fee
     uint public referrerFee;
 
+    /// @return The address of Parlay AMM
+    address public parlayAMM;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -175,6 +178,27 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint tempAmount = amount.mul(baseOdds.add(impactPriceIncrease)).div(ONE);
         uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
         return ISportPositionalMarketManager(manager).transformCollateral(returnQuote);
+    }
+    
+    /// @notice Calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game
+    /// @param market The address of the SportPositional market of a game
+    /// @param position The position (home/away/draw) quoted to buy from AMM
+    /// @param amount The position amount quoted to buy from AMM
+    /// @return The sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
+    function buyFromAmmQuoteForParlayAMM(
+        address market,
+        Position position,
+        uint amount
+    ) public view returns (uint) {
+        if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
+            return 0;
+        }
+        uint baseOdds = obtainOdds(market, position).add(min_spread);
+        uint impactPriceIncrease = ONE.sub(baseOdds).mul(_buyPriceImpact(market, position, amount)).div(ONE);
+        // add 2% to the price increase to avoid edge cases on the extremes
+        impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
+        uint tempAmount = amount.mul(baseOdds.add(impactPriceIncrease)).div(ONE);
+        return ISportPositionalMarketManager(manager).transformCollateral(tempAmount);
     }
 
     /// @notice Calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game
@@ -512,7 +536,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         require(amount > ZERO_POINT_ONE && amount <= availableToBuyFromAMMatm, "Not enough liquidity or zero amount.");
 
         if (sendSUSD) {
-            sUSDPaid = buyFromAmmQuote(market, position, amount);
+            if(msg.sender == parlayAMM) {
+                sUSDPaid = buyFromAmmQuoteForParlayAMM(market, position, amount);
+            }
+            else {
+                sUSDPaid = buyFromAmmQuote(market, position, amount);
+            }
             require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
             require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
             require(sUSDPaid.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high");
@@ -656,20 +685,23 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
         IStakingThales _stakingThales,
-        address _referrals
+        address _referrals,
+        address _parlayAMM
     ) external onlyOwner {
         safeBox = _safeBox;
         sUSD = _sUSD;
         theRundownConsumer = _theRundownConsumer;
         stakingThales = _stakingThales;
         referrals = _referrals;
+        parlayAMM = _parlayAMM;
 
         emit AddressesUpdated(
             _safeBox,
             _sUSD,
             _theRundownConsumer,
             _stakingThales,
-            _referrals
+            _referrals,
+            _parlayAMM
         );
     }
 
@@ -747,7 +779,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address buyer
     ) internal {
         uint safeBoxShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(safeBoxImpact)));
-        if (safeBoxImpact > 0) {
+        if (safeBoxImpact > 0 && buyer != parlayAMM) {
             sUSD.safeTransfer(safeBox, safeBoxShare);
         } else {
             safeBoxShare = 0;
@@ -1006,7 +1038,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             IERC20Upgradeable _sUSD,
             address _theRundownConsumer,
             IStakingThales _stakingThales,
-            address _referrals
+            address _referrals,
+            address _parlayAMM
         );
 
     event SetSportsPositionalMarketManager(address _manager);

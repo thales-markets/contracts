@@ -444,15 +444,6 @@ contract('ParlayAMM', (accounts) => {
 			{ from: owner }
 		);
 
-		await SportsAMM.setAddresses(
-			owner,
-			Thales.address,
-			TherundownConsumerDeployed.address,
-			StakingThales.address,
-			Referrals.address,
-			{ from: owner }
-		);
-
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
@@ -490,6 +481,16 @@ contract('ParlayAMM', (accounts) => {
 
 		await ParlayAMM.setParlayMarketMastercopies(ParlayMarketMastercopy.address, { from: owner });
 		await Thales.transfer(ParlayAMM.address, toUnit('20000'), { from: owner });
+
+		await SportsAMM.setAddresses(
+			owner,
+			Thales.address,
+			TherundownConsumerDeployed.address,
+			StakingThales.address,
+			Referrals.address,
+			ParlayAMM.address,
+			{ from: owner }
+		);
 	});
 
 	describe('Parlay AMM setters', () => {

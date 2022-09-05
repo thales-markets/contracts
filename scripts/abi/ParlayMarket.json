@@ -99,6 +99,24 @@
   },
   {
     "inputs": [],
+    "name": "getNewResolvedAndWinningPositions",
+    "outputs": [
+      {
+        "internalType": "bool[]",
+        "name": "newResolvedMarkets",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "newWinningMarkets",
+        "type": "bool[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getSportMarketBalances",
     "outputs": [
       {

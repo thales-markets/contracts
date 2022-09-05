@@ -24,5 +24,11 @@ interface ISportsAMM {
         Position position,
         uint amount
     ) external view returns (uint);
+    
+    function buyFromAmmQuoteForParlayAMM(
+        address market,
+        Position position,
+        uint amount
+    ) external view returns (uint);
 
 }

@@ -89,6 +89,35 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "buyFromAmmQuoteForParlayAMM",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_market",
         "type": "address"
       },

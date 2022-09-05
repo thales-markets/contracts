@@ -31,6 +31,12 @@
         "internalType": "address",
         "name": "_referrals",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_parlayAMM",
+        "type": "address"
       }
     ],
     "name": "AddressesUpdated",
@@ -543,6 +549,35 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      }
+    ],
+    "name": "buyFromAmmQuoteForParlayAMM",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum SportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -910,6 +945,19 @@
   },
   {
     "inputs": [],
+    "name": "parlayAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -1120,6 +1168,11 @@
       {
         "internalType": "address",
         "name": "_referrals",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayAMM",
         "type": "address"
       }
     ],

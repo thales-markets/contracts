@@ -126,7 +126,7 @@ contract ParlayMarket is OwnedWithInit {
                 && numOfResolvedSportMarkets < numOfSportMarkets, "Already exercised all markets");
         for(uint i=0; i<numOfSportMarkets; i++) {
             _updateSportMarketParameters(sportMarket[i].sportAddress, i);
-            if(!sportMarket[i].exercised && sportMarket[i].resolved) {
+            if(sportMarket[i].resolved && !sportMarket[i].exercised) {
                 _exerciseSpecificSportMarket(sportMarket[i].sportAddress, i);
             }
         }
@@ -223,13 +223,16 @@ contract ParlayMarket is OwnedWithInit {
         emit Resolved(_userWon);
     }
 
-    function _getResolvedAndWinningPositions() internal view returns (bool anyResolved, bool anyExercisable) {
+    function getNewResolvedAndWinningPositions() external view returns (bool[] memory newResolvedMarkets, bool[] memory newWinningMarkets) {
         for(uint i=0; i<numOfSportMarkets; i++) {
-            if(sportMarket[i].exercised)
-            (anyExercisable, anyResolved) = _isWinningSportMarket(sportMarket[i].sportAddress, sportMarket[i].position);
-            // console.log(">>>> exercisable: ",anyExercisable , "| resolved: ", anyResolved);
-            if(anyExercisable) {
-                break;
+            if(!sportMarket[i].exercised || !sportMarket[i].resolved) {
+                (bool exercisable, bool isResolved) = _isWinningSportMarket(sportMarket[i].sportAddress, sportMarket[i].position);
+                if(isResolved) {
+                    newResolvedMarkets[i] = true;
+                }
+                if(exercisable) {
+                    newWinningMarkets[i] = true;
+                }
             }
         }
     }

@@ -222,7 +222,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         _buyPositionsFromSportAMM(
             _sportMarkets,
             _positions,
-            marketQuotes, 
             amountsToBuy,
             _additionalSlippage,
             address(parlayMarket)
@@ -234,7 +233,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseWiningSportMarkets();
-        if(parlayMarket.resolved()) {
+        if(parlayMarket.numOfResolvedSportMarkets() == parlayMarket.numOfSportMarkets()) {
             resolvedParlay[_parlayMarket] = true;
             _knownMarkets.remove(_parlayMarket);
         }
@@ -244,7 +243,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseSpecificSportMarket(_sportMarket);
-        if(parlayMarket.resolved()) {
+        if(parlayMarket.numOfResolvedSportMarkets() == parlayMarket.numOfSportMarkets()) {
             resolvedParlay[_parlayMarket] = true;
             _knownMarkets.remove(_parlayMarket);
         }
@@ -383,7 +382,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function _buyPositionsFromSportAMM(
         address[] calldata _sportMarkets, 
         uint[] calldata _positions,
-        uint[] memory _marketQuotes, 
         uint[] memory _proportionalAmounts,
         uint _additionalSlippage, 
         address _parlayMarket
@@ -392,7 +390,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint buyAMMQuote;
 
         for(uint i=0; i < numOfMarkets; i++) {
-            buyAMMQuote = sportsAmm.buyFromAmmQuote(
+            buyAMMQuote = sportsAmm.buyFromAmmQuoteForParlayAMM(
                 _sportMarkets[i],
                 _obtainSportsAMMPosition(_positions[i]), 
                 _proportionalAmounts[i]

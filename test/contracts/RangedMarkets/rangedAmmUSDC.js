@@ -334,8 +334,6 @@ contract('RangedAMM', (accounts) => {
 				'leftMarketAddressFromCreatedRangedMarket is ' + leftMarketAddressFromCreatedRangedMarket
 			);
 
-			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
-
 			console.log('BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
 
 			let buyInQuote = await rangedMarketsAMM.buyFromAmmQuote(
@@ -583,7 +581,7 @@ contract('RangedAMM', (accounts) => {
 			console.log('DONE SELLING OUT POSITIONS!!!!!');
 
 			console.log('BREAK BUY MAXIMUM IN!!!!!!!!!');
-			availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
+			let availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
 				rangedMarket.address,
 				RangedPosition.IN
 			);

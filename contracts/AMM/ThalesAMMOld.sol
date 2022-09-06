@@ -362,11 +362,11 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
         uint expectedPayout,
         uint additionalSlippage,
         address _referrer
-    ) public nonReentrant notPaused {
+    ) public nonReentrant notPaused returns (uint) {
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
-        _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
+        return _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
     }
 
     /// @notice buy positions of the defined type of a given market from the AMM with USDC, USDT or DAI
@@ -385,7 +385,7 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
         uint additionalSlippage,
         address collateral,
         address _referrer
-    ) public nonReentrant notPaused {
+    ) public nonReentrant notPaused returns (uint) {
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
@@ -415,7 +415,7 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
         collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
         curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, susdQuote);
 
-        _buyFromAMM(market, position, amount, susdQuote, additionalSlippage, false, susdQuote);
+        return _buyFromAMM(market, position, amount, susdQuote, additionalSlippage, false, susdQuote);
     }
 
     /// @notice buy positions of the defined type of a given market from the AMM
@@ -430,8 +430,8 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
-    ) public nonReentrant notPaused {
-        _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
+    ) public nonReentrant notPaused returns (uint) {
+        return _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
     }
 
     /// @notice sell positions of the defined type of a given market to the AMM
@@ -446,7 +446,7 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
-    ) public nonReentrant notPaused {
+    ) public nonReentrant notPaused returns (uint) {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         uint basePrice = price(market, position);
@@ -479,6 +479,7 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
         _updateSpentOnMarketOnSell(market, pricePaid, sUSDFromBurning, msg.sender);
 
         emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), address(target));
+        return pricePaid;
     }
 
     /// @notice Exercise positions on a certain matured market to retrieve sUSD
@@ -602,7 +603,7 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
         uint additionalSlippage,
         bool sendSUSD,
         uint sUSDPaid
-    ) internal {
+    ) internal returns (uint) {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         uint basePrice = price(market, position);
@@ -636,6 +637,7 @@ contract ThalesAMMOld is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initia
         _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
 
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
+        return sUSDPaid;
     }
 
     function _updateSpentOnMarketOnSell(

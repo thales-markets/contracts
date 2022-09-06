@@ -320,11 +320,11 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         uint expectedPayout,
         uint additionalSlippage,
         address _referrer
-    ) public nonReentrant notPaused {
+    ) public nonReentrant notPaused returns (uint) {
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
-        _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
+        return _buyFromAMM(market, position, amount, expectedPayout, additionalSlippage, true, 0);
     }
 
     /// @notice buy positions of the defined type of a given market from the AMM with USDC, USDT or DAI
@@ -343,7 +343,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         uint additionalSlippage,
         address collateral,
         address _referrer
-    ) public nonReentrant notPaused {
+    ) public nonReentrant notPaused returns (uint) {
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
@@ -373,7 +373,7 @@ contract ThalesAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
         curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, susdQuote);
 
-        _buyFromAMM(market, position, amount, susdQuote, additionalSlippage, false, susdQuote);
+        return _buyFromAMM(market, position, amount, susdQuote, additionalSlippage, false, susdQuote);
     }
 
     /// @notice buy positions of the defined type of a given market from the AMM

@@ -150,7 +150,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     /// @notice get the skew impact applied to that side of the market on buy
     /// @param market a Positional Market known to Market Manager
-    /// @param position UP or DO
+    /// @param position UP or DOWN
     /// @param amount number of positions to buy with 18 decimals
     /// @return the skew impact applied to that side of the market
     function buyPriceImpact(

@@ -133,6 +133,7 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
             sUSD.safeTransfer(address(msg.sender), amountInVoucher[tokenId]);
             super._burn(tokenId);
         }
+        emit BoughtFromAmmWithVoucher(msg.sender, market, position, amount, quote, address(sUSD), address(target));
     }
 
     /* ========== VIEW ========== */
@@ -180,6 +181,15 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
 
     /* ========== EVENTS ========== */
 
+    event BoughtFromAmmWithVoucher(
+        address buyer,
+        address market,
+        ISportsAMM.Position position,
+        uint amount,
+        uint sUSDPaid,
+        address susd,
+        address asset
+    );
     event NewTokenUri(string _tokenURI);
     event NewSportsAMM(address _thalesRoyaleAddress);
     event Paused(bool _state);

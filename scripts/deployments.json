@@ -81,9 +81,9 @@
 		"TherundownConsumer": "0x2B91c14Ce9aa828eD124D12541452a017d8a2148",
 		"TherundownConsumerImplementation": "0xe8e8093d44f84be11974E3183d219e94fc9c36D7",
 		"TherundownConsumerWrapper": "0xe7f379DCaD66A5128f44a996D276Cf55E6D8F2c5",
-		"OvertimeVoucher": "0x5442fF0573Fd54A4F6C02A7a0d8E22BdC1a3C671",
 		"Vault": "0xF4507b4E2ff47c8008072B232Ce332e89a167f4D",
-		"VaultImplementation": "0x5ebC0a9278a87caFFc090f8E1e53f2fE60f76F9E"
+		"VaultImplementation": "0x5ebC0a9278a87caFFc090f8E1e53f2fE60f76F9E",
+		"OvertimeVoucher": "0xC9183E3306A06E64c2A83E655756F70A83152536"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -365,7 +365,7 @@
 		"SportsAMMImplementation": "0x0aBdaF0c4cFF91F96F817809d4735929fCA75B80",
 		"SportPositionalMarketData": "0xC7D8c34048D8bf6eB24FC76c7A61F47754990c81",
 		"SportPositionalMarketDataImplementation": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
-		"OvertimeVoucher": "0xD1fe5a0256AcaeA497ecD30dc0b816cce95e23E9",
+		"OvertimeVoucher": "0x671f9654a594f8966b19c0b466f306E1dFe912a6",
 		"Referrals": "0xA59727442212227BBdCFEC1E883677A930707412",
 		"ReferralsImplementation": "0xd965c4192933a7cCF9BFD5C2a9f09DB9470e5485"
 	},

@@ -75,6 +75,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     address public dai;
 
     bool public curveOnrampEnabled;
+    uint public maxAllowedPegSlippagePercentage;
 
     function initialize(
         address _owner,
@@ -152,16 +153,14 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         knownRangedMarket(address(rangedMarket))
         returns (uint)
     {
-        uint availableLeft =
-            thalesAmm.availableToBuyFromAMM(
-                address(rangedMarket.leftMarket()),
-                position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up
-            );
-        uint availableRight =
-            thalesAmm.availableToBuyFromAMM(
-                address(rangedMarket.rightMarket()),
-                position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down
-            );
+        uint availableLeft = thalesAmm.availableToBuyFromAMM(
+            address(rangedMarket.leftMarket()),
+            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up
+        );
+        uint availableRight = thalesAmm.availableToBuyFromAMM(
+            address(rangedMarket.rightMarket()),
+            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down
+        );
         if (position == RangedMarket.Position.Out) {
             return availableLeft < availableRight ? availableLeft : availableRight;
         } else {
@@ -247,10 +246,9 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     summedQuotes >
                     ((_transformCollateral(amount, false) - leftQuote) + (_transformCollateral(amount, false) - rightQuote))
                 ) {
-                    uint quoteWithoutFees =
-                        summedQuotes -
-                            (_transformCollateral(amount, false) - leftQuote) -
-                            (_transformCollateral(amount, false) - rightQuote);
+                    uint quoteWithoutFees = summedQuotes -
+                        (_transformCollateral(amount, false) - leftQuote) -
+                        (_transformCollateral(amount, false) - rightQuote);
                     quoteWithFees = (quoteWithoutFees * (rangedAmmFee + safeBoxImpact + ONE)) / ONE;
                 }
             }
@@ -304,8 +302,21 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
-        (uint collateralQuote, uint susdQuote) =
-            buyFromAmmQuoteWithDifferentCollateral(rangedMarket, position, amount, collateral);
+        (uint collateralQuote, uint susdQuote) = buyFromAmmQuoteWithDifferentCollateral(
+            rangedMarket,
+            position,
+            amount,
+            collateral
+        );
+
+        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
+            ? collateralQuote * 1e12
+            : collateralQuote;
+        require(
+            maxAllowedPegSlippagePercentage > 0 &&
+                transformedCollateralForPegCheck >= (susdQuote * (ONE - maxAllowedPegSlippagePercentage)) / ONE,
+            "Amount below max allowed peg slippage"
+        );
 
         require((collateralQuote * ONE) / expectedPayout <= (ONE + additionalSlippage), "Slippage too high");
 
@@ -394,8 +405,6 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             rightQuote,
             additionalSlippage
         );
-        // TODO: what if I got 1% less than amount via Thales AMM? set additional slippage to 0 for internal trades
-        // apply the same in all places
         (, IPosition down) = IPositionalMarket(rangedMarket.leftMarket()).getOptions();
         IERC20Upgradeable(address(down)).safeTransfer(address(rangedMarket), amount);
 
@@ -438,16 +447,14 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         knownRangedMarket(address(rangedMarket))
         returns (uint _available)
     {
-        uint availableLeft =
-            thalesAmm.availableToSellToAMM(
-                address(rangedMarket.leftMarket()),
-                position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up
-            );
-        uint availableRight =
-            thalesAmm.availableToSellToAMM(
-                address(rangedMarket.rightMarket()),
-                position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down
-            );
+        uint availableLeft = thalesAmm.availableToSellToAMM(
+            address(rangedMarket.leftMarket()),
+            position == RangedMarket.Position.Out ? IThalesAMM.Position.Down : IThalesAMM.Position.Up
+        );
+        uint availableRight = thalesAmm.availableToSellToAMM(
+            address(rangedMarket.rightMarket()),
+            position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down
+        );
 
         _available = availableLeft < availableRight ? availableLeft : availableRight;
         if (position == RangedMarket.Position.In) {
@@ -501,8 +508,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     amountTransformed > rightQuote &&
                     summedQuotes > ((amountTransformed - leftQuote) + (amountTransformed - rightQuote))
                 ) {
-                    uint quoteWithoutFees =
-                        summedQuotes - ((amountTransformed - leftQuote) + (amountTransformed - rightQuote));
+                    uint quoteWithoutFees = summedQuotes -
+                        ((amountTransformed - leftQuote) + (amountTransformed - rightQuote));
                     quoteWithFees = (quoteWithoutFees * (ONE - rangedAmmFee - safeBoxImpact)) / ONE;
                 }
             }
@@ -710,7 +717,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address _dai,
         address _usdc,
         address _usdt,
-        bool _curveOnrampEnabled
+        bool _curveOnrampEnabled,
+        uint _maxAllowedPegSlippagePercentage
     ) external onlyOwner {
         curveSUSD = ICurveSUSD(_curveSUSD);
         dai = _dai;
@@ -722,6 +730,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         // not needed unless selling into different collateral is enabled
         //sUSD.approve(_curveSUSD, type(uint256).max);
         curveOnrampEnabled = _curveOnrampEnabled;
+        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
     modifier knownRangedMarket(address market) {

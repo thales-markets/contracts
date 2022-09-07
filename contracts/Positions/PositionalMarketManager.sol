@@ -71,6 +71,8 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     mapping(bytes32 => mapping(uint => address[])) public marketsPerOracleKey;
     mapping(address => uint) public marketsStrikePrice;
 
+    bool public override onlyAMMMintingAndBurning;
+
     function initialize(
         address _owner,
         IERC20 _sUSD,
@@ -169,7 +171,6 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
             IPositionalMarket // no support for returning PositionalMarket polymorphically given the interface
         )
     {
-
         if (onlyWhitelistedAddressesCanCreateMarkets) {
             require(whitelistedAddresses[msg.sender], "Only whitelisted addresses can create markets");
         }
@@ -383,6 +384,13 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         emit SetPriceFeed(_address);
     }
 
+    /// @notice setOnlyAMMMintingAndBurning whether minting and burning is only allowed for AMM
+    /// @param _onlyAMMMintingAndBurning the value
+    function setOnlyAMMMintingAndBurning(bool _onlyAMMMintingAndBurning) external onlyOwner {
+        onlyAMMMintingAndBurning = _onlyAMMMintingAndBurning;
+        emit SetOnlyAMMMintingAndBurning(_onlyAMMMintingAndBurning);
+    }
+
     /// @notice setsUSD sets address of sUSD contract
     /// @param _address sUSD address
     function setsUSD(address _address) external onlyOwner {
@@ -435,7 +443,7 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         uint strikePrice,
         bytes32 oracleKey
     ) internal view returns (bool) {
-         uint buffer = (priceBuffer * _getImpliedVolatility(oracleKey)) / 1e18;
+        uint buffer = (priceBuffer * _getImpliedVolatility(oracleKey)) / 1e18;
         for (uint i = 0; i < markets.length; i++) {
             uint upperPriceLimit = marketsStrikePrice[markets[i]] + (marketsStrikePrice[markets[i]] * buffer) / 1e20;
             uint lowerPriceLimit = marketsStrikePrice[markets[i]] - (marketsStrikePrice[markets[i]] * buffer) / 1e20;
@@ -509,6 +517,12 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
         impliedVolatility = IThalesAMM(thalesAMM).impliedVolatilityPerAsset(oracleKey);
     }
 
+    /// @notice get the thales amm address from the factory
+    /// @return thales amm address
+    function getThalesAMM() external view override returns (address) {
+        return PositionalMarketFactory(positionalMarketFactory).thalesAMM();
+    }
+
     /// @notice _transformCollateral transforms collateral if needed
     /// @param value value to be transformed
     /// @return uint
@@ -555,4 +569,5 @@ contract PositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, IP
     event SetMigratingManager(address manager);
     event PriceBufferChanged(uint priceBuffer);
     event TimeframeBufferChanged(uint timeframeBuffer);
+    event SetOnlyAMMMintingAndBurning(bool _SetOnlyAMMMintingAndBurning);
 }

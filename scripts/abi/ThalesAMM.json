@@ -148,19 +148,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "_capPerMarket",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetCapPerMarket",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -194,11 +181,23 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_spread",
+        "name": "minPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "capPerMarket",
         "type": "uint256"
       }
     ],
-    "name": "SetMaxSupportedPrice",
+    "name": "SetMinMaxSupportedPriceCapPerMarket",
     "type": "event"
   },
   {
@@ -212,19 +211,6 @@
       }
     ],
     "name": "SetMinSpread",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMinSupportedPrice",
     "type": "event"
   },
   {
@@ -955,6 +941,21 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "maxAllowedPegSlippagePercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "maxSupportedPrice",
     "outputs": [
       {
@@ -1382,6 +1383,11 @@
         "internalType": "bool",
         "name": "_curveOnrampEnabled",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxAllowedPegSlippagePercentage",
+        "type": "uint256"
       }
     ],
     "name": "setCurveSUSD",

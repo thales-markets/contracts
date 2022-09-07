@@ -13,6 +13,8 @@ interface IPositionalMarketManager {
 
     function marketCreationEnabled() external view returns (bool);
 
+    function onlyAMMMintingAndBurning() external view returns (bool);
+
     function transformCollateral(uint value) external view returns (uint);
 
     function reverseTransformCollateral(uint value) external view returns (uint);
@@ -30,6 +32,8 @@ interface IPositionalMarketManager {
     function isActiveMarket(address candidate) external view returns (bool);
 
     function isKnownMarket(address candidate) external view returns (bool);
+
+    function getThalesAMM() external view returns (address);
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 

@@ -60,7 +60,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The period of time before a game is matured and begins to be restricted for AMM trading
     uint public minimalTimeLeftToMaturity;
 
-    enum Position {Home, Away, Draw}
+    enum Position {
+        Home,
+        Away,
+        Draw
+    }
 
     /// @return The sUSD amount bought from AMM by users for the market
     mapping(address => uint) public spentOnGame;
@@ -97,6 +101,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @return Curve usage is enabled?
     bool public curveOnrampEnabled;
+
+    /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
+    uint public maxAllowedPegSlippagePercentage;
 
     /// @return Referrals contract address
     address public referrals;
@@ -228,8 +235,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 return 0;
             }
             (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-            uint balanceOfTheOtherSide =
-                position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
+            uint balanceOfTheOtherSide = position == Position.Home
+                ? away.getBalanceOf(address(this))
+                : home.getBalanceOf(address(this));
 
             // Balancing with three positions needs to be elaborated
             if (ISportPositionalMarket(market).optionsCount() == 3) {
@@ -403,14 +411,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (_referrer != address(0)) {
             IReferrals(referrals).setReferrer(_referrer, msg.sender);
         }
-        _buyFromAMMWithDifferentCollateral(
-            market,
-            position,
-            amount,
-            expectedPayout,
-            additionalSlippage,
-            collateral
-        ); 
+        _buyFromAMMWithDifferentCollateral(market, position, amount, expectedPayout, additionalSlippage, collateral);
     }
 
     /// @notice Buy amount of position for market/game from AMM using different collateral
@@ -428,14 +429,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint additionalSlippage,
         address collateral
     ) public nonReentrant whenNotPaused {
-        _buyFromAMMWithDifferentCollateral(
-            market,
-            position,
-            amount,
-            expectedPayout,
-            additionalSlippage,
-            collateral
-        ); 
+        _buyFromAMMWithDifferentCollateral(market, position, amount, expectedPayout, additionalSlippage, collateral);
     }
 
     /// @notice Buy amount of position for market/game from AMM using sUSD
@@ -485,8 +479,21 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
         require(curveIndex > 0 && curveOnrampEnabled, "Unsupported collateral");
 
-        (uint collateralQuote, uint susdQuote) =
-            buyFromAmmQuoteWithDifferentCollateral(market, position, amount, collateral);
+        (uint collateralQuote, uint susdQuote) = buyFromAmmQuoteWithDifferentCollateral(
+            market,
+            position,
+            amount,
+            collateral
+        );
+
+        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
+            ? collateralQuote.mul(1e12)
+            : collateralQuote;
+        require(
+            maxAllowedPegSlippagePercentage > 0 &&
+                transformedCollateralForPegCheck >= susdQuote.mul(ONE.sub(maxAllowedPegSlippagePercentage)).div(ONE),
+            "Amount below max allowed peg slippage"
+        );
 
         require(collateralQuote.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high!");
 
@@ -579,10 +586,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         //transfer options first to have max burn available
         IERC20Upgradeable(address(target)).safeTransferFrom(msg.sender, address(this), amount);
-        uint sUSDFromBurning =
-            ISportPositionalMarketManager(manager).transformCollateral(
-                ISportPositionalMarket(market).getMaximumBurnable(address(this))
-            );
+        uint sUSDFromBurning = ISportPositionalMarketManager(manager).transformCollateral(
+            ISportPositionalMarket(market).getMaximumBurnable(address(this))
+        );
         if (sUSDFromBurning > 0) {
             ISportPositionalMarket(market).burnOptionsMaximum();
         }
@@ -634,15 +640,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         referrerFee = _referrerFee;
 
         emit ParametersUpdated(
-            _minimalTimeLeftToMaturity, 
-            _minSpread, 
-            _maxSpread, 
-            _minSupportedOdds, 
+            _minimalTimeLeftToMaturity,
+            _minSpread,
+            _maxSpread,
+            _minSupportedOdds,
             _maxSupportedOdds,
             _defaultCapPerGame,
             _safeBoxImpact,
             _referrerFee
-            );
+        );
     }
 
     /// @notice Setting the main addresses for SportsAMM
@@ -664,13 +670,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         stakingThales = _stakingThales;
         referrals = _referrals;
 
-        emit AddressesUpdated(
-            _safeBox,
-            _sUSD,
-            _theRundownConsumer,
-            _stakingThales,
-            _referrals
-        );
+        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals);
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -690,12 +690,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _usdc Address of the USDC contract
     /// @param _usdt Address of the USDT (Tether) contract
     /// @param _curveOnrampEnabled Enabling or restricting the use of multicollateral
+    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
     function setCurveSUSD(
         address _curveSUSD,
         address _dai,
         address _usdc,
         address _usdt,
-        bool _curveOnrampEnabled
+        bool _curveOnrampEnabled,
+        uint _maxAllowedPegSlippagePercentage
     ) external onlyOwner {
         curveSUSD = ICurveSUSD(_curveSUSD);
         dai = _dai;
@@ -707,6 +709,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         // not needed unless selling into different collateral is enabled
         //sUSD.approve(_curveSUSD, MAX_APPROVAL);
         curveOnrampEnabled = _curveOnrampEnabled;
+        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
     // Internal
@@ -776,8 +779,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         // take the balanceOtherSideMaximum
         (uint balancePosition, uint balanceOtherSide, ) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
-        uint balanceOtherSideAfter =
-            balancePosition > amount ? balanceOtherSide : balanceOtherSide.add(amount.sub(balancePosition));
+        uint balanceOtherSideAfter = balancePosition > amount
+            ? balanceOtherSide
+            : balanceOtherSide.add(amount.sub(balancePosition));
 
         if (!(balancePosition >= amount)) {
             _buyPrice = _buyPriceImpactElse(
@@ -825,8 +829,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal view returns (uint) {
         // take the balanceOtherSideMinimum
         (uint balancePosition, , uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
-        uint balancePositionAfter =
-            balancePosition > 0 ? balancePosition.add(amount) : balanceOtherSide > amount ? 0 : amount.sub(balanceOtherSide);
+        uint balancePositionAfter = balancePosition > 0 ? balancePosition.add(amount) : balanceOtherSide > amount
+            ? 0
+            : amount.sub(balanceOtherSide);
         uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide.sub(amount) : 0;
         if (balancePositionAfter < balanceOtherSideAfter) {
             //minimal price impact as it will balance the AMM exposure
@@ -912,8 +917,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         uint balance = position == Position.Home ? home.getBalanceOf(address(this)) : away.getBalanceOf(address(this));
-        uint balanceOtherSideMax =
-            position == Position.Home ? away.getBalanceOf(address(this)) : home.getBalanceOf(address(this));
+        uint balanceOtherSideMax = position == Position.Home
+            ? away.getBalanceOf(address(this))
+            : home.getBalanceOf(address(this));
         uint balanceOtherSideMin = balanceOtherSideMax;
         if (ISportPositionalMarket(market).optionsCount() == 3) {
             uint homeBalance = home.getBalanceOf(address(this));
@@ -992,24 +998,23 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     );
 
     event ParametersUpdated(
-            uint _minimalTimeLeftToMaturity, 
-            uint _minSpread, 
-            uint _maxSpread, 
-            uint _minSupportedOdds, 
-            uint _maxSupportedOdds,
-            uint _defaultCapPerGame,
-            uint _safeBoxImpact,
-            uint _referrerFee
-            );
+        uint _minimalTimeLeftToMaturity,
+        uint _minSpread,
+        uint _maxSpread,
+        uint _minSupportedOdds,
+        uint _maxSupportedOdds,
+        uint _defaultCapPerGame,
+        uint _safeBoxImpact,
+        uint _referrerFee
+    );
     event AddressesUpdated(
-            address _safeBox,
-            IERC20Upgradeable _sUSD,
-            address _theRundownConsumer,
-            IStakingThales _stakingThales,
-            address _referrals
-        );
+        address _safeBox,
+        IERC20Upgradeable _sUSD,
+        address _theRundownConsumer,
+        IStakingThales _stakingThales,
+        address _referrals
+    );
 
     event SetSportsPositionalMarketManager(address _manager);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
-
 }

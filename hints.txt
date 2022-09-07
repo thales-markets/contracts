@@ -61,3 +61,4 @@ npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyale/verify
 scripts:
 npx hardhat verify ADDRESS_CONTRACT --network polygon
 npx hardhat size-contracts
+--gas

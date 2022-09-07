@@ -733,6 +733,19 @@
   },
   {
     "inputs": [],
+    "name": "maxAllowedPegSlippagePercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maxSupportedPrice",
     "outputs": [
       {
@@ -1121,6 +1134,11 @@
         "internalType": "bool",
         "name": "_curveOnrampEnabled",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxAllowedPegSlippagePercentage",
+        "type": "uint256"
       }
     ],
     "name": "setCurveSUSD",

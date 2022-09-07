@@ -55,7 +55,7 @@ async function main() {
 	console.log('ThalesAMM upgraded');
 	await delay(10000);
 
-	// const ThalesAMMImplementation = await getImplementationAddress(ethers.provider, thalesAmmAddress);
+	const ThalesAMMImplementation = await getImplementationAddress(ethers.provider, thalesAmmAddress);
 
 	console.log('Implementation ThalesAMM: ', ThalesAMMImplementation);
 

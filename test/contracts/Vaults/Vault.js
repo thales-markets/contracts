@@ -667,6 +667,11 @@ contract('Vault', accounts => {
 				'eth alloc spent',
 				(await vault.getAllocationSpentPerRound(round, Asset.ETH)) / 1e18
 			);
+			console.log(
+				'alloc for eth left',
+				(await vault.getAvailableAllocationPerAsset(round, Asset.ETH)) / 1e18
+			);
+
 			quote = await thalesAMM.buyFromAmmQuote(
 				market1.address,
 				Position.DOWN,
@@ -678,9 +683,17 @@ contract('Vault', accounts => {
 			await vault.trade(market1.address, toUnit(60).toString());
 			console.log('after 60 positions', (await sUSDSynth.balanceOf(vault.address)) / 1e18);
 			console.log('eth spent', (await vault.getAllocationSpentPerRound(round, Asset.ETH)) / 1e18);
+			console.log(
+				'alloc for eth left',
+				(await vault.getAvailableAllocationPerAsset(round, Asset.ETH)) / 1e18
+			);
 			await vault.trade(market1.address, toUnit(20).toString());
 			console.log('after 20 positions', (await sUSDSynth.balanceOf(vault.address)) / 1e18);
 			console.log('eth spent', (await vault.getAllocationSpentPerRound(round, Asset.ETH)) / 1e18);
+			console.log(
+				'alloc for eth left',
+				(await vault.getAvailableAllocationPerAsset(round, Asset.ETH)) / 1e18
+			);
 
 			await assert.revert(vault.trade(market1.address, toUnit(150).toString()), REVERT);
 

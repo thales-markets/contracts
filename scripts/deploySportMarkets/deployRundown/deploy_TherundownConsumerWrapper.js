@@ -36,6 +36,10 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
 
 	if (networkObj.chainId == 80001) {
 		networkObj.name = 'polygonMumbai';
@@ -47,9 +51,9 @@ async function main() {
 		network = 'polygon';
 	}
 
-	const paymentCreate = w3utils.toWei('0.2');
-	const paymentResolve = w3utils.toWei('0.2');
-	const paymentOdds = w3utils.toWei('0.15');
+	const paymentCreate = w3utils.toWei('0.1');
+	const paymentResolve = w3utils.toWei('0.1');
+	const paymentOdds = w3utils.toWei('0.1');
 
 	const consumer = await ethers.getContractFactory('TherundownConsumer');
 	let consumerAddress = getTargetAddress('TherundownConsumer', network);
@@ -95,14 +99,14 @@ async function main() {
 }
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

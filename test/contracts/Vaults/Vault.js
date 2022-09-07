@@ -243,11 +243,18 @@ contract('Vault', accounts => {
 			await assert.revert(vault.setPriceLimits(toUnit(80), toUnit(70), { from: owner }), REVERT);
 		});
 
-		it('should revert if caller is not owner', async () => {
+		it('should revert if caller is not owner setSkewImpactLimit', async () => {
 			const REVERT = 'Only the contract owner may perform this action';
-
 			await assert.revert(vault.setSkewImpactLimit(toUnit(2), { from: minter }), REVERT);
+		});
+
+		it('should revert if caller is not owner setSUSD', async () => {
+			const REVERT = 'Only the contract owner may perform this action';
 			await assert.revert(vault.setSUSD(ZERO_ADDRESS, { from: minter }), REVERT);
+		});
+
+		it('should revert if caller is not owner setThalesAMM', async () => {
+			const REVERT = 'Only the contract owner may perform this action';
 			await assert.revert(vault.setThalesAMM(ZERO_ADDRESS, { from: minter }), REVERT);
 		});
 	});

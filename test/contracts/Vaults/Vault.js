@@ -248,11 +248,6 @@ contract('Vault', accounts => {
 			await assert.revert(vault.setSkewImpactLimit(toUnit(2), { from: minter }), REVERT);
 		});
 
-		it('should revert if caller is not owner setSUSD', async () => {
-			const REVERT = 'Only the contract owner may perform this action';
-			await assert.revert(vault.setSUSD(ZERO_ADDRESS, { from: minter }), REVERT);
-		});
-
 		it('should revert if caller is not owner setThalesAMM', async () => {
 			const REVERT = 'Only the contract owner may perform this action';
 			await assert.revert(vault.setThalesAMM(ZERO_ADDRESS, { from: minter }), REVERT);

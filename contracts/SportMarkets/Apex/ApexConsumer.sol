@@ -1,104 +1,105 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
-/*
- * **** Data Conversions ****
- *
- * Decimals to integers
- * ---------------------------------------------------
- * Value                           Conversion
- * ---------------------------------------------------
- * probability A                multiplied by 10000
- * probability B                multiplied by 10000
- * probability C                multiplied by 10000
- * probability D                multiplied by 10000
- *
- */
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-//Event meta data (to get event id): 8ffc516f1f024cf990e2a57ae08e58b3
-//● Pre (or Post)-Qualifying Probabilities: 32e909bce3c649ce98a6d4bad8fa0307
-//● Results: 4ef5150682ec4c2d8e69a94ded14cf3b
-//Oracle Address: 0x28e2A3DAC71fd88d43D0EFcde8e14385c725F032
+// internal
+import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 
-contract ApexConsumer is ChainlinkClient, ConfirmedOwner {
-    using Chainlink for Chainlink.Request;
+// interface
+import "../../interfaces/ISportPositionalMarketManager.sol";
+
+/// @title Consumer contract which stores all data from CL data feed (Link to docs: https://market.link/nodes/TheRundown/integrations), also creates all sports markets based on that data
+/// @author vladan
+contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
+    /* ========== CONSTANTS =========== */
+
+    uint public constant CANCELLED = 0;
+    uint public constant HOME_WIN = 1;
+    uint public constant AWAY_WIN = 2;
+    uint public constant NUMBER_OF_POSITIONS = 2;
+    uint public constant MIN_TAG_NUMBER = 9100;
 
     /* ========== CONSUMER STATE VARIABLES ========== */
 
-    uint256 private constant ORACLE_PAYMENT = 1 * LINK_DIVISIBILITY;
-    bytes public event_id;
-    bytes public bet_type;
-    bytes public event_name;
-    bytes public qualifying_start_time;
-    bytes public race_start_time;
+    struct RaceCreate {
+        string raceId;
+        uint256 startTime;
+        string eventId;
+        string eventName;
+        string betType;
+    }
 
-    bytes public timestamp;
+    struct GameCreate {
+        bytes32 gameId;
+        uint256 startTime;
+        uint256 homeOdds;
+        uint256 awayOdds;
+        uint256 drawOdds;
+        string homeTeam;
+        string awayTeam;
+    }
 
-    bytes public betTypeDetail;
-    uint256 public probabilityA;
-    uint256 public probabilityB;
-    uint256 public probabilityC;
-    uint256 public probabilityD;
+    struct GameResolve {
+        bytes32 gameId;
+        uint8 homeScore;
+        uint8 awayScore;
+        uint8 statusId;
+    }
 
-    bytes public results;
-    bytes public resultsDetail;
+    struct GameOdds {
+        bytes32 gameId;
+        uint256 homeOdds;
+        uint256 awayOdds;
+        uint256 drawOdds;
+    }
+
+    /* ========== STATE VARIABLES ========== */
+
+    // global params
+    address public wrapperAddress;
+    mapping(address => bool) public whitelistedAddresses;
+
+    string public results;
+    string public resultsDetail;
+
+    // Maps <GameId, Game>
+    mapping(string => RaceCreate) public raceCreated;
+    mapping(bytes32 => GameCreate) public gameCreated;
+    mapping(bytes32 => GameResolve) public gameResolved;
+    mapping(bytes32 => GameOdds) public gameOdds;
+    mapping(bytes32 => uint) public sportsIdPerGame;
+    mapping(bytes32 => bool) public gameFulfilledCreated;
+    mapping(bytes32 => bool) public gameFulfilledResolved;
+
+    // sports props
+    mapping(string => bool) public supportedSport;
+    mapping(string => uint) public supportedSportId;
+
+    // market props
+    ISportPositionalMarketManager public sportsManager;
+    mapping(bytes32 => address) public marketPerGameId;
+    mapping(address => bytes32) public gameIdPerMarket;
+    mapping(address => bool) public marketCreated;
+    mapping(address => bool) public marketResolved;
+    mapping(address => bool) public marketCanceled;
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor() ConfirmedOwner(msg.sender) {
-        //        setPublicChainlinkToken();
-        // use the function for Goerli calls.
-        setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
-    }
-
-    /* ========== CONSUMER REQUEST FUNCTIONS ========== */
-
-    // no parameters needed, just an automiatc get call
-    function requestMetaData(address _oracle, string memory _jobId) public onlyOwner {
-        Chainlink.Request memory req = buildChainlinkRequest(
-            stringToBytes32(_jobId),
-            address(this),
-            this.fulfillMetaData.selector
-        );
-        sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
-    }
-
-    function requestMatchup(
-        address _oracle,
-        string memory _jobId,
-        string memory eventID,
-        string memory betType
-    ) public onlyOwner {
-        Chainlink.Request memory req = buildChainlinkRequest(
-            stringToBytes32(_jobId),
-            address(this),
-            this.fulfillMatchup.selector
-        );
-        req.add("event_id", eventID); // example data points
-        req.add("qualifying_status", "pre");
-        req.add("bet_type", betType);
-        req.add("stage_level", "null");
-        sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
-    }
-
-    function requestResults(
-        address _oracle,
-        string memory _jobId,
-        string memory eventID,
-        string memory betType,
-        string memory resultType
-    ) public onlyOwner {
-        Chainlink.Request memory req = buildChainlinkRequest(
-            stringToBytes32(_jobId),
-            address(this),
-            this.fulfillResults.selector
-        );
-        req.add("event_id", eventID);
-        req.add("result_type", resultType);
-        req.add("bet_type", betType);
-        sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
+    function initialize(
+        address _owner,
+        string[] memory _supportedSports,
+        address _sportsManager
+    ) external initializer {
+        setOwner(_owner);
+        sportsManager = ISportPositionalMarketManager(_sportsManager);
+        whitelistedAddresses[_owner] = true;
+        for (uint i; i < _supportedSports.length; i++) {
+            supportedSport[_supportedSports[i]] = true;
+            supportedSportId[_supportedSports[i]] = i;
+        }
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -109,25 +110,33 @@ contract ApexConsumer is ChainlinkClient, ConfirmedOwner {
      */
     function fulfillMetaData(
         bytes32 _requestId,
-        bytes calldata _event_id,
-        bytes calldata _bet_type,
-        bytes calldata _event_name,
-        bytes calldata _qualifying_start_time,
-        bytes calldata _race_start_time
-    ) public recordChainlinkFulfillment(_requestId) {
-        emit RequestMetaDataFulfilled(
-            _requestId,
-            _event_id,
-            _bet_type,
-            _event_name,
-            _qualifying_start_time,
-            _race_start_time
-        );
-        event_id = _event_id;
-        bet_type = _bet_type;
-        event_name = _event_name;
-        qualifying_start_time = _qualifying_start_time;
-        race_start_time = _race_start_time;
+        string memory _event_id,
+        string memory _bet_type,
+        string memory _event_name,
+        uint256 _qualifying_start_time,
+        uint256 _race_start_time,
+        string memory _sport
+    ) external onlyWrapper {
+        if (_qualifying_start_time > block.timestamp) {
+            RaceCreate memory race;
+
+            race.raceId = _event_id;
+            race.eventId = _event_id;
+            race.eventName = _event_name;
+            race.betType = _bet_type;
+            race.startTime = _qualifying_start_time;
+
+            raceCreated[_sport] = race;
+
+            emit RequestMetaDataFulfilled(
+                _requestId,
+                _event_id,
+                _bet_type,
+                _event_name,
+                _qualifying_start_time,
+                _race_start_time
+            );
+        }
     }
 
     /**
@@ -136,26 +145,38 @@ contract ApexConsumer is ChainlinkClient, ConfirmedOwner {
      * @param _betTypeDetail the type of bet being requested.
      * @param _probA: Probability for Team/Category/Rider A, returned as uint256.
      * @param _probB: Probability for Team/Category/Rider B, returned as uint256.
-     * @param _probC: Probability for Team/Category/Rider C, returned as uint256.
-     * @param _probD: Probability for Team/Category/Rider D, returned as uint256.
      */
 
     function fulfillMatchup(
         bytes32 _requestId,
-        bytes calldata _betTypeDetail,
+        string memory _betTypeDetail,
         uint256 _probA,
         uint256 _probB,
-        uint256 _probC,
-        uint256 _probD,
-        bytes calldata _timestamp
-    ) public recordChainlinkFulfillment(_requestId) {
-        betTypeDetail = _betTypeDetail;
-        probabilityA = _probA;
-        probabilityB = _probB;
-        probabilityC = _probC;
-        probabilityD = _probD;
-        timestamp = _timestamp;
-        emit RequestProbabilitiesFulfilled(_requestId, _betTypeDetail, _probA, _probB, _probC, _probD, _timestamp);
+        uint256 _timestamp,
+        bytes32 _gameId,
+        string memory _sport
+    ) external onlyWrapper {
+        RaceCreate memory race = raceCreated[_sport];
+
+        if (race.startTime > block.timestamp && !gameFulfilledCreated[_gameId]) {
+            GameCreate memory game;
+
+            game.gameId = _gameId;
+            game.homeOdds = _probA;
+            game.awayOdds = _probB;
+            game.homeTeam = _betTypeDetail;
+            game.awayTeam = _betTypeDetail;
+            game.startTime = race.startTime;
+
+            gameCreated[_gameId] = game;
+            sportsIdPerGame[_gameId] = supportedSportId[_sport];
+            gameFulfilledCreated[_gameId] = true;
+            gameOdds[_gameId] = GameOdds(_gameId, game.homeOdds, game.awayOdds, game.drawOdds);
+
+            // emit GameCreated(requestId, _sportId, _game.gameId, _game, queues.lastCreated(), getNormalizedOdds(_game.gameId));
+
+            emit RequestProbabilitiesFulfilled(_requestId, _betTypeDetail, _probA, _probB, _timestamp);
+        }
     }
 
     /**
@@ -166,130 +187,177 @@ contract ApexConsumer is ChainlinkClient, ConfirmedOwner {
      */
     function fulfillResults(
         bytes32 _requestId,
-        bytes calldata _result,
-        bytes calldata _resultDetails
-    ) public recordChainlinkFulfillment(_requestId) {
+        string memory _result,
+        string memory _resultDetails
+    ) external onlyWrapper {
         emit RequestResultsFulfilled(_requestId, _result, _resultDetails);
         results = _result;
         resultsDetail = _resultDetails;
     }
 
-    /* ========== OTHER FUNCTIONS ========== */
-    function getOracleAddress() external view returns (address) {
-        return chainlinkOracleAddress();
+    /// @notice creates market for a given game id
+    /// @param _gameId game id
+    function createMarketForGame(bytes32 _gameId) public {
+        require(marketPerGameId[_gameId] == address(0), "Market for game already exists");
+        require(gameFulfilledCreated[_gameId], "No such game fulfilled, created");
+        _createMarket(_gameId);
     }
 
-    function setOracle(address _oracle) external {
-        setChainlinkOracle(_oracle);
+    /* ========== VIEW FUNCTIONS ========== */
+
+    /// @notice view function which returns game created object based on id of a game
+    /// @param _gameId game id
+    /// @return GameCreate game create object
+    function getGameCreatedById(bytes32 _gameId) public view returns (GameCreate memory) {
+        return gameCreated[_gameId];
     }
 
-    function getChainlinkToken() public view returns (address) {
-        return chainlinkTokenAddress();
+    /// @notice view function which returns if game is resolved or canceled and ready for market to be resolved or canceled
+    /// @param _gameId game id for which game is looking
+    /// @return bool is it ready for resolve or cancel true/false
+    function isGameResolvedOrCanceled(bytes32 _gameId) public view returns (bool) {
+        return marketResolved[marketPerGameId[_gameId]] || marketCanceled[marketPerGameId[_gameId]];
     }
 
-    function withdrawLink() public onlyOwner {
-        LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
-        require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
-    }
+    /// @notice view function which returns normalized odds up to 100 (Example: 50-40-10)
+    /// @param _gameId game id for which game is looking
+    /// @return uint[] odds array normalized
+    function getNormalizedOdds(bytes32 _gameId) public view returns (uint[] memory) {
+        uint[] memory normalizedOdds = new uint[](3);
+        normalizedOdds[0] = gameOdds[_gameId].homeOdds;
+        normalizedOdds[1] = gameOdds[_gameId].awayOdds;
+        normalizedOdds[2] = gameOdds[_gameId].drawOdds;
 
-    function setLink(address _link) external onlyOwner {
-        require(_link != address(0), "Invalid address");
-        setChainlinkToken(_link);
-    }
-
-    function cancelRequest(
-        bytes32 _requestId,
-        uint256 _payment,
-        bytes4 _callbackFunctionId,
-        uint256 _expiration
-    ) public onlyOwner {
-        cancelChainlinkRequest(_requestId, _payment, _callbackFunctionId, _expiration);
-    }
-
-    function stringToBytes32(string memory source) private pure returns (bytes32 result) {
-        bytes memory tempEmptyStringTest = bytes(source);
-        if (tempEmptyStringTest.length == 0) {
-            return 0x0;
+        for (uint i = 0; i < normalizedOdds.length; i++) {
+            normalizedOdds[i] = (1e18 * normalizedOdds[i]) / 1e4;
         }
-        assembly {
-            // solhint-disable-line no-inline-assembly
-            result := mload(add(source, 32))
-        }
+        return normalizedOdds;
     }
 
-    function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
-        uint8 i = 0;
-        while (i < 32 && _bytes32[i] != 0) {
-            i++;
-        }
-        bytes memory bytesArray = new bytes(i);
-        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
-            bytesArray[i] = _bytes32[i];
-        }
-        return string(bytesArray);
+    function isApexGame(bytes32 _gameId) public view returns (bool) {
+        return gameFulfilledCreated[_gameId];
     }
 
-    function bytesToString(bytes memory byteCode) public pure returns (string memory stringData) {
-        uint256 blank = 0; //blank 32 byte value
-        uint256 length = byteCode.length;
+    /* ========== INTERNALS ========== */
 
-        uint cycles = byteCode.length / 0x20;
-        uint requiredAlloc = length;
+    function _createMarket(bytes32 _gameId) internal {
+        GameCreate memory game = getGameCreatedById(_gameId);
+        uint sportId = sportsIdPerGame[_gameId];
+        uint[] memory tags = _calculateTags(sportId);
 
-        if (length % 0x20 > 0) //optimise copying the final part of the bytes - to avoid looping with single byte writes
-        {
-            cycles++;
-            requiredAlloc += 0x20; //expand memory to allow end blank, so we don't smack the next stack entry
-        }
+        // create
+        sportsManager.createMarket(
+            _gameId,
+            _append(game.homeTeam, game.awayTeam), // gameLabel
+            game.startTime, //maturity
+            0, //initialMint
+            NUMBER_OF_POSITIONS,
+            tags //tags
+        );
 
-        stringData = new string(requiredAlloc);
+        address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
+        marketPerGameId[game.gameId] = marketAddress;
+        gameIdPerMarket[marketAddress] = game.gameId;
+        marketCreated[marketAddress] = true;
 
-        //copy data in 32 byte blocks
-        assembly {
-            let cycle := 0
+        // emit CreateSportsMarket(marketAddress, game.gameId, game, tags, getNormalizedOdds(game.gameId));
+    }
 
-            for {
-                let mc := add(stringData, 0x20) //pointer into bytes we're writing to
-                let cc := add(byteCode, 0x20) //pointer to where we're reading from
-            } lt(cycle, cycles) {
-                mc := add(mc, 0x20)
-                cc := add(cc, 0x20)
-                cycle := add(cycle, 0x01)
-            } {
-                mstore(mc, mload(cc))
-            }
-        }
-
-        //finally blank final bytes and shrink size (part of the optimisation to avoid looping adding blank bytes1)
-        if (length % 0x20 > 0) {
-            uint offsetStart = 0x20 + length;
-            assembly {
-                let mc := add(stringData, offsetStart)
-                mstore(mc, mload(add(blank, 0x20)))
-                //now shrink the memory back so the returned object is the correct size
-                mstore(stringData, length)
-            }
+    function _pauseOrUnpauseMarket(address _market, bool _pause) internal {
+        if (sportsManager.isMarketPaused(_market) != _pause) {
+            sportsManager.setMarketPaused(_market, _pause);
+            emit PauseSportsMarket(_market, _pause);
         }
     }
+
+    function _cancelMarket(bytes32 _gameId) internal {
+        sportsManager.resolveMarket(marketPerGameId[_gameId], 0);
+        marketCanceled[marketPerGameId[_gameId]] = true;
+
+        emit CancelSportsMarket(marketPerGameId[_gameId], _gameId);
+    }
+
+    function _append(string memory teamA, string memory teamB) internal pure returns (string memory) {
+        return string(abi.encodePacked(teamA, " vs ", teamB));
+    }
+
+    function _calculateTags(uint _sportsId) internal pure returns (uint[] memory) {
+        uint[] memory result = new uint[](1);
+        result[0] = MIN_TAG_NUMBER + _sportsId;
+        return result;
+    }
+
+    function _areOddsValid(GameOdds memory _game) internal pure returns (bool) {
+        return _game.awayOdds != 0 && _game.homeOdds != 0;
+    }
+
+    /* ========== CONTRACT MANAGEMENT ========== */
+
+    /// @notice sets if sport is suported or not (delete from supported sport)
+    /// @param sport sport which needs to be supported or not
+    /// @param _isSupported true/false (supported or not)
+    function setSupportedSport(string memory sport, bool _isSupported) external onlyOwner {
+        require(supportedSport[sport] != _isSupported, "Already set");
+        supportedSport[sport] = _isSupported;
+        emit SupportedSportsChanged(sport, _isSupported);
+    }
+
+    /// @notice sets wrapper andmanager address
+    /// @param _wrapperAddress wrapper address
+    /// @param _sportsManager sport manager address
+    function setSportContracts(address _wrapperAddress, address _sportsManager) external onlyOwner {
+        require(_wrapperAddress != address(0) || _sportsManager != address(0), "Invalid addreses");
+
+        sportsManager = ISportPositionalMarketManager(_sportsManager);
+        wrapperAddress = _wrapperAddress;
+
+        emit NewSportContracts(_wrapperAddress, _sportsManager);
+    }
+
+    /// @notice adding/removing whitelist address depending on a flag
+    /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
+    /// @param _flag adding or removing from whitelist (true: add, false: remove)
+    function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
+        require(_whitelistAddress != address(0), "Invalid address");
+        require(whitelistedAddresses[_whitelistAddress] != _flag, "Already set to that flag");
+        whitelistedAddresses[_whitelistAddress] = _flag;
+        emit AddedIntoWhitelist(_whitelistAddress, _flag);
+    }
+
+    /* ========== MODIFIERS ========== */
+
+    modifier onlyWrapper() {
+        require(msg.sender == wrapperAddress, "Only wrapper can call this function");
+        _;
+    }
+
+    modifier isAddressWhitelisted() {
+        require(whitelistedAddresses[msg.sender], "Address not supported");
+        _;
+    }
+
+    /* ========== EVENTS ========== */
+
+    event PauseSportsMarket(address _marketAddress, bool _pause);
+    event CancelSportsMarket(address _marketAddress, bytes32 _id);
+    event SupportedSportsChanged(string _sport, bool _isSupported);
+    event NewSportContracts(address _wrapperAddress, address _sportsManager);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 
     event RequestMetaDataFulfilled(
         bytes32 indexed requestId,
-        bytes event_id,
-        bytes bet_type,
-        bytes event_name,
-        bytes qualifying_start_time,
-        bytes race_start_time
+        string event_id,
+        string bet_type,
+        string event_name,
+        uint256 qualifying_start_time,
+        uint256 _race_start_time
     );
-
     event RequestProbabilitiesFulfilled(
         bytes32 indexed requestId,
-        bytes betTypeDetail,
+        string betTypeDetail,
         uint256 probA,
         uint256 probB,
-        uint256 probC,
-        uint256 probD,
-        bytes timestamp
+        uint256 timestamp
     );
-
-    event RequestResultsFulfilled(bytes32 indexed requestId, bytes result, bytes resultDetails);
+    event RequestResultsFulfilled(bytes32 indexed requestId, string result, string resultDetails);
 }

@@ -3,11 +3,11 @@ const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
 
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
+
 const { toBN } = web3.utils;
 
 const { toBytes32 } = require('../../../index');
-
-const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -21,24 +21,40 @@ async function main() {
 	console.log('Account is:' + owner.address);
 	console.log('Network name:' + networkObj.name);
 
+	if (network === 'unknown') {
+		network = 'localhost';
+	}
+
+	if (network == 'homestead') {
+		network = 'mainnet';
+	}
+
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
-	} else if (networkObj.chainId == 69) {
-		network = 'optimisticKovan';
 	}
 
-	// We get the contract to deploy
-	let ApexConsumer = await ethers.getContractFactory('ApexConsumerOld');
-	const apexConsumerContractDeployed = await ApexConsumer.deploy();
-	await apexConsumerContractDeployed.deployed();
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
 
-	console.log('apexConsumerContractDeployed deployed to:', apexConsumerContractDeployed.address);
-	setTargetAddress('ApexConsumerOld', network, apexConsumerContractDeployed.address);
+	if (networkObj.chainId == 137) {
+		networkObj.name = 'polygon';
+		network = 'polygon';
+	}
 
-	await hre.run('verify:verify', {
-		address: apexConsumerContractDeployed.address,
-	});
+	const ApexConsumerImplementation = getTargetAddress('ApexConsumerImplementation', network);
+
+	console.log('Implementation ApexConsumer: ', ApexConsumerImplementation);
+
+	try {
+		await hre.run('verify:verify', {
+			address: ApexConsumerImplementation,
+		});
+	} catch (e) {
+		console.log(e);
+	}
 }
 
 main()

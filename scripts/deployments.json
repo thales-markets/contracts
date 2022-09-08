@@ -356,7 +356,9 @@
 		"OvertimeVoucher": "0xD1fe5a0256AcaeA497ecD30dc0b816cce95e23E9",
 		"Referrals": "0xA59727442212227BBdCFEC1E883677A930707412",
 		"ReferralsImplementation": "0xd965c4192933a7cCF9BFD5C2a9f09DB9470e5485",
-		"ApexConsumer": "0xF9aa70FB15F09d8deB5bC5Eb19F8386d3Fc3FAD4"
+		"ApexConsumer": "0x9A2815D704c0Bf8a09408bDefC6e8bdB91D3d760",
+		"ApexConsumerImplementation": "0x6bAB824B9C4AF99f0Da4D57F2035A8971f6E47eC",
+		"ApexConsumerOld": "0xB688e5c3fD8c2989be20904086c81E5D1Efe2DBD"
 	},
 	"localhost": {
 		"Airdrop": "",

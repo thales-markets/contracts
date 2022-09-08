@@ -41,6 +41,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     IERC20 public sUSD;
 
     address public theRundownConsumer;
+    address public apexConsumer;
     address public sportPositionalMarketFactory;
     bool public needsTransformingCollateral;
 
@@ -66,6 +67,11 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
         theRundownConsumer = _theRundownConsumer;
         emit SetTherundownConsumer(_theRundownConsumer);
+    }
+
+    function setApexConsumer(address _apexConsumer) external onlyOwner {
+        apexConsumer = _apexConsumer;
+        emit SetApexConsumer(_apexConsumer);
     }
 
     /* ========== VIEWS ========== */
@@ -105,7 +111,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function setMarketPaused(address _market, bool _paused) external override {
-        require(msg.sender == owner || msg.sender == theRundownConsumer, "Invalid caller");
+        require(msg.sender == owner || msg.sender == theRundownConsumer || msg.sender == apexConsumer, "Invalid caller");
         require(ISportPositionalMarket(_market).paused() != _paused, "No state change");
         ISportPositionalMarket(_market).setPaused(_paused);
     }
@@ -159,7 +165,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-        require(msg.sender == theRundownConsumer, "Invalid creator");
+        require(msg.sender == theRundownConsumer || msg.sender == apexConsumer, "Invalid creator");
 
         uint expiry = maturity.add(expiryDuration);
 
@@ -167,20 +173,19 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         // We also require maturity < expiry. But there is no need to check this.
         // The market itself validates the capital and skew requirements.
 
-        SportPositionalMarket market =
-            SportPositionalMarketFactory(sportPositionalMarketFactory).createMarket(
-                SportPositionalMarketFactory.SportPositionCreationMarketParameters(
-                    msg.sender,
-                    sUSD,
-                    gameId,
-                    gameLabel,
-                    [maturity, expiry],
-                    initialMint,
-                    positionCount,
-                    msg.sender,
-                    tags
-                )
-            );
+        SportPositionalMarket market = SportPositionalMarketFactory(sportPositionalMarketFactory).createMarket(
+            SportPositionalMarketFactory.SportPositionCreationMarketParameters(
+                msg.sender,
+                sUSD,
+                gameId,
+                gameLabel,
+                [maturity, expiry],
+                initialMint,
+                positionCount,
+                msg.sender,
+                tags
+            )
+        );
 
         _activeMarkets.add(address(market));
 
@@ -219,7 +224,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function resolveMarket(address market, uint _outcome) external override {
-        require(msg.sender == theRundownConsumer || msg.sender == owner, "Invalid resolver");
+        require(msg.sender == theRundownConsumer || msg.sender == apexConsumer || msg.sender == owner, "Invalid resolver");
         require(_activeMarkets.contains(market), "Not an active market");
         SportPositionalMarket(market).resolve(_outcome);
 
@@ -325,5 +330,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event SetSportPositionalMarketFactory(address _sportPositionalMarketFactory);
     event SetsUSD(address _address);
     event SetTherundownConsumer(address theRundownConsumer);
+    event SetApexConsumer(address apexConsumer);
     event OddsForMarketRestored(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds);
 }

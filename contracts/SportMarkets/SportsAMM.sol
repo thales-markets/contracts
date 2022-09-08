@@ -76,9 +76,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The address of Therundown Consumer
     address public theRundownConsumer;
 
-    /// @return The address of Apex Consumer
-    address public apexConsumer;
-
     /// @return The percentage that goes to SafeBox
     uint public safeBoxImpact;
 
@@ -111,6 +108,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @return Default referrer fee
     uint public referrerFee;
+
+    /// @return The address of Parlay AMM
+    address public parlayAMM;
+
+    /// @return The address of Apex Consumer
+    address public apexConsumer;
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions

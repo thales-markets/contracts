@@ -33,11 +33,16 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 5) {
+		networkObj.name = 'goerli';
+		network = 'goerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
 	const SportsAMM = await ethers.getContractFactory('SportsAMM');
 
-	if (networkObj.chainId == 42) {
+	if (networkObj.chainId == 42 || networkObj.chainId == 5) {
 		await upgrades.upgradeProxy(SportsAMMAddress, SportsAMM);
 		await delay(5000);
 

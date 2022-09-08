@@ -41,9 +41,9 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     IERC20 public sUSD;
 
     address public theRundownConsumer;
-    address public apexConsumer;
     address public sportPositionalMarketFactory;
     bool public needsTransformingCollateral;
+    address public apexConsumer;
 
     /* ========== CONSTRUCTOR ========== */
 

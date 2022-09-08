@@ -81,6 +81,8 @@
 		"TherundownConsumer": "0x2B91c14Ce9aa828eD124D12541452a017d8a2148",
 		"TherundownConsumerImplementation": "0xe8e8093d44f84be11974E3183d219e94fc9c36D7",
 		"TherundownConsumerWrapper": "0xe7f379DCaD66A5128f44a996D276Cf55E6D8F2c5",
+		"Vault": "0xF4507b4E2ff47c8008072B232Ce332e89a167f4D",
+		"VaultImplementation": "0x5ebC0a9278a87caFFc090f8E1e53f2fE60f76F9E",
 		"OvertimeVoucher": "0xC9183E3306A06E64c2A83E655756F70A83152536"
 	},
 	"polygon": {
@@ -105,7 +107,9 @@
 		"RangedAMM": "0xe8e022405505a9F2b0B7452C844F1e64423849fC",
 		"RangedAMMImplementation": "0xaC47c388d52C443Fd854848Ef1fA57171679e7B1",
 		"RangedPositionMastercopy": "0xff9d1B34f369CAf91c6b69761e2A06f78ed3cd9d",
-		"RangedMarketMastercopy": "0x75c7671d046268c11b5f55bA75DF2B6d14774B1C"
+		"RangedMarketMastercopy": "0x75c7671d046268c11b5f55bA75DF2B6d14774B1C",
+		"Vault": "",
+		"VaultImplementation": ""
 	},
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
@@ -128,7 +132,9 @@
 		"Referrals": "0x8ba51d5b8C2693ecC4c355dC778b6a0Ae775A776",
 		"ReferralsImplementation": "0x22d23b6ba1086D495fd950Ed503e89158318136A",
 		"RangedPositionMastercopy": "0xA3AB485700F1997aF105b23aB04A0c7A22Eabf69",
-		"RangedMarketMastercopy": "0x3dfE6FAb38D20d189cD7d28b04f8714c289De2AE"
+		"RangedMarketMastercopy": "0x3dfE6FAb38D20d189cD7d28b04f8714c289De2AE",
+		"Vault": "",
+		"VaultImplementation": ""
 	},
 	"arbitrumOne": {
 		"ProxyUSDC": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
@@ -151,7 +157,9 @@
 		"RangedPositionMastercopy": "0xE931777640149fE67aE0771FF250aC93A5c38E85",
 		"RangedMarketMastercopy": "0x32C99D02E7d7fbc3B09eF19648b474cCCc1dB1DE",
 		"Referrals": "0x22d23b6ba1086D495fd950Ed503e89158318136A",
-		"ReferralsImplementation": "0xda5Bd4aBAFbE249bdC5684eAD594B0ac379687fd"
+		"ReferralsImplementation": "0xda5Bd4aBAFbE249bdC5684eAD594B0ac379687fd",
+		"Vault": "",
+		"VaultImplementation": ""
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",
@@ -230,7 +238,9 @@
 		"ReferralsImplementation": "0x3149A69fAe9892a6C179dCC14172F3a1E01CF5cc",
 		"SafeBoxImplementation": "0x9de4F62659acd8023c2730218e5CF592A20331c8",
 		"SwapRouter": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984"
+		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+		"Vault": "0x98F1bbc89aE7b0e69793e7f24b295AC553B46039",
+		"VaultImplementation": "0x2F8B331c758EdD3f6765B21587597eBe15DD78d9"
 	},
 	"polygonMumbai": {
 		"ProxyUSDC": "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",
@@ -250,7 +260,9 @@
 		"PositionalMarketFactory": "0xe95C975ae8e37ab0bA6b9F78262977A59FcAABEB",
 		"PositionalMarketFactoryImplementation": "0x812c4837Ba990071Eecde8B87b150487BC179456",
 		"PositionalMarketData": "0xd6BEd7D753DCbbbb8937Dd009788d6c815aE3094",
-		"ThalesRoyalePass": "0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9"
+		"ThalesRoyalePass": "0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9",
+		"Vault": "",
+		"VaultImplementation": ""
 	},
 	"ropsten": {
 		"Airdrop": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",
@@ -379,6 +391,8 @@
 		"VestingEscrowCC": "0xdB05A386810c809aD5a77422eb189D36c7f24402",
 		"VestingEscrowCCImplementation": "0xa779C1D17bC5230c07afdC51376CAC1cb3Dd5314",
 		"SwapRouter": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984"
+		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+		"Vault": "",
+		"VaultImplementation": ""
 	}
 }

@@ -1609,6 +1609,21 @@
       "address": "0x68096121d1eDF7AD897F5db96775eAbc2868Bc09",
       "txHash": "0xed250015e866919de7252e77c097ac37c23b6bd342b099cedfd8544a6466925d",
       "kind": "transparent"
+    },
+    {
+      "address": "0x31a4fc8EDaBe369Fca3658efa085151D6C859447",
+      "txHash": "0x6840dd3020d2eb4776ea04d3d7ad9afe35e40297c0977e82512978b8f2bf5ae3",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x9e8706B070Df6A30eFE980041eF5d1426C93f6be",
+      "txHash": "0xf1db979f808843902c3a2a068a22d6253db44d592e033aa597f7c0b4bef9fc0a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x98F1bbc89aE7b0e69793e7f24b295AC553B46039",
+      "txHash": "0xe70a18b7eaf9d20ead7f6cdfbb0e7298c44d689e885b2a02c73ee30cba9aad49",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -55834,6 +55849,924 @@
           },
           "t_mapping(t_address,t_mapping(t_address,t_bool))": {
             "label": "mapping(address => mapping(address => bool))"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "7dee5155631988877c5d6f4ee7325af58fb68fb1891b645b098e6049c8d09cf4": {
+      "address": "0xc69e1632094FA2455786E79da1063B4A40c55Fa1",
+      "txHash": "0x7749dd866027fd344e992b32f95bb82dd184c880848670fa68ec840e29e120dc",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "thalesAMM",
+            "type": "t_contract(IThalesAMM)2969",
+            "src": "contracts/Vaults/BaseVault.sol:35"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)390",
+            "src": "contracts/Vaults/BaseVault.sol:36"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "vaultStarted",
+            "type": "t_bool",
+            "src": "contracts/Vaults/BaseVault.sol:38"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "round",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/BaseVault.sol:40"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "roundLength",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/BaseVault.sol:41"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "roundStartTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:42"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "roundEndTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:43"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "usersPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:45"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "balancesPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts/Vaults/BaseVault.sol:46"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "claimedPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/Vaults/BaseVault.sol:47"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "withdrawalQueue",
+            "type": "t_mapping(t_address,t_struct(WithdrawalRequest)932_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:48"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "depositReceipts",
+            "type": "t_mapping(t_address,t_struct(DepositReceipt)937_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:49"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "withdrawalQueueAmount",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:50"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "allocationPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:52"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "tradingMarketsPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:54"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "isTradingMarketInARound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/Vaults/BaseVault.sol:55"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "profitAndLossPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:57"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "cumulativeProfitAndLoss",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:58"
+          },
+          {
+            "contract": "Vault",
+            "label": "allocationLimits",
+            "type": "t_mapping(t_enum(Asset)1987,t_uint256)",
+            "src": "contracts/Vaults/Vault.sol:21"
+          },
+          {
+            "contract": "Vault",
+            "label": "allocationSpentPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_enum(Asset)1987,t_uint256))",
+            "src": "contracts/Vaults/Vault.sol:22"
+          },
+          {
+            "contract": "Vault",
+            "label": "priceLowerLimit",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/Vault.sol:24"
+          },
+          {
+            "contract": "Vault",
+            "label": "priceUpperLimit",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/Vault.sol:25"
+          },
+          {
+            "contract": "Vault",
+            "label": "skewImpactLimit",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/Vault.sol:26"
+          }
+        ],
+        "types": {
+          "t_mapping(t_enum(Asset)1987,t_uint256)": {
+            "label": "mapping(enum Vault.Asset => uint256)"
+          },
+          "t_enum(Asset)1987": {
+            "label": "enum Vault.Asset",
+            "members": [
+              "ETH",
+              "BTC",
+              "Other"
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_mapping(t_enum(Asset)1987,t_uint256))": {
+            "label": "mapping(uint256 => mapping(enum Vault.Asset => uint256))"
+          },
+          "t_contract(IThalesAMM)2969": {
+            "label": "contract IThalesAMM"
+          },
+          "t_contract(IERC20Upgradeable)390": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_address,t_struct(WithdrawalRequest)932_storage)": {
+            "label": "mapping(address => struct BaseVault.WithdrawalRequest)"
+          },
+          "t_struct(WithdrawalRequest)932_storage": {
+            "label": "struct BaseVault.WithdrawalRequest",
+            "members": [
+              {
+                "label": "round",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "requested",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_struct(DepositReceipt)937_storage)": {
+            "label": "mapping(address => struct BaseVault.DepositReceipt)"
+          },
+          "t_struct(DepositReceipt)937_storage": {
+            "label": "struct BaseVault.DepositReceipt",
+            "members": [
+              {
+                "label": "round",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "12b5d755f5e2b5e068a9f89f688f2faad68de25cd0c07a0e76baacd64f80682c": {
+      "address": "0x0D054CfE8d1982CeD24e8ED9B1648da3Ca800CD5",
+      "txHash": "0xc7f3070efc0049d14bb89edad57d883d0862e65813abbd74d53cc77a1c206ac2",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "thalesAMM",
+            "type": "t_contract(IThalesAMM)2867",
+            "src": "contracts/Vaults/BaseVault.sol:35"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)390",
+            "src": "contracts/Vaults/BaseVault.sol:36"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "vaultStarted",
+            "type": "t_bool",
+            "src": "contracts/Vaults/BaseVault.sol:38"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "round",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/BaseVault.sol:40"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "roundLength",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/BaseVault.sol:41"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "roundStartTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:42"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "roundEndTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:43"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "usersPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:45"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "balancesPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts/Vaults/BaseVault.sol:46"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "claimedPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/Vaults/BaseVault.sol:47"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "withdrawalQueue",
+            "type": "t_mapping(t_address,t_struct(WithdrawalRequest)932_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:48"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "depositReceipts",
+            "type": "t_mapping(t_address,t_struct(DepositReceipt)937_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:49"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "withdrawalQueueAmount",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:50"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "allocationPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:52"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "tradingMarketsPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:54"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "isTradingMarketInARound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/Vaults/BaseVault.sol:55"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "profitAndLossPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:57"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "cumulativeProfitAndLoss",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:58"
+          },
+          {
+            "contract": "Vault",
+            "label": "allocationLimits",
+            "type": "t_mapping(t_enum(Asset)1987,t_uint256)",
+            "src": "contracts/Vaults/Vault.sol:21"
+          },
+          {
+            "contract": "Vault",
+            "label": "allocationSpentPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_enum(Asset)1987,t_uint256))",
+            "src": "contracts/Vaults/Vault.sol:22"
+          },
+          {
+            "contract": "Vault",
+            "label": "priceLowerLimit",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/Vault.sol:24"
+          },
+          {
+            "contract": "Vault",
+            "label": "priceUpperLimit",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/Vault.sol:25"
+          },
+          {
+            "contract": "Vault",
+            "label": "skewImpactLimit",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/Vault.sol:26"
+          }
+        ],
+        "types": {
+          "t_mapping(t_enum(Asset)1987,t_uint256)": {
+            "label": "mapping(enum Vault.Asset => uint256)"
+          },
+          "t_enum(Asset)1987": {
+            "label": "enum Vault.Asset",
+            "members": [
+              "ETH",
+              "BTC",
+              "Other"
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_mapping(t_enum(Asset)1987,t_uint256))": {
+            "label": "mapping(uint256 => mapping(enum Vault.Asset => uint256))"
+          },
+          "t_contract(IThalesAMM)2867": {
+            "label": "contract IThalesAMM"
+          },
+          "t_contract(IERC20Upgradeable)390": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_address,t_struct(WithdrawalRequest)932_storage)": {
+            "label": "mapping(address => struct BaseVault.WithdrawalRequest)"
+          },
+          "t_struct(WithdrawalRequest)932_storage": {
+            "label": "struct BaseVault.WithdrawalRequest",
+            "members": [
+              {
+                "label": "round",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "requested",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_struct(DepositReceipt)937_storage)": {
+            "label": "mapping(address => struct BaseVault.DepositReceipt)"
+          },
+          "t_struct(DepositReceipt)937_storage": {
+            "label": "struct BaseVault.DepositReceipt",
+            "members": [
+              {
+                "label": "round",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "3dd9496f8676bb6259707be577ab8ecde0050d0130ffdc9e86dcb7462e783228": {
+      "address": "0x2F8B331c758EdD3f6765B21587597eBe15DD78d9",
+      "txHash": "0xf6feba457b7fb894249cb8779041bec4ad4d67d3581a43b8eeef454ed0d52348",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "thalesAMM",
+            "type": "t_contract(IThalesAMM)60182",
+            "src": "contracts/Vaults/BaseVault.sol:35"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)7761",
+            "src": "contracts/Vaults/BaseVault.sol:36"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "vaultStarted",
+            "type": "t_bool",
+            "src": "contracts/Vaults/BaseVault.sol:38"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "round",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/BaseVault.sol:40"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "roundLength",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/BaseVault.sol:41"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "roundStartTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:42"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "roundEndTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:43"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "usersPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:45"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "balancesPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts/Vaults/BaseVault.sol:46"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "claimedPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/Vaults/BaseVault.sol:47"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "withdrawalQueue",
+            "type": "t_mapping(t_address,t_struct(WithdrawalRequest)56865_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:48"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "depositReceipts",
+            "type": "t_mapping(t_address,t_struct(DepositReceipt)56870_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:49"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "withdrawalQueueAmount",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:50"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "allocationPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:52"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "tradingMarketsPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts/Vaults/BaseVault.sol:54"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "isTradingMarketInARound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts/Vaults/BaseVault.sol:55"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "profitAndLossPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:57"
+          },
+          {
+            "contract": "BaseVault",
+            "label": "cumulativeProfitAndLoss",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/Vaults/BaseVault.sol:58"
+          },
+          {
+            "contract": "Vault",
+            "label": "allocationLimits",
+            "type": "t_mapping(t_enum(Asset)57920,t_uint256)",
+            "src": "contracts/Vaults/Vault.sol:21"
+          },
+          {
+            "contract": "Vault",
+            "label": "allocationSpentPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_enum(Asset)57920,t_uint256))",
+            "src": "contracts/Vaults/Vault.sol:22"
+          },
+          {
+            "contract": "Vault",
+            "label": "priceLowerLimit",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/Vault.sol:24"
+          },
+          {
+            "contract": "Vault",
+            "label": "priceUpperLimit",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/Vault.sol:25"
+          },
+          {
+            "contract": "Vault",
+            "label": "skewImpactLimit",
+            "type": "t_uint256",
+            "src": "contracts/Vaults/Vault.sol:26"
+          }
+        ],
+        "types": {
+          "t_mapping(t_enum(Asset)57920,t_uint256)": {
+            "label": "mapping(enum Vault.Asset => uint256)"
+          },
+          "t_enum(Asset)57920": {
+            "label": "enum Vault.Asset",
+            "members": [
+              "ETH",
+              "BTC",
+              "Other"
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_mapping(t_enum(Asset)57920,t_uint256))": {
+            "label": "mapping(uint256 => mapping(enum Vault.Asset => uint256))"
+          },
+          "t_contract(IThalesAMM)60182": {
+            "label": "contract IThalesAMM"
+          },
+          "t_contract(IERC20Upgradeable)7761": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_address,t_struct(WithdrawalRequest)56865_storage)": {
+            "label": "mapping(address => struct BaseVault.WithdrawalRequest)"
+          },
+          "t_struct(WithdrawalRequest)56865_storage": {
+            "label": "struct BaseVault.WithdrawalRequest",
+            "members": [
+              {
+                "label": "round",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "requested",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_struct(DepositReceipt)56870_storage)": {
+            "label": "mapping(address => struct BaseVault.DepositReceipt)"
+          },
+          "t_struct(DepositReceipt)56870_storage": {
+            "label": "struct BaseVault.DepositReceipt",
+            "members": [
+              {
+                "label": "round",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"

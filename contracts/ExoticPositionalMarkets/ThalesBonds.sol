@@ -41,12 +41,6 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
 
-    bool public curveOnrampEnabled;
-    ICurveSUSD public curveSUSD;
-    address public usdc;
-    address public usdt;
-    address public dai;
-
     uint private constant CREATOR_BOND = 101;
     uint private constant RESOLVER_BOND = 102;
     uint private constant DISPUTOR_BOND = 103;
@@ -54,6 +48,12 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     uint private constant RESOLVER_AND_DISPUTOR = 105;
 
     IStakingThales public stakingThales;
+
+    bool public curveOnrampEnabled;
+    ICurveSUSD public curveSUSD;
+    address public usdc;
+    address public usdt;
+    address public dai;
 
     function initialize(address _owner) public initializer {
         setOwner(_owner);

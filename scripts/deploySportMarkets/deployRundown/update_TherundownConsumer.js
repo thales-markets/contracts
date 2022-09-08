@@ -24,6 +24,10 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
@@ -38,7 +42,7 @@ async function main() {
 	}
 
 	// upgrade if test networks
-	if (networkObj.chainId == 69 || networkObj.chainId == 42) {
+	if (networkObj.chainId == 69 || networkObj.chainId == 42 || networkObj.chainId == 420) {
 		await upgrades.upgradeProxy(therundownConsumerAddress, TherundownConsumer);
 
 		implementation = await getImplementationAddress(ethers.provider, therundownConsumerAddress);
@@ -56,7 +60,7 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

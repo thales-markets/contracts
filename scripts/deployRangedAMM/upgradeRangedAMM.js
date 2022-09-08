@@ -28,6 +28,15 @@ async function main() {
 		networkObj.name = 'polygon';
 		network = 'polygon';
 	}
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
+
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
@@ -36,15 +45,18 @@ async function main() {
 	console.log('Found RangedMarketsAMM at:', rangedAmmAddress);
 
 	const RangedMarketsAMM = await ethers.getContractFactory('RangedMarketsAMM');
-	// await upgrades.upgradeProxy(rangedAmmAddress, RangedMarketsAMM);
+	await upgrades.upgradeProxy(rangedAmmAddress, RangedMarketsAMM);
 
-	let RangedMarketsAMMImplementation = await upgrades.prepareUpgrade(
-		rangedAmmAddress,
-		RangedMarketsAMM
-	);
+	// let RangedMarketsAMMImplementation = await upgrades.prepareUpgrade(
+	// 	rangedAmmAddress,
+	// 	RangedMarketsAMM
+	// );
 	console.log('RangedMarketsAMM upgraded');
 
-	// const RangedMarketsAMMImplementation = await getImplementationAddress(ethers.provider, rangedAmmAddress);
+	const RangedMarketsAMMImplementation = await getImplementationAddress(
+		ethers.provider,
+		rangedAmmAddress
+	);
 
 	console.log('Implementation RangedMarketsAMM: ', RangedMarketsAMMImplementation);
 
@@ -61,7 +73,7 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

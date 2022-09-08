@@ -34,7 +34,7 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
-contract('TheRundownConsumer', accounts => {
+contract('TheRundownConsumer', (accounts) => {
 	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -1327,7 +1327,7 @@ contract('TheRundownConsumer', accounts => {
 				_id: fightId,
 			});
 
-			assert.equal(true, await deployedMarket.paused());
+			assert.equal(false, await deployedMarket.paused());
 			assert.equal(true, await deployedMarket.cancelled());
 
 			await expect(
@@ -1948,13 +1948,10 @@ contract('TheRundownConsumer', accounts => {
 				_isSupported: true,
 			});
 
-			const tx_SupportedResolvedStatuses = await TherundownConsumerDeployed.setSupportedResolvedStatuses(
-				15,
-				true,
-				{
+			const tx_SupportedResolvedStatuses =
+				await TherundownConsumerDeployed.setSupportedResolvedStatuses(15, true, {
 					from: owner,
-				}
-			);
+				});
 
 			await expect(
 				TherundownConsumerDeployed.setSupportedResolvedStatuses(15, false, { from: wrapper })
@@ -1970,13 +1967,10 @@ contract('TheRundownConsumer', accounts => {
 				_isSupported: true,
 			});
 
-			const tx_SupportedCancelStatuses = await TherundownConsumerDeployed.setSupportedCancelStatuses(
-				15,
-				true,
-				{
+			const tx_SupportedCancelStatuses =
+				await TherundownConsumerDeployed.setSupportedCancelStatuses(15, true, {
 					from: owner,
-				}
-			);
+				});
 
 			await expect(
 				TherundownConsumerDeployed.setSupportedCancelStatuses(15, false, { from: wrapper })

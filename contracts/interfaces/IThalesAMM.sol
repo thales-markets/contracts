@@ -2,13 +2,16 @@
 pragma solidity >=0.5.16;
 
 interface IThalesAMM {
-    enum Position {Up, Down}
+    enum Position {
+        Up,
+        Down
+    }
 
     function manager() external view returns (address);
 
     function availableToBuyFromAMM(address market, Position position) external view returns (uint);
 
-    function impliedVolatilityPerAsset(bytes32 oracleKey) external view returns(uint);
+    function impliedVolatilityPerAsset(bytes32 oracleKey) external view returns (uint);
 
     function buyFromAmmQuote(
         address market,
@@ -22,7 +25,7 @@ interface IThalesAMM {
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
-    ) external;
+    ) external returns (uint);
 
     function availableToSellToAMM(address market, Position position) external view returns (uint);
 
@@ -38,7 +41,15 @@ interface IThalesAMM {
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
-    ) external;
+    ) external returns (uint);
 
     function isMarketInAMMTrading(address market) external view returns (bool);
+
+    function price(address market, Position position) external view returns (uint);
+
+    function buyPriceImpact(
+        address market,
+        Position position,
+        uint amount
+    ) external view returns (uint);
 }

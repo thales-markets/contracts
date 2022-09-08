@@ -92,11 +92,16 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
         // Instantiate the options themselves
         options.up = Position(_parameters.up);
         options.down = Position(_parameters.down);
-        // abi.encodePacked("sUP: ", _oracleKey)
-        // consider naming the option: sUpBTC>50@2021.12.31
+
         options.up.initialize("Position Up", "UP", _parameters.thalesAMM);
         options.down.initialize("Position Down", "DOWN", _parameters.thalesAMM);
-        _mint(creator, initialMint);
+        if (initialMint > 0) {
+            require(
+                !_manager().onlyAMMMintingAndBurning() || msg.sender == _manager().getThalesAMM(),
+                "Only allowed from ThalesAMM"
+            );
+            _mint(creator, initialMint);
+        }
 
         // Note: the ERC20 base contract does not have a constructor, so we do not have to worry
         // about initializing its state separately
@@ -189,6 +194,10 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
     /// @notice mint mints up and down tokens
     /// @param value to mint options for
     function mint(uint value) external override duringMinting {
+        require(
+            !_manager().onlyAMMMintingAndBurning() || msg.sender == _manager().getThalesAMM(),
+            "Only allowed from ThalesAMM"
+        );
         if (value == 0) {
             return;
         }
@@ -201,11 +210,19 @@ contract PositionalMarket is OwnedWithInit, IPositionalMarket {
 
     /// @notice burnOptionsMaximum burns option tokens based on maximum burnable account amount
     function burnOptionsMaximum() external override {
+        require(
+            !_manager().onlyAMMMintingAndBurning() || msg.sender == _manager().getThalesAMM(),
+            "Only allowed from ThalesAMM"
+        );
         _burnOptions(msg.sender, _getMaximumBurnable(msg.sender));
     }
 
     /// @notice burnOptions burns option tokens based on amount
     function burnOptions(uint amount) external override {
+        require(
+            !_manager().onlyAMMMintingAndBurning() || msg.sender == _manager().getThalesAMM(),
+            "Only allowed from ThalesAMM"
+        );
         _burnOptions(msg.sender, amount);
     }
 

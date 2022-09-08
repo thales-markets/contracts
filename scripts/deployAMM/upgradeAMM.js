@@ -33,6 +33,16 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
+
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
@@ -40,12 +50,12 @@ async function main() {
 	console.log('Found ThalesAMM at:', thalesAmmAddress);
 
 	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
-	const ThalesAMMImplementation = await upgrades.prepareUpgrade(thalesAmmAddress, ThalesAMM);
-	// await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
+	// const ThalesAMMImplementation = await upgrades.prepareUpgrade(thalesAmmAddress, ThalesAMM);
+	await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
 	console.log('ThalesAMM upgraded');
 	await delay(10000);
 
-	// const ThalesAMMImplementation = await getImplementationAddress(ethers.provider, thalesAmmAddress);
+	const ThalesAMMImplementation = await getImplementationAddress(ethers.provider, thalesAmmAddress);
 
 	console.log('Implementation ThalesAMM: ', ThalesAMMImplementation);
 
@@ -101,12 +111,12 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

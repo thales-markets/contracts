@@ -4,13 +4,8 @@ const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
 const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../utils')();
+const { fastForward, toUnit, currentTime, multiplyDecimalRound, divideDecimalRound } =
+	require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupContract, setupAllContracts } = require('../../utils/setup');
 
@@ -47,7 +42,7 @@ const Phase = {
 	Expiry: toBN(2),
 };
 
-contract('RangedAMM', accounts => {
+contract('RangedAMM', (accounts) => {
 	const [
 		initialCreator,
 		managerOwner,
@@ -101,7 +96,7 @@ contract('RangedAMM', accounts => {
 			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
-			event => event['event'] && event['event'] === 'MarketCreated'
+			(event) => event['event'] && event['event'] === 'MarketCreated'
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
@@ -314,6 +309,7 @@ contract('RangedAMM', accounts => {
 			testUSDC.address,
 			testUSDT.address,
 			true,
+			toUnit(0.02),
 			{ from: owner }
 		);
 
@@ -380,24 +376,26 @@ contract('RangedAMM', accounts => {
 			);
 			console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
 
-			let buyFromAmmQuoteUSDCCollateralObject = await rangedMarketsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				rangedMarket.address,
-				RangedPosition.IN,
-				toUnit(availableToBuyFromAMMIn / 1e18 - 1),
-				testUSDC.address
-			);
+			let buyFromAmmQuoteUSDCCollateralObject =
+				await rangedMarketsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					rangedMarket.address,
+					RangedPosition.IN,
+					toUnit(availableToBuyFromAMMIn / 1e18 - 1),
+					testUSDC.address
+				);
 			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
 			console.log('buyFromAmmQuoteUSDCCollateral  is:' + buyFromAmmQuoteUSDCCollateral);
 			console.log(
 				'buyFromAmmQuoteUSDCCollateral decimal is:' + buyFromAmmQuoteUSDCCollateral / 1e6
 			);
 
-			let buyFromAmmQuoteDAICollateralObject = await rangedMarketsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				rangedMarket.address,
-				RangedPosition.IN,
-				toUnit(availableToBuyFromAMMIn / 1e18 - 1),
-				testDAI.address
-			);
+			let buyFromAmmQuoteDAICollateralObject =
+				await rangedMarketsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					rangedMarket.address,
+					RangedPosition.IN,
+					toUnit(availableToBuyFromAMMIn / 1e18 - 1),
+					testDAI.address
+				);
 			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
 			console.log('buyFromAmmQuoteDAICollateral  is:' + buyFromAmmQuoteDAICollateral);
 			console.log('buyFromAmmQuoteDAICollateral decimal is:' + buyFromAmmQuoteDAICollateral / 1e18);
@@ -408,12 +406,13 @@ contract('RangedAMM', accounts => {
 			let ammSusdBalance = await sUSDSynth.balanceOf(thalesAMM.address);
 			console.log('ammSusdBalance pre buy decimal is:' + ammSusdBalance / 1e18);
 
-			let buyFromAmmQuoteUSDCCollateralObjectSlippagedObject = await rangedMarketsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				rangedMarket.address,
-				RangedPosition.IN,
-				toUnit(0.9 * (availableToBuyFromAMMIn / 1e18 - 1)),
-				testUSDC.address
-			);
+			let buyFromAmmQuoteUSDCCollateralObjectSlippagedObject =
+				await rangedMarketsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					rangedMarket.address,
+					RangedPosition.IN,
+					toUnit(0.9 * (availableToBuyFromAMMIn / 1e18 - 1)),
+					testUSDC.address
+				);
 			let buyFromAmmQuoteUSDCCollateralObjectSlippaged =
 				buyFromAmmQuoteUSDCCollateralObjectSlippagedObject[0];
 			console.log(
@@ -487,6 +486,7 @@ contract('RangedAMM', accounts => {
 				testUSDC.address,
 				testUSDT.address,
 				false,
+				toUnit(0.02),
 				{ from: owner }
 			);
 

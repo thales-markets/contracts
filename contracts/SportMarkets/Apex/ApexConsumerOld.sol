@@ -27,20 +27,18 @@ contract ApexConsumerOld is ChainlinkClient, ConfirmedOwner {
 
     /* ========== CONSUMER STATE VARIABLES ========== */
 
-    uint256 private constant ORACLE_PAYMENT = 1 * LINK_DIVISIBILITY;
+    uint256 private constant ORACLE_PAYMENT = (1 * LINK_DIVISIBILITY) / 1e2;
     string public event_id;
     string public bet_type;
     string public event_name;
     uint256 public qualifying_start_time;
     uint256 public race_start_time;
 
-    uint256 public timestamp;
-
-    string public betTypeDetail;
+    string public betDetail1;
+    string public betDetail2;
     uint256 public probabilityA;
     uint256 public probabilityB;
-    uint256 public probabilityC;
-    uint256 public probabilityD;
+    uint256 public timestamp;
 
     string public results;
     string public resultsDetail;
@@ -138,29 +136,27 @@ contract ApexConsumerOld is ChainlinkClient, ConfirmedOwner {
     /**
      * @notice Consumes the data returned by the node job on a particular request.
      * @param _requestId the request ID for fulfillment
-     * @param _betTypeDetail the type of bet being requested.
+     * @param _betTypeDetail1 Team/Category/Rider A identifier, returned as string.
+     * @param _betTypeDetail2 Team/Category/Rider B identifier, returned as string.
      * @param _probA: Probability for Team/Category/Rider A, returned as uint256.
      * @param _probB: Probability for Team/Category/Rider B, returned as uint256.
-     * @param _probC: Probability for Team/Category/Rider C, returned as uint256.
-     * @param _probD: Probability for Team/Category/Rider D, returned as uint256.
+     * @param _timeStamp: Timestamp this probability was sent, returned as uint256.
      */
 
     function fulfillMatchup(
         bytes32 _requestId,
-        string memory _betTypeDetail,
+        string calldata _betTypeDetail1,
+        string calldata _betTypeDetail2,
         uint256 _probA,
         uint256 _probB,
-        uint256 _probC,
-        uint256 _probD,
-        uint256 _timestamp
+        uint256 _timeStamp
     ) public recordChainlinkFulfillment(_requestId) {
-        betTypeDetail = _betTypeDetail;
+        betDetail1 = _betTypeDetail1;
+        betDetail2 = _betTypeDetail2;
         probabilityA = _probA;
         probabilityB = _probB;
-        probabilityC = _probC;
-        probabilityD = _probD;
-        timestamp = _timestamp;
-        emit RequestProbabilitiesFulfilled(_requestId, _betTypeDetail, _probA, _probB, _probC, _probD, _timestamp);
+        timestamp = _timeStamp;
+        emit RequestProbabilitiesFulfilled(_requestId, _betTypeDetail1, _betTypeDetail2, _probA, _probB, _timeStamp);
     }
 
     /**
@@ -233,12 +229,11 @@ contract ApexConsumerOld is ChainlinkClient, ConfirmedOwner {
 
     event RequestProbabilitiesFulfilled(
         bytes32 indexed requestId,
-        string betTypeDetail,
+        string betTypeDetail1,
+        string betTypeDetail2,
         uint256 probA,
         uint256 probB,
-        uint256 probC,
-        uint256 probD,
-        uint256 timestamp
+        uint256 timeStamp
     );
 
     event RequestResultsFulfilled(bytes32 indexed requestId, string result, string resultDetails);

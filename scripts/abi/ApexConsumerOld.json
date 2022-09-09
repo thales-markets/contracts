@@ -136,7 +136,13 @@
       {
         "indexed": false,
         "internalType": "string",
-        "name": "betTypeDetail",
+        "name": "betTypeDetail1",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "betTypeDetail2",
         "type": "string"
       },
       {
@@ -154,19 +160,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "probC",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "probD",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "timestamp",
+        "name": "timeStamp",
         "type": "uint256"
       }
     ],
@@ -207,7 +201,20 @@
   },
   {
     "inputs": [],
-    "name": "betTypeDetail",
+    "name": "betDetail1",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "betDetail2",
     "outputs": [
       {
         "internalType": "string",
@@ -294,7 +301,12 @@
       },
       {
         "internalType": "string",
-        "name": "_betTypeDetail",
+        "name": "_betTypeDetail1",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_betTypeDetail2",
         "type": "string"
       },
       {
@@ -309,17 +321,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "_probC",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_probD",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_timestamp",
+        "name": "_timeStamp",
         "type": "uint256"
       }
     ],
@@ -444,32 +446,6 @@
   {
     "inputs": [],
     "name": "probabilityB",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "probabilityC",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "probabilityD",
     "outputs": [
       {
         "internalType": "uint256",

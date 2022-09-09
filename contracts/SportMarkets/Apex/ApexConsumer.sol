@@ -19,6 +19,10 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     uint public constant CANCELLED = 0;
     uint public constant HOME_WIN = 1;
     uint public constant AWAY_WIN = 2;
+
+    uint public constant STATUS_CANCELLED = 0;
+    uint public constant STATUS_RESOLVED = 1;
+
     uint public constant NUMBER_OF_POSITIONS = 2;
     uint public constant MIN_TAG_NUMBER = 9100;
 
@@ -26,6 +30,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     struct RaceCreate {
         string raceId;
+        uint256 qualifyingStartTime;
         uint256 startTime;
         string eventId;
         string eventName;
@@ -86,6 +91,10 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public marketResolved;
     mapping(address => bool) public marketCanceled;
 
+    // game
+    mapping(address => bool) public invalidOdds;
+    mapping(address => bool) public isPausedByCanceledStatus;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -117,66 +126,63 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint256 _race_start_time,
         string memory _sport
     ) external onlyWrapper {
-        if (_qualifying_start_time > block.timestamp) {
-            RaceCreate memory race;
+        //if (_qualifying_start_time > block.timestamp) {
+        RaceCreate memory race;
 
-            race.raceId = _event_id;
-            race.eventId = _event_id;
-            race.eventName = _event_name;
-            race.betType = _bet_type;
-            race.startTime = _qualifying_start_time;
+        race.raceId = _event_id;
+        race.eventId = _event_id;
+        race.eventName = _event_name;
+        race.betType = _bet_type;
+        race.qualifyingStartTime = _qualifying_start_time;
+        race.startTime = _race_start_time;
 
-            raceCreated[_sport] = race;
+        raceCreated[_sport] = race;
 
-            emit RequestMetaDataFulfilled(
-                _requestId,
-                _event_id,
-                _bet_type,
-                _event_name,
-                _qualifying_start_time,
-                _race_start_time
-            );
-        }
+        emit RaceCreated(_requestId, _sport, _event_id, race);
+        //}
     }
 
     /**
      * @notice Consumes the data returned by the node job on a particular request.
      * @param _requestId the request ID for fulfillment
-     * @param _betTypeDetail the type of bet being requested.
+     * @param _betTypeDetail1 Team/Category/Rider A identifier, returned as string.
+     * @param _betTypeDetail2 Team/Category/Rider B identifier, returned as string.
      * @param _probA: Probability for Team/Category/Rider A, returned as uint256.
      * @param _probB: Probability for Team/Category/Rider B, returned as uint256.
      */
 
     function fulfillMatchup(
         bytes32 _requestId,
-        string memory _betTypeDetail,
+        string memory _betTypeDetail1,
+        string memory _betTypeDetail2,
         uint256 _probA,
         uint256 _probB,
-        uint256 _timestamp,
         bytes32 _gameId,
         string memory _sport
     ) external onlyWrapper {
-        RaceCreate memory race = raceCreated[_sport];
+        if (!gameFulfilledCreated[_gameId]) {
+            RaceCreate memory race = raceCreated[_sport];
 
-        if (race.startTime > block.timestamp && !gameFulfilledCreated[_gameId]) {
+            //if (race.startTime > block.timestamp && !gameFulfilledCreated[_gameId]) {
             GameCreate memory game;
 
             game.gameId = _gameId;
             game.homeOdds = _probA;
             game.awayOdds = _probB;
-            game.homeTeam = _betTypeDetail;
-            game.awayTeam = _betTypeDetail;
-            game.startTime = race.startTime;
+            game.homeTeam = _betTypeDetail1;
+            game.awayTeam = _betTypeDetail2;
+            game.startTime = race.qualifyingStartTime;
 
-            gameCreated[_gameId] = game;
-            sportsIdPerGame[_gameId] = supportedSportId[_sport];
-            gameFulfilledCreated[_gameId] = true;
-            gameOdds[_gameId] = GameOdds(_gameId, game.homeOdds, game.awayOdds, game.drawOdds);
-
-            // emit GameCreated(requestId, _sportId, _game.gameId, _game, queues.lastCreated(), getNormalizedOdds(_game.gameId));
-
-            emit RequestProbabilitiesFulfilled(_requestId, _betTypeDetail, _probA, _probB, _timestamp);
+            _createGameFulfill(_requestId, game, _sport);
+            //}
         }
+
+        GameOdds memory newGameOdds;
+        newGameOdds.gameId = _gameId;
+        newGameOdds.homeOdds = _probA;
+        newGameOdds.awayOdds = _probB;
+
+        _oddsGameFulfill(_requestId, newGameOdds);
     }
 
     /**
@@ -188,11 +194,32 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     function fulfillResults(
         bytes32 _requestId,
         string memory _result,
-        string memory _resultDetails
+        string memory _resultDetails,
+        bytes32 _gameId,
+        string memory _sport
     ) external onlyWrapper {
         emit RequestResultsFulfilled(_requestId, _result, _resultDetails);
-        results = _result;
-        resultsDetail = _resultDetails;
+
+        GameResolve memory game;
+        if (keccak256(abi.encodePacked(_result)) == keccak256(abi.encodePacked("win/lose"))) {
+            game.gameId = _gameId;
+            game.homeScore = 1;
+            game.awayScore = 0;
+            game.statusId = uint8(STATUS_RESOLVED);
+            _resolveGameFulfill(_requestId, game, _sport);
+        } else if (keccak256(abi.encodePacked(_result)) == keccak256(abi.encodePacked("lose/win"))) {
+            game.gameId = _gameId;
+            game.homeScore = 0;
+            game.awayScore = 1;
+            game.statusId = uint8(STATUS_RESOLVED);
+            _resolveGameFulfill(_requestId, game, _sport);
+        } else if (keccak256(abi.encodePacked(_result)) == keccak256(abi.encodePacked("null"))) {
+            game.gameId = _gameId;
+            game.homeScore = 0;
+            game.awayScore = 0;
+            game.statusId = uint8(STATUS_CANCELLED);
+            _resolveGameFulfill(_requestId, game, _sport);
+        }
     }
 
     /// @notice creates market for a given game id
@@ -203,6 +230,14 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         _createMarket(_gameId);
     }
 
+    /// @notice resolve market for a given game id
+    /// @param _gameId game id
+    function resolveMarketForGame(bytes32 _gameId) public {
+        require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
+        require(gameFulfilledResolved[_gameId], "No such game Fulfilled, resolved");
+        _resolveMarket(_gameId);
+    }
+
     /* ========== VIEW FUNCTIONS ========== */
 
     /// @notice view function which returns game created object based on id of a game
@@ -210,6 +245,13 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @return GameCreate game create object
     function getGameCreatedById(bytes32 _gameId) public view returns (GameCreate memory) {
         return gameCreated[_gameId];
+    }
+
+    /// @notice view function which returns game resolved object based on id of a game
+    /// @param _gameId game id
+    /// @return GameResolve game resolve object
+    function getGameResolvedById(bytes32 _gameId) public view returns (GameResolve memory) {
+        return gameResolved[_gameId];
     }
 
     /// @notice view function which returns if game is resolved or canceled and ready for market to be resolved or canceled
@@ -240,6 +282,73 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== INTERNALS ========== */
 
+    function _createGameFulfill(
+        bytes32 _requestId,
+        GameCreate memory _game,
+        string memory sport
+    ) internal {
+        gameCreated[_game.gameId] = _game;
+        sportsIdPerGame[_game.gameId] = supportedSportId[sport];
+        gameFulfilledCreated[_game.gameId] = true;
+        gameOdds[_game.gameId] = GameOdds(_game.gameId, _game.homeOdds, _game.awayOdds, _game.drawOdds);
+
+        emit GameCreated(_requestId, sport, _game.gameId, _game, getNormalizedOdds(_game.gameId));
+    }
+
+    function _resolveGameFulfill(
+        bytes32 requestId,
+        GameResolve memory _game,
+        string memory sport
+    ) internal {
+        GameCreate memory singleGameCreated = getGameCreatedById(_game.gameId);
+
+        // if status is resolved OR (status is canceled AND start time has passed fulfill game to be resolved)
+        if (
+            _isGameStatusResolved(_game) || (_isGameStatusCancelled(_game) && singleGameCreated.startTime < block.timestamp)
+        ) {
+            gameResolved[_game.gameId] = _game;
+            gameFulfilledResolved[_game.gameId] = true;
+
+            emit GameResolved(requestId, sport, _game.gameId, _game);
+        }
+        // if status is canceled AND start time has not passed only pause market
+        else if (
+            marketPerGameId[_game.gameId] != address(0) &&
+            _isGameStatusCancelled(_game) &&
+            singleGameCreated.startTime >= block.timestamp
+        ) {
+            isPausedByCanceledStatus[marketPerGameId[_game.gameId]] = true;
+            _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
+        }
+    }
+
+    function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
+        // if odds are valid store them if not pause market
+        if (_areOddsValid(_game)) {
+            gameOdds[_game.gameId] = _game;
+
+            // if market created and was paused (paused by invalid odds or paused by canceled status) unpause
+            if (marketPerGameId[_game.gameId] != address(0) && sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
+                if (invalidOdds[marketPerGameId[_game.gameId]] || isPausedByCanceledStatus[marketPerGameId[_game.gameId]]) {
+                    invalidOdds[marketPerGameId[_game.gameId]] = false;
+                    isPausedByCanceledStatus[marketPerGameId[_game.gameId]] = false;
+                    _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], false);
+                }
+            }
+
+            emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
+        } else {
+            if (
+                marketPerGameId[_game.gameId] != address(0) && !sportsManager.isMarketPaused(marketPerGameId[_game.gameId])
+            ) {
+                invalidOdds[marketPerGameId[_game.gameId]] = true;
+                _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
+            }
+
+            emit InvalidOddsForMarket(requestId, marketPerGameId[_game.gameId], _game.gameId, _game);
+        }
+    }
+
     function _createMarket(bytes32 _gameId) internal {
         GameCreate memory game = getGameCreatedById(_gameId);
         uint sportId = sportsIdPerGame[_gameId];
@@ -249,7 +358,8 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         sportsManager.createMarket(
             _gameId,
             _append(game.homeTeam, game.awayTeam), // gameLabel
-            game.startTime, //maturity
+            1664449109,
+            //game.startTime, //maturity
             0, //initialMint
             NUMBER_OF_POSITIONS,
             tags //tags
@@ -260,7 +370,28 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         gameIdPerMarket[marketAddress] = game.gameId;
         marketCreated[marketAddress] = true;
 
-        // emit CreateSportsMarket(marketAddress, game.gameId, game, tags, getNormalizedOdds(game.gameId));
+        emit CreateSportsMarket(marketAddress, game.gameId, game, tags, getNormalizedOdds(game.gameId));
+    }
+
+    function _resolveMarket(bytes32 _gameId) internal {
+        GameResolve memory game = getGameResolvedById(_gameId);
+        GameCreate memory singleGameCreated = getGameCreatedById(_gameId);
+
+        if (_isGameStatusResolved(game)) {
+            if (invalidOdds[marketPerGameId[game.gameId]]) {
+                _pauseOrUnpauseMarket(marketPerGameId[game.gameId], false);
+            }
+
+            uint _outcome = _calculateOutcome(game);
+
+            sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
+            marketResolved[marketPerGameId[game.gameId]] = true;
+
+            emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
+            // if status is canceled and start time of a game passed cancel market
+        } else if (_isGameStatusResolved(game) && singleGameCreated.startTime < block.timestamp) {
+            _cancelMarket(game.gameId);
+        }
     }
 
     function _pauseOrUnpauseMarket(address _market, bool _pause) internal {
@@ -287,8 +418,44 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         return result;
     }
 
+    function _isGameReadyToBeResolved(GameResolve memory _game) internal pure returns (bool) {
+        return _isGameStatusResolved(_game) || _isGameStatusCancelled(_game);
+    }
+
+    function _isGameStatusResolved(GameResolve memory _game) internal pure returns (bool) {
+        return _game.statusId == STATUS_RESOLVED;
+    }
+
+    function _isGameStatusCancelled(GameResolve memory _game) internal pure returns (bool) {
+        return _game.statusId == STATUS_CANCELLED;
+    }
+
+    function _calculateOutcome(GameResolve memory _game) internal pure returns (uint) {
+        return _game.homeScore > _game.awayScore ? HOME_WIN : AWAY_WIN;
+    }
+
     function _areOddsValid(GameOdds memory _game) internal pure returns (bool) {
         return _game.awayOdds != 0 && _game.homeOdds != 0;
+    }
+
+    function _isValidOutcomeForGame(uint _outcome) internal pure returns (bool) {
+        return _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == CANCELLED;
+    }
+
+    function _isValidOutcomeWithResult(
+        uint _outcome,
+        uint _homeScore,
+        uint _awayScore
+    ) internal pure returns (bool) {
+        if (_outcome == CANCELLED) {
+            return _awayScore == CANCELLED && _homeScore == CANCELLED;
+        } else if (_outcome == HOME_WIN) {
+            return _homeScore > _awayScore;
+        } else if (_outcome == AWAY_WIN) {
+            return _homeScore < _awayScore;
+        } else {
+            return _homeScore == _awayScore;
+        }
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */
@@ -338,26 +505,21 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== EVENTS ========== */
 
+    event RaceCreated(bytes32 _requestId, string sport, string _id, RaceCreate _race);
+    event GameCreated(bytes32 _requestId, string sport, bytes32 _id, GameCreate _game, uint[] _normalizedOdds);
+    event GameResolved(bytes32 _requestId, string sport, bytes32 _id, GameResolve _game);
+
+    event GameOddsAdded(bytes32 _requestId, bytes32 _id, GameOdds _game, uint[] _normalizedOdds);
+    event InvalidOddsForMarket(bytes32 _requestId, address _marketAddress, bytes32 _id, GameOdds _game);
+
+    event CreateSportsMarket(address _marketAddress, bytes32 _id, GameCreate _game, uint[] _tags, uint[] _normalizedOdds);
+    event ResolveSportsMarket(address _marketAddress, bytes32 _id, uint _outcome);
+
     event PauseSportsMarket(address _marketAddress, bool _pause);
     event CancelSportsMarket(address _marketAddress, bytes32 _id);
     event SupportedSportsChanged(string _sport, bool _isSupported);
     event NewSportContracts(address _wrapperAddress, address _sportsManager);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 
-    event RequestMetaDataFulfilled(
-        bytes32 indexed requestId,
-        string event_id,
-        string bet_type,
-        string event_name,
-        uint256 qualifying_start_time,
-        uint256 _race_start_time
-    );
-    event RequestProbabilitiesFulfilled(
-        bytes32 indexed requestId,
-        string betTypeDetail,
-        uint256 probA,
-        uint256 probB,
-        uint256 timestamp
-    );
     event RequestResultsFulfilled(bytes32 indexed requestId, string result, string resultDetails);
 }

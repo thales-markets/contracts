@@ -344,7 +344,7 @@
 		"ExoticUSD": "0x2851715A8d25e176413A77b495762435D5dDBd0d",
 		"ProxysUSD": "0x2851715A8d25e176413A77b495762435D5dDBd0d",
 		"SportPositionalMarketManager": "0x7465c5d60d3d095443CF9991Da03304A30D42Eae",
-		"SportPositionalMarketManagerImplementation": "0x54ee3f99c9d94beed6a20072c26fac8ae0eba092",
+		"SportPositionalMarketManagerImplementation": "0x54ee3F99C9d94BeEd6A20072c26fAc8Ae0eba092",
 		"SportPositionalMarketFactory": "0x75c7671d046268c11b5f55bA75DF2B6d14774B1C",
 		"SportPositionalMarketFactoryImplementation": "0x261C4500a87f0203cE5EB6706645f7f1bd614B5d",
 		"SportPositionalMarketMastercopy": "0xf854caE2ED8ab612262b07472173A432fd59028B",
@@ -356,9 +356,10 @@
 		"OvertimeVoucher": "0xD1fe5a0256AcaeA497ecD30dc0b816cce95e23E9",
 		"Referrals": "0xA59727442212227BBdCFEC1E883677A930707412",
 		"ReferralsImplementation": "0xd965c4192933a7cCF9BFD5C2a9f09DB9470e5485",
-		"ApexConsumer": "0x9A2815D704c0Bf8a09408bDefC6e8bdB91D3d760",
-		"ApexConsumerImplementation": "0x6bAB824B9C4AF99f0Da4D57F2035A8971f6E47eC",
-		"ApexConsumerOld": "0xB688e5c3fD8c2989be20904086c81E5D1Efe2DBD"
+		"ApexConsumer": "0x1224e1585e5027E56527F1685411e55AC411c9e4",
+		"ApexConsumerImplementation": "0x09EC2ed8a87283b4e2D4F7202DfF705a48Be4c52",
+		"ApexConsumerOld": "0x14953ab06bA217Bc5DE7b7ADB48C88D7c0095f5e",
+		"ApexConsumerWrapper": "0xeEAacf51A6A3009Fc0FFB1DE42B01CfA8aDF8393"
 	},
 	"localhost": {
 		"Airdrop": "",

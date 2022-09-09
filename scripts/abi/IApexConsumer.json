@@ -8,7 +8,12 @@
       },
       {
         "internalType": "string",
-        "name": "_betTypeDetail",
+        "name": "_betTypeDetail1",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_betTypeDetail2",
         "type": "string"
       },
       {
@@ -95,6 +100,16 @@
       {
         "internalType": "string",
         "name": "_resultDetails",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_sport",
         "type": "string"
       }
     ],

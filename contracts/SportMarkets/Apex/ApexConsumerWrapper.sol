@@ -74,11 +74,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         sportPerRequestId[requestId] = sport;
     }
 
-    function requestMatchup(
-        string memory _eventID,
-        string memory _betType,
-        string memory _sport
-    ) public whenNotPaused {
+    function requestMatchup(string memory _eventID, string memory _betType) public whenNotPaused {
         Chainlink.Request memory req = buildChainlinkRequest(
             _stringToBytes32(requestMatchupJobId),
             address(this),
@@ -92,7 +88,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         _putLink(msg.sender, paymentMatchup);
 
         bytes32 requestId = sendChainlinkRequest(req, paymentMatchup);
-        sportPerRequestId[requestId] = _sport;
+        sportPerRequestId[requestId] = sportPerEventId[_eventID];
         gameIdPerRequestId[requestId] = _createGameId(_eventID, _betType);
     }
 
@@ -114,6 +110,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
         bytes32 requestId = sendChainlinkRequest(req, paymentResults);
         sportPerRequestId[requestId] = sportPerEventId[_eventID];
+        gameIdPerRequestId[requestId] = _createGameId(_eventID, _betType);
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -147,19 +144,21 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /**
      * @notice Consumes the data returned by the node job on a particular request.
      * @param _requestId the request ID for fulfillment
-     * @param _betTypeDetail the type of bet being requested.
+     * @param _betTypeDetail1 Team/Category/Rider A identifier, returned as string.
+     * @param _betTypeDetail2 Team/Category/Rider B identifier, returned as string.
      * @param _probA: Probability for Team/Category/Rider A, returned as uint256.
      * @param _probB: Probability for Team/Category/Rider B, returned as uint256.
      */
     function fulfillMatchup(
         bytes32 _requestId,
-        string memory _betTypeDetail,
+        string memory _betTypeDetail1,
+        string memory _betTypeDetail2,
         uint256 _probA,
         uint256 _probB
     ) external recordChainlinkFulfillment(_requestId) {
         bytes32 gameId = _stringToBytes32(gameIdPerRequestId[_requestId]);
         string memory sport = sportPerRequestId[_requestId];
-        consumer.fulfillMatchup(_requestId, _betTypeDetail, _probA, _probB, gameId, sport);
+        consumer.fulfillMatchup(_requestId, _betTypeDetail1, _betTypeDetail2, _probA, _probB, gameId, sport);
     }
 
     /**
@@ -173,7 +172,9 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         string memory _result,
         string memory _resultDetails
     ) external recordChainlinkFulfillment(_requestId) {
-        consumer.fulfillResults(_requestId, _result, _resultDetails);
+        bytes32 gameId = _stringToBytes32(gameIdPerRequestId[_requestId]);
+        string memory sport = sportPerRequestId[_requestId];
+        consumer.fulfillResults(_requestId, _result, _resultDetails, gameId, sport);
     }
 
     /* ========== VIEWS ========== */
@@ -217,7 +218,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @param _paymentMetadata amount of LINK per request for metadata
     /// @param _paymentMatchup amount of LINK per request for mathcup
     /// @param _paymentResults amount of LINK per request for results
-    function setPaymentMetadata(
+    function setPaymentAmounts(
         uint _paymentMetadata,
         uint _paymentMatchup,
         uint _paymentResults

@@ -31,7 +31,8 @@ interface IApexConsumer {
 
     function fulfillMatchup(
         bytes32 _requestId,
-        string memory _betTypeDetail,
+        string memory _betTypeDetail1,
+        string memory _betTypeDetail2,
         uint256 _probA,
         uint256 _probB,
         bytes32 _gameId,
@@ -41,6 +42,8 @@ interface IApexConsumer {
     function fulfillResults(
         bytes32 _requestId,
         string memory _result,
-        string memory _resultDetails
+        string memory _resultDetails,
+        bytes32 _gameId,
+        string memory _sport
     ) external;
 }

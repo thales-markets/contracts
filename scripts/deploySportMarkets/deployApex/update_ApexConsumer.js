@@ -31,19 +31,21 @@ async function main() {
 	let implementation;
 	if (networkObj.chainId == 10) {
 		implementation = await upgrades.prepareUpgrade(apexConsumerAddress, ApexConsumer);
+		await delay(5000);
 	}
 
 	// upgrade if test networks
 	if (networkObj.chainId == 5 || networkObj.chainId == 42) {
 		await upgrades.upgradeProxy(apexConsumerAddress, ApexConsumer);
+		await delay(15000);
 
 		implementation = await getImplementationAddress(ethers.provider, apexConsumerAddress);
 	}
 
-	console.log('apexConsumer upgraded');
+	console.log('ApexConsumer upgraded');
 
-	console.log('apexConsumerImplementation: ', implementation);
-	setTargetAddress('apexConsumerImplementation', network, implementation);
+	console.log('ApexConsumerImplementation: ', implementation);
+	setTargetAddress('ApexConsumerImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
 		address: implementation,
@@ -56,3 +58,9 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
+
+function delay(time) {
+	return new Promise(function(resolve) {
+		setTimeout(resolve, time);
+	});
+}

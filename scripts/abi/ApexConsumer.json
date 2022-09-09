@@ -43,6 +43,313 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "homeOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "awayOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "drawOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "homeTeam",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "awayTeam",
+            "type": "string"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ApexConsumer.GameCreate",
+        "name": "_game",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_tags",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_normalizedOdds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "CreateSportsMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "sport",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "homeOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "awayOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "drawOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "homeTeam",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "awayTeam",
+            "type": "string"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ApexConsumer.GameCreate",
+        "name": "_game",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_normalizedOdds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "GameCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "homeOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "awayOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "drawOdds",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ApexConsumer.GameOdds",
+        "name": "_game",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_normalizedOdds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "GameOddsAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "sport",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "homeScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "awayScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "statusId",
+            "type": "uint8"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ApexConsumer.GameResolve",
+        "name": "_game",
+        "type": "tuple"
+      }
+    ],
+    "name": "GameResolved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "homeOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "awayOdds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "drawOdds",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ApexConsumer.GameOdds",
+        "name": "_game",
+        "type": "tuple"
+      }
+    ],
+    "name": "InvalidOddsForMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_wrapperAddress",
         "type": "address"
       },
@@ -124,80 +431,63 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "bytes32",
-        "name": "requestId",
+        "name": "_requestId",
         "type": "bytes32"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "event_id",
+        "name": "sport",
         "type": "string"
       },
       {
         "indexed": false,
         "internalType": "string",
-        "name": "bet_type",
+        "name": "_id",
         "type": "string"
       },
       {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "raceId",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "qualifyingStartTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "eventId",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "eventName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "betType",
+            "type": "string"
+          }
+        ],
         "indexed": false,
-        "internalType": "string",
-        "name": "event_name",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "qualifying_start_time",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_race_start_time",
-        "type": "uint256"
+        "internalType": "struct ApexConsumer.RaceCreate",
+        "name": "_race",
+        "type": "tuple"
       }
     ],
-    "name": "RequestMetaDataFulfilled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "requestId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "betTypeDetail",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "probA",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "probB",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      }
-    ],
-    "name": "RequestProbabilitiesFulfilled",
+    "name": "RaceCreated",
     "type": "event"
   },
   {
@@ -223,6 +513,31 @@
       }
     ],
     "name": "RequestResultsFulfilled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      }
+    ],
+    "name": "ResolveSportsMarket",
     "type": "event"
   },
   {
@@ -311,6 +626,32 @@
   },
   {
     "inputs": [],
+    "name": "STATUS_CANCELLED",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "STATUS_RESOLVED",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -356,7 +697,12 @@
       },
       {
         "internalType": "string",
-        "name": "_betTypeDetail",
+        "name": "_betTypeDetail1",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_betTypeDetail2",
         "type": "string"
       },
       {
@@ -367,11 +713,6 @@
       {
         "internalType": "uint256",
         "name": "_probB",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_timestamp",
         "type": "uint256"
       },
       {
@@ -448,6 +789,16 @@
       {
         "internalType": "string",
         "name": "_resultDetails",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_sport",
         "type": "string"
       }
     ],
@@ -694,6 +1045,47 @@
         "type": "bytes32"
       }
     ],
+    "name": "getGameResolvedById",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint8",
+            "name": "homeScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "awayScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "statusId",
+            "type": "uint8"
+          }
+        ],
+        "internalType": "struct ApexConsumer.GameResolve",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
     "name": "getNormalizedOdds",
     "outputs": [
       {
@@ -731,6 +1123,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "invalidOdds",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"
@@ -756,6 +1167,25 @@
       }
     ],
     "name": "isGameResolvedOrCanceled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "isPausedByCanceledStatus",
     "outputs": [
       {
         "internalType": "bool",
@@ -924,6 +1354,11 @@
       },
       {
         "internalType": "uint256",
+        "name": "qualifyingStartTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
         "name": "startTime",
         "type": "uint256"
       },
@@ -944,6 +1379,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "resolveMarketForGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

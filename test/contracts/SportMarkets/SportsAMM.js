@@ -199,6 +199,11 @@ contract('SportsAMM', (accounts) => {
 		await SportPositionalMarketManager.setWhitelistAddress(third, true, {
 			from: manager,
 		});
+
+		await SportPositionalMarketManager.setWhitelistedAddressesForAll([first, second], true, {
+			from: manager,
+		});
+
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
@@ -1522,6 +1527,8 @@ contract('SportsAMM', (accounts) => {
 		});
 
 		it('Pause market', async () => {
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(first), true);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(second), true);
 			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(third), true);
 			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(fourth), false);
 

@@ -75,6 +75,23 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setWhitelistAddress(address _whitelistAddress, bool _flag) external onlyOwner {
         require(_whitelistAddress != address(0), "Invalid address");
         require(whitelistedAddresses[_whitelistAddress] != _flag, "Already set to that flag");
+        _setWhitelistAddress(_whitelistAddress, _flag);
+    }
+
+    /// @notice setWhitelistedAddresses enables whitelist addresses of given array
+    /// @param _whitelistedAddresses array of whitelisted addresses
+    /// @param _flag adding or removing from whitelist (true: add, false: remove)
+    function setWhitelistedAddressesForAll(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
+        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
+        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
+            // only if current flag is different, if same skip it
+            if (whitelistedAddresses[_whitelistedAddresses[index]] != _flag) {
+                _setWhitelistAddress(_whitelistedAddresses[index], _flag);
+            }
+        }
+    }
+
+    function _setWhitelistAddress(address _whitelistAddress, bool _flag) internal {
         whitelistedAddresses[_whitelistAddress] = _flag;
         emit AddedIntoWhitelist(_whitelistAddress, _flag);
     }

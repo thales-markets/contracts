@@ -671,7 +671,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         stakingThales = _stakingThales;
         referrals = _referrals;
 
-        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals);
+        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _apexConsumer, _stakingThales, _referrals);
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -1009,6 +1009,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _safeBox,
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
+        address _apexConsumer,
         IStakingThales _stakingThales,
         address _referrals
     );

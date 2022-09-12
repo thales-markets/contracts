@@ -122,9 +122,9 @@
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "sport",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -249,9 +249,9 @@
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "sport",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -289,6 +289,54 @@
       }
     ],
     "name": "GameResolved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "string",
+            "name": "result",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "resultDetails",
+            "type": "string"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ApexConsumer.GameResults",
+        "name": "_game",
+        "type": "tuple"
+      }
+    ],
+    "name": "GameResultsSet",
     "type": "event"
   },
   {
@@ -438,9 +486,9 @@
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "sport",
-        "type": "string"
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -488,31 +536,6 @@
       }
     ],
     "name": "RaceCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "requestId",
-        "type": "bytes32"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "result",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "resultDetails",
-        "type": "string"
-      }
-    ],
-    "name": "RequestResultsFulfilled",
     "type": "event"
   },
   {
@@ -671,6 +694,19 @@
       }
     ],
     "name": "addToWhitelist",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "cancelMarketManually",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -985,6 +1021,35 @@
     "inputs": [
       {
         "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "gameResults",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "result",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "resultDetails",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"
       }
@@ -1100,6 +1165,54 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getOddsForGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getResult",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_result",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -1166,6 +1279,25 @@
         "type": "bytes32"
       }
     ],
+    "name": "isGameInResolvedStatus",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
     "name": "isGameResolvedOrCanceled",
     "outputs": [
       {
@@ -1186,6 +1318,25 @@
       }
     ],
     "name": "isPausedByCanceledStatus",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_sport",
+        "type": "string"
+      }
+    ],
+    "name": "isSupportedSport",
     "outputs": [
       {
         "internalType": "bool",
@@ -1325,6 +1476,24 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_pause",
+        "type": "bool"
+      }
+    ],
+    "name": "pauseOrUnpauseMarketManually",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "paused",
     "outputs": [
@@ -1387,6 +1556,34 @@
         "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_homeScore",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_awayScore",
+        "type": "uint8"
+      }
+    ],
+    "name": "resolveGameManually",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
       }
     ],
     "name": "resolveMarketForGame",
@@ -1395,29 +1592,31 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "results",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_homeScore",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_awayScore",
+        "type": "uint8"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "resultsDetail",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "resolveMarketManually",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

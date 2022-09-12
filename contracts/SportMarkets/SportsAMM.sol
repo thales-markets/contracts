@@ -322,7 +322,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bytes32 gameId = ISportPositionalMarket(_market).getGameId();
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-            bool isApexGame = IApexConsumer(apexConsumer).isApexGame(gameId);
+            bool isApexGame = apexConsumer != address(0) && IApexConsumer(apexConsumer).isApexGame(gameId);
             odds = isApexGame
                 ? IApexConsumer(apexConsumer).getNormalizedOdds(gameId)
                 : ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);

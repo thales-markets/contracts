@@ -469,7 +469,7 @@
       },
       {
         "internalType": "string",
-        "name": "_betType",
+        "name": "_gameNumber",
         "type": "string"
       }
     ],
@@ -526,7 +526,7 @@
       },
       {
         "internalType": "string",
-        "name": "_betType",
+        "name": "_gameNumber",
         "type": "string"
       },
       {

@@ -74,7 +74,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         sportPerRequestId[requestId] = sport;
     }
 
-    function requestMatchup(string memory _eventID, string memory _betType) public whenNotPaused {
+    function requestMatchup(string memory _eventID, string memory _gameNumber) public whenNotPaused {
         Chainlink.Request memory req = buildChainlinkRequest(
             _stringToBytes32(requestMatchupJobId),
             address(this),
@@ -82,19 +82,19 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         );
         req.add("event_id", _eventID);
         req.add("qualifying_status", "pre");
-        req.add("bet_type", _betType);
+        req.add("bet_type", _createBetType(_gameNumber));
         req.add("stage_level", "null");
 
         _putLink(msg.sender, paymentMatchup);
 
         bytes32 requestId = sendChainlinkRequest(req, paymentMatchup);
         sportPerRequestId[requestId] = sportPerEventId[_eventID];
-        gameIdPerRequestId[requestId] = _createGameId(_eventID, _betType);
+        gameIdPerRequestId[requestId] = _createGameId(_eventID, _gameNumber);
     }
 
     function requestResults(
         string memory _eventID,
-        string memory _betType,
+        string memory _gameNumber,
         string memory _resultType
     ) public whenNotPaused {
         Chainlink.Request memory req = buildChainlinkRequest(
@@ -104,13 +104,13 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         );
         req.add("event_id", _eventID);
         req.add("result_type", _resultType);
-        req.add("bet_type", _betType);
+        req.add("bet_type", _createBetType(_gameNumber));
 
         _putLink(msg.sender, paymentResults);
 
         bytes32 requestId = sendChainlinkRequest(req, paymentResults);
         sportPerRequestId[requestId] = sportPerEventId[_eventID];
-        gameIdPerRequestId[requestId] = _createGameId(_eventID, _betType);
+        gameIdPerRequestId[requestId] = _createGameId(_eventID, _gameNumber);
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -197,8 +197,12 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         linkToken.safeTransferFrom(_sender, address(this), _payment);
     }
 
-    function _createGameId(string memory _eventId, string memory _betType) internal pure returns (string memory) {
-        return string(abi.encodePacked(_eventId, "_", _betType));
+    function _createBetType(string memory _gameNumber) internal pure returns (string memory) {
+        return string(abi.encodePacked("outright_head_to_head_", _gameNumber));
+    }
+
+    function _createGameId(string memory _eventId, string memory _gameNumber) internal pure returns (string memory) {
+        return string(abi.encodePacked(_eventId, "_", _gameNumber));
     }
 
     function _stringToBytes32(string memory source) internal pure returns (bytes32 result) {
@@ -275,12 +279,8 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /* ========== MODIFIERS ========== */
 
-    modifier isValidMetaDataRequest(string memory sport) {
-        require(
-            keccak256(abi.encodePacked(sport)) == keccak256(abi.encodePacked("formula1")) ||
-                keccak256(abi.encodePacked(sport)) == keccak256(abi.encodePacked("motogp")),
-            "Sport is not supported"
-        );
+    modifier isValidMetaDataRequest(string memory _sport) {
+        require(consumer.isSupportedSport(_sport), "Sport is not supported");
         _;
     }
 

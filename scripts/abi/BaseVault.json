@@ -548,7 +548,7 @@
     "name": "sUSD",
     "outputs": [
       {
-        "internalType": "contract IERC20",
+        "internalType": "contract IERC20Upgradeable",
         "name": "",
         "type": "address"
       }
@@ -578,19 +578,6 @@
       }
     ],
     "name": "setRoundLength",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "_sUSD",
-        "type": "address"
-      }
-    ],
-    "name": "setSUSD",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

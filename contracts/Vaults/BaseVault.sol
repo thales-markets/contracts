@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -14,7 +14,7 @@ import "../interfaces/IPositionalMarket.sol";
 
 contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     /* ========== LIBRARIES ========== */
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     struct WithdrawalRequest {
         uint round;
@@ -33,7 +33,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /* ========== STATE VARIABLES ========== */
 
     IThalesAMM public thalesAMM;
-    IERC20 public sUSD;
+    IERC20Upgradeable public sUSD;
 
     bool public vaultStarted;
 
@@ -62,7 +62,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function __BaseVault_init(
         address _owner,
         IThalesAMM _thalesAmm,
-        IERC20 _sUSD,
+        IERC20Upgradeable _sUSD,
         uint _roundLength
     ) internal onlyInitializing {
         setOwner(_owner);
@@ -205,13 +205,6 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function setThalesAMM(IThalesAMM _thalesAMM) external onlyOwner {
         thalesAMM = _thalesAMM;
         emit ThalesAMMChanged(address(_thalesAMM));
-    }
-
-    /// @notice Set sUSD token contract
-    /// @param _sUSD sUSD token address
-    function setSUSD(IERC20 _sUSD) external onlyOwner {
-        sUSD = _sUSD;
-        emit SetSUSD(address(sUSD));
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */

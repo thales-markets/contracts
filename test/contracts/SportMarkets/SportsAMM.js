@@ -33,7 +33,7 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
-contract('SportsAMM', accounts => {
+contract('SportsAMM', (accounts) => {
 	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -196,6 +196,14 @@ contract('SportsAMM', accounts => {
 			SportPositionalMarketFactory.address,
 			{ from: manager }
 		);
+		await SportPositionalMarketManager.setWhitelistAddress(third, true, {
+			from: manager,
+		});
+
+		await SportPositionalMarketManager.setWhitelistedAddressesForAll([first, second], true, {
+			from: manager,
+		});
+
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
@@ -372,6 +380,7 @@ contract('SportsAMM', accounts => {
 			testUSDC.address,
 			testUSDT.address,
 			true,
+			toUnit(0.02),
 			{ from: owner }
 		);
 
@@ -920,12 +929,13 @@ contract('SportsAMM', accounts => {
 			await Thales.approve(SportsAMM.address, toUnit(100000), { from: first });
 			console.log('buyFromAmmQuote decimal is: ', fromUnit(buyFromAmmQuote));
 
-			let buyFromAmmQuoteUSDCCollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				deployedMarket.address,
-				position,
-				toUnit(value),
-				testUSDC.address
-			);
+			let buyFromAmmQuoteUSDCCollateralObject =
+				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					testUSDC.address
+				);
 			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
 			console.log(
 				'buyFromAmmQuoteWithDifferentCollateral USDC: ',
@@ -934,12 +944,13 @@ contract('SportsAMM', accounts => {
 
 			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > fromUnit(buyFromAmmQuote), true);
 
-			let buyFromAmmQuoteDAICollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				deployedMarket.address,
-				position,
-				toUnit(value),
-				testDAI.address
-			);
+			let buyFromAmmQuoteDAICollateralObject =
+				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					testDAI.address
+				);
 			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
 			console.log(
 				'buyFromAmmQuoteWithDifferentCollateral DAI: ',
@@ -1517,10 +1528,24 @@ contract('SportsAMM', accounts => {
 		});
 
 		it('Pause market', async () => {
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(first), true);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(second), true);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(third), true);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(fourth), false);
+
+			await expect(
+				SportPositionalMarketManager.setMarketPaused(deployedMarket.address, true, { from: fourth })
+			).to.be.revertedWith('Invalid caller');
+
 			await SportPositionalMarketManager.setMarketPaused(deployedMarket.address, true);
 			answer = await SportsAMM.isMarketInAMMTrading(deployedMarket.address);
-			// assert.equal(answer, false);
 			assert.equal(answer, false);
+
+			await SportPositionalMarketManager.setMarketPaused(deployedMarket.address, false, {
+				from: third,
+			});
+			answer = await SportsAMM.isMarketInAMMTrading(deployedMarket.address);
+			assert.equal(answer, true);
 		});
 
 		it('Get odds', async () => {
@@ -2135,12 +2160,13 @@ contract('SportsAMM', accounts => {
 			await Thales.approve(SportsAMM.address, toUnit(100000), { from: first });
 			console.log('buyFromAmmQuote decimal is: ', fromUnit(buyFromAmmQuote));
 
-			let buyFromAmmQuoteUSDCCollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				deployedMarket.address,
-				position,
-				toUnit(value),
-				testUSDC.address
-			);
+			let buyFromAmmQuoteUSDCCollateralObject =
+				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					testUSDC.address
+				);
 			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
 			console.log(
 				'buyFromAmmQuoteWithDifferentCollateral USDC: ',
@@ -2149,12 +2175,13 @@ contract('SportsAMM', accounts => {
 
 			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > fromUnit(buyFromAmmQuote), true);
 
-			let buyFromAmmQuoteDAICollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				deployedMarket.address,
-				position,
-				toUnit(value),
-				testDAI.address
-			);
+			let buyFromAmmQuoteDAICollateralObject =
+				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					testDAI.address
+				);
 			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
 			console.log(
 				'buyFromAmmQuoteWithDifferentCollateral DAI: ',

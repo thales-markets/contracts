@@ -103,6 +103,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return Curve usage is enabled?
     bool public curveOnrampEnabled;
 
+    /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
+    uint public maxAllowedPegSlippagePercentage;
+
     /// @return Referrals contract address
     address public referrals;
 
@@ -493,6 +496,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             collateral
         );
 
+        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
+            ? collateralQuote.mul(1e12)
+            : collateralQuote;
+        require(
+            maxAllowedPegSlippagePercentage > 0 &&
+                transformedCollateralForPegCheck >= susdQuote.mul(ONE.sub(maxAllowedPegSlippagePercentage)).div(ONE),
+            "Amount below max allowed peg slippage"
+        );
+
         require(collateralQuote.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high!");
 
         IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
@@ -691,12 +703,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _usdc Address of the USDC contract
     /// @param _usdt Address of the USDT (Tether) contract
     /// @param _curveOnrampEnabled Enabling or restricting the use of multicollateral
+    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
     function setCurveSUSD(
         address _curveSUSD,
         address _dai,
         address _usdc,
         address _usdt,
-        bool _curveOnrampEnabled
+        bool _curveOnrampEnabled,
+        uint _maxAllowedPegSlippagePercentage
     ) external onlyOwner {
         curveSUSD = ICurveSUSD(_curveSUSD);
         dai = _dai;
@@ -708,6 +722,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         // not needed unless selling into different collateral is enabled
         //sUSD.approve(_curveSUSD, MAX_APPROVAL);
         curveOnrampEnabled = _curveOnrampEnabled;
+        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
     // Internal

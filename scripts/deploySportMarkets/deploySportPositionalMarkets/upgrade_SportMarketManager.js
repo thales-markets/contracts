@@ -18,9 +18,14 @@ async function main() {
 		);
 		return 0;
 	}
-	if (networkObj.chainId == 42) {
-		networkObj.name = 'kovan';
-		network = 'kovan';
+	if (networkObj.chainId == 5) {
+		networkObj.name = 'goerli';
+		network = 'goerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 	if (networkObj.chainId == 69) {
@@ -49,7 +54,8 @@ async function main() {
 	}
 
 	// upgrade if test networks
-	if (networkObj.chainId == 69 || networkObj.chainId == 42 || networkObj.chainId == 5) {
+
+	if (networkObj.chainId == 69 || networkObj.chainId == 5 || networkObj.chainId == 420) {
 		await upgrades.upgradeProxy(SportMarketManagerAddress, SportMarketManager);
 
 		implementation = await getImplementationAddress(ethers.provider, SportMarketManagerAddress);
@@ -73,13 +79,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

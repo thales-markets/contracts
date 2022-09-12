@@ -4,13 +4,8 @@ const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
 const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../utils')();
+const { fastForward, toUnit, currentTime, multiplyDecimalRound, divideDecimalRound } =
+	require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupContract, setupAllContracts } = require('../../utils/setup');
 
@@ -45,7 +40,7 @@ const Phase = {
 	Expiry: toBN(2),
 };
 
-contract('RangedAMM', accounts => {
+contract('RangedAMM', (accounts) => {
 	const [
 		initialCreator,
 		managerOwner,
@@ -101,7 +96,7 @@ contract('RangedAMM', accounts => {
 			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
-			event => event['event'] && event['event'] === 'MarketCreated'
+			(event) => event['event'] && event['event'] === 'MarketCreated'
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
@@ -338,15 +333,6 @@ contract('RangedAMM', accounts => {
 			console.log(
 				'leftMarketAddressFromCreatedRangedMarket is ' + leftMarketAddressFromCreatedRangedMarket
 			);
-
-			let minInPrice = await rangedMarketsAMM.minInPrice(rangedMarket.address);
-			console.log('minInPrice is:' + minInPrice / 1e6);
-			let availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
-				rangedMarket.address,
-				RangedPosition.IN
-			);
-
-			console.log('availableToBuyFromAMMIn is:' + availableToBuyFromAMMIn / 1e18);
 
 			console.log('BUYING IN POSITION!!!!!!!!!!!!!!!!!!!!!!');
 
@@ -595,7 +581,7 @@ contract('RangedAMM', accounts => {
 			console.log('DONE SELLING OUT POSITIONS!!!!!');
 
 			console.log('BREAK BUY MAXIMUM IN!!!!!!!!!');
-			availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
+			let availableToBuyFromAMMIn = await rangedMarketsAMM.availableToBuyFromAMM(
 				rangedMarket.address,
 				RangedPosition.IN
 			);

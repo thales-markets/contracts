@@ -330,10 +330,12 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function burnOptionsMaximum() external override {
+        require(msg.sender == sportsAMM, "Invalid burner");
         _burnOptions(msg.sender, _getMaximumBurnable(msg.sender));
     }
 
     function burnOptions(uint amount) external override {
+        require(msg.sender == sportsAMM, "Invalid burner");
         _burnOptions(msg.sender, amount);
     }
 

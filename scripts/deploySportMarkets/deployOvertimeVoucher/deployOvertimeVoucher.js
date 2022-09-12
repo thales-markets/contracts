@@ -8,6 +8,7 @@ async function main() {
 	let network = networkObj.name;
 	let sUSDAddress;
 	let sportsAMMAddress;
+	let PaymentToken;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -34,15 +35,21 @@ async function main() {
 		networkObj.name = 'polygon';
 		network = 'polygon';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
+	sUSDAddress = PaymentToken;
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
-		sUSDAddress = getTargetAddress('ProxyUSDC', network);
-	} else {
-		sUSDAddress = getTargetAddress('ProxysUSD', network);
-	}
+	// if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+	// 	sUSDAddress = getTargetAddress('ProxyUSDC', network);
+	// } else {
+	// 	sUSDAddress = getTargetAddress('ProxysUSD', network);
+	// }
 
 	console.log('Proxy USD :', sUSDAddress);
 
@@ -82,7 +89,7 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

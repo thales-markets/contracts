@@ -10,7 +10,7 @@
 		"LimitOrderProvider": "0xb707d89D29c189421163515c59E42147371D6857",
 		"DeciMath": "0x5c779CFAe4b6B7a02c32938dDAbDada8AB60fb14",
 		"ThalesAMM": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
-		"ThalesAMMImplementation": "0xe6947368DdacDe47CC7FE64303125AB9D8421530",
+		"ThalesAMMImplementation": "0xeF9E3A581a2D7916B05d24C2EF54a505B3219e72",
 		"SafeBox": "0xe853207c30f3c32eda9aeffddc67357d5332978c",
 		"SafeBoxImplementation": "0x4063BFaC9b1215C55452b961D428D98BCE55CD49",
 		"SafeBoxBuyback": "0x679C0174f6c288C4bcd5C95C9Ec99D50357C59E7",
@@ -55,7 +55,7 @@
 		"ExoticPositionalTags": "0xd550bD32B434bA870642F94710eb220f542Ed3F3",
 		"ExoticPositionalTagsImplementation": "0x7a911614e0a916FB59A14EBd5c186dD076d1eDBc",
 		"RangedAMM": "0x2d356b114cbCA8DEFf2d8783EAc2a5A5324fE1dF",
-		"RangedAMMImplementation": "0xF1e574Df617174E3911E8FE43587C7BB24882589",
+		"RangedAMMImplementation": "0x086Cc1c04eF1AA4797c18a946c5688bF3949e89D",
 		"RangedPositionMastercopy": "0x7801Efa8E30606D2d4c9848852b56ff03efDAd5c",
 		"RangedMarketMastercopy": "0xe5109CC91F2c236Fbee3752AF06dC92d4BDddC84",
 		"Referrals": "0xCDE1C5D8998165fB417f58B1f258CB0DeC38BA00",
@@ -67,7 +67,7 @@
 		"USDC": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
 		"USDT": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
 		"SportPositionalMarketManager": "0xFBffEbfA2bF2cF84fdCf77917b358fC59Ff5771e",
-		"SportPositionalMarketManagerImplementation": "0xcCF4Fdc780401010Aa7572102bF82A769b741A19",
+		"SportPositionalMarketManagerImplementation": "0x08bfe49094940702B33Ebc5Ce7D0FE84AE9608d2",
 		"SportPositionalMarketFactory": "0x795BA11D575E6703282b1Db0cB849A15E304115d",
 		"SportPositionalMarketFactoryImplementation": "0x91C5A519023620066B5fEc2f28E4d899DEd79465",
 		"SportPositionalMarketMastercopy": "0xEd5C389ad19c5A839ef93233DbFF6e969ac9eCB5",
@@ -81,7 +81,9 @@
 		"TherundownConsumer": "0x2B91c14Ce9aa828eD124D12541452a017d8a2148",
 		"TherundownConsumerImplementation": "0xe8e8093d44f84be11974E3183d219e94fc9c36D7",
 		"TherundownConsumerWrapper": "0xe7f379DCaD66A5128f44a996D276Cf55E6D8F2c5",
-		"OvertimeVoucher": "0x5442fF0573Fd54A4F6C02A7a0d8E22BdC1a3C671"
+		"Vault": "0xF4507b4E2ff47c8008072B232Ce332e89a167f4D",
+		"VaultImplementation": "0x5ebC0a9278a87caFFc090f8E1e53f2fE60f76F9E",
+		"OvertimeVoucher": "0xC9183E3306A06E64c2A83E655756F70A83152536"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -105,7 +107,9 @@
 		"RangedAMM": "0xe8e022405505a9F2b0B7452C844F1e64423849fC",
 		"RangedAMMImplementation": "0xaC47c388d52C443Fd854848Ef1fA57171679e7B1",
 		"RangedPositionMastercopy": "0xff9d1B34f369CAf91c6b69761e2A06f78ed3cd9d",
-		"RangedMarketMastercopy": "0x75c7671d046268c11b5f55bA75DF2B6d14774B1C"
+		"RangedMarketMastercopy": "0x75c7671d046268c11b5f55bA75DF2B6d14774B1C",
+		"Vault": "",
+		"VaultImplementation": ""
 	},
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
@@ -121,14 +125,16 @@
 		"PositionalMarketFactoryImplementation": "0x8Eb4eB483f0DfB0910d24351d11b4D098d82080D",
 		"PositionalMarketData": "0x308C5B6E489B693e1e582157aaBaF2d6df187aa1",
 		"DeciMath": "0xC6e9c95823D7CC98A92D73de89D69548E2774cd8",
-		"ThalesAMM": "0x85f1B57A1D3Ac7605de3Df8AdA056b3dB9676eCE",
-		"ThalesAMMImplementation": "0xEcA7A1b229BB6Ad5c96FeeCdBF095750A71889ac",
+		"ThalesAMM": "0x465B66A3e33088F0666dB1836652fBcF037c7319",
+		"ThalesAMMImplementation": "0x6D3705368323900490193324277a221D8Db62bA7",
 		"RangedAMM": "0xda5Bd4aBAFbE249bdC5684eAD594B0ac379687fd",
-		"RangedAMMImplementation": "0x8Fc9310EC4c6d090Bd6Ad90025B47927399aDad6",
+		"RangedAMMImplementation": "0x705D97a0Eb98a1a611BebDe00FD3dCF380ec04f5",
 		"Referrals": "0x8ba51d5b8C2693ecC4c355dC778b6a0Ae775A776",
 		"ReferralsImplementation": "0x22d23b6ba1086D495fd950Ed503e89158318136A",
 		"RangedPositionMastercopy": "0xA3AB485700F1997aF105b23aB04A0c7A22Eabf69",
-		"RangedMarketMastercopy": "0x3dfE6FAb38D20d189cD7d28b04f8714c289De2AE"
+		"RangedMarketMastercopy": "0x3dfE6FAb38D20d189cD7d28b04f8714c289De2AE",
+		"Vault": "",
+		"VaultImplementation": ""
 	},
 	"arbitrumOne": {
 		"ProxyUSDC": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
@@ -144,14 +150,16 @@
 		"PositionalMarketFactoryImplementation": "0xE0B31640B07E4BCFAFc190d7DDE951BA3286Dd63",
 		"PositionalMarketData": "0x3124A11216273018C8F37181b4505d36573D9701",
 		"DeciMath": "0x5c779CFAe4b6B7a02c32938dDAbDada8AB60fb14",
-		"ThalesAMM": "0x5ae7454827D83526261F3871C1029792644Ef1B1",
-		"ThalesAMMImplementation": "0xd0418B847255b9e55E1f1d5a52241AdA23e5197C",
+		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
+		"ThalesAMMImplementation": "0x5f5b9455917d18b175Bc482effc0588165F8C71c",
 		"RangedAMM": "0x5cf3b1882357BB66Cf3cd2c85b81AbBc85553962",
-		"RangedAMMImplementation": "0x34F42B4cfc9e614E7e2a89583733F2d268B0Abe4",
+		"RangedAMMImplementation": "0x8ba51d5b8C2693ecC4c355dC778b6a0Ae775A776",
 		"RangedPositionMastercopy": "0xE931777640149fE67aE0771FF250aC93A5c38E85",
 		"RangedMarketMastercopy": "0x32C99D02E7d7fbc3B09eF19648b474cCCc1dB1DE",
 		"Referrals": "0x22d23b6ba1086D495fd950Ed503e89158318136A",
-		"ReferralsImplementation": "0xda5Bd4aBAFbE249bdC5684eAD594B0ac379687fd"
+		"ReferralsImplementation": "0xda5Bd4aBAFbE249bdC5684eAD594B0ac379687fd",
+		"Vault": "",
+		"VaultImplementation": ""
 	},
 	"mainnet": {
 		"Thales": "0x03E173Ad8d1581A4802d3B532AcE27a62c5B81dc",
@@ -230,7 +238,9 @@
 		"ReferralsImplementation": "0x3149A69fAe9892a6C179dCC14172F3a1E01CF5cc",
 		"SafeBoxImplementation": "0x9de4F62659acd8023c2730218e5CF592A20331c8",
 		"SwapRouter": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984"
+		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+		"Vault": "0x98F1bbc89aE7b0e69793e7f24b295AC553B46039",
+		"VaultImplementation": "0x2F8B331c758EdD3f6765B21587597eBe15DD78d9"
 	},
 	"polygonMumbai": {
 		"ProxyUSDC": "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747",
@@ -250,7 +260,9 @@
 		"PositionalMarketFactory": "0xe95C975ae8e37ab0bA6b9F78262977A59FcAABEB",
 		"PositionalMarketFactoryImplementation": "0x812c4837Ba990071Eecde8B87b150487BC179456",
 		"PositionalMarketData": "0xd6BEd7D753DCbbbb8937Dd009788d6c815aE3094",
-		"ThalesRoyalePass": "0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9"
+		"ThalesRoyalePass": "0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9",
+		"Vault": "",
+		"VaultImplementation": ""
 	},
 	"ropsten": {
 		"Airdrop": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",
@@ -353,13 +365,34 @@
 		"SportsAMMImplementation": "0xe06A81a9Ad90125481CEF53Fa5c761f3e28Ab830",
 		"SportPositionalMarketData": "0xC7D8c34048D8bf6eB24FC76c7A61F47754990c81",
 		"SportPositionalMarketDataImplementation": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
-		"OvertimeVoucher": "0xD1fe5a0256AcaeA497ecD30dc0b816cce95e23E9",
+		"OvertimeVoucher": "0x671f9654a594f8966b19c0b466f306E1dFe912a6",
 		"Referrals": "0xA59727442212227BBdCFEC1E883677A930707412",
 		"ReferralsImplementation": "0xd965c4192933a7cCF9BFD5C2a9f09DB9470e5485",
 		"ApexConsumer": "0x5c3b16F688Cb8B438699b0FC65C154a9AD8D7Ff3",
 		"ApexConsumerImplementation": "0xE2e3Db34a857BAe0bCf0bb51562d807e88320D6D",
 		"ApexConsumerOld": "0x14953ab06bA217Bc5DE7b7ADB48C88D7c0095f5e",
 		"ApexConsumerWrapper": "0x4F3C385b27003E24EaF045b0bb4bFF4569150c10"
+	},
+	"optimisticGoerli": {
+		"ExoticUSD": "0xE1ceaa829525a08C1d39A5CEBe4b42aF58d77198",
+		"GamesQueue": "0x1Ac7eBfa70AB18bf0a8C36e51ecD6C969E88B1d1",
+		"GamesQueueImplementation": "0xece0eEFFF3003d23e366C917104C6CF5Cdb404F1",
+		"TherundownConsumer": "0xdB6EB989127D0c33bC630d7b5B53f87ceCED3ce1",
+		"TherundownConsumerImplementation": "0x85b827d133FEDC36B844b20f4a198dA583B25BAA",
+		"TherundownConsumerWrapper": "0xe95C975ae8e37ab0bA6b9F78262977A59FcAABEB",
+		"SportPositionalMarketManager": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
+		"SportPositionalMarketManagerImplementation": "0x50B532AdAF5378F59dBD619dFD03E4d4ab3586bC",
+		"SportPositionalMarketFactory": "0xB72f87AA15E8FE50Ed364eB4A94486A578fc1556",
+		"SportPositionalMarketFactoryImplementation": "0x1751dDCE8D8B917223e05D8bD015dfb81bF1fcf2",
+		"SportPositionMastercopy": "0x2851715A8d25e176413A77b495762435D5dDBd0d",
+		"SportPositionalMarketMastercopy": "0xD2b907a94E33BFe0371B8dcbFAcf1a319b13d609",
+		"SportPositionalMarketData": "0x5915Bf86aD35330Acf103544aD205774a970a4E0",
+		"SportPositionalMarketDataImplementation": "0xc62E56E756a3D14ffF838e820F38d845a16D49dE",
+		"SportsAMM": "0x7465c5d60d3d095443CF9991Da03304A30D42Eae",
+		"SportsAMMImplementation": "0x7F6fB7CB277fa68972F350CE426ef9090821bd5e",
+		"Referrals": "0xB2947FC03d8Ee002726F4e28C42D513f7B6D6788",
+		"ReferralsImplementation": "0x943fb0D6CDeB373D4384f617887EB557855B815d",
+		"OvertimeVoucher": "0x9B91d27568c51cEf3C4E04D504EF3CE11D5f2427"
 	},
 	"localhost": {
 		"Airdrop": "",
@@ -383,6 +416,8 @@
 		"VestingEscrowCC": "0xdB05A386810c809aD5a77422eb189D36c7f24402",
 		"VestingEscrowCCImplementation": "0xa779C1D17bC5230c07afdC51376CAC1cb3Dd5314",
 		"SwapRouter": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984"
+		"UniswapV3Factory": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+		"Vault": "",
+		"VaultImplementation": ""
 	}
 }

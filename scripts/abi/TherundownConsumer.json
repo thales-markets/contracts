@@ -697,6 +697,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "canMarketBeUpdated",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -1286,25 +1305,6 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getResult",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "_result",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -1674,24 +1674,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_pause",
-        "type": "bool"
-      }
-    ],
-    "name": "pauseOrUnpauseMarketManually",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "paused",
     "outputs": [
@@ -1715,33 +1697,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "removeFromCreatedQueue",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "removeFromResolvedQueue",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_index",
-        "type": "uint256"
-      }
-    ],
-    "name": "removeFromUnprocessedGamesArray",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1825,34 +1780,6 @@
       }
     ],
     "name": "resolveAllMarketsForGames",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_outcome",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint8",
-        "name": "_homeScore",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint8",
-        "name": "_awayScore",
-        "type": "uint8"
-      }
-    ],
-    "name": "resolveGameManually",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

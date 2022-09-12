@@ -43,6 +43,8 @@ interface ISportPositionalMarketManager {
 
     function setMarketPaused(address _market, bool _paused) external;
 
+    function updateDatesForMarket(address _market, uint256 _newStartTime) external;
+
     function resolveMarket(address market, uint outcome) external;
 
     function expireMarkets(address[] calldata market) external;

@@ -60,6 +60,11 @@
             "type": "bytes32"
           },
           {
+            "internalType": "string",
+            "name": "raceId",
+            "type": "string"
+          },
+          {
             "internalType": "uint256",
             "name": "startTime",
             "type": "uint256"
@@ -138,6 +143,11 @@
             "internalType": "bytes32",
             "name": "gameId",
             "type": "bytes32"
+          },
+          {
+            "internalType": "string",
+            "name": "raceId",
+            "type": "string"
           },
           {
             "internalType": "uint256",
@@ -864,6 +874,11 @@
         "type": "bytes32"
       },
       {
+        "internalType": "string",
+        "name": "raceId",
+        "type": "string"
+      },
+      {
         "internalType": "uint256",
         "name": "startTime",
         "type": "uint256"
@@ -1067,6 +1082,11 @@
             "internalType": "bytes32",
             "name": "gameId",
             "type": "bytes32"
+          },
+          {
+            "internalType": "string",
+            "name": "raceId",
+            "type": "string"
           },
           {
             "internalType": "uint256",
@@ -1360,6 +1380,25 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "name": "latestRaceIdPerSport",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",

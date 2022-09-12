@@ -323,27 +323,27 @@
       },
       {
         "internalType": "string",
-        "name": "_event_id",
+        "name": "_eventId",
         "type": "string"
       },
       {
         "internalType": "string",
-        "name": "_bet_type",
+        "name": "_betType",
         "type": "string"
       },
       {
         "internalType": "string",
-        "name": "_event_name",
+        "name": "_eventName",
         "type": "string"
       },
       {
         "internalType": "uint256",
-        "name": "_qualifying_start_time",
+        "name": "_qualifyingStartTime",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_race_start_time",
+        "name": "_raceStartTime",
         "type": "uint256"
       }
     ],
@@ -509,7 +509,7 @@
     "inputs": [
       {
         "internalType": "string",
-        "name": "_eventID",
+        "name": "_eventId",
         "type": "string"
       },
       {
@@ -566,17 +566,12 @@
     "inputs": [
       {
         "internalType": "string",
-        "name": "_eventID",
+        "name": "_eventId",
         "type": "string"
       },
       {
         "internalType": "string",
         "name": "_gameNumber",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_resultType",
         "type": "string"
       }
     ],

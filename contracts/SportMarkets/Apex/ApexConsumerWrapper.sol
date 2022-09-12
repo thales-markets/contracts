@@ -81,15 +81,15 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     }
 
     /// @notice Returns the matchup information
-    /// @param _eventID event ID which is provided from CL
+    /// @param _eventId event ID which is provided from CL
     /// @param _gameNumber game number for specific bet type
-    function requestMatchup(string memory _eventID, string memory _gameNumber) public whenNotPaused {
+    function requestMatchup(string memory _eventId, string memory _gameNumber) public whenNotPaused {
         Chainlink.Request memory req = buildChainlinkRequest(
             _stringToBytes32(requestMatchupJobId),
             address(this),
             this.fulfillMatchup.selector
         );
-        req.add("event_id", _eventID);
+        req.add("event_id", _eventId);
         req.add("qualifying_status", "pre");
         req.add("bet_type", _createBetType(_gameNumber));
         req.add("stage_level", "null");
@@ -97,66 +97,58 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         _putLink(msg.sender, paymentMatchup);
 
         bytes32 requestId = sendChainlinkRequest(req, paymentMatchup);
-        sportPerRequestId[requestId] = sportPerEventId[_eventID];
-        eventIdPerRequestId[requestId] = _eventID;
-        gameIdPerRequestId[requestId] = _createGameId(_eventID, _gameNumber);
+        sportPerRequestId[requestId] = sportPerEventId[_eventId];
+        eventIdPerRequestId[requestId] = _eventId;
+        gameIdPerRequestId[requestId] = _createGameId(_eventId, _gameNumber);
     }
 
     /// @notice Returns the results information
-    /// @param _eventID event ID which is provided from CL
+    /// @param _eventId event ID which is provided from CL
     /// @param _gameNumber game number for specific bet type
-    /// @param _resultType final or provisional
-    function requestResults(
-        string memory _eventID,
-        string memory _gameNumber,
-        string memory _resultType
-    ) public whenNotPaused {
+    function requestResults(string memory _eventId, string memory _gameNumber) public whenNotPaused {
         Chainlink.Request memory req = buildChainlinkRequest(
             _stringToBytes32(requestResultsJobId),
             address(this),
             this.fulfillResults.selector
         );
-        req.add("event_id", _eventID);
-        req.add("result_type", _resultType);
+        req.add("event_id", _eventId);
+        req.add("result_type", "final");
         req.add("bet_type", _createBetType(_gameNumber));
 
         _putLink(msg.sender, paymentResults);
 
         bytes32 requestId = sendChainlinkRequest(req, paymentResults);
-        sportPerRequestId[requestId] = sportPerEventId[_eventID];
-        gameIdPerRequestId[requestId] = _createGameId(_eventID, _gameNumber);
+        sportPerRequestId[requestId] = sportPerEventId[_eventId];
+        gameIdPerRequestId[requestId] = _createGameId(_eventId, _gameNumber);
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
 
     /**
-     * @notice Consumes the data returned by the node job on a particular request
+     * @notice Fulfill all race metadata necessary to create sport markets
      * @param _requestId the request ID for fulfillment
+     * @param _eventId event ID which is provided from CL
+     * @param _betType bet type for provided event ID
+     * @param _eventName event name which is provided from CL
+     * @param _qualifyingStartTime timestamp on which race qualifying is started
+     * @param _raceStartTime timestamp on which race is started
      */
     function fulfillMetaData(
         bytes32 _requestId,
-        string memory _event_id,
-        string memory _bet_type,
-        string memory _event_name,
-        uint256 _qualifying_start_time,
-        uint256 _race_start_time
+        string memory _eventId,
+        string memory _betType,
+        string memory _eventName,
+        uint256 _qualifyingStartTime,
+        uint256 _raceStartTime
     ) external recordChainlinkFulfillment(_requestId) {
         string memory sport = sportPerRequestId[_requestId];
-        sportPerEventId[_event_id] = sport;
+        sportPerEventId[_eventId] = sport;
 
-        consumer.fulfillMetaData(
-            _requestId,
-            _event_id,
-            _bet_type,
-            _event_name,
-            _qualifying_start_time,
-            _race_start_time,
-            sport
-        );
+        consumer.fulfillMetaData(_requestId, _eventId, _betType, _eventName, _qualifyingStartTime, _raceStartTime, sport);
     }
 
     /**
-     * @notice Consumes the data returned by the node job on a particular request
+     * @notice Fulfill all matchup data necessary to create sport markets
      * @param _requestId the request ID for fulfillment
      * @param _betTypeDetail1 Team/Category/Rider A identifier, returned as string
      * @param _betTypeDetail2 Team/Category/Rider B identifier, returned as string
@@ -178,7 +170,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     }
 
     /**
-     * @notice Consumes the data returned by the node job on a particular request
+     * @notice Fulfill all data necessary to resolve sport markets
      * @param _requestId the request ID for fulfillment
      * @param _result win/loss for the matchup.
      * @param _resultDetails ranking/timing data to elaborate on win/loss

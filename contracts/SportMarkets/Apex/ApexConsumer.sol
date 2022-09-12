@@ -39,6 +39,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     struct GameCreate {
         bytes32 gameId;
+        string raceId;
         uint256 startTime;
         uint256 homeOdds;
         uint256 awayOdds;
@@ -83,6 +84,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(string => bool) public raceFulfilledCreated;
     mapping(bytes32 => bool) public gameFulfilledCreated;
     mapping(bytes32 => bool) public gameFulfilledResolved;
+    mapping(string => string) public latestRaceIdPerSport;
 
     // sports props
     mapping(string => bool) public supportedSport;
@@ -145,6 +147,8 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         race.qualifyingStartTime = _qualifyingStartTime;
         race.startTime = _raceStartTime;
 
+        latestRaceIdPerSport[_sport] = race.raceId;
+
         _createRaceFulfill(_requestId, race, supportedSportId[_sport]);
         //}
     }
@@ -178,6 +182,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
             game.awayOdds = _probB;
             game.homeTeam = _betTypeDetail1;
             game.awayTeam = _betTypeDetail2;
+            game.raceId = _eventId;
             game.startTime = race.qualifyingStartTime;
 
             _createGameFulfill(_requestId, game, supportedSportId[_sport]);
@@ -236,7 +241,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice Creates market for a given game ID
     /// @param _gameId unique game identifier
-    function createMarketForGame(bytes32 _gameId) public {
+    function createMarketForGame(bytes32 _gameId) public isAddressWhitelisted {
         require(marketPerGameId[_gameId] == address(0), "Market for game already exists");
         require(gameFulfilledCreated[_gameId], "No such game fulfilled, created");
         _createMarket(_gameId);
@@ -244,7 +249,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice Resolve market for a given game ID
     /// @param _gameId unique game identifier
-    function resolveMarketForGame(bytes32 _gameId) public {
+    function resolveMarketForGame(bytes32 _gameId) public isAddressWhitelisted {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
         require(gameFulfilledResolved[_gameId], "No such game fulfilled, resolved");
         _resolveMarket(_gameId);
@@ -503,7 +508,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
             // if status is canceled and start time of a game passed cancel market
-        } else if (_isGameStatusResolved(game) && singleGameCreated.startTime < block.timestamp) {
+        } else if (_isGameStatusCancelled(game) && singleGameCreated.startTime < block.timestamp) {
             _cancelMarket(game.gameId);
         }
     }

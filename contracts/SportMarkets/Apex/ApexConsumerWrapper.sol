@@ -17,10 +17,14 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     using Chainlink for Chainlink.Request;
     using SafeERC20 for IERC20;
 
+    string public constant BET_TYPE_PREFIX = "outright_head_to_head_";
+    string public constant GAME_ID_INFIX = "_h2h_";
+
     IApexConsumer public consumer;
 
     mapping(bytes32 => string) public sportPerRequestId;
     mapping(bytes32 => string) public gameIdPerRequestId;
+    mapping(bytes32 => string) public eventIdPerRequestId;
     mapping(string => string) public sportPerEventId;
 
     uint public paymentMetadata;
@@ -60,20 +64,25 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /* ========== CONSUMER REQUEST FUNCTIONS ========== */
 
-    function requestMetaData(string memory sport) public whenNotPaused isValidMetaDataRequest(sport) {
+    /// @notice Returns the metadata info. Function is requesting metadata for the next race
+    /// @param _sport paremeter to distinguish between different sport metadata for event ID
+    function requestMetaData(string memory _sport) public whenNotPaused isValidMetaDataRequest(_sport) {
         Chainlink.Request memory req = buildChainlinkRequest(
             _stringToBytes32(requestMetadataJobId),
             address(this),
             this.fulfillMetaData.selector
         );
-        req.add("sports", sport);
+        req.add("sports", _sport);
 
         _putLink(msg.sender, paymentMetadata);
 
         bytes32 requestId = sendChainlinkRequest(req, paymentMetadata);
-        sportPerRequestId[requestId] = sport;
+        sportPerRequestId[requestId] = _sport;
     }
 
+    /// @notice Returns the matchup information
+    /// @param _eventID event ID which is provided from CL
+    /// @param _gameNumber game number for specific bet type
     function requestMatchup(string memory _eventID, string memory _gameNumber) public whenNotPaused {
         Chainlink.Request memory req = buildChainlinkRequest(
             _stringToBytes32(requestMatchupJobId),
@@ -89,9 +98,14 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
         bytes32 requestId = sendChainlinkRequest(req, paymentMatchup);
         sportPerRequestId[requestId] = sportPerEventId[_eventID];
+        eventIdPerRequestId[requestId] = _eventID;
         gameIdPerRequestId[requestId] = _createGameId(_eventID, _gameNumber);
     }
 
+    /// @notice Returns the results information
+    /// @param _eventID event ID which is provided from CL
+    /// @param _gameNumber game number for specific bet type
+    /// @param _resultType final or provisional
     function requestResults(
         string memory _eventID,
         string memory _gameNumber,
@@ -116,7 +130,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
 
     /**
-     * @notice Consumes the data returned by the node job on a particular request.
+     * @notice Consumes the data returned by the node job on a particular request
      * @param _requestId the request ID for fulfillment
      */
     function fulfillMetaData(
@@ -142,12 +156,12 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     }
 
     /**
-     * @notice Consumes the data returned by the node job on a particular request.
+     * @notice Consumes the data returned by the node job on a particular request
      * @param _requestId the request ID for fulfillment
-     * @param _betTypeDetail1 Team/Category/Rider A identifier, returned as string.
-     * @param _betTypeDetail2 Team/Category/Rider B identifier, returned as string.
-     * @param _probA: Probability for Team/Category/Rider A, returned as uint256.
-     * @param _probB: Probability for Team/Category/Rider B, returned as uint256.
+     * @param _betTypeDetail1 Team/Category/Rider A identifier, returned as string
+     * @param _betTypeDetail2 Team/Category/Rider B identifier, returned as string
+     * @param _probA: Probability for Team/Category/Rider A, returned as uint256
+     * @param _probB: Probability for Team/Category/Rider B, returned as uint256
      */
     function fulfillMatchup(
         bytes32 _requestId,
@@ -158,11 +172,13 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     ) external recordChainlinkFulfillment(_requestId) {
         bytes32 gameId = _stringToBytes32(gameIdPerRequestId[_requestId]);
         string memory sport = sportPerRequestId[_requestId];
-        consumer.fulfillMatchup(_requestId, _betTypeDetail1, _betTypeDetail2, _probA, _probB, gameId, sport);
+        string memory eventId = eventIdPerRequestId[_requestId];
+
+        consumer.fulfillMatchup(_requestId, _betTypeDetail1, _betTypeDetail2, _probA, _probB, gameId, sport, eventId);
     }
 
     /**
-     * @notice Consumes the data returned by the node job on a particular request.
+     * @notice Consumes the data returned by the node job on a particular request
      * @param _requestId the request ID for fulfillment
      * @param _result win/loss for the matchup.
      * @param _resultDetails ranking/timing data to elaborate on win/loss
@@ -179,13 +195,13 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /* ========== VIEWS ========== */
 
-    /// @notice getting oracle address for CL data sport feed
+    /// @notice Getting oracle address for CL data sport feed
     /// @return address of oracle
     function getOracleAddress() external view returns (address) {
         return chainlinkOracleAddress();
     }
 
-    /// @notice getting LINK token address for payment for requests
+    /// @notice Getting LINK token address for payment for requests
     /// @return address of LINK token
     function getTokenAddress() external view returns (address) {
         return chainlinkTokenAddress();
@@ -198,11 +214,11 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     }
 
     function _createBetType(string memory _gameNumber) internal pure returns (string memory) {
-        return string(abi.encodePacked("outright_head_to_head_", _gameNumber));
+        return string(abi.encodePacked(BET_TYPE_PREFIX, _gameNumber));
     }
 
     function _createGameId(string memory _eventId, string memory _gameNumber) internal pure returns (string memory) {
-        return string(abi.encodePacked(_eventId, "_", _gameNumber));
+        return string(abi.encodePacked(_eventId, GAME_ID_INFIX, _gameNumber));
     }
 
     function _stringToBytes32(string memory source) internal pure returns (bytes32 result) {
@@ -252,7 +268,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewRequestsJobIds(_requestMetadataJobId, _requestMatchupJobId, _requestResultsJobId);
     }
 
-    /// @notice setting new oracle address
+    /// @notice Setting new oracle address
     /// @param _oracle address of oracle sports data feed
     function setOracle(address _oracle) external onlyOwner {
         require(_oracle != address(0), "Invalid address");
@@ -260,7 +276,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewOracleAddress(_oracle);
     }
 
-    /// @notice setting consumer address
+    /// @notice Setting consumer address
     /// @param _consumer address of a consumer which gets the data from CL requests
     function setConsumer(address _consumer) external onlyOwner {
         require(_consumer != address(0), "Invalid address");
@@ -268,7 +284,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewConsumer(_consumer);
     }
 
-    /// @notice setting link address
+    /// @notice Setting link address
     /// @param _link address of a LINK which request will be paid
     function setLink(address _link) external onlyOwner {
         require(_link != address(0), "Invalid address");

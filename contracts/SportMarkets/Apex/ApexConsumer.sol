@@ -11,7 +11,7 @@ import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 // interface
 import "../../interfaces/ISportPositionalMarketManager.sol";
 
-/// @title Consumer contract which stores all data from CL data feed (Link to docs: https://market.link/nodes/TheRundown/integrations), also creates all sports markets based on that data
+/// @title Consumer contract which stores all data from CL data feed (Link to docs:https://market.link/nodes/Apex146/integrations), also creates all sports markets based on that data
 /// @author vladan
 contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== CONSTANTS =========== */
@@ -80,6 +80,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => GameResults) public gameResults;
     mapping(bytes32 => GameOdds) public gameOdds;
     mapping(bytes32 => uint) public sportsIdPerGame;
+    mapping(string => bool) public raceFulfilledCreated;
     mapping(bytes32 => bool) public gameFulfilledCreated;
     mapping(bytes32 => bool) public gameFulfilledResolved;
 
@@ -117,44 +118,45 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
 
-    /**
-     * @notice Consumes the data returned by the node job on a particular request.
-     * @param _requestId the request ID for fulfillment
-     */
+    /// @notice Fulfill all race metadata necessary to create sport markets
+    /// @param _requestId unique request ID form CL
+    /// @param _eventId event ID which is provided from CL
+    /// @param _betType bet type for provided event ID
+    /// @param _eventName event name which is provided from CL
+    /// @param _qualifyingStartTime timestamp on which race qualifying is started
+    /// @param _raceStartTime timestamp on which race is started
+    /// @param _sport supported sport name which is provided from CL
     function fulfillMetaData(
         bytes32 _requestId,
-        string memory _event_id,
-        string memory _bet_type,
-        string memory _event_name,
-        uint256 _qualifying_start_time,
-        uint256 _race_start_time,
+        string memory _eventId,
+        string memory _betType,
+        string memory _eventName,
+        uint256 _qualifyingStartTime,
+        uint256 _raceStartTime,
         string memory _sport
     ) external onlyWrapper {
         //if (_qualifying_start_time > block.timestamp) {
         RaceCreate memory race;
 
-        race.raceId = _event_id;
-        race.eventId = _event_id;
-        race.eventName = _event_name;
-        race.betType = _bet_type;
-        race.qualifyingStartTime = _qualifying_start_time;
-        race.startTime = _race_start_time;
+        race.raceId = _eventId;
+        race.eventId = _eventId;
+        race.eventName = _eventName;
+        race.betType = _betType;
+        race.qualifyingStartTime = _qualifyingStartTime;
+        race.startTime = _raceStartTime;
 
-        raceCreated[_sport] = race;
-
-        emit RaceCreated(_requestId, supportedSportId[_sport], _event_id, race);
+        _createRaceFulfill(_requestId, race, supportedSportId[_sport]);
         //}
     }
 
-    /**
-     * @notice Consumes the data returned by the node job on a particular request.
-     * @param _requestId the request ID for fulfillment
-     * @param _betTypeDetail1 Team/Category/Rider A identifier, returned as string.
-     * @param _betTypeDetail2 Team/Category/Rider B identifier, returned as string.
-     * @param _probA: Probability for Team/Category/Rider A, returned as uint256.
-     * @param _probB: Probability for Team/Category/Rider B, returned as uint256.
-     */
-
+    /// @notice Fulfill all matchup data necessary to create sport markets
+    /// @param _requestId unique request ID form CL
+    /// @param _betTypeDetail1 Team/Category/Rider A identifier, returned as string
+    /// @param _betTypeDetail2 Team/Category/Rider B identifier, returned as string
+    /// @param _probA: Probability for Team/Category/Rider A, returned as uint256
+    /// @param _probB: Probability for Team/Category/Rider B, returned as uint256
+    /// @param _gameId unique game identifier
+    /// @param _sport supported sport name which is provided from CL
     function fulfillMatchup(
         bytes32 _requestId,
         string memory _betTypeDetail1,
@@ -162,12 +164,13 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint256 _probA,
         uint256 _probB,
         bytes32 _gameId,
-        string memory _sport
+        string memory _sport,
+        string memory _eventId
     ) external onlyWrapper {
-        if (!gameFulfilledCreated[_gameId]) {
-            RaceCreate memory race = raceCreated[_sport];
+        if (!gameFulfilledCreated[_gameId] && raceFulfilledCreated[_eventId]) {
+            RaceCreate memory race = raceCreated[_eventId];
 
-            //if (race.startTime > block.timestamp && !gameFulfilledCreated[_gameId]) {
+            //if (race.qualifyingStartTime > block.timestamp) {
             GameCreate memory game;
 
             game.gameId = _gameId;
@@ -189,12 +192,12 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         _oddsGameFulfill(_requestId, newGameOdds);
     }
 
-    /**
-     * @notice Consumes the data returned by the node job on a particular request.
-     * @param _requestId the request ID for fulfillment
-     * @param _result win/loss for the matchup.
-     * @param _resultDetails ranking/timing data to elaborate on win/loss
-     */
+    /// @notice Fulfill all data necessary to resolve sport markets
+    /// @param _requestId unique request ID form CL
+    /// @param _result win/loss for the matchup
+    /// @param _resultDetails ranking/timing data to elaborate on win/loss
+    /// @param _gameId unique game identifier
+    /// @param _sport supported sport name which is provided from CL
     function fulfillResults(
         bytes32 _requestId,
         string memory _result,
@@ -231,25 +234,25 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         _gameResultsFulfill(_requestId, newGameResults, supportedSportId[_sport]);
     }
 
-    /// @notice creates market for a given game id
-    /// @param _gameId game id
+    /// @notice Creates market for a given game ID
+    /// @param _gameId unique game identifier
     function createMarketForGame(bytes32 _gameId) public {
         require(marketPerGameId[_gameId] == address(0), "Market for game already exists");
         require(gameFulfilledCreated[_gameId], "No such game fulfilled, created");
         _createMarket(_gameId);
     }
 
-    /// @notice resolve market for a given game id
-    /// @param _gameId game id
+    /// @notice Resolve market for a given game ID
+    /// @param _gameId unique game identifier
     function resolveMarketForGame(bytes32 _gameId) public {
         require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
-        require(gameFulfilledResolved[_gameId], "No such game Fulfilled, resolved");
+        require(gameFulfilledResolved[_gameId], "No such game fulfilled, resolved");
         _resolveMarket(_gameId);
     }
 
-    /// @notice resolve market for a given game id
-    /// @param _gameId game id
-    /// @param _outcome outcome of a game (1: home win, 2: away win, 3: draw, 0: cancel market)
+    /// @notice Resolve market for a given game ID
+    /// @param _gameId unique game identifier
+    /// @param _outcome outcome of the game (1: home win, 2: away win, 0: cancel market)
     /// @param _homeScore score of home team
     /// @param _awayScore score of away team
     function resolveGameManually(
@@ -261,9 +264,9 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         _resolveMarketManually(marketPerGameId[_gameId], _outcome, _homeScore, _awayScore);
     }
 
-    /// @notice resolve market for a given market address
+    /// @notice Resolve market for a given market address
     /// @param _market market address
-    /// @param _outcome outcome of a game (1: home win, 2: away win, 3: draw, 0: cancel market)
+    /// @param _outcome outcome of a game (1: home win, 2: away win, 0: cancel market)
     /// @param _homeScore score of home team
     /// @param _awayScore score of away team
     function resolveMarketManually(
@@ -275,7 +278,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         _resolveMarketManually(_market, _outcome, _homeScore, _awayScore);
     }
 
-    /// @notice cancel market for a given market address
+    /// @notice Cancel market for a given market address
     /// @param _market market address
     function cancelMarketManually(address _market)
         external
@@ -285,21 +288,10 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         _cancelMarketManually(_market);
     }
 
-    /// @notice pause/unpause market for a given market address
-    /// @param _market market address
-    /// @param _pause pause = true, unpause = false
-    function pauseOrUnpauseMarketManually(address _market, bool _pause)
-        external
-        isAddressWhitelisted
-        canGameBePaused(_market, _pause)
-    {
-        _pauseOrUnpauseMarket(_market, _pause);
-    }
-
     /* ========== VIEW FUNCTIONS ========== */
 
-    /// @notice view function which returns odds
-    /// @param _gameId game id
+    /// @notice View function which returns odds
+    /// @param _gameId unique game identifier
     /// @return homeOdds moneyline odd in a two decimal places
     /// @return awayOdds moneyline odd in a two decimal places
     /// @return drawOdds moneyline odd in a two decimal places
@@ -315,36 +307,36 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         return (gameOdds[_gameId].homeOdds, gameOdds[_gameId].awayOdds, gameOdds[_gameId].drawOdds);
     }
 
-    /// @notice view function which returns game created object based on id of a game
-    /// @param _gameId game id
+    /// @notice View function which returns game created object based on ID of a game
+    /// @param _gameId unique game identifier
     /// @return GameCreate game create object
     function getGameCreatedById(bytes32 _gameId) public view returns (GameCreate memory) {
         return gameCreated[_gameId];
     }
 
-    /// @notice view function which returns game resolved object based on id of a game
-    /// @param _gameId game id
+    /// @notice View function which returns game resolved object based on ID of a game
+    /// @param _gameId unique game identifier
     /// @return GameResolve game resolve object
     function getGameResolvedById(bytes32 _gameId) public view returns (GameResolve memory) {
         return gameResolved[_gameId];
     }
 
-    /// @notice view function which returns if game is resolved or canceled and ready for market to be resolved or canceled
-    /// @param _gameId game id for which game is looking
+    /// @notice View function which returns if game is resolved or canceled and ready for market to be resolved or canceled
+    /// @param _gameId unique game identifier for which game is looking
     /// @return bool is it ready for resolve or cancel true/false
     function isGameResolvedOrCanceled(bytes32 _gameId) public view returns (bool) {
         return marketResolved[marketPerGameId[_gameId]] || marketCanceled[marketPerGameId[_gameId]];
     }
 
-    /// @notice view function which returns if sport is supported or not
+    /// @notice View function which returns if sport is supported or not
     /// @param _sport sport for which is looking
     /// @return bool is sport supported true/false
     function isSupportedSport(string memory _sport) external view returns (bool) {
         return supportedSport[_sport];
     }
 
-    /// @notice view function which returns normalized odds up to 100 (Example: 50-40-10)
-    /// @param _gameId game id for which game is looking
+    /// @notice View function which returns normalized odds up to 100 (Example: 50-40-10)
+    /// @param _gameId unique game identifier for which game is looking
     /// @return uint[] odds array normalized
     function getNormalizedOdds(bytes32 _gameId) public view returns (uint[] memory) {
         uint[] memory normalizedOdds = new uint[](3);
@@ -358,27 +350,41 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         return normalizedOdds;
     }
 
-    /// @notice view function which returns if game is resolved
-    /// @param _gameId game id for which game is looking
+    /// @notice Vew function which returns if game is resolved
+    /// @param _gameId unique game identifier for which game is looking
     /// @return bool is game resolved true/false
     function isGameInResolvedStatus(bytes32 _gameId) public view returns (bool) {
         return _isGameStatusResolved(getGameResolvedById(_gameId));
     }
 
-    /// @notice view function which returns outcome of a game based on ID
-    /// @param _gameId game id for which result is looking
-    /// @return _result returns 1: home win, 2: away win, 3: draw
+    /// @notice View function which returns outcome of a game based on ID
+    /// @param _gameId unique game identifier for which result is looking
+    /// @return _result returns 1: home win, 2: away win
     function getResult(bytes32 _gameId) external view returns (uint _result) {
         if (isGameInResolvedStatus(_gameId)) {
             return _calculateOutcome(getGameResolvedById(_gameId));
         }
     }
 
+    /// @notice View function which returns if game is provided by Apex
+    /// @param _gameId unique game identifier for which result is looking
+    /// @return bool is game provided by Apex
     function isApexGame(bytes32 _gameId) public view returns (bool) {
         return gameFulfilledCreated[_gameId];
     }
 
     /* ========== INTERNALS ========== */
+
+    function _createRaceFulfill(
+        bytes32 _requestId,
+        RaceCreate memory _race,
+        uint _sportId
+    ) internal {
+        raceCreated[_race.raceId] = _race;
+        raceFulfilledCreated[_race.raceId] = true;
+
+        emit RaceCreated(_requestId, _sportId, _race.raceId, _race);
+    }
 
     function _createGameFulfill(
         bytes32 _requestId,
@@ -394,7 +400,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _resolveGameFulfill(
-        bytes32 requestId,
+        bytes32 _requestId,
         GameResolve memory _game,
         uint _sportId
     ) internal {
@@ -407,7 +413,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
             gameResolved[_game.gameId] = _game;
             gameFulfilledResolved[_game.gameId] = true;
 
-            emit GameResolved(requestId, _sportId, _game.gameId, _game);
+            emit GameResolved(_requestId, _sportId, _game.gameId, _game);
         }
         // if market for the game exists AND status is canceled AND start time has not passed only pause market
         else if (
@@ -421,13 +427,13 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _gameResultsFulfill(
-        bytes32 requestId,
+        bytes32 _requestId,
         GameResults memory _game,
         uint _sportId
     ) internal {
         gameResults[_game.gameId] = _game;
 
-        emit GameResultsSet(requestId, _sportId, _game.gameId, _game);
+        emit GameResultsSet(_requestId, _sportId, _game.gameId, _game);
     }
 
     function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
@@ -601,7 +607,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== CONTRACT MANAGEMENT ========== */
 
-    /// @notice sets if sport is suported or not (delete from supported sport)
+    /// @notice Sets if sport is suported or not (delete from supported sport)
     /// @param sport sport which needs to be supported or not
     /// @param _isSupported true/false (supported or not)
     function setSupportedSport(string memory sport, bool _isSupported) external onlyOwner {
@@ -610,7 +616,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit SupportedSportsChanged(sport, _isSupported);
     }
 
-    /// @notice sets wrapper andmanager address
+    /// @notice Sets wrapper and manager addresses
     /// @param _wrapperAddress wrapper address
     /// @param _sportsManager sport manager address
     function setSportContracts(address _wrapperAddress, address _sportsManager) external onlyOwner {
@@ -622,8 +628,8 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit NewSportContracts(_wrapperAddress, _sportsManager);
     }
 
-    /// @notice adding/removing whitelist address depending on a flag
-    /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
+    /// @notice Adding/removing whitelist address depending on a flag
+    /// @param _whitelistAddress address that needed to be whitelisted or removed from WL
     /// @param _flag adding or removing from whitelist (true: add, false: remove)
     function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
         require(_whitelistAddress != address(0), "Invalid address");

@@ -28,7 +28,8 @@ interface IApexConsumer {
         uint256 _probA,
         uint256 _probB,
         bytes32 _gameId,
-        string memory _sport
+        string memory _sport,
+        string memory _eventId
     ) external;
 
     function fulfillResults(

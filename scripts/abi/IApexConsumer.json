@@ -35,6 +35,11 @@
         "internalType": "string",
         "name": "_sport",
         "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_eventId",
+        "type": "string"
       }
     ],
     "name": "fulfillMatchup",

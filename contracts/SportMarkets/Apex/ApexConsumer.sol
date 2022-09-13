@@ -250,7 +250,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice Resolve market for a given game ID
     /// @param _gameId unique game identifier
     function resolveMarketForGame(bytes32 _gameId) public isAddressWhitelisted {
-        require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
+        require(!isGameResolvedOrCanceled(_gameId), "Market resolved or canceled");
         require(gameFulfilledResolved[_gameId], "No such game fulfilled, resolved");
         _resolveMarket(_gameId);
     }
@@ -656,7 +656,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     modifier canGameBeCanceled(bytes32 _gameId) {
-        require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
+        require(!isGameResolvedOrCanceled(_gameId), "Market resolved or canceled");
         require(marketPerGameId[_gameId] != address(0), "No market created for game");
         _;
     }
@@ -667,7 +667,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint8 _homeScore,
         uint8 _awayScore
     ) {
-        require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
+        require(!isGameResolvedOrCanceled(_gameId), "Market resolved or canceled");
         require(marketPerGameId[_gameId] != address(0), "No market created for game");
         require(
             _isValidOutcomeForGame(_outcome) && _isValidOutcomeWithResult(_outcome, _homeScore, _awayScore),
@@ -680,7 +680,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(_market != address(0), "No market address");
         require(gameFulfilledCreated[gameIdPerMarket[_market]], "Game not existing");
         require(gameIdPerMarket[_market] != 0, "Market not existing");
-        require(!isGameResolvedOrCanceled(gameIdPerMarket[_market]), "Market resoved or canceled");
+        require(!isGameResolvedOrCanceled(gameIdPerMarket[_market]), "Market resolved or canceled");
         require(sportsManager.isMarketPaused(_market) != _pause, "Already paused/unpaused");
         _;
     }

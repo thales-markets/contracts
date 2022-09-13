@@ -155,8 +155,32 @@ contract('ApexConsumer', (accounts) => {
 	const game1homeTeam = 'lance stroll';
 	const game1awayTeam = 'daniel ricciardo';
 
-	const sport_formula1 = 'formula1'; // Formula 1
-	const sport_motogp = 'motogp'; // MotoGP
+	const homeWinResult = 'win/lose';
+	const homeWinResultDetails = '4.0/6.0';
+
+	const awayWinResult = 'lose/win';
+	const awayWinResultDetails = '15.0/1.0';
+
+	const cancelResult = 'null';
+	const cancelResultDetails = 'DNF/DNF';
+
+	const sportFormula1 = 'formula1';
+	const sportMotoGP = 'motogp';
+	const sportFootball = 'football';
+
+	const tagFormula1 = 9100;
+	const tagMotoGP = 9101;
+
+	const statusCancelled = 0;
+	const statusResolved = 1;
+
+	const outcomeCancelled = 0;
+	const outcomeHomeWin = 1;
+	const outcomeAwayWin = 2;
+
+	const cancelScore = 0;
+	const loseScore = 0;
+	const winScore = 1;
 
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
@@ -295,7 +319,7 @@ contract('ApexConsumer', (accounts) => {
 
 		await ApexConsumerDeployed.initialize(
 			owner,
-			[sport_formula1, sport_motogp],
+			[sportFormula1, sportMotoGP],
 			SportPositionalMarketManager.address,
 			{ from: owner }
 		);
@@ -319,8 +343,10 @@ contract('ApexConsumer', (accounts) => {
 		});
 	});
 
-	describe('Fulfill Games Created', () => {
-		it('Fulfill Race Created, Fulfill Game Created - Formula 1, create market, check results', async () => {
+	describe('Fulfill Game Created', () => {
+		it('Fulfill Game Created - Formula 1, create market, check results', async () => {
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+
 			// req. create race
 			const txCreateRace = await ApexConsumerDeployed.fulfillMetaData(
 				reqIdCreateRace,
@@ -329,9 +355,33 @@ contract('ApexConsumer', (accounts) => {
 				eventName,
 				game1qualifyingStartTime,
 				game1raceStartTime,
-				sport_formula1,
+				sportFormula1,
 				{ from: wrapper }
 			);
+
+			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+			assert.equal(eventId, await ApexConsumerDeployed.latestRaceIdPerSport(sportFormula1));
+
+			let race = await ApexConsumerDeployed.raceCreated(eventId);
+			assert.bnEqual(game1qualifyingStartTime, race.qualifyingStartTime);
+			assert.bnEqual(game1raceStartTime, race.startTime);
+			assert.equal(eventName, race.eventName);
+
+			const sportId = await ApexConsumerDeployed.supportedSportId(sportFormula1);
+
+			// check if event is emited
+			assert.eventEqual(txCreateRace.logs[0], 'RaceCreated', {
+				_requestId: reqIdCreateRace,
+				_sportId: sportId,
+				_id: eventId,
+				_race: race,
+			});
+
+			await expect(
+				ApexConsumerDeployed.createMarketForGame(gameid1, {
+					from: owner,
+				})
+			).to.be.revertedWith('No such game fulfilled, created');
 
 			// req. create game
 			const txCreateGame = await ApexConsumerDeployed.fulfillMatchup(
@@ -341,14 +391,14 @@ contract('ApexConsumer', (accounts) => {
 				game1homeOdds,
 				game1awayOdds,
 				gameid1,
-				sport_formula1,
+				sportFormula1,
 				eventId,
 				{ from: wrapper }
 			);
 
-			const sportId = await ApexConsumerDeployed.supportedSportId(gameid1);
 			assert.bnEqual(sportId, await ApexConsumerDeployed.sportsIdPerGame(gameid1));
-			assert.equal(true, await ApexConsumerDeployed.isSupportedSport(sport_formula1));
+			assert.equal(true, await ApexConsumerDeployed.isSupportedSport(sportFormula1));
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
 
 			let result = await ApexConsumerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(game1homeOdds, result[0]);
@@ -356,7 +406,7 @@ contract('ApexConsumer', (accounts) => {
 			assert.bnEqual(0, result[2]);
 
 			let game = await ApexConsumerDeployed.gameCreated(gameid1);
-			let gameTime = game.startTime;
+			assert.bnEqual(game1qualifyingStartTime, game.startTime);
 			assert.equal(game1homeTeam, game.homeTeam);
 			assert.equal(game1awayTeam, game.awayTeam);
 
@@ -373,11 +423,13 @@ contract('ApexConsumer', (accounts) => {
 				from: owner,
 			});
 
-			let marketAdd = await ApexConsumerDeployed.marketPerGameId(gameid1);
+			let marketAddress = await ApexConsumerDeployed.marketPerGameId(gameid1);
+			assert.equal(true, await ApexConsumerDeployed.marketCreated(marketAddress));
+			assert.equal(gameid1, await ApexConsumerDeployed.gameIdPerMarket(marketAddress));
 
 			// check if event is emited
 			assert.eventEqual(txCreateMarket.logs[1], 'CreateSportsMarket', {
-				_marketAddress: marketAdd,
+				_marketAddress: marketAddress,
 				_id: gameid1,
 				_game: game,
 			});
@@ -386,1175 +438,709 @@ contract('ApexConsumer', (accounts) => {
 			deployedMarket = await SportPositionalMarketContract.at(answer);
 
 			assert.equal(false, await deployedMarket.canResolve());
-			assert.equal(9100, await deployedMarket.tags(0));
+			assert.equal(tagFormula1, await deployedMarket.tags(0));
 
-			/*
-			assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.getGameDetails());
-			assert.equal(2, await deployedMarket.positionCount());
-			*/
+			await expect(
+				ApexConsumerDeployed.createMarketForGame(gameid1, {
+					from: owner,
+				})
+			).to.be.revertedWith('Market for game already exists');
 		});
 	});
 
-	// describe('Fulfill Games Resolved', () => {
-	// 	it('Fulfill Games Resolved - NBA, resolve markets, check results', async () => {
-	// 		await fastForward(game1NBATime - (await currentTime()) - SECOND);
-
-	// 		// req. games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdCreate,
-	// 			gamesCreated,
-	// 			sportId_4,
-	// 			game1NBATime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-	// 		assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
-	// 		assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
-	// 		assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-	// 		assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-	// 		assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
-
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
-
-	// 		assert.equal(1, await gamesQueue.firstCreated());
-	// 		assert.equal(2, await gamesQueue.lastCreated());
-
-	// 		assert.equal(
-	// 			game_1_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-	// 		);
-	// 		assert.equal(
-	// 			game_2_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-	// 		);
-
-	// 		let game = await TherundownConsumerDeployed.gameCreated(gameid1);
-	// 		let gameTime = game.startTime;
-	// 		assert.equal('Atlanta Hawks', game.homeTeam);
-	// 		assert.equal('Charlotte Hornets', game.awayTeam);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx.logs[0], 'GameCreated', {
-	// 			_requestId: reqIdCreate,
-	// 			_sportId: sportId_4,
-	// 			_id: gameid1,
-	// 			_game: game,
-	// 		});
-
-	// 		// create markets
-	// 		const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
-
-	// 		assert.equal(2, await gamesQueue.firstCreated());
-	// 		assert.equal(2, await gamesQueue.lastCreated());
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameid1,
-	// 			_game: game,
-	// 		});
-
-	// 		let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-	// 		deployedMarket = await SportPositionalMarketContract.at(answer);
-
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		assert.equal(9004, await deployedMarket.tags(0));
-
-	// 		/*
-	// 		assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.marketQuestion());
-	// 		assert.equal(2, await deployedMarket.positionCount());
-	// 		*/
-
-	// 		await fastForward(await currentTime());
-
-	// 		assert.equal(true, await deployedMarket.canResolve());
-
-	// 		const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-	// 			reqIdResolve,
-	// 			gamesResolved,
-	// 			sportId_4,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(
-	// 			game_1_resolve,
-	// 			await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 0)
-	// 		);
-	// 		assert.equal(
-	// 			game_2_resolve,
-	// 			await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 1)
-	// 		);
-
-	// 		let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
-	// 		assert.equal(100, gameR.homeScore);
-	// 		assert.equal(129, gameR.awayScore);
-	// 		assert.equal(8, gameR.statusId);
-
-	// 		assert.eventEqual(tx_2.logs[0], 'GameResolved', {
-	// 			_requestId: reqIdResolve,
-	// 			_sportId: sportId_4,
-	// 			_id: gameid1,
-	// 			_game: gameR,
-	// 		});
-
-	// 		// resolve markets
-	// 		const tx_resolve = await TherundownConsumerDeployed.resolveAllMarketsForGames([gameid1]);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameid1,
-	// 			_outcome: 2,
-	// 		});
-
-	// 		assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
-	// 	});
-
-	// 	it('Fulfill Games Resolved - Champions League Game 1, resolve market, check results', async () => {
-	// 		await fastForward(gameFootballTime - (await currentTime()) - SECOND);
-
-	// 		// req. games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdFootballCreate,
-	// 			gamesFootballCreated,
-	// 			sportId_16,
-	// 			gameFootballTime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
-
-	// 		assert.equal(
-	// 			game_1_football_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-	// 		);
-	// 		assert.equal(
-	// 			game_2_football_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-	// 		);
-
-	// 		let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
-	// 		assert.equal('Atletico Madrid Atletico Madrid', game.homeTeam);
-	// 		assert.equal('Manchester City Manchester City', game.awayTeam);
-
-	// 		let game_per_req = await TherundownConsumerDeployed.getGameCreatedByRequestId(
-	// 			reqIdFootballCreate,
-	// 			0
-	// 		);
-	// 		assert.equal('Atletico Madrid Atletico Madrid', game_per_req.homeTeam);
-	// 		assert.equal('Manchester City Manchester City', game_per_req.awayTeam);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx.logs[0], 'GameCreated', {
-	// 			_requestId: reqIdFootballCreate,
-	// 			_sportId: sportId_16,
-	// 			_id: gameFootballid1,
-	// 			_game: game,
-	// 		});
-
-	// 		// create markets
-	// 		const tx_create = await TherundownConsumerDeployed.createAllMarketsForGames([
-	// 			gameFootballid1,
-	// 		]);
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameFootballid1,
-	// 			_game: game,
-	// 		});
-
-	// 		let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-	// 		deployedMarket = await SportPositionalMarketContract.at(answer);
-
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		assert.equal(9016, await deployedMarket.tags(0));
-
-	// 		await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
-
-	// 		assert.equal(true, await deployedMarket.canResolve());
-
-	// 		const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-	// 			reqIdResolveFoodball,
-	// 			gamesResolvedFootball,
-	// 			sportId_16,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(
-	// 			game_2_football_resolve,
-	// 			await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 1)
-	// 		);
-
-	// 		let gameR = await TherundownConsumerDeployed.gameResolved(gameFootballid1);
-	// 		assert.bnEqual(0, gameR.homeScore);
-	// 		assert.bnEqual(1, gameR.awayScore);
-	// 		assert.bnEqual(11, gameR.statusId);
-
-	// 		assert.eventEqual(tx_2.logs[0], 'GameResolved', {
-	// 			_requestId: reqIdResolveFoodball,
-	// 			_sportId: sportId_16,
-	// 			_id: gameFootballid1,
-	// 			_game: gameR,
-	// 		});
-
-	// 		// resolve markets
-	// 		const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameFootballid1);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameFootballid1,
-	// 			_outcome: 2,
-	// 		});
-	// 	});
-
-	// 	it('Fulfill Games Resolved - Champions League Game 2, resolve market, check results', async () => {
-	// 		await fastForward(gameFootballTime - (await currentTime()) - SECOND);
-
-	// 		// req games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdFootballCreate,
-	// 			gamesFootballCreated,
-	// 			sportId_16,
-	// 			gameFootballTime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
-
-	// 		assert.equal(
-	// 			game_1_football_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-	// 		);
-	// 		assert.equal(
-	// 			game_2_football_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-	// 		);
-
-	// 		let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
-	// 		assert.equal('Liverpool Liverpool', game.homeTeam);
-	// 		assert.equal('Benfica Benfica', game.awayTeam);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx.logs[1], 'GameCreated', {
-	// 			_requestId: reqIdFootballCreate,
-	// 			_sportId: sportId_16,
-	// 			_id: gameFootballid2,
-	// 			_game: game,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
-	// 		).to.be.revertedWith('Must be first in a queue');
-
-	// 		// clean first in queue
-	// 		await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
-
-	// 		// create markets
-	// 		const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameFootballid2,
-	// 			_game: game,
-	// 		});
-
-	// 		let answer = await SportPositionalMarketManager.getActiveMarketAddress('1');
-	// 		deployedMarket = await SportPositionalMarketContract.at(answer);
-
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		assert.equal(9016, await deployedMarket.tags(0));
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
-	// 		).to.be.revertedWith('Market for game already exists');
-
-	// 		await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
-
-	// 		assert.equal(true, await deployedMarket.canResolve());
-
-	// 		const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-	// 			reqIdResolveFoodball,
-	// 			gamesResolvedFootball,
-	// 			sportId_16,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(
-	// 			game_1_football_resolve,
-	// 			await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 0)
-	// 		);
-
-	// 		assert.equal(
-	// 			game_1_football_resolve,
-	// 			await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 0)
-	// 		);
-	// 		assert.equal(
-	// 			game_2_football_resolve,
-	// 			await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 1)
-	// 		);
-
-	// 		let gameR = await TherundownConsumerDeployed.gameResolved(gameFootballid2);
-	// 		assert.equal(0, gameR.homeScore);
-	// 		assert.equal(1, gameR.awayScore);
-	// 		assert.equal(11, gameR.statusId);
-
-	// 		assert.eventEqual(tx_2.logs[1], 'GameResolved', {
-	// 			_requestId: reqIdResolveFoodball,
-	// 			_sportId: sportId_16,
-	// 			_id: gameFootballid2,
-	// 			_game: gameR,
-	// 		});
-
-	// 		// resolve markets
-	// 		const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameFootballid2);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameFootballid2,
-	// 			_outcome: 2,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketForGame(gameFootballid2, { from: owner })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-
-	// 		assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
-	// 	});
-
-	// 	it('Fulfill Games Resolved - UFC, create market, resolve market, check results', async () => {
-	// 		await fastForward(fightTime - (await currentTime()) - SECOND);
-
-	// 		// req games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdFightCreate,
-	// 			fightCreated,
-	// 			sportId_7,
-	// 			fightTime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
-
-	// 		assert.equal(
-	// 			fight_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-	// 		);
-
-	// 		let fight = await TherundownConsumerDeployed.gameCreated(fightId);
-	// 		assert.equal('Clayton Carpenter', fight.homeTeam);
-	// 		assert.equal('Edgar Chairez', fight.awayTeam);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx.logs[0], 'GameCreated', {
-	// 			_requestId: reqIdFightCreate,
-	// 			_sportId: sportId_7,
-	// 			_id: fightId,
-	// 			_game: fight,
-	// 		});
-
-	// 		const tx_create = await TherundownConsumerDeployed.createMarketForGame(fightId);
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: fightId,
-	// 			_game: fight,
-	// 		});
-
-	// 		let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-	// 		deployedMarket = await SportPositionalMarketContract.at(answer);
-
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		assert.equal(9007, await deployedMarket.tags(0));
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-	// 		).to.be.revertedWith('Market for game already exists');
-
-	// 		await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-
-	// 		assert.equal(true, await deployedMarket.canResolve());
-
-	// 		const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-	// 			reqIdFightResolve,
-	// 			gamesFightResolved,
-	// 			sportId_7,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(
-	// 			game_fight_resolve,
-	// 			await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightResolve, 0)
-	// 		);
-
-	// 		let fightR = await TherundownConsumerDeployed.gameResolved(fightId);
-	// 		assert.equal(1, fightR.homeScore);
-	// 		assert.equal(0, fightR.awayScore);
-	// 		assert.equal(8, fightR.statusId);
-
-	// 		assert.eventEqual(tx_2.logs[0], 'GameResolved', {
-	// 			_requestId: reqIdFightResolve,
-	// 			_sportId: sportId_7,
-	// 			_id: fightId,
-	// 			_game: fightR,
-	// 		});
-
-	// 		// resolve markets
-	// 		const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_resolve.logs[0], 'ResolveSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: fightId,
-	// 			_outcome: 1,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-	// 	});
-
-	// 	it('Fulfill Games Resolved - UFC DRAW, create market, resolve market, check results', async () => {
-	// 		await fastForward(fightTime - (await currentTime()) - SECOND);
-
-	// 		// req games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdFightCreate,
-	// 			fightCreated,
-	// 			sportId_7,
-	// 			fightTime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
-
-	// 		assert.equal(
-	// 			fight_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-	// 		);
-
-	// 		let fight = await TherundownConsumerDeployed.gameCreated(fightId);
-	// 		assert.equal('Clayton Carpenter', fight.homeTeam);
-	// 		assert.equal('Edgar Chairez', fight.awayTeam);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx.logs[0], 'GameCreated', {
-	// 			_requestId: reqIdFightCreate,
-	// 			_sportId: sportId_7,
-	// 			_id: fightId,
-	// 			_game: fight,
-	// 		});
-
-	// 		const tx_create = await TherundownConsumerDeployed.createMarketForGame(fightId);
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: fightId,
-	// 			_game: fight,
-	// 		});
-
-	// 		let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-	// 		deployedMarket = await SportPositionalMarketContract.at(answer);
-
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		assert.equal(9007, await deployedMarket.tags(0));
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-	// 		).to.be.revertedWith('Market for game already exists');
-
-	// 		await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-
-	// 		assert.equal(true, await deployedMarket.canResolve());
-
-	// 		const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-	// 			reqIdFightResolveDraw,
-	// 			gamesFightResolvedDraw,
-	// 			sportId_7,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(
-	// 			game_fight_resolve_draw,
-	// 			await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightResolveDraw, 0)
-	// 		);
-
-	// 		let fightR = await TherundownConsumerDeployed.gameResolved(fightId);
-	// 		assert.equal(0, fightR.homeScore);
-	// 		assert.equal(0, fightR.awayScore);
-	// 		assert.equal(8, fightR.statusId);
-
-	// 		assert.eventEqual(tx_2.logs[0], 'GameResolved', {
-	// 			_requestId: reqIdFightResolveDraw,
-	// 			_sportId: sportId_7,
-	// 			_id: fightId,
-	// 			_game: fightR,
-	// 		});
-
-	// 		// resolve markets
-	// 		const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_resolve.logs[0], 'CancelSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: fightId,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-	// 	});
-
-	// 	it('Fulfill Games Resolved - game time has passed, cancel market, automaticly', async () => {
-	// 		await fastForward(fightTime - (await currentTime()) - SECOND);
-
-	// 		// req games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdFightCreate,
-	// 			fightCreated,
-	// 			sportId_7,
-	// 			fightTime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
-
-	// 		assert.equal(
-	// 			fight_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-	// 		);
-
-	// 		let fight = await TherundownConsumerDeployed.gameCreated(fightId);
-	// 		assert.equal('Clayton Carpenter', fight.homeTeam);
-	// 		assert.equal('Edgar Chairez', fight.awayTeam);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx.logs[0], 'GameCreated', {
-	// 			_requestId: reqIdFightCreate,
-	// 			_sportId: sportId_7,
-	// 			_id: fightId,
-	// 			_game: fight,
-	// 		});
-
-	// 		const tx_create = await TherundownConsumerDeployed.createMarketForGame(fightId);
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: fightId,
-	// 			_game: fight,
-	// 		});
-
-	// 		let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-	// 		deployedMarket = await SportPositionalMarketContract.at(answer);
-
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		assert.equal(9007, await deployedMarket.tags(0));
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-	// 		).to.be.revertedWith('Market for game already exists');
-
-	// 		await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-
-	// 		assert.equal(true, await deployedMarket.canResolve());
-
-	// 		const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-	// 			reqIdFightCanceled,
-	// 			gamesFightCanceled,
-	// 			sportId_7,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(
-	// 			game_fight_canceled,
-	// 			await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightCanceled, 0)
-	// 		);
-	// 		assert.equal(true, await TherundownConsumerDeployed.gameFulfilledResolved(fightId));
-
-	// 		let fightC = await TherundownConsumerDeployed.gameResolved(fightId);
-	// 		assert.equal(0, fightC.homeScore);
-	// 		assert.equal(0, fightC.awayScore);
-	// 		assert.equal(2, fightC.statusId);
-
-	// 		assert.eventEqual(tx_2.logs[0], 'GameResolved', {
-	// 			_requestId: reqIdFightCanceled,
-	// 			_sportId: sportId_7,
-	// 			_id: fightId,
-	// 			_game: fightC,
-	// 		});
-
-	// 		// resolve markets
-	// 		const tx_canceled = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_canceled.logs[0], 'CancelSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: fightId,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-	// 	});
-
-	// 	it('Fulfill Games Resolved - game time has not passed, first pause, then cancel automaticly after it is passed', async () => {
-	// 		await fastForward(fightTime - (await currentTime()) - SECOND);
-
-	// 		// req games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdFightCreate,
-	// 			fightCreated,
-	// 			sportId_7,
-	// 			fightTime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
-
-	// 		assert.equal(
-	// 			fight_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-	// 		);
-
-	// 		let fight = await TherundownConsumerDeployed.gameCreated(fightId);
-	// 		assert.equal('Clayton Carpenter', fight.homeTeam);
-	// 		assert.equal('Edgar Chairez', fight.awayTeam);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx.logs[0], 'GameCreated', {
-	// 			_requestId: reqIdFightCreate,
-	// 			_sportId: sportId_7,
-	// 			_id: fightId,
-	// 			_game: fight,
-	// 		});
-
-	// 		const tx_create = await TherundownConsumerDeployed.createMarketForGame(fightId);
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: fightId,
-	// 			_game: fight,
-	// 		});
-
-	// 		let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-	// 		deployedMarket = await SportPositionalMarketContract.at(answer);
-
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		assert.equal(false, await deployedMarket.paused());
-	// 		assert.equal(9007, await deployedMarket.tags(0));
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-	// 		).to.be.revertedWith('Market for game already exists');
-
-	// 		const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-	// 			reqIdFightCanceled,
-	// 			gamesFightCanceled,
-	// 			sportId_7,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		// not canceled part only paused
-
-	// 		assert.equal(false, await TherundownConsumerDeployed.gameFulfilledResolved(fightId));
-
-	// 		// there is no result yet
-	// 		let fightC = await TherundownConsumerDeployed.gameResolved(fightId);
-	// 		assert.equal(0, fightC.homeScore);
-	// 		assert.equal(0, fightC.awayScore);
-	// 		assert.equal(0, fightC.statusId);
-
-	// 		assert.eventEqual(tx_2.logs[0], 'PauseSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_pause: true,
-	// 		});
-
-	// 		assert.equal(true, await deployedMarket.paused());
-
-	// 		// canceling part when time has arrived
-
-	// 		await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-
-	// 		assert.equal(true, await deployedMarket.paused());
-	// 		// paused can not be resolved
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		// stil not canceled
-	// 		assert.equal(false, await deployedMarket.cancelled());
-
-	// 		const tx_3 = await TherundownConsumerDeployed.fulfillGamesResolved(
-	// 			reqIdFightCanceled,
-	// 			gamesFightCanceled,
-	// 			sportId_7,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(
-	// 			game_fight_canceled,
-	// 			await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightCanceled, 0)
-	// 		);
-	// 		assert.equal(true, await TherundownConsumerDeployed.gameFulfilledResolved(fightId));
-
-	// 		fightC = await TherundownConsumerDeployed.gameResolved(fightId);
-	// 		assert.equal(0, fightC.homeScore);
-	// 		assert.equal(0, fightC.awayScore);
-	// 		assert.equal(2, fightC.statusId);
-
-	// 		assert.eventEqual(tx_3.logs[0], 'GameResolved', {
-	// 			_requestId: reqIdFightCanceled,
-	// 			_sportId: sportId_7,
-	// 			_id: fightId,
-	// 			_game: fightC,
-	// 		});
-
-	// 		// resolve markets
-	// 		const tx_canceled = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_canceled.logs[0], 'CancelSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: fightId,
-	// 		});
-
-	// 		assert.equal(false, await deployedMarket.paused());
-	// 		assert.equal(true, await deployedMarket.cancelled());
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-	// 	});
-	// });
-
-	// describe('Game resolve/clancel Manually', () => {
-	// 	it('Resolve game 1 Manually, check results', async () => {
-	// 		await fastForward(gameFootballTime - (await currentTime()) - SECOND);
-
-	// 		// req. games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdFootballCreate,
-	// 			gamesFootballCreated,
-	// 			sportId_16,
-	// 			gameFootballTime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
-
-	// 		assert.equal(
-	// 			game_1_football_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-	// 		);
-	// 		assert.equal(
-	// 			game_2_football_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-	// 		);
-
-	// 		let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
-	// 		assert.equal('Atletico Madrid Atletico Madrid', game.homeTeam);
-	// 		assert.equal('Manchester City Manchester City', game.awayTeam);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx.logs[0], 'GameCreated', {
-	// 			_requestId: reqIdFootballCreate,
-	// 			_sportId: sportId_16,
-	// 			_id: gameFootballid1,
-	// 			_game: game,
-	// 		});
-
-	// 		// create markets
-	// 		const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameFootballid1,
-	// 			_game: game,
-	// 		});
-
-	// 		let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-	// 		deployedMarket = await SportPositionalMarketContract.at(answer);
-
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		assert.equal(9016, await deployedMarket.tags(0));
-
-	// 		await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, 1, 1, { from: second })
-	// 		).to.be.revertedWith('Address not supported');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 4, 1, 1, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 1, { from: second })
-	// 		).to.be.revertedWith('Address not supported');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, 1, 1, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 2, 1, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 1, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 1, 1, 1, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 1, 1, 2, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, 1, 1, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, 2, 1, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, 1, 2, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-
-	// 		const tx_2 = await TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, 1, 2, {
-	// 			from: third,
-	// 		});
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_2.logs[1], 'ResolveSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameFootballid1,
-	// 			_outcome: 2,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveGameManually(gameFootballid1, 2, 1, 2, { from: third })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-
-	// 		assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
-	// 	});
-
-	// 	it('Resolve market address manually, check results', async () => {
-	// 		await fastForward(gameFootballTime - (await currentTime()) - SECOND);
-
-	// 		// req games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdFootballCreate,
-	// 			gamesFootballCreated,
-	// 			sportId_16,
-	// 			gameFootballTime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
-
-	// 		assert.equal(
-	// 			game_1_football_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-	// 		);
-	// 		assert.equal(
-	// 			game_2_football_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-	// 		);
-
-	// 		let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
-	// 		assert.equal('Liverpool Liverpool', game.homeTeam);
-	// 		assert.equal('Benfica Benfica', game.awayTeam);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx.logs[1], 'GameCreated', {
-	// 			_requestId: reqIdFootballCreate,
-	// 			_sportId: sportId_16,
-	// 			_id: gameFootballid2,
-	// 			_game: game,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
-	// 		).to.be.revertedWith('Must be first in a queue');
-
-	// 		// clean first in queue
-	// 		await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
-
-	// 		// create markets
-	// 		const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameFootballid2,
-	// 			_game: game,
-	// 		});
-
-	// 		let answer = await SportPositionalMarketManager.getActiveMarketAddress('1');
-	// 		deployedMarket = await SportPositionalMarketContract.at(answer);
-
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		assert.equal(9016, await deployedMarket.tags(0));
-
-	// 		await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, { from: second })
-	// 		).to.be.revertedWith('Address not supported');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, 0, 0, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-
-	// 		const tx_2 = await TherundownConsumerDeployed.resolveMarketManually(marketAdd, 1, 2, 1, {
-	// 			from: third,
-	// 		});
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_2.logs[0], 'GameResolved', {
-	// 			_requestId: gameFootballid2,
-	// 			_sportId: 16,
-	// 			_id: gameFootballid2,
-	// 			_queueIndex: 0,
-	// 		});
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_2.logs[1], 'ResolveSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameFootballid2,
-	// 			_outcome: 1,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveGameManually(gameFootballid2, 2, 1, 2, { from: third })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, { from: third })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-
-	// 		assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
-	// 	});
-
-	// 	it('Cancel market Manually, check results', async () => {
-	// 		await fastForward(game1NBATime - (await currentTime()) - SECOND);
-
-	// 		// req. games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdCreate,
-	// 			gamesCreated,
-	// 			sportId_4,
-	// 			game1NBATime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		assert.equal(2, await gamesQueue.getLengthUnproccessedGames());
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-	// 		assert.equal(1, await gamesQueue.unproccessedGamesIndex(gameid2));
-	// 		assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid1));
-	// 		assert.equal(sportId_4, await TherundownConsumerDeployed.sportsIdPerGame(gameid2));
-	// 		assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid1));
-	// 		assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
-
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_4));
-	// 		assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
-
-	// 		assert.equal(1, await gamesQueue.firstCreated());
-	// 		assert.equal(2, await gamesQueue.lastCreated());
-
-	// 		assert.equal(
-	// 			game_1_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-	// 		);
-	// 		assert.equal(
-	// 			game_2_create,
-	// 			await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-	// 		);
-
-	// 		let game = await TherundownConsumerDeployed.gameCreated(gameid1);
-	// 		let gameTime = game.startTime;
-	// 		assert.equal('Atlanta Hawks', game.homeTeam);
-	// 		assert.equal('Charlotte Hornets', game.awayTeam);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx.logs[0], 'GameCreated', {
-	// 			_requestId: reqIdCreate,
-	// 			_sportId: sportId_4,
-	// 			_id: gameid1,
-	// 			_game: game,
-	// 		});
-
-	// 		// create markets
-	// 		const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
-
-	// 		assert.equal(2, await gamesQueue.firstCreated());
-	// 		assert.equal(2, await gamesQueue.lastCreated());
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameid1,
-	// 			_game: game,
-	// 		});
-
-	// 		let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-	// 		deployedMarket = await SportPositionalMarketContract.at(answer);
-
-	// 		assert.equal(false, await deployedMarket.canResolve());
-	// 		assert.equal(9004, await deployedMarket.tags(0));
-
-	// 		/*
-	// 		assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.marketQuestion());
-	// 		assert.equal(2, await deployedMarket.positionCount());
-	// 		*/
-
-	// 		await fastForward(await currentTime());
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: second })
-	// 		).to.be.revertedWith('Address not supported');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.cancelMarketManually(second, { from: third })
-	// 		).to.be.revertedWith('No market created for game');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, 0, 0, { from: third })
-	// 		).to.be.revertedWith('Bad result or outcome');
-
-	// 		const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(marketAdd, {
-	// 			from: third,
-	// 		});
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_2.logs[0], 'CancelSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_id: gameid1,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveGameManually(gameid1, 2, 1, 2, { from: third })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, { from: third })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-	// 		await expect(
-	// 			TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: third })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-
-	// 		assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
-	// 		assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid2));
-	// 	});
-
-	// 	it('Pause-unpause market manually, check results', async () => {
-	// 		await fastForward(game1NBATime - (await currentTime()) - SECOND);
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.pauseOrUnpauseMarketManually(dummyAddress, true, { from: third })
-	// 		).to.be.revertedWith('Game not existing');
-
-	// 		// req. games
-	// 		const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-	// 			reqIdCreate,
-	// 			gamesCreated,
-	// 			sportId_4,
-	// 			game1NBATime,
-	// 			{ from: wrapper }
-	// 		);
-
-	// 		let marketAdd_wrong = await TherundownConsumerDeployed.marketPerGameId(gameid1);
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.pauseOrUnpauseMarketManually(marketAdd_wrong, true, {
-	// 				from: third,
-	// 			})
-	// 		).to.be.revertedWith('No market address');
-
-	// 		// create markets
-	// 		const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
-
-	// 		let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.pauseOrUnpauseMarketManually(marketAdd, false, { from: third })
-	// 		).to.be.revertedWith('Already paused/unpaused');
-
-	// 		const tx_pause = await TherundownConsumerDeployed.pauseOrUnpauseMarketManually(
-	// 			marketAdd,
-	// 			true,
-	// 			{
-	// 				from: third,
-	// 			}
-	// 		);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_pause.logs[0], 'PauseSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_pause: true,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.pauseOrUnpauseMarketManually(marketAdd, true, { from: third })
-	// 		).to.be.revertedWith('Already paused/unpaused');
-
-	// 		const tx_unpause = await TherundownConsumerDeployed.pauseOrUnpauseMarketManually(
-	// 			marketAdd,
-	// 			false,
-	// 			{ from: third }
-	// 		);
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_unpause.logs[0], 'PauseSportsMarket', {
-	// 			_marketAddress: marketAdd,
-	// 			_pause: false,
-	// 		});
-
-	// 		await fastForward(await currentTime());
-
-	// 		const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(marketAdd, {
-	// 			from: third,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.pauseOrUnpauseMarketManually(marketAdd, true, { from: third })
-	// 		).to.be.revertedWith('Market resoved or canceled');
-	// 	});
-	// });
+	describe('Fulfill Game Resolved', () => {
+		it('Fulfill Game Resolved - Formula 1, resolve market (HOME WIN), check results', async () => {
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+
+			// req. create race
+			await ApexConsumerDeployed.fulfillMetaData(
+				reqIdCreateRace,
+				eventId,
+				betType,
+				eventName,
+				game1qualifyingStartTime,
+				game1raceStartTime,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+
+			// req. create game
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOdds,
+				game1awayOdds,
+				gameid1,
+				sportFormula1,
+				eventId,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
+
+			// create market
+			await ApexConsumerDeployed.createMarketForGame(gameid1, {
+				from: owner,
+			});
+			let marketAddress = await ApexConsumerDeployed.marketPerGameId(gameid1);
+			assert.equal(true, await ApexConsumerDeployed.marketCreated(marketAddress));
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+
+			await fastForward(await currentTime());
+
+			assert.equal(true, await deployedMarket.canResolve());
+
+			const txResolveGame = await ApexConsumerDeployed.fulfillResults(
+				reqIdResolveGame,
+				homeWinResult,
+				homeWinResultDetails,
+				gameid1,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledResolved(gameid1));
+
+			let gameResolved = await ApexConsumerDeployed.gameResolved(gameid1);
+			assert.equal(winScore, gameResolved.homeScore);
+			assert.equal(loseScore, gameResolved.awayScore);
+			assert.equal(statusResolved, gameResolved.statusId);
+
+			const sportId = await ApexConsumerDeployed.supportedSportId(sportFormula1);
+
+			assert.eventEqual(txResolveGame.logs[0], 'GameResolved', {
+				_requestId: reqIdResolveGame,
+				_sportId: sportId,
+				_id: gameid1,
+				_game: gameResolved,
+			});
+
+			// resolve markets
+			const txResolveMarket = await ApexConsumerDeployed.resolveMarketForGame(gameid1, {
+				from: owner,
+			});
+			assert.equal(true, await ApexConsumerDeployed.marketResolved(marketAddress));
+
+			// check if event is emited
+			assert.eventEqual(txResolveMarket.logs[0], 'ResolveSportsMarket', {
+				_marketAddress: marketAddress,
+				_id: gameid1,
+				_outcome: outcomeHomeWin,
+			});
+		});
+
+		it('Fulfill Game Resolved - Formula 1, resolve market (AWAY WIN), check results', async () => {
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+
+			// req. create race
+			await ApexConsumerDeployed.fulfillMetaData(
+				reqIdCreateRace,
+				eventId,
+				betType,
+				eventName,
+				game1qualifyingStartTime,
+				game1raceStartTime,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+
+			// req. create game
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOdds,
+				game1awayOdds,
+				gameid1,
+				sportFormula1,
+				eventId,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
+
+			// create market
+			await ApexConsumerDeployed.createMarketForGame(gameid1, {
+				from: owner,
+			});
+			let marketAddress = await ApexConsumerDeployed.marketPerGameId(gameid1);
+			assert.equal(true, await ApexConsumerDeployed.marketCreated(marketAddress));
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+
+			await fastForward(await currentTime());
+
+			assert.equal(true, await deployedMarket.canResolve());
+
+			await expect(
+				ApexConsumerDeployed.resolveMarketForGame(gameid1, {
+					from: owner,
+				})
+			).to.be.revertedWith('No such game fulfilled, resolved');
+
+			const txResolveGame = await ApexConsumerDeployed.fulfillResults(
+				reqIdResolveGame,
+				awayWinResult,
+				awayWinResultDetails,
+				gameid1,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledResolved(gameid1));
+
+			let gameResolved = await ApexConsumerDeployed.gameResolved(gameid1);
+			assert.equal(loseScore, gameResolved.homeScore);
+			assert.equal(winScore, gameResolved.awayScore);
+			assert.equal(statusResolved, gameResolved.statusId);
+
+			const sportId = await ApexConsumerDeployed.supportedSportId(sportFormula1);
+
+			assert.eventEqual(txResolveGame.logs[0], 'GameResolved', {
+				_requestId: reqIdResolveGame,
+				_sportId: sportId,
+				_id: gameid1,
+				_game: gameResolved,
+			});
+
+			// resolve markets
+			const txResolveMarket = await ApexConsumerDeployed.resolveMarketForGame(gameid1, {
+				from: owner,
+			});
+			assert.equal(true, await ApexConsumerDeployed.marketResolved(marketAddress));
+
+			// check if event is emited
+			assert.eventEqual(txResolveMarket.logs[0], 'ResolveSportsMarket', {
+				_marketAddress: marketAddress,
+				_id: gameid1,
+				_outcome: outcomeAwayWin,
+			});
+
+			await expect(
+				ApexConsumerDeployed.resolveMarketForGame(gameid1, {
+					from: owner,
+				})
+			).to.be.revertedWith('Market resolved or canceled');
+		});
+
+		it('Fulfill Game Resolved - Formula 1, resolve market (CANCEL), game time has passed, cancel market, automatically', async () => {
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+
+			// req. create race
+			await ApexConsumerDeployed.fulfillMetaData(
+				reqIdCreateRace,
+				eventId,
+				betType,
+				eventName,
+				game1qualifyingStartTime,
+				game1raceStartTime,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+
+			// req. create game
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOdds,
+				game1awayOdds,
+				gameid1,
+				sportFormula1,
+				eventId,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
+
+			// create market
+			await ApexConsumerDeployed.createMarketForGame(gameid1, {
+				from: owner,
+			});
+			let marketAddress = await ApexConsumerDeployed.marketPerGameId(gameid1);
+			assert.equal(true, await ApexConsumerDeployed.marketCreated(marketAddress));
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+
+			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
+
+			assert.equal(true, await deployedMarket.canResolve());
+
+			const txResolveGame = await ApexConsumerDeployed.fulfillResults(
+				reqIdResolveGame,
+				cancelResult,
+				cancelResultDetails,
+				gameid1,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledResolved(gameid1));
+
+			let gameResolved = await ApexConsumerDeployed.gameResolved(gameid1);
+			assert.equal(cancelScore, gameResolved.homeScore);
+			assert.equal(cancelScore, gameResolved.awayScore);
+			assert.equal(statusCancelled, gameResolved.statusId);
+
+			const sportId = await ApexConsumerDeployed.supportedSportId(sportFormula1);
+
+			assert.eventEqual(txResolveGame.logs[0], 'GameResolved', {
+				_requestId: reqIdResolveGame,
+				_sportId: sportId,
+				_id: gameid1,
+				_game: gameResolved,
+			});
+
+			// resolve markets
+			const txCancelMarket = await ApexConsumerDeployed.resolveMarketForGame(gameid1, {
+				from: owner,
+			});
+			assert.equal(false, await ApexConsumerDeployed.marketResolved(marketAddress));
+			assert.equal(true, await ApexConsumerDeployed.marketCanceled(marketAddress));
+
+			// check if event is emited
+			assert.eventEqual(txCancelMarket.logs[0], 'CancelSportsMarket', {
+				_marketAddress: marketAddress,
+				_id: gameid1,
+			});
+
+			await expect(
+				ApexConsumerDeployed.resolveMarketForGame(gameid1, {
+					from: owner,
+				})
+			).to.be.revertedWith('Market resolved or canceled');
+		});
+
+		it('Fulfill Game Resolved - Formula 1, resolve market (CANCEL), game time has not passed, first pause, then cancel automatically after it is passed', async () => {
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+
+			// req. create race
+			await ApexConsumerDeployed.fulfillMetaData(
+				reqIdCreateRace,
+				eventId,
+				betType,
+				eventName,
+				game1qualifyingStartTime,
+				game1raceStartTime,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+
+			// req. create game
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOdds,
+				game1awayOdds,
+				gameid1,
+				sportFormula1,
+				eventId,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
+
+			// create market
+			await ApexConsumerDeployed.createMarketForGame(gameid1, {
+				from: owner,
+			});
+			let marketAddress = await ApexConsumerDeployed.marketPerGameId(gameid1);
+			assert.equal(true, await ApexConsumerDeployed.marketCreated(marketAddress));
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(false, await deployedMarket.paused());
+
+			const txResolveGame = await ApexConsumerDeployed.fulfillResults(
+				reqIdResolveGame,
+				cancelResult,
+				cancelResultDetails,
+				gameid1,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			// not canceled part only paused
+			assert.equal(false, await ApexConsumerDeployed.gameFulfilledResolved(gameid1));
+
+			// there is no result yet
+			let gameResolved = await ApexConsumerDeployed.gameResolved(gameid1);
+			assert.equal(0, gameResolved.homeScore);
+			assert.equal(0, gameResolved.awayScore);
+			assert.equal(0, gameResolved.statusId);
+
+			assert.eventEqual(txResolveGame.logs[0], 'PauseSportsMarket', {
+				_marketAddress: marketAddress,
+				_pause: true,
+			});
+
+			assert.equal(true, await deployedMarket.paused());
+
+			// canceling part when time has arrived
+			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
+
+			// paused
+			assert.equal(true, await deployedMarket.paused());
+			// paused can not be resolved
+			assert.equal(false, await deployedMarket.canResolve());
+			// stil not canceled
+			assert.equal(false, await deployedMarket.cancelled());
+
+			const txSecondResolveGame = await ApexConsumerDeployed.fulfillResults(
+				reqIdResolveGame,
+				cancelResult,
+				cancelResultDetails,
+				gameid1,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledResolved(gameid1));
+
+			gameResolved = await ApexConsumerDeployed.gameResolved(gameid1);
+			assert.equal(cancelScore, gameResolved.homeScore);
+			assert.equal(cancelScore, gameResolved.awayScore);
+			assert.equal(statusCancelled, gameResolved.statusId);
+
+			const sportId = await ApexConsumerDeployed.supportedSportId(sportFormula1);
+
+			assert.eventEqual(txSecondResolveGame.logs[0], 'GameResolved', {
+				_requestId: reqIdResolveGame,
+				_sportId: sportId,
+				_id: gameid1,
+				_game: gameResolved,
+			});
+
+			// resolve markets
+			const txCancelMarket = await ApexConsumerDeployed.resolveMarketForGame(gameid1, {
+				from: owner,
+			});
+			assert.equal(false, await ApexConsumerDeployed.marketResolved(marketAddress));
+			assert.equal(true, await ApexConsumerDeployed.marketCanceled(marketAddress));
+
+			// check if event is emited
+			assert.eventEqual(txCancelMarket.logs[0], 'CancelSportsMarket', {
+				_marketAddress: marketAddress,
+				_id: gameid1,
+			});
+
+			assert.equal(false, await deployedMarket.paused());
+			assert.equal(true, await deployedMarket.cancelled());
+
+			await expect(
+				ApexConsumerDeployed.resolveMarketForGame(gameid1, {
+					from: owner,
+				})
+			).to.be.revertedWith('Market resolved or canceled');
+		});
+	});
+
+	describe('Game resolve/cancel manually', () => {
+		it('Resolve game manually, check results', async () => {
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+
+			// req. create race
+			await ApexConsumerDeployed.fulfillMetaData(
+				reqIdCreateRace,
+				eventId,
+				betType,
+				eventName,
+				game1qualifyingStartTime,
+				game1raceStartTime,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+
+			// req. create game
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOdds,
+				game1awayOdds,
+				gameid1,
+				sportFormula1,
+				eventId,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
+
+			// create market
+			await ApexConsumerDeployed.createMarketForGame(gameid1, {
+				from: owner,
+			});
+			let marketAddress = await ApexConsumerDeployed.marketPerGameId(gameid1);
+			assert.equal(true, await ApexConsumerDeployed.marketCreated(marketAddress));
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+
+			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
+
+			assert.equal(true, await deployedMarket.canResolve());
+
+			await expect(
+				ApexConsumerDeployed.resolveGameManually(gameid1, 2, 1, 1, { from: second })
+			).to.be.revertedWith('Address not supported');
+			await expect(
+				ApexConsumerDeployed.resolveGameManually(gameid1, 4, 1, 1, { from: third })
+			).to.be.revertedWith('Bad result or outcome');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(marketAddress, 2, 1, 1, { from: second })
+			).to.be.revertedWith('Address not supported');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(marketAddress, 4, 1, 1, { from: third })
+			).to.be.revertedWith('Bad result or outcome');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(marketAddress, 2, 2, 1, { from: third })
+			).to.be.revertedWith('Bad result or outcome');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(marketAddress, 2, 1, 1, { from: third })
+			).to.be.revertedWith('Bad result or outcome');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(marketAddress, 1, 1, 1, { from: third })
+			).to.be.revertedWith('Bad result or outcome');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(marketAddress, 1, 1, 2, { from: third })
+			).to.be.revertedWith('Bad result or outcome');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(marketAddress, 0, 1, 1, { from: third })
+			).to.be.revertedWith('Bad result or outcome');
+			await expect(
+				ApexConsumerDeployed.resolveGameManually(gameid2, outcomeAwayWin, loseScore, winScore, {
+					from: third,
+				})
+			).to.be.revertedWith('No market created for game');
+
+			const txResolveGame = await ApexConsumerDeployed.resolveGameManually(
+				gameid1,
+				outcomeAwayWin,
+				loseScore,
+				winScore,
+				{
+					from: third,
+				}
+			);
+
+			const sportId = await ApexConsumerDeployed.supportedSportId(sportFormula1);
+
+			// check if event is emited
+			assert.eventEqual(txResolveGame.logs[0], 'GameResolved', {
+				_requestId: gameid1,
+				_sportId: sportId,
+				_id: gameid1,
+			});
+
+			// check if event is emited
+			assert.eventEqual(txResolveGame.logs[1], 'ResolveSportsMarket', {
+				_marketAddress: marketAddress,
+				_id: gameid1,
+				_outcome: outcomeAwayWin,
+			});
+
+			await expect(
+				ApexConsumerDeployed.resolveGameManually(gameid1, outcomeAwayWin, loseScore, winScore, {
+					from: third,
+				})
+			).to.be.revertedWith('Market resolved or canceled');
+		});
+
+		it('Resolve market address manually, check results', async () => {
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+
+			// req. create race
+			await ApexConsumerDeployed.fulfillMetaData(
+				reqIdCreateRace,
+				eventId,
+				betType,
+				eventName,
+				game1qualifyingStartTime,
+				game1raceStartTime,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+
+			// req. create game
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOdds,
+				game1awayOdds,
+				gameid1,
+				sportFormula1,
+				eventId,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
+
+			// create market
+			await ApexConsumerDeployed.createMarketForGame(gameid1, {
+				from: owner,
+			});
+			let marketAddress = await ApexConsumerDeployed.marketPerGameId(gameid1);
+			assert.equal(true, await ApexConsumerDeployed.marketCreated(marketAddress));
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+
+			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
+
+			assert.equal(true, await deployedMarket.canResolve());
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(marketAddress, 2, 1, 2, { from: second })
+			).to.be.revertedWith('Address not supported');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(marketAddress, 4, 0, 0, { from: third })
+			).to.be.revertedWith('Bad result or outcome');
+			await expect(
+				ApexConsumerDeployed.resolveGameManually(gameid2, outcomeHomeWin, winScore, loseScore, {
+					from: third,
+				})
+			).to.be.revertedWith('No market created for game');
+
+			const txResolveMarket = await ApexConsumerDeployed.resolveMarketManually(
+				marketAddress,
+				outcomeHomeWin,
+				winScore,
+				loseScore,
+				{
+					from: third,
+				}
+			);
+
+			const sportId = await ApexConsumerDeployed.supportedSportId(sportFormula1);
+
+			// check if event is emited
+			assert.eventEqual(txResolveMarket.logs[0], 'GameResolved', {
+				_requestId: gameid1,
+				_sportId: sportId,
+				_id: gameid1,
+			});
+
+			// check if event is emited
+			assert.eventEqual(txResolveMarket.logs[1], 'ResolveSportsMarket', {
+				_marketAddress: marketAddress,
+				_id: gameid1,
+				_outcome: outcomeHomeWin,
+			});
+
+			await expect(
+				ApexConsumerDeployed.resolveGameManually(gameid1, outcomeHomeWin, winScore, loseScore, {
+					from: third,
+				})
+			).to.be.revertedWith('Market resolved or canceled');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(
+					marketAddress,
+					outcomeHomeWin,
+					winScore,
+					loseScore,
+					{ from: third }
+				)
+			).to.be.revertedWith('Market resolved or canceled');
+		});
+
+		it('Cancel market manually, check results', async () => {
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+
+			// req. create race
+			await ApexConsumerDeployed.fulfillMetaData(
+				reqIdCreateRace,
+				eventId,
+				betType,
+				eventName,
+				game1qualifyingStartTime,
+				game1raceStartTime,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+
+			// req. create game
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOdds,
+				game1awayOdds,
+				gameid1,
+				sportFormula1,
+				eventId,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
+
+			// create market
+			await ApexConsumerDeployed.createMarketForGame(gameid1, {
+				from: owner,
+			});
+			let marketAddress = await ApexConsumerDeployed.marketPerGameId(gameid1);
+			assert.equal(true, await ApexConsumerDeployed.marketCreated(marketAddress));
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+
+			await fastForward(await currentTime());
+
+			await expect(
+				ApexConsumerDeployed.cancelMarketManually(marketAddress, { from: second })
+			).to.be.revertedWith('Address not supported');
+			await expect(
+				ApexConsumerDeployed.cancelMarketManually(second, { from: third })
+			).to.be.revertedWith('No market created for game');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(marketAddress, 3, 0, 0, { from: third })
+			).to.be.revertedWith('Bad result or outcome');
+
+			const txCancelMarket = await ApexConsumerDeployed.cancelMarketManually(marketAddress, {
+				from: third,
+			});
+
+			// check if event is emited
+			assert.eventEqual(txCancelMarket.logs[0], 'CancelSportsMarket', {
+				_marketAddress: marketAddress,
+				_id: gameid1,
+			});
+
+			await expect(
+				ApexConsumerDeployed.resolveGameManually(gameid1, outcomeHomeWin, winScore, loseScore, {
+					from: third,
+				})
+			).to.be.revertedWith('Market resolved or canceled');
+			await expect(
+				ApexConsumerDeployed.resolveMarketManually(
+					marketAddress,
+					outcomeHomeWin,
+					winScore,
+					loseScore,
+					{
+						from: third,
+					}
+				)
+			).to.be.revertedWith('Market resolved or canceled');
+			await expect(
+				ApexConsumerDeployed.cancelMarketManually(marketAddress, { from: third })
+			).to.be.revertedWith('Market resolved or canceled');
+		});
+	});
 
 	// describe('Odds for game', () => {
 	// 	it('Get odds per game, check results, geme not created, no odds created', async () => {
@@ -1754,109 +1340,67 @@ contract('ApexConsumer', (accounts) => {
 	// 	});
 	// });
 
-	// describe('Consumer management', () => {
-	// 	it('Test owner functions', async () => {
-	// 		const tx_SupportedSport = await TherundownConsumerDeployed.setSupportedSport(15, true, {
-	// 			from: owner,
-	// 		});
+	describe('Consumer management', () => {
+		it('Test owner functions', async () => {
+			// ====== setSupportedSport ======
+			await expect(
+				ApexConsumerDeployed.setSupportedSport(sportFootball, false, { from: wrapper })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+			await expect(
+				ApexConsumerDeployed.setSupportedSport(sportFormula1, true, { from: owner })
+			).to.be.revertedWith('Already set');
 
-	// 		await expect(
-	// 			TherundownConsumerDeployed.setSupportedSport(15, false, { from: wrapper })
-	// 		).to.be.revertedWith('Only the contract owner may perform this action');
+			const txSupportedSport = await ApexConsumerDeployed.setSupportedSport(sportFootball, true, {
+				from: owner,
+			});
+			// check if event is emited
+			assert.eventEqual(txSupportedSport.logs[0], 'SupportedSportsChanged', {
+				_sport: sportFootball,
+				_isSupported: true,
+			});
+			assert.equal(true, await ApexConsumerDeployed.isSupportedSport(sportFootball));
 
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_SupportedSport.logs[0], 'SupportedSportsChanged', {
-	// 			_sportId: 15,
-	// 			_isSupported: true,
-	// 		});
+			// ====== setSportContracts ======
+			await expect(
+				ApexConsumerDeployed.setSportContracts(first, second, { from: wrapper })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+			await expect(
+				ApexConsumerDeployed.setSportContracts(ZERO_ADDRESS, ZERO_ADDRESS, {
+					from: owner,
+				})
+			).to.be.revertedWith('Invalid addreses');
 
-	// 		const tx_SupportedResolvedStatuses = await TherundownConsumerDeployed.setSupportedResolvedStatuses(
-	// 			15,
-	// 			true,
-	// 			{
-	// 				from: owner,
-	// 			}
-	// 		);
+			const txSportsManager = await ApexConsumerDeployed.setSportContracts(first, second, {
+				from: owner,
+			});
+			// check if event is emited
+			assert.eventEqual(txSportsManager.logs[0], 'NewSportContracts', {
+				_wrapperAddress: first,
+				_sportsManager: second,
+			});
+			assert.equal(first, await ApexConsumerDeployed.wrapperAddress());
+			assert.equal(second, await ApexConsumerDeployed.sportsManager());
 
-	// 		await expect(
-	// 			TherundownConsumerDeployed.setSupportedResolvedStatuses(15, false, { from: wrapper })
-	// 		).to.be.revertedWith('Only the contract owner may perform this action');
+			// ====== addToWhitelist ======
+			await expect(
+				ApexConsumerDeployed.addToWhitelist(first, false, { from: wrapper })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+			await expect(
+				ApexConsumerDeployed.addToWhitelist(owner, true, { from: owner })
+			).to.be.revertedWith('Already set to that flag');
+			await expect(
+				ApexConsumerDeployed.addToWhitelist(ZERO_ADDRESS, true, { from: owner })
+			).to.be.revertedWith('Invalid address');
 
-	// 		await expect(
-	// 			TherundownConsumerDeployed.setSupportedResolvedStatuses(15, true, { from: owner })
-	// 		).to.be.revertedWith('Already set');
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_SupportedResolvedStatuses.logs[0], 'SupportedResolvedStatusChanged', {
-	// 			_status: 15,
-	// 			_isSupported: true,
-	// 		});
-
-	// 		const tx_SupportedCancelStatuses = await TherundownConsumerDeployed.setSupportedCancelStatuses(
-	// 			15,
-	// 			true,
-	// 			{
-	// 				from: owner,
-	// 			}
-	// 		);
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.setSupportedCancelStatuses(15, false, { from: wrapper })
-	// 		).to.be.revertedWith('Only the contract owner may perform this action');
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.setSupportedCancelStatuses(15, true, { from: owner })
-	// 		).to.be.revertedWith('Already set');
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_SupportedCancelStatuses.logs[0], 'SupportedCancelStatusChanged', {
-	// 			_status: 15,
-	// 			_isSupported: true,
-	// 		});
-
-	// 		const tx_twoPositionSport = await TherundownConsumerDeployed.setTwoPositionSport(15, true, {
-	// 			from: owner,
-	// 		});
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.setTwoPositionSport(15, false, { from: wrapper })
-	// 		).to.be.revertedWith('Only the contract owner may perform this action');
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.setTwoPositionSport(15, true, { from: owner })
-	// 		).to.be.revertedWith('Invalid input');
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_twoPositionSport.logs[0], 'TwoPositionSportChanged', {
-	// 			_sportId: 15,
-	// 			_isTwoPosition: true,
-	// 		});
-
-	// 		const tx_SportsManager = await TherundownConsumerDeployed.setSportContracts(
-	// 			wrapper,
-	// 			wrapper,
-	// 			wrapper,
-	// 			{
-	// 				from: owner,
-	// 			}
-	// 		);
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.setSportContracts(wrapper, wrapper, wrapper, { from: wrapper })
-	// 		).to.be.revertedWith('Only the contract owner may perform this action');
-
-	// 		await expect(
-	// 			TherundownConsumerDeployed.setSportContracts(ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS, {
-	// 				from: owner,
-	// 			})
-	// 		).to.be.revertedWith('Invalid addreses');
-
-	// 		// check if event is emited
-	// 		assert.eventEqual(tx_SportsManager.logs[0], 'NewSportContracts', {
-	// 			_wrapperAddress: wrapper,
-	// 			_queues: wrapper,
-	// 			_sportsManager: wrapper,
-	// 		});
-	// 	});
-	// });
+			const txAddToWhitelist = await ApexConsumerDeployed.addToWhitelist(first, true, {
+				from: owner,
+			});
+			// check if event is emited
+			assert.eventEqual(txAddToWhitelist.logs[0], 'AddedIntoWhitelist', {
+				_whitelistAddress: first,
+				_flag: true,
+			});
+			assert.equal(true, await ApexConsumerDeployed.whitelistedAddresses(first));
+		});
+	});
 });

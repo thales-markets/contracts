@@ -959,7 +959,7 @@ contract('Exotic Positional market', async (accounts) => {
 					testUSDC.address,
 					testUSDT.address,
 					false,
-					0,
+					toUnit(0.02),
 					{ from: manager }
 				);
 
@@ -988,7 +988,7 @@ contract('Exotic Positional market', async (accounts) => {
 					testUSDC.address,
 					testUSDT.address,
 					true,
-					0,
+					toUnit(0.02),
 					{ from: manager }
 				);
 

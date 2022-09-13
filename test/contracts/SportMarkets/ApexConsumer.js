@@ -486,6 +486,76 @@ contract('ApexConsumer', (accounts) => {
 				})
 			).to.be.revertedWith('Market for game already exists');
 		});
+
+		it('Fulfill Game Created - game not created', async () => {
+			// no race created
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOdds,
+				game1awayOdds,
+				gameid1,
+				sportFormula1,
+				eventId,
+				{ from: wrapper }
+			);
+			assert.equal(false, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+			assert.equal(false, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
+
+			// race in the past
+			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
+			await ApexConsumerDeployed.fulfillMetaData(
+				reqIdCreateRace,
+				eventId,
+				betType,
+				eventName,
+				game1qualifyingStartTime,
+				game1raceStartTime,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOdds,
+				game1awayOdds,
+				gameid1,
+				sportFormula1,
+				eventId,
+				{ from: wrapper }
+			);
+			assert.equal(false, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+			assert.equal(false, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
+
+			// invalid odds
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+			await ApexConsumerDeployed.fulfillMetaData(
+				reqIdCreateRace,
+				eventId,
+				betType,
+				eventName,
+				game1qualifyingStartTime,
+				game1raceStartTime,
+				sportFormula1,
+				{ from: wrapper }
+			);
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				invalidOdds,
+				game1awayOdds,
+				gameid1,
+				sportFormula1,
+				eventId,
+				{ from: wrapper }
+			);
+			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
+			assert.equal(false, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
+		});
 	});
 
 	describe('Fulfill Game Resolved', () => {

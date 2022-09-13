@@ -137,20 +137,20 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint256 _raceStartTime,
         string memory _sport
     ) external onlyWrapper {
-        //if (_qualifying_start_time > block.timestamp) {
-        RaceCreate memory race;
+        if (_qualifyingStartTime > block.timestamp) {
+            RaceCreate memory race;
 
-        race.raceId = _eventId;
-        race.eventId = _eventId;
-        race.eventName = _eventName;
-        race.betType = _betType;
-        race.qualifyingStartTime = _qualifyingStartTime;
-        race.startTime = _raceStartTime;
+            race.raceId = _eventId;
+            race.eventId = _eventId;
+            race.eventName = _eventName;
+            race.betType = _betType;
+            race.qualifyingStartTime = _qualifyingStartTime;
+            race.startTime = _raceStartTime;
 
-        latestRaceIdPerSport[_sport] = race.raceId;
+            latestRaceIdPerSport[_sport] = race.raceId;
 
-        _createRaceFulfill(_requestId, race, supportedSportId[_sport]);
-        //}
+            _createRaceFulfill(_requestId, race, supportedSportId[_sport]);
+        }
     }
 
     /// @notice Fulfill all matchup data necessary to create sport markets
@@ -171,30 +171,35 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         string memory _sport,
         string memory _eventId
     ) external onlyWrapper {
-        if (!gameFulfilledCreated[_gameId] && raceFulfilledCreated[_eventId]) {
+        if (raceFulfilledCreated[_eventId]) {
             RaceCreate memory race = raceCreated[_eventId];
 
-            //if (race.qualifyingStartTime > block.timestamp) {
-            GameCreate memory game;
+            if (race.qualifyingStartTime > block.timestamp) {
+                GameOdds memory newGameOdds;
+                newGameOdds.gameId = _gameId;
+                newGameOdds.homeOdds = _probA;
+                newGameOdds.awayOdds = _probB;
 
-            game.gameId = _gameId;
-            game.homeOdds = _probA;
-            game.awayOdds = _probB;
-            game.homeTeam = _betTypeDetail1;
-            game.awayTeam = _betTypeDetail2;
-            game.raceId = _eventId;
-            game.startTime = race.qualifyingStartTime;
+                if (!gameFulfilledCreated[_gameId]) {
+                    if (_areOddsValid(newGameOdds)) {
+                        GameCreate memory game;
 
-            _createGameFulfill(_requestId, game, supportedSportId[_sport]);
-            //}
+                        game.gameId = _gameId;
+                        game.homeOdds = _probA;
+                        game.awayOdds = _probB;
+                        game.homeTeam = _betTypeDetail1;
+                        game.awayTeam = _betTypeDetail2;
+                        game.raceId = _eventId;
+                        game.startTime = race.qualifyingStartTime;
+
+                        _createGameFulfill(_requestId, game, supportedSportId[_sport]);
+                        _oddsGameFulfill(_requestId, newGameOdds);
+                    }
+                } else {
+                    _oddsGameFulfill(_requestId, newGameOdds);
+                }
+            }
         }
-
-        GameOdds memory newGameOdds;
-        newGameOdds.gameId = _gameId;
-        newGameOdds.homeOdds = _probA;
-        newGameOdds.awayOdds = _probB;
-
-        _oddsGameFulfill(_requestId, newGameOdds);
     }
 
     /// @notice Fulfill all data necessary to resolve sport markets
@@ -348,15 +353,6 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         return _isGameStatusResolved(getGameResolvedById(_gameId));
     }
 
-    /// @notice View function which returns outcome of a game based on ID
-    /// @param _gameId unique game identifier for which result is looking
-    /// @return _result returns 1: home win, 2: away win
-    function getResult(bytes32 _gameId) external view returns (uint _result) {
-        if (isGameInResolvedStatus(_gameId)) {
-            return _calculateOutcome(getGameResolvedById(_gameId));
-        }
-    }
-
     /// @notice View function which returns if game is provided by Apex
     /// @param _gameId unique game identifier for which result is looking
     /// @return bool is game provided by Apex
@@ -463,8 +459,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         sportsManager.createMarket(
             _gameId,
             _append(game.homeTeam, game.awayTeam), // gameLabel
-            block.timestamp + 600,
-            //game.startTime, //maturity
+            game.startTime, //maturity
             0, //initialMint
             NUMBER_OF_POSITIONS,
             tags //tags

@@ -326,6 +326,39 @@
         "internalType": "uint256",
         "name": "_additionalSlippage",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_expectedPayout",
+        "type": "uint256"
+      }
+    ],
+    "name": "buyFromParlay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sUSDPaid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_additionalSlippage",
+        "type": "uint256"
       }
     ],
     "name": "buyParlay",
@@ -369,6 +402,70 @@
     "name": "buyParlayWithDifferentCollateralAndReferrer",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sUSDPaid",
+        "type": "uint256"
+      }
+    ],
+    "name": "buyQuoteFromParlay",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "sUSDAfterFees",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "initialTotalAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewImpact",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "ammToInvest",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "finalQuotes",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "amountsToBuy",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {

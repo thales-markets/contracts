@@ -54,6 +54,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     address public usdc;
     address public usdt;
     address public dai;
+    uint public maxAllowedPegSlippagePercentage;
 
     function initialize(address _owner) public initializer {
         setOwner(_owner);
@@ -285,6 +286,15 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
             require(curveIndex > 0 && curveOnrampEnabled, "unsupported collateral");
 
             uint collateralQuote = getCurveQuoteForDifferentCollateral(_amount, collateral, true);
+
+            uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
+                ? collateralQuote.mul(1e12)
+                : collateralQuote;
+            require(
+                maxAllowedPegSlippagePercentage > 0 &&
+                    transformedCollateralForPegCheck >= _amount.mul(ONE.sub(maxAllowedPegSlippagePercentage)).div(ONE),
+                "Amount below max allowed peg slippage"
+            );
             require(collateralQuote.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high!");
             require(IERC20Upgradeable(collateral).balanceOf(_account) >= collateralQuote, "Sender balance low");
             require(
@@ -344,12 +354,14 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
     /// @param _usdc USDC address
     /// @param _usdt USDT addresss
     /// @param _curveOnrampEnabled whether AMM supports curve onramp
+    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
     function setCurveSUSD(
         address _curveSUSD,
         address _dai,
         address _usdc,
         address _usdt,
-        bool _curveOnrampEnabled
+        bool _curveOnrampEnabled,
+        uint _maxAllowedPegSlippagePercentage
     ) external onlyOwner {
         curveSUSD = ICurveSUSD(_curveSUSD);
         dai = _dai;
@@ -362,6 +374,7 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         IERC20Upgradeable(marketManager.paymentToken()).approve(_curveSUSD, MAX_APPROVAL);
 
         curveOnrampEnabled = _curveOnrampEnabled;
+        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
     function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {

@@ -151,6 +151,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused {
+        require(_maturity > block.timestamp, "Maturity must be in a future");
         times = Times(_maturity, _expiry);
         emit DatesUpdated(_maturity, _expiry);
     }

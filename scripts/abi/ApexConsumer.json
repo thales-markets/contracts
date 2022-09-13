@@ -1601,34 +1601,6 @@
         "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_outcome",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint8",
-        "name": "_homeScore",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint8",
-        "name": "_awayScore",
-        "type": "uint8"
-      }
-    ],
-    "name": "resolveGameManually",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
       }
     ],
     "name": "resolveMarketForGame",

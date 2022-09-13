@@ -255,20 +255,6 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         _resolveMarket(_gameId);
     }
 
-    /// @notice Resolve market for a given game ID
-    /// @param _gameId unique game identifier
-    /// @param _outcome outcome of the game (1: home win, 2: away win, 0: cancel market)
-    /// @param _homeScore score of home team
-    /// @param _awayScore score of away team
-    function resolveGameManually(
-        bytes32 _gameId,
-        uint _outcome,
-        uint8 _homeScore,
-        uint8 _awayScore
-    ) external isAddressWhitelisted canGameBeResolved(_gameId, _outcome, _homeScore, _awayScore) {
-        _resolveMarketManually(marketPerGameId[_gameId], _outcome, _homeScore, _awayScore);
-    }
-
     /// @notice Resolve market for a given market address
     /// @param _market market address
     /// @param _outcome outcome of a game (1: home win, 2: away win, 0: cancel market)
@@ -442,7 +428,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
-        // if odds are valid store them if not pause market
+        // if odds are valid store them if not pause market if created
         if (_areOddsValid(_game)) {
             gameOdds[_game.gameId] = _game;
 
@@ -462,9 +448,9 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
             ) {
                 invalidOdds[marketPerGameId[_game.gameId]] = true;
                 _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
-            }
 
-            emit InvalidOddsForMarket(requestId, marketPerGameId[_game.gameId], _game.gameId, _game);
+                emit InvalidOddsForMarket(requestId, marketPerGameId[_game.gameId], _game.gameId, _game);
+            }
         }
     }
 
@@ -530,7 +516,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         );
 
         emit GameResolved(
-            gameIdPerMarket[_market],
+            gameIdPerMarket[_market], // no req. from CL (manual resolve) so just put gameID
             sportsIdPerGame[gameIdPerMarket[_market]],
             gameIdPerMarket[_market],
             gameResolved[gameIdPerMarket[_market]]
@@ -568,10 +554,6 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint[] memory result = new uint[](1);
         result[0] = MIN_TAG_NUMBER + _sportsId;
         return result;
-    }
-
-    function _isGameReadyToBeResolved(GameResolve memory _game) internal pure returns (bool) {
-        return _isGameStatusResolved(_game) || _isGameStatusCancelled(_game);
     }
 
     function _isGameStatusResolved(GameResolve memory _game) internal pure returns (bool) {
@@ -651,7 +633,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     modifier isAddressWhitelisted() {
-        require(whitelistedAddresses[msg.sender], "Address not supported");
+        require(whitelistedAddresses[msg.sender], "Invalid caller");
         _;
     }
 
@@ -673,15 +655,6 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
             _isValidOutcomeForGame(_outcome) && _isValidOutcomeWithResult(_outcome, _homeScore, _awayScore),
             "Bad result or outcome"
         );
-        _;
-    }
-
-    modifier canGameBePaused(address _market, bool _pause) {
-        require(_market != address(0), "No market address");
-        require(gameFulfilledCreated[gameIdPerMarket[_market]], "Game not existing");
-        require(gameIdPerMarket[_market] != 0, "Market not existing");
-        require(!isGameResolvedOrCanceled(gameIdPerMarket[_market]), "Market resolved or canceled");
-        require(sportsManager.isMarketPaused(_market) != _pause, "Already paused/unpaused");
         _;
     }
 

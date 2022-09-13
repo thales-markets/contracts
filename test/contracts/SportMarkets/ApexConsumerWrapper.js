@@ -165,6 +165,24 @@ contract('ApexConsumerWrapper', (accounts) => {
 					from: second,
 				})
 			).to.be.revertedWith('Sport is not supported');
+
+			await expect(
+				wrapper.requestMetaData('formula1', {
+					from: second,
+				})
+			).to.be.revertedWith('SafeMath: subtraction overflow');
+
+			await expect(
+				wrapper.requestMatchup('f1r_16_22', '10', {
+					from: second,
+				})
+			).to.be.revertedWith('SafeMath: subtraction overflow');
+
+			await expect(
+				wrapper.requestResults('f1r_16_22', '10', {
+					from: second,
+				})
+			).to.be.revertedWith('SafeMath: subtraction overflow');
 		});
 	});
 });

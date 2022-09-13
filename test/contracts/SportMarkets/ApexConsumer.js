@@ -1198,24 +1198,6 @@ contract('ApexConsumer', (accounts) => {
 	});
 
 	describe('Odds for game', () => {
-		it('Get odds per game, check results, geme not created, no odds created', async () => {
-			// req. games
-			const tx = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds,
-				oddsResultArray,
-				game1NBATime,
-				{
-					from: wrapper,
-				}
-			);
-
-			// game not created so zero odds
-			let result = await TherundownConsumerDeployed.getOddsForGame(oddsid);
-			assert.bnEqual(0, result[0]);
-			assert.bnEqual(0, result[0]);
-			assert.bnEqual(0, result[0]);
-		});
-
 		it('Get odds per game, check results, valid odds', async () => {
 			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
 

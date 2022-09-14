@@ -196,6 +196,14 @@ contract('SportsAMM', (accounts) => {
 			SportPositionalMarketFactory.address,
 			{ from: manager }
 		);
+		await SportPositionalMarketManager.setWhitelistAddress(third, true, {
+			from: manager,
+		});
+
+		await SportPositionalMarketManager.setWhitelistedAddressesForAll([first, second], true, {
+			from: manager,
+		});
+
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
@@ -1519,10 +1527,24 @@ contract('SportsAMM', (accounts) => {
 		});
 
 		it('Pause market', async () => {
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(first), true);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(second), true);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(third), true);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(fourth), false);
+
+			await expect(
+				SportPositionalMarketManager.setMarketPaused(deployedMarket.address, true, { from: fourth })
+			).to.be.revertedWith('Invalid caller');
+
 			await SportPositionalMarketManager.setMarketPaused(deployedMarket.address, true);
 			answer = await SportsAMM.isMarketInAMMTrading(deployedMarket.address);
-			// assert.equal(answer, false);
 			assert.equal(answer, false);
+
+			await SportPositionalMarketManager.setMarketPaused(deployedMarket.address, false, {
+				from: third,
+			});
+			answer = await SportsAMM.isMarketInAMMTrading(deployedMarket.address);
+			assert.equal(answer, true);
 		});
 
 		it('Get odds', async () => {

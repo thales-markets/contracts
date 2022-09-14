@@ -585,19 +585,6 @@
   {
     "inputs": [
       {
-        "internalType": "contract IERC20Upgradeable",
-        "name": "_sUSD",
-        "type": "address"
-      }
-    ],
-    "name": "setSUSD",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "contract IThalesAMM",
         "name": "_thalesAMM",
         "type": "address"

@@ -207,13 +207,6 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit ThalesAMMChanged(address(_thalesAMM));
     }
 
-    /// @notice Set sUSD token contract
-    /// @param _sUSD sUSD token address
-    function setSUSD(IERC20Upgradeable _sUSD) external onlyOwner {
-        sUSD = _sUSD;
-        emit SetSUSD(address(sUSD));
-    }
-
     /* ========== INTERNAL FUNCTIONS ========== */
 
     /// @notice Calculate user balance in a round based on vaults' PnL

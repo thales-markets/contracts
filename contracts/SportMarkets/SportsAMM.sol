@@ -103,9 +103,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return Curve usage is enabled?
     bool public curveOnrampEnabled;
 
-    /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
-    uint public maxAllowedPegSlippagePercentage;
-
     /// @return Referrals contract address
     address public referrals;
 
@@ -117,6 +114,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /// @return The address of Apex Consumer
     address public apexConsumer;
+
+    /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
+    uint public maxAllowedPegSlippagePercentage;
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions

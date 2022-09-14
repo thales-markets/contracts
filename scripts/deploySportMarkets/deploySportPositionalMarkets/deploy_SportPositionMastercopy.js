@@ -63,7 +63,12 @@ async function main() {
 	// await delay(5000);
 	// await SportMarketManagerDeployed.setPositionalMarketFactory(SportMarketFactoryDeployed.address, {from: owner.address});
 	await delay(5000);
-	if (networkObj.chainId == 69 || networkObj.chainId == 42) {
+	if (
+		networkObj.chainId == 69 ||
+		networkObj.chainId == 42 ||
+		networkObj.chainId == 420 ||
+		networkObj.chainId == 5
+	) {
 		await SportMarketFactoryDeployed.setSportPositionMastercopy(SportPositionDeployed.address, {
 			from: owner.address,
 		});

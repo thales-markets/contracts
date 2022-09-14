@@ -18,6 +18,7 @@ contract ParlayMarket is OwnedWithInit {
 
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
+    uint private constant TWELVE_DECIMAL = 1e6;
 
     struct SportMarkets {
         address sportAddress;
@@ -160,19 +161,24 @@ contract ParlayMarket is OwnedWithInit {
             if (_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
                 uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
                 uint calculatedAmount = _recalculateAmount();
+                // console.log("\n--> totalSUSDamount: ", totalSUSDamount);
+                // console.log("--> calculatedAmount: ", calculatedAmount);
                 _resolve(true);
                 if (calculatedAmount < totalSUSDamount) {
-                    // console.log("calculated < total");
+                    // console.log("-----> calculatedAmount < totalSUSDamount");
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
                     parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount - calculatedAmount));
                     fundsIssued = true;
                 } else if (calculatedAmount > totalSUSDamount) {
-                    // console.log("calculated > total");
-                    parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
-                    parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (calculatedAmount - totalSUSDamount), true);
+                    // console.log("-----> calculatedAmount > totalSUSDamount");
+                    parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+                    if ((calculatedAmount - totalSUSDamount) >= TWELVE_DECIMAL) {
+                        // console.log("-----> higher than twelve decimal");
+                        parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (calculatedAmount - totalSUSDamount), true);
+                    }
                     fundsIssued = true;
                 } else {
-                    // console.log("equal");
+                    // console.log("-----> equal");
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
                     fundsIssued = true;
                 }
@@ -215,7 +221,7 @@ contract ParlayMarket is OwnedWithInit {
     function _recalculateAmount() internal view returns (uint recalculated) {
         recalculated = ((sUSDPaid * ONE * ONE) / totalResultQuote) / ONE;
         // apply AMM fees
-        recalculated = ((ONE - (ONE_PERCENT * parlayMarketsAMM.parlayAmmFee())) * recalculated) / ONE;
+        // recalculated = ((ONE - (ONE_PERCENT * parlayMarketsAMM.parlayAmmFee())) * recalculated) / ONE;
     }
 
     function _resolve(bool _userWon) internal {

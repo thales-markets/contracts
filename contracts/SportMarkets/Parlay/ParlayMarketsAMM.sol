@@ -27,7 +27,7 @@ import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
@@ -107,49 +107,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         return _knownMarkets.getPage(index, pageSize);
     }
 
-    function canAddToParlay(
-        address _sportMarket,
-        uint _position,
-        uint _gamesCount,
-        uint _totalQuote,
-        uint _previousTotalAmount,
-        uint _totalSUSDToPay
-    )
-        external
-        view
-        returns (
-            uint totalResultQuote,
-            uint totalAmount,
-            uint oddForPosition,
-            uint availableToBuy
-        )
-    {
-        (totalResultQuote, totalAmount, oddForPosition, availableToBuy) = _addGameToParlay(
-            _sportMarket,
-            _position,
-            _gamesCount,
-            _totalQuote,
-            _previousTotalAmount,
-            _totalSUSDToPay
-        );
-    }
-
     function canCreateParlayMarket(
         address[] calldata _sportMarkets,
         uint[] calldata _positions,
-        uint sUSDToPay
+        uint _sUSDToPay
     ) external view returns (bool canBeCreated) {
-        (uint totalQuote, uint totalAmount, , ) = _canCreateParlayMarket(_sportMarkets, _positions, sUSDToPay);
-        canBeCreated = totalQuote > maxSupportedOdds && totalAmount <= maxSupportedAmount;
-    }
-
-    function buyParlay(
-        address[] calldata _sportMarkets,
-        uint[] calldata _positions,
-        uint _sUSDPaid,
-        uint _additionalSlippage
-    ) external nonReentrant notPaused {
-        _buyParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, true);
+        (, uint totalBuyAmount, uint totalQuote, , , , ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDToPay);
+        canBeCreated = totalQuote > maxSupportedOdds && totalBuyAmount <= maxSupportedAmount;
     }
 
     function buyFromParlay(
@@ -162,11 +126,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         _buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, true);
     }
 
-    function buyParlayWithDifferentCollateralAndReferrer(
+    function buyFromParlayWithDifferentCollateralAndReferrer(
         address[] calldata _sportMarkets,
         uint[] calldata _positions,
         uint _sUSDPaid,
         uint _additionalSlippage,
+        uint _expectedPayout,
         address collateral,
         address _referrer
     ) external nonReentrant notPaused {
@@ -187,7 +152,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
         curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, _sUSDPaid);
 
-        _buyParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, false);
+        _buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, false);
     }
 
     function buyQuoteFromParlay(
@@ -199,300 +164,23 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         view
         returns (
             uint sUSDAfterFees,
-            uint initialTotalAmount,
-            uint expectedPayout,
-            uint skewImpact,
-            uint ammToInvest,
+            uint totalBuyAmount,
             uint totalQuote,
+            uint initialQuote,
+            uint skewImpact,
             uint[] memory finalQuotes,
             uint[] memory amountsToBuy
         )
     {
         (
             sUSDAfterFees,
-            initialTotalAmount,
-            expectedPayout,
-            skewImpact,
-            ammToInvest,
+            totalBuyAmount,
             totalQuote,
+            initialQuote,
+            skewImpact,
             finalQuotes,
             amountsToBuy
         ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid);
-    }
-
-    function _buyQuoteFromParlay(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _sUSDPaid
-    )
-        internal
-        view
-        returns (
-            uint sUSDAfterFees,
-            uint totalBuyAmount,
-            uint expectedPayout,
-            uint skewImpact,
-            uint ammToInvest,
-            uint totalQuote,
-            uint[] memory finalQuotes,
-            uint[] memory amountsToBuy
-        )
-    {
-        uint sumQuotes;
-        uint[] memory marketQuotes;
-        sUSDAfterFees = _sUSDPaid.mul(ONE.sub(safeBoxImpact.mul(ONE_PERCENT))).div(ONE);
-
-        (totalQuote, sumQuotes, marketQuotes, totalBuyAmount) = _calculateInitialQuotesForParlay(
-            _sportMarkets,
-            _positions,
-            sUSDAfterFees
-        );
-        // console.log("totalQuote: ", totalQuote);
-        // console.log("sumQuotes: ", sumQuotes);
-        // console.log("totalBuyAmount: ", totalBuyAmount);
-        if (totalQuote > 0) {
-            // console.log("enters");
-            // console.log("\n>>> buyQuoteAmounts");
-            (totalBuyAmount, amountsToBuy) = _calculateBuyQuoteAmounts(totalQuote, sumQuotes, sUSDAfterFees, marketQuotes);
-            // console.log("\n>>> >>>> _calculateFinalQuotes");
-            (totalQuote, ammToInvest, totalBuyAmount, finalQuotes, ) = _calculateFinalQuotes(
-                _sportMarkets,
-                _positions,
-                amountsToBuy
-            );
-            console.log("\n>>> totalBuyAmount: ", totalBuyAmount);
-            expectedPayout = totalQuote > 0 ? ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE : 0;
-            console.log(">>> expectedPayout: ", expectedPayout);
-            skewImpact = (ONE * (expectedPayout - totalBuyAmount)) / (expectedPayout);
-            console.log(">>> skewImpact: ", skewImpact);
-            console.log(">>> totalQuote: ", totalQuote);
-            uint newQuote = ((ONE + skewImpact) * totalQuote) / ONE;
-            console.log(">>> newQuote: ", newQuote);
-            newQuote = newQuote;
-            uint newExpectedPayout = ((sUSDAfterFees * ONE * ONE) / newQuote) / ONE;
-            console.log(">>> newExpectedPayout: ", newExpectedPayout);
-            newExpectedPayout = newExpectedPayout - totalBuyAmount;
-            console.log(">>> newExpectedPayout diff: ", newExpectedPayout);
-            // expectedPayout = ((ONE - (ONE_PERCENT *parlayAmmFee)) * totalBuyAmount) / ONE;
-
-            // expectedPayout = expectedPayout <= totalBuyAmount ? expectedPayout : totalBuyAmount;
-        }
-    }
-
-    function _calculateFinalQuotes(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint[] memory _buyQuoteAmounts
-    )
-        internal
-        view
-        returns (
-            uint totalQuote,
-            uint sUSDToPay,
-            uint totalBuyAmount,
-            uint[] memory finalQuotes,
-            uint[] memory buyAmountPerMarket
-        )
-    {
-        buyAmountPerMarket = new uint[](_sportMarkets.length);
-        finalQuotes = new uint[](_sportMarkets.length);
-        for (uint i = 0; i < _sportMarkets.length; i++) {
-            totalBuyAmount += _buyQuoteAmounts[i];
-            buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuoteForParlayAMM(
-                // buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
-                _sportMarkets[i],
-                _obtainSportsAMMPosition(_positions[i]),
-                _buyQuoteAmounts[i]
-            );
-            if (buyAmountPerMarket[i] == 0) {
-                totalQuote = 0;
-                sUSDToPay = 0;
-                totalBuyAmount = 0;
-                break;
-            }
-            sUSDToPay = sUSDToPay + buyAmountPerMarket[i];
-        }
-        // console.log("totalBuyAmount: ", totalBuyAmount);
-        // totalQuote = ((ONE*ONE * _sUSDPaid) / (totalBuyAmount*ONE));
-        for (uint i = 0; i < _sportMarkets.length; i++) {
-            finalQuotes[i] = ((buyAmountPerMarket[i] * ONE * ONE) / _buyQuoteAmounts[i]) / ONE;
-            totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
-        }
-    }
-
-    function _calculateBuyQuoteAmounts(
-        uint _totalQuote,
-        uint _sumOfQuotes,
-        uint _sUSDPaid,
-        uint[] memory _marketQuotes
-    ) internal pure returns (uint totalAmount, uint[] memory buyQuoteAmounts) {
-        buyQuoteAmounts = new uint[](_marketQuotes.length);
-        for (uint i = 0; i < _marketQuotes.length; i++) {
-            // buyQuoteAmounts[i] = ((ONE * _marketQuotes[i] * _totalQuote * _sUSDPaid) / _sumOfQuotes) / ONE;
-            buyQuoteAmounts[i] = ((ONE * ONE * _marketQuotes[i] * _sUSDPaid) / _sumOfQuotes) / (ONE * _totalQuote);
-            // console.log("\n > >> buyQuoteAmounts[i]: ", buyQuoteAmounts[i]);
-            totalAmount += buyQuoteAmounts[i];
-        }
-    }
-
-    function _calculateInitialQuotesForParlay(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _totalSUSDToPay
-    )
-        internal
-        view
-        returns (
-            uint totalResultQuote,
-            uint sumQuotes,
-            uint[] memory marketQuotes,
-            uint totalAmount
-        )
-    {
-        uint numOfMarkets = _sportMarkets.length;
-        uint numOfPositions = _positions.length;
-        if (_totalSUSDToPay < ONE) {
-            _totalSUSDToPay = ONE;
-        }
-        if (numOfMarkets == numOfPositions && numOfMarkets > 0 && numOfMarkets <= parlaySize) {
-            marketQuotes = new uint[](numOfMarkets);
-            uint[] memory marketOdds;
-            for (uint i = 0; i < numOfMarkets; i++) {
-                if (_positions[i] > 2) {
-                    totalResultQuote = 0;
-                    break;
-                }
-                marketOdds = sportsAmm.getMarketDefaultOdds(_sportMarkets[i], false);
-                marketQuotes[i] = marketOdds[_positions[i]];
-                totalResultQuote = totalResultQuote == 0 ? marketQuotes[i] : (totalResultQuote * marketQuotes[i]) / ONE;
-                sumQuotes = sumQuotes + marketQuotes[i];
-                // console.log("marketQuotes[i]: ", marketQuotes[i]);
-                // console.log("totalResultQuote: ", totalResultQuote);
-                // console.log("sumQuotes: ", sumQuotes);
-                if (totalResultQuote == 0) {
-                    totalResultQuote = 0;
-                    break;
-                }
-                // two markets can't be equal:
-                for (uint j = 0; j < i; j++) {
-                    if (_sportMarkets[i] == _sportMarkets[j]) {
-                        totalResultQuote = 0;
-                        break;
-                    }
-                }
-            }
-            totalAmount = totalResultQuote > 0 ? ((_totalSUSDToPay * ONE * ONE) / totalResultQuote) / ONE : 0;
-        }
-    }
-
-    function _buyFromParlay(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _sUSDPaid,
-        uint _additionalSlippage,
-        uint _expectedPayout,
-        bool _sendSUSD
-    ) internal {
-        uint totalAmount;
-        uint expectedPayout;
-        uint totalQuote;
-        uint[] memory amountsToBuy = new uint[](_sportMarkets.length);
-        uint[] memory marketQuotes = new uint[](_sportMarkets.length);
-        uint sUSDAfterFees;
-        uint skewImpact;
-        (
-            sUSDAfterFees,
-            totalAmount,
-            expectedPayout,
-            skewImpact,
-            ,
-            totalQuote,
-            marketQuotes,
-            amountsToBuy
-        ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid);
-
-        // apply all checks
-        require(totalQuote > maxSupportedOdds, "Can't create this parlay market!");
-        require(expectedPayout <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
-        require(((ONE * sUSDAfterFees) / _expectedPayout) <= (ONE + _additionalSlippage), "Slippage too high");
-        console.log(">>>>> expectedPayout: ", expectedPayout);
-        console.log(">>>>> _expectedPayout: ", _expectedPayout);
-        // checks for creation missing
-
-        if (_sendSUSD) {
-            sUSD.safeTransferFrom(msg.sender, address(this), sUSDAfterFees);
-            sUSD.safeTransferFrom(msg.sender, safeBox, _sUSDPaid.sub(sUSDAfterFees));
-        } else {
-            sUSD.safeTransfer(safeBox, _sUSDPaid.sub(sUSDAfterFees));
-        }
-
-        // mint the stateful token  (ERC-20)
-        // clone a parlay market
-        ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
-
-        parlayMarket.initialize(_sportMarkets, _positions, totalAmount, sUSDAfterFees, address(this), msg.sender);
-
-        emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
-
-        _knownMarkets.add(address(parlayMarket));
-        parlayMarket.updateQuotes(marketQuotes, totalQuote);
-
-        // buy the positions
-        _buyPositionsFromSportAMM(_sportMarkets, _positions, amountsToBuy, _additionalSlippage, address(parlayMarket));
-        emit ParlayMarketCreated(address(parlayMarket), msg.sender, expectedPayout, _sUSDPaid, sUSDAfterFees);
-    }
-
-    function _buyParlay(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _sUSDPaid,
-        uint _additionalSlippage,
-        bool _sendSUSD
-    ) internal {
-        uint totalResultQuote;
-        uint totalAmount;
-        uint[] memory amountsToBuy = new uint[](_sportMarkets.length);
-        uint[] memory marketQuotes = new uint[](_sportMarkets.length);
-        uint sUSDAfterFees = _sUSDPaid.mul(ONE.sub(safeBoxImpact.mul(ONE_PERCENT))).div(ONE);
-        (totalResultQuote, totalAmount, amountsToBuy, marketQuotes) = _canCreateParlayMarket(
-            _sportMarkets,
-            _positions,
-            sUSDAfterFees
-        );
-
-        // apply all checks
-        require(totalResultQuote > maxSupportedOdds, "Can't create this parlay market!");
-        require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
-        // checks for creation missing
-
-        if (_sendSUSD) {
-            sUSD.safeTransferFrom(msg.sender, address(this), sUSDAfterFees);
-            sUSD.safeTransferFrom(msg.sender, safeBox, _sUSDPaid.sub(sUSDAfterFees));
-        } else {
-            sUSD.safeTransfer(safeBox, _sUSDPaid.sub(sUSDAfterFees));
-        }
-        if (sortingEnabled) {
-            (_sportMarkets, _positions, amountsToBuy, marketQuotes) = _sortPositions(
-                _sportMarkets,
-                _positions,
-                amountsToBuy,
-                marketQuotes
-            );
-        }
-        // mint the stateful token  (ERC-20)
-        // clone a parlay market
-        ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
-
-        parlayMarket.initialize(_sportMarkets, _positions, totalAmount, sUSDAfterFees, address(this), msg.sender);
-
-        emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
-
-        _knownMarkets.add(address(parlayMarket));
-        parlayMarket.updateQuotes(marketQuotes, totalResultQuote);
-
-        // buy the positions
-        _buyPositionsFromSportAMM(_sportMarkets, _positions, amountsToBuy, _additionalSlippage, address(parlayMarket));
-        emit ParlayMarketCreated(address(parlayMarket), msg.sender, totalAmount, _sUSDPaid, sUSDAfterFees);
     }
 
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused {
@@ -561,27 +249,149 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     // INTERNAL FUNCTIONS
 
-    function _checkPositionAvailability(uint[] memory _amounts, uint[] memory _availableAmounts)
-        internal
-        pure
-        returns (uint[] memory)
-    {
-        bool amountsExceeded;
-        for (uint i = 0; i < _amounts.length; i++) {
-            if (_amounts[i] > _availableAmounts[i]) {
-                amountsExceeded = true;
-                break;
-            }
-        }
-        if (amountsExceeded) {
-            uint[] memory newAmounts = new uint[](_amounts.length);
-            return newAmounts;
+    function _buyFromParlay(
+        address[] memory _sportMarkets,
+        uint[] memory _positions,
+        uint _sUSDPaid,
+        uint _additionalSlippage,
+        uint _expectedPayout,
+        bool _sendSUSD
+    ) internal {
+        uint totalAmount;
+        uint initialQuote;
+        uint totalQuote;
+        uint[] memory amountsToBuy = new uint[](_sportMarkets.length);
+        uint[] memory marketQuotes = new uint[](_sportMarkets.length);
+        uint sUSDAfterFees;
+        uint skewImpact;
+        (sUSDAfterFees, totalAmount, totalQuote, initialQuote, skewImpact, marketQuotes, amountsToBuy) = _buyQuoteFromParlay(
+            _sportMarkets,
+            _positions,
+            _sUSDPaid
+        );
+
+        // apply all checks
+        require(totalQuote > maxSupportedOdds, "Can't create this parlay market!");
+        require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
+        require(((ONE * sUSDAfterFees) / _expectedPayout) <= (ONE + _additionalSlippage), "Slippage too high");
+        // checks for creation missing
+
+        if (_sendSUSD) {
+            sUSD.safeTransferFrom(msg.sender, address(this), sUSDAfterFees);
+            sUSD.safeTransferFrom(msg.sender, safeBox, _sUSDPaid.sub(sUSDAfterFees));
         } else {
-            return _amounts;
+            sUSD.safeTransfer(safeBox, _sUSDPaid.sub(sUSDAfterFees));
+        }
+
+        // mint the stateful token  (ERC-20)
+        // clone a parlay market
+        ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
+
+        parlayMarket.initialize(_sportMarkets, _positions, totalAmount, sUSDAfterFees, address(this), msg.sender);
+
+        emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
+
+        _knownMarkets.add(address(parlayMarket));
+        parlayMarket.updateQuotes(marketQuotes, totalQuote);
+
+        // buy the positions
+        _buyPositionsFromSportAMM(_sportMarkets, _positions, amountsToBuy, _additionalSlippage, address(parlayMarket));
+        emit ParlayMarketCreated(
+            address(parlayMarket),
+            msg.sender,
+            totalAmount,
+            _sUSDPaid,
+            sUSDAfterFees,
+            totalQuote,
+            initialQuote,
+            skewImpact
+        );
+    }
+
+    function _buyQuoteFromParlay(
+        address[] memory _sportMarkets,
+        uint[] memory _positions,
+        uint _sUSDPaid
+    )
+        internal
+        view
+        returns (
+            uint sUSDAfterFees,
+            uint totalBuyAmount,
+            uint totalQuote,
+            uint initialQuote,
+            uint skewImpact,
+            uint[] memory finalQuotes,
+            uint[] memory amountsToBuy
+        )
+    {
+        uint sumQuotes;
+        uint[] memory marketQuotes;
+        sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee) * ONE_PERCENT)) * _sUSDPaid) / ONE;
+        (initialQuote, sumQuotes, marketQuotes, ) = _calculateInitialQuotesForParlay(
+            _sportMarkets,
+            _positions,
+            sUSDAfterFees
+        );
+        if (initialQuote > 0) {
+            (totalBuyAmount, amountsToBuy) = _calculateBuyQuoteAmounts(initialQuote, sumQuotes, sUSDAfterFees, marketQuotes);
+            (initialQuote, totalBuyAmount, finalQuotes, ) = _calculateFinalQuotes(_sportMarkets, _positions, amountsToBuy);
+            uint expectedPayout = initialQuote > 0 ? ((sUSDAfterFees * ONE * ONE) / initialQuote) / ONE : 0;
+            skewImpact = ((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount);
+            totalQuote = ((ONE + skewImpact) * initialQuote) / ONE;
         }
     }
 
-    function _canCreateParlayMarket(
+    function _calculateFinalQuotes(
+        address[] memory _sportMarkets,
+        uint[] memory _positions,
+        uint[] memory _buyQuoteAmounts
+    )
+        internal
+        view
+        returns (
+            uint totalQuote,
+            uint totalBuyAmount,
+            uint[] memory finalQuotes,
+            uint[] memory buyAmountPerMarket
+        )
+    {
+        buyAmountPerMarket = new uint[](_sportMarkets.length);
+        finalQuotes = new uint[](_sportMarkets.length);
+        for (uint i = 0; i < _sportMarkets.length; i++) {
+            totalBuyAmount += _buyQuoteAmounts[i];
+            buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuoteForParlayAMM(
+                // buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
+                _sportMarkets[i],
+                _obtainSportsAMMPosition(_positions[i]),
+                _buyQuoteAmounts[i]
+            );
+            if (buyAmountPerMarket[i] == 0) {
+                totalQuote = 0;
+                totalBuyAmount = 0;
+                break;
+            }
+        }
+        for (uint i = 0; i < _sportMarkets.length; i++) {
+            finalQuotes[i] = ((buyAmountPerMarket[i] * ONE * ONE) / _buyQuoteAmounts[i]) / ONE;
+            totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
+        }
+    }
+
+    function _calculateBuyQuoteAmounts(
+        uint _totalQuote,
+        uint _sumOfQuotes,
+        uint _sUSDPaid,
+        uint[] memory _marketQuotes
+    ) internal pure returns (uint totalAmount, uint[] memory buyQuoteAmounts) {
+        buyQuoteAmounts = new uint[](_marketQuotes.length);
+        for (uint i = 0; i < _marketQuotes.length; i++) {
+            buyQuoteAmounts[i] = ((ONE * ONE * _marketQuotes[i] * _sUSDPaid) / _sumOfQuotes) / (ONE * _totalQuote);
+            totalAmount += buyQuoteAmounts[i];
+        }
+    }
+
+    function _calculateInitialQuotesForParlay(
         address[] memory _sportMarkets,
         uint[] memory _positions,
         uint _totalSUSDToPay
@@ -590,36 +400,28 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         view
         returns (
             uint totalResultQuote,
-            uint totalAmount,
-            uint[] memory amountsToBuy,
-            uint[] memory quoteAmounts
+            uint sumQuotes,
+            uint[] memory marketQuotes,
+            uint totalAmount
         )
     {
         uint numOfMarkets = _sportMarkets.length;
         uint numOfPositions = _positions.length;
-        uint previousAmount;
-        amountsToBuy = new uint[](numOfMarkets);
-        quoteAmounts = new uint[](numOfMarkets);
-        if (_totalSUSDToPay == 0) {
-            _totalSUSDToPay = 1;
+        if (_totalSUSDToPay < ONE) {
+            _totalSUSDToPay = ONE;
         }
-        if (numOfMarkets == numOfPositions) {
+        if (numOfMarkets == numOfPositions && numOfMarkets > 0 && numOfMarkets <= parlaySize) {
+            marketQuotes = new uint[](numOfMarkets);
+            uint[] memory marketOdds;
             for (uint i = 0; i < numOfMarkets; i++) {
                 if (_positions[i] > 2) {
                     totalResultQuote = 0;
                     break;
                 }
-                (totalResultQuote, totalAmount, quoteAmounts[i], ) = _addGameToParlay(
-                    _sportMarkets[i],
-                    _positions[i],
-                    i,
-                    totalResultQuote,
-                    previousAmount,
-                    _totalSUSDToPay
-                );
-                // not ideal if the first amount is the lowest quote
-                amountsToBuy[i] = totalAmount.sub(previousAmount);
-                previousAmount = totalAmount;
+                marketOdds = sportsAmm.getMarketDefaultOdds(_sportMarkets[i], false);
+                marketQuotes[i] = marketOdds[_positions[i]];
+                totalResultQuote = totalResultQuote == 0 ? marketQuotes[i] : (totalResultQuote * marketQuotes[i]) / ONE;
+                sumQuotes = sumQuotes + marketQuotes[i];
                 if (totalResultQuote == 0) {
                     totalResultQuote = 0;
                     break;
@@ -631,40 +433,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                         break;
                     }
                 }
-                if (totalResultQuote == 0) {
-                    break;
-                }
             }
-        }
-    }
-
-    function _addGameToParlay(
-        address _sportMarket,
-        uint _position,
-        uint _gamesCount,
-        uint _totalQuote,
-        uint _previousTotalAmount,
-        uint _totalSUSDToPay
-    )
-        internal
-        view
-        returns (
-            uint totalResultQuote,
-            uint totalAmount,
-            uint oddForPosition,
-            uint availableToBuy
-        )
-    {
-        if ((_gamesCount == 0 || _totalQuote >= maxSupportedOdds) && _gamesCount < parlaySize) {
-            uint[] memory marketOdds = sportsAmm.getMarketDefaultOdds(_sportMarket, false);
-            oddForPosition = marketOdds[_position];
-            totalResultQuote = _totalQuote == 0 ? oddForPosition : _totalQuote.mul(oddForPosition).div(ONE);
-            totalAmount = ONE.mul(ONE).mul(_totalSUSDToPay).div(totalResultQuote).div(ONE);
-            availableToBuy = sportsAmm.availableToBuyFromAMM(_sportMarket, _obtainSportsAMMPosition(_position));
-            if (availableToBuy < totalAmount.sub(_previousTotalAmount)) {
-                totalResultQuote = 0;
-                totalAmount = 0;
-            }
+            totalAmount = totalResultQuote > 0 ? ((_totalSUSDToPay * ONE * ONE) / totalResultQuote) / ONE : 0;
         }
     }
 
@@ -848,7 +618,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     event SetSUSD(address sUSD);
     event NewParlayMarket(address market, address[] markets, uint[] positions, uint amount, uint sUSDpaid);
-    event ParlayMarketCreated(address market, address account, uint amount, uint sUSDPaid, uint sUSDAfterFees);
+    event ParlayMarketCreated(
+        address market,
+        address account,
+        uint amount,
+        uint sUSDPaid,
+        uint sUSDAfterFees,
+        uint totalQuote,
+        uint initialQuote,
+        uint skewImpact
+    );
     event SetAmounts(uint max_amount, uint max_odds, uint _parlayAMMFee, uint _safeBoxImpact, uint _referrerFee);
     event AddressesSet(
         address _thalesAMM,

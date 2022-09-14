@@ -156,6 +156,24 @@
         "internalType": "uint256",
         "name": "sUSDAfterFees",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalQuote",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "initialQuote",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "skewImpact",
+        "type": "uint256"
       }
     ],
     "name": "ParlayMarketCreated",
@@ -359,33 +377,10 @@
         "internalType": "uint256",
         "name": "_additionalSlippage",
         "type": "uint256"
-      }
-    ],
-    "name": "buyParlay",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_sportMarkets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_positions",
-        "type": "uint256[]"
       },
       {
         "internalType": "uint256",
-        "name": "_sUSDPaid",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_additionalSlippage",
+        "name": "_expectedPayout",
         "type": "uint256"
       },
       {
@@ -399,7 +394,7 @@
         "type": "address"
       }
     ],
-    "name": "buyParlayWithDifferentCollateralAndReferrer",
+    "name": "buyFromParlayWithDifferentCollateralAndReferrer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -431,27 +426,22 @@
       },
       {
         "internalType": "uint256",
-        "name": "initialTotalAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "expectedPayout",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "skewImpact",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "ammToInvest",
+        "name": "totalBuyAmount",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
         "name": "totalQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "initialQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewImpact",
         "type": "uint256"
       },
       {
@@ -471,65 +461,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_sportMarket",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_position",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_gamesCount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_totalQuote",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_previousTotalAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_totalSUSDToPay",
-        "type": "uint256"
-      }
-    ],
-    "name": "canAddToParlay",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "totalResultQuote",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "oddForPosition",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "availableToBuy",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address[]",
         "name": "_sportMarkets",
         "type": "address[]"
@@ -541,7 +472,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "sUSDToPay",
+        "name": "_sUSDToPay",
         "type": "uint256"
       }
     ],

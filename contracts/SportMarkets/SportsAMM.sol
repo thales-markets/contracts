@@ -725,6 +725,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
+    function setPaused(bool _setPausing) external onlyOwner {
+        if (_setPausing) {
+            _pause();
+        } else {
+            _unpause();
+        }
+    }
+
     // Internal
 
     function _updateSpentOnMarketOnSell(

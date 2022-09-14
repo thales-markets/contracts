@@ -1,6 +1,6 @@
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -42,7 +42,12 @@ async function main() {
 	}
 
 	// upgrade if test networks
-	if (networkObj.chainId == 69 || networkObj.chainId == 42 || networkObj.chainId == 420) {
+	if (
+		networkObj.chainId == 69 ||
+		networkObj.chainId == 42 ||
+		networkObj.chainId == 420 ||
+		networkObj.chainId == 5
+	) {
 		await upgrades.upgradeProxy(gamesQueueAddress, GamesQueue);
 
 		implementation = await getImplementationAddress(ethers.provider, gamesQueueAddress);

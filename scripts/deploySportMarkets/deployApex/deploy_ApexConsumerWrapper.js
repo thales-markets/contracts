@@ -43,9 +43,9 @@ async function main() {
 		network = 'polygon';
 	}
 
-	const paymentMetadata = w3utils.toWei('0.01');
-	const paymentMatchup = w3utils.toWei('0.01');
-	const paymentResults = w3utils.toWei('0.01');
+	const paymentMetadata = w3utils.toWei('0.1');
+	const paymentMatchup = w3utils.toWei('0.1');
+	const paymentResults = w3utils.toWei('0.1');
 
 	const consumer = await ethers.getContractFactory('ApexConsumer');
 	let consumerAddress = getTargetAddress('ApexConsumer', network);
@@ -97,14 +97,14 @@ async function main() {
 }
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

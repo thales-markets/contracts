@@ -37,7 +37,7 @@ async function main() {
 	// upgrade if test networks
 	if (networkObj.chainId == 5 || networkObj.chainId == 42) {
 		await upgrades.upgradeProxy(apexConsumerAddress, ApexConsumer);
-		await delay(15000);
+		await delay(30000);
 
 		implementation = await getImplementationAddress(ethers.provider, apexConsumerAddress);
 	}
@@ -54,13 +54,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

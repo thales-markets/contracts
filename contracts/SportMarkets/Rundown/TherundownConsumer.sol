@@ -538,12 +538,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             if (_outcome == RESULT_DRAW && _isDrawForCancelationBySport(sportsIdPerGame[game.gameId])) {
                 _cancelMarket(game.gameId, index);
             } else {
-                sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
-                marketResolved[marketPerGameId[game.gameId]] = true;
+                // if market is paused only remove from queue
+                if (!sportsManager.isMarketPaused(marketPerGameId[game.gameId])) {
+                    sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
+                    marketResolved[marketPerGameId[game.gameId]] = true;
 
-                _cleanStorageQueue(index);
+                    _cleanStorageQueue(index);
 
-                emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
+                    emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
+                } else {
+                    queues.dequeueGamesResolved();
+                }
             }
             // if status is canceled and start time of a game passed cancel market
         } else if (cancelGameStatuses[game.statusId] && singleGameCreated.startTime < block.timestamp) {
@@ -630,10 +635,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint[] memory result = new uint[](1);
         result[0] = MIN_TAG_NUMBER + _sportsId;
         return result;
-    }
-
-    function _isGameReadyToBeResolved(GameResolve memory _game) internal view returns (bool) {
-        return _isGameStatusResolved(_game) || cancelGameStatuses[_game.statusId];
     }
 
     function _isDrawForCancelationBySport(uint _sportsId) internal view returns (bool) {

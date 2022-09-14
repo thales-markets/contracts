@@ -1051,6 +1051,105 @@ contract('TheRundownConsumer', (accounts) => {
 			).to.be.revertedWith('Market resoved or canceled');
 		});
 
+		it('Fulfill Games Resolved - UFC, create market, pause market, resolve -> remove from queue only', async () => {
+			await fastForward(fightTime - (await currentTime()) - SECOND);
+
+			// req games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFightCreate,
+				fightCreated,
+				sportId_7,
+				fightTime,
+				{ from: wrapper }
+			);
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
+
+			assert.equal(
+				fight_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
+			);
+
+			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
+			assert.equal('Clayton Carpenter', fight.homeTeam);
+			assert.equal('Edgar Chairez', fight.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdFightCreate,
+				_sportId: sportId_7,
+				_id: fightId,
+				_game: fight,
+			});
+
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(fightId);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
+
+			// check if event is emited
+			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: fightId,
+				_game: fight,
+			});
+
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			deployedMarket = await SportPositionalMarketContract.at(answer);
+
+			assert.equal(false, await deployedMarket.canResolve());
+			assert.equal(9007, await deployedMarket.tags(0));
+
+			await expect(
+				TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
+			).to.be.revertedWith('Market for game already exists');
+
+			await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
+
+			assert.equal(true, await deployedMarket.canResolve());
+
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdFightResolve,
+				gamesFightResolved,
+				sportId_7,
+				{ from: wrapper }
+			);
+
+			assert.equal(
+				game_fight_resolve,
+				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightResolve, 0)
+			);
+
+			let fightR = await TherundownConsumerDeployed.gameResolved(fightId);
+			assert.equal(1, fightR.homeScore);
+			assert.equal(0, fightR.awayScore);
+			assert.equal(8, fightR.statusId);
+
+			assert.eventEqual(tx_2.logs[0], 'GameResolved', {
+				_requestId: reqIdFightResolve,
+				_sportId: sportId_7,
+				_id: fightId,
+				_game: fightR,
+			});
+
+			assert.equal(true, await deployedMarket.canResolve());
+			assert.equal(false, await deployedMarket.paused());
+
+			await SportPositionalMarketManager.setMarketPaused(marketAdd, true, { from: manager });
+
+			assert.equal(true, await deployedMarket.paused());
+			assert.equal(false, await deployedMarket.canResolve());
+
+			assert.equal(1, await gamesQueue.firstResolved());
+			assert.equal(1, await gamesQueue.lastResolved());
+
+			// resolve markets but market is paused so only remove from queue
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
+
+			assert.equal(2, await gamesQueue.firstResolved());
+			assert.equal(1, await gamesQueue.lastResolved());
+		});
+
 		it('Fulfill Games Resolved - UFC DRAW, create market, resolve market, check results', async () => {
 			await fastForward(fightTime - (await currentTime()) - SECOND);
 

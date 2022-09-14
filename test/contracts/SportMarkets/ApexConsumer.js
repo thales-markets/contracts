@@ -714,6 +714,8 @@ contract('ApexConsumer', (accounts) => {
 			// not canceled part only paused
 			assert.equal(false, await ApexConsumerDeployed.gameFulfilledResolved(gameid1));
 			assert.equal(false, await ApexConsumerDeployed.isGameInResolvedStatus(gameid1));
+			assert.equal(true, await ApexConsumerDeployed.isPausedByCanceledStatus(marketAddress));
+			assert.equal(true, await deployedMarket.paused());
 
 			// there is no result yet
 			let gameResolved = await ApexConsumerDeployed.gameResolved(gameid1);
@@ -721,12 +723,11 @@ contract('ApexConsumer', (accounts) => {
 			assert.equal(0, gameResolved.awayScore);
 			assert.equal(0, gameResolved.statusId);
 
+			// check if event is emited
 			assert.eventEqual(txResolveGame.logs[0], 'PauseSportsMarket', {
 				_marketAddress: marketAddress,
 				_pause: true,
 			});
-
-			assert.equal(true, await deployedMarket.paused());
 
 			// canceling part when time has arrived
 			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
@@ -755,6 +756,7 @@ contract('ApexConsumer', (accounts) => {
 
 			const sportId = await ApexConsumerDeployed.supportedSportId(sportFormula1);
 
+			// check if event is emited
 			assert.eventEqual(txSecondResolveGame.logs[0], 'GameResolved', {
 				_requestId: reqIdResolveGame,
 				_sportId: sportId,
@@ -1210,6 +1212,10 @@ contract('ApexConsumer', (accounts) => {
 			};
 
 			// check if event is emited
+			assert.eventEqual(txGetInvalidOdds.logs[0], 'PauseSportsMarket', {
+				_marketAddress: marketAddress,
+				_pause: true,
+			});
 			assert.eventEqual(txGetInvalidOdds.logs[1], 'InvalidOddsForMarket', {
 				_requestId: reqIdCreateGame,
 				_id: gameid1,

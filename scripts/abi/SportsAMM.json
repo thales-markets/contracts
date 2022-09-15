@@ -22,6 +22,12 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_apexConsumer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -296,6 +302,19 @@
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "apexConsumer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -923,6 +942,19 @@
   },
   {
     "inputs": [],
+    "name": "parlayAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -1126,6 +1158,11 @@
         "type": "address"
       },
       {
+        "internalType": "address",
+        "name": "_apexConsumer",
+        "type": "address"
+      },
+      {
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -1236,6 +1273,19 @@
       }
     ],
     "name": "setParameters",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_setPausing",
+        "type": "bool"
+      }
+    ],
+    "name": "setPaused",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

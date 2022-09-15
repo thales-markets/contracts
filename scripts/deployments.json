@@ -41,7 +41,7 @@
 		"PositionalMarketFactoryImplementation": "0xFaE0177f052c9F020e6e984aCCF98241Ae35FACd",
 		"PositionalMarketData": "0xe840E8e7BEf7783F8F51908eF9e77044C1D4C58c",
 		"ExoticMarketManager": "0x9a51524422DDF1B8AfEc04CBa6451a6c50320998",
-		"ExoticMarketManagerImplementation": "0xd4C0f91eFa1fF4cC32F86693f166125818D27277",
+		"ExoticMarketManagerImplementation": "0x0fA6b2516ce46013182f3F1F31aa7bfb04FD409B",
 		"ThalesOracleCouncil": "0xDF3eefC2ED0F31947a67f0e817DfD92717630E38",
 		"ThalesOracleCouncilImplementation": "0x717eE7991Cfeeb79B1D8E7d1DBD982fb7982d0fD",
 		"ThalesBonds": "0x160Ca569999601bca06109D42d561D85D6Bb4b57",

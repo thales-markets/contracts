@@ -32,11 +32,14 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
-	const ExoticMarketMastercopyAddress = getTargetAddress('ExoticMarketMasterCopy', network);
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
 	const ExoticMarketManagerAddress = getTargetAddress('ExoticMarketManager', network);
 	const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
 
-	if (networkObj.chainId == 69) {
+	if (networkObj.chainId == 69 || networkObj.chainId == 420) {
 		await upgrades.upgradeProxy(ExoticMarketManagerAddress, ExoticMarketManager);
 		await delay(5000);
 
@@ -87,13 +90,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

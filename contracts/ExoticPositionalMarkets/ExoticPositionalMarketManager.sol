@@ -331,7 +331,7 @@ contract ExoticPositionalMarketManager is Initializable, ProxyOwned, PausableUpg
             if (!IThalesOracleCouncil(oracleCouncilAddress).isMarketClosedForDisputes(_marketAddress)) {
                 IThalesOracleCouncil(oracleCouncilAddress).closeMarketForDisputes(_marketAddress);
             }
-            IThalesBonds(thalesBonds).decreaseCreatorVolume(_marketAddress);
+            //    IThalesBonds(thalesBonds).decreaseCreatorVolume(_marketAddress);
         }
         if (IExoticPositionalMarket(_marketAddress).paused()) {
             require(msg.sender == owner, "only pDAO");

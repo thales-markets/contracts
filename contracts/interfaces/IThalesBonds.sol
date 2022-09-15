@@ -82,5 +82,5 @@ interface IThalesBonds {
 
     function transferCreatorToResolverBonds(address _market) external;
 
-    function decreaseCreatorVolume(address _market) external;
+    // function decreaseCreatorVolume(address _market) external;
 }

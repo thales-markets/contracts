@@ -336,6 +336,14 @@ contract ThalesBonds is Initializable, ProxyOwned, PausableUpgradeable, ProxyRee
         emit NewStakingThalesAddress(_stakingThales);
     }
 
+    function setPaused(bool _setPausing) external onlyOwner {
+        if (_setPausing) {
+            _pause();
+        } else {
+            _unpause();
+        }
+    }
+
     modifier onlyOracleCouncilManagerAndOwner() {
         require(
             msg.sender == marketManager.oracleCouncilAddress() ||

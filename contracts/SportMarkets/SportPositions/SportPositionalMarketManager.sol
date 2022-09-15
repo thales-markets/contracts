@@ -138,7 +138,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function updateDatesForMarket(address _market, uint256 _newStartTime) external override {
-        require(msg.sender == owner || msg.sender == theRundownConsumer, "Invalid caller");
+        require(msg.sender == owner || msg.sender == theRundownConsumer || msg.sender == apexConsumer, "Invalid caller");
 
         uint expiry = _newStartTime.add(expiryDuration);
 

@@ -196,11 +196,7 @@ contract('SportsAMM', (accounts) => {
 			SportPositionalMarketFactory.address,
 			{ from: manager }
 		);
-		await SportPositionalMarketManager.setWhitelistAddress(third, true, {
-			from: manager,
-		});
-
-		await SportPositionalMarketManager.setWhitelistedAddressesForAll([first, second], true, {
+		await SportPositionalMarketManager.setWhitelistedAddresses([first, third], true, {
 			from: manager,
 		});
 
@@ -1204,15 +1200,19 @@ contract('SportsAMM', (accounts) => {
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
 			// resolve markets
 			// const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
-			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(gameid1, 0, 0, 0, {
-				from: owner,
-			});
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketManually(
+				marketAdd,
+				0,
+				0,
+				0,
+				{
+					from: owner,
+				}
+			);
 			answer = await deployedMarket.result();
 			console.log('Result resolved: ', answer.toString());
-
-			answer = await TherundownConsumerDeployed.getResult(gameid1);
-			console.log('Result theRunDown resolved: ', answer.toString());
-			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
 			// check if event is emited
 			assert.eventEqual(tx_resolve.logs[1], 'ResolveSportsMarket', {
 				_marketAddress: marketAdd,
@@ -1338,8 +1338,9 @@ contract('SportsAMM', (accounts) => {
 				{ from: wrapper }
 			);
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
-			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(
-				gameid1,
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketManually(
+				marketAdd,
 				user2_position + 1,
 				1,
 				2,
@@ -1348,9 +1349,7 @@ contract('SportsAMM', (accounts) => {
 			answer = await deployedMarket.result();
 			let game_results = ['Home', 'Away', 'Draw'];
 			console.log('Game result: ', game_results[parseInt(answer.toString())], ' wins');
-			answer = await TherundownConsumerDeployed.getResult(gameid1);
-			console.log('Therundown result returns: ', game_results[parseInt(answer.toString())]);
-			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
 
 			options = await deployedMarket.balancesOf(first);
 			console.log('User 1 options to excercise: ', fromUnit(options[user1_position]));
@@ -1452,8 +1451,9 @@ contract('SportsAMM', (accounts) => {
 				{ from: wrapper }
 			);
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
-			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(
-				gameid1,
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketManually(
+				marketAdd,
 				user2_position + 1,
 				1,
 				2,
@@ -1462,9 +1462,7 @@ contract('SportsAMM', (accounts) => {
 			answer = await deployedMarket.result();
 			let game_results = ['Home', 'Away', 'Draw'];
 			console.log('Game result: ', game_results[parseInt(answer.toString())], ' wins');
-			answer = await TherundownConsumerDeployed.getResult(gameid1);
-			console.log('Therundown result returns: ', game_results[parseInt(answer.toString())]);
-			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
 
 			let phase = await deployedMarket.phase();
 			console.log('market phase: ', phase.toString());
@@ -1529,7 +1527,7 @@ contract('SportsAMM', (accounts) => {
 
 		it('Pause market', async () => {
 			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(first), true);
-			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(second), true);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(second), false);
 			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(third), true);
 			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(fourth), false);
 

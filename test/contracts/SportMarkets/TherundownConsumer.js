@@ -412,6 +412,8 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.bnEqual(1649890800, await gamesQueue.gameStartPerGameId(gameid2));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
 			assert.bnEqual(true, await TherundownConsumerDeployed.isSportOnADate(game1NBATime, 4));
+			assert.bnEqual(game1NBATime, await TherundownConsumerDeployed.gameOnADate(gameid1));
+			assert.bnEqual(game1NBATime, await TherundownConsumerDeployed.gameOnADate(gameid2));
 
 			let getGamesPerdatepersport = await TherundownConsumerDeployed.getGamesPerDatePerSport(
 				4,

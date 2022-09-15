@@ -91,6 +91,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(uint => mapping(uint => bytes32[])) public gamesPerDatePerSport;
     mapping(address => bool) public isPausedByCanceledStatus;
     mapping(address => bool) public canMarketBeUpdated;
+    mapping(bytes32 => uint) public gameOnADate;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -137,7 +138,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 !isSameTeamOrTBD(gameForProcessing.homeTeam, gameForProcessing.awayTeam) &&
                 gameForProcessing.startTime > block.timestamp
             ) {
-                gamesPerDatePerSport[_sportId][_date].push(gameForProcessing.gameId);
+                _updateGameOnADate(gameForProcessing.gameId, _date, _sportId);
                 _createGameFulfill(_requestId, gameForProcessing, _sportId);
             }
             // old game UFC checking fighters
@@ -155,6 +156,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                     if (marketCreated[marketPerGameId[gameForProcessing.gameId]]) {
                         sportsManager.resolveMarket(marketPerGameId[gameForProcessing.gameId], 0);
                         marketCanceled[marketPerGameId[gameForProcessing.gameId]] = true;
+                        _updateGameOnADate(gameForProcessing.gameId, _date, _sportId);
                         _createGameFulfill(_requestId, gameForProcessing, _sportId);
                     }
                 }
@@ -164,6 +166,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 GameCreate memory currentGameValues = getGameCreatedById(gameForProcessing.gameId);
                 // checking time
                 if (gameForProcessing.startTime != currentGameValues.startTime) {
+                    _updateGameOnADate(gameForProcessing.gameId, _date, _sportId);
                     // if NEW start time is in future
                     if (gameForProcessing.startTime > block.timestamp) {
                         // this checks is for new markets
@@ -708,6 +711,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             }
         }
         return normalizedOdds;
+    }
+
+    function _updateGameOnADate(
+        bytes32 _gameId,
+        uint _date,
+        uint _sportId
+    ) internal {
+        if (gameOnADate[_gameId] != _date) {
+            gamesPerDatePerSport[_sportId][_date].push(_gameId);
+            gameOnADate[_gameId] = _date;
+        }
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */

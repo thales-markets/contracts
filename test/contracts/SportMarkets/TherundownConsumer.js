@@ -2158,8 +2158,12 @@ contract('TheRundownConsumer', (accounts) => {
 			// old market canceled
 			assert.equal(true, await await TherundownConsumerDeployed.marketCanceled(marketAdd));
 
-			// check if event is emited
-			assert.eventEqual(tx_update.logs[0], 'GameCreated', {
+			// check if events are emited
+			assert.eventEqual(tx_update.logs[0], 'CancelSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: fightId,
+			});
+			assert.eventEqual(tx_update.logs[1], 'GameCreated', {
 				_requestId: reqIdFightUpdate,
 				_sportId: sportId_7,
 				_id: fightId,

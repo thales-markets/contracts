@@ -70,7 +70,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         emit SetTherundownConsumer(_theRundownConsumer);
     }
 
-
     function setApexConsumer(address _apexConsumer) external onlyOwner {
         apexConsumer = _apexConsumer;
         emit SetApexConsumer(_apexConsumer);

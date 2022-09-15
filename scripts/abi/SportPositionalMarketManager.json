@@ -264,6 +264,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "apexConsumer",
+        "type": "address"
+      }
+    ],
+    "name": "SetApexConsumer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "migratingManager",
         "type": "address"
       }
@@ -336,6 +349,19 @@
         "internalType": "address[]",
         "name": "",
         "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "apexConsumer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -761,6 +787,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_apexConsumer",
+        "type": "address"
+      }
+    ],
+    "name": "setApexConsumer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

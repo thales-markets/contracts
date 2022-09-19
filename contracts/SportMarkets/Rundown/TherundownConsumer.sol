@@ -93,7 +93,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public isPausedByCanceledStatus;
     mapping(address => bool) public canMarketBeUpdated;
     mapping(bytes32 => uint) public gameOnADate;
-    uint public timeDifferenceWhenGameCanBeResolved;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -201,11 +200,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         for (uint i = 0; i < _games.length; i++) {
             GameResolve memory game = abi.decode(_games[i], (GameResolve));
             // if game is not resolved already and there is market for that game
-            if (
-                !queues.existingGamesInResolvedQueue(game.gameId) &&
-                marketPerGameId[game.gameId] != address(0) &&
-                game.lastUpdated + timeDifferenceWhenGameCanBeResolved <= block.timestamp
-            ) {
+            if (!queues.existingGamesInResolvedQueue(game.gameId) && marketPerGameId[game.gameId] != address(0)) {
                 _resolveGameFulfill(_requestId, game, _sportId);
             }
         }
@@ -757,13 +752,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit SupportedCancelStatusChanged(_status, _isSupported);
     }
 
-    /// @notice sets  difference in time that game is good for resolve
-    /// @param _timeDifferenceWhenGameCanBeResolved timedifference in seconds
-    function setTimeDifferenceWhenGameCanBeResolved(uint _timeDifferenceWhenGameCanBeResolved) external onlyOwner {
-        timeDifferenceWhenGameCanBeResolved = _timeDifferenceWhenGameCanBeResolved;
-        emit TimeDifferenceWhenGameCanBeResolvedChanged(_timeDifferenceWhenGameCanBeResolved);
-    }
-
     /// @notice sets if sport is two positional (Example: NBA)
     /// @param _sportId sport ID which is two positional
     /// @param _isTwoPosition true/false (two positional sport or not)
@@ -861,5 +849,4 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event NewQueueAddress(GamesQueue _queues); // deprecated
     event NewSportContracts(address _wrapperAddress, GamesQueue _queues, address _sportsManager);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
-    event TimeDifferenceWhenGameCanBeResolvedChanged(uint _timeDifferenceWhenGameCanBeResolved);
 }

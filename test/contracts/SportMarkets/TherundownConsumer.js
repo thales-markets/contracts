@@ -1462,7 +1462,7 @@ contract('TheRundownConsumer', (accounts) => {
 			).to.be.revertedWith('Market resoved or canceled');
 		});
 
-		it('Fulfill Games Resolved - game time has not passed, also updated at not passed, no resolve', async () => {
+		/*it('Fulfill Games Resolved - game time has not passed, also updated at not passed, no resolve', async () => {
 			await fastForward(fightTime - (await currentTime()) - 3 * HOUR);
 
 			// req games
@@ -1534,7 +1534,7 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(0, fightC.statusId);
 
 			assert.equal(false, await TherundownConsumerDeployed.gameFulfilledResolved(fightId));
-		});
+		});*/
 	});
 
 	describe('Game resolve/clancel Manually', () => {
@@ -2138,7 +2138,7 @@ contract('TheRundownConsumer', (accounts) => {
 				_sportsManager: wrapper,
 			});
 
-			const tx_setTimeDifferenceWhenGameCanBeResolved =
+			/*const tx_setTimeDifferenceWhenGameCanBeResolved =
 				await TherundownConsumerDeployed.setTimeDifferenceWhenGameCanBeResolved(HOUR, {
 					from: owner,
 				});
@@ -2154,7 +2154,7 @@ contract('TheRundownConsumer', (accounts) => {
 				{
 					_timeDifferenceWhenGameCanBeResolved: HOUR,
 				}
-			);
+			);*/
 		});
 	});
 

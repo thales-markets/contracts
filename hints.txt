@@ -60,5 +60,6 @@ npx hardhat run --network polygon scripts/deployThalesRoyale/thalesRoyale/verify
 
 scripts:
 npx hardhat verify ADDRESS_CONTRACT --network polygon
+npx hardhat verify 0x8947da500Eb47F82df21143D0C01A29862a8C3c5 --network arbitrumOne --contract contracts/Positions/PositionMastercopy.sol:PositionMastercopy
 npx hardhat size-contracts
 --gas

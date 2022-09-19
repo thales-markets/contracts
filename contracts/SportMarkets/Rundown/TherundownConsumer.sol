@@ -154,8 +154,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 ) {
                     // double-check if market exists -> cancel market -> create new for queue
                     if (marketCreated[marketPerGameId[gameForProcessing.gameId]]) {
-                        sportsManager.resolveMarket(marketPerGameId[gameForProcessing.gameId], 0);
-                        marketCanceled[marketPerGameId[gameForProcessing.gameId]] = true;
+                        _cancelMarket(gameForProcessing.gameId, 0, false);
                         _updateGameOnADate(gameForProcessing.gameId, _date, _sportId);
                         _createGameFulfill(_requestId, gameForProcessing, _sportId);
                     }
@@ -539,7 +538,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             // if result is draw and game is UFC or NFL, cancel market
             if (_outcome == RESULT_DRAW && _isDrawForCancelationBySport(sportsIdPerGame[game.gameId])) {
-                _cancelMarket(game.gameId, index);
+                _cancelMarket(game.gameId, index, true);
             } else {
                 // if market is paused only remove from queue
                 if (!sportsManager.isMarketPaused(marketPerGameId[game.gameId])) {
@@ -555,7 +554,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             }
             // if status is canceled and start time of a game passed cancel market
         } else if (cancelGameStatuses[game.statusId] && singleGameCreated.startTime < block.timestamp) {
-            _cancelMarket(game.gameId, index);
+            _cancelMarket(game.gameId, index, true);
         }
     }
 
@@ -612,11 +611,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _cancelMarket(bytes32 _gameId, uint _index) internal {
+    function _cancelMarket(
+        bytes32 _gameId,
+        uint _index,
+        bool cleanStorage
+    ) internal {
         sportsManager.resolveMarket(marketPerGameId[_gameId], 0);
         marketCanceled[marketPerGameId[_gameId]] = true;
 
-        _cleanStorageQueue(_index);
+        if (cleanStorage) {
+            _cleanStorageQueue(_index);
+        }
 
         emit CancelSportsMarket(marketPerGameId[_gameId], _gameId);
     }

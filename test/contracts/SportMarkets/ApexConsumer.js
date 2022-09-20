@@ -46,11 +46,15 @@ contract('ApexConsumer', (accounts) => {
 
 	const game1qualifyingStartTime = 1663094759;
 	const game1raceStartTime = 1663181159;
-	const game1homeOdds = 5380;
-	const game1awayOdds = 4620;
+	const game1homeOddsPre = 5380;
+	const game1awayOddsPre = 4620;
+	const game1homeNormalizedOddsPre = 0.538;
+	const game1awayNormalizedOddsPre = 0.462;
+	const game1homeOddsPost = 5100;
+	const game1awayOddsPost = 4900;
+	const game1homeNormalizedOddsPost = 0.51;
+	const game1awayNormalizedOddsPost = 0.49;
 	const invalidOdds = 0;
-	const game1homeNormalizedOdds = 0.538;
-	const game1awayNormalizedOdds = 0.462;
 	const game1homeTeam = 'lance stroll';
 	const game1awayTeam = 'daniel ricciardo';
 
@@ -214,11 +218,12 @@ contract('ApexConsumer', (accounts) => {
 					reqIdCreateGame,
 					game1homeTeam,
 					game1awayTeam,
-					game1homeOdds,
-					game1awayOdds,
+					game1homeOddsPre,
+					game1awayOddsPre,
 					gameid1,
 					sportFormula1,
 					eventId,
+					false,
 					{ from: first }
 				)
 			).to.be.revertedWith('Only wrapper can call this function');
@@ -228,11 +233,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 
@@ -242,12 +248,12 @@ contract('ApexConsumer', (accounts) => {
 			assert.equal(true, await ApexConsumerDeployed.isApexGame(gameid1));
 
 			let odds = await ApexConsumerDeployed.getOddsForGame(gameid1);
-			assert.bnEqual(game1homeOdds, odds[0]);
-			assert.bnEqual(game1awayOdds, odds[1]);
+			assert.bnEqual(game1homeOddsPre, odds[0]);
+			assert.bnEqual(game1awayOddsPre, odds[1]);
 			assert.bnEqual(0, odds[2]);
 
 			let game = await ApexConsumerDeployed.gameCreated(gameid1);
-			assert.bnEqual(game1qualifyingStartTime, game.startTime);
+			assert.bnEqual(game1raceStartTime, game.startTime);
 			assert.equal(game1homeTeam, game.homeTeam);
 			assert.equal(game1awayTeam, game.awayTeam);
 
@@ -292,6 +298,72 @@ contract('ApexConsumer', (accounts) => {
 					from: owner,
 				})
 			).to.be.revertedWith('Market for game already exists');
+
+			assert.equal(
+				false,
+				await ApexConsumerDeployed.isGamePausedByNonExistingPostQualifyingOdds(gameid1)
+			);
+
+			await fastForward(game1qualifyingStartTime - (await currentTime()) + SECOND);
+
+			assert.equal(
+				true,
+				await ApexConsumerDeployed.isGamePausedByNonExistingPostQualifyingOdds(gameid1)
+			);
+			odds = await ApexConsumerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(0, odds[0]);
+			assert.bnEqual(0, odds[1]);
+			assert.bnEqual(0, odds[2]);
+			let gameOdds = await ApexConsumerDeployed.gameOdds(gameid1);
+			assert.equal(false, gameOdds.arePostQualifyingOddsFetched);
+
+			// send again "pre" as qualifying status
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOddsPost,
+				game1awayOddsPost,
+				gameid1,
+				sportFormula1,
+				eventId,
+				false,
+				{ from: wrapper }
+			);
+			assert.equal(
+				true,
+				await ApexConsumerDeployed.isGamePausedByNonExistingPostQualifyingOdds(gameid1)
+			);
+			odds = await ApexConsumerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(0, odds[0]);
+			assert.bnEqual(0, odds[1]);
+			assert.bnEqual(0, odds[2]);
+			gameOdds = await ApexConsumerDeployed.gameOdds(gameid1);
+			assert.equal(false, gameOdds.arePostQualifyingOddsFetched);
+
+			// send "post" as qualifying status
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOddsPost,
+				game1awayOddsPost,
+				gameid1,
+				sportFormula1,
+				eventId,
+				true,
+				{ from: wrapper }
+			);
+			assert.equal(
+				false,
+				await ApexConsumerDeployed.isGamePausedByNonExistingPostQualifyingOdds(gameid1)
+			);
+			odds = await ApexConsumerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(game1homeOddsPost, odds[0]);
+			assert.bnEqual(game1awayOddsPost, odds[1]);
+			assert.bnEqual(0, odds[2]);
+			gameOdds = await ApexConsumerDeployed.gameOdds(gameid1);
+			assert.equal(true, gameOdds.arePostQualifyingOddsFetched);
 		});
 
 		it('Fulfill Game Created - game not created', async () => {
@@ -301,18 +373,19 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(false, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
 			assert.equal(false, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
 
 			// race in the past
-			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
+			await fastForward(game1raceStartTime - (await currentTime()) + SECOND);
 			await ApexConsumerDeployed.fulfillMetaData(
 				reqIdCreateRace,
 				eventId,
@@ -327,11 +400,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(false, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
@@ -354,10 +428,11 @@ contract('ApexConsumer', (accounts) => {
 				game1homeTeam,
 				game1awayTeam,
 				invalidOdds,
-				game1awayOdds,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
@@ -387,11 +462,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -408,7 +484,22 @@ contract('ApexConsumer', (accounts) => {
 
 			assert.equal(false, await deployedMarket.canResolve());
 
-			await fastForward(await currentTime());
+			await fastForward(game1qualifyingStartTime - (await currentTime()) - SECOND);
+
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOddsPost,
+				game1awayOddsPost,
+				gameid1,
+				sportFormula1,
+				eventId,
+				true,
+				{ from: wrapper }
+			);
+
+			await fastForward(game1raceStartTime - (await currentTime()) + SECOND);
 
 			assert.equal(true, await deployedMarket.canResolve());
 			assert.equal(false, await ApexConsumerDeployed.isGameInResolvedStatus(gameid1));
@@ -490,11 +581,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -511,7 +603,7 @@ contract('ApexConsumer', (accounts) => {
 
 			assert.equal(false, await deployedMarket.canResolve());
 
-			await fastForward(await currentTime());
+			await fastForward(game1raceStartTime - (await currentTime()) + SECOND);
 
 			assert.equal(true, await deployedMarket.canResolve());
 			assert.equal(false, await ApexConsumerDeployed.isGameInResolvedStatus(gameid1));
@@ -588,11 +680,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -609,7 +702,7 @@ contract('ApexConsumer', (accounts) => {
 
 			assert.equal(false, await deployedMarket.canResolve());
 
-			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
+			await fastForward(game1raceStartTime - (await currentTime()) + SECOND);
 
 			assert.equal(true, await deployedMarket.canResolve());
 			assert.equal(false, await ApexConsumerDeployed.isGameInResolvedStatus(gameid1));
@@ -680,11 +773,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -730,7 +824,7 @@ contract('ApexConsumer', (accounts) => {
 			});
 
 			// canceling part when time has arrived
-			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
+			await fastForward(game1raceStartTime - (await currentTime()) + SECOND);
 
 			// paused
 			assert.equal(true, await deployedMarket.paused());
@@ -810,11 +904,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -831,7 +926,7 @@ contract('ApexConsumer', (accounts) => {
 
 			assert.equal(false, await deployedMarket.canResolve());
 
-			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
+			await fastForward(game1raceStartTime - (await currentTime()) + SECOND);
 
 			assert.equal(true, await deployedMarket.canResolve());
 
@@ -922,11 +1017,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -943,7 +1039,7 @@ contract('ApexConsumer', (accounts) => {
 
 			assert.equal(false, await deployedMarket.canResolve());
 
-			await fastForward(game1qualifyingStartTime - (await currentTime()) + 3 * HOUR);
+			await fastForward(game1raceStartTime - (await currentTime()) + SECOND);
 
 			assert.equal(true, await deployedMarket.canResolve());
 			await expect(
@@ -1016,11 +1112,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -1037,7 +1134,7 @@ contract('ApexConsumer', (accounts) => {
 
 			assert.equal(false, await deployedMarket.canResolve());
 
-			await fastForward(await currentTime());
+			await fastForward(game1raceStartTime - (await currentTime()) + SECOND);
 
 			await expect(
 				ApexConsumerDeployed.cancelMarketManually(marketAddress, { from: second })
@@ -1098,11 +1195,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -1118,16 +1216,16 @@ contract('ApexConsumer', (accounts) => {
 			deployedMarket = await SportPositionalMarketContract.at(answer);
 
 			let odds = await ApexConsumerDeployed.getOddsForGame(gameid1);
-			assert.bnEqual(game1homeOdds, odds[0]);
-			assert.bnEqual(game1awayOdds, odds[1]);
+			assert.bnEqual(game1homeOddsPre, odds[0]);
+			assert.bnEqual(game1awayOddsPre, odds[1]);
 			assert.bnEqual(0, odds[2]);
 
-			const parsedHomeNormalizedOdds = w3utils.toWei(game1homeNormalizedOdds.toString());
-			const parsedAwayNormalizedOdds = w3utils.toWei(game1awayNormalizedOdds.toString());
+			const parsedHomeNormalizedOddsPre = w3utils.toWei(game1homeNormalizedOddsPre.toString());
+			const parsedAwayNormalizedOddsPre = w3utils.toWei(game1awayNormalizedOddsPre.toString());
 
 			let normalizedOdds = await ApexConsumerDeployed.getNormalizedOdds(gameid1);
-			assert.bnEqual(parsedHomeNormalizedOdds, normalizedOdds[0]);
-			assert.bnEqual(parsedAwayNormalizedOdds, normalizedOdds[1]);
+			assert.bnEqual(parsedHomeNormalizedOddsPre, normalizedOdds[0]);
+			assert.bnEqual(parsedAwayNormalizedOddsPre, normalizedOdds[1]);
 			assert.bnEqual(0, normalizedOdds[2]);
 
 			let gameOdds = await ApexConsumerDeployed.gameOdds(gameid1);
@@ -1138,6 +1236,96 @@ contract('ApexConsumer', (accounts) => {
 				_id: gameid1,
 				_game: gameOdds,
 			});
+
+			assert.equal(
+				false,
+				await ApexConsumerDeployed.isGamePausedByNonExistingPostQualifyingOdds(gameid1)
+			);
+
+			await fastForward(game1qualifyingStartTime - (await currentTime()) + SECOND);
+
+			assert.equal(
+				true,
+				await ApexConsumerDeployed.isGamePausedByNonExistingPostQualifyingOdds(gameid1)
+			);
+
+			odds = await ApexConsumerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(0, odds[0]);
+			assert.bnEqual(0, odds[1]);
+			assert.bnEqual(0, odds[2]);
+
+			normalizedOdds = await ApexConsumerDeployed.getNormalizedOdds(gameid1);
+			assert.bnEqual(0, normalizedOdds[0]);
+			assert.bnEqual(0, normalizedOdds[1]);
+			assert.bnEqual(0, normalizedOdds[2]);
+
+			gameOdds = await ApexConsumerDeployed.gameOdds(gameid1);
+			assert.equal(false, gameOdds.arePostQualifyingOddsFetched);
+
+			// send again "pre" as qualifying status
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOddsPost,
+				game1awayOddsPost,
+				gameid1,
+				sportFormula1,
+				eventId,
+				false,
+				{ from: wrapper }
+			);
+			assert.equal(
+				true,
+				await ApexConsumerDeployed.isGamePausedByNonExistingPostQualifyingOdds(gameid1)
+			);
+
+			odds = await ApexConsumerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(0, odds[0]);
+			assert.bnEqual(0, odds[1]);
+			assert.bnEqual(0, odds[2]);
+
+			normalizedOdds = await ApexConsumerDeployed.getNormalizedOdds(gameid1);
+			assert.bnEqual(0, normalizedOdds[0]);
+			assert.bnEqual(0, normalizedOdds[1]);
+			assert.bnEqual(0, normalizedOdds[2]);
+
+			gameOdds = await ApexConsumerDeployed.gameOdds(gameid1);
+			assert.equal(false, gameOdds.arePostQualifyingOddsFetched);
+
+			// get "post" odds
+			await ApexConsumerDeployed.fulfillMatchup(
+				reqIdCreateGame,
+				game1homeTeam,
+				game1awayTeam,
+				game1homeOddsPost,
+				game1awayOddsPost,
+				gameid1,
+				sportFormula1,
+				eventId,
+				true,
+				{ from: wrapper }
+			);
+			assert.equal(
+				false,
+				await ApexConsumerDeployed.isGamePausedByNonExistingPostQualifyingOdds(gameid1)
+			);
+
+			odds = await ApexConsumerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(game1homeOddsPost, odds[0]);
+			assert.bnEqual(game1awayOddsPost, odds[1]);
+			assert.bnEqual(0, odds[2]);
+
+			const parsedHomeNormalizedOddsPost = w3utils.toWei(game1homeNormalizedOddsPost.toString());
+			const parsedAwayNormalizedOddsPost = w3utils.toWei(game1awayNormalizedOddsPost.toString());
+
+			normalizedOdds = await ApexConsumerDeployed.getNormalizedOdds(gameid1);
+			assert.bnEqual(parsedHomeNormalizedOddsPost, normalizedOdds[0]);
+			assert.bnEqual(parsedAwayNormalizedOddsPost, normalizedOdds[1]);
+			assert.bnEqual(0, normalizedOdds[2]);
+
+			gameOdds = await ApexConsumerDeployed.gameOdds(gameid1);
+			assert.equal(true, gameOdds.arePostQualifyingOddsFetched);
 		});
 
 		it('Get odds per game, check results, invalid odds, pause market, unpause once odds are valid', async () => {
@@ -1161,18 +1349,19 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
 
 			let odds = await ApexConsumerDeployed.getOddsForGame(gameid1);
-			assert.bnEqual(game1homeOdds, odds[0]);
-			assert.bnEqual(game1awayOdds, odds[1]);
+			assert.bnEqual(game1homeOddsPre, odds[0]);
+			assert.bnEqual(game1awayOddsPre, odds[1]);
 			assert.bnEqual(0, odds[2]);
 
 			// create market
@@ -1193,10 +1382,11 @@ contract('ApexConsumer', (accounts) => {
 				game1homeTeam,
 				game1awayTeam,
 				invalidOdds,
-				game1awayOdds,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 
@@ -1227,11 +1417,12 @@ contract('ApexConsumer', (accounts) => {
 				reqIdCreateGame,
 				game1homeTeam,
 				game1awayTeam,
-				game1homeOdds,
-				game1awayOdds,
+				game1homeOddsPre,
+				game1awayOddsPre,
 				gameid1,
 				sportFormula1,
 				eventId,
+				false,
 				{ from: wrapper }
 			);
 

@@ -66,6 +66,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint256 homeOdds;
         uint256 awayOdds;
         uint256 drawOdds;
+        bool arePostQualifyingOddsFetched;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -137,7 +138,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint256 _raceStartTime,
         string memory _sport
     ) external onlyWrapper {
-        if (_qualifyingStartTime > block.timestamp) {
+        if (_raceStartTime > block.timestamp) {
             RaceCreate memory race;
 
             race.raceId = _eventId;
@@ -169,16 +170,18 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint256 _probB,
         bytes32 _gameId,
         string memory _sport,
-        string memory _eventId
+        string memory _eventId,
+        bool _arePostQualifyingOdds
     ) external onlyWrapper {
         if (raceFulfilledCreated[_eventId]) {
             RaceCreate memory race = raceCreated[_eventId];
 
-            if (race.qualifyingStartTime > block.timestamp) {
+            if (race.startTime > block.timestamp) {
                 GameOdds memory newGameOdds;
                 newGameOdds.gameId = _gameId;
                 newGameOdds.homeOdds = _probA;
                 newGameOdds.awayOdds = _probB;
+                newGameOdds.arePostQualifyingOddsFetched = _arePostQualifyingOdds;
 
                 if (!gameFulfilledCreated[_gameId]) {
                     if (_areOddsValid(newGameOdds)) {
@@ -190,9 +193,9 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
                         game.homeTeam = _betTypeDetail1;
                         game.awayTeam = _betTypeDetail2;
                         game.raceId = _eventId;
-                        game.startTime = race.qualifyingStartTime;
+                        game.startTime = race.startTime;
 
-                        _createGameFulfill(_requestId, game, supportedSportId[_sport]);
+                        _createGameFulfill(_requestId, game, newGameOdds, supportedSportId[_sport]);
                         _oddsGameFulfill(_requestId, newGameOdds);
                     }
                 } else {
@@ -292,7 +295,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @return awayOdds moneyline odd in a two decimal places
     /// @return drawOdds moneyline odd in a two decimal places
     function getOddsForGame(bytes32 _gameId)
-        external
+        public
         view
         returns (
             uint256,
@@ -300,7 +303,10 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
             uint256
         )
     {
-        return (gameOdds[_gameId].homeOdds, gameOdds[_gameId].awayOdds, gameOdds[_gameId].drawOdds);
+        return
+            isGamePausedByNonExistingPostQualifyingOdds(_gameId)
+                ? (0, 0, 0)
+                : (gameOdds[_gameId].homeOdds, gameOdds[_gameId].awayOdds, gameOdds[_gameId].drawOdds);
     }
 
     /// @notice View function which returns game created object based on ID of a game
@@ -336,9 +342,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @return uint[] odds array normalized
     function getNormalizedOdds(bytes32 _gameId) public view returns (uint[] memory) {
         uint[] memory normalizedOdds = new uint[](3);
-        normalizedOdds[0] = gameOdds[_gameId].homeOdds;
-        normalizedOdds[1] = gameOdds[_gameId].awayOdds;
-        normalizedOdds[2] = gameOdds[_gameId].drawOdds;
+        (normalizedOdds[0], normalizedOdds[1], normalizedOdds[2]) = getOddsForGame(_gameId);
 
         for (uint i = 0; i < normalizedOdds.length; i++) {
             normalizedOdds[i] = (1e18 * normalizedOdds[i]) / 1e4;
@@ -360,6 +364,20 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         return gameFulfilledCreated[_gameId];
     }
 
+    /// @notice View function which returns if game is paused because there are no new odds for post qualifying phase
+    /// @param _gameId unique game identifier for which result is looking
+    /// @return bool is game paused
+    function isGamePausedByNonExistingPostQualifyingOdds(bytes32 _gameId) public view returns (bool) {
+        GameCreate memory game = gameCreated[_gameId];
+        RaceCreate memory race = raceCreated[game.raceId];
+        GameOdds memory odds = gameOdds[_gameId];
+
+        return
+            race.qualifyingStartTime < block.timestamp &&
+            game.startTime > block.timestamp &&
+            !odds.arePostQualifyingOddsFetched;
+    }
+
     /* ========== INTERNALS ========== */
 
     function _createRaceFulfill(
@@ -376,12 +394,13 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     function _createGameFulfill(
         bytes32 _requestId,
         GameCreate memory _game,
+        GameOdds memory _gameOdds,
         uint _sportId
     ) internal {
         gameCreated[_game.gameId] = _game;
         sportsIdPerGame[_game.gameId] = _sportId;
         gameFulfilledCreated[_game.gameId] = true;
-        gameOdds[_game.gameId] = GameOdds(_game.gameId, _game.homeOdds, _game.awayOdds, _game.drawOdds);
+        gameOdds[_game.gameId] = _gameOdds;
 
         emit GameCreated(_requestId, _sportId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
     }

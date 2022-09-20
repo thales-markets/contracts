@@ -1437,6 +1437,7 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(0, fightC.homeScore);
 			assert.equal(0, fightC.awayScore);
 			assert.equal(2, fightC.statusId);
+			assert.equal(1660082400, fightC.lastUpdated);
 
 			assert.eventEqual(tx_3.logs[0], 'GameResolved', {
 				_requestId: reqIdFightCanceled,

@@ -10,7 +10,7 @@ const { toUnit } = require('../../utils')();
 
 const { toBytes32 } = require('../../../index');
 
-contract('TherundownConsumerWrapper', accounts => {
+contract('TherundownConsumerWrapper', (accounts) => {
 	const [first, owner, second, third] = accounts;
 	let TherundownConsumerWrapper;
 	let TherundownConsumerWrapperDeployed;
@@ -23,6 +23,7 @@ contract('TherundownConsumerWrapper', accounts => {
 	let paymentCreate;
 	let paymentResolve;
 	let paymentOdds;
+	let verifier;
 
 	beforeEach(async () => {
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
@@ -63,6 +64,29 @@ contract('TherundownConsumerWrapper', accounts => {
 		);
 
 		wrapper = await TherundownConsumerWrapper.at(TherundownConsumerWrapperDeployed.address);
+
+		let ConsumerVerifier = artifacts.require('TherundownConsumerVerifier');
+		verifier = await ConsumerVerifier.new({ from: owner });
+
+		await verifier.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			['TBD TBD', 'TBA TBA'],
+			['create', 'resolve'],
+			{
+				from: owner,
+			}
+		);
+
+		await consumer.setSportContracts(
+			TherundownConsumerWrapperDeployed.address,
+			MockPriceFeedDeployed.address,
+			MockPriceFeedDeployed.address,
+			verifier.address,
+			{
+				from: owner,
+			}
+		);
 	});
 
 	describe('Wrapper tests', () => {

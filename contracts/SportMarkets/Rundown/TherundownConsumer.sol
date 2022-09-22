@@ -11,6 +11,7 @@ import "./GamesQueue.sol";
 
 // interface
 import "../../interfaces/ISportPositionalMarketManager.sol";
+import "../../interfaces/ITherundownConsumerVerifier.sol";
 
 /// @title Consumer contract which stores all data from CL data feed (Link to docs: https://market.link/nodes/TheRundown/integrations), also creates all sports markets based on that data
 /// @author gruja
@@ -93,6 +94,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public canMarketBeUpdated;
     mapping(bytes32 => uint) public gameOnADate;
 
+    ITherundownConsumerVerifier public verifier;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -135,7 +138,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             // new game
             if (
                 !queues.existingGamesInCreatedQueue(gameForProcessing.gameId) &&
-                !isSameTeamOrTBD(gameForProcessing.homeTeam, gameForProcessing.awayTeam) &&
+                !verifier.isInvalidNames(gameForProcessing.homeTeam, gameForProcessing.awayTeam) &&
                 gameForProcessing.startTime > block.timestamp
             ) {
                 _updateGameOnADate(gameForProcessing.gameId, _date, _sportId);
@@ -147,10 +150,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
                 // if name of fighter (away or home) is not the same
                 if (
-                    keccak256(abi.encodePacked(gameForProcessing.homeTeam)) !=
-                    keccak256(abi.encodePacked(currentGameValues.homeTeam)) ||
-                    keccak256(abi.encodePacked(gameForProcessing.awayTeam)) !=
-                    keccak256(abi.encodePacked(currentGameValues.awayTeam))
+                    !verifier.areTeamsEqual(gameForProcessing.homeTeam, currentGameValues.homeTeam) ||
+                    !verifier.areTeamsEqual(gameForProcessing.awayTeam, currentGameValues.awayTeam)
                 ) {
                     // double-check if market exists -> cancel market -> create new for queue
                     if (marketCreated[marketPerGameId[gameForProcessing.gameId]]) {
@@ -338,20 +339,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _market type of market (create or resolve)
     /// @return bool supported or not
     function isSupportedMarketType(string memory _market) external view returns (bool) {
-        return
-            keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create")) ||
-            keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("resolve"));
-    }
-
-    /// @notice view function which returns if game is ready to be created and teams are defined or not
-    /// @param _teamA team A in string (Example: Liverpool Liverpool)
-    /// @param _teamB team B in string (Example: Arsenal Arsenal)
-    /// @return bool is it ready for creation true/false
-    function isSameTeamOrTBD(string memory _teamA, string memory _teamB) public view returns (bool) {
-        return
-            keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked(_teamB)) ||
-            keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked("TBD TBD")) ||
-            keccak256(abi.encodePacked(_teamB)) == keccak256(abi.encodePacked("TBD TBD"));
+        return verifier.isSupportedMarketType(_market);
     }
 
     /// @notice view function which returns if game is resolved or canceled and ready for market to be resolved or canceled
@@ -774,18 +762,23 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function setSportContracts(
         address _wrapperAddress,
         GamesQueue _queues,
-        address _sportsManager
+        address _sportsManager,
+        address _verifier
     ) external onlyOwner {
         require(
-            _wrapperAddress != address(0) || address(_queues) != address(0) || _sportsManager != address(0),
+            _wrapperAddress != address(0) ||
+                address(_queues) != address(0) ||
+                _sportsManager != address(0) ||
+                _verifier != address(0),
             "Invalid addreses"
         );
 
         sportsManager = ISportPositionalMarketManager(_sportsManager);
         queues = _queues;
         wrapperAddress = _wrapperAddress;
+        verifier = ITherundownConsumerVerifier(_verifier);
 
-        emit NewSportContracts(_wrapperAddress, _queues, _sportsManager);
+        emit NewSportContracts(_wrapperAddress, _queues, _sportsManager, _verifier);
     }
 
     /// @notice adding/removing whitelist address depending on a flag
@@ -853,6 +846,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event NewSportsMarketManager(address _sportsManager); // deprecated
     event NewWrapperAddress(address _wrapperAddress); // deprecated
     event NewQueueAddress(GamesQueue _queues); // deprecated
-    event NewSportContracts(address _wrapperAddress, GamesQueue _queues, address _sportsManager);
+    event NewSportContracts(address _wrapperAddress, GamesQueue _queues, address _sportsManager, address _verifier);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 }

@@ -78,6 +78,9 @@ contract('TheRundownConsumer', (accounts) => {
 		outcomePosition2;
 
 	let consumer;
+	let verifier;
+	let TherundownConsumerVerifier;
+	let TherundownConsumerVerifierDeployed;
 	let TherundownConsumer;
 	let TherundownConsumerImplementation;
 	let TherundownConsumerDeployed;
@@ -328,10 +331,24 @@ contract('TheRundownConsumer', (accounts) => {
 		);
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 
+		let ConsumerVerifier = artifacts.require('TherundownConsumerVerifier');
+		verifier = await ConsumerVerifier.new({ from: owner });
+
+		await verifier.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			['TDB TDB', 'TBA TBA'],
+			['create', 'resolve'],
+			{
+				from: owner,
+			}
+		);
+
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
+			verifier.address,
 			{ from: owner }
 		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
@@ -357,23 +374,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarketType('create'));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarketType('resolve'));
 			assert.equal(false, await TherundownConsumerDeployed.isSupportedMarketType('aaa'));
-
-			assert.equal(
-				true,
-				await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'Real Madrid')
-			);
-			assert.equal(
-				true,
-				await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'TBD TBD')
-			);
-			assert.equal(
-				true,
-				await TherundownConsumerDeployed.isSameTeamOrTBD('TBD TBD', 'Liverpool FC')
-			);
-			assert.equal(
-				false,
-				await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'Liverpool FC')
-			);
 
 			assert.equal(true, await TherundownConsumerDeployed.supportResolveGameStatuses(8));
 			assert.equal(false, await TherundownConsumerDeployed.supportResolveGameStatuses(1));
@@ -2057,19 +2057,28 @@ contract('TheRundownConsumer', (accounts) => {
 				wrapper,
 				wrapper,
 				wrapper,
+				wrapper,
 				{
 					from: owner,
 				}
 			);
 
 			await expect(
-				TherundownConsumerDeployed.setSportContracts(wrapper, wrapper, wrapper, { from: wrapper })
+				TherundownConsumerDeployed.setSportContracts(wrapper, wrapper, wrapper, wrapper, {
+					from: wrapper,
+				})
 			).to.be.revertedWith('Only the contract owner may perform this action');
 
 			await expect(
-				TherundownConsumerDeployed.setSportContracts(ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS, {
-					from: owner,
-				})
+				TherundownConsumerDeployed.setSportContracts(
+					ZERO_ADDRESS,
+					ZERO_ADDRESS,
+					ZERO_ADDRESS,
+					ZERO_ADDRESS,
+					{
+						from: owner,
+					}
+				)
 			).to.be.revertedWith('Invalid addreses');
 
 			// check if event is emited
@@ -2077,6 +2086,7 @@ contract('TheRundownConsumer', (accounts) => {
 				_wrapperAddress: wrapper,
 				_queues: wrapper,
 				_sportsManager: wrapper,
+				_verifier: wrapper,
 			});
 		});
 	});

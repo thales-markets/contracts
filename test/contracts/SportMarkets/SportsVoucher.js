@@ -33,7 +33,7 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
-contract('SportsAMM', (accounts) => {
+contract('SportsVauchers', (accounts) => {
 	const [manager, first, owner, second, third, fourth, safeBox, wrapper, minter] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -68,6 +68,7 @@ contract('SportsAMM', (accounts) => {
 	let MockExoticMarket;
 	let MockTherundownConsumerWrapper;
 	let initializeConsumerData;
+	let verifier;
 	let gamesQueue;
 	let game_1_create;
 	let game_1_resolve;
@@ -294,6 +295,19 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		let ConsumerVerifier = artifacts.require('TherundownConsumerVerifier');
+		verifier = await ConsumerVerifier.new({ from: owner });
+
+		await verifier.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			['TBD TBD', 'TBA TBA'],
+			['create', 'resolve'],
+			{
+				from: owner,
+			}
+		);
+
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
 		// 	TherundownConsumerDeployed.address
@@ -302,6 +316,7 @@ contract('SportsAMM', (accounts) => {
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
+			verifier.address,
 			{
 				from: owner,
 			}

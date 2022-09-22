@@ -791,7 +791,7 @@ contract('ParlayAMM', (accounts) => {
 				let result = await ParlayAMM.canExerciseAnySportPositionOnParlay(
 					parlaySingleMarket.address
 				);
-				assert.equal(result, answer);
+				assert.equal(result.isExercisable, answer.isResolved);
 			});
 
 			it('Single game resolved', async () => {
@@ -808,8 +808,8 @@ contract('ParlayAMM', (accounts) => {
 				const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
 				let answer = await parlaySingleMarket.isAnySportMarketResolved();
 				let result = await ParlayAMM.isAnySportPositionResolvedOnParlay(parlaySingleMarket.address);
-				assert.equal(answer, true);
-				assert.equal(result, true);
+				assert.equal(answer.isResolved, true);
+				assert.equal(result.isAnyResolvable, true);
 			});
 
 			it('All games resolved', async () => {
@@ -848,8 +848,8 @@ contract('ParlayAMM', (accounts) => {
 
 				let answer = await parlaySingleMarket.isAnySportMarketResolved();
 				let result = await ParlayAMM.isAnySportPositionResolvedOnParlay(parlaySingleMarket.address);
-				assert.equal(answer, true);
-				assert.equal(result, true);
+				assert.equal(answer.isResolved, true);
+				assert.equal(result.isAnyResolvable, true);
 			});
 
 			describe('Exercise single market of the parlay', () => {
@@ -884,19 +884,19 @@ contract('ParlayAMM', (accounts) => {
 					}
 				});
 				it('Excercise specific parlay', async () => {
-					assert.equal(
-						await ParlayAMM.isAnySportPositionResolvedOnParlay(parlaySingleMarket.address),
-						true
+					let result = await ParlayAMM.isAnySportPositionResolvedOnParlay(
+						parlaySingleMarket.address
 					);
-					assert.equal(await parlaySingleMarket.isAnySportMarketExercisable(), true);
+					assert.equal(result.isAnyResolvable, true);
+					result = await parlaySingleMarket.isAnySportMarketExercisable();
+					assert.equal(result.isExercisable, true);
 					await ParlayAMM.exerciseSportMarketInParlay(
 						parlaySingleMarket.address,
 						parlayMarkets[0].address
 					);
-					assert.equal(
-						await ParlayAMM.canExerciseAnySportPositionOnParlay(parlaySingleMarket.address),
-						false
-					);
+
+					result = await parlaySingleMarket.isAnySportMarketExercisable();
+					assert.equal(result.isExercisable, false);
 				});
 			});
 

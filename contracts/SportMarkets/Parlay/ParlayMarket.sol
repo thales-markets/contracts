@@ -79,23 +79,29 @@ contract ParlayMarket is OwnedWithInit {
         //add odds
     }
 
-    function isAnySportMarketExercisable() external view returns (bool isExercisable) {
+    function isAnySportMarketExercisable() external view returns (bool isExercisable, address[] memory exercisableMarkets) {
+        exercisableMarkets = new address[](numOfSportMarkets);
+        bool exercisable;
         for (uint i = 0; i < numOfSportMarkets; i++) {
             if (!sportMarket[i].exercised) {
-                (isExercisable, ) = _isWinningSportMarket(sportMarket[i].sportAddress, sportMarket[i].position);
-                if (isExercisable) {
-                    break;
+                (exercisable, ) = _isWinningSportMarket(sportMarket[i].sportAddress, sportMarket[i].position);
+                if (exercisable) {
+                    isExercisable = true;
+                    exercisableMarkets[i] = sportMarket[i].sportAddress;
                 }
             }
         }
     }
 
-    function isAnySportMarketResolved() external view returns (bool isResolved) {
+    function isAnySportMarketResolved() external view returns (bool isResolved, address[] memory resolvableMarkets) {
+        resolvableMarkets = new address[](numOfSportMarkets);
+        bool resolvable;
         for (uint i = 0; i < numOfSportMarkets; i++) {
             if (!sportMarket[i].resolved) {
-                (, isResolved) = _isWinningSportMarket(sportMarket[i].sportAddress, sportMarket[i].position);
-                if (isResolved) {
-                    break;
+                (, resolvable) = _isWinningSportMarket(sportMarket[i].sportAddress, sportMarket[i].position);
+                if (resolvable) {
+                    isResolved = true;
+                    resolvableMarkets[i] = sportMarket[i].sportAddress;
                 }
             }
         }

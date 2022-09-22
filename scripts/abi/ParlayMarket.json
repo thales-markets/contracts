@@ -187,6 +187,11 @@
         "internalType": "bool",
         "name": "isExercisable",
         "type": "bool"
+      },
+      {
+        "internalType": "address[]",
+        "name": "exercisableMarkets",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -200,6 +205,11 @@
         "internalType": "bool",
         "name": "isResolved",
         "type": "bool"
+      },
+      {
+        "internalType": "address[]",
+        "name": "resolvableMarkets",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",

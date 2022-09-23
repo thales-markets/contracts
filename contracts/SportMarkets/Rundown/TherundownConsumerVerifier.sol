@@ -14,9 +14,14 @@ import "../../interfaces/ITherundownConsumer.sol";
 /// @title Verifier of data which are coming from CL and stored into TherundownConsumer.sol
 /// @author gruja
 contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable {
+    uint private constant ONE_PERCENT = 1e16;
+    uint private constant ONE = 1e18;
+
     ITherundownConsumer public consumer;
     mapping(bytes32 => bool) public invalidName;
     mapping(bytes32 => bool) public supportedMarketType;
+    uint public defaultOddThreshold;
+    mapping(uint => uint) public oddThresholdForSport;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -24,12 +29,14 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         address _owner,
         address _consumer,
         string[] memory _invalidNames,
-        string[] memory _supportedMarketTypes
+        string[] memory _supportedMarketTypes,
+        uint _defaultOddThreshold
     ) external initializer {
         setOwner(_owner);
         consumer = ITherundownConsumer(_consumer);
         _setInvalidNames(_invalidNames, true);
         _setSupportedMarketTypes(_supportedMarketTypes, true);
+        defaultOddThreshold = _defaultOddThreshold;
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -58,6 +65,28 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @return bool supported or not
     function isSupportedMarketType(string memory _market) external view returns (bool) {
         return supportedMarketType[keccak256(abi.encodePacked(_market))];
+    }
+
+    /// @notice view function which returns if odds are inside of the threshold
+    /// @param _sportId sport id for which we get threshold
+    /// @return bool true if odds are less then threshold false if above
+    function areOddsInThreshold(
+        uint _sportId,
+        uint _currentOdd,
+        uint _newOdd
+    ) external view returns (bool) {
+        uint threshold = oddThresholdForSport[_sportId] == 0 ? defaultOddThreshold : oddThresholdForSport[_sportId];
+
+        // new odd appear or it is equal
+        if (_currentOdd == 0 || _currentOdd == _newOdd) {
+            return true;
+        }
+
+        // if current odd is GT new one
+        if (_newOdd > _currentOdd) {
+            return !(((ONE * _newOdd) / _currentOdd) > (ONE + (threshold * ONE_PERCENT)));
+        }
+        return !(ONE - ((_newOdd * ONE) / _currentOdd) > (threshold * ONE_PERCENT));
     }
 
     /* ========== INTERNALS ========== */
@@ -108,8 +137,30 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         _setSupportedMarketTypes(_supportedMarketTypes, _isSupported);
     }
 
+    /// @notice setting default odd threshold
+    /// @param _defaultOddThreshold default odd threshold
+    function setDefaultOddThreshold(uint _defaultOddThreshold) external onlyOwner {
+        require(_defaultOddThreshold > 0, "Must be more then ZERO");
+        defaultOddThreshold = _defaultOddThreshold;
+        emit NewDefaultOddThreshold(_defaultOddThreshold);
+    }
+
+    /// @notice setting custom odd threshold for sport
+    /// @param _sportId sport id
+    /// @param _oddThresholdForSport custom odd threshold which will be by sport
+    function setCustomOddThresholdForSport(uint _sportId, uint _oddThresholdForSport) external onlyOwner {
+        require(defaultOddThreshold != _oddThresholdForSport, "Same value as default value");
+        require(_oddThresholdForSport > 0, "Must be more then ZERO");
+        require(consumer.isSupportedSport(_sportId), "SportId is not supported");
+        require(oddThresholdForSport[_sportId] != _oddThresholdForSport, "Same value as before");
+        oddThresholdForSport[_sportId] = _oddThresholdForSport;
+        emit NewCustomOddThresholdForSport(_sportId, _oddThresholdForSport);
+    }
+
     /* ========== EVENTS ========== */
     event NewConsumerAddress(address _consumer);
     event SetInvalidName(bytes32 _invalidName, bool _isInvalid);
     event SetSupportedMarketType(bytes32 _supportedMarketType, bool _isSupported);
+    event NewDefaultOddThreshold(uint _defaultOddThreshold);
+    event NewCustomOddThresholdForSport(uint _sportId, uint _oddThresholdForSport);
 }

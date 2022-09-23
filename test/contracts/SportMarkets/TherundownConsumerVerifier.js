@@ -315,49 +315,59 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		dummyAddress = '0xb69e74324bc030f1b8889236efa461496d439226';
 
 		TherundownConsumer = artifacts.require('TherundownConsumer');
-		TherundownConsumerDeployed = await TherundownConsumer.new();
+		TherundownConsumerDeployed = await TherundownConsumer.new({ from: manager });
 
-		await TherundownConsumerDeployed.initialize(
-			owner,
+		consumer = await TherundownConsumer.at(TherundownConsumerDeployed.address);
+
+		await consumer.initialize(
+			manager,
 			[sportId_4, sportId_16, sportId_7],
 			SportPositionalMarketManager.address,
 			[sportId_4, sportId_7],
 			gamesQueue.address,
 			[8, 11, 12], // resolved statuses
 			[1, 2], // cancel statuses
-			{ from: owner }
+			{ from: manager }
 		);
-		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 
 		let ConsumerVerifier = artifacts.require('TherundownConsumerVerifier');
-		verifier = await ConsumerVerifier.new({ from: owner });
+		TherundownConsumerVerifierDeployed = await ConsumerVerifier.new({ from: manager });
+
+		verifier = await ConsumerVerifier.at(TherundownConsumerVerifierDeployed.address);
 
 		await verifier.initialize(
 			owner,
-			TherundownConsumerDeployed.address,
+			consumer.address,
 			['TBD TBD', 'TBA TBA'],
 			['create', 'resolve'],
+			20,
 			{
-				from: owner,
+				from: manager,
 			}
 		);
 
-		await TherundownConsumerDeployed.setSportContracts(
+		await consumer.setSportContracts(
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
 			verifier.address,
-			{ from: owner }
+			{ from: manager }
 		);
-		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
+		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: manager });
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
 		});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
+		await verifier.setCustomOddThresholdForSport(sportId_16, 10, {
+			from: owner,
+		});
 	});
 
 	describe('Init', () => {
 		it('Check init', async () => {
+			assert.equal(20, await verifier.defaultOddThreshold());
+			assert.equal(10, await verifier.oddThresholdForSport(sportId_16));
+
 			assert.equal(true, await verifier.isInvalidNames('Liverpool', 'Liverpool'));
 			assert.equal(true, await verifier.areTeamsEqual('Liverpool', 'Liverpool'));
 
@@ -369,6 +379,80 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			assert.equal(true, await verifier.isSupportedMarketType('create'));
 			assert.equal(true, await verifier.isSupportedMarketType('resolve'));
 			assert.equal(false, await verifier.isSupportedMarketType('aaa'));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
+		});
+	});
+
+	describe('Checking odds - compare', () => {
+		it('Different odds checking', async () => {
+			assert.equal(
+				true,
+				await verifier.areOddsInThreshold(sportId_16, 0, toUnit('0.321223930700518974'))
+			);
+			assert.equal(
+				true,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					toUnit('0.321223930700518974'),
+					toUnit('0.321223930700518974')
+				)
+			);
+			assert.equal(
+				true,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					toUnit('0.311223930700518974'),
+					toUnit('0.321223930700518974')
+				)
+			);
+			assert.equal(
+				true,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					toUnit('0.321223930700518974'),
+					toUnit('0.311223930700518974')
+				)
+			);
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					toUnit('0.321223930700518974'),
+					toUnit('0.121223930700518974')
+				)
+			);
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					toUnit('0.121223930700518974'),
+					toUnit('0.321223930700518974')
+				)
+			);
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(sportId_16, toUnit('100'), toUnit('89'))
+			);
+			assert.equal(
+				true,
+				await verifier.areOddsInThreshold(sportId_16, toUnit('100'), toUnit('90'))
+			);
+			assert.equal(
+				true,
+				await verifier.areOddsInThreshold(sportId_16, toUnit('91'), toUnit('100'))
+			);
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(sportId_16, toUnit('90'), toUnit('100'))
+			);
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(sportId_16, toUnit('100'), toUnit('89'))
+			);
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(sportId_16, toUnit('89'), toUnit('100'))
+			);
 		});
 	});
 
@@ -424,6 +508,58 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			assert.eventEqual(tx_setSupportedMarketTypes.logs[0], 'SetSupportedMarketType', {
 				_supportedMarketType: '0xb9a5dc0048db9a7d13548781df3cd4b2334606391f75f40c14225a92f4cb3537',
 				_isSupported: true,
+			});
+
+			const tx_setDefaultOddThreshold = await verifier.setDefaultOddThreshold(20, {
+				from: owner,
+			});
+
+			await expect(verifier.setDefaultOddThreshold(20, { from: wrapper })).to.be.revertedWith(
+				'Only the contract owner may perform this action'
+			);
+
+			await expect(verifier.setDefaultOddThreshold(0, { from: owner })).to.be.revertedWith(
+				'Must be more then ZERO'
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_setDefaultOddThreshold.logs[0], 'NewDefaultOddThreshold', {
+				_defaultOddThreshold: 20,
+			});
+
+			await expect(
+				verifier.setCustomOddThresholdForSport(sportId_4, 20, { from: owner })
+			).to.be.revertedWith('Same value as default value');
+
+			await verifier.setConsumerAddress(consumer.address, {
+				from: owner,
+			});
+
+			const tx_setCustomOddThresholdForSport = await verifier.setCustomOddThresholdForSport(
+				sportId_4,
+				19,
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				verifier.setCustomOddThresholdForSport(sportId_4, 19, { from: wrapper })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			await expect(
+				verifier.setCustomOddThresholdForSport(sportId_4, 0, { from: owner })
+			).to.be.revertedWith('Must be more then ZERO');
+			await expect(
+				verifier.setCustomOddThresholdForSport(sportId_4, 19, { from: owner })
+			).to.be.revertedWith('Same value as before');
+			await expect(
+				verifier.setCustomOddThresholdForSport(5, 21, { from: owner })
+			).to.be.revertedWith('SportId is not supported');
+			// check if event is emited
+			assert.eventEqual(tx_setCustomOddThresholdForSport.logs[0], 'NewCustomOddThresholdForSport', {
+				_sportId: sportId_4,
+				_oddThresholdForSport: 19,
 			});
 		});
 	});

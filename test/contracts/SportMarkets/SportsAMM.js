@@ -339,6 +339,7 @@ contract('SportsAMM', (accounts) => {
 			TherundownConsumerDeployed.address,
 			['TDB TDB', 'TBA TBA'],
 			['create', 'resolve'],
+			20,
 			{
 				from: owner,
 			}

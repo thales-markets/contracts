@@ -73,6 +73,7 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			TherundownConsumerDeployed.address,
 			['TBD TBD', 'TBA TBA'],
 			['create', 'resolve'],
+			20,
 			{
 				from: owner,
 			}

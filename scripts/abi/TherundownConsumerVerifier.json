@@ -17,6 +17,38 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_oddThresholdForSport",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewCustomOddThresholdForSport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_defaultOddThreshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "NewDefaultOddThreshold",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -105,6 +137,35 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_currentOdd",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_newOdd",
+        "type": "uint256"
+      }
+    ],
+    "name": "areOddsInThreshold",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_teamA",
         "type": "string"
@@ -140,6 +201,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "defaultOddThreshold",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -160,6 +234,11 @@
         "internalType": "string[]",
         "name": "_supportedMarketTypes",
         "type": "string[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_defaultOddThreshold",
+        "type": "uint256"
       }
     ],
     "name": "initialize",
@@ -269,6 +348,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "oddThresholdForSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -303,6 +401,37 @@
       }
     ],
     "name": "setConsumerAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_oddThresholdForSport",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCustomOddThresholdForSport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_defaultOddThreshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDefaultOddThreshold",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

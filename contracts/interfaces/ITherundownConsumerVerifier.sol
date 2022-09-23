@@ -9,4 +9,10 @@ interface ITherundownConsumerVerifier {
     function areTeamsEqual(string memory _teamA, string memory _teamB) external view returns (bool);
 
     function isSupportedMarketType(string memory _market) external view returns (bool);
+
+    function areOddsInThreshold(
+        uint _sportId,
+        uint _currentOdd,
+        uint _newOdd
+    ) external view returns (bool);
 }

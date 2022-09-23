@@ -608,6 +608,19 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "_parlayMarkets",
+        "type": "address[]"
+      }
+    ],
+    "name": "expireMarkets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_parlayMarket",
         "type": "address"

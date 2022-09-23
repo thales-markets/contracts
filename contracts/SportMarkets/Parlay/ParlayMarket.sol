@@ -301,10 +301,29 @@ contract ParlayMarket is OwnedWithInit {
         parlayMarketsAMM.sUSD().transfer(recipient, parlayMarketsAMM.sUSD().balanceOf(address(this)));
     }
 
+    function expire(address payable beneficiary) external onlyAMM {
+        require(phase() == Phase.Expiry, "Ticket Expired");
+        emit Expired(beneficiary);
+        _selfDestruct(beneficiary);
+    }
+
+    function _selfDestruct(address payable beneficiary) internal {
+        // Transfer the balance rather than the deposit value in case there are any synths left over
+        // from direct transfers.
+        uint balance = parlayMarketsAMM.sUSD().balanceOf(address(this));
+        if (balance != 0) {
+            parlayMarketsAMM.sUSD().transfer(beneficiary, balance);
+        }
+
+        // Destroy the option tokens before destroying the market itself.
+        selfdestruct(beneficiary);
+    }
+
     modifier onlyAMM() {
         require(msg.sender == address(parlayMarketsAMM), "only the AMM may perform these methods");
         _;
     }
 
     event Resolved(bool isUserTheWinner);
+    event Expired(address beneficiary);
 }

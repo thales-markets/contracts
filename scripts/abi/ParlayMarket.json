@@ -5,6 +5,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "beneficiary",
+        "type": "address"
+      }
+    ],
+    "name": "Expired",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -80,6 +93,19 @@
   {
     "inputs": [],
     "name": "exerciseWiningSportMarkets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "beneficiary",
+        "type": "address"
+      }
+    ],
+    "name": "expire",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -644,6 +644,11 @@
         "type": "address"
       },
       {
+        "internalType": "contract ISportPositionalMarketManager",
+        "name": "_sportManager",
+        "type": "address"
+      },
+      {
         "internalType": "uint256",
         "name": "_parlayAmmFee",
         "type": "uint256"
@@ -1145,6 +1150,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sportManager",
+    "outputs": [
+      {
+        "internalType": "contract ISportPositionalMarketManager",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

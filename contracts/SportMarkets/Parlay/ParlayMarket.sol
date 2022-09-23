@@ -20,6 +20,12 @@ contract ParlayMarket is OwnedWithInit {
     uint private constant ONE_PERCENT = 1e16;
     uint private constant TWELVE_DECIMAL = 1e6;
 
+    enum Phase {
+        Trading,
+        Maturity,
+        Expiry
+    }
+
     struct SportMarkets {
         address sportAddress;
         uint position;
@@ -37,6 +43,7 @@ contract ParlayMarket is OwnedWithInit {
     mapping(address => uint) private _sportMarketIndex;
 
     uint public numOfResolvedSportMarkets;
+    uint public expiry;
     uint public amount;
     uint public sUSDPaid;
     uint public totalResultQuote;
@@ -58,6 +65,7 @@ contract ParlayMarket is OwnedWithInit {
         uint[] calldata _positionPerMarket,
         uint _amount,
         uint _sUSDPaid,
+        uint _expiryDuration,
         address _parlayMarketsAMM,
         address _parlayOwner
     ) external {
@@ -74,6 +82,7 @@ contract ParlayMarket is OwnedWithInit {
         }
         // sportMarket = sportMarketTemp;
         amount = _amount;
+        expiry = block.timestamp + _expiryDuration;
         sUSDPaid = _sUSDPaid;
         parlayOwner = _parlayOwner;
         //add odds
@@ -116,6 +125,18 @@ contract ParlayMarket is OwnedWithInit {
     function getSportMarketBalances() external view returns (uint[] memory allBalances) {
         allBalances = new uint[](numOfSportMarkets);
         allBalances = _marketPositionsAndBalances();
+    }
+
+    function phase() public view returns (Phase) {
+        if (resolved) {
+            if (resolved && expiry < block.timestamp) {
+                return Phase.Expiry;
+            } else {
+                return Phase.Maturity;
+            }
+        } else {
+            return Phase.Trading;
+        }
     }
 
     function updateQuotes(uint[] calldata _marketQuotes, uint _totalResultQuote) external onlyAMM {

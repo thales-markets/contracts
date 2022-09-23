@@ -453,6 +453,7 @@ contract('ParlayAMM', (accounts) => {
 		await ParlayAMM.initialize(
 			owner,
 			SportsAMM.address,
+			SportPositionalMarketManager.address,
 			parlayAMMfee,
 			toUnit(maxSupportedAmount),
 			toUnit(maxSupportedOdd),

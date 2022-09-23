@@ -23,6 +23,7 @@ import "../../utils/libraries/AddressSetLib.sol";
 import "./ParlayMarket.sol";
 import "../../interfaces/IParlayMarketData.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
+import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
@@ -39,6 +40,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     uint private constant DEFAULT_PARLAY_SIZE = 4;
 
     ISportsAMM public sportsAmm;
+    ISportPositionalMarketManager public sportManager;
 
     uint public parlayAmmFee;
     uint public parlaySize;
@@ -79,6 +81,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     function initialize(
         address _owner,
         ISportsAMM _sportsAmm,
+        ISportPositionalMarketManager _sportManager,
         uint _parlayAmmFee,
         uint _maxSupportedAmount,
         uint _maxSupportedOdds,
@@ -89,6 +92,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         setOwner(_owner);
         initNonReentrant();
         sportsAmm = _sportsAmm;
+        sportManager = _sportManager;
         maxSupportedAmount = _maxSupportedAmount;
         maxSupportedOdds = _maxSupportedOdds;
         parlayAmmFee = _parlayAmmFee;
@@ -294,8 +298,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         // mint the stateful token  (ERC-20)
         // clone a parlay market
         ParlayMarket parlayMarket = ParlayMarket(Clones.clone(parlayMarketMastercopy));
-
-        parlayMarket.initialize(_sportMarkets, _positions, totalAmount, sUSDAfterFees, address(this), msg.sender);
+        parlayMarket.initialize(
+            _sportMarkets,
+            _positions,
+            totalAmount,
+            sUSDAfterFees,
+            sportManager.getExpiryDuration(),
+            address(this),
+            msg.sender
+        );
 
         emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
 

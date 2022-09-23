@@ -86,6 +86,19 @@
   },
   {
     "inputs": [],
+    "name": "expiry",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "fundsIssued",
     "outputs": [
       {
@@ -148,6 +161,11 @@
       {
         "internalType": "uint256",
         "name": "_sUSDPaid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_expiryDuration",
         "type": "uint256"
       },
       {
@@ -340,6 +358,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "phase",
+    "outputs": [
+      {
+        "internalType": "enum ParlayMarket.Phase",
+        "name": "",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",

@@ -114,6 +114,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         return ISportPositionalMarket(_market).paused();
     }
 
+    function getExpiryDuration() external view override returns (uint) {
+        return expiryDuration;
+    }
+
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     /* ---------- Setters ---------- */
@@ -167,20 +171,19 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         // We also require maturity < expiry. But there is no need to check this.
         // The market itself validates the capital and skew requirements.
 
-        SportPositionalMarket market =
-            SportPositionalMarketFactory(sportPositionalMarketFactory).createMarket(
-                SportPositionalMarketFactory.SportPositionCreationMarketParameters(
-                    msg.sender,
-                    sUSD,
-                    gameId,
-                    gameLabel,
-                    [maturity, expiry],
-                    initialMint,
-                    positionCount,
-                    msg.sender,
-                    tags
-                )
-            );
+        SportPositionalMarket market = SportPositionalMarketFactory(sportPositionalMarketFactory).createMarket(
+            SportPositionalMarketFactory.SportPositionCreationMarketParameters(
+                msg.sender,
+                sUSD,
+                gameId,
+                gameLabel,
+                [maturity, expiry],
+                initialMint,
+                positionCount,
+                msg.sender,
+                tags
+            )
+        );
 
         _activeMarkets.add(address(market));
 

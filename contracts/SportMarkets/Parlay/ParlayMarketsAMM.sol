@@ -207,6 +207,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
+    function expireMarkets(address[] calldata _parlayMarkets) external onlyOwner {
+        for (uint i = 0; i < _parlayMarkets.length; i++) {
+            if (ParlayMarket(_parlayMarkets[i]).phase() == ParlayMarket.Phase.Expiry) {
+                ParlayMarket(_parlayMarkets[i]).expire(payable(safeBox));
+            }
+        }
+    }
+
     function getParlayBalances(address _parlayMarket) external view returns (uint[] memory balances) {
         if (_knownMarkets.contains(_parlayMarket)) {
             balances = ParlayMarket(_parlayMarket).getSportMarketBalances();
@@ -531,14 +539,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             return 3;
         }
         return 0;
-    }
-
-    function expireMarkets(address[] calldata _parlayMarkets) external onlyOwner {
-        for (uint i = 0; i < _parlayMarkets.length; i++) {
-            if (ParlayMarket(_parlayMarkets[i]).phase() == ParlayMarket.Phase.Expiry) {
-                ParlayMarket(_parlayMarkets[i]).expire(payable(safeBox));
-            }
-        }
     }
 
     function _sortPositions(

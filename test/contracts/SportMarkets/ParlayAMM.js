@@ -483,6 +483,7 @@ contract('ParlayAMM', (accounts) => {
 		await ParlayAMM.setParlayMarketMastercopies(ParlayMarketMastercopy.address, { from: owner });
 		await Thales.transfer(ParlayAMM.address, toUnit('20000'), { from: owner });
 
+		await ParlayAMM.setParameters(true, { from: owner });
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,

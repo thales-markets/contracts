@@ -76,7 +76,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     address public dai;
 
     bool public curveOnrampEnabled;
-    bool public sortingEnabled;
+    bool public reducedFeesEnabled;
 
     function initialize(
         address _owner,
@@ -387,12 +387,19 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         finalQuotes = new uint[](_sportMarkets.length);
         for (uint i = 0; i < _sportMarkets.length; i++) {
             totalBuyAmount += _buyQuoteAmounts[i];
-            buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuoteForParlayAMM(
-                // buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
-                _sportMarkets[i],
-                _obtainSportsAMMPosition(_positions[i]),
-                _buyQuoteAmounts[i]
-            );
+            if (reducedFeesEnabled) {
+                buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuoteForParlayAMM(
+                    _sportMarkets[i],
+                    _obtainSportsAMMPosition(_positions[i]),
+                    _buyQuoteAmounts[i]
+                );
+            } else {
+                buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
+                    _sportMarkets[i],
+                    _obtainSportsAMMPosition(_positions[i]),
+                    _buyQuoteAmounts[i]
+                );
+            }
             if (buyAmountPerMarket[i] == 0) {
                 totalQuote = 0;
                 totalBuyAmount = 0;
@@ -541,45 +548,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         return 0;
     }
 
-    function _sortPositions(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint[] memory _amountsToBuy,
-        uint[] memory _marketQuotes
-    )
-        internal
-        view
-        returns (
-            address[] memory sortedAddresses,
-            uint[] memory sortedPositions,
-            uint[] memory sortedAmountsToBuy,
-            uint[] memory sortedMarketQuotes
-        )
-    {
-        sortedAddresses = new address[](_sportMarkets.length);
-        sortedPositions = new uint[](_sportMarkets.length);
-        sortedAmountsToBuy = new uint[](_sportMarkets.length);
-        sortedMarketQuotes = new uint[](_sportMarkets.length);
-        for (uint i = 0; i < _sportMarkets.length; i++) {
-            for (uint j = i + 1; j < _sportMarkets.length; j++) {
-                if (_marketQuotes[i] < _marketQuotes[j]) {
-                    sortedAddresses[i] = _sportMarkets[j];
-                    sortedPositions[i] = _positions[j];
-                    sortedAmountsToBuy[i] = _amountsToBuy[j];
-                    sortedMarketQuotes[i] = _marketQuotes[j];
-                }
-            }
-        }
-    }
-
     // SETTERS //////////
 
     function setParlayMarketMastercopies(address _parlayMarketMastercopy) external onlyOwner {
         parlayMarketMastercopy = _parlayMarketMastercopy;
     }
 
-    function setParameters(bool _sortingEnabled) external onlyOwner {
-        sortingEnabled = _sortingEnabled;
+    function setParameters(bool _reducedFeesEnabled) external onlyOwner {
+        reducedFeesEnabled = _reducedFeesEnabled;
     }
 
     function setAmounts(

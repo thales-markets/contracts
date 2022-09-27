@@ -33,7 +33,7 @@ const {
 	assertRevert,
 } = require('../../utils/helpers');
 
-contract('ParlayAMM', (accounts) => {
+contract('ParlayAMM', accounts => {
 	const [manager, first, owner, second, third, fourth, safeBox, wrapper] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
@@ -483,7 +483,8 @@ contract('ParlayAMM', (accounts) => {
 		await ParlayAMM.setParlayMarketMastercopies(ParlayMarketMastercopy.address, { from: owner });
 		await Thales.transfer(ParlayAMM.address, toUnit('20000'), { from: owner });
 
-		await ParlayAMM.setParameters(true, { from: owner });
+		// await ParlayAMM.setParameters(true, { from: owner });
+
 		await SportsAMM.setAddresses(
 			owner,
 			Thales.address,

@@ -30615,7 +30615,7 @@
           {
             "contract": "ApexConsumer",
             "label": "sportsManager",
-            "type": "t_contract(ISportPositionalMarketManager)68304",
+            "type": "t_contract(ISportPositionalMarketManager)68491",
             "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:94"
           },
           {
@@ -30838,7 +30838,7 @@
           "t_mapping(t_string_memory_ptr,t_uint256)": {
             "label": "mapping(string => uint256)"
           },
-          "t_contract(ISportPositionalMarketManager)68304": {
+          "t_contract(ISportPositionalMarketManager)68491": {
             "label": "contract ISportPositionalMarketManager"
           },
           "t_mapping(t_bytes32,t_address)": {
@@ -32613,6 +32613,385 @@
           },
           "t_mapping(t_uint256,t_mapping(t_uint256,t_array(t_bytes32)dyn_storage))": {
             "label": "mapping(uint256 => mapping(uint256 => bytes32[]))"
+          }
+        }
+      }
+    },
+    "91cbe77359e0f2c2ae4974e2ea68d55fc8973fc32e51aa12938d9c4d1f063dda": {
+      "address": "0x9712eF637F3834f1fB884908ee105D5170813646",
+      "txHash": "0xcc81c26621aacb0831a3c601c017f16670637b052a75319029fb19fe4fd3b278",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "wrapperAddress",
+            "type": "t_address",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:75"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "whitelistedAddresses",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:76"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "raceCreated",
+            "type": "t_mapping(t_string_memory_ptr,t_struct(RaceCreate)523_storage)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:79"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "gameCreated",
+            "type": "t_mapping(t_bytes32,t_struct(GameCreate)540_storage)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:80"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "gameResolved",
+            "type": "t_mapping(t_bytes32,t_struct(GameResolve)549_storage)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:81"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "gameResults",
+            "type": "t_mapping(t_bytes32,t_struct(GameResults)556_storage)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:82"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "gameOdds",
+            "type": "t_mapping(t_bytes32,t_struct(GameOdds)567_storage)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:83"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "sportsIdPerGame",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:84"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "raceFulfilledCreated",
+            "type": "t_mapping(t_string_memory_ptr,t_bool)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:85"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "gameFulfilledCreated",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:86"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "gameFulfilledResolved",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:87"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "latestRaceIdPerSport",
+            "type": "t_mapping(t_string_memory_ptr,t_string_storage)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:88"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "supportedSport",
+            "type": "t_mapping(t_string_memory_ptr,t_bool)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:91"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "supportedSportId",
+            "type": "t_mapping(t_string_memory_ptr,t_uint256)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:92"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "sportsManager",
+            "type": "t_contract(ISportPositionalMarketManager)3330",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:95"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "marketPerGameId",
+            "type": "t_mapping(t_bytes32,t_address)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:96"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "gameIdPerMarket",
+            "type": "t_mapping(t_address,t_bytes32)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:97"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "marketCreated",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:98"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "marketResolved",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:99"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "marketCanceled",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:100"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "invalidOdds",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:103"
+          },
+          {
+            "contract": "ApexConsumer",
+            "label": "isPausedByCanceledStatus",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\SportMarkets\\Apex\\ApexConsumer.sol:104"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_string_memory_ptr,t_struct(RaceCreate)523_storage)": {
+            "label": "mapping(string => struct ApexConsumer.RaceCreate)"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_struct(RaceCreate)523_storage": {
+            "label": "struct ApexConsumer.RaceCreate",
+            "members": [
+              {
+                "label": "raceId",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "qualifyingStartTime",
+                "type": "t_uint256"
+              },
+              {
+                "label": "startTime",
+                "type": "t_uint256"
+              },
+              {
+                "label": "eventId",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "eventName",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "betType",
+                "type": "t_string_storage"
+              }
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes32,t_struct(GameCreate)540_storage)": {
+            "label": "mapping(bytes32 => struct ApexConsumer.GameCreate)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(GameCreate)540_storage": {
+            "label": "struct ApexConsumer.GameCreate",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "raceId",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "startTime",
+                "type": "t_uint256"
+              },
+              {
+                "label": "homeOdds",
+                "type": "t_uint256"
+              },
+              {
+                "label": "awayOdds",
+                "type": "t_uint256"
+              },
+              {
+                "label": "drawOdds",
+                "type": "t_uint256"
+              },
+              {
+                "label": "homeTeam",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "awayTeam",
+                "type": "t_string_storage"
+              }
+            ]
+          },
+          "t_mapping(t_bytes32,t_struct(GameResolve)549_storage)": {
+            "label": "mapping(bytes32 => struct ApexConsumer.GameResolve)"
+          },
+          "t_struct(GameResolve)549_storage": {
+            "label": "struct ApexConsumer.GameResolve",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "homeScore",
+                "type": "t_uint8"
+              },
+              {
+                "label": "awayScore",
+                "type": "t_uint8"
+              },
+              {
+                "label": "statusId",
+                "type": "t_uint8"
+              }
+            ]
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_mapping(t_bytes32,t_struct(GameResults)556_storage)": {
+            "label": "mapping(bytes32 => struct ApexConsumer.GameResults)"
+          },
+          "t_struct(GameResults)556_storage": {
+            "label": "struct ApexConsumer.GameResults",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "result",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "resultDetails",
+                "type": "t_string_storage"
+              }
+            ]
+          },
+          "t_mapping(t_bytes32,t_struct(GameOdds)567_storage)": {
+            "label": "mapping(bytes32 => struct ApexConsumer.GameOdds)"
+          },
+          "t_struct(GameOdds)567_storage": {
+            "label": "struct ApexConsumer.GameOdds",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "homeOdds",
+                "type": "t_uint256"
+              },
+              {
+                "label": "awayOdds",
+                "type": "t_uint256"
+              },
+              {
+                "label": "drawOdds",
+                "type": "t_uint256"
+              },
+              {
+                "label": "arePostQualifyingOddsFetched",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_mapping(t_string_memory_ptr,t_bool)": {
+            "label": "mapping(string => bool)"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_mapping(t_string_memory_ptr,t_string_storage)": {
+            "label": "mapping(string => string)"
+          },
+          "t_mapping(t_string_memory_ptr,t_uint256)": {
+            "label": "mapping(string => uint256)"
+          },
+          "t_contract(ISportPositionalMarketManager)3330": {
+            "label": "contract ISportPositionalMarketManager"
+          },
+          "t_mapping(t_bytes32,t_address)": {
+            "label": "mapping(bytes32 => address)"
+          },
+          "t_mapping(t_address,t_bytes32)": {
+            "label": "mapping(address => bytes32)"
           }
         }
       }

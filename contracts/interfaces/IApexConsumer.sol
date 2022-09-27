@@ -29,7 +29,8 @@ interface IApexConsumer {
         uint256 _probB,
         bytes32 _gameId,
         string memory _sport,
-        string memory _eventId
+        string memory _eventId,
+        bool _arePostQualifyingOdds
     ) external;
 
     function fulfillResults(

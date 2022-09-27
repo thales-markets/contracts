@@ -85,8 +85,8 @@
 		"VaultImplementation": "0x5ebC0a9278a87caFFc090f8E1e53f2fE60f76F9E",
 		"OvertimeVoucher": "0xC9183E3306A06E64c2A83E655756F70A83152536",
 		"ApexConsumer": "0x0a6851C7D112A27019d84DCCb9cE0c0cd8b75325",
-		"ApexConsumerImplementation": "0xfd0740a2041eDc475c3fA224875BAD9916c73CA9",
-		"ApexConsumerWrapper": "0x7a07c26166Dc04f1319e58d630769585ADA2CAD8"
+		"ApexConsumerImplementation": "0x9712eF637F3834f1fB884908ee105D5170813646",
+		"ApexConsumerWrapper": "0xb0DD7B602656C315f970616e72F28D05A5d8F29c"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -370,9 +370,9 @@
 		"Referrals": "0xA59727442212227BBdCFEC1E883677A930707412",
 		"ReferralsImplementation": "0xd965c4192933a7cCF9BFD5C2a9f09DB9470e5485",
 		"ApexConsumer": "0x03500619C58F4377c047A8918AE09594adb23f11",
-		"ApexConsumerImplementation": "0xc4Cd9F1EA63946d58b8E156fa5c6A4e3171C36B5",
+		"ApexConsumerImplementation": "0xda2981E2955fFC69f470fb9167Ca914d510c799b",
 		"ApexConsumerOld": "0x14953ab06bA217Bc5DE7b7ADB48C88D7c0095f5e",
-		"ApexConsumerWrapper": "0x56a6A778fF02228D0564f5eAf6B29CC5Da7E26ad"
+		"ApexConsumerWrapper": "0x6b81a14cB40b038Edb183f0Ce53FddB5d2fEC726"
 	},
 	"optimisticGoerli": {
 		"ExoticUSD": "0xE1ceaa829525a08C1d39A5CEBe4b42aF58d77198",

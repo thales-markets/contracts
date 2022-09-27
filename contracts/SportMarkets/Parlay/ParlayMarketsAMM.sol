@@ -354,19 +354,61 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     {
         uint sumQuotes;
         uint[] memory marketQuotes;
+        uint[] memory inverseQuotes;
+        uint inverseSum;
         sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee) * ONE_PERCENT)) * _sUSDPaid) / ONE;
-        (initialQuote, sumQuotes, marketQuotes, ) = _calculateInitialQuotesForParlay(
+        (initialQuote, sumQuotes, inverseSum, marketQuotes, inverseQuotes, ) = _calculateInitialQuotesForParlay(
             _sportMarkets,
             _positions,
             sUSDAfterFees
         );
         if (initialQuote > 0) {
-            (totalBuyAmount, amountsToBuy) = _calculateBuyQuoteAmounts(initialQuote, sumQuotes, sUSDAfterFees, marketQuotes);
-            (initialQuote, totalBuyAmount, finalQuotes, ) = _calculateFinalQuotes(_sportMarkets, _positions, amountsToBuy);
-            uint expectedPayout = initialQuote > 0 ? ((sUSDAfterFees * ONE * ONE) / initialQuote) / ONE : 0;
-            skewImpact = ((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount);
-            totalQuote = ((ONE + skewImpact) * initialQuote) / ONE;
+            (totalBuyAmount, amountsToBuy) = _calculateBuyQuoteAmounts(
+                initialQuote,
+                sumQuotes,
+                inverseSum,
+                sUSDAfterFees,
+                inverseQuotes
+            );
+            // console.log("----> totalAmount2: ", totalBuyAmount);
+            // console.log("----> initialQuote: ", initialQuote);
+            (totalQuote, totalBuyAmount, finalQuotes, ) = _calculateFinalQuotes(_sportMarkets, _positions, amountsToBuy);
+            uint expectedPayout = totalQuote > 0 ? ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE : 0;
+            // console.log("----> expectedPayout: ", expectedPayout);
+            skewImpact = expectedPayout > totalBuyAmount
+                ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
+                : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
+            // console.log("----> skewImpact: ", skewImpact);
+            // totalQuote = expectedPayout > totalBuyAmount ? ((ONE + skewImpact) * initialQuote) / ONE : ((ONE - skewImpact) * initialQuote) / ONE;
+            // console.log("----> totalQuote: ", totalQuote);
+            // finalQuotes = applySkewImpactBatch(finalQuotes, skewImpact, (expectedPayout > totalBuyAmount));
+            amountsToBuy = applySkewImpactBatch(amountsToBuy, skewImpact, (expectedPayout > totalBuyAmount));
+            totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
+            // console.log("----> final_totalBuyAmount: ", totalBuyAmount);
         }
+    }
+
+    function applySkewImpact(
+        uint _value,
+        uint _skewImpact,
+        bool _addition
+    ) internal pure returns (uint newValue) {
+        newValue = _addition ? (((ONE + _skewImpact) * _value) / ONE) : (((ONE - _skewImpact) * _value) / ONE);
+    }
+
+    function applySkewImpactBatch(
+        uint[] memory _values,
+        uint _skewImpact,
+        bool _addition
+    ) internal view returns (uint[] memory newValues) {
+        uint totalAmount;
+        newValues = new uint[](_values.length);
+        for (uint i = 0; i < _values.length; i++) {
+            newValues[i] = applySkewImpact(_values[i], _skewImpact, _addition);
+            // console.log(i, "----> amountsToBuy", newValues[i]);
+            totalAmount += newValues[i];
+        }
+        // console.log("----> final_totalAmount", totalAmount);
     }
 
     function _calculateFinalQuotes(
@@ -393,6 +435,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     _obtainSportsAMMPosition(_positions[i]),
                     _buyQuoteAmounts[i]
                 );
+                // console.log(i,"----> 2_buyQuoteAmounts: ", _buyQuoteAmounts[i]);
             } else {
                 buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
                     _sportMarkets[i],
@@ -400,6 +443,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     _buyQuoteAmounts[i]
                 );
             }
+            // console.log("----> 2_totalBuyAmount: ", totalBuyAmount);
             if (buyAmountPerMarket[i] == 0) {
                 totalQuote = 0;
                 totalBuyAmount = 0;
@@ -408,19 +452,29 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
         for (uint i = 0; i < _sportMarkets.length; i++) {
             finalQuotes[i] = ((buyAmountPerMarket[i] * ONE * ONE) / _buyQuoteAmounts[i]) / ONE;
+            // console.log(i,"----> finalQuotes: ", finalQuotes[i]);
             totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
+        // console.log("----> init_totalQuote: ", totalQuote);
     }
 
     function _calculateBuyQuoteAmounts(
         uint _totalQuote,
         uint _sumOfQuotes,
+        uint _inverseSum,
         uint _sUSDPaid,
         uint[] memory _marketQuotes
-    ) internal pure returns (uint totalAmount, uint[] memory buyQuoteAmounts) {
+    ) internal view returns (uint totalAmount, uint[] memory buyQuoteAmounts) {
+        // console.log(" \n");
+        // console.log(" ---> _inverseSum:", _inverseSum);
+        // console.log(" ---> _sumOfQuotes:", _sumOfQuotes);
         buyQuoteAmounts = new uint[](_marketQuotes.length);
         for (uint i = 0; i < _marketQuotes.length; i++) {
-            buyQuoteAmounts[i] = ((ONE * ONE * _marketQuotes[i] * _sUSDPaid) / _sumOfQuotes) / (ONE * _totalQuote);
+            // console.log(i, " ---> marketQuote:", _marketQuotes[i]);
+            buyQuoteAmounts[i] =
+                ((ONE * _marketQuotes[i] * _sUSDPaid * _sumOfQuotes)) /
+                (_totalQuote * _inverseSum * _sumOfQuotes);
+            // console.log(i, " ---> buyQuoteAmounts:", buyQuoteAmounts[i]);
             totalAmount += buyQuoteAmounts[i];
         }
     }
@@ -435,7 +489,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         returns (
             uint totalResultQuote,
             uint sumQuotes,
+            uint inverseSum,
             uint[] memory marketQuotes,
+            uint[] memory inverseQuotes,
             uint totalAmount
         )
     {
@@ -446,6 +502,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
         if (numOfMarkets == numOfPositions && numOfMarkets > 0 && numOfMarkets <= parlaySize) {
             marketQuotes = new uint[](numOfMarkets);
+            inverseQuotes = new uint[](numOfMarkets);
             uint[] memory marketOdds;
             for (uint i = 0; i < numOfMarkets; i++) {
                 if (_positions[i] > 2) {
@@ -455,6 +512,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 marketOdds = sportsAmm.getMarketDefaultOdds(_sportMarkets[i], false);
                 marketQuotes[i] = marketOdds[_positions[i]];
                 totalResultQuote = totalResultQuote == 0 ? marketQuotes[i] : (totalResultQuote * marketQuotes[i]) / ONE;
+                inverseQuotes[i] = ONE - marketQuotes[i];
+                inverseSum = inverseSum + inverseQuotes[i];
                 sumQuotes = sumQuotes + marketQuotes[i];
                 if (totalResultQuote == 0) {
                     totalResultQuote = 0;

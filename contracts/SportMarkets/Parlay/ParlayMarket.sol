@@ -193,11 +193,17 @@ contract ParlayMarket is OwnedWithInit {
                 _resolve(true);
                 if (calculatedAmount < totalSUSDamount) {
                     // console.log("-----> calculatedAmount < totalSUSDamount");
+                    // console.log("-----> calculatedAmount:", calculatedAmount);
+                    // console.log("-----> totalSUSDamount: ", totalSUSDamount);
+                    // console.log("-----> diff: ", (totalSUSDamount-calculatedAmount));
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
                     parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount - calculatedAmount));
                     fundsIssued = true;
                 } else if (calculatedAmount > totalSUSDamount) {
                     // console.log("-----> calculatedAmount > totalSUSDamount");
+                    // console.log("-----> calculatedAmount:", calculatedAmount);
+                    // console.log("-----> totalSUSDamount: ", totalSUSDamount);
+                    // console.log("-----> diff: ", (calculatedAmount-totalSUSDamount));
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
                     if ((calculatedAmount - totalSUSDamount) >= TWELVE_DECIMAL) {
                         // console.log("-----> higher than twelve decimal");
@@ -246,6 +252,8 @@ contract ParlayMarket is OwnedWithInit {
     }
 
     function _recalculateAmount() internal view returns (uint recalculated) {
+        // console.log("===D sUSDpaid: ", sUSDPaid);
+        // console.log("===D totalResultQuote: ", totalResultQuote);
         recalculated = ((sUSDPaid * ONE * ONE) / totalResultQuote) / ONE;
         // apply AMM fees
         // recalculated = ((ONE - (ONE_PERCENT * parlayMarketsAMM.parlayAmmFee())) * recalculated) / ONE;

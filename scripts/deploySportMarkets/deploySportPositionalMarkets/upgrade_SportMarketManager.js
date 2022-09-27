@@ -39,6 +39,11 @@ async function main() {
 		network = 'optimisticEthereum';
 		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
+	if (networkObj.chainId == 5) {
+		networkObj.name = 'goerli';
+		network = 'goerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 
 	const SportMarketManager = await ethers.getContractFactory('SportPositionalMarketManager');
 	const SportMarketManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
@@ -49,6 +54,7 @@ async function main() {
 	}
 
 	// upgrade if test networks
+
 	if (networkObj.chainId == 69 || networkObj.chainId == 5 || networkObj.chainId == 420) {
 		await upgrades.upgradeProxy(SportMarketManagerAddress, SportMarketManager);
 

@@ -19,6 +19,7 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
+import "../interfaces/IApexConsumer.sol";
 import "../interfaces/ICurveSUSD.sol";
 import "../interfaces/IReferrals.sol";
 
@@ -102,14 +103,20 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return Curve usage is enabled?
     bool public curveOnrampEnabled;
 
-    /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
-    uint public maxAllowedPegSlippagePercentage;
-
     /// @return Referrals contract address
     address public referrals;
 
     /// @return Default referrer fee
     uint public referrerFee;
+
+    /// @return The address of Parlay AMM
+    address public parlayAMM;
+
+    /// @return The address of Apex Consumer
+    address public apexConsumer;
+
+    /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
+    uint public maxAllowedPegSlippagePercentage;
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
@@ -318,7 +325,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bytes32 gameId = ISportPositionalMarket(_market).getGameId();
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-            odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
+            bool isApexGame = apexConsumer != address(0) && IApexConsumer(apexConsumer).isApexGame(gameId);
+            odds = isApexGame
+                ? IApexConsumer(apexConsumer).getNormalizedOdds(gameId)
+                : ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
             return odds[uint(_position)];
         } else {
             return 0;
@@ -655,22 +665,25 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _safeBox Address of the Safe Box
     /// @param _sUSD Address of the sUSD
     /// @param _theRundownConsumer Address of Therundown consumer
+    /// @param _apexConsumer Address of Apex consumer
     /// @param _stakingThales Address of Staking contract
     /// @param _referrals contract for referrals storage
     function setAddresses(
         address _safeBox,
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
+        address _apexConsumer,
         IStakingThales _stakingThales,
         address _referrals
     ) external onlyOwner {
         safeBox = _safeBox;
         sUSD = _sUSD;
         theRundownConsumer = _theRundownConsumer;
+        apexConsumer = _apexConsumer;
         stakingThales = _stakingThales;
         referrals = _referrals;
 
-        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals);
+        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _apexConsumer, _stakingThales, _referrals);
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -710,6 +723,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         //sUSD.approve(_curveSUSD, MAX_APPROVAL);
         curveOnrampEnabled = _curveOnrampEnabled;
         maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
+    }
+
+    function setPaused(bool _setPausing) external onlyOwner {
+        if (_setPausing) {
+            _pause();
+        } else {
+            _unpause();
+        }
     }
 
     // Internal
@@ -1011,6 +1032,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _safeBox,
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
+        address _apexConsumer,
         IStakingThales _stakingThales,
         address _referrals
     );

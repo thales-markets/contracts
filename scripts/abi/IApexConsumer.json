@@ -1,0 +1,183 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_betTypeDetail1",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_betTypeDetail2",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_probA",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_probB",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_sport",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_eventId",
+        "type": "string"
+      }
+    ],
+    "name": "fulfillMatchup",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_event_id",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_bet_type",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_event_name",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_qualifying_start_time",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_race_start_time",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_sport",
+        "type": "string"
+      }
+    ],
+    "name": "fulfillMetaData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_requestId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_result",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_resultDetails",
+        "type": "string"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "string",
+        "name": "_sport",
+        "type": "string"
+      }
+    ],
+    "name": "fulfillResults",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getNormalizedOdds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "isApexGame",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "sport",
+        "type": "string"
+      }
+    ],
+    "name": "isSupportedSport",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

@@ -36,6 +36,31 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_newStartTime",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_expiry",
+        "type": "uint256"
+      }
+    ],
+    "name": "DatesUpdatedForMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "duration",
         "type": "uint256"
@@ -264,6 +289,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "apexConsumer",
+        "type": "address"
+      }
+    ],
+    "name": "SetApexConsumer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "migratingManager",
         "type": "address"
       }
@@ -336,6 +374,19 @@
         "internalType": "address[]",
         "name": "",
         "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "apexConsumer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -766,6 +817,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_apexConsumer",
+        "type": "address"
+      }
+    ],
+    "name": "setApexConsumer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_expiryDuration",
         "type": "uint256"
@@ -862,24 +926,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_whitelistAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_flag",
-        "type": "bool"
-      }
-    ],
-    "name": "setWhitelistAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address[]",
         "name": "_whitelistedAddresses",
         "type": "address[]"
@@ -890,7 +936,7 @@
         "type": "bool"
       }
     ],
-    "name": "setWhitelistedAddressesForAll",
+    "name": "setWhitelistedAddresses",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1000,6 +1046,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_newStartTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateDatesForMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

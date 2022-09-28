@@ -481,11 +481,66 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(false, await deployedMarket.canResolve());
 			assert.equal(9004, await deployedMarket.tags(0));
+		});
 
-			/*
-			assert.equal('Atlanta Hawks vs Charlotte Hornets', await deployedMarket.getGameDetails());
-			assert.equal(2, await deployedMarket.positionCount());
-			*/
+		it('Fulfill Games Created - UFC, time of a game has pased, no market creation only dequeue', async () => {
+			await fastForward(fightTime - (await currentTime()) - SECOND);
+
+			// queue clean!!!
+			assert.equal(1, await gamesQueue.firstCreated());
+			assert.equal(0, await gamesQueue.lastCreated());
+
+			// req games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFightCreate,
+				fightCreated,
+				sportId_7,
+				fightTime,
+				{ from: wrapper }
+			);
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
+
+			assert.equal(fightId, await gamesQueue.gamesCreateQueue(1));
+
+			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(fightId));
+
+			// added into queue!!!
+			assert.equal(1, await gamesQueue.firstCreated());
+			assert.equal(1, await gamesQueue.lastCreated());
+
+			assert.equal(
+				fight_create,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
+			);
+
+			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
+			assert.equal('Clayton Carpenter', fight.homeTeam);
+			assert.equal('Edgar Chairez', fight.awayTeam);
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdFightCreate,
+				_sportId: sportId_7,
+				_id: fightId,
+				_game: fight,
+			});
+
+			// game time has passed !!!!
+			await fastForward(fightTime - (await currentTime()) + 2 * HOUR);
+
+			// this transaction will only dequeue and not create market
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(fightId);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
+			// no market created
+			assert.equal(ZERO_ADDRESS, marketAdd);
+
+			// dequeued
+			assert.equal(2, await gamesQueue.firstCreated());
+			assert.equal(1, await gamesQueue.lastCreated());
 		});
 
 		it('Fulfill Games Created - Champions League Game 1, create market, check results', async () => {

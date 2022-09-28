@@ -484,29 +484,34 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _createMarket(bytes32 _gameId) internal {
         GameCreate memory game = getGameCreatedById(_gameId);
-        uint sportId = sportsIdPerGame[_gameId];
-        uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(sportId);
-        uint[] memory tags = _calculateTags(sportId);
+        // only markets in a future, if not dequeue that creation
+        if (game.startTime > block.timestamp) {
+            uint sportId = sportsIdPerGame[_gameId];
+            uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(sportId);
+            uint[] memory tags = _calculateTags(sportId);
 
-        // create
-        sportsManager.createMarket(
-            _gameId,
-            _append(game.homeTeam, game.awayTeam), // gameLabel
-            game.startTime, //maturity
-            0, //initialMint
-            numberOfPositions,
-            tags //tags
-        );
+            // create
+            sportsManager.createMarket(
+                _gameId,
+                _append(game.homeTeam, game.awayTeam), // gameLabel
+                game.startTime, //maturity
+                0, //initialMint
+                numberOfPositions,
+                tags //tags
+            );
 
-        address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
-        marketPerGameId[game.gameId] = marketAddress;
-        gameIdPerMarket[marketAddress] = game.gameId;
-        marketCreated[marketAddress] = true;
-        canMarketBeUpdated[marketAddress] = true;
+            address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
+            marketPerGameId[game.gameId] = marketAddress;
+            gameIdPerMarket[marketAddress] = game.gameId;
+            marketCreated[marketAddress] = true;
+            canMarketBeUpdated[marketAddress] = true;
 
-        queues.dequeueGamesCreated();
+            queues.dequeueGamesCreated();
 
-        emit CreateSportsMarket(marketAddress, game.gameId, game, tags, getNormalizedOdds(game.gameId));
+            emit CreateSportsMarket(marketAddress, game.gameId, game, tags, getNormalizedOdds(game.gameId));
+        } else {
+            queues.dequeueGamesCreated();
+        }
     }
 
     function _resolveMarket(bytes32 _gameId) internal {

@@ -27,6 +27,13 @@
   },
   {
     "inputs": [],
+    "name": "resolveParlay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "sUSD",
     "outputs": [
       {

@@ -190,7 +190,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(_knownMarkets.contains(_parlayMarket), "Unknown/Expired parlay");
         ParlayMarket parlayMarket = ParlayMarket(_parlayMarket);
         parlayMarket.exerciseWiningSportMarkets();
-        if (parlayMarket.numOfResolvedSportMarkets() == parlayMarket.numOfSportMarkets()) {
+    }
+
+    function resolveParlay() external notPaused {
+        require(_knownMarkets.contains(msg.sender), "Unknown/Expired parlay");
+        _resolveParlay(msg.sender);
+    }
+
+    function _resolveParlay(address _parlayMarket) internal {
+        if (ParlayMarket(_parlayMarket).numOfResolvedSportMarkets() == ParlayMarket(_parlayMarket).numOfSportMarkets()) {
             resolvedParlay[_parlayMarket] = true;
             _knownMarkets.remove(_parlayMarket);
         }

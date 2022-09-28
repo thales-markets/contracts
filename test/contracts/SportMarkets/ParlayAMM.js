@@ -680,6 +680,11 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(true, await deployedMarket_3.canResolve());
 			assert.equal(true, await deployedMarket_4.canResolve());
 
+			console.log('parlay 1: ', deployedMarket_1.address);
+			console.log('parlay 2: ', deployedMarket_2.address);
+			console.log('parlay 3: ', deployedMarket_3.address);
+			console.log('parlay 4: ', deployedMarket_4.address);
+
 			parlayMarkets = [deployedMarket_1, deployedMarket_2, deployedMarket_3, deployedMarket_4];
 		});
 
@@ -1179,6 +1184,373 @@ contract('ParlayAMM', (accounts) => {
 				it('Parlay exercised (balances checked)', async () => {
 					let userBalanceBefore = toUnit('1000');
 					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
+					let userBalanceAfter = await Thales.balanceOf(first);
+					console.log(
+						'\n\nAMM Balance before: ',
+						fromUnit(balanceBefore),
+						'\nAMM Balance after: ',
+						fromUnit(balanceAfter),
+						'\nAMM change: ',
+						fromUnit(balanceAfter.sub(toUnit(20000)))
+					);
+					console.log(
+						'User balance before: ',
+						fromUnit(userBalanceBefore),
+						'\nUser balance after: ',
+						fromUnit(userBalanceAfter),
+						'\nUser won: ',
+						fromUnit(userBalanceAfter.sub(userBalanceBefore))
+					);
+
+					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+				});
+			});
+			describe('Exercise whole parlay with 1 wrong result', () => {
+				beforeEach(async () => {
+					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
+					let resolveMatrix = ['2', '1', '2', '2'];
+					console.log('Games resolved: ', resolveMatrix, '\n');
+					// parlayPositions = ['0', '0', '0', '0'];
+					let gameId;
+					let homeResult = '0';
+					let awayResult = '0';
+					for (let i = 0; i < parlayMarkets.length; i++) {
+						homeResult = '0';
+						awayResult = '0';
+						gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
+						if (resolveMatrix[i] == '1') {
+							homeResult = '1';
+						} else if (resolveMatrix[i] == '2') {
+							awayResult = '1';
+						} else if (resolveMatrix[i] == '3') {
+							homeResult = '1';
+							awayResult = '1';
+						}
+						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
+							gameId,
+							resolveMatrix[i],
+							homeResult,
+							awayResult,
+							{ from: owner }
+						);
+					}
+				});
+				it('Parlay exercised (balances checked)', async () => {
+					let userBalanceBefore = toUnit('1000');
+					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
+					let userBalanceAfter = await Thales.balanceOf(first);
+					console.log(
+						'\n\nAMM Balance before: ',
+						fromUnit(balanceBefore),
+						'\nAMM Balance after: ',
+						fromUnit(balanceAfter),
+						'\nAMM change: ',
+						fromUnit(balanceAfter.sub(toUnit(20000)))
+					);
+					console.log(
+						'User balance before: ',
+						fromUnit(userBalanceBefore),
+						'\nUser balance after: ',
+						fromUnit(userBalanceAfter),
+						'\nUser won: ',
+						fromUnit(userBalanceAfter.sub(userBalanceBefore))
+					);
+
+					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+				});
+			});
+			describe('Exercise whole parlay with 2 wrong result', () => {
+				beforeEach(async () => {
+					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
+					let resolveMatrix = ['2', '1', '1', '2'];
+					console.log('Games resolved: ', resolveMatrix, '\n');
+					// parlayPositions = ['0', '0', '0', '0'];
+					let gameId;
+					let homeResult = '0';
+					let awayResult = '0';
+					for (let i = 0; i < parlayMarkets.length; i++) {
+						homeResult = '0';
+						awayResult = '0';
+						gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
+						if (resolveMatrix[i] == '1') {
+							homeResult = '1';
+						} else if (resolveMatrix[i] == '2') {
+							awayResult = '1';
+						} else if (resolveMatrix[i] == '3') {
+							homeResult = '1';
+							awayResult = '1';
+						}
+						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
+							gameId,
+							resolveMatrix[i],
+							homeResult,
+							awayResult,
+							{ from: owner }
+						);
+					}
+				});
+				it('Parlay exercised (balances checked)', async () => {
+					let userBalanceBefore = toUnit('1000');
+					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
+					let userBalanceAfter = await Thales.balanceOf(first);
+					console.log(
+						'\n\nAMM Balance before: ',
+						fromUnit(balanceBefore),
+						'\nAMM Balance after: ',
+						fromUnit(balanceAfter),
+						'\nAMM change: ',
+						fromUnit(balanceAfter.sub(toUnit(20000)))
+					);
+					console.log(
+						'User balance before: ',
+						fromUnit(userBalanceBefore),
+						'\nUser balance after: ',
+						fromUnit(userBalanceAfter),
+						'\nUser won: ',
+						fromUnit(userBalanceAfter.sub(userBalanceBefore))
+					);
+
+					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+				});
+			});
+			describe('Exercise whole parlay with 3 wrong result', () => {
+				beforeEach(async () => {
+					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
+					let resolveMatrix = ['1', '1', '1', '2'];
+					console.log('Games resolved: ', resolveMatrix, '\n');
+					// parlayPositions = ['0', '0', '0', '0'];
+					let gameId;
+					let homeResult = '0';
+					let awayResult = '0';
+					for (let i = 0; i < parlayMarkets.length; i++) {
+						homeResult = '0';
+						awayResult = '0';
+						gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[i].address);
+						if (resolveMatrix[i] == '1') {
+							homeResult = '1';
+						} else if (resolveMatrix[i] == '2') {
+							awayResult = '1';
+						} else if (resolveMatrix[i] == '3') {
+							homeResult = '1';
+							awayResult = '1';
+						}
+						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
+							gameId,
+							resolveMatrix[i],
+							homeResult,
+							awayResult,
+							{ from: owner }
+						);
+					}
+				});
+				it('Parlay exercised (balances checked)', async () => {
+					let userBalanceBefore = toUnit('1000');
+					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
+					let userBalanceAfter = await Thales.balanceOf(first);
+					console.log(
+						'\n\nAMM Balance before: ',
+						fromUnit(balanceBefore),
+						'\nAMM Balance after: ',
+						fromUnit(balanceAfter),
+						'\nAMM change: ',
+						fromUnit(balanceAfter.sub(toUnit(20000)))
+					);
+					console.log(
+						'User balance before: ',
+						fromUnit(userBalanceBefore),
+						'\nUser balance after: ',
+						fromUnit(userBalanceAfter),
+						'\nUser won: ',
+						fromUnit(userBalanceAfter.sub(userBalanceBefore))
+					);
+
+					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+				});
+			});
+
+			describe('Exercise step by step all winning parlay', () => {
+				beforeEach(async () => {
+					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
+				});
+				it('Exercise first sport Market', async () => {
+					let userBalanceBefore = toUnit('1000');
+					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
+						gameId,
+						'2',
+						'1',
+						'2',
+						{ from: owner }
+					);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
+					let userBalanceAfter = await Thales.balanceOf(first);
+					console.log(
+						'\n\nAMM Balance before: ',
+						fromUnit(balanceBefore),
+						'\nAMM Balance after: ',
+						fromUnit(balanceAfter),
+						'\nAMM change: ',
+						fromUnit(balanceAfter.sub(toUnit(20000)))
+					);
+					console.log(
+						'User balance before: ',
+						fromUnit(userBalanceBefore),
+						'\nUser balance after: ',
+						fromUnit(userBalanceAfter),
+						'\nUser won: ',
+						fromUnit(userBalanceAfter.sub(userBalanceBefore))
+					);
+
+					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+				});
+
+				it('Exercise first,second sport Market', async () => {
+					let userBalanceBefore = toUnit('1000');
+					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
+						gameId,
+						'2',
+						'1',
+						'2',
+						{ from: owner }
+					);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+
+					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
+					const tx_resolve_2 = await TherundownConsumerDeployed.resolveGameManually(
+						gameId2,
+						'2',
+						'1',
+						'2',
+						{ from: owner }
+					);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
+					let userBalanceAfter = await Thales.balanceOf(first);
+					console.log(
+						'\n\nAMM Balance before: ',
+						fromUnit(balanceBefore),
+						'\nAMM Balance after: ',
+						fromUnit(balanceAfter),
+						'\nAMM change: ',
+						fromUnit(balanceAfter.sub(toUnit(20000)))
+					);
+					console.log(
+						'User balance before: ',
+						fromUnit(userBalanceBefore),
+						'\nUser balance after: ',
+						fromUnit(userBalanceAfter),
+						'\nUser won: ',
+						fromUnit(userBalanceAfter.sub(userBalanceBefore))
+					);
+
+					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+				});
+				it('Exercise first,second,third sport Market', async () => {
+					let userBalanceBefore = toUnit('1000');
+					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
+						gameId,
+						'2',
+						'1',
+						'2',
+						{ from: owner }
+					);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+
+					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
+					const tx_resolve_2 = await TherundownConsumerDeployed.resolveGameManually(
+						gameId2,
+						'2',
+						'1',
+						'2',
+						{ from: owner }
+					);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let gameId3 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[2].address);
+					const tx_resolve_3 = await TherundownConsumerDeployed.resolveGameManually(
+						gameId3,
+						'2',
+						'1',
+						'2',
+						{ from: owner }
+					);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
+					let userBalanceAfter = await Thales.balanceOf(first);
+					console.log(
+						'\n\nAMM Balance before: ',
+						fromUnit(balanceBefore),
+						'\nAMM Balance after: ',
+						fromUnit(balanceAfter),
+						'\nAMM change: ',
+						fromUnit(balanceAfter.sub(toUnit(20000)))
+					);
+					console.log(
+						'User balance before: ',
+						fromUnit(userBalanceBefore),
+						'\nUser balance after: ',
+						fromUnit(userBalanceAfter),
+						'\nUser won: ',
+						fromUnit(userBalanceAfter.sub(userBalanceBefore))
+					);
+
+					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
+				});
+				it('Exercise first, second, third, forth sport Market', async () => {
+					let userBalanceBefore = toUnit('1000');
+					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
+					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
+						gameId,
+						'2',
+						'1',
+						'2',
+						{ from: owner }
+					);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+
+					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
+					const tx_resolve_2 = await TherundownConsumerDeployed.resolveGameManually(
+						gameId2,
+						'2',
+						'1',
+						'2',
+						{ from: owner }
+					);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let gameId3 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[2].address);
+					const tx_resolve_3 = await TherundownConsumerDeployed.resolveGameManually(
+						gameId3,
+						'2',
+						'1',
+						'2',
+						{ from: owner }
+					);
+					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					let gameId4 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[3].address);
+					const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
+						gameId4,
+						'2',
+						'1',
+						'2',
+						{ from: owner }
+					);
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
 					let balanceAfter = await Thales.balanceOf(ParlayAMM.address);
 					let userBalanceAfter = await Thales.balanceOf(first);

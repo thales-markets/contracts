@@ -499,6 +499,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "qualifyingStatusPerRequestId",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -515,6 +534,11 @@
       {
         "internalType": "string",
         "name": "_gameNumber",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_qualifyingStatus",
         "type": "string"
       }
     ],

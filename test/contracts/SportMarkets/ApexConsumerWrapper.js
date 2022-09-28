@@ -173,7 +173,13 @@ contract('ApexConsumerWrapper', (accounts) => {
 			).to.be.revertedWith('SafeMath: subtraction overflow');
 
 			await expect(
-				wrapper.requestMatchup('f1r_16_22', '10', {
+				wrapper.requestMatchup('f1r_16_22', '10', 'pre1', {
+					from: second,
+				})
+			).to.be.revertedWith('Qualifying status is not supported');
+
+			await expect(
+				wrapper.requestMatchup('f1r_16_22', '10', 'pre', {
 					from: second,
 				})
 			).to.be.revertedWith('SafeMath: subtraction overflow');

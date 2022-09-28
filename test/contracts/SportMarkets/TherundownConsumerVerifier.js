@@ -387,11 +387,11 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		it('Different odds checking', async () => {
 			assert.equal(
 				true,
-				await verifier.areOddsInThreshold(sportId_16, 0, toUnit('0.321223930700518974'))
+				await verifier.areOddInThreshold(sportId_16, 0, toUnit('0.321223930700518974'))
 			);
 			assert.equal(
 				true,
-				await verifier.areOddsInThreshold(
+				await verifier.areOddInThreshold(
 					sportId_16,
 					toUnit('0.321223930700518974'),
 					toUnit('0.321223930700518974')
@@ -399,7 +399,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 			assert.equal(
 				true,
-				await verifier.areOddsInThreshold(
+				await verifier.areOddInThreshold(
 					sportId_16,
 					toUnit('0.311223930700518974'),
 					toUnit('0.321223930700518974')
@@ -407,7 +407,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 			assert.equal(
 				true,
-				await verifier.areOddsInThreshold(
+				await verifier.areOddInThreshold(
 					sportId_16,
 					toUnit('0.321223930700518974'),
 					toUnit('0.311223930700518974')
@@ -415,7 +415,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 			assert.equal(
 				false,
-				await verifier.areOddsInThreshold(
+				await verifier.areOddInThreshold(
 					sportId_16,
 					toUnit('0.321223930700518974'),
 					toUnit('0.121223930700518974')
@@ -423,7 +423,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 			assert.equal(
 				false,
-				await verifier.areOddsInThreshold(
+				await verifier.areOddInThreshold(
 					sportId_16,
 					toUnit('0.121223930700518974'),
 					toUnit('0.321223930700518974')
@@ -431,27 +431,71 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 			assert.equal(
 				false,
-				await verifier.areOddsInThreshold(sportId_16, toUnit('100'), toUnit('89'))
+				await verifier.areOddInThreshold(sportId_16, toUnit('100'), toUnit('89'))
 			);
+			assert.equal(true, await verifier.areOddInThreshold(sportId_16, toUnit('100'), toUnit('90')));
+			assert.equal(true, await verifier.areOddInThreshold(sportId_16, toUnit('91'), toUnit('100')));
+			assert.equal(
+				false,
+				await verifier.areOddInThreshold(sportId_16, toUnit('90'), toUnit('100'))
+			);
+			assert.equal(
+				false,
+				await verifier.areOddInThreshold(sportId_16, toUnit('100'), toUnit('89'))
+			);
+			assert.equal(
+				false,
+				await verifier.areOddInThreshold(sportId_16, toUnit('89'), toUnit('100'))
+			);
+
 			assert.equal(
 				true,
-				await verifier.areOddsInThreshold(sportId_16, toUnit('100'), toUnit('90'))
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					[toUnit('91'), toUnit('91'), toUnit('0')],
+					[toUnit('100'), toUnit('100'), toUnit('0')],
+					true
+				)
 			);
+
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					[toUnit('89'), toUnit('91'), toUnit('0')],
+					[toUnit('100'), toUnit('100'), toUnit('0')],
+					true
+				)
+			);
+
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					[toUnit('91'), toUnit('89'), toUnit('0')],
+					[toUnit('100'), toUnit('100'), toUnit('0')],
+					true
+				)
+			);
+
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					[toUnit('91'), toUnit('91'), toUnit('89')],
+					[toUnit('100'), toUnit('100'), toUnit('100')],
+					false
+				)
+			);
+
 			assert.equal(
 				true,
-				await verifier.areOddsInThreshold(sportId_16, toUnit('91'), toUnit('100'))
-			);
-			assert.equal(
-				false,
-				await verifier.areOddsInThreshold(sportId_16, toUnit('90'), toUnit('100'))
-			);
-			assert.equal(
-				false,
-				await verifier.areOddsInThreshold(sportId_16, toUnit('100'), toUnit('89'))
-			);
-			assert.equal(
-				false,
-				await verifier.areOddsInThreshold(sportId_16, toUnit('89'), toUnit('100'))
+				await verifier.areOddsInThreshold(
+					sportId_16,
+					[toUnit('91'), toUnit('91'), toUnit('91')],
+					[toUnit('100'), toUnit('100'), toUnit('100')],
+					false
+				)
 			);
 		});
 	});

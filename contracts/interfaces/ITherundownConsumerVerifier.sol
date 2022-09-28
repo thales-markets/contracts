@@ -12,7 +12,8 @@ interface ITherundownConsumerVerifier {
 
     function areOddsInThreshold(
         uint _sportId,
-        uint _currentOdd,
-        uint _newOdd
+        uint[] memory _currentOdds,
+        uint[] memory _newOdds,
+        bool _isTwoPositionalSport
     ) external view returns (bool);
 }

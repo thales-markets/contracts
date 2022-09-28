@@ -7,14 +7,19 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "_currentOdd",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "_currentOdds",
+        "type": "uint256[]"
       },
       {
-        "internalType": "uint256",
-        "name": "_newOdd",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "_newOdds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isTwoPositionalSport",
+        "type": "bool"
       }
     ],
     "name": "areOddsInThreshold",

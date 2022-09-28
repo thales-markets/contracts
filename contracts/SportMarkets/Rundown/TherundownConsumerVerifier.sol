@@ -69,12 +69,32 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
 
     /// @notice view function which returns if odds are inside of the threshold
     /// @param _sportId sport id for which we get threshold
+    /// @param _currentOdds current odd on a contract
+    /// @param _newOdds new odd on a contract
+    /// @param _isTwoPositionalSport is sport two positional
     /// @return bool true if odds are less then threshold false if above
     function areOddsInThreshold(
         uint _sportId,
+        uint[] memory _currentOdds,
+        uint[] memory _newOdds,
+        bool _isTwoPositionalSport
+    ) external view returns (bool) {
+        return
+            areOddInThreshold(_sportId, _currentOdds[0], _newOdds[0]) &&
+            areOddInThreshold(_sportId, _currentOdds[1], _newOdds[1]) &&
+            (_isTwoPositionalSport || areOddInThreshold(_sportId, _currentOdds[2], _newOdds[2]));
+    }
+
+    /// @notice view function which returns if odds are inside of the threshold
+    /// @param _sportId sport id for which we get threshold
+    /// @param _currentOdd current odd on a contract
+    /// @param _newOdd new odd on a contract
+    /// @return bool true if odds are less then threshold false if above
+    function areOddInThreshold(
+        uint _sportId,
         uint _currentOdd,
         uint _newOdd
-    ) external view returns (bool) {
+    ) public view returns (bool) {
         uint threshold = oddThresholdForSport[_sportId] == 0 ? defaultOddThreshold : oddThresholdForSport[_sportId];
 
         // new odd appear or it is equal

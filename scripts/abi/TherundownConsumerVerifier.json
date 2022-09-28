@@ -152,6 +152,40 @@
         "type": "uint256"
       }
     ],
+    "name": "areOddInThreshold",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_currentOdds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_newOdds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isTwoPositionalSport",
+        "type": "bool"
+      }
+    ],
     "name": "areOddsInThreshold",
     "outputs": [
       {

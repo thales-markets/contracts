@@ -374,19 +374,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return _calculateAndNormalizeOdds(odds);
     }
 
-    /// @notice view function which returns normalized odd based on moneyline odd (Example: -15000)
-    /// @param _americanOdd moneyline odd (Example of a param: -15000, +35000, etc.), this param is with two decimal places (-15000 is -150 in moneyline world)
-    /// @return odd normalized to a 100
-    function calculateNormalizedOddFromAmerican(int _americanOdd) external pure returns (uint odd) {
-        if (_americanOdd > 0) {
-            odd = uint(_americanOdd);
-            odd = ((10000 * 1e18) / (odd + 10000)) * 100;
-        } else if (_americanOdd < 0) {
-            odd = uint(-_americanOdd);
-            odd = ((odd * 1e18) / (odd + 10000)) * 100;
-        }
-    }
-
     /* ========== INTERNALS ========== */
 
     function _createGameFulfill(

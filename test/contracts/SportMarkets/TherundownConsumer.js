@@ -427,17 +427,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			let result = await TherundownConsumerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
-			//assert.bnEqual(17700, await TherundownConsumerDeployed.getOddsAwayTeam(gameid1));
-			assert.notEqual(
-				0,
-				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(-20700)
-			);
-			assert.notEqual(
-				0,
-				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(17700)
-			);
-			assert.bnEqual(0, await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(0));
-
 			assert.equal(
 				game_1_create,
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
@@ -2030,16 +2019,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			let result = await TherundownConsumerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
-			assert.notEqual(
-				0,
-				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(-20700)
-			);
-			assert.notEqual(
-				0,
-				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(17700)
-			);
-			assert.bnEqual(0, await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(0));
-
 			assert.equal(
 				game_1_create,
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
@@ -2372,17 +2351,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			let result = await TherundownConsumerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
-			//assert.bnEqual(17700, await TherundownConsumerDeployed.getOddsAwayTeam(gameid1));
-			assert.notEqual(
-				0,
-				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(-20700)
-			);
-			assert.notEqual(
-				0,
-				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(17700)
-			);
-			assert.bnEqual(0, await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(0));
-
 			assert.equal(
 				game_1_create,
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
@@ -2477,17 +2445,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			let result = await TherundownConsumerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
-			//assert.bnEqual(17700, await TherundownConsumerDeployed.getOddsAwayTeam(gameid1));
-			assert.notEqual(
-				0,
-				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(-20700)
-			);
-			assert.notEqual(
-				0,
-				await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(17700)
-			);
-			assert.bnEqual(0, await TherundownConsumerDeployed.calculateNormalizedOddFromAmerican(0));
-
 			assert.equal(
 				game_1_create,
 				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)

@@ -40,6 +40,11 @@
         "internalType": "string",
         "name": "_eventId",
         "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "_arePostQualifyingOdds",
+        "type": "bool"
       }
     ],
     "name": "fulfillMatchup",

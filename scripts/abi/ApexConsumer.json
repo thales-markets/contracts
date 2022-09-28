@@ -231,6 +231,11 @@
             "internalType": "uint256",
             "name": "drawOdds",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "arePostQualifyingOddsFetched",
+            "type": "bool"
           }
         ],
         "indexed": false,
@@ -391,6 +396,11 @@
             "internalType": "uint256",
             "name": "drawOdds",
             "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "arePostQualifyingOddsFetched",
+            "type": "bool"
           }
         ],
         "indexed": false,
@@ -775,6 +785,11 @@
         "internalType": "string",
         "name": "_eventId",
         "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "_arePostQualifyingOdds",
+        "type": "bool"
       }
     ],
     "name": "fulfillMatchup",
@@ -998,6 +1013,11 @@
         "internalType": "uint256",
         "name": "drawOdds",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "arePostQualifyingOddsFetched",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1286,6 +1306,25 @@
       }
     ],
     "name": "isGameInResolvedStatus",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "isGamePausedByNonExistingPostQualifyingOdds",
     "outputs": [
       {
         "internalType": "bool",

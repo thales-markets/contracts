@@ -19,6 +19,8 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     mapping(address => mapping(uint => AddressSetLib.AddressSet)) internal _parlaysInGamePosition;
+    mapping(address => mapping(uint => mapping(uint => address))) public gamePositionParlay;
+    mapping(address => mapping(uint => uint)) public numOfparlaysInGamePosition;
     mapping(address => ParlayDetails) public parlayDetails;
 
     address public parlayMarketsAMM;

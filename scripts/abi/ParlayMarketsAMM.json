@@ -488,54 +488,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_parlayMarket",
-        "type": "address"
-      }
-    ],
-    "name": "canExerciseAnySportPositionOnParlay",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "isExercisable",
-        "type": "bool"
-      },
-      {
-        "internalType": "address[]",
-        "name": "exercisableMarkets",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "createdParlayMarkets",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "curveOnrampEnabled",
     "outputs": [
@@ -569,6 +521,30 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "exercisableSportPositionsInParlay",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isExercisable",
+        "type": "bool"
+      },
+      {
+        "internalType": "address[]",
+        "name": "exercisableMarkets",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -616,25 +592,6 @@
     "name": "expireMarkets",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_parlayMarket",
-        "type": "address"
-      }
-    ],
-    "name": "getParlayBalances",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "balances",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -711,30 +668,6 @@
         "internalType": "bool",
         "name": "isActiveParlayMarket",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_parlayMarket",
-        "type": "address"
-      }
-    ],
-    "name": "isAnySportPositionResolvedOnParlay",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "isAnyResolvable",
-        "type": "bool"
-      },
-      {
-        "internalType": "address[]",
-        "name": "resolvableMarkets",
-        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -936,6 +869,30 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "resolvableSportPositionsInParlay",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isAnyResolvable",
+        "type": "bool"
+      },
+      {
+        "internalType": "address[]",
+        "name": "resolvableMarkets",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",

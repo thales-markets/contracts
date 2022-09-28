@@ -184,34 +184,21 @@ contract ParlayMarket is OwnedWithInit {
             ISportPositionalMarket(_sportMarket).exerciseOptions();
             sportMarket[_idx].exercised = true;
             _numOfAlreadyExercisedSportMarkets++;
-            // console.log("--> market exercised");
             if (_numOfAlreadyExercisedSportMarkets == numOfSportMarkets && !parlayAlreadyLost) {
                 uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
                 uint calculatedAmount = _recalculateAmount();
-                // console.log("\n--> totalSUSDamount: ", totalSUSDamount);
-                // console.log("--> calculatedAmount: ", calculatedAmount);
                 _resolve(true);
                 if (calculatedAmount < totalSUSDamount) {
-                    // console.log("-----> calculatedAmount < totalSUSDamount");
-                    // console.log("-----> calculatedAmount:", calculatedAmount);
-                    // console.log("-----> totalSUSDamount: ", totalSUSDamount);
-                    // console.log("-----> diff: ", (totalSUSDamount-calculatedAmount));
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
                     parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount - calculatedAmount));
                     fundsIssued = true;
                 } else if (calculatedAmount > totalSUSDamount) {
-                    // console.log("-----> calculatedAmount > totalSUSDamount");
-                    // console.log("-----> calculatedAmount:", calculatedAmount);
-                    // console.log("-----> totalSUSDamount: ", totalSUSDamount);
-                    // console.log("-----> diff: ", (calculatedAmount-totalSUSDamount));
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
                     if ((calculatedAmount - totalSUSDamount) >= TWELVE_DECIMAL) {
-                        // console.log("-----> higher than twelve decimal");
                         parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (calculatedAmount - totalSUSDamount), true);
                     }
                     fundsIssued = true;
                 } else {
-                    // console.log("-----> equal");
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
                     fundsIssued = true;
                 }
@@ -232,11 +219,8 @@ contract ParlayMarket is OwnedWithInit {
         sportMarket[_idx].hasWon = result == (sportMarket[_idx].position + 1);
         numOfResolvedSportMarkets++;
         if (isResolved && result == 0) {
-            // console.log("--> 1. totalResult: ", totalResultQuote);
-            // console.log("--> 2. odd: ", sportMarket[_idx].odd);
             totalResultQuote = ((totalResultQuote * ONE * ONE) / sportMarket[_idx].odd) / ONE;
             sportMarket[_idx].isCancelled = true;
-            // console.log("--> 3. totalResult: ", totalResultQuote);
         }
     }
 
@@ -252,8 +236,6 @@ contract ParlayMarket is OwnedWithInit {
     }
 
     function _recalculateAmount() internal view returns (uint recalculated) {
-        // console.log("===D sUSDpaid: ", sUSDPaid);
-        // console.log("===D totalResultQuote: ", totalResultQuote);
         recalculated = ((sUSDPaid * ONE * ONE) / totalResultQuote) / ONE;
         // apply AMM fees
         // recalculated = ((ONE - (ONE_PERCENT * parlayMarketsAMM.parlayAmmFee())) * recalculated) / ONE;

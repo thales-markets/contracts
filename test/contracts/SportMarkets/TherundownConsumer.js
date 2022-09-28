@@ -908,7 +908,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
-			).to.be.revertedWith('Must be first in a queue');
+			).to.be.revertedWith('ID3');
 
 			// clean first in queue
 			await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
@@ -933,7 +933,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
-			).to.be.revertedWith('Market for game already exists');
+			).to.be.revertedWith('ID1');
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 
@@ -984,7 +984,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.resolveMarketForGame(gameFootballid2, { from: owner })
-			).to.be.revertedWith('Market resoved or canceled');
+			).to.be.revertedWith('ID4');
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
@@ -1042,7 +1042,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market for game already exists');
+			).to.be.revertedWith('ID1');
 
 			await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
 
@@ -1084,7 +1084,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market resoved or canceled');
+			).to.be.revertedWith('ID4');
 		});
 
 		it('Fulfill Games Resolved - UFC, create market, pause market, resolve -> remove from queue only', async () => {
@@ -1138,7 +1138,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market for game already exists');
+			).to.be.revertedWith('ID1');
 
 			await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
 
@@ -1237,7 +1237,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market for game already exists');
+			).to.be.revertedWith('ID1');
 
 			await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
 
@@ -1278,7 +1278,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market resoved or canceled');
+			).to.be.revertedWith('ID4');
 		});
 
 		it('Fulfill Games Resolved - game time has passed, cancel market, automaticly', async () => {
@@ -1332,7 +1332,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market for game already exists');
+			).to.be.revertedWith('ID1');
 
 			await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
 
@@ -1374,7 +1374,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market resoved or canceled');
+			).to.be.revertedWith('ID4');
 		});
 
 		it('Fulfill Games Resolved - game time has not passed, first pause, then cancel automaticly after it is passed', async () => {
@@ -1429,7 +1429,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market for game already exists');
+			).to.be.revertedWith('ID1');
 
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdFightCanceled,
@@ -1505,7 +1505,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.resolveMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market resoved or canceled');
+			).to.be.revertedWith('ID4');
 		});
 
 		/*it('Fulfill Games Resolved - game time has not passed, also updated at not passed, no resolve', async () => {
@@ -1560,7 +1560,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market for game already exists');
+			).to.be.revertedWith('ID1');
 
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdFightCanceled,
@@ -1642,31 +1642,31 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 1, { from: second })
-			).to.be.revertedWith('Invalid caller');
+			).to.be.revertedWith('ID10');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, 1, 1, { from: third })
-			).to.be.revertedWith('Bad result or outcome');
+			).to.be.revertedWith('ID15');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 2, 1, { from: third })
-			).to.be.revertedWith('Bad result or outcome');
+			).to.be.revertedWith('ID15');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 1, { from: third })
-			).to.be.revertedWith('Bad result or outcome');
+			).to.be.revertedWith('ID15');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 1, 1, 1, { from: third })
-			).to.be.revertedWith('Bad result or outcome');
+			).to.be.revertedWith('ID15');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 1, 1, 2, { from: third })
-			).to.be.revertedWith('Bad result or outcome');
+			).to.be.revertedWith('ID15');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 0, 1, 1, { from: third })
-			).to.be.revertedWith('Bad result or outcome');
+			).to.be.revertedWith('ID15');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, 2, 1, { from: third })
-			).to.be.revertedWith('Bad result or outcome');
+			).to.be.revertedWith('ID15');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, 1, 2, { from: third })
-			).to.be.revertedWith('Bad result or outcome');
+			).to.be.revertedWith('ID15');
 
 			const tx_2 = await TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, {
 				from: third,
@@ -1681,7 +1681,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, { from: third })
-			).to.be.revertedWith('Market resoved or canceled');
+			).to.be.revertedWith('ID13');
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
@@ -1726,7 +1726,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
-			).to.be.revertedWith('Must be first in a queue');
+			).to.be.revertedWith('ID3');
 
 			// clean first in queue
 			await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
@@ -1753,10 +1753,10 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, { from: second })
-			).to.be.revertedWith('Invalid caller');
+			).to.be.revertedWith('ID10');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 4, 0, 0, { from: third })
-			).to.be.revertedWith('Bad result or outcome');
+			).to.be.revertedWith('ID15');
 
 			const tx_2 = await TherundownConsumerDeployed.resolveMarketManually(marketAdd, 1, 2, 1, {
 				from: third,
@@ -1779,7 +1779,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, { from: third })
-			).to.be.revertedWith('Market resoved or canceled');
+			).to.be.revertedWith('ID13');
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
@@ -1861,13 +1861,13 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: second })
-			).to.be.revertedWith('Invalid caller');
+			).to.be.revertedWith('ID10');
 			await expect(
 				TherundownConsumerDeployed.cancelMarketManually(second, { from: third })
-			).to.be.revertedWith('No market created for game');
+			).to.be.revertedWith('ID12');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, 0, 0, { from: third })
-			).to.be.revertedWith('Bad result or outcome');
+			).to.be.revertedWith('ID15');
 
 			const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(marketAdd, {
 				from: third,
@@ -1881,10 +1881,10 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, { from: third })
-			).to.be.revertedWith('Market resoved or canceled');
+			).to.be.revertedWith('ID13');
 			await expect(
 				TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: third })
-			).to.be.revertedWith('Market resoved or canceled');
+			).to.be.revertedWith('ID11');
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
 			assert.equal(0, await gamesQueue.unproccessedGamesIndex(gameid1));
@@ -2103,7 +2103,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.setSupportedResolvedStatuses(15, true, { from: owner })
-			).to.be.revertedWith('Already set');
+			).to.be.revertedWith('Transaction reverted without a reason');
 
 			// check if event is emited
 			assert.eventEqual(tx_SupportedResolvedStatuses.logs[0], 'SupportedResolvedStatusChanged', {
@@ -2122,7 +2122,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.setSupportedCancelStatuses(15, true, { from: owner })
-			).to.be.revertedWith('Already set');
+			).to.be.revertedWith('Transaction reverted without a reason');
 
 			// check if event is emited
 			assert.eventEqual(tx_SupportedCancelStatuses.logs[0], 'SupportedCancelStatusChanged', {
@@ -2140,7 +2140,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.setTwoPositionSport(15, true, { from: owner })
-			).to.be.revertedWith('Invalid input');
+			).to.be.revertedWith('Transaction reverted without a reason');
 
 			// check if event is emited
 			assert.eventEqual(tx_twoPositionSport.logs[0], 'TwoPositionSportChanged', {
@@ -2174,7 +2174,7 @@ contract('TheRundownConsumer', (accounts) => {
 						from: owner,
 					}
 				)
-			).to.be.revertedWith('Invalid addreses');
+			).to.be.revertedWith('Transaction reverted without a reason');
 
 			// check if event is emited
 			assert.eventEqual(tx_SportsManager.logs[0], 'NewSportContracts', {
@@ -2256,7 +2256,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market for game already exists');
+			).to.be.revertedWith('ID1');
 
 			// update values on fighter name
 
@@ -2312,7 +2312,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(fightId, { from: owner })
-			).to.be.revertedWith('Market for game already exists');
+			).to.be.revertedWith('ID1');
 		});
 
 		it('Test changing date of a game, pause market, because game date less then current time', async () => {
@@ -2641,7 +2641,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
-			).to.be.revertedWith('Must be first in a queue');
+			).to.be.revertedWith('ID3');
 
 			// clean first in queue
 			await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
@@ -2666,7 +2666,7 @@ contract('TheRundownConsumer', (accounts) => {
 
 			await expect(
 				TherundownConsumerDeployed.createMarketForGame(gameFootballid2, { from: owner })
-			).to.be.revertedWith('Market for game already exists');
+			).to.be.revertedWith('ID1');
 
 			await fastForward(gameFootballTime - (await currentTime()) + 3 * HOUR);
 

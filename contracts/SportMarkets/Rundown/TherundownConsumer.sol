@@ -232,10 +232,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(
             marketPerGameId[_gameId] == address(0) ||
                 (marketCanceled[marketPerGameId[_gameId]] && marketPerGameId[_gameId] != address(0)),
-            "Market for game already exists"
+            "ID1"
         );
-        require(gameFulfilledCreated[_gameId], "No such game fulfilled, created");
-        require(queues.gamesCreateQueue(queues.firstCreated()) == _gameId, "Must be first in a queue");
+        require(gameFulfilledCreated[_gameId], "ID2");
+        require(queues.gamesCreateQueue(queues.firstCreated()) == _gameId, "ID3");
         _createMarket(_gameId);
     }
 
@@ -250,8 +250,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice resolve market for a given game id
     /// @param _gameId game id
     function resolveMarketForGame(bytes32 _gameId) public {
-        require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
-        require(gameFulfilledResolved[_gameId], "No such game Fulfilled, resolved");
+        require(!isGameResolvedOrCanceled(_gameId), "ID4");
+        require(gameFulfilledResolved[_gameId], "ID5");
         _resolveMarket(_gameId);
     }
 
@@ -500,7 +500,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint index = queues.unproccessedGamesIndex(_gameId);
 
         // it can return ZERO index, needs checking
-        require(_gameId == queues.unproccessedGames(index), "Invalid Game ID");
+        require(_gameId == queues.unproccessedGames(index), "ID6");
 
         if (_isGameStatusResolved(game)) {
             if (invalidOdds[marketPerGameId[game.gameId]]) {
@@ -540,7 +540,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint index = queues.unproccessedGamesIndex(gameIdPerMarket[_market]);
 
         // it can return ZERO index, needs checking
-        require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "Invalid Game ID");
+        require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "ID7");
 
         _pauseOrUnpauseMarket(_market, false);
         sportsManager.resolveMarket(_market, _outcome);
@@ -568,7 +568,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint index = queues.unproccessedGamesIndex(gameIdPerMarket[_market]);
 
         // it can return ZERO index, needs checking
-        require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "Invalid Game ID");
+        require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "ID8");
 
         _pauseOrUnpauseMarket(_market, false);
         sportsManager.resolveMarket(_market, 0);
@@ -709,7 +709,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _sportId sport id which needs to be supported or not
     /// @param _isSupported true/false (supported or not)
     function setSupportedSport(uint _sportId, bool _isSupported) external onlyOwner {
-        require(supportedSport[_sportId] != _isSupported, "Already set");
+        require(supportedSport[_sportId] != _isSupported);
         supportedSport[_sportId] = _isSupported;
         emit SupportedSportsChanged(_sportId, _isSupported);
     }
@@ -718,7 +718,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _status status ID which needs to be supported or not
     /// @param _isSupported true/false (supported or not)
     function setSupportedResolvedStatuses(uint _status, bool _isSupported) external onlyOwner {
-        require(supportResolveGameStatuses[_status] != _isSupported, "Already set");
+        require(supportResolveGameStatuses[_status] != _isSupported);
         supportResolveGameStatuses[_status] = _isSupported;
         emit SupportedResolvedStatusChanged(_status, _isSupported);
     }
@@ -727,7 +727,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _status ststus ID which needs to be supported or not
     /// @param _isSupported true/false (supported or not)
     function setSupportedCancelStatuses(uint _status, bool _isSupported) external onlyOwner {
-        require(cancelGameStatuses[_status] != _isSupported, "Already set");
+        require(cancelGameStatuses[_status] != _isSupported);
         cancelGameStatuses[_status] = _isSupported;
         emit SupportedCancelStatusChanged(_status, _isSupported);
     }
@@ -736,7 +736,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _sportId sport ID which is two positional
     /// @param _isTwoPosition true/false (two positional sport or not)
     function setTwoPositionSport(uint _sportId, bool _isTwoPosition) external onlyOwner {
-        require(supportedSport[_sportId] && twoPositionSport[_sportId] != _isTwoPosition, "Invalid input");
+        require(supportedSport[_sportId] && twoPositionSport[_sportId] != _isTwoPosition);
         twoPositionSport[_sportId] = _isTwoPosition;
         emit TwoPositionSportChanged(_sportId, _isTwoPosition);
     }
@@ -755,8 +755,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             _wrapperAddress != address(0) ||
                 address(_queues) != address(0) ||
                 _sportsManager != address(0) ||
-                _verifier != address(0),
-            "Invalid addreses"
+                _verifier != address(0)
         );
 
         sportsManager = ISportPositionalMarketManager(_sportsManager);
@@ -771,7 +770,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
     /// @param _flag adding or removing from whitelist (true: add, false: remove)
     function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
-        require(_whitelistAddress != address(0) && whitelistedAddresses[_whitelistAddress] != _flag, "Invalid");
+        require(_whitelistAddress != address(0) && whitelistedAddresses[_whitelistAddress] != _flag);
         whitelistedAddresses[_whitelistAddress] = _flag;
         emit AddedIntoWhitelist(_whitelistAddress, _flag);
     }
@@ -779,18 +778,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== MODIFIERS ========== */
 
     modifier onlyWrapper() {
-        require(msg.sender == wrapperAddress, "Only wrapper");
+        require(msg.sender == wrapperAddress, "ID9");
         _;
     }
 
     modifier isAddressWhitelisted() {
-        require(whitelistedAddresses[msg.sender], "Invalid caller");
+        require(whitelistedAddresses[msg.sender], "ID10");
         _;
     }
 
     modifier canGameBeCanceled(bytes32 _gameId) {
-        require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
-        require(marketPerGameId[_gameId] != address(0), "No market created for game");
+        require(!isGameResolvedOrCanceled(_gameId), "ID11");
+        require(marketPerGameId[_gameId] != address(0), "ID12");
         _;
     }
 
@@ -800,11 +799,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint8 _homeScore,
         uint8 _awayScore
     ) {
-        require(!isGameResolvedOrCanceled(_gameId), "Market resoved or canceled");
-        require(marketPerGameId[_gameId] != address(0), "No market created for game");
+        require(!isGameResolvedOrCanceled(_gameId), "ID13");
+        require(marketPerGameId[_gameId] != address(0), "ID14");
         require(
             _isValidOutcomeForGame(_gameId, _outcome) && _isValidOutcomeWithResult(_outcome, _homeScore, _awayScore),
-            "Bad result or outcome"
+            "ID15"
         );
         _;
     }

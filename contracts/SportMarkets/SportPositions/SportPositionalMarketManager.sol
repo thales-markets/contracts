@@ -45,6 +45,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     bool public needsTransformingCollateral;
     mapping(address => bool) public whitelistedAddresses;
     address public apexConsumer;
+    uint public cancelTimeout;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -302,6 +303,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             marketCreationEnabled = enabled;
             emit MarketCreationEnabledUpdated(enabled);
         }
+    }
+
+    function setCancelTimeout(uint _cancelTimeout) external onlyOwner {
+        cancelTimeout = _cancelTimeout;
     }
 
     // support USDC with 6 decimals

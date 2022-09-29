@@ -181,6 +181,7 @@ contract('SportsAMM', (accounts) => {
 		await SportPositionalMarketFactory.initialize(manager, { from: manager });
 
 		await SportPositionalMarketManager.setExpiryDuration(5 * DAY, { from: manager });
+		// await SportPositionalMarketManager.setCancelTimeout(2 * HOUR, { from: manager });
 
 		await SportPositionalMarketFactory.setSportPositionalMarketManager(
 			SportPositionalMarketManager.address,
@@ -1221,6 +1222,7 @@ contract('SportsAMM', (accounts) => {
 					from: owner,
 				}
 			);
+			await SportPositionalMarketManager.setCancelTimeout(2 * HOUR, { from: manager });
 			answer = await deployedMarket.result();
 			console.log('Result resolved: ', answer.toString());
 			marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
@@ -1236,6 +1238,10 @@ contract('SportsAMM', (accounts) => {
 			console.log('acc sUSD balance before exercise: ', fromUnit(answer));
 			let options = await deployedMarket.balancesOf(first);
 			console.log('options balance before exercise: ', fromUnit(options[positionInAMM]));
+			await expect(deployedMarket.exerciseOptions({ from: first })).to.be.revertedWith(
+				'Invalid timeout/stamped odds'
+			);
+			await fastForward((await currentTime()) + (2 * HOUR + SECOND));
 			await deployedMarket.exerciseOptions({ from: first });
 			answer = await Thales.balanceOf(first);
 			cost = answer.sub(initial_balance);

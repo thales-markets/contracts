@@ -430,7 +430,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                     _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], false);
                 }
             }
-
             emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
         } else {
             if (!sportsManager.isMarketPaused(marketPerGameId[_game.gameId])) {
@@ -467,7 +466,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // only markets in a future, if not dequeue that creation
         if (game.startTime > block.timestamp) {
             uint sportId = sportsIdPerGame[_gameId];
-            uint numberOfPositions = _calculateNumberOfPositionsBasedOnSport(sportId);
             uint[] memory tags = _calculateTags(sportId);
 
             // create
@@ -476,7 +474,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 _append(game.homeTeam, game.awayTeam), // gameLabel
                 game.startTime, //maturity
                 0, //initialMint
-                numberOfPositions,
+                isSportTwoPositionsSport(sportId) ? 2 : 3,
                 tags //tags
             );
 
@@ -571,7 +569,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "ID8");
 
         _pauseOrUnpauseMarket(_market, false);
-        sportsManager.resolveMarket(_market, 0);
+        sportsManager.resolveMarket(_market, CANCELLED);
         marketCanceled[_market] = true;
         queues.removeItemUnproccessedGames(index);
 
@@ -590,7 +588,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint _index,
         bool cleanStorage
     ) internal {
-        sportsManager.resolveMarket(marketPerGameId[_gameId], 0);
+        sportsManager.resolveMarket(marketPerGameId[_gameId], CANCELLED);
         marketCanceled[marketPerGameId[_gameId]] = true;
 
         if (cleanStorage) {
@@ -607,10 +605,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _append(string memory teamA, string memory teamB) internal pure returns (string memory) {
         return string(abi.encodePacked(teamA, " vs ", teamB));
-    }
-
-    function _calculateNumberOfPositionsBasedOnSport(uint _sportsId) internal view returns (uint) {
-        return isSportTwoPositionsSport(_sportsId) ? 2 : 3;
     }
 
     function _calculateTags(uint _sportsId) internal pure returns (uint[] memory) {
@@ -636,60 +630,29 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _areOddsValid(GameOdds memory _game) internal view returns (bool) {
-        if (isSportTwoPositionsSport(sportsIdPerGame[_game.gameId])) {
-            return _game.awayOdds != 0 && _game.homeOdds != 0;
-        } else {
-            return _game.awayOdds != 0 && _game.homeOdds != 0 && _game.drawOdds != 0;
-        }
+        return
+            verifier.areOddsValid(
+                isSportTwoPositionsSport(sportsIdPerGame[_game.gameId]),
+                _game.homeOdds,
+                _game.awayOdds,
+                _game.drawOdds
+            );
     }
 
     function _isValidOutcomeForGame(bytes32 _gameId, uint _outcome) internal view returns (bool) {
-        if (isSportTwoPositionsSport(sportsIdPerGame[_gameId])) {
-            return _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == CANCELLED;
-        }
-        return _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW || _outcome == CANCELLED;
+        return verifier.isValidOutcomeForGame(isSportTwoPositionsSport(sportsIdPerGame[_gameId]), _outcome);
     }
 
     function _isValidOutcomeWithResult(
         uint _outcome,
         uint _homeScore,
         uint _awayScore
-    ) internal pure returns (bool) {
-        if (_outcome == CANCELLED) {
-            return _awayScore == CANCELLED && _homeScore == CANCELLED;
-        } else if (_outcome == HOME_WIN) {
-            return _homeScore > _awayScore;
-        } else if (_outcome == AWAY_WIN) {
-            return _homeScore < _awayScore;
-        } else {
-            return _homeScore == _awayScore;
-        }
+    ) internal view returns (bool) {
+        return verifier.isValidOutcomeWithResult(_outcome, _homeScore, _awayScore);
     }
 
-    function _calculateAndNormalizeOdds(int[] memory _americanOdds) internal pure returns (uint[] memory) {
-        uint[] memory normalizedOdds = new uint[](_americanOdds.length);
-        uint totalOdds;
-        for (uint i = 0; i < _americanOdds.length; i++) {
-            uint odd;
-            if (_americanOdds[i] == 0) {
-                normalizedOdds[i] = 0;
-            } else if (_americanOdds[i] > 0) {
-                odd = uint(_americanOdds[i]);
-                normalizedOdds[i] = ((10000 * 1e18) / (odd + 10000)) * 100;
-            } else if (_americanOdds[i] < 0) {
-                odd = uint(-_americanOdds[i]);
-                normalizedOdds[i] = ((odd * 1e18) / (odd + 10000)) * 100;
-            }
-            totalOdds += normalizedOdds[i];
-        }
-        for (uint i = 0; i < normalizedOdds.length; i++) {
-            if (totalOdds == 0) {
-                normalizedOdds[i] = 0;
-            } else {
-                normalizedOdds[i] = (1e18 * normalizedOdds[i]) / totalOdds;
-            }
-        }
-        return normalizedOdds;
+    function _calculateAndNormalizeOdds(int[] memory _americanOdds) internal view returns (uint[] memory) {
+        return verifier.calculateAndNormalizeOdds(_americanOdds);
     }
 
     function _updateGameOnADate(

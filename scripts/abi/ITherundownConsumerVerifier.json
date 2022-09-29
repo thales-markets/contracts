@@ -36,6 +36,40 @@
   {
     "inputs": [
       {
+        "internalType": "bool",
+        "name": "_isTwoPositionalSport",
+        "type": "bool"
+      },
+      {
+        "internalType": "int24",
+        "name": "_homeOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "_awayOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "_drawOdds",
+        "type": "int24"
+      }
+    ],
+    "name": "areOddsValid",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_teamA",
         "type": "string"
@@ -52,6 +86,25 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "int256[]",
+        "name": "_americanOdds",
+        "type": "int256[]"
+      }
+    ],
+    "name": "calculateAndNormalizeOdds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "view",
@@ -90,6 +143,59 @@
       }
     ],
     "name": "isSupportedMarketType",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_isTwoPositionalSport",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      }
+    ],
+    "name": "isValidOutcomeForGame",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_homeScore",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_awayScore",
+        "type": "uint256"
+      }
+    ],
+    "name": "isValidOutcomeWithResult",
     "outputs": [
       {
         "internalType": "bool",

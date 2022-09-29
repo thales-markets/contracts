@@ -16,4 +16,21 @@ interface ITherundownConsumerVerifier {
         uint[] memory _newOdds,
         bool _isTwoPositionalSport
     ) external view returns (bool);
+
+    function areOddsValid(
+        bool _isTwoPositionalSport,
+        int24 _homeOdds,
+        int24 _awayOdds,
+        int24 _drawOdds
+    ) external view returns (bool);
+
+    function isValidOutcomeForGame(bool _isTwoPositionalSport, uint _outcome) external view returns (bool);
+
+    function isValidOutcomeWithResult(
+        uint _outcome,
+        uint _homeScore,
+        uint _awayScore
+    ) external view returns (bool);
+
+    function calculateAndNormalizeOdds(int[] memory _americanOdds) external view returns (uint[] memory);
 }

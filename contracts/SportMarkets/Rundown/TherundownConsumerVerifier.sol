@@ -16,6 +16,10 @@ import "../../interfaces/ITherundownConsumer.sol";
 contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable {
     uint private constant ONE_PERCENT = 1e16;
     uint private constant ONE = 1e18;
+    uint public constant CANCELLED = 0;
+    uint public constant HOME_WIN = 1;
+    uint public constant AWAY_WIN = 2;
+    uint public constant RESULT_DRAW = 3;
 
     ITherundownConsumer public consumer;
     mapping(bytes32 => bool) public invalidName;
@@ -109,7 +113,112 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         return !(ONE - ((_newOdd * ONE) / _currentOdd) > (threshold * ONE_PERCENT));
     }
 
+    /// @notice view function which if odds are valid or not
+    /// @param _isTwoPositionalSport if two positional sport dont look at draw odd
+    /// @param _homeOdds odd for home win
+    /// @param _awayOdds odd for away win
+    /// @param _drawOdds odd for draw win
+    /// @return bool true - valid, fasle - invalid
+    function areOddsValid(
+        bool _isTwoPositionalSport,
+        int24 _homeOdds,
+        int24 _awayOdds,
+        int24 _drawOdds
+    ) external view returns (bool) {
+        return _areOddsValid(_isTwoPositionalSport, _homeOdds, _awayOdds, _drawOdds);
+    }
+
+    /// @notice view function which returns if outcome of a game is valid
+    /// @param _isTwoPositionalSport if two positional sport  draw now vallid
+    /// @param _outcome home - 1, away - 2, draw - 3 (if not two positional), and cancel - 0 are valid outomes
+    /// @return bool true - valid, fasle - invalid
+    function isValidOutcomeForGame(bool _isTwoPositionalSport, uint _outcome) external view returns (bool) {
+        return _isValidOutcomeForGame(_isTwoPositionalSport, _outcome);
+    }
+
+    /// @notice view function which returns if outcome is good with a score
+    /// @param _outcome home - 1, away - 2, draw - 3 (if not two positional), and cancel - 0 are valid outomes
+    /// @param _homeScore home team has scored in points
+    /// @param _awayScore away team has scored in points
+    /// @return bool true - valid, fasle - invalid
+    function isValidOutcomeWithResult(
+        uint _outcome,
+        uint _homeScore,
+        uint _awayScore
+    ) external view returns (bool) {
+        return _isValidOutcomeWithResult(_outcome, _homeScore, _awayScore);
+    }
+
+    /// @notice calculate normalized odds based on american odds
+    /// @param _americanOdds american odds in array of 3 [home,away,draw]
+    /// @return uint[] array of normalized odds
+    function calculateAndNormalizeOdds(int[] memory _americanOdds) external view returns (uint[] memory) {
+        return _calculateAndNormalizeOdds(_americanOdds);
+    }
+
     /* ========== INTERNALS ========== */
+
+    function _calculateAndNormalizeOdds(int[] memory _americanOdds) internal pure returns (uint[] memory) {
+        uint[] memory normalizedOdds = new uint[](_americanOdds.length);
+        uint totalOdds;
+        for (uint i = 0; i < _americanOdds.length; i++) {
+            uint odd;
+            if (_americanOdds[i] == 0) {
+                normalizedOdds[i] = 0;
+            } else if (_americanOdds[i] > 0) {
+                odd = uint(_americanOdds[i]);
+                normalizedOdds[i] = ((10000 * 1e18) / (odd + 10000)) * 100;
+            } else if (_americanOdds[i] < 0) {
+                odd = uint(-_americanOdds[i]);
+                normalizedOdds[i] = ((odd * 1e18) / (odd + 10000)) * 100;
+            }
+            totalOdds += normalizedOdds[i];
+        }
+        for (uint i = 0; i < normalizedOdds.length; i++) {
+            if (totalOdds == 0) {
+                normalizedOdds[i] = 0;
+            } else {
+                normalizedOdds[i] = (1e18 * normalizedOdds[i]) / totalOdds;
+            }
+        }
+        return normalizedOdds;
+    }
+
+    function _areOddsValid(
+        bool _isTwoPositionalSport,
+        int24 _homeOdds,
+        int24 _awayOdds,
+        int24 _drawOdds
+    ) internal view returns (bool) {
+        if (_isTwoPositionalSport) {
+            return _awayOdds != 0 && _homeOdds != 0;
+        } else {
+            return _awayOdds != 0 && _homeOdds != 0 && _drawOdds != 0;
+        }
+    }
+
+    function _isValidOutcomeForGame(bool _isTwoPositionalSport, uint _outcome) internal view returns (bool) {
+        if (_isTwoPositionalSport) {
+            return _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == CANCELLED;
+        }
+        return _outcome == HOME_WIN || _outcome == AWAY_WIN || _outcome == RESULT_DRAW || _outcome == CANCELLED;
+    }
+
+    function _isValidOutcomeWithResult(
+        uint _outcome,
+        uint _homeScore,
+        uint _awayScore
+    ) internal pure returns (bool) {
+        if (_outcome == CANCELLED) {
+            return _awayScore == CANCELLED && _homeScore == CANCELLED;
+        } else if (_outcome == HOME_WIN) {
+            return _homeScore > _awayScore;
+        } else if (_outcome == AWAY_WIN) {
+            return _homeScore < _awayScore;
+        } else {
+            return _homeScore == _awayScore;
+        }
+    }
 
     function _setInvalidNames(string[] memory _invalidNames, bool _isInvalid) internal {
         for (uint256 index = 0; index < _invalidNames.length; index++) {

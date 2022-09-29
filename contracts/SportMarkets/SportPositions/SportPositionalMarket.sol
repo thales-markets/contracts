@@ -61,7 +61,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     ITherundownConsumer public theRundownConsumer;
     IERC20 public sUSD;
     address public sportsAMM;
-    uint[] public tags;
+    uint[] public override tags;
     uint public finalResult;
 
     // `deposited` tracks the sum of all deposits.

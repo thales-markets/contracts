@@ -634,6 +634,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "capPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "curveOnrampEnabled",
     "outputs": [
@@ -1174,6 +1193,24 @@
       }
     ],
     "name": "setAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_capPerSport",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCapPerSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

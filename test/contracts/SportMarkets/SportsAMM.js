@@ -146,6 +146,9 @@ contract('SportsAMM', (accounts) => {
 	const sportId_4 = 4; // NBA
 	const sportId_16 = 16; // CHL
 
+	const tagID_4 = 9000 + sportId_4;
+	const tagID_16 = 9000 + sportId_16;
+
 	let gameMarket;
 
 	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
@@ -393,6 +396,7 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
+		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 	});
 
 	describe('Init', () => {
@@ -635,6 +639,8 @@ contract('SportsAMM', (accounts) => {
 			assert.bnEqual(await SportsAMM.max_spread(), toUnit('0.2'));
 			assert.bnEqual(await SportsAMM.defaultCapPerGame(), toUnit('5000'));
 			assert.bnEqual(await SportsAMM.minimalTimeLeftToMaturity(), DAY);
+			assert.bnEqual(await SportsAMM.capPerSport(tagID_4), toUnit('50000'));
+			assert.bnEqual(await SportsAMM.capPerSport(tagID_16), toUnit('0'));
 		});
 
 		it('Market data test', async () => {
@@ -661,6 +667,11 @@ contract('SportsAMM', (accounts) => {
 		it('Is market in AMM trading', async () => {
 			answer = await SportsAMM.isMarketInAMMTrading(deployedMarket.address);
 			assert.equal(answer, true);
+		});
+
+		it('Check tags', async () => {
+			answer = await deployedMarket.tags('0');
+			assert.bnEqual(answer.toString(), tagID_4.toString());
 		});
 
 		it('Get odds', async () => {

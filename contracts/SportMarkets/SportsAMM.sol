@@ -118,6 +118,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
     uint public maxAllowedPegSlippagePercentage;
 
+    /// @return the cap per sportID. based on the tagID
+    mapping(uint => uint) public capPerSport;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -159,11 +162,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             uint divider_price = ONE.sub(baseOdds.add(midImpactPriceIncrease));
 
             uint additionalBufferFromSelling = balance.mul(baseOdds).div(ONE);
-
-            if (defaultCapPerGame.add(additionalBufferFromSelling) <= spentOnGame[market]) {
+            uint capUsed = capPerSport[ISportPositionalMarket(market).tags(0)] > 0
+                ? capPerSport[ISportPositionalMarket(market).tags(0)]
+                : defaultCapPerGame;
+            if (capUsed.add(additionalBufferFromSelling) <= spentOnGame[market]) {
                 return 0;
             }
-            uint availableUntilCapSUSD = defaultCapPerGame.add(additionalBufferFromSelling).sub(spentOnGame[market]);
+            uint availableUntilCapSUSD = capUsed.add(additionalBufferFromSelling).sub(spentOnGame[market]);
 
             _available = balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
         }
@@ -262,7 +267,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
             // can burn straight away balanceOfTheOtherSide
             uint willPay = balanceOfTheOtherSide.mul(sell_max_price).div(ONE);
-            uint capPlusBalance = defaultCapPerGame.add(balanceOfTheOtherSide);
+            uint capPlusBalance = capPerSport[ISportPositionalMarket(market).tags(0)] > 0
+                ? capPerSport[ISportPositionalMarket(market).tags(0)]
+                : defaultCapPerGame;
+            capPlusBalance = capPlusBalance.add(balanceOfTheOtherSide);
             if (capPlusBalance < spentOnGame[market].add(willPay)) {
                 return 0;
             }
@@ -502,7 +510,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         require(
             maxAllowedPegSlippagePercentage > 0 &&
                 transformedCollateralForPegCheck >= susdQuote.mul(ONE.sub(maxAllowedPegSlippagePercentage)).div(ONE),
-            "Amount below max allowed peg slippage"
+            "Below max slippage"
         );
 
         require(collateralQuote.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high!");
@@ -523,14 +531,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         bool sendSUSD,
         uint sUSDPaid
     ) internal {
-        require(isMarketInAMMTrading(market), "Market is not in Trading phase");
+        require(isMarketInAMMTrading(market), "Not in Trading");
         require(ISportPositionalMarket(market).optionsCount() > uint(position), "Invalid position");
         uint availableToBuyFromAMMatm = availableToBuyFromAMM(market, position);
-        require(amount > ZERO_POINT_ONE && amount <= availableToBuyFromAMMatm, "Not enough liquidity or zero amount.");
+        require(amount > ZERO_POINT_ONE && amount <= availableToBuyFromAMMatm, "Low liquidity || 0 amount");
 
         if (sendSUSD) {
             sUSDPaid = buyFromAmmQuote(market, position, amount);
-            require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "You dont have enough sUSD.");
+            require(sUSD.balanceOf(msg.sender) >= sUSDPaid, "Not enough sUSD.");
             require(sUSD.allowance(msg.sender, address(this)) >= sUSDPaid, "No allowance.");
             require(sUSDPaid.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high");
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
@@ -540,7 +548,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (toMint > 0) {
             require(
                 sUSD.balanceOf(address(this)) >= ISportPositionalMarketManager(manager).transformCollateral(toMint),
-                "Not enough sUSD in contract."
+                "Low contract sUSD"
             );
             ISportPositionalMarket(market).mint(toMint);
             spentOnGame[market] = spentOnGame[market].add(toMint);
@@ -574,12 +582,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint expectedPayout,
         uint additionalSlippage
     ) public nonReentrant whenNotPaused {
-        require(isMarketInAMMTrading(market), "Market is not in Trading phase");
+        require(isMarketInAMMTrading(market), "Not in Trading");
         require(ISportPositionalMarket(market).optionsCount() > uint(position), "Invalid position");
         uint availableToSellToAMMATM = availableToSellToAMM(market, position);
         require(
             availableToSellToAMMATM > 0 && amount > ZERO_POINT_ONE && amount <= availableToSellToAMMATM,
-            "Not enough liquidity or zero amount.."
+            "Low liquidity || 0 amount"
         );
 
         uint pricePaid = sellToAmmQuote(market, position, amount);
@@ -591,7 +599,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             target = position == Position.Away ? away : draw;
         }
 
-        require(target.getBalanceOf(msg.sender) >= amount, "You dont have enough options.");
+        require(target.getBalanceOf(msg.sender) >= amount, "Low user options");
         require(IERC20Upgradeable(address(target)).allowance(msg.sender, address(this)) >= amount, "No allowance.");
 
         //transfer options first to have max burn available
@@ -603,7 +611,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             ISportPositionalMarket(market).burnOptionsMaximum();
         }
 
-        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
+        require(sUSD.balanceOf(address(this)) >= pricePaid, "Low contract sUSD");
 
         sUSD.safeTransfer(msg.sender, pricePaid);
 
@@ -731,6 +739,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         } else {
             _unpause();
         }
+    }
+
+    function setCapPerSport(uint _sportID, uint _capPerSport) external onlyOwner {
+        capPerSport[_sportID] = _capPerSport;
     }
 
     // Internal

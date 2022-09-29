@@ -55,6 +55,8 @@ interface ISportPositionalMarket {
 
     function result() external view returns (Side);
 
+    function tags(uint idx) external view returns (uint);
+
     function getStampedOdds()
         external
         view

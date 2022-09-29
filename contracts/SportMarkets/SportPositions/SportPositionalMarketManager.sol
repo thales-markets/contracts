@@ -257,13 +257,11 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function resolveMarket(address market, uint _outcome) external override {
         require(msg.sender == theRundownConsumer || msg.sender == apexConsumer || msg.sender == owner, "Invalid resolver");
         require(_activeMarkets.contains(market), "Not an active market");
-        SportPositionalMarket(market).resolve(_outcome);
-
         // unpause if paused
         if (ISportPositionalMarket(market).paused()) {
             ISportPositionalMarket(market).setPaused(false);
         }
-
+        SportPositionalMarket(market).resolve(_outcome);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
     }

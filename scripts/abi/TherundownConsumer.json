@@ -286,6 +286,11 @@
             "internalType": "uint8",
             "name": "statusId",
             "type": "uint8"
+          },
+          {
+            "internalType": "uint40",
+            "name": "lastUpdated",
+            "type": "uint40"
           }
         ],
         "indexed": false,
@@ -1033,6 +1038,11 @@
         "internalType": "uint8",
         "name": "statusId",
         "type": "uint8"
+      },
+      {
+        "internalType": "uint40",
+        "name": "lastUpdated",
+        "type": "uint40"
       }
     ],
     "stateMutability": "view",
@@ -1151,67 +1161,6 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "_requestId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_idx",
-        "type": "uint256"
-      }
-    ],
-    "name": "getGameCreatedByRequestId",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "gameId",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "startTime",
-            "type": "uint256"
-          },
-          {
-            "internalType": "int24",
-            "name": "homeOdds",
-            "type": "int24"
-          },
-          {
-            "internalType": "int24",
-            "name": "awayOdds",
-            "type": "int24"
-          },
-          {
-            "internalType": "int24",
-            "name": "drawOdds",
-            "type": "int24"
-          },
-          {
-            "internalType": "string",
-            "name": "homeTeam",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "awayTeam",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct TherundownConsumer.GameCreate",
-        "name": "game",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"
       }
@@ -1239,6 +1188,11 @@
             "internalType": "uint8",
             "name": "statusId",
             "type": "uint8"
+          },
+          {
+            "internalType": "uint40",
+            "name": "lastUpdated",
+            "type": "uint40"
           }
         ],
         "internalType": "struct TherundownConsumer.GameResolve",
@@ -1461,7 +1415,7 @@
         "type": "bool"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1523,7 +1477,7 @@
         "type": "bool"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {

@@ -372,12 +372,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 inverseQuotes
             );
             (totalQuote, totalBuyAmount, finalQuotes, ) = _calculateFinalQuotes(_sportMarkets, _positions, amountsToBuy);
-            uint expectedPayout = totalQuote > 0 ? ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE : 0;
-            skewImpact = expectedPayout > totalBuyAmount
-                ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
-                : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
-            amountsToBuy = applySkewImpactBatch(amountsToBuy, skewImpact, (expectedPayout > totalBuyAmount));
-            totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
+            if (totalQuote > 0) {
+                uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
+                skewImpact = expectedPayout > totalBuyAmount
+                    ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
+                    : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
+                amountsToBuy = applySkewImpactBatch(amountsToBuy, skewImpact, (expectedPayout > totalBuyAmount));
+                totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
+            }
         }
     }
 

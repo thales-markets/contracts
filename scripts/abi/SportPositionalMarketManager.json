@@ -776,6 +776,39 @@
       },
       {
         "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_homeScore",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_awayScore",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address",
+        "name": "_consumer",
+        "type": "address"
+      }
+    ],
+    "name": "resolveMarketWithResult",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
         "name": "_homeOdds",
         "type": "uint256"
       },
@@ -960,6 +993,11 @@
         "internalType": "bool",
         "name": "_flag",
         "type": "bool"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_group",
+        "type": "uint8"
       }
     ],
     "name": "setWhitelistedAddresses",
@@ -1101,6 +1139,25 @@
       }
     ],
     "name": "whitelistedAddresses",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "whitelistedCancelAddresses",
     "outputs": [
       {
         "internalType": "bool",

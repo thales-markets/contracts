@@ -40,4 +40,11 @@ interface IApexConsumer {
         bytes32 _gameId,
         string memory _sport
     ) external;
+
+    function resolveMarketManually(
+        address _market,
+        uint _outcome,
+        uint8 _homeScore,
+        uint8 _awayScore
+    ) external;
 }

@@ -200,7 +200,10 @@ contract('SportsAMM', (accounts) => {
 			SportPositionalMarketFactory.address,
 			{ from: manager }
 		);
-		await SportPositionalMarketManager.setWhitelistedAddresses([first, third], true, {
+		await SportPositionalMarketManager.setWhitelistedAddresses([first, third], true, 1, {
+			from: manager,
+		});
+		await SportPositionalMarketManager.setWhitelistedAddresses([first, second], true, 2, {
 			from: manager,
 		});
 
@@ -347,6 +350,9 @@ contract('SportsAMM', (accounts) => {
 			}
 		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: owner });
+		await TherundownConsumerDeployed.addToWhitelist(SportPositionalMarketManager.address, true, {
+			from: owner,
+		});
 
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
@@ -1239,9 +1245,98 @@ contract('SportsAMM', (accounts) => {
 			let options = await deployedMarket.balancesOf(first);
 			console.log('options balance before exercise: ', fromUnit(options[positionInAMM]));
 			await expect(deployedMarket.exerciseOptions({ from: first })).to.be.revertedWith(
-				'Invalid timeout/stamped odds'
+				'Unexpired timeout/ invalid odds'
 			);
 			await fastForward((await currentTime()) + (2 * HOUR + SECOND));
+			await deployedMarket.exerciseOptions({ from: first });
+			answer = await Thales.balanceOf(first);
+			cost = answer.sub(initial_balance);
+			console.log('acc sUSD balance after exercise: ', fromUnit(answer));
+			options = await deployedMarket.balancesOf(first);
+			console.log('options balance after exercise: ', fromUnit(options[positionInAMM]));
+			console.log('difference: ', fromUnit(cost));
+		});
+
+		it('Resolove manually, and claim', async () => {
+			position = 2;
+			value = 100;
+			let odds = [];
+			odds[0] = await SportsAMM.obtainOdds(deployedMarket.address, 0);
+			odds[1] = await SportsAMM.obtainOdds(deployedMarket.address, 1);
+			odds[2] = await SportsAMM.obtainOdds(deployedMarket.address, 2);
+			console.log(
+				'Game odds: 0=',
+				fromUnit(odds[0]),
+				', 1=',
+				fromUnit(odds[1]),
+				', 2=',
+				fromUnit(odds[1])
+			);
+			let optionsCount = await deployedMarket.optionsCount();
+			console.log('Positions count: ', optionsCount.toString());
+			let positionInAMM = position > 0 ? position - 1 : position;
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(
+				deployedMarket.address,
+				positionInAMM
+			);
+			let additionalSlippage = toUnit(0.05);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				positionInAMM,
+				toUnit(value)
+			);
+			answer = await Thales.balanceOf(first);
+			let startBalance = answer;
+			let initial_balance = answer;
+			console.log('acc sUSD balance before buy: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				positionInAMM,
+				toUnit(value),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+			// let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);
+			let cost;
+			answer = await Thales.balanceOf(first);
+			console.log('acc sUSD balance after buy: ', fromUnit(answer));
+			cost = initial_balance.sub(answer);
+			console.log('cost in sUSD: ', fromUnit(cost));
+
+			await fastForward(await currentTime());
+
+			assert.equal(true, await deployedMarket.canResolve());
+
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolve,
+				gamesResolved,
+				sportId_4,
+				{ from: wrapper }
+			);
+
+			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
+			// resolve markets
+			// const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			const tx_resolve = await SportPositionalMarketManager.resolveMarketWithResult(
+				marketAdd,
+				2,
+				1,
+				2,
+				TherundownConsumerDeployed.address,
+				{
+					from: second,
+				}
+			);
+			answer = await deployedMarket.result();
+			console.log('Result resolved: ', answer.toString());
+			answer = await Thales.balanceOf(first);
+			initial_balance = answer;
+			console.log('acc sUSD balance before exercise: ', fromUnit(answer));
+			let options = await deployedMarket.balancesOf(first);
+			console.log('options balance before exercise: ', fromUnit(options[positionInAMM]));
 			await deployedMarket.exerciseOptions({ from: first });
 			answer = await Thales.balanceOf(first);
 			cost = answer.sub(initial_balance);

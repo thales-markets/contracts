@@ -419,6 +419,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     function _oddsGameFulfill(bytes32 requestId, GameOdds memory _game) internal {
         // if odds are valid store them if not pause market
         if (_areOddsValid(_game)) {
+            uint[] memory currentNormalizedOdd = getNormalizedOdds(_game.gameId);
+
             gameOdds[_game.gameId] = _game;
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
@@ -429,6 +431,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                     isPausedByCanceledStatus[marketPerGameId[_game.gameId]] = false;
                     _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], false);
                 }
+            } else if (
+                //if market is not paused but odd are not in threshold, pause parket
+                !sportsManager.isMarketPaused(marketPerGameId[_game.gameId]) &&
+                !verifier.areOddsInThreshold(
+                    sportsIdPerGame[_game.gameId],
+                    currentNormalizedOdd,
+                    getNormalizedOdds(_game.gameId),
+                    isSportTwoPositionsSport(sportsIdPerGame[_game.gameId])
+                )
+            ) {
+                _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
             }
             emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
         } else {

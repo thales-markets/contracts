@@ -1616,7 +1616,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[0], balances[0]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[0].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[0].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(toBN(0), balances[0]);
 					console.log('[after] balance of 0:', fromUnit(balances[0]));
@@ -1631,7 +1634,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[1], balances[1]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[1].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[1].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(toBN(0), balances[1]);
 					console.log('[after] balance of 1:', fromUnit(balances[1]));
@@ -1646,7 +1652,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[2], balances[2]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[2].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[2].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(toBN(0), balances[2]);
 					console.log('[after] balance of 2:', fromUnit(balances[2]));
@@ -1661,7 +1670,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[3], balances[3]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[3].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[3].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(toBN(0), balances[3]);
 					console.log('[after] balance of 3:', fromUnit(balances[3]));
@@ -1701,7 +1713,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[0], balances[0]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[0].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[0].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[0], balances[0]);
 					console.log('[after] balance of 0:', fromUnit(balances[0]));
@@ -1716,7 +1731,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[1], balances[1]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[1].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[1].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(toBN(0), balances[1]);
 					console.log('[after] balance of 1:', fromUnit(balances[1]));
@@ -1731,7 +1749,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[2], balances[2]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[2].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[2].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(toBN(0), balances[2]);
 					console.log('[after] balance of 2:', fromUnit(balances[2]));
@@ -1746,7 +1767,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[3], balances[3]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[3].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[3].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(toBN(0), balances[3]);
 					console.log('[after] balance of 3:', fromUnit(balances[3]));
@@ -1786,7 +1810,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[0], balances[0]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[0].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[0].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(toBN(0), balances[0]);
 					console.log('[after] balance of 0:', fromUnit(balances[0]));
@@ -1801,7 +1828,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[1], balances[1]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[1].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[1].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(toBN(0), balances[1]);
 					console.log('[after] balance of 1:', fromUnit(balances[1]));
@@ -1816,7 +1846,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[2], balances[2]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[2].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[2].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(toBN(0), balances[2]);
 					console.log('[after] balance of 2:', fromUnit(balances[2]));
@@ -1831,7 +1864,10 @@ contract('ParlayAMM', (accounts) => {
 					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[3], balances[3]);
-					await parlaySingleMarket.exerciseSpecificSportMarket(parlayMarkets[3].address);
+					await ParlayAMM.exerciseSportMarketInParlay(
+						parlaySingleMarket.address,
+						parlayMarkets[3].address
+					);
 					balances = await parlaySingleMarket.getSportMarketBalances();
 					assert.bnEqual(previousBalances[3], balances[3]);
 					console.log('[after] balance of 3:', fromUnit(balances[3]));

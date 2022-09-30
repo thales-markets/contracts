@@ -34,12 +34,17 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
+
 	const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
 
 	const ExoticMarketManagerDeployed = await upgrades.deployProxy(ExoticMarketManager, [
 		owner.address,
 	]);
-	await ExoticMarketManagerDeployed.deployed;
+	await ExoticMarketManagerDeployed.deployed();
 
 	console.log('ExoticMarketManager Deployed on', ExoticMarketManagerDeployed.address);
 	setTargetAddress('ExoticMarketManager', network, ExoticMarketManagerDeployed.address);

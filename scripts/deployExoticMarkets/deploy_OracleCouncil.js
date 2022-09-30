@@ -31,6 +31,11 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
+
 	const OracleCouncilContract = await ethers.getContractFactory('ThalesOracleCouncil');
 	const ExoticMarketManagerAddress = getTargetAddress('ExoticMarketManager', network);
 	const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
@@ -39,7 +44,7 @@ async function main() {
 		owner.address,
 		ExoticMarketManagerAddress,
 	]);
-	await OracleCouncilDeployed.deployed;
+	await OracleCouncilDeployed.deployed();
 
 	console.log('OracleCouncil Deployed on', OracleCouncilDeployed.address);
 	setTargetAddress('ThalesOracleCouncil', network, OracleCouncilDeployed.address);

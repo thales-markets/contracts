@@ -56,6 +56,7 @@ module.exports = {
 			// optimism
 			optimisticEthereum: OP_ETHERSCAN_KEY,
 			optimisticKovan: OP_ETHERSCAN_KEY,
+			optimisticGoerli: OP_ETHERSCAN_KEY,
 			// polygon
 			polygon: POLYGONSCAN_API_KEY,
 			polygonMumbai: POLYGONSCAN_API_KEY,
@@ -190,6 +191,11 @@ module.exports = {
 			url: 'https://optimism-kovan.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
+		optimisticGoerli: {
+			gasPrice: 10000,
+			url: 'https://goerli.optimism.io',
+			accounts: [PRIVATE_KEY],
+		},
 		polygonMumbai: {
 			url: 'https://polygon-mumbai.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
@@ -217,6 +223,7 @@ module.exports = {
 			accounts: [PRIVATE_KEY],
 		},
 	},
+
 	gasReporter: {
 		enabled: process.env.REPORT_GAS ? true : false,
 		showTimeSpent: true,

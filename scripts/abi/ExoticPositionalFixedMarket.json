@@ -249,6 +249,19 @@
   },
   {
     "inputs": [],
+    "name": "additionalInfo",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "arbitraryRewardForDisputor",
     "outputs": [
       {
@@ -890,6 +903,11 @@
         "type": "string"
       },
       {
+        "internalType": "string",
+        "name": "_additionalInfo",
+        "type": "string"
+      },
+      {
         "internalType": "uint256",
         "name": "_endOfPositioning",
         "type": "uint256"
@@ -1280,6 +1298,21 @@
       {
         "internalType": "uint256",
         "name": "_position",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "additionalSlippage",
         "type": "uint256"
       }
     ],

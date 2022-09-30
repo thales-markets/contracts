@@ -42,6 +42,12 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+		SportsAMMContract = getTargetAddress('SportsAMM', network);
+	}
 
 	const parlayAMMfee = '5';
 	const maxSupportedAmount = w3utils.toWei('20000');

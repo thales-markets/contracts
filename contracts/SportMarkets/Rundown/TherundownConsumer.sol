@@ -40,6 +40,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint8 homeScore;
         uint8 awayScore;
         uint8 statusId;
+        uint40 lastUpdated;
     }
 
     struct GameOdds {
@@ -287,14 +288,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /* ========== VIEW FUNCTIONS ========== */
 
-    /// @notice returns game created based on CL request id and index of a game in a array
-    /// @param _requestId request id from CL
-    /// @param _idx index in array
-    /// @return game GameCreate game create object
-    function getGameCreatedByRequestId(bytes32 _requestId, uint256 _idx) public view returns (GameCreate memory game) {
-        game = abi.decode(requestIdGamesCreated[_requestId][_idx], (GameCreate));
-    }
-
     /// @notice view function which returns game created object based on id of a game
     /// @param _gameId game id
     /// @return GameCreate game create object
@@ -337,7 +330,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice view function which returns if market type is supported, checks are done in a wrapper contract
     /// @param _market type of market (create or resolve)
     /// @return bool supported or not
-    function isSupportedMarketType(string memory _market) external view returns (bool) {
+    function isSupportedMarketType(string memory _market) external pure returns (bool) {
         return
             keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("create")) ||
             keccak256(abi.encodePacked(_market)) == keccak256(abi.encodePacked("resolve"));
@@ -347,7 +340,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _teamA team A in string (Example: Liverpool Liverpool)
     /// @param _teamB team B in string (Example: Arsenal Arsenal)
     /// @return bool is it ready for creation true/false
-    function isSameTeamOrTBD(string memory _teamA, string memory _teamB) public view returns (bool) {
+    function isSameTeamOrTBD(string memory _teamA, string memory _teamB) public pure returns (bool) {
         return
             keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked(_teamB)) ||
             keccak256(abi.encodePacked(_teamA)) == keccak256(abi.encodePacked("TBD TBD")) ||
@@ -577,7 +570,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             gameIdPerMarket[_market],
             _homeScore,
             _awayScore,
-            isSportTwoPositionsSport(sportsIdPerGame[gameIdPerMarket[_market]]) ? 8 : 11
+            isSportTwoPositionsSport(sportsIdPerGame[gameIdPerMarket[_market]]) ? 8 : 11,
+            0
         );
 
         emit GameResolved(
@@ -635,17 +629,17 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return string(abi.encodePacked(teamA, " vs ", teamB));
     }
 
-    function _calculateNumberOfPositionsBasedOnSport(uint _sportsId) internal returns (uint) {
+    function _calculateNumberOfPositionsBasedOnSport(uint _sportsId) internal view returns (uint) {
         return isSportTwoPositionsSport(_sportsId) ? 2 : 3;
     }
 
-    function _calculateTags(uint _sportsId) internal returns (uint[] memory) {
+    function _calculateTags(uint _sportsId) internal pure returns (uint[] memory) {
         uint[] memory result = new uint[](1);
         result[0] = MIN_TAG_NUMBER + _sportsId;
         return result;
     }
 
-    function _isDrawForCancelationBySport(uint _sportsId) internal view returns (bool) {
+    function _isDrawForCancelationBySport(uint _sportsId) internal pure returns (bool) {
         // UFC or NFL
         return _sportsId == 7 || _sportsId == 2;
     }
@@ -680,7 +674,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint _outcome,
         uint _homeScore,
         uint _awayScore
-    ) internal view returns (bool) {
+    ) internal pure returns (bool) {
         if (_outcome == CANCELLED) {
             return _awayScore == CANCELLED && _homeScore == CANCELLED;
         } else if (_outcome == HOME_WIN) {

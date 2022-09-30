@@ -25,6 +25,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     mapping(bytes32 => string) public sportPerRequestId;
     mapping(bytes32 => string) public gameIdPerRequestId;
     mapping(bytes32 => string) public eventIdPerRequestId;
+    mapping(bytes32 => string) public qualifyingStatusPerRequestId;
     mapping(string => string) public sportPerEventId;
 
     uint public paymentMetadata;
@@ -83,14 +84,19 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @notice Returns the matchup information
     /// @param _eventId event ID which is provided from CL
     /// @param _gameNumber game number for specific bet type
-    function requestMatchup(string memory _eventId, string memory _gameNumber) public whenNotPaused {
+    /// @param _qualifyingStatus string which can be "pre" or "post" for pre-qualifying or post-qualifying probabilities
+    function requestMatchup(
+        string memory _eventId,
+        string memory _gameNumber,
+        string memory _qualifyingStatus
+    ) public whenNotPaused isValidMatchupRequest(_qualifyingStatus) {
         Chainlink.Request memory req = buildChainlinkRequest(
             _stringToBytes32(requestMatchupJobId),
             address(this),
             this.fulfillMatchup.selector
         );
         req.add("event_id", _eventId);
-        req.add("qualifying_status", "pre");
+        req.add("qualifying_status", _qualifyingStatus);
         req.add("bet_type", _createBetType(_gameNumber));
         req.add("stage_level", "null");
 
@@ -100,6 +106,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         sportPerRequestId[requestId] = sportPerEventId[_eventId];
         eventIdPerRequestId[requestId] = _eventId;
         gameIdPerRequestId[requestId] = _createGameId(_eventId, _gameNumber);
+        qualifyingStatusPerRequestId[requestId] = _qualifyingStatus;
     }
 
     /// @notice Returns the results information
@@ -165,8 +172,20 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         bytes32 gameId = _stringToBytes32(gameIdPerRequestId[_requestId]);
         string memory sport = sportPerRequestId[_requestId];
         string memory eventId = eventIdPerRequestId[_requestId];
+        bool arePostQualifyingOdds = keccak256(abi.encodePacked(qualifyingStatusPerRequestId[_requestId])) ==
+            keccak256(abi.encodePacked("post"));
 
-        consumer.fulfillMatchup(_requestId, _betTypeDetail1, _betTypeDetail2, _probA, _probB, gameId, sport, eventId);
+        consumer.fulfillMatchup(
+            _requestId,
+            _betTypeDetail1,
+            _betTypeDetail2,
+            _probA,
+            _probB,
+            gameId,
+            sport,
+            eventId,
+            arePostQualifyingOdds
+        );
     }
 
     /**
@@ -289,6 +308,15 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     modifier isValidMetaDataRequest(string memory _sport) {
         require(consumer.isSupportedSport(_sport), "Sport is not supported");
+        _;
+    }
+
+    modifier isValidMatchupRequest(string memory _qualifyingStatus) {
+        require(
+            keccak256(abi.encodePacked(_qualifyingStatus)) == keccak256(abi.encodePacked("pre")) ||
+                keccak256(abi.encodePacked(_qualifyingStatus)) == keccak256(abi.encodePacked("post")),
+            "Qualifying status is not supported"
+        );
         _;
     }
 

@@ -90,6 +90,37 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "_parlayMarket",
+        "type": "address[]"
+      }
+    ],
+    "name": "exerciseParlays",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_parlayMarket",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarket",
+        "type": "address"
+      }
+    ],
+    "name": "exerciseSportMarketInParlays",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "",
         "type": "address"

@@ -411,7 +411,10 @@
 		"RangedAMM": "0x618D7aeab71f1C5E2264982c0C35DCbE62600ad9",
 		"RangedAMMImplementation": "0x9Ee26dcb9A3F1104B37A5dCc8573c8b144c7ce42",
 		"RangedPositionMastercopy": "0xc4Db40A9Bf954bD8c2266ACfdA227d576d9Cc89c",
-		"RangedMarketMastercopy": "0xD792b54AD28aeA550AaE878665F6a0De00793E81"
+		"RangedMarketMastercopy": "0xD792b54AD28aeA550AaE878665F6a0De00793E81",
+		"ParlayAMM": "0x0ec9D8Dac2178b041f85f60E3cF13CfaA3d23e0e",
+		"ParlayAMMImplementation": "0x38C1bB9fd1a80a56894b9b9195F8401c11087a5f",
+		"ParlayMarketMastercopy": "0xf1A418326b600f2Dd0cDd34Ec90bB2279544D1F9"
 	},
 	"localhost": {
 		"Airdrop": "",

@@ -37,12 +37,6 @@
         "internalType": "address",
         "name": "_referrals",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_parlayAMM",
-        "type": "address"
       }
     ],
     "name": "AddressesUpdated",

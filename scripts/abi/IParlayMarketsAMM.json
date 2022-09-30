@@ -1,5 +1,55 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "exerciseParlay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarket",
+        "type": "address"
+      }
+    ],
+    "name": "exerciseSportMarketInParlay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "isActiveParlay",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isActiveParlayMarket",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "parlayAmmFee",
     "outputs": [

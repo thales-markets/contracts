@@ -13,6 +13,7 @@ async function main() {
 	let mainnetNetwork = 'mainnet';
 	let PaymentToken;
 	let SportsAMMContract;
+	let SportManagerContract;
 
 	if (network == 'homestead') {
 		console.log(
@@ -35,18 +36,22 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 		PaymentToken = getTargetAddress('ProxysUSD', network);
+		SportsAMMContract = getTargetAddress('SportsAMM', network);
+		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
 	}
 	if (networkObj.chainId == 5) {
 		networkObj.name = 'goerli';
 		network = 'goerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
+		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
 	}
 	if (networkObj.chainId == 420) {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
+		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
 	}
 
 	const parlayAMMfee = '5';
@@ -59,6 +64,7 @@ async function main() {
 	const ParlayAMMDeployed = await upgrades.deployProxy(ParlayAMM, [
 		owner.address,
 		SportsAMMContract,
+		SportManagerContract,
 		parlayAMMfee,
 		maxSupportedAmount,
 		maxSupportedOdds,

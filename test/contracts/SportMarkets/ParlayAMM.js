@@ -442,6 +442,7 @@ contract('ParlayAMM', (accounts) => {
 			testUSDC.address,
 			testUSDT.address,
 			true,
+			toUnit(0.02),
 			{ from: owner }
 		);
 
@@ -490,6 +491,7 @@ contract('ParlayAMM', (accounts) => {
 			owner,
 			Thales.address,
 			TherundownConsumerDeployed.address,
+			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
 			ParlayAMM.address,
@@ -861,24 +863,6 @@ contract('ParlayAMM', (accounts) => {
 				assert.equal(result.isExercisable, answer.isResolved);
 			});
 
-			it('Single game resolved', async () => {
-				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-				deployedMarket = await SportPositionalMarketContract.at(parlayMarkets[3].address);
-				assert.equal(true, await deployedMarket.canResolve());
-				const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
-					reqIdFightResolve,
-					gamesFightResolved,
-					sportId_7,
-					{ from: wrapper }
-				);
-				// resolve markets
-				const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(fightId);
-				let answer = await parlaySingleMarket.isAnySportMarketResolved();
-				let result = await ParlayAMM.resolvableSportPositionsInParlay(parlaySingleMarket.address);
-				assert.equal(answer.isResolved, true);
-				assert.equal(result.isAnyResolvable, true);
-			});
-
 			it('All games resolved', async () => {
 				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
 				let resolveMatrix = ['2', '2', '2', '2'];
@@ -898,8 +882,8 @@ contract('ParlayAMM', (accounts) => {
 						homeResult = '1';
 						awayResult = '1';
 					}
-					const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId,
+					const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[i].address,
 						resolveMatrix[i],
 						homeResult,
 						awayResult,
@@ -941,8 +925,8 @@ contract('ParlayAMM', (accounts) => {
 							awayResult = '1';
 						}
 						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-							gameId,
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+							parlayMarkets[i].address,
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
@@ -987,8 +971,8 @@ contract('ParlayAMM', (accounts) => {
 							awayResult = '1';
 						}
 						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-							gameId,
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+							parlayMarkets[i].address,
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
@@ -1059,8 +1043,8 @@ contract('ParlayAMM', (accounts) => {
 							awayResult = '1';
 						}
 						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-							gameId,
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+							parlayMarkets[i].address,
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
@@ -1116,8 +1100,8 @@ contract('ParlayAMM', (accounts) => {
 							awayResult = '1';
 						}
 						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-							gameId,
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+							parlayMarkets[i].address,
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
@@ -1173,8 +1157,8 @@ contract('ParlayAMM', (accounts) => {
 							awayResult = '1';
 						}
 						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-							gameId,
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+							parlayMarkets[i].address,
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
@@ -1230,8 +1214,8 @@ contract('ParlayAMM', (accounts) => {
 							awayResult = '1';
 						}
 						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-							gameId,
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+							parlayMarkets[i].address,
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
@@ -1287,8 +1271,8 @@ contract('ParlayAMM', (accounts) => {
 							awayResult = '1';
 						}
 						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-							gameId,
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+							parlayMarkets[i].address,
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
@@ -1344,8 +1328,8 @@ contract('ParlayAMM', (accounts) => {
 							awayResult = '1';
 						}
 						// console.log(i, " outcome:", resolveMatrix[i], " home: ", homeResult, " away:", awayResult);
-						const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-							gameId,
+						const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+							parlayMarkets[i].address,
 							resolveMatrix[i],
 							homeResult,
 							awayResult,
@@ -1390,8 +1374,8 @@ contract('ParlayAMM', (accounts) => {
 					let userBalanceBefore = toUnit('1000');
 					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
-					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId,
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[0].address,
 						'2',
 						'1',
 						'2',
@@ -1424,8 +1408,8 @@ contract('ParlayAMM', (accounts) => {
 					let userBalanceBefore = toUnit('1000');
 					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
-					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId,
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[0].address,
 						'2',
 						'1',
 						'2',
@@ -1434,8 +1418,8 @@ contract('ParlayAMM', (accounts) => {
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
 
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
-					const tx_resolve_2 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId2,
+					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[1].address,
 						'2',
 						'1',
 						'2',
@@ -1467,8 +1451,8 @@ contract('ParlayAMM', (accounts) => {
 					let userBalanceBefore = toUnit('1000');
 					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
-					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId,
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[0].address,
 						'2',
 						'1',
 						'2',
@@ -1477,8 +1461,8 @@ contract('ParlayAMM', (accounts) => {
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
 
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
-					const tx_resolve_2 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId2,
+					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[1].address,
 						'2',
 						'1',
 						'2',
@@ -1486,8 +1470,8 @@ contract('ParlayAMM', (accounts) => {
 					);
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
 					let gameId3 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[2].address);
-					const tx_resolve_3 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId3,
+					const tx_resolve_3 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[2].address,
 						'2',
 						'1',
 						'2',
@@ -1521,8 +1505,8 @@ contract('ParlayAMM', (accounts) => {
 					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 					console.log('[before] balance of 0:', fromUnit(balances[0]));
 					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
-					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId,
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[0].address,
 						'2',
 						'1',
 						'2',
@@ -1536,8 +1520,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 0:', fromUnit(balances[0]));
 					console.log('\n[before] balance of 1:', fromUnit(balances[1]));
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
-					const tx_resolve_2 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId2,
+					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[1].address,
 						'2',
 						'1',
 						'2',
@@ -1551,8 +1535,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 1:', fromUnit(balances[1]));
 					console.log('\n[before] balance of 2:', fromUnit(balances[2]));
 					let gameId3 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[2].address);
-					const tx_resolve_3 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId3,
+					const tx_resolve_3 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[2].address,
 						'2',
 						'1',
 						'2',
@@ -1566,8 +1550,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 2:', fromUnit(balances[2]));
 					console.log('\n[before] balance of 3:', fromUnit(balances[3]));
 					let gameId4 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[3].address);
-					const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId4,
+					const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[3].address,
 						'2',
 						'1',
 						'2',
@@ -1607,8 +1591,8 @@ contract('ParlayAMM', (accounts) => {
 					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 					console.log('[before] balance of 0:', fromUnit(balances[0]));
 					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
-					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId,
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[0].address,
 						'2',
 						'1',
 						'2',
@@ -1625,8 +1609,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 0:', fromUnit(balances[0]));
 					console.log('\n[before] balance of 1:', fromUnit(balances[1]));
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
-					const tx_resolve_2 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId2,
+					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[1].address,
 						'2',
 						'1',
 						'2',
@@ -1643,8 +1627,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 1:', fromUnit(balances[1]));
 					console.log('\n[before] balance of 2:', fromUnit(balances[2]));
 					let gameId3 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[2].address);
-					const tx_resolve_3 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId3,
+					const tx_resolve_3 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[2].address,
 						'2',
 						'1',
 						'2',
@@ -1661,8 +1645,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 2:', fromUnit(balances[2]));
 					console.log('\n[before] balance of 3:', fromUnit(balances[3]));
 					let gameId4 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[3].address);
-					const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId4,
+					const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[3].address,
 						'2',
 						'1',
 						'2',
@@ -1704,8 +1688,8 @@ contract('ParlayAMM', (accounts) => {
 					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 					console.log('[before] balance of 0:', fromUnit(balances[0]));
 					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
-					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId,
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[0].address,
 						'1',
 						'3',
 						'2',
@@ -1722,8 +1706,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 0:', fromUnit(balances[0]));
 					console.log('\n[before] balance of 1:', fromUnit(balances[1]));
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
-					const tx_resolve_2 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId2,
+					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[1].address,
 						'2',
 						'1',
 						'2',
@@ -1740,8 +1724,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 1:', fromUnit(balances[1]));
 					console.log('\n[before] balance of 2:', fromUnit(balances[2]));
 					let gameId3 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[2].address);
-					const tx_resolve_3 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId3,
+					const tx_resolve_3 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[2].address,
 						'2',
 						'1',
 						'2',
@@ -1758,8 +1742,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 2:', fromUnit(balances[2]));
 					console.log('\n[before] balance of 3:', fromUnit(balances[3]));
 					let gameId4 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[3].address);
-					const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId4,
+					const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[3].address,
 						'2',
 						'1',
 						'2',
@@ -1801,8 +1785,8 @@ contract('ParlayAMM', (accounts) => {
 					let balanceBefore = await Thales.balanceOf(ParlayAMM.address);
 					console.log('[before] balance of 0:', fromUnit(balances[0]));
 					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
-					const tx_resolve_1 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId,
+					const tx_resolve_1 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[0].address,
 						'2',
 						'1',
 						'2',
@@ -1819,8 +1803,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 0:', fromUnit(balances[0]));
 					console.log('\n[before] balance of 1:', fromUnit(balances[1]));
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
-					const tx_resolve_2 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId2,
+					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[1].address,
 						'2',
 						'1',
 						'2',
@@ -1837,8 +1821,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 1:', fromUnit(balances[1]));
 					console.log('\n[before] balance of 2:', fromUnit(balances[2]));
 					let gameId3 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[2].address);
-					const tx_resolve_3 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId3,
+					const tx_resolve_3 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[2].address,
 						'2',
 						'1',
 						'2',
@@ -1855,8 +1839,8 @@ contract('ParlayAMM', (accounts) => {
 					console.log('[after] balance of 2:', fromUnit(balances[2]));
 					console.log('\n[before] balance of 3:', fromUnit(balances[3]));
 					let gameId4 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[3].address);
-					const tx_resolve_4 = await TherundownConsumerDeployed.resolveGameManually(
-						gameId4,
+					const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+						parlayMarkets[3].address,
 						'1',
 						'3',
 						'2',

@@ -351,6 +351,7 @@ contract('SportsAMM', (accounts) => {
 			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
+			ZERO_ADDRESS,
 			{ from: owner }
 		);
 

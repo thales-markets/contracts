@@ -280,7 +280,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(totalQuote > maxSupportedOdds, "Can't create this parlay market!");
         require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
         require(((ONE * sUSDAfterFees) / _expectedPayout) <= (ONE + _additionalSlippage), "Slippage too high");
-        // checks for creation missing
 
         if (_sendSUSD) {
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDAfterFees);

@@ -81,6 +81,24 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    // todo
+    function exerciseParlays(address[] memory _parlayMarket) external {
+        for (uint i = 0; i < _parlayMarket.length; i++) {
+            if (IParlayMarketsAMM(parlayMarketsAMM).isActiveParlay(_parlayMarket[i])) {
+                IParlayMarketsAMM(parlayMarketsAMM).exerciseParlay(_parlayMarket[i]);
+            }
+        }
+    }
+
+    // todo
+    function exerciseSportMarketInParlays(address[] memory _parlayMarket, address _sportMarket) external {
+        for (uint i = 0; i < _parlayMarket.length; i++) {
+            if (IParlayMarketsAMM(parlayMarketsAMM).isActiveParlay(_parlayMarket[i])) {
+                IParlayMarketsAMM(parlayMarketsAMM).exerciseSportMarketInParlay(_parlayMarket[i], _sportMarket);
+            }
+        }
+    }
+
     function addParlayForGamePosition(
         address _game,
         uint _position,

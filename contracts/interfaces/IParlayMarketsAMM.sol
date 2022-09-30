@@ -14,6 +14,12 @@ interface IParlayMarketsAMM {
 
     function parlayAmmFee() external view returns (uint);
 
+    function isActiveParlay(address _parlayMarket) external view returns (bool isActiveParlayMarket);
+
+    function exerciseParlay(address _parlayMarket) external;
+
+    function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket) external;
+
     function transferRestOfSUSDAmount(
         address receiver,
         uint amount,

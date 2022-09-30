@@ -8,8 +8,17 @@ import "../interfaces/IPriceFeed.sol";
 interface ISportPositionalMarket {
     /* ========== TYPES ========== */
 
-    enum Phase {Trading, Maturity, Expiry}
-    enum Side {Cancelled, Home, Away, Draw}
+    enum Phase {
+        Trading,
+        Maturity,
+        Expiry
+    }
+    enum Side {
+        Cancelled,
+        Home,
+        Away,
+        Draw
+    }
 
     /* ========== VIEWS / VARIABLES ========== */
 
@@ -78,6 +87,8 @@ interface ISportPositionalMarket {
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function setPaused(bool _paused) external;
+
+    function updateDates(uint256 _maturity, uint256 _expiry) external;
 
     function mint(uint value) external;
 

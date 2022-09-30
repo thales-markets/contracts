@@ -12,6 +12,7 @@ async function main() {
 	let network = networkObj.name;
 	let mainnetNetwork = 'mainnet';
 	let PaymentToken;
+	const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 	if (network == 'homestead') {
 		console.log(
@@ -38,6 +39,11 @@ async function main() {
 	if (networkObj.chainId == 5) {
 		networkObj.name = 'goerli';
 		network = 'goerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
@@ -104,20 +110,30 @@ async function main() {
 	setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
 
 	await delay(2000);
-	await SportsAMMDeployed.setMinSupportedOdds(min_supported, { from: owner.address });
-	console.log('minSupportedOdds set');
-	await delay(2000);
-	await SportsAMMDeployed.setMaxSupportedOdds(max_supported, { from: owner.address });
-	console.log('maxSupportedOdds set');
-	await delay(2000);
-	await SportsAMMDeployed.setSafeBoxImpact(safeBoxImpact, { from: owner.address });
-	console.log('set SafeBox impact');
-	await delay(2000);
-	await SportsAMMDeployed.setSafeBox(owner.address, { from: owner.address });
-	console.log('set SafeBox');
-	await delay(2000);
-	await SportsAMMDeployed.setTherundownConsumer(TherundownConsumerAddress, { from: owner.address });
-	console.log('set Rundownconsumer');
+	const referrerFee = w3utils.toWei('0.005');
+	await SportsAMMDeployed.setParameters(
+		minimalTimeLeftToMaturity,
+		min_spread,
+		max_spread,
+		min_supported,
+		max_supported,
+		capPerMarket,
+		safeBoxImpact,
+		referrerFee,
+		{ from: owner.address }
+	);
+	console.log('setParameters set');
+
+	let referals = getTargetAddress('Referrals', network);
+	await SportsAMMDeployed.setAddresses(
+		owner.address,
+		PaymentToken,
+		TherundownConsumerAddress,
+		ZERO_ADDRESS,
+		referals,
+		{ from: owner.address }
+	);
+	console.log('set setAddresses');
 	await delay(5000);
 	await SportsAMMDeployed.setSportsPositionalMarketManager(SportMarketManagerAddress, {
 		from: owner.address,

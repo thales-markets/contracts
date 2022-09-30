@@ -38,6 +38,10 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
 
 	if (networkObj.chainId == 80001) {
 		networkObj.name = 'polygonMumbai';
@@ -64,9 +68,9 @@ async function main() {
 	console.log('LINK address:', chainlink['LINK']);
 	console.log('ORACLE address:', chainlink['ORACLE']);
 
-	const allowedSports = [2, 3, 4, 6, 7, 10, 11, 12, 13, 14, 15];
+	const allowedSports = [1, 2, 3, 4, 6, 7, 10, 11, 12, 13, 14, 15];
 
-	const twoPositionSports = [2, 3, 4, 6, 7];
+	const twoPositionSports = [1, 2, 3, 4, 6, 7];
 
 	const allowedResolvedStatuses = [8, 11];
 	const allowedCancelStatuses = [1, 2, 15, 22];
@@ -84,6 +88,7 @@ async function main() {
 	await gamesQueue.deployed();
 
 	console.log('GamesQueue deployed to:', gamesQueue.address);
+	console.log('Network name:' + network);
 	setTargetAddress('GamesQueue', network, gamesQueue.address);
 
 	const implementationQueue = await getImplementationAddress(ethers.provider, gamesQueue.address);

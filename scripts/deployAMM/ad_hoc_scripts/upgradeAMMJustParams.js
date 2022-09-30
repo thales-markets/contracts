@@ -1,5 +1,5 @@
 const { ethers } = require('hardhat');
-const { getTargetAddress } = require('../helpers');
+const { getTargetAddress } = require('../../helpers');
 const w3utils = require('web3-utils');
 
 async function main() {

@@ -36,6 +36,7 @@ async function main() {
 	if (networkObj.chainId == 5) {
 		networkObj.name = 'goerli';
 		network = 'goerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
@@ -43,7 +44,7 @@ async function main() {
 
 	if (networkObj.chainId == 42 || networkObj.chainId == 5) {
 		await upgrades.upgradeProxy(SportsAMMAddress, SportsAMM);
-		await delay(65000);
+		await delay(15000);
 
 		const SportsAMMImplementation = await getImplementationAddress(
 			ethers.provider,

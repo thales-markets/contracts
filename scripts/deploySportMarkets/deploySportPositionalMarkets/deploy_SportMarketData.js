@@ -29,6 +29,11 @@ async function main() {
 		mainnetNetwork = 'kovan';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';

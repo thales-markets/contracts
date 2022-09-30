@@ -22,6 +22,12 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "_apexConsumer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -302,6 +308,19 @@
     "name": "acceptOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "apexConsumer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -817,6 +836,19 @@
   },
   {
     "inputs": [],
+    "name": "maxAllowedPegSlippagePercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maxSupportedOdds",
     "outputs": [
       {
@@ -1161,6 +1193,11 @@
         "type": "address"
       },
       {
+        "internalType": "address",
+        "name": "_apexConsumer",
+        "type": "address"
+      },
+      {
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -1207,6 +1244,11 @@
         "internalType": "bool",
         "name": "_curveOnrampEnabled",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxAllowedPegSlippagePercentage",
+        "type": "uint256"
       }
     ],
     "name": "setCurveSUSD",
@@ -1271,6 +1313,19 @@
       }
     ],
     "name": "setParameters",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_setPausing",
+        "type": "bool"
+      }
+    ],
+    "name": "setPaused",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

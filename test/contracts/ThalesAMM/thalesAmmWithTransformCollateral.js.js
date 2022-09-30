@@ -26,7 +26,7 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-contract('ThalesAMM', accounts => {
+contract('ThalesAMM', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
 	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
@@ -46,7 +46,7 @@ contract('ThalesAMM', accounts => {
 			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
-			event => event['event'] && event['event'] === 'MarketCreated'
+			(event) => event['event'] && event['event'] === 'MarketCreated'
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};

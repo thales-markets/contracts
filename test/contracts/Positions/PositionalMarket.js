@@ -38,7 +38,7 @@ const Phase = {
 
 async function transactionEvent(tx, eventName) {
 	let receipt = await tx.wait();
-	return receipt.events.find(event => event['event'] && event['event'] === eventName);
+	return receipt.events.find((event) => event['event'] && event['event'] === eventName);
 }
 
 async function createMarketAndMintMore(
@@ -59,7 +59,7 @@ async function createMarketAndMintMore(
 
 	let receipt = await result.wait();
 	const marketEvent = receipt.events.find(
-		event => event['event'] && event['event'] === 'MarketCreated'
+		(event) => event['event'] && event['event'] === 'MarketCreated'
 	);
 	market = await PositionalMarket.at(marketEvent.args.market);
 	await market.mint(toUnit(1), {
@@ -67,7 +67,7 @@ async function createMarketAndMintMore(
 	});
 }
 
-contract('Position', accounts => {
+contract('Position', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
 	let creator, owner, minterSigner, secondCreatorSigner, dummySigner, exerciserSigner;
 
@@ -98,7 +98,7 @@ contract('Position', accounts => {
 			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
-			event => event['event'] && event['event'] === 'MarketCreated'
+			(event) => event['event'] && event['event'] === 'MarketCreated'
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
@@ -135,14 +135,8 @@ contract('Position', accounts => {
 				'PositionalMarketFactory',
 			],
 		}));
-		[
-			creator,
-			owner,
-			minterSigner,
-			dummySigner,
-			exerciserSigner,
-			secondCreatorSigner,
-		] = await ethers.getSigners();
+		[creator, owner, minterSigner, dummySigner, exerciserSigner, secondCreatorSigner] =
+			await ethers.getSigners();
 
 		await manager.connect(creator).setPositionalMarketFactory(factory.address);
 
@@ -957,7 +951,9 @@ contract('Position', accounts => {
 			await market.mint(toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			await aggregator_sAUD.setLatestAnswer(
-				(await market.oracleDetails()).strikePrice,
+				(
+					await market.oracleDetails()
+				).strikePrice,
 				await currentTime()
 			);
 			assert.isFalse(await market.resolved());
@@ -985,7 +981,9 @@ contract('Position', accounts => {
 			await market.mint(toUnit(1), { from: exersicer });
 			await fastForward(timeToMaturity + 100);
 			await aggregator_sAUD.setLatestAnswer(
-				(await market.oracleDetails()).strikePrice,
+				(
+					await market.oracleDetails()
+				).strikePrice,
 				await currentTime()
 			);
 

@@ -340,6 +340,7 @@ contract('SportsAMM', (accounts) => {
 			testUSDC.address,
 			testUSDT.address,
 			true,
+			toUnit(0.02),
 			{ from: owner }
 		);
 
@@ -347,6 +348,7 @@ contract('SportsAMM', (accounts) => {
 			owner,
 			Thales.address,
 			TherundownConsumerDeployed.address,
+			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
 			{ from: owner }

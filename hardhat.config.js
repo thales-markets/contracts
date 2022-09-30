@@ -34,6 +34,17 @@ const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : 'http
 
 module.exports = {
 	etherscan: {
+		// not supported by default by hardhat
+		customChains: [
+			{
+				network: 'optimisticGoerli',
+				chainId: 420,
+				urls: {
+					apiURL: 'https://api-goerli-optimism.etherscan.io/api',
+					browserURL: 'https://goerli-optimism.etherscan.io/',
+				},
+			},
+		],
 		// Your API key for Etherscan
 		// Obtain one at https://etherscan.io/
 		apiKey: {
@@ -50,6 +61,7 @@ module.exports = {
 			polygonMumbai: POLYGONSCAN_API_KEY,
 			bsc: BSC_API_KEY,
 			arbitrumOne: ARBITRUM_API_KEY,
+			optimisticGoerli: OP_ETHERSCAN_KEY,
 		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
@@ -197,6 +209,11 @@ module.exports = {
 			url: 'https://arbitrum-mainnet.infura.io/v3/' + INFURA,
 			chainId: 42161,
 			//gasPrice: 5000000000,
+			accounts: [PRIVATE_KEY],
+		},
+		optimisticGoerli: {
+			gasPrice: 10000,
+			url: 'https://goerli.optimism.io',
 			accounts: [PRIVATE_KEY],
 		},
 	},

@@ -38,6 +38,11 @@ async function main() {
 		network = 'goerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 
 	const SportMarketManager = await ethers.getContractFactory('SportPositionalMarketManager');
 	const SportMarketManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
@@ -59,7 +64,12 @@ async function main() {
 		SportPositionalMarketDeployed.address
 	);
 
-	if (networkObj.chainId == 69 || networkObj.chainId == 42) {
+	if (
+		networkObj.chainId == 69 ||
+		networkObj.chainId == 42 ||
+		networkObj.chainId == 420 ||
+		networkObj.chainId == 5
+	) {
 		await delay(5000);
 		await SportMarketFactoryDeployed.setSportPositionalMarketMastercopy(
 			SportPositionalMarketDeployed.address,

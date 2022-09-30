@@ -30,7 +30,7 @@ contract Vault is BaseVault {
     function initialize(
         address _owner,
         IThalesAMM _thalesAmm,
-        IERC20 _sUSD,
+        IERC20Upgradeable _sUSD,
         uint _roundLength,
         uint _priceLowerLimit,
         uint _priceUpperLimit,
@@ -160,11 +160,21 @@ contract Vault is BaseVault {
     /* ========== VIEWS ========== */
 
     /// @notice Get amount spent on given asset in a round
-    /// @param _round number of round
+    /// @param _round round number
     /// @param asset asset to fetch spent allocation for
     /// @return uint
     function getAllocationSpentPerRound(uint _round, Asset asset) external view returns (uint) {
         return allocationSpentPerRound[_round][asset];
+    }
+
+    /// @notice Get available amount to spend on an asset in a round
+    /// @param _round round number
+    /// @param asset asset to fetch available allocation for
+    /// @return uint
+    function getAvailableAllocationPerAsset(uint _round, Asset asset) external view returns (uint) {
+        uint allocationAsset = (allocationPerRound[round] * allocationLimits[asset]) / HUNDRED;
+
+        return allocationAsset - allocationSpentPerRound[_round][asset];
     }
 
     /* ========== EVENTS ========== */

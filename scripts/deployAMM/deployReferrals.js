@@ -49,22 +49,10 @@ async function main() {
 		network = 'arbitrumOne';
 	}
 
-	if (networkObj.chainId == 10) {
-		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	} else if (networkObj.chainId == 69) {
-		networkObj.name = 'optimisticKovan';
-		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	} else if (
-		networkObj.chainId == 80001 ||
-		networkObj.chainId == 137 ||
-		networkObj.chainId == 42161
-	) {
-		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
-	} else if (networkObj.chainId == 56) {
-		ProxyERC20sUSDaddress = getTargetAddress('BUSD', network);
-	} else {
-		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
-		ProxyERC20sUSDaddress = ProxyERC20sUSD.address;
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
 	let accounts = await ethers.getSigners();
@@ -80,7 +68,7 @@ async function main() {
 	const Referrals = await ethers.getContractFactory('Referrals');
 	let ReferralsDeployed = await upgrades.deployProxy(Referrals, [
 		owner.address,
-		thalesAMM,
+		owner.address,
 		owner.address,
 	]);
 	await ReferralsDeployed.deployed();

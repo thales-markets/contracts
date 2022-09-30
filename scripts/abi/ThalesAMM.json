@@ -148,19 +148,6 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "_capPerMarket",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetCapPerMarket",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "bytes32",
         "name": "asset",
         "type": "bytes32"
@@ -194,11 +181,23 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_spread",
+        "name": "minPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxPrice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "capPerMarket",
         "type": "uint256"
       }
     ],
-    "name": "SetMaxSupportedPrice",
+    "name": "SetMinMaxSupportedPriceCapPerMarket",
     "type": "event"
   },
   {
@@ -212,19 +211,6 @@
       }
     ],
     "name": "SetMinSpread",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spread",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetMinSupportedPrice",
     "type": "event"
   },
   {
@@ -460,7 +446,13 @@
       }
     ],
     "name": "buyFromAMM",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -505,7 +497,13 @@
       }
     ],
     "name": "buyFromAMMWithDifferentCollateralAndReferrer",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -545,7 +543,13 @@
       }
     ],
     "name": "buyFromAMMWithReferrer",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -645,7 +649,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_available",
         "type": "uint256"
       }
     ],
@@ -687,6 +691,42 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_price",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "strike",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timeLeftInDays",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "volatility",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateOddsGas",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -946,6 +986,21 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "maxAllowedPegSlippagePercentage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -1299,7 +1354,13 @@
       }
     ],
     "name": "sellToAMM",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1382,6 +1443,11 @@
         "internalType": "bool",
         "name": "_curveOnrampEnabled",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxAllowedPegSlippagePercentage",
+        "type": "uint256"
       }
     ],
     "name": "setCurveSUSD",

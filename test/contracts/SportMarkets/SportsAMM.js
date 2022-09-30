@@ -196,6 +196,10 @@ contract('SportsAMM', (accounts) => {
 			SportPositionalMarketFactory.address,
 			{ from: manager }
 		);
+		await SportPositionalMarketManager.setWhitelistedAddresses([first, third], true, {
+			from: manager,
+		});
+
 		Referrals = await ReferralsContract.new();
 		await Referrals.initialize(owner, ZERO_ADDRESS, ZERO_ADDRESS, { from: owner });
 
@@ -279,9 +283,9 @@ contract('SportsAMM', (accounts) => {
 		// resolve game props
 		reqIdResolve = '0x30250573c4b099aeaf06273ef9fbdfe32ab2d6b8e33420de988be5d6886c92a7';
 		game_1_resolve =
-			'0x6536306366613738303834366166363839373862343935373965356366333936000000000000000000000000000000000000000000000000000000000000006400000000000000000000000000000000000000000000000000000000000000810000000000000000000000000000000000000000000000000000000000000008';
+			'0x653630636661373830383436616636383937386234393537396535636633393600000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000081000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000622a9808';
 		game_2_resolve =
-			'0x3937346533663036386233333764313239656435633133646632376133326662000000000000000000000000000000000000000000000000000000000000006600000000000000000000000000000000000000000000000000000000000000710000000000000000000000000000000000000000000000000000000000000008';
+			'0x393734653366303638623333376431323965643563313364663237613332666200000000000000000000000000000000000000000000000000000000000000660000000000000000000000000000000000000000000000000000000000000071000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000622a9808';
 		gamesResolved = [game_1_resolve, game_2_resolve];
 
 		// football matches
@@ -299,9 +303,9 @@ contract('SportsAMM', (accounts) => {
 			'0x0000000000000000000000000000000000000000000000000000000000000020653530343932616163653831303566636231653136636437366438396364336100000000000000000000000000000000000000000000000000000000629271300000000000000000000000000000000000000000000000000000000000002a3000000000000000000000000000000000000000000000000000000000000064c800000000000000000000000000000000000000000000000000000000000067e800000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000000134c69766572706f6f6c204c69766572706f6f6c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000175265616c204d6164726964205265616c204d6164726964000000000000000000';
 		gamesFootballCreated = [game_1_football_create, game_2_football_create, game_3_football_create];
 		game_1_football_resolve =
-			'0x316362616262316330313837346536326331366131646233316436316435333300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b';
+			'0x316362616262316330313837346536326331366131646233316436316435333300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b0000000000000000000000000000000000000000000000000000000062571db0';
 		game_2_football_resolve =
-			'0x366264643731373131633739383764333664346533353864393739323735623400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b';
+			'0x366264643731373131633739383764333664346533353864393739323735623400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000b0000000000000000000000000000000000000000000000000000000062571db0';
 		reqIdResolveFoodball = '0xff8887a8535b7a8030962e6f6b1eba61c0f1cb82f706e77d834f15c781e47697';
 		gamesResolvedFootball = [game_1_football_resolve, game_2_football_resolve];
 
@@ -372,6 +376,7 @@ contract('SportsAMM', (accounts) => {
 			testUSDC.address,
 			testUSDT.address,
 			true,
+			toUnit(0.02),
 			{ from: owner }
 		);
 
@@ -379,6 +384,7 @@ contract('SportsAMM', (accounts) => {
 			owner,
 			Thales.address,
 			TherundownConsumerDeployed.address,
+			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
 			{ from: owner }
@@ -919,12 +925,13 @@ contract('SportsAMM', (accounts) => {
 			await Thales.approve(SportsAMM.address, toUnit(100000), { from: first });
 			console.log('buyFromAmmQuote decimal is: ', fromUnit(buyFromAmmQuote));
 
-			let buyFromAmmQuoteUSDCCollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				deployedMarket.address,
-				position,
-				toUnit(value),
-				testUSDC.address
-			);
+			let buyFromAmmQuoteUSDCCollateralObject =
+				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					testUSDC.address
+				);
 			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
 			console.log(
 				'buyFromAmmQuoteWithDifferentCollateral USDC: ',
@@ -933,12 +940,13 @@ contract('SportsAMM', (accounts) => {
 
 			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > fromUnit(buyFromAmmQuote), true);
 
-			let buyFromAmmQuoteDAICollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				deployedMarket.address,
-				position,
-				toUnit(value),
-				testDAI.address
-			);
+			let buyFromAmmQuoteDAICollateralObject =
+				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					testDAI.address
+				);
 			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
 			console.log(
 				'buyFromAmmQuoteWithDifferentCollateral DAI: ',
@@ -1192,15 +1200,19 @@ contract('SportsAMM', (accounts) => {
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
 			// resolve markets
 			// const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
-			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(gameid1, 0, 0, 0, {
-				from: owner,
-			});
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketManually(
+				marketAdd,
+				0,
+				0,
+				0,
+				{
+					from: owner,
+				}
+			);
 			answer = await deployedMarket.result();
 			console.log('Result resolved: ', answer.toString());
-
-			answer = await TherundownConsumerDeployed.getResult(gameid1);
-			console.log('Result theRunDown resolved: ', answer.toString());
-			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
 			// check if event is emited
 			assert.eventEqual(tx_resolve.logs[1], 'ResolveSportsMarket', {
 				_marketAddress: marketAdd,
@@ -1326,8 +1338,9 @@ contract('SportsAMM', (accounts) => {
 				{ from: wrapper }
 			);
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
-			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(
-				gameid1,
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketManually(
+				marketAdd,
 				user2_position + 1,
 				1,
 				2,
@@ -1336,9 +1349,7 @@ contract('SportsAMM', (accounts) => {
 			answer = await deployedMarket.result();
 			let game_results = ['Home', 'Away', 'Draw'];
 			console.log('Game result: ', game_results[parseInt(answer.toString())], ' wins');
-			answer = await TherundownConsumerDeployed.getResult(gameid1);
-			console.log('Therundown result returns: ', game_results[parseInt(answer.toString())]);
-			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
 
 			options = await deployedMarket.balancesOf(first);
 			console.log('User 1 options to excercise: ', fromUnit(options[user1_position]));
@@ -1440,8 +1451,9 @@ contract('SportsAMM', (accounts) => {
 				{ from: wrapper }
 			);
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
-			const tx_resolve = await TherundownConsumerDeployed.resolveGameManually(
-				gameid1,
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketManually(
+				marketAdd,
 				user2_position + 1,
 				1,
 				2,
@@ -1450,9 +1462,7 @@ contract('SportsAMM', (accounts) => {
 			answer = await deployedMarket.result();
 			let game_results = ['Home', 'Away', 'Draw'];
 			console.log('Game result: ', game_results[parseInt(answer.toString())], ' wins');
-			answer = await TherundownConsumerDeployed.getResult(gameid1);
-			console.log('Therundown result returns: ', game_results[parseInt(answer.toString())]);
-			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+			marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
 
 			let phase = await deployedMarket.phase();
 			console.log('market phase: ', phase.toString());
@@ -1516,10 +1526,24 @@ contract('SportsAMM', (accounts) => {
 		});
 
 		it('Pause market', async () => {
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(first), true);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(second), false);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(third), true);
+			assert.equal(await SportPositionalMarketManager.whitelistedAddresses(fourth), false);
+
+			await expect(
+				SportPositionalMarketManager.setMarketPaused(deployedMarket.address, true, { from: fourth })
+			).to.be.revertedWith('Invalid caller');
+
 			await SportPositionalMarketManager.setMarketPaused(deployedMarket.address, true);
 			answer = await SportsAMM.isMarketInAMMTrading(deployedMarket.address);
-			// assert.equal(answer, false);
 			assert.equal(answer, false);
+
+			await SportPositionalMarketManager.setMarketPaused(deployedMarket.address, false, {
+				from: third,
+			});
+			answer = await SportsAMM.isMarketInAMMTrading(deployedMarket.address);
+			assert.equal(answer, true);
 		});
 
 		it('Get odds', async () => {
@@ -2134,12 +2158,13 @@ contract('SportsAMM', (accounts) => {
 			await Thales.approve(SportsAMM.address, toUnit(100000), { from: first });
 			console.log('buyFromAmmQuote decimal is: ', fromUnit(buyFromAmmQuote));
 
-			let buyFromAmmQuoteUSDCCollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				deployedMarket.address,
-				position,
-				toUnit(value),
-				testUSDC.address
-			);
+			let buyFromAmmQuoteUSDCCollateralObject =
+				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					testUSDC.address
+				);
 			let buyFromAmmQuoteUSDCCollateral = buyFromAmmQuoteUSDCCollateralObject[0];
 			console.log(
 				'buyFromAmmQuoteWithDifferentCollateral USDC: ',
@@ -2148,12 +2173,13 @@ contract('SportsAMM', (accounts) => {
 
 			assert.equal(buyFromAmmQuoteUSDCCollateral / 1e6 > fromUnit(buyFromAmmQuote), true);
 
-			let buyFromAmmQuoteDAICollateralObject = await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
-				deployedMarket.address,
-				position,
-				toUnit(value),
-				testDAI.address
-			);
+			let buyFromAmmQuoteDAICollateralObject =
+				await SportsAMM.buyFromAmmQuoteWithDifferentCollateral(
+					deployedMarket.address,
+					position,
+					toUnit(value),
+					testDAI.address
+				);
 			let buyFromAmmQuoteDAICollateral = buyFromAmmQuoteDAICollateralObject[0];
 			console.log(
 				'buyFromAmmQuoteWithDifferentCollateral DAI: ',

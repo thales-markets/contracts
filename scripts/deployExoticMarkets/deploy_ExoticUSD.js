@@ -37,6 +37,11 @@ async function main() {
 		networkObj.name = 'goerli';
 		network = 'goerli';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 
 	const ExoticUSDContract = await ethers.getContractFactory('ExoticUSD');
 	const ExoticMarketManagerAddress = getTargetAddress('ExoticMarketManager', network);

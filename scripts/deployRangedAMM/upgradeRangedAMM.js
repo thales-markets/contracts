@@ -28,6 +28,15 @@ async function main() {
 		networkObj.name = 'polygon';
 		network = 'polygon';
 	}
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
+
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
@@ -44,7 +53,10 @@ async function main() {
 	);
 	console.log('RangedMarketsAMM upgraded');
 
-	// const RangedMarketsAMMImplementation = await getImplementationAddress(ethers.provider, rangedAmmAddress);
+	// const RangedMarketsAMMImplementation = await getImplementationAddress(
+	// 	ethers.provider,
+	// 	rangedAmmAddress
+	// );
 
 	console.log('Implementation RangedMarketsAMM: ', RangedMarketsAMMImplementation);
 

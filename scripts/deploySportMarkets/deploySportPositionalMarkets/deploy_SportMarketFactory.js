@@ -34,6 +34,11 @@ async function main() {
 		network = 'optimisticEthereum';
 		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 	if (networkObj.chainId == 5) {
 		networkObj.name = 'goerli';
 		network = 'goerli';

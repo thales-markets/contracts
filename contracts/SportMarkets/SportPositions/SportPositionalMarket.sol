@@ -15,7 +15,6 @@ import "./SportPosition.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "hardhat/console.sol";
 
-
 contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ========== LIBRARIES ========== */
 
@@ -150,6 +149,12 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         require(paused != _paused, "State not changed");
         paused = _paused;
         emit PauseUpdated(_paused);
+    }
+
+    function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused {
+        require(_maturity > block.timestamp, "Maturity must be in a future");
+        times = Times(_maturity, _expiry);
+        emit DatesUpdated(_maturity, _expiry);
     }
 
     /* ---------- Market Resolution ---------- */
@@ -332,10 +337,12 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function burnOptionsMaximum() external override {
+        require(msg.sender == sportsAMM, "Invalid burner");
         _burnOptions(msg.sender, _getMaximumBurnable(msg.sender));
     }
 
     function burnOptions(uint amount) external override {
+        require(msg.sender == sportsAMM, "Invalid burner");
         _burnOptions(msg.sender, amount);
     }
 
@@ -511,4 +518,5 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     event Expired(address beneficiary);
     event StoredOddsOnCancellation(uint homeOdds, uint awayOdds, uint drawOdds);
     event PauseUpdated(bool _paused);
+    event DatesUpdated(uint256 _maturity, uint256 _expiry);
 }

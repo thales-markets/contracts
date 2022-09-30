@@ -43,6 +43,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     address public theRundownConsumer;
     address public sportPositionalMarketFactory;
     bool public needsTransformingCollateral;
+    mapping(address => bool) public whitelistedAddresses;
+    address public apexConsumer;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -66,6 +68,25 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
         theRundownConsumer = _theRundownConsumer;
         emit SetTherundownConsumer(_theRundownConsumer);
+    }
+
+    function setApexConsumer(address _apexConsumer) external onlyOwner {
+        apexConsumer = _apexConsumer;
+        emit SetApexConsumer(_apexConsumer);
+    }
+
+    /// @notice setWhitelistedAddresses enables whitelist addresses of given array
+    /// @param _whitelistedAddresses array of whitelisted addresses
+    /// @param _flag adding or removing from whitelist (true: add, false: remove)
+    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
+        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
+        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
+            // only if current flag is different, if same skip it
+            if (whitelistedAddresses[_whitelistedAddresses[index]] != _flag) {
+                whitelistedAddresses[_whitelistedAddresses[index]] = _flag;
+                emit AddedIntoWhitelist(_whitelistedAddresses[index], _flag);
+            }
+        }
     }
 
     /* ========== VIEWS ========== */
@@ -105,9 +126,25 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function setMarketPaused(address _market, bool _paused) external override {
-        require(msg.sender == owner || msg.sender == theRundownConsumer, "Invalid caller");
+        require(
+            msg.sender == owner ||
+                msg.sender == theRundownConsumer ||
+                msg.sender == apexConsumer ||
+                whitelistedAddresses[msg.sender],
+            "Invalid caller"
+        );
         require(ISportPositionalMarket(_market).paused() != _paused, "No state change");
         ISportPositionalMarket(_market).setPaused(_paused);
+    }
+
+    function updateDatesForMarket(address _market, uint256 _newStartTime) external override {
+        require(msg.sender == owner || msg.sender == theRundownConsumer || msg.sender == apexConsumer, "Invalid caller");
+
+        uint expiry = _newStartTime.add(expiryDuration);
+
+        ISportPositionalMarket(_market).updateDates(_newStartTime, expiry);
+
+        emit DatesUpdatedForMarket(_market, _newStartTime, expiry);
     }
 
     function isMarketPaused(address _market) external view override returns (bool) {
@@ -163,7 +200,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-        require(msg.sender == theRundownConsumer, "Invalid creator");
+        require(msg.sender == theRundownConsumer || msg.sender == apexConsumer, "Invalid creator");
 
         uint expiry = maturity.add(expiryDuration);
 
@@ -222,15 +259,13 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function resolveMarket(address market, uint _outcome) external override {
-        require(msg.sender == theRundownConsumer || msg.sender == owner, "Invalid resolver");
+        require(msg.sender == theRundownConsumer || msg.sender == apexConsumer || msg.sender == owner, "Invalid resolver");
         require(_activeMarkets.contains(market), "Not an active market");
-        SportPositionalMarket(market).resolve(_outcome);
-
         // unpause if paused
         if (ISportPositionalMarket(market).paused()) {
             ISportPositionalMarket(market).setPaused(false);
         }
-
+        SportPositionalMarket(market).resolve(_outcome);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
     }
@@ -328,5 +363,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event SetSportPositionalMarketFactory(address _sportPositionalMarketFactory);
     event SetsUSD(address _address);
     event SetTherundownConsumer(address theRundownConsumer);
+    event SetApexConsumer(address apexConsumer);
     event OddsForMarketRestored(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
+    event DatesUpdatedForMarket(address _market, uint256 _newStartTime, uint256 _expiry);
 }

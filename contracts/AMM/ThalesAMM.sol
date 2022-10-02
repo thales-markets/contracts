@@ -538,25 +538,27 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address market,
         Position position,
         uint basePrice
-    ) internal view returns (uint) {
-        if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
-            return 0;
+    ) internal view returns (uint availableAmount) {
+        if (basePrice > minSupportedPrice && basePrice < maxSupportedPrice) {
+            basePrice = basePrice.add(min_spread);
+            uint discountedPrice = basePrice.mul(ONE.sub(max_spread / 4)) / ONE;
+            uint balance = _balanceOfPositionOnMarket(market, position);
+            uint additionalBufferFromSelling = balance.mul(discountedPrice).div(ONE);
+
+            if (_capOnMarket(market).add(additionalBufferFromSelling) > spentOnMarket[market]) {
+                uint availableUntilCapSUSD = _capOnMarket(market).add(additionalBufferFromSelling).sub(
+                    spentOnMarket[market]
+                );
+                if (availableUntilCapSUSD > _capOnMarket(market)) {
+                    availableUntilCapSUSD = _capOnMarket(market);
+                }
+
+                uint midImpactPriceIncrease = ONE.sub(basePrice).mul(max_spread.div(2)).div(ONE);
+                uint divider_price = ONE.sub(basePrice.add(midImpactPriceIncrease));
+
+                availableAmount = balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
+            }
         }
-        basePrice = basePrice.add(min_spread);
-
-        uint balance = _balanceOfPositionOnMarket(market, position);
-        uint midImpactPriceIncrease = ONE.sub(basePrice).mul(max_spread.div(2)).div(ONE);
-
-        uint divider_price = ONE.sub(basePrice.add(midImpactPriceIncrease));
-
-        uint additionalBufferFromSelling = balance.mul(basePrice).div(ONE);
-
-        if (_capOnMarket(market).add(additionalBufferFromSelling) <= spentOnMarket[market]) {
-            return 0;
-        }
-        uint availableUntilCapSUSD = _capOnMarket(market).add(additionalBufferFromSelling).sub(spentOnMarket[market]);
-
-        return balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
     }
 
     function _buyFromAmmQuoteWithBasePrice(
@@ -564,30 +566,29 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         Position position,
         uint amount,
         uint basePrice
-    ) internal view returns (uint) {
+    ) internal view returns (uint returnQuote) {
         Position positionOtherSide = position == Position.Up ? Position.Down : Position.Up;
         uint _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
         uint _availableOtherSide = _availableToBuyFromAMMWithBasePrice(market, positionOtherSide, basePrice);
-        if (amount < 1 || amount > _available) {
-            return 0;
-        }
-        int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
-        int returnQuote;
-        if (skewImpact >= 0) {
+        if (amount <= _available) {
+            int tempQuote;
+            int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
             basePrice = basePrice.add(min_spread);
-            int impactPrice = ONE_INT.sub(basePrice.toInt256()).mul(skewImpact).div(ONE_INT);
+            if (skewImpact >= 0) {
+                int impactPrice = ONE_INT.sub(basePrice.toInt256()).mul(skewImpact).div(ONE_INT);
 
-            //return impactPrice;
-            // add 2% to the price increase to avoid edge cases on the extremes
-            impactPrice = impactPrice.mul(ONE_INT.add(ONE_PERCENT_INT * 2)).div(ONE_INT);
-            int tempAmount = (amount.toInt256()).mul((basePrice.toInt256()).add(impactPrice)).div(ONE_INT);
-            returnQuote = tempAmount.mul(ONE_INT.add((safeBoxImpact.toInt256()))).div(ONE_INT);
-        } else {
-            returnQuote = (amount.toInt256()).mul((basePrice.toInt256()).mul(ONE_INT.add(skewImpact)).div(ONE_INT)).div(
-                ONE_INT
-            );
+                //return impactPrice;
+                // add 2% to the price increase to avoid edge cases on the extremes
+                impactPrice = impactPrice.mul(ONE_INT.add(ONE_PERCENT_INT * 2)).div(ONE_INT);
+                tempQuote = (amount.toInt256()).mul((basePrice.toInt256()).add(impactPrice)).div(ONE_INT);
+            } else {
+                tempQuote = (amount.toInt256()).mul((basePrice.toInt256()).mul(ONE_INT.add(skewImpact)).div(ONE_INT)).div(
+                    ONE_INT
+                );
+            }
+            tempQuote = tempQuote.mul(ONE_INT.add((safeBoxImpact.toInt256()))).div(ONE_INT);
+            returnQuote = IPositionalMarketManager(manager).transformCollateral(tempQuote.toUint256());
         }
-        return IPositionalMarketManager(manager).transformCollateral(returnQuote.toUint256());
     }
 
     function _getSellMaxPrice(

@@ -381,7 +381,7 @@
 		"GamesQueue": "0x1Ac7eBfa70AB18bf0a8C36e51ecD6C969E88B1d1",
 		"GamesQueueImplementation": "0x575D88fdcd1e5Ac9a7424BA100F385736cE021D4",
 		"TherundownConsumer": "0xdB6EB989127D0c33bC630d7b5B53f87ceCED3ce1",
-		"TherundownConsumerImplementation": "0xD9ceC0F5b2B43C74DFA4A87117968808b95d9018",
+		"TherundownConsumerImplementation": "0x657a0A6C74262Ce7630E470778538487D092fEe2",
 		"TherundownConsumerWrapper": "0xe95C975ae8e37ab0bA6b9F78262977A59FcAABEB",
 		"SportPositionalMarketManager": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
 		"SportPositionalMarketManagerImplementation": "0xd873c1534e8709601Be4F9C2b63B0074B81c2E0c",
@@ -411,7 +411,9 @@
 		"RangedAMM": "0x618D7aeab71f1C5E2264982c0C35DCbE62600ad9",
 		"RangedAMMImplementation": "0x9Ee26dcb9A3F1104B37A5dCc8573c8b144c7ce42",
 		"RangedPositionMastercopy": "0xc4Db40A9Bf954bD8c2266ACfdA227d576d9Cc89c",
-		"RangedMarketMastercopy": "0xD792b54AD28aeA550AaE878665F6a0De00793E81"
+		"RangedMarketMastercopy": "0xD792b54AD28aeA550AaE878665F6a0De00793E81",
+		"TherundownConsumerVerifier": "0x40dEE0d7914FED2749E6b2dBb028Ac67aD453BE0",
+		"TherundownConsumerVerifierImplementation": "0xfba4777e4931E149d6680fE04b4Bf5112669EDb4"
 	},
 	"localhost": {
 		"Airdrop": "",

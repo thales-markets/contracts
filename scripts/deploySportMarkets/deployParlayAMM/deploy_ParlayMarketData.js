@@ -39,6 +39,11 @@ async function main() {
 		network = 'goerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
@@ -80,7 +85,7 @@ async function main() {
 
 	await delay(5000);
 
-	const SportsAMMContract = getTargetAddress('SportsAMM', network);
+	SportsAMMContract = getTargetAddress('SportsAMM', network);
 
 	await ParlayAMMDeployed.setAddresses(
 		SportsAMMContract,

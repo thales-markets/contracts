@@ -39,10 +39,17 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+		SportsAMMContract = getTargetAddress('SportsAMM', network);
+	}
+
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
 	const SportsAMM = await ethers.getContractFactory('SportsAMM');
 
-	if (networkObj.chainId == 42 || networkObj.chainId == 5) {
+	if (networkObj.chainId == 42 || networkObj.chainId == 5 || networkObj.chainId == 420) {
 		await upgrades.upgradeProxy(SportsAMMAddress, SportsAMM);
 		await delay(15000);
 

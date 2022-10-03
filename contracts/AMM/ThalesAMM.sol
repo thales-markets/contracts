@@ -497,7 +497,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         Position position,
         uint basePrice
     ) internal view returns (uint _available) {
-        uint sell_max_price = _getSellMaxPrice(market, position, basePrice);
+        uint sell_max_price = _getSellMaxPrice(basePrice);
         if (sell_max_price > 0) {
             (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
             uint balanceOfTheOtherSide = position == Position.Up
@@ -591,12 +591,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
     }
 
-    function _getSellMaxPrice(
-        address market,
-        Position position,
-        uint basePrice
-    ) internal view returns (uint sell_max_price) {
-        // ignore extremes
+    function _getSellMaxPrice(uint basePrice) internal view returns (uint sell_max_price) {
         if (!(basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice)) {
             sell_max_price = basePrice.sub(min_spread).mul(ONE.sub(max_spread.div(2))).div(ONE);
         }
@@ -829,8 +824,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide.sub(amount) : 0;
         if (!(balancePositionAfter < balanceOtherSideAfter)) {
             _sellImpact = _sellPriceImpactImbalancedSkew(
-                market,
-                position,
                 amount,
                 balanceOtherSide,
                 _balancePosition,
@@ -842,8 +835,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function _sellPriceImpactImbalancedSkew(
-        address market,
-        Position position,
         uint amount,
         uint balanceOtherSide,
         uint _balancePosition,

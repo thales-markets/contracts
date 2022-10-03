@@ -472,6 +472,55 @@
       },
       {
         "internalType": "uint256",
+        "name": "_sUSDPaid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_collateral",
+        "type": "address"
+      }
+    ],
+    "name": "buyQuoteFromParlayWithDifferentCollateral",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "collateralQuote",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sUSDAfterFees",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalBuyAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalQuote",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
         "name": "_sUSDToPay",
         "type": "uint256"
       }
@@ -1054,6 +1103,11 @@
         "internalType": "bool",
         "name": "_curveOnrampEnabled",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxAllowedPegSlippagePercentage",
+        "type": "uint256"
       }
     ],
     "name": "setCurveSUSD",

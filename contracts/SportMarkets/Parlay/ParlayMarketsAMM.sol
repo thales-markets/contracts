@@ -34,6 +34,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
     uint private constant DEFAULT_PARLAY_SIZE = 4;
+    uint private constant MAX_APPROVAL = type(uint256).max;
 
     ISportsAMM public sportsAmm;
     ISportPositionalMarketManager public sportManager;
@@ -62,6 +63,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     AddressSetLib.AddressSet internal _knownMarkets;
     mapping(address => bool) public resolvedParlay;
+    uint maxAllowedPegSlippagePercentage;
 
     function initialize(
         address _owner,
@@ -126,6 +128,32 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid);
     }
 
+    function buyQuoteFromParlayWithDifferentCollateral(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDPaid,
+        address _collateral
+    )
+        external
+        view
+        returns (
+            uint collateralQuote,
+            uint sUSDAfterFees,
+            uint totalBuyAmount,
+            uint totalQuote
+        )
+    {
+        int128 curveIndex = _mapCollateralToCurveIndex(_collateral);
+        if (curveIndex == 0 || !curveOnrampEnabled) {
+            return (collateralQuote, sUSDAfterFees, totalBuyAmount, totalQuote);
+        }
+
+        (sUSDAfterFees, totalBuyAmount, totalQuote, , , , ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid);
+        //cant get a quote on how much collateral is needed from curve for sUSD,
+        //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
+        collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);
+    }
+
     function canCreateParlayMarket(
         address[] calldata _sportMarkets,
         uint[] calldata _positions,
@@ -187,6 +215,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid).mul(ONE.add(ONE_PERCENT.div(5))).div(
             ONE
         );
+
+        uint transformedCollateralForPegCheck = collateral == usdc || collateral == usdt
+            ? collateralQuote.mul(1e12)
+            : collateralQuote;
+        require(
+            maxAllowedPegSlippagePercentage > 0 &&
+                transformedCollateralForPegCheck >= _sUSDPaid.mul(ONE.sub(maxAllowedPegSlippagePercentage)).div(ONE),
+            "Amount below max allowed peg slippage"
+        );
+
         require(collateralQuote.mul(ONE).div(_sUSDPaid) <= ONE.add(_additionalSlippage), "Slippage too high!");
 
         IERC20Upgradeable collateralToken = IERC20Upgradeable(collateral);
@@ -626,23 +664,32 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit AddressesSet(_sportsAMM, address(_stakingThales), _safeBox, _referrals, _parlayMarketData);
     }
 
+    /// @notice Setting the Curve collateral addresses for all collaterals
+    /// @param _curveSUSD Address of the Curve contract
+    /// @param _dai Address of the DAI contract
+    /// @param _usdc Address of the USDC contract
+    /// @param _usdt Address of the USDT (Tether) contract
+    /// @param _curveOnrampEnabled Enabling or restricting the use of multicollateral
+    /// @param _maxAllowedPegSlippagePercentage maximum discount AMM accepts for sUSD purchases
     function setCurveSUSD(
         address _curveSUSD,
         address _dai,
         address _usdc,
         address _usdt,
-        bool _curveOnrampEnabled
+        bool _curveOnrampEnabled,
+        uint _maxAllowedPegSlippagePercentage
     ) external onlyOwner {
         curveSUSD = ICurveSUSD(_curveSUSD);
         dai = _dai;
         usdc = _usdc;
         usdt = _usdt;
-        IERC20(dai).approve(_curveSUSD, type(uint256).max);
-        IERC20(usdc).approve(_curveSUSD, type(uint256).max);
-        IERC20(usdt).approve(_curveSUSD, type(uint256).max);
+        IERC20Upgradeable(dai).approve(_curveSUSD, MAX_APPROVAL);
+        IERC20Upgradeable(usdc).approve(_curveSUSD, MAX_APPROVAL);
+        IERC20Upgradeable(usdt).approve(_curveSUSD, MAX_APPROVAL);
         // not needed unless selling into different collateral is enabled
-        //sUSD.approve(_curveSUSD, type(uint256).max);
+        //sUSD.approve(_curveSUSD, MAX_APPROVAL);
         curveOnrampEnabled = _curveOnrampEnabled;
+        maxAllowedPegSlippagePercentage = _maxAllowedPegSlippagePercentage;
     }
 
     /* ========== MODIFIERS ========== */

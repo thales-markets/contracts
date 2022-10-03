@@ -93,7 +93,7 @@ async function main() {
 		RangedMarketMastercopyDeployed.address,
 		RangedPositionMastercopyDeployed.address
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('RangedMarketAMMDeployer: setRangedMarketMastercopies');
 	});
 
@@ -119,13 +119,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

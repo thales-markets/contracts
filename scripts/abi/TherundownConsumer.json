@@ -286,6 +286,11 @@
             "internalType": "uint8",
             "name": "statusId",
             "type": "uint8"
+          },
+          {
+            "internalType": "uint40",
+            "name": "lastUpdated",
+            "type": "uint40"
           }
         ],
         "indexed": false,
@@ -697,6 +702,25 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "canMarketBeUpdated",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -974,6 +998,25 @@
         "type": "bytes32"
       }
     ],
+    "name": "gameOnADate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
     "name": "gameResolved",
     "outputs": [
       {
@@ -995,6 +1038,11 @@
         "internalType": "uint8",
         "name": "statusId",
         "type": "uint8"
+      },
+      {
+        "internalType": "uint40",
+        "name": "lastUpdated",
+        "type": "uint40"
       }
     ],
     "stateMutability": "view",
@@ -1113,67 +1161,6 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "_requestId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_idx",
-        "type": "uint256"
-      }
-    ],
-    "name": "getGameCreatedByRequestId",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "gameId",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint256",
-            "name": "startTime",
-            "type": "uint256"
-          },
-          {
-            "internalType": "int24",
-            "name": "homeOdds",
-            "type": "int24"
-          },
-          {
-            "internalType": "int24",
-            "name": "awayOdds",
-            "type": "int24"
-          },
-          {
-            "internalType": "int24",
-            "name": "drawOdds",
-            "type": "int24"
-          },
-          {
-            "internalType": "string",
-            "name": "homeTeam",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "awayTeam",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct TherundownConsumer.GameCreate",
-        "name": "game",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
         "name": "_gameId",
         "type": "bytes32"
       }
@@ -1201,6 +1188,11 @@
             "internalType": "uint8",
             "name": "statusId",
             "type": "uint8"
+          },
+          {
+            "internalType": "uint40",
+            "name": "lastUpdated",
+            "type": "uint40"
           }
         ],
         "internalType": "struct TherundownConsumer.GameResolve",
@@ -1278,25 +1270,6 @@
         "internalType": "int24",
         "name": "",
         "type": "int24"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getResult",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "_result",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1442,7 +1415,7 @@
         "type": "bool"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1504,7 +1477,7 @@
         "type": "bool"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -1674,24 +1647,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_pause",
-        "type": "bool"
-      }
-    ],
-    "name": "pauseOrUnpauseMarketManually",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "paused",
     "outputs": [
@@ -1715,33 +1670,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "removeFromCreatedQueue",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "removeFromResolvedQueue",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_index",
-        "type": "uint256"
-      }
-    ],
-    "name": "removeFromUnprocessedGamesArray",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1825,34 +1753,6 @@
       }
     ],
     "name": "resolveAllMarketsForGames",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_outcome",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint8",
-        "name": "_homeScore",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint8",
-        "name": "_awayScore",
-        "type": "uint8"
-      }
-    ],
-    "name": "resolveGameManually",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

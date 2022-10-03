@@ -150,6 +150,12 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         emit PauseUpdated(_paused);
     }
 
+    function updateDates(uint256 _maturity, uint256 _expiry) external override onlyOwner managerNotPaused {
+        require(_maturity > block.timestamp, "Maturity must be in a future");
+        times = Times(_maturity, _expiry);
+        emit DatesUpdated(_maturity, _expiry);
+    }
+
     /* ---------- Market Resolution ---------- */
 
     function canResolve() public view override returns (bool) {
@@ -511,4 +517,5 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     event Expired(address beneficiary);
     event StoredOddsOnCancellation(uint homeOdds, uint awayOdds, uint drawOdds);
     event PauseUpdated(bool _paused);
+    event DatesUpdated(uint256 _maturity, uint256 _expiry);
 }

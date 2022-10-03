@@ -28,6 +28,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     uint public lastResolved;
 
     address public consumer;
+    mapping(address => bool) public whitelistedAddresses;
 
     /// @notice public initialize proxy method
     /// @param _owner future owner of a contract
@@ -47,7 +48,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         bytes32 data,
         uint startTime,
         uint sportsId
-    ) public onlyConsumer {
+    ) public canExecuteFunction {
         lastCreated += 1;
         gamesCreateQueue[lastCreated] = data;
 
@@ -61,7 +62,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice removing first game in a queue from created queue
     /// @return data returns id of a game which is removed
-    function dequeueGamesCreated() public onlyConsumer returns (bytes32 data) {
+    function dequeueGamesCreated() public canExecuteFunction returns (bytes32 data) {
         require(lastCreated >= firstCreated, "No more elements in a queue");
 
         data = gamesCreateQueue[firstCreated];
@@ -74,7 +75,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice putting game in a resolved queue
     /// @param data id of a game in byte32
-    function enqueueGamesResolved(bytes32 data) public onlyConsumer {
+    function enqueueGamesResolved(bytes32 data) public canExecuteFunction {
         lastResolved += 1;
         gamesResolvedQueue[lastResolved] = data;
         existingGamesInResolvedQueue[data] = true;
@@ -84,7 +85,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice removing first game in a queue from resolved queue
     /// @return data returns id of a game which is removed
-    function dequeueGamesResolved() public onlyConsumer returns (bytes32 data) {
+    function dequeueGamesResolved() public canExecuteFunction returns (bytes32 data) {
         require(lastResolved >= firstResolved, "No more elements in a queue");
 
         data = gamesResolvedQueue[firstResolved];
@@ -97,7 +98,7 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice removing game from array of unprocessed games
     /// @param index index in array
-    function removeItemUnproccessedGames(uint index) public onlyConsumer {
+    function removeItemUnproccessedGames(uint index) public canExecuteFunction {
         require(index < unproccessedGames.length, "No such index in array");
 
         bytes32 dataProccessed = unproccessedGames[index];
@@ -123,8 +124,17 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit NewConsumerAddress(_consumer);
     }
 
-    modifier onlyConsumer() {
-        require(msg.sender == consumer, "Only consumer can call this function");
+    /// @notice adding/removing whitelist address depending on a flag
+    /// @param _whitelistAddress address that needed to be whitelisted/ ore removed from WL
+    /// @param _flag adding or removing from whitelist (true: add, false: remove)
+    function addToWhitelist(address _whitelistAddress, bool _flag) external onlyOwner {
+        require(_whitelistAddress != address(0) && whitelistedAddresses[_whitelistAddress] != _flag, "Invalid");
+        whitelistedAddresses[_whitelistAddress] = _flag;
+        emit AddedIntoWhitelist(_whitelistAddress, _flag);
+    }
+
+    modifier canExecuteFunction() {
+        require(msg.sender == consumer || whitelistedAddresses[msg.sender], "Only consumer or whitelisted address");
         _;
     }
 
@@ -134,4 +144,5 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     event DequeueGamesResolved(bytes32 _gameId, uint _index);
     event GameProcessed(bytes32 _gameId, uint _index);
     event NewConsumerAddress(address _consumer);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 }

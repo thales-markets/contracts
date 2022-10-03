@@ -70,6 +70,21 @@ async function main() {
 		TheRundownConsumer = getTargetAddress('TherundownConsumer', network);
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		mainnetNetwork = 'Goerli';
+		PaymentTokenAddress = getTargetAddress('ExoticUSD', network);
+		SafeBoxAddress = owner.address;
+		OracleCouncilAddress = getTargetAddress('ThalesOracleCouncil', network);
+		ThalesBondsAddress = getTargetAddress('ThalesBonds', network);
+		ExoticTagsAddress = getTargetAddress('ExoticPositionalTags', network);
+		MarketDataAddress = getTargetAddress('ExoticPositionalMarketData', network);
+		ExoticRewardsAddress = getTargetAddress('ExoticRewards', network);
+		OpenBidMastercopy = getTargetAddress('ExoticMarketOpenBidMastercopy', network);
+		FixedBidMastercopy = getTargetAddress('ExoticMarketMasterCopy', network);
+	}
+
 	const ExoticMarketMastercopyAddress = getTargetAddress('ExoticMarketMasterCopy', network);
 	const ExoticMarketOpenBidMastercopyAddress = getTargetAddress(
 		'ExoticMarketOpenBidMastercopy',

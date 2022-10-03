@@ -6,7 +6,7 @@
 [![Discord](https://img.shields.io/discord/906484044915687464.svg?color=768AD4&label=discord&logo=https%3A%2F%2Fdiscordapp.com%2Fassets%2F8c9701b98ad4372b58f13fd9f65f966e.svg)](https://discord.gg/DHebdQqqaD)
 [![Twitter Follow](https://img.shields.io/twitter/follow/thalesmarket.svg?label=thalesmarket&style=social)](https://twitter.com/thalesmarket)
 
-Thales is a decentralized protocol that allows users to take part in peer-to-peer Parimutuel Markets on Ethereum.  The simple but powerful smart contracts at the foundation of Thales Market allow you to speculate on the price of different crypto assets, but that's just the beginning.  Any real-world outcome that can be tracked by an on-chain data feed can be used to create a market on Thales.
+Thales is a decentralized protocol that allows users to take part in peer-to-peer Parimutuel Markets on Ethereum. The simple but powerful smart contracts at the foundation of Thales Market allow you to speculate on the price of different crypto assets, but that's just the beginning. Any real-world outcome that can be tracked by an on-chain data feed can be used to create a market on Thales.
 
 For the latest system documentation see [docs.thalesmarket.io](https://docs.thalesmarket.io/)
 
@@ -23,12 +23,13 @@ Everything about the [THALES token](https://thalesmarket.io/article/token)
 [![Discord](https://img.shields.io/discord/906484044915687464.svg?color=768AD4&label=discord&logo=https%3A%2F%2Fdiscordapp.com%2Fassets%2F8c9701b98ad4372b58f13fd9f65f966e.svg)](https://discord.gg/DHebdQqqaD)
 [![Twitter Follow](https://img.shields.io/twitter/follow/thalesmarket.svg?label=thalesmarket&style=social)](https://twitter.com/thalesmarket)
 
-
 ---
 
 ## Repo Guide
 
 ### Audits
+
+- https://iosiro.com/audits/thales-amm-smart-contract-audit
 - https://www.certik.com/projects/thales
 - https://iosiro.com/audits/thales-airdrop-and-staking-smart-contract-audit
 - https://iosiro.com/audits/thales-binary-option-market-smart-contract-audit

@@ -1624,6 +1624,11 @@
       "address": "0x98F1bbc89aE7b0e69793e7f24b295AC553B46039",
       "txHash": "0xe70a18b7eaf9d20ead7f6cdfbb0e7298c44d689e885b2a02c73ee30cba9aad49",
       "kind": "transparent"
+    },
+    {
+      "address": "0x4B27bd235E31974CDB5E68640606Ad31c34243FE",
+      "txHash": "0x9f3c121a370e3e41bcf1a466115594a714f6e80e7a60122ddc07f635fe280175",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -56764,6 +56769,199 @@
                 "type": "t_uint256"
               }
             ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "f073b8c1bbedb7e33b512db18828346d1762de46064633c9cf62cbb455443d2a": {
+      "address": "0x65ED1896192091e2904bc253E499008D2D21B570",
+      "txHash": "0x00142c6da3f66ab3f01033c8f017dc6bcfd0e4403565528a8be40decf5bd33a9",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketManager",
+            "type": "t_contract(IExoticPositionalMarketManager)64728",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:26"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketBond",
+            "type": "t_mapping(t_address,t_struct(MarketBond)29256_storage)",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:37"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketFunds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:38"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "stakingThales",
+            "type": "t_contract(IStakingThales)65646",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:50"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "curveOnrampEnabled",
+            "type": "t_bool",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:52"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "curveSUSD",
+            "type": "t_contract(ICurveSUSD)64104",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:53"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "usdc",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:54"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "usdt",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:55"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "dai",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:56"
+          }
+        ],
+        "types": {
+          "t_contract(IExoticPositionalMarketManager)64728": {
+            "label": "contract IExoticPositionalMarketManager"
+          },
+          "t_mapping(t_address,t_struct(MarketBond)29256_storage)": {
+            "label": "mapping(address => struct ThalesBonds.MarketBond)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_struct(MarketBond)29256_storage": {
+            "label": "struct ThalesBonds.MarketBond",
+            "members": [
+              {
+                "label": "totalDepositedMarketBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "totalMarketBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "creatorBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "resolverBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorsTotalBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorsCount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorBond",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_contract(IStakingThales)65646": {
+            "label": "contract IStakingThales"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(ICurveSUSD)64104": {
+            "label": "contract ICurveSUSD"
           },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"

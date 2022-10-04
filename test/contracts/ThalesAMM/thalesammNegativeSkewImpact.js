@@ -324,6 +324,7 @@ contract('ThalesAMM', (accounts) => {
 			console.log(
 				'buyPriceImpact post buy max DOWN decimal is:' + buyPriceImpactPostBuyDOWN / 1e18
 			);
+			assert.bnLte(buyPriceImpactPostBuyDOWN, toUnit(-0.01));
 
 			const buyQuoteAvailableDown = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,

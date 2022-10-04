@@ -23,7 +23,6 @@ import "../interfaces/ICurveSUSD.sol";
 import "./DeciMath.sol";
 
 /// @title An AMM using BlackScholes odds algorithm to provide liqudidity for traders of UP or DOWN positions
-/// @author Danijel
 contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
     using SafeMath for uint;
     using SignedSafeMath for int;
@@ -541,7 +540,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) internal view returns (uint availableAmount) {
         if (basePrice > minSupportedPrice && basePrice < maxSupportedPrice) {
             basePrice = basePrice.add(min_spread);
-            uint discountedPrice = basePrice.mul(ONE.sub(max_spread / 4)) / ONE;
+            uint discountedPrice = basePrice.mul(ONE.sub(max_spread.div(4))).div(ONE);
             uint balance = _balanceOfPositionOnMarket(market, position);
             uint additionalBufferFromSelling = balance.mul(discountedPrice).div(ONE);
 
@@ -612,11 +611,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         uint availableToBuyFromAMMatm = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
         require(amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
-        //
+
         if (sendSUSD) {
             sUSDPaid = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
             require(sUSDPaid.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high");
-
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
         }
         uint toMint = _getMintableAmount(market, position, amount);
@@ -638,6 +636,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
         _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
 
+        if (amount > toMint) {
+            uint discountedAmount = amount.sub(toMint);
+            uint paidForDiscountedAmount = sUSDPaid.mul(discountedAmount).div(amount);
+            emit BoughtWithDiscount(msg.sender, discountedAmount, paidForDiscountedAmount);
+        }
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
         return sUSDPaid;
     }
@@ -648,12 +651,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint sUSDFromBurning,
         address seller
     ) internal {
-        uint safeBoxShare = sUSDPaid.mul(ONE).div(ONE.sub(safeBoxImpact)).sub(sUSDPaid);
+        uint safeBoxShare;
 
         if (safeBoxImpact > 0) {
+            safeBoxShare = sUSDPaid.mul(ONE).div(ONE.sub(safeBoxImpact)).sub(sUSDPaid);
             sUSD.safeTransfer(safeBox, safeBoxShare);
-        } else {
-            safeBoxShare = 0;
         }
 
         spentOnMarket[market] = spentOnMarket[market].add(
@@ -678,11 +680,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint sUSDPaid,
         address buyer
     ) internal {
-        uint safeBoxShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(safeBoxImpact)));
-        if (safeBoxImpact > 0 && sUSD.balanceOf(address(this)) > safeBoxShare) {
+        uint safeBoxShare;
+        if (safeBoxImpact > 0) {
+            safeBoxShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(safeBoxImpact)));
             sUSD.safeTransfer(safeBox, safeBoxShare);
-        } else {
-            safeBoxShare = 0;
         }
 
         if (
@@ -988,7 +989,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner can change IV!"
         );
-        require(_impliedVolatility > ONE.mul(60) && _impliedVolatility < ONE.mul(300), "IV outside min/max range!");
+        require(_impliedVolatility > ONE.mul(40) && _impliedVolatility < ONE.mul(300), "IV outside min/max range!");
         require(priceFeed.rateForCurrency(asset) != 0, "Asset has no price!");
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
         emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);
@@ -1085,6 +1086,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address susd,
         address asset
     );
+    event BoughtWithDiscount(address buyer, uint amount, uint sUSDPaid);
 
     event SetPositionalMarketManager(address _manager);
     event SetSUSD(address sUSD);

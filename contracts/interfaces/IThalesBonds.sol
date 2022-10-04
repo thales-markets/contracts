@@ -16,6 +16,12 @@ interface IThalesBonds {
 
     function getResolverBondForMarket(address _market) external view returns (uint);
 
+    function getCurveQuoteForDifferentCollateral(
+        uint amount,
+        address collateral,
+        bool toSUSD
+    ) external view returns (uint);
+
     function sendCreatorBondToMarket(
         address _market,
         address _creatorAddress,
@@ -52,13 +58,29 @@ interface IThalesBonds {
 
     function setManagerAddress(address _managerAddress) external;
 
+    function setCurveSUSD(
+        address _curveSUSD,
+        address _dai,
+        address _usdc,
+        address _usdt,
+        bool _curveOnrampEnabled
+    ) external;
+
     function issueBondsBackToCreatorAndResolver(address _market) external;
 
     function transferToMarket(address _account, uint _amount) external;
+
+    function transferToMarket(
+        address _account,
+        uint _amount,
+        address collateral,
+        uint expectedPayout,
+        uint additionalSlippage
+    ) external;
 
     function transferFromMarket(address _account, uint _amount) external;
 
     function transferCreatorToResolverBonds(address _market) external;
 
-    function decreaseCreatorVolume(address _market) external;
+    // function decreaseCreatorVolume(address _market) external;
 }

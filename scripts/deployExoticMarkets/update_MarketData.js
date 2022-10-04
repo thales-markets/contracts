@@ -33,6 +33,11 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
+
 	const MarketDataContract = await ethers.getContractFactory('ExoticPositionalMarketData');
 	const MarketDataAddress = getTargetAddress('ExoticPositionalMarketData', network);
 

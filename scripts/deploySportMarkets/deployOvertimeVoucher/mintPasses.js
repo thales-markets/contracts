@@ -76,7 +76,7 @@ async function main() {
 	let tx = await contract.approve(voucher.address, approvedsUSD, {
 		from: owner.address,
 	});
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('Approve tokens');
 	});
 
@@ -90,7 +90,7 @@ async function main() {
 
 	console.log('Minting...');
 	tx = await voucher.mint(addressToMintTo, amountToMint, { from: owner.address });
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		txLog(tx, 'Pass minted to ' + addressToMintTo);
 	});
 
@@ -98,14 +98,14 @@ async function main() {
 }
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

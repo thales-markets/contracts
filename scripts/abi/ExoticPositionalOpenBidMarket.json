@@ -323,7 +323,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "result",
         "type": "bool"
       }
     ],
@@ -912,7 +912,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "amount",
         "type": "uint256"
       }
     ],
@@ -1416,6 +1416,21 @@
         "internalType": "uint256[]",
         "name": "_amounts",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "address",
+        "name": "collateral",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "additionalSlippage",
+        "type": "uint256"
       }
     ],
     "name": "takeOpenBidPositions",

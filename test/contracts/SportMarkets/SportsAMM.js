@@ -2131,7 +2131,7 @@ contract('SportsAMM', (accounts) => {
 				toUnit(value)
 			);
 			let balanceOfReferrer = await Thales.balanceOf(second);
-			await Referrals.setSportsAMM(SportsAMM.address, { from: owner });
+			await Referrals.setSportsAMM(SportsAMM.address, ZERO_ADDRESS, { from: owner });
 			answer = await SportsAMM.buyFromAMMWithReferrer(
 				deployedMarket.address,
 				position,

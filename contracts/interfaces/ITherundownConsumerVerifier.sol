@@ -10,10 +10,10 @@ interface ITherundownConsumerVerifier {
 
     function isSupportedMarketType(string memory _market) external view returns (bool);
 
-    function areOddsInThreshold(
+    function areOddsArrayInThreshold(
         uint _sportId,
-        uint[] memory _currentOdds,
-        uint[] memory _newOdds,
+        uint[] memory _currentOddsArray,
+        uint[] memory _newOddsArray,
         bool _isTwoPositionalSport
     ) external view returns (bool);
 

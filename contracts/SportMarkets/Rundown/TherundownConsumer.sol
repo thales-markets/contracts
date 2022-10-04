@@ -435,7 +435,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             } else if (
                 //if market is not paused but odd are not in threshold, pause parket
                 !sportsManager.isMarketPaused(marketPerGameId[_game.gameId]) &&
-                !verifier.areOddsInThreshold(
+                !verifier.areOddsArrayInThreshold(
                     sportsIdPerGame[_game.gameId],
                     currentNormalizedOdd,
                     getNormalizedOdds(_game.gameId),

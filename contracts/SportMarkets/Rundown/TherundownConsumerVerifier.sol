@@ -24,8 +24,8 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     ITherundownConsumer public consumer;
     mapping(bytes32 => bool) public invalidName;
     mapping(bytes32 => bool) public supportedMarketType;
-    uint public defaultOddThreshold;
-    mapping(uint => uint) public oddThresholdForSport;
+    uint public defaultOddsThreshold;
+    mapping(uint => uint) public oddsThresholdForSport;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -34,13 +34,13 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         address _consumer,
         string[] memory _invalidNames,
         string[] memory _supportedMarketTypes,
-        uint _defaultOddThreshold
+        uint _defaultOddsThreshold
     ) external initializer {
         setOwner(_owner);
         consumer = ITherundownConsumer(_consumer);
         _setInvalidNames(_invalidNames, true);
         _setSupportedMarketTypes(_supportedMarketTypes, true);
-        defaultOddThreshold = _defaultOddThreshold;
+        defaultOddsThreshold = _defaultOddsThreshold;
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -73,48 +73,48 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
 
     /// @notice view function which returns if odds are inside of the threshold
     /// @param _sportId sport id for which we get threshold
-    /// @param _currentOdds current odd on a contract
-    /// @param _newOdds new odd on a contract
+    /// @param _currentOddsArray current odds on a contract as array
+    /// @param _newOddsArray new odds on a contract as array
     /// @param _isTwoPositionalSport is sport two positional
     /// @return bool true if odds are less then threshold false if above
-    function areOddsInThreshold(
+    function areOddsArrayInThreshold(
         uint _sportId,
-        uint[] memory _currentOdds,
-        uint[] memory _newOdds,
+        uint[] memory _currentOddsArray,
+        uint[] memory _newOddsArray,
         bool _isTwoPositionalSport
     ) external view returns (bool) {
         return
-            areOddInThreshold(_sportId, _currentOdds[0], _newOdds[0]) &&
-            areOddInThreshold(_sportId, _currentOdds[1], _newOdds[1]) &&
-            (_isTwoPositionalSport || areOddInThreshold(_sportId, _currentOdds[2], _newOdds[2]));
+            areOddsInThreshold(_sportId, _currentOddsArray[0], _newOddsArray[0]) &&
+            areOddsInThreshold(_sportId, _currentOddsArray[1], _newOddsArray[1]) &&
+            (_isTwoPositionalSport || areOddsInThreshold(_sportId, _currentOddsArray[2], _newOddsArray[2]));
     }
 
     /// @notice view function which returns if odds are inside of the threshold
     /// @param _sportId sport id for which we get threshold
-    /// @param _currentOdd current odd on a contract
-    /// @param _newOdd new odd on a contract
+    /// @param _currentOdds current single odds on a contract
+    /// @param _newOdds new single odds on a contract
     /// @return bool true if odds are less then threshold false if above
-    function areOddInThreshold(
+    function areOddsInThreshold(
         uint _sportId,
-        uint _currentOdd,
-        uint _newOdd
+        uint _currentOdds,
+        uint _newOdds
     ) public view returns (bool) {
-        uint threshold = oddThresholdForSport[_sportId] == 0 ? defaultOddThreshold : oddThresholdForSport[_sportId];
+        uint threshold = oddsThresholdForSport[_sportId] == 0 ? defaultOddsThreshold : oddsThresholdForSport[_sportId];
 
-        // new odd appear or it is equal
-        if (_currentOdd == 0 || _currentOdd == _newOdd) {
+        // new odds appear or it is equal
+        if (_currentOdds == 0 || _currentOdds == _newOdds) {
             return true;
         }
 
-        // if current odd is GT new one
-        if (_newOdd > _currentOdd) {
-            return !(((ONE * _newOdd) / _currentOdd) > (ONE + (threshold * ONE_PERCENT)));
+        // if current odds is GT new one
+        if (_newOdds > _currentOdds) {
+            return !(((ONE * _newOdds) / _currentOdds) > (ONE + (threshold * ONE_PERCENT)));
         }
-        return !(ONE - ((_newOdd * ONE) / _currentOdd) > (threshold * ONE_PERCENT));
+        return !(ONE - ((_newOdds * ONE) / _currentOdds) > (threshold * ONE_PERCENT));
     }
 
     /// @notice view function which if odds are valid or not
-    /// @param _isTwoPositionalSport if two positional sport dont look at draw odd
+    /// @param _isTwoPositionalSport if two positional sport dont look at draw odds
     /// @param _homeOdds odd for home win
     /// @param _awayOdds odd for away win
     /// @param _drawOdds odd for draw win
@@ -162,15 +162,15 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         uint[] memory normalizedOdds = new uint[](_americanOdds.length);
         uint totalOdds;
         for (uint i = 0; i < _americanOdds.length; i++) {
-            uint odd;
+            uint calculationOdds;
             if (_americanOdds[i] == 0) {
                 normalizedOdds[i] = 0;
             } else if (_americanOdds[i] > 0) {
-                odd = uint(_americanOdds[i]);
-                normalizedOdds[i] = ((10000 * 1e18) / (odd + 10000)) * 100;
+                calculationOdds = uint(_americanOdds[i]);
+                normalizedOdds[i] = ((10000 * 1e18) / (calculationOdds + 10000)) * 100;
             } else if (_americanOdds[i] < 0) {
-                odd = uint(-_americanOdds[i]);
-                normalizedOdds[i] = ((odd * 1e18) / (odd + 10000)) * 100;
+                calculationOdds = uint(-_americanOdds[i]);
+                normalizedOdds[i] = ((calculationOdds * 1e18) / (calculationOdds + 10000)) * 100;
             }
             totalOdds += normalizedOdds[i];
         }
@@ -266,30 +266,30 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         _setSupportedMarketTypes(_supportedMarketTypes, _isSupported);
     }
 
-    /// @notice setting default odd threshold
-    /// @param _defaultOddThreshold default odd threshold
-    function setDefaultOddThreshold(uint _defaultOddThreshold) external onlyOwner {
-        require(_defaultOddThreshold > 0, "Must be more then ZERO");
-        defaultOddThreshold = _defaultOddThreshold;
-        emit NewDefaultOddThreshold(_defaultOddThreshold);
+    /// @notice setting default odds threshold
+    /// @param _defaultOddsThreshold default odds threshold
+    function setDefaultOddsThreshold(uint _defaultOddsThreshold) external onlyOwner {
+        require(_defaultOddsThreshold > 0, "Must be more then ZERO");
+        defaultOddsThreshold = _defaultOddsThreshold;
+        emit NewDefaultOddsThreshold(_defaultOddsThreshold);
     }
 
-    /// @notice setting custom odd threshold for sport
+    /// @notice setting custom odds threshold for sport
     /// @param _sportId sport id
-    /// @param _oddThresholdForSport custom odd threshold which will be by sport
-    function setCustomOddThresholdForSport(uint _sportId, uint _oddThresholdForSport) external onlyOwner {
-        require(defaultOddThreshold != _oddThresholdForSport, "Same value as default value");
-        require(_oddThresholdForSport > 0, "Must be more then ZERO");
+    /// @param _oddsThresholdForSport custom odds threshold which will be by sport
+    function setCustomOddsThresholdForSport(uint _sportId, uint _oddsThresholdForSport) external onlyOwner {
+        require(defaultOddsThreshold != _oddsThresholdForSport, "Same value as default value");
+        require(_oddsThresholdForSport > 0, "Must be more then ZERO");
         require(consumer.isSupportedSport(_sportId), "SportId is not supported");
-        require(oddThresholdForSport[_sportId] != _oddThresholdForSport, "Same value as before");
-        oddThresholdForSport[_sportId] = _oddThresholdForSport;
-        emit NewCustomOddThresholdForSport(_sportId, _oddThresholdForSport);
+        require(oddsThresholdForSport[_sportId] != _oddsThresholdForSport, "Same value as before");
+        oddsThresholdForSport[_sportId] = _oddsThresholdForSport;
+        emit NewCustomOddsThresholdForSport(_sportId, _oddsThresholdForSport);
     }
 
     /* ========== EVENTS ========== */
     event NewConsumerAddress(address _consumer);
     event SetInvalidName(bytes32 _invalidName, bool _isInvalid);
     event SetSupportedMarketType(bytes32 _supportedMarketType, bool _isSupported);
-    event NewDefaultOddThreshold(uint _defaultOddThreshold);
-    event NewCustomOddThresholdForSport(uint _sportId, uint _oddThresholdForSport);
+    event NewDefaultOddsThreshold(uint _defaultOddsThreshold);
+    event NewCustomOddsThresholdForSport(uint _sportId, uint _oddsThresholdForSport);
 }

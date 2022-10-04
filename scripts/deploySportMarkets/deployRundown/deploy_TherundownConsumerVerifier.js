@@ -66,7 +66,7 @@ async function main() {
 
 	let supportedMarketTypes = ['create', 'resolve'];
 
-	const defaultOddThreshold = 20;
+	const defaultOddsThreshold = 20;
 
 	/* ========== DEPLOY CONTRACT ========== */
 
@@ -81,7 +81,7 @@ async function main() {
 		consumerAddress,
 		invalidNames,
 		supportedMarketTypes,
-		defaultOddThreshold,
+		defaultOddsThreshold,
 	]);
 
 	await verifier.deployed();

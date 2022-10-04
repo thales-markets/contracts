@@ -358,15 +358,15 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			from: manager,
 		});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
-		await verifier.setCustomOddThresholdForSport(sportId_16, 10, {
+		await verifier.setCustomOddsThresholdForSport(sportId_16, 10, {
 			from: owner,
 		});
 	});
 
 	describe('Init', () => {
 		it('Check init', async () => {
-			assert.equal(20, await verifier.defaultOddThreshold());
-			assert.equal(10, await verifier.oddThresholdForSport(sportId_16));
+			assert.equal(20, await verifier.defaultOddsThreshold());
+			assert.equal(10, await verifier.oddsThresholdForSport(sportId_16));
 
 			assert.equal(true, await verifier.isInvalidNames('Liverpool', 'Liverpool'));
 			assert.equal(true, await verifier.areTeamsEqual('Liverpool', 'Liverpool'));
@@ -387,11 +387,11 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		it('Different odds checking', async () => {
 			assert.equal(
 				true,
-				await verifier.areOddInThreshold(sportId_16, 0, toUnit('0.321223930700518974'))
+				await verifier.areOddsInThreshold(sportId_16, 0, toUnit('0.321223930700518974'))
 			);
 			assert.equal(
 				true,
-				await verifier.areOddInThreshold(
+				await verifier.areOddsInThreshold(
 					sportId_16,
 					toUnit('0.321223930700518974'),
 					toUnit('0.321223930700518974')
@@ -399,7 +399,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 			assert.equal(
 				true,
-				await verifier.areOddInThreshold(
+				await verifier.areOddsInThreshold(
 					sportId_16,
 					toUnit('0.311223930700518974'),
 					toUnit('0.321223930700518974')
@@ -407,7 +407,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 			assert.equal(
 				true,
-				await verifier.areOddInThreshold(
+				await verifier.areOddsInThreshold(
 					sportId_16,
 					toUnit('0.321223930700518974'),
 					toUnit('0.311223930700518974')
@@ -415,7 +415,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 			assert.equal(
 				false,
-				await verifier.areOddInThreshold(
+				await verifier.areOddsInThreshold(
 					sportId_16,
 					toUnit('0.321223930700518974'),
 					toUnit('0.121223930700518974')
@@ -423,7 +423,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 			assert.equal(
 				false,
-				await verifier.areOddInThreshold(
+				await verifier.areOddsInThreshold(
 					sportId_16,
 					toUnit('0.121223930700518974'),
 					toUnit('0.321223930700518974')
@@ -431,26 +431,32 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 			assert.equal(
 				false,
-				await verifier.areOddInThreshold(sportId_16, toUnit('100'), toUnit('89'))
-			);
-			assert.equal(true, await verifier.areOddInThreshold(sportId_16, toUnit('100'), toUnit('90')));
-			assert.equal(true, await verifier.areOddInThreshold(sportId_16, toUnit('91'), toUnit('100')));
-			assert.equal(
-				false,
-				await verifier.areOddInThreshold(sportId_16, toUnit('90'), toUnit('100'))
+				await verifier.areOddsInThreshold(sportId_16, toUnit('100'), toUnit('89'))
 			);
 			assert.equal(
-				false,
-				await verifier.areOddInThreshold(sportId_16, toUnit('100'), toUnit('89'))
+				true,
+				await verifier.areOddsInThreshold(sportId_16, toUnit('100'), toUnit('90'))
+			);
+			assert.equal(
+				true,
+				await verifier.areOddsInThreshold(sportId_16, toUnit('91'), toUnit('100'))
 			);
 			assert.equal(
 				false,
-				await verifier.areOddInThreshold(sportId_16, toUnit('89'), toUnit('100'))
+				await verifier.areOddsInThreshold(sportId_16, toUnit('90'), toUnit('100'))
+			);
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(sportId_16, toUnit('100'), toUnit('89'))
+			);
+			assert.equal(
+				false,
+				await verifier.areOddsInThreshold(sportId_16, toUnit('89'), toUnit('100'))
 			);
 
 			assert.equal(
 				true,
-				await verifier.areOddsInThreshold(
+				await verifier.areOddsArrayInThreshold(
 					sportId_16,
 					[toUnit('91'), toUnit('91'), toUnit('0')],
 					[toUnit('100'), toUnit('100'), toUnit('0')],
@@ -460,7 +466,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 
 			assert.equal(
 				false,
-				await verifier.areOddsInThreshold(
+				await verifier.areOddsArrayInThreshold(
 					sportId_16,
 					[toUnit('89'), toUnit('91'), toUnit('0')],
 					[toUnit('100'), toUnit('100'), toUnit('0')],
@@ -470,7 +476,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 
 			assert.equal(
 				false,
-				await verifier.areOddsInThreshold(
+				await verifier.areOddsArrayInThreshold(
 					sportId_16,
 					[toUnit('91'), toUnit('89'), toUnit('0')],
 					[toUnit('100'), toUnit('100'), toUnit('0')],
@@ -480,7 +486,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 
 			assert.equal(
 				false,
-				await verifier.areOddsInThreshold(
+				await verifier.areOddsArrayInThreshold(
 					sportId_16,
 					[toUnit('91'), toUnit('91'), toUnit('89')],
 					[toUnit('100'), toUnit('100'), toUnit('100')],
@@ -490,7 +496,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 
 			assert.equal(
 				true,
-				await verifier.areOddsInThreshold(
+				await verifier.areOddsArrayInThreshold(
 					sportId_16,
 					[toUnit('91'), toUnit('91'), toUnit('91')],
 					[toUnit('100'), toUnit('100'), toUnit('100')],
@@ -554,32 +560,32 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 				_isSupported: true,
 			});
 
-			const tx_setDefaultOddThreshold = await verifier.setDefaultOddThreshold(20, {
+			const tx_setDefaultOddsThreshold = await verifier.setDefaultOddsThreshold(20, {
 				from: owner,
 			});
 
-			await expect(verifier.setDefaultOddThreshold(20, { from: wrapper })).to.be.revertedWith(
+			await expect(verifier.setDefaultOddsThreshold(20, { from: wrapper })).to.be.revertedWith(
 				'Only the contract owner may perform this action'
 			);
 
-			await expect(verifier.setDefaultOddThreshold(0, { from: owner })).to.be.revertedWith(
+			await expect(verifier.setDefaultOddsThreshold(0, { from: owner })).to.be.revertedWith(
 				'Must be more then ZERO'
 			);
 
 			// check if event is emited
-			assert.eventEqual(tx_setDefaultOddThreshold.logs[0], 'NewDefaultOddThreshold', {
-				_defaultOddThreshold: 20,
+			assert.eventEqual(tx_setDefaultOddsThreshold.logs[0], 'NewDefaultOddsThreshold', {
+				_defaultOddsThreshold: 20,
 			});
 
 			await expect(
-				verifier.setCustomOddThresholdForSport(sportId_4, 20, { from: owner })
+				verifier.setCustomOddsThresholdForSport(sportId_4, 20, { from: owner })
 			).to.be.revertedWith('Same value as default value');
 
 			await verifier.setConsumerAddress(consumer.address, {
 				from: owner,
 			});
 
-			const tx_setCustomOddThresholdForSport = await verifier.setCustomOddThresholdForSport(
+			const tx_setCustomOddsThresholdForSport = await verifier.setCustomOddsThresholdForSport(
 				sportId_4,
 				19,
 				{
@@ -588,23 +594,27 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			);
 
 			await expect(
-				verifier.setCustomOddThresholdForSport(sportId_4, 19, { from: wrapper })
+				verifier.setCustomOddsThresholdForSport(sportId_4, 19, { from: wrapper })
 			).to.be.revertedWith('Only the contract owner may perform this action');
 
 			await expect(
-				verifier.setCustomOddThresholdForSport(sportId_4, 0, { from: owner })
+				verifier.setCustomOddsThresholdForSport(sportId_4, 0, { from: owner })
 			).to.be.revertedWith('Must be more then ZERO');
 			await expect(
-				verifier.setCustomOddThresholdForSport(sportId_4, 19, { from: owner })
+				verifier.setCustomOddsThresholdForSport(sportId_4, 19, { from: owner })
 			).to.be.revertedWith('Same value as before');
 			await expect(
-				verifier.setCustomOddThresholdForSport(5, 21, { from: owner })
+				verifier.setCustomOddsThresholdForSport(5, 21, { from: owner })
 			).to.be.revertedWith('SportId is not supported');
 			// check if event is emited
-			assert.eventEqual(tx_setCustomOddThresholdForSport.logs[0], 'NewCustomOddThresholdForSport', {
-				_sportId: sportId_4,
-				_oddThresholdForSport: 19,
-			});
+			assert.eventEqual(
+				tx_setCustomOddsThresholdForSport.logs[0],
+				'NewCustomOddsThresholdForSport',
+				{
+					_sportId: sportId_4,
+					_oddsThresholdForSport: 19,
+				}
+			);
 		});
 	});
 });

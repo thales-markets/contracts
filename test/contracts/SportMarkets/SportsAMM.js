@@ -2210,7 +2210,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('Balance of sUSD for sportsAMM: ', fromUnit(sportsAMMBalance));
 
 			let balanceOfReferrer = await Thales.balanceOf(second);
-			await Referrals.setSportsAMM(SportsAMM.address, { from: owner });
+			await Referrals.setSportsAMM(SportsAMM.address, ZERO_ADDRESS, { from: owner });
 
 			await SportsAMM.buyFromAMMWithDifferentCollateralAndReferrer(
 				deployedMarket.address,

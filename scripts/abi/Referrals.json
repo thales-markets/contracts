@@ -230,6 +230,19 @@
   },
   {
     "inputs": [],
+    "name": "parlayAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -341,6 +354,11 @@
       {
         "internalType": "address",
         "name": "_sportsAMM",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayAMM",
         "type": "address"
       }
     ],

@@ -465,6 +465,17 @@ contract('ParlayAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		await ParlayAMM.setAmounts(
+			toUnit(maxSupportedAmount),
+			toUnit(maxSupportedOdd),
+			parlayAMMfee,
+			safeBoxImpact,
+			toUnit(0.05),
+			{
+				from: owner,
+			}
+		);
+
 		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: first });
 		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: second });
 		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: third });
@@ -477,7 +488,7 @@ contract('ParlayAMM', (accounts) => {
 			SportsAMM.address,
 			owner,
 			safeBox,
-			safeBox,
+			Referrals.address,
 			ParlayMarketData.address,
 			{ from: owner }
 		);
@@ -507,6 +518,8 @@ contract('ParlayAMM', (accounts) => {
 			toUnit(0.02),
 			{ from: owner }
 		);
+
+		Referrals.setSportsAMM(SportsAMM.address, ParlayAMM.address, { from: owner });
 
 		await testUSDC.mint(first, toUnit(1000));
 		await testUSDC.mint(curveSUSD.address, toUnit(1000));
@@ -828,6 +841,49 @@ contract('ParlayAMM', (accounts) => {
 			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
 				account: first,
 				sUSDPaid: totalSUSDToPay,
+				amount: result[2],
+			});
+		});
+
+		it('Multi-collateral buy with referrals from amm', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				testUSDC.address
+			);
+			let balanceOfReferrer = await Thales.balanceOf(second);
+			let buyParlayTX = await ParlayAMM.buyFromParlayWithDifferentCollateralAndReferrer(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[2],
+				testUSDC.address,
+				second,
+				{ from: first }
+			);
+			// console.log("event: \n", buyParlayTX.logs[0]);
+			answer = await Thales.balanceOf(second);
+
+			assert.bnGt(answer, balanceOfReferrer);
+			console.log('Referrer change: ', fromUnit(balanceOfReferrer), fromUnit(answer));
+
+			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+				account: first,
+				sUSDPaid: totalSUSDToPay,
+				amount: result[2],
 			});
 		});
 

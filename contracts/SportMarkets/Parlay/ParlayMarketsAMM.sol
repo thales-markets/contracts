@@ -232,6 +232,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, _sUSDPaid);
 
         _buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, false);
+        if (referrerFee > 0 && referrals != address(0)) {
+            _handleReferrer(msg.sender, _sUSDPaid);
+        }
     }
 
     function exerciseParlay(address _parlayMarket) external nonReentrant notPaused {
@@ -621,6 +624,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             return 3;
         }
         return 0;
+    }
+
+    function _handleReferrer(address buyer, uint volume) internal {
+        address referrer = IReferrals(referrals).sportReferrals(buyer);
+        uint referrerShare = volume.mul(ONE).div(ONE.sub(referrerFee)).sub(volume);
+        if (referrer != address(0) && referrerFee > 0) {
+            sUSD.safeTransfer(referrer, referrerShare);
+            emit ReferrerPaid(referrer, buyer, referrerShare, volume);
+        }
     }
 
     /* ========== SETTERS FUNCTIONS ========== */

@@ -352,7 +352,7 @@
 		"GamesQueue": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
 		"GamesQueueImplementation": "0xd64695be37C1694F2e08AE1C2a0d42cb3720480d",
 		"TherundownConsumer": "0x4dB7AfB6b777fB47101C86Bdeb56669ffA8cD656",
-		"TherundownConsumerImplementation": "0x7121Ad77CD471851764D3D6A28b3A99ca5bF256F",
+		"TherundownConsumerImplementation": "0xaaF9BC65a03447bF23aFab2332025E43D280E575",
 		"TherundownConsumerWrapper": "0xB72f87AA15E8FE50Ed364eB4A94486A578fc1556",
 		"ExoticUSD": "0x2851715A8d25e176413A77b495762435D5dDBd0d",
 		"ProxysUSD": "0x2851715A8d25e176413A77b495762435D5dDBd0d",
@@ -372,7 +372,9 @@
 		"ApexConsumer": "0x03500619C58F4377c047A8918AE09594adb23f11",
 		"ApexConsumerImplementation": "0xda2981E2955fFC69f470fb9167Ca914d510c799b",
 		"ApexConsumerOld": "0x14953ab06bA217Bc5DE7b7ADB48C88D7c0095f5e",
-		"ApexConsumerWrapper": "0x6b81a14cB40b038Edb183f0Ce53FddB5d2fEC726"
+		"ApexConsumerWrapper": "0x6b81a14cB40b038Edb183f0Ce53FddB5d2fEC726",
+		"TherundownConsumerVerifier": "0x8271a8e4377479bc42CB0A13Ee57c8a2bD14EfF8",
+		"TherundownConsumerVerifierImplementation": "0x4883e66502ccd8a060Cd3b100292e106bcCd0143"
 	},
 	"optimisticGoerli": {
 		"ExoticUSD": "0xE1ceaa829525a08C1d39A5CEBe4b42aF58d77198",

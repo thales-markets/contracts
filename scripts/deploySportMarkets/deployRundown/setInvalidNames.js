@@ -133,7 +133,13 @@ async function main() {
 		console.log('Adding invalid name: ' + invalidNames[i], ', which is ' + i);
 		invalidNamesBatch.push(invalidNames[i]);
 
-		if (invalidNamesBatch.length > 0 && invalidNamesBatch.length % 10 == 0) {
+		//console.log('Value on contract...');
+		//console.log(await verifier.isInvalidNames(invalidNames[i], { from: owner.address }));
+
+		if (
+			(invalidNamesBatch.length > 0 && invalidNamesBatch.length % 10 == 0) ||
+			invalidNames.length - 1 == i
+		) {
 			try {
 				console.log('Populate...');
 

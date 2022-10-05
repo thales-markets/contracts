@@ -503,6 +503,86 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 					false
 				)
 			);
+
+			assert.equal(
+				true,
+				await verifier.areOddsArrayInThreshold(
+					sportId_16,
+					[toUnit('0.5'), toUnit('0.5'), toUnit('0.5')],
+					[toUnit('0.45'), toUnit('0.45'), toUnit('0.45')],
+					false
+				)
+			);
+
+			assert.equal(
+				false,
+				await verifier.areOddsArrayInThreshold(
+					sportId_16,
+					[toUnit('0.5'), toUnit('0.5'), toUnit('0.5')],
+					[toUnit('0.449'), toUnit('0.449'), toUnit('0.449')],
+					false
+				)
+			);
+
+			assert.equal(
+				false,
+				await verifier.areOddsArrayInThreshold(
+					sportId_16,
+					[toUnit('0.5'), toUnit('0.5'), toUnit('0.5')],
+					[toUnit('0.551'), toUnit('0.551'), toUnit('0.551')],
+					false
+				)
+			);
+
+			assert.equal(
+				true,
+				await verifier.areOddsArrayInThreshold(
+					sportId_16,
+					[toUnit('0.5'), toUnit('0.5'), toUnit('0.5')],
+					[toUnit('0.55'), toUnit('0.55'), toUnit('0.55')],
+					false
+				)
+			);
+
+			assert.equal(
+				false,
+				await verifier.areOddsArrayInThreshold(
+					sportId_16,
+					[toUnit('0.5'), toUnit('0.5'), toUnit('0.5')],
+					[toUnit('0.601'), toUnit('0.601'), toUnit('0.601')],
+					false
+				)
+			);
+
+			assert.equal(
+				false,
+				await verifier.areOddsArrayInThreshold(
+					sportId_16,
+					[toUnit('0.5'), toUnit('0.5'), toUnit('0.5')],
+					[toUnit('0.3999'), toUnit('0.3999'), toUnit('0.3999')],
+					false
+				)
+			);
+
+			assert.equal(
+				false,
+				await verifier.areOddsArrayInThreshold(
+					sportId_16,
+					[toUnit('0.5'), toUnit('0.5'), toUnit('0')],
+					[toUnit('0.551'), toUnit('0.551'), toUnit('0')],
+					true
+				)
+			);
+
+			assert.equal(
+				true,
+				await verifier.areOddsArrayInThreshold(
+					sportId_16,
+					[toUnit('0.5'), toUnit('0.5'), toUnit('0')],
+					[toUnit('0.55'), toUnit('0.55'), toUnit('0')],
+					true
+				)
+			);
 		});
 	});
 

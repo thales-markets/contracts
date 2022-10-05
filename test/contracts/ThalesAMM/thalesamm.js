@@ -128,7 +128,7 @@ contract('ThalesAMM', (accounts) => {
 	let deciMath;
 	let rewardTokenAddress;
 	let ThalesAMM;
-	let thalesAMM;
+	let thalesAMM, thalesAmmUtils;
 	let MockPriceFeedDeployed;
 
 	beforeEach(async () => {
@@ -171,8 +171,8 @@ contract('ThalesAMM', (accounts) => {
 		});
 
 		let ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
-		let thalesAMMUtils = await ThalesAMMUtils.new();
-		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
+		thalesAmmUtils = await ThalesAMMUtils.new();
+		await thalesAMM.setAmmUtils(thalesAmmUtils.address, {
 			from: owner,
 		});
 
@@ -1012,7 +1012,7 @@ contract('ThalesAMM', (accounts) => {
 
 			let calculatedOdds = calculateOdds(10000, 12000, 10, 120);
 			//console.log('calculatedOdds is:' + calculatedOdds);
-			let calculatedOddsContract = await thalesAMM.calculateOdds(
+			let calculatedOddsContract = await thalesAmmUtils.calculateOdds(
 				toUnit(10000),
 				toUnit(12000),
 				toUnit(10),
@@ -1034,7 +1034,7 @@ contract('ThalesAMM', (accounts) => {
 
 			calculatedOdds = calculateOdds(10000, 10000, 1, 120);
 			//console.log('calculatedOdds is:' + calculatedOdds);
-			calculatedOddsContract = await thalesAMM.calculateOdds(
+			calculatedOddsContract = await thalesAmmUtils.calculateOdds(
 				toUnit(10000),
 				toUnit(10000),
 				toUnit(1),
@@ -1056,7 +1056,7 @@ contract('ThalesAMM', (accounts) => {
 
 			calculatedOdds = calculateOdds(10000, 11000, 0.5, 120);
 			//console.log('calculatedOdds is:' + calculatedOdds);
-			calculatedOddsContract = await thalesAMM.calculateOdds(
+			calculatedOddsContract = await thalesAmmUtils.calculateOdds(
 				toUnit(10000),
 				toUnit(11000),
 				toUnit(0.5),
@@ -1081,7 +1081,7 @@ contract('ThalesAMM', (accounts) => {
 
 			let calculatedOdds = calculateOdds(10000, 13000, 0.5, 120);
 			//console.log('calculatedOdds is:' + calculatedOdds);
-			let calculatedOddsContract = await thalesAMM.calculateOdds(
+			let calculatedOddsContract = await thalesAmmUtils.calculateOdds(
 				toUnit(10000),
 				toUnit(13000),
 				toUnit(0.5),
@@ -1135,7 +1135,7 @@ contract('ThalesAMM', (accounts) => {
 
 			let calculatedOdds = calculateOdds(10000, 10235, 0.5, 120);
 			//console.log('calculatedOdds is:' + calculatedOdds);
-			let calculatedOddsContract = await thalesAMM.calculateOdds(
+			let calculatedOddsContract = await thalesAmmUtils.calculateOdds(
 				toUnit(10000),
 				toUnit(10235),
 				toUnit(0.5),
@@ -1192,7 +1192,7 @@ contract('ThalesAMM', (accounts) => {
 
 			let calculatedOdds = calculateOdds(10000, 10235, 0.5, 120);
 			//console.log('calculatedOdds is:' + calculatedOdds);
-			let calculatedOddsContract = await thalesAMM.calculateOdds(
+			let calculatedOddsContract = await thalesAmmUtils.calculateOdds(
 				toUnit(10000),
 				toUnit(10235),
 				toUnit(0.5),

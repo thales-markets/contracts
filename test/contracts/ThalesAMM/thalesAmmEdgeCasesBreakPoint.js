@@ -123,7 +123,7 @@ contract('ThalesAMM', (accounts) => {
 	let deciMath;
 	let rewardTokenAddress;
 	let ThalesAMM;
-	let thalesAMM;
+	let thalesAMM, thalesAMMUtils;
 	let MockPriceFeedDeployed;
 
 	beforeEach(async () => {
@@ -193,7 +193,7 @@ contract('ThalesAMM', (accounts) => {
 
 			let calculatedOdds = calculateOdds(50720, strike, 13, 80);
 			console.log('calculatedOdds is:' + calculatedOdds);
-			let calculatedOddsContract = await thalesAMM.calculateOdds(
+			let calculatedOddsContract = await thalesAMM.thalesAMMUtils(
 				toUnit(50720),
 				toUnit(strike),
 				toUnit(13),

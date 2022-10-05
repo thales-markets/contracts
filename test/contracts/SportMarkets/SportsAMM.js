@@ -1992,9 +1992,13 @@ contract('SportsAMM', (accounts) => {
 				{ from: first }
 			);
 
-			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(deployedMarket.address, {
-				from: third,
-			});
+			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(
+				deployedMarket.address,
+				false,
+				{
+					from: third,
+				}
+			);
 
 			let stampedOdds;
 			stampedOdds = await deployedMarket.getStampedOdds();
@@ -2057,9 +2061,13 @@ contract('SportsAMM', (accounts) => {
 				{ from: first }
 			);
 
-			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(deployedMarket.address, {
-				from: third,
-			});
+			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(
+				deployedMarket.address,
+				false,
+				{
+					from: third,
+				}
+			);
 
 			answer = await SportsAMM.canExerciseMaturedMarket(deployedMarket.address);
 			console.log('Can exercise options: ', answer);

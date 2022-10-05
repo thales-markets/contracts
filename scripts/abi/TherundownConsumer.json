@@ -689,6 +689,40 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "backupOdds",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "int24",
+        "name": "homeOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "awayOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "drawOdds",
+        "type": "int24"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -730,6 +764,11 @@
         "internalType": "address",
         "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_useBackupOdds",
+        "type": "bool"
       }
     ],
     "name": "cancelMarketManually",

@@ -96,6 +96,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(bytes32 => uint) public gameOnADate;
 
     ITherundownConsumerVerifier public verifier;
+    mapping(bytes32 => GameOdds) public backupOdds;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -109,7 +110,20 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint[] memory _cancelGameStatuses
     ) external initializer {
         setOwner(_owner);
-        _populateOnInit(_supportedSportIds, _twoPositionSports, _resolvedStatuses, _cancelGameStatuses);
+
+        for (uint i; i < _supportedSportIds.length; i++) {
+            supportedSport[_supportedSportIds[i]] = true;
+        }
+        for (uint i; i < _twoPositionSports.length; i++) {
+            twoPositionSport[_twoPositionSports[i]] = true;
+        }
+        for (uint i; i < _resolvedStatuses.length; i++) {
+            supportResolveGameStatuses[_resolvedStatuses[i]] = true;
+        }
+        for (uint i; i < _cancelGameStatuses.length; i++) {
+            cancelGameStatuses[_cancelGameStatuses[i]] = true;
+        }
+
         sportsManager = ISportPositionalMarketManager(_sportsManager);
         queues = _queues;
         whitelistedAddresses[_owner] = true;
@@ -280,12 +294,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     /// @notice cancel market for a given market address
     /// @param _market market address
-    function cancelMarketManually(address _market)
+    /// @param _useBackupOdds use backup odds before cancel
+    function cancelMarketManually(address _market, bool _useBackupOdds)
         external
         isAddressWhitelisted
         canGameBeCanceled(gameIdPerMarket[_market])
     {
-        _cancelMarketManually(_market);
+        _cancelMarketManually(_market, _useBackupOdds);
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -421,7 +436,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         // if odds are valid store them if not pause market
         if (_areOddsValid(_game)) {
             uint[] memory currentNormalizedOdd = getNormalizedOdds(_game.gameId);
-
+            GameOdds memory currentOddsBeforeSave = gameOdds[_game.gameId];
             gameOdds[_game.gameId] = _game;
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
 
@@ -443,6 +458,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 )
             ) {
                 _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
+                backupOdds[_game.gameId] = currentOddsBeforeSave;
             }
             emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
         } else {
@@ -455,40 +471,19 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _populateOnInit(
-        uint[] memory _supportedSportIds,
-        uint[] memory _twoPositionSports,
-        uint[] memory _supportedStatuses,
-        uint[] memory _cancelStatuses
-    ) internal {
-        for (uint i; i < _supportedSportIds.length; i++) {
-            supportedSport[_supportedSportIds[i]] = true;
-        }
-        for (uint i; i < _twoPositionSports.length; i++) {
-            twoPositionSport[_twoPositionSports[i]] = true;
-        }
-        for (uint i; i < _supportedStatuses.length; i++) {
-            supportResolveGameStatuses[_supportedStatuses[i]] = true;
-        }
-        for (uint i; i < _cancelStatuses.length; i++) {
-            cancelGameStatuses[_cancelStatuses[i]] = true;
-        }
-    }
-
     function _createMarket(bytes32 _gameId) internal {
         GameCreate memory game = getGameCreatedById(_gameId);
         // only markets in a future, if not dequeue that creation
         if (game.startTime > block.timestamp) {
-            uint sportId = sportsIdPerGame[_gameId];
-            uint[] memory tags = _calculateTags(sportId);
+            uint[] memory tags = _calculateTags(sportsIdPerGame[_gameId]);
 
             // create
             sportsManager.createMarket(
                 _gameId,
-                _append(game.homeTeam, game.awayTeam), // gameLabel
+                string(abi.encodePacked(game.homeTeam, " vs ", game.awayTeam)), // gameLabel
                 game.startTime, //maturity
                 0, //initialMint
-                isSportTwoPositionsSport(sportId) ? 2 : 3,
+                isSportTwoPositionsSport(sportsIdPerGame[_gameId]) ? 2 : 3,
                 tags //tags
             );
 
@@ -527,9 +522,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             } else {
                 // if market is paused only remove from queue
                 if (!sportsManager.isMarketPaused(marketPerGameId[game.gameId])) {
-                    sportsManager.resolveMarket(marketPerGameId[game.gameId], _outcome);
-                    marketResolved[marketPerGameId[game.gameId]] = true;
-
+                    _setMarketCancelOrResolved(marketPerGameId[game.gameId], _outcome);
                     _cleanStorageQueue(index);
 
                     emit ResolveSportsMarket(marketPerGameId[game.gameId], game.gameId, _outcome);
@@ -552,11 +545,10 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint index = queues.unproccessedGamesIndex(gameIdPerMarket[_market]);
 
         // it can return ZERO index, needs checking
-        require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "ID7");
+        require(gameIdPerMarket[_market] == queues.unproccessedGames(index));
 
         _pauseOrUnpauseMarket(_market, false);
-        sportsManager.resolveMarket(_market, _outcome);
-        marketResolved[_market] = true;
+        _setMarketCancelOrResolved(_market, _outcome);
         queues.removeItemUnproccessedGames(index);
         gameResolved[gameIdPerMarket[_market]] = GameResolve(
             gameIdPerMarket[_market],
@@ -576,15 +568,25 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit ResolveSportsMarket(_market, gameIdPerMarket[_market], _outcome);
     }
 
-    function _cancelMarketManually(address _market) internal {
+    function _cancelMarketManually(address _market, bool _useBackupOdds) internal {
         uint index = queues.unproccessedGamesIndex(gameIdPerMarket[_market]);
 
         // it can return ZERO index, needs checking
-        require(gameIdPerMarket[_market] == queues.unproccessedGames(index), "ID8");
+        require(gameIdPerMarket[_market] == queues.unproccessedGames(index));
+
+        if (_useBackupOdds) {
+            require(_areOddsValid(backupOdds[gameIdPerMarket[_market]]));
+            gameOdds[gameIdPerMarket[_market]] = backupOdds[gameIdPerMarket[_market]];
+            emit GameOddsAdded(
+                gameIdPerMarket[_market], // // no req. from CL (manual cancel) so just put gameID
+                gameIdPerMarket[_market],
+                gameOdds[gameIdPerMarket[_market]],
+                getNormalizedOdds(gameIdPerMarket[_market])
+            );
+        }
 
         _pauseOrUnpauseMarket(_market, false);
-        sportsManager.resolveMarket(_market, CANCELLED);
-        marketCanceled[_market] = true;
+        _setMarketCancelOrResolved(_market, CANCELLED);
         queues.removeItemUnproccessedGames(index);
 
         emit CancelSportsMarket(_market, gameIdPerMarket[_market]);
@@ -602,9 +604,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint _index,
         bool cleanStorage
     ) internal {
-        sportsManager.resolveMarket(marketPerGameId[_gameId], CANCELLED);
-        marketCanceled[marketPerGameId[_gameId]] = true;
-
+        _setMarketCancelOrResolved(marketPerGameId[_gameId], CANCELLED);
         if (cleanStorage) {
             _cleanStorageQueue(_index);
         }
@@ -612,13 +612,18 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         emit CancelSportsMarket(marketPerGameId[_gameId], _gameId);
     }
 
+    function _setMarketCancelOrResolved(address _market, uint _outcome) internal {
+        sportsManager.resolveMarket(_market, _outcome);
+        if (_outcome == CANCELLED) {
+            marketCanceled[_market] = true;
+        } else {
+            marketResolved[_market] = true;
+        }
+    }
+
     function _cleanStorageQueue(uint index) internal {
         queues.dequeueGamesResolved();
         queues.removeItemUnproccessedGames(index);
-    }
-
-    function _append(string memory teamA, string memory teamB) internal pure returns (string memory) {
-        return string(abi.encodePacked(teamA, " vs ", teamB));
     }
 
     function _calculateTags(uint _sportsId) internal pure returns (uint[] memory) {

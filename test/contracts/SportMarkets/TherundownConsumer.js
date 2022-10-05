@@ -1855,16 +1855,16 @@ contract('TheRundownConsumer', (accounts) => {
 			await fastForward(await currentTime());
 
 			await expect(
-				TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: second })
+				TherundownConsumerDeployed.cancelMarketManually(marketAdd, false, { from: second })
 			).to.be.revertedWith('ID10');
 			await expect(
-				TherundownConsumerDeployed.cancelMarketManually(second, { from: third })
+				TherundownConsumerDeployed.cancelMarketManually(second, false, { from: third })
 			).to.be.revertedWith('ID12');
 			await expect(
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 3, 0, 0, { from: third })
 			).to.be.revertedWith('ID15');
 
-			const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(marketAdd, {
+			const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(marketAdd, false, {
 				from: third,
 			});
 
@@ -1878,7 +1878,7 @@ contract('TheRundownConsumer', (accounts) => {
 				TherundownConsumerDeployed.resolveMarketManually(marketAdd, 2, 1, 2, { from: third })
 			).to.be.revertedWith('ID13');
 			await expect(
-				TherundownConsumerDeployed.cancelMarketManually(marketAdd, { from: third })
+				TherundownConsumerDeployed.cancelMarketManually(marketAdd, false, { from: third })
 			).to.be.revertedWith('ID11');
 
 			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
@@ -2162,6 +2162,32 @@ contract('TheRundownConsumer', (accounts) => {
 
 			// market is paused odds are not in threshold
 			assert.equal(true, await deployedMarket.paused());
+
+			const tx_cancel = await TherundownConsumerDeployed.cancelMarketManually(marketAdd, true, {
+				from: third,
+			});
+
+			let resultAfterCancel = await TherundownConsumerDeployed.getOddsForGame(gameid1);
+			assert.bnEqual(-20700, resultAfterCancel[0]);
+
+			// check if events are emited
+			assert.eventEqual(tx_cancel.logs[0], 'GameOddsAdded', {
+				_requestId: gameid1,
+				_id: gameid1,
+			});
+
+			assert.eventEqual(tx_cancel.logs[1], 'PauseSportsMarket', {
+				_marketAddress: marketAdd,
+				_pause: false,
+			});
+
+			// check if events are emited
+			assert.eventEqual(tx_cancel.logs[2], 'CancelSportsMarket', {
+				_marketAddress: marketAdd,
+				_id: gameid1,
+			});
+			assert.equal(true, await TherundownConsumerDeployed.marketCanceled(marketAdd));
+			assert.equal(false, await deployedMarket.paused());
 		});
 	});
 

@@ -26,7 +26,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     /* ========== STATE VARIABLES ========== */
 
-    uint public expiryDuration;
+    uint public override expiryDuration;
 
     bool public override marketCreationEnabled;
     bool public customMarketCreationEnabled;
@@ -149,10 +149,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     function isMarketPaused(address _market) external view override returns (bool) {
         return ISportPositionalMarket(_market).paused();
-    }
-
-    function getExpiryDuration() external view override returns (uint) {
-        return expiryDuration;
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */

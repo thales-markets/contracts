@@ -318,7 +318,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
 
         // apply all checks
-        require(totalQuote > maxSupportedOdds, "Can't create this parlay market!");
+        require(totalQuote > maxSupportedOdds, "Can not create this parlay market!");
         require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
         require(
             ((ONE * sUSDAfterFees) / totalQuote) <= (((ONE + _additionalSlippage) * _expectedPayout) / ONE),
@@ -340,7 +340,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _positions,
             totalAmount,
             sUSDAfterFees,
-            sportManager.getExpiryDuration(),
+            sportManager.expiryDuration(),
             address(this),
             msg.sender
         );
@@ -522,6 +522,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     break;
                 }
                 marketOdds = sportsAmm.getMarketDefaultOdds(_sportMarkets[i], false);
+                if (marketOdds.length == 0) {
+                    totalResultQuote = 0;
+                    break;
+                }
                 marketQuotes[i] = marketOdds[_positions[i]];
                 totalResultQuote = totalResultQuote == 0 ? marketQuotes[i] : (totalResultQuote * marketQuotes[i]) / ONE;
                 inverseQuotes[i] = ONE - marketQuotes[i];

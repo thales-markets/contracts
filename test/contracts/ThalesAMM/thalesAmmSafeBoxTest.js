@@ -330,7 +330,11 @@ contract('ThalesAMM', (accounts) => {
 				Position.UP,
 				toUnit(availableToSellToAMM / 1e18 - 1)
 			);
-
+			let ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
+			let thalesAMMUtils = await ThalesAMMUtils.new();
+			await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
+				from: owner,
+			});
 			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.UP,

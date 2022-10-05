@@ -30,13 +30,12 @@ async function main() {
 	}
 
 	if (networkObj.chainId == 10) {
-		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 		network = 'optimisticEthereum';
+		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
 	} else if (networkObj.chainId == 69) {
 		network = 'optimisticKovan';
 		ProxyERC20sUSDaddress = getTargetAddress('ProxysUSD', network);
-	}
-	if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
+	} else if (networkObj.chainId == 80001 || networkObj.chainId == 137) {
 		ProxyERC20sUSDaddress = getTargetAddress('ProxyUSDC', network);
 	} else {
 		const ProxyERC20sUSD = snx.getTarget({ network, contract: 'ProxyERC20sUSD' });
@@ -67,93 +66,14 @@ async function main() {
 		PositionalMarketMastercopyDeployed.address
 	);
 
-	const PositionalMarketFactory = await ethers.getContractFactory('PositionalMarketFactory');
-	const PositionalMarketFactoryDeployed = PositionalMarketFactory.attach(
-		getTargetAddress('PositionalMarketFactory', network)
-	);
-
-	let tx = await PositionalMarketFactoryDeployed.setPositionalMarketMastercopy(
-		PositionalMarketMastercopyDeployed.address
-	);
-	await tx.wait().then(e => {
-		console.log('PositionalMarketFactory: setPositionalMarketMastercopy');
-	});
-
-	const positionalManagerAddress = getTargetAddress('PositionalMarketManager', network);
-	console.log('Found positionalManagerAddress at:', positionalManagerAddress);
-
-	const PositionalMarketManager = await ethers.getContractFactory('PositionalMarketManager');
-	upgrades.prepareUpgrade;
-	await upgrades.upgradeProxy(positionalManagerAddress, PositionalMarketManager);
-
-	console.log('PositionalMarketManager upgraded');
-
-	const PositionalMarketManagerImplementation = await getImplementationAddress(
-		ethers.provider,
-		positionalManagerAddress
-	);
-
-	console.log(
-		'Implementation PositionalMarketManagerImplementation: ',
-		PositionalMarketManagerImplementation
-	);
-
-	setTargetAddress(
-		'PositionalMarketManagerImplementation',
-		network,
-		PositionalMarketManagerImplementation
-	);
-
-	const PositionalMarketData = await ethers.getContractFactory('PositionalMarketData');
-	const positionalMarketData = await PositionalMarketData.deploy();
-
-	console.log('PositionalMarketData deployed to:', positionalMarketData.address);
-	setTargetAddress('PositionalMarketData', network, positionalMarketData.address);
-
-	const thalesAmmAddress = getTargetAddress('ThalesAMM', network);
-	console.log('Found ThalesAMM at:', thalesAmmAddress);
-
-	const ThalesAMM = await ethers.getContractFactory('ThalesAMM');
-	upgrades.prepareUpgrade;
-	await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
-
-	console.log('ThalesAMM upgraded');
-
-	const ThalesAMMImplementation = await getImplementationAddress(ethers.provider, thalesAmmAddress);
-
-	console.log('Implementation ThalesAMM: ', ThalesAMMImplementation);
-
-	setTargetAddress('ThalesAMMImplementation', network, ThalesAMMImplementation);
-
-	try {
-		await hre.run('verify:verify', {
-			address: PositionalMarketManagerImplementation,
-		});
-	} catch (e) {
-		console.log(e);
-	}
-
-	try {
-		await hre.run('verify:verify', {
-			address: ThalesAMMImplementation,
-		});
-	} catch (e) {
-		console.log(e);
-	}
-
 	await hre.run('verify:verify', {
 		address: PositionalMarketMastercopyDeployed.address,
 		constructorArguments: [],
 		contract: 'contracts/Positions/PositionalMarketMastercopy.sol:PositionalMarketMastercopy',
 	});
 
-	await hre.run('verify:verify', {
-		address: positionalMarketData.address,
-		constructorArguments: [],
-	});
-
 	function delay(time) {
-		return new Promise(function(resolve) {
+		return new Promise(function (resolve) {
 			setTimeout(resolve, time);
 		});
 	}
@@ -161,7 +81,7 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

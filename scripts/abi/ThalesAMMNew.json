@@ -1,38 +1,5 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "x",
-        "type": "uint256"
-      }
-    ],
-    "name": "PRBMathUD60x18__Exp2InputTooBig",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "x",
-        "type": "uint256"
-      }
-    ],
-    "name": "PRBMathUD60x18__LogInputTooSmall",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "prod1",
-        "type": "uint256"
-      }
-    ],
-    "name": "PRBMath__MulDivFixedPointOverflow",
-    "type": "error"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -660,40 +627,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_price",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "strike",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timeLeftInDays",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "volatility",
-        "type": "uint256"
-      }
-    ],
-    "name": "calculateOdds",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "market",
         "type": "address"
@@ -1258,6 +1191,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IThalesAMMUtils",
+        "name": "_ammUtils",
+        "type": "address"
+      }
+    ],
+    "name": "setAmmUtils",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

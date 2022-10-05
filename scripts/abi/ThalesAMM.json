@@ -686,42 +686,6 @@
     "constant": true,
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_price",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "strike",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timeLeftInDays",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "volatility",
-        "type": "uint256"
-      }
-    ],
-    "name": "calculateOdds",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
         "internalType": "address",
         "name": "market",
         "type": "address"
@@ -1383,6 +1347,21 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "contract IThalesAMMUtils",
+        "name": "_ammUtils",
+        "type": "address"
+      }
+    ],
+    "name": "setAmmUtils",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

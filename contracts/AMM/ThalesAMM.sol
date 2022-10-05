@@ -20,6 +20,7 @@ import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ICurveSUSD.sol";
+import "../interfaces/IThalesAMMUtils.sol";
 import "./DeciMath.sol";
 
 /// @title An AMM using BlackScholes odds algorithm to provide liqudidity for traders of UP or DOWN positions
@@ -97,6 +98,8 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     bool public curveOnrampEnabled;
 
     uint public maxAllowedPegSlippagePercentage;
+
+    IThalesAMMUtils ammUtils;
 
     int private constant ONE_INT = 1e18;
     int private constant ONE_PERCENT_INT = 1e16;
@@ -250,54 +253,16 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             (bytes32 key, uint strikePrice, ) = marketContract.getOracleDetails();
 
             if (position == Position.Up) {
-                priceToReturn = calculateOdds(
-                    oraclePrice,
-                    strikePrice,
-                    timeLeftToMaturityInDays,
-                    impliedVolatilityPerAsset[key]
-                ).div(1e2);
+                priceToReturn = ammUtils
+                    .calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
+                    .div(1e2);
             } else {
                 priceToReturn = ONE.sub(
-                    calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
-                        1e2
-                    )
+                    ammUtils
+                        .calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
+                        .div(1e2)
                 );
             }
-        }
-    }
-
-    /// @notice get the algorithmic odds of market being in the money, taken from JS code https://gist.github.com/aasmith/524788/208694a9c74bb7dfcb3295d7b5fa1ecd1d662311
-    /// @param _price current price of the asset
-    /// @param strike price of the asset
-    /// @param timeLeftInDays when does the market mature
-    /// @param volatility implied yearly volatility of the asset
-    /// @return odds of market being in the money
-    function calculateOdds(
-        uint _price,
-        uint strike,
-        uint timeLeftInDays,
-        uint volatility
-    ) public view returns (uint) {
-        uint vt = volatility.div(100).mul(sqrt(timeLeftInDays.div(365))).div(1e9);
-        bool direction = strike >= _price;
-        uint lnBase = strike >= _price ? strike.mul(ONE).div(_price) : _price.mul(ONE).div(strike);
-        uint d1 = deciMath.ln(lnBase, 99).mul(ONE).div(vt);
-        uint y = ONE.mul(ONE).div(ONE.add(d1.mul(2316419).div(1e7)));
-        uint d2 = d1.mul(d1).div(2).div(ONE);
-        uint z = _expneg(d2).mul(3989423).div(1e7);
-
-        uint y5 = powerInt(y, 5).mul(1330274).div(1e6);
-        uint y4 = powerInt(y, 4).mul(1821256).div(1e6);
-        uint y3 = powerInt(y, 3).mul(1781478).div(1e6);
-        uint y2 = powerInt(y, 2).mul(356538).div(1e6);
-        uint y1 = y.mul(3193815).div(1e7);
-        uint x1 = y5.add(y3).add(y1).sub(y4).sub(y2);
-        uint x = ONE.sub(z.mul(x1).div(ONE));
-        uint result = ONE.mul(1e2).sub(x.mul(1e2));
-        if (direction) {
-            return result;
-        } else {
-            return ONE.mul(1e2).sub(result);
         }
     }
 
@@ -889,35 +854,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         return getCapPerAsset(key);
     }
 
-    function _expneg(uint x) internal view returns (uint result) {
-        result = (ONE * ONE) / _expNegPow(x);
-    }
-
-    function _expNegPow(uint x) internal view returns (uint result) {
-        uint e = 2718280000000000000;
-        result = deciMath.pow(e, x);
-    }
-
-    function powerInt(uint A, int8 B) internal pure returns (uint result) {
-        result = ONE;
-        for (int8 i = 0; i < B; i++) {
-            result = result.mul(A).div(ONE);
-        }
-    }
-
-    function sqrt(uint y) internal pure returns (uint z) {
-        if (y > 3) {
-            z = y;
-            uint x = y / 2 + 1;
-            while (x < z) {
-                z = x;
-                x = (y / x + x) / 2;
-            }
-        } else if (y != 0) {
-            z = 1;
-        }
-    }
-
     function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
         if (collateral == dai) {
             return 1;
@@ -1004,6 +940,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         sUSD = _sUSD;
         emit SetSUSD(address(sUSD));
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _ammUtils address of AMMUtils
+    function setAmmUtils(IThalesAMMUtils _ammUtils) external onlyOwner {
+        ammUtils = _ammUtils;
     }
 
     /// @notice Updates contract parametars

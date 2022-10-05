@@ -26,6 +26,11 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     uint public constant NUMBER_OF_POSITIONS = 2;
     uint public constant MIN_TAG_NUMBER = 9100;
 
+    uint public constant BET_TYPE_H2H = 0;
+    uint public constant BET_TYPE_TOP3 = 1;
+    uint public constant BET_TYPE_TOP5 = 2;
+    uint public constant BET_TYPE_TOP10 = 3;
+
     /* ========== CONSUMER STATE VARIABLES ========== */
 
     struct RaceCreate {
@@ -46,6 +51,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint256 drawOdds;
         string homeTeam;
         string awayTeam;
+        uint betType;
     }
 
     struct GameResolve {
@@ -162,6 +168,8 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _probB: Probability for Team/Category/Rider B, returned as uint256
     /// @param _gameId unique game identifier
     /// @param _sport supported sport name which is provided from CL
+    /// @param _arePostQualifyingOdds flag which indicates are "pre" or "post" odds
+    /// @param _betType bet type for provided game
     function fulfillMatchup(
         bytes32 _requestId,
         string memory _betTypeDetail1,
@@ -171,7 +179,8 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         bytes32 _gameId,
         string memory _sport,
         string memory _eventId,
-        bool _arePostQualifyingOdds
+        bool _arePostQualifyingOdds,
+        uint _betType
     ) external onlyWrapper {
         if (raceFulfilledCreated[_eventId]) {
             RaceCreate memory race = raceCreated[_eventId];
@@ -191,9 +200,10 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
                         game.homeOdds = _probA;
                         game.awayOdds = _probB;
                         game.homeTeam = _betTypeDetail1;
-                        game.awayTeam = _betTypeDetail2;
+                        game.awayTeam = _betType == BET_TYPE_H2H ? _betTypeDetail2 : "";
                         game.raceId = _eventId;
                         game.startTime = race.startTime;
+                        game.betType = _betType;
 
                         _createGameFulfill(_requestId, game, newGameOdds, supportedSportId[_sport]);
                         _oddsGameFulfill(_requestId, newGameOdds);

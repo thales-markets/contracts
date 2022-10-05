@@ -57,6 +57,8 @@ async function main() {
 	console.log('LINK address: ', chainlink['LINK']);
 	console.log('ORACLE address: ', chainlink['ORACLE']);
 
+	const allowedBetTypes = ['outright_head_to_head', 'top3', 'top5', 'top10'];
+
 	// We get the contract to deploy
 	let ApexConsumerWrapper = await ethers.getContractFactory('ApexConsumerWrapper');
 	const ApexConsumerWrapperDeployed = await ApexConsumerWrapper.deploy(
@@ -68,7 +70,8 @@ async function main() {
 		paymentResults,
 		chainlink['REQUEST_METADATA_JOB_ID'],
 		chainlink['REQUEST_MATCHUP_JOB_ID'],
-		chainlink['REQUEST_RESULTS_JOB_ID']
+		chainlink['REQUEST_RESULTS_JOB_ID'],
+		allowedBetTypes
 	);
 	await ApexConsumerWrapperDeployed.deployed();
 
@@ -89,6 +92,7 @@ async function main() {
 				chainlink['REQUEST_METADATA_JOB_ID'],
 				chainlink['REQUEST_MATCHUP_JOB_ID'],
 				chainlink['REQUEST_RESULTS_JOB_ID'],
+				allowedBetTypes,
 			],
 		});
 	} catch (e) {

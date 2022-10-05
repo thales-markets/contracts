@@ -86,7 +86,9 @@
 		"OvertimeVoucher": "0xC9183E3306A06E64c2A83E655756F70A83152536",
 		"ApexConsumer": "0x0a6851C7D112A27019d84DCCb9cE0c0cd8b75325",
 		"ApexConsumerImplementation": "0x9712eF637F3834f1fB884908ee105D5170813646",
-		"ApexConsumerWrapper": "0xb0DD7B602656C315f970616e72F28D05A5d8F29c"
+		"ApexConsumerWrapper": "0xb0DD7B602656C315f970616e72F28D05A5d8F29c",
+		"TherundownConsumerVerifier": "0x56d0A5098AD74F5e635797753644521173be89dB",
+		"TherundownConsumerVerifierImplementation": "0xEa71aACad9C7105859581AA7048126d6f98B391F"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

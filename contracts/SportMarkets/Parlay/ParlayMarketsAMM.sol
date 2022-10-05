@@ -160,7 +160,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _sUSDToPay
     ) external view returns (bool canBeCreated) {
         (, uint totalBuyAmount, uint totalQuote, , , , ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDToPay);
-        canBeCreated = totalQuote > maxSupportedOdds && totalBuyAmount <= maxSupportedAmount;
+        canBeCreated = totalQuote >= maxSupportedOdds && totalBuyAmount <= maxSupportedAmount;
     }
 
     function exercisableSportPositionsInParlay(address _parlayMarket)
@@ -318,7 +318,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
 
         // apply all checks
-        require(totalQuote > maxSupportedOdds, "Can not create this parlay market!");
+        require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");
         require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
         require(
             ((ONE * sUSDAfterFees) / totalQuote) <= (((ONE + _additionalSlippage) * _expectedPayout) / ONE),
@@ -400,13 +400,15 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 inverseQuotes
             );
             (totalQuote, totalBuyAmount, finalQuotes, ) = _calculateFinalQuotes(_sportMarkets, _positions, amountsToBuy);
-            if (totalQuote > 0) {
+            if (totalQuote > 0 && totalQuote >= maxSupportedOdds) {
                 uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
                 skewImpact = expectedPayout > totalBuyAmount
                     ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
                     : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
                 amountsToBuy = _applySkewImpactBatch(amountsToBuy, skewImpact, (expectedPayout > totalBuyAmount));
                 totalBuyAmount = _applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
+            } else {
+                totalQuote = 0;
             }
         }
     }

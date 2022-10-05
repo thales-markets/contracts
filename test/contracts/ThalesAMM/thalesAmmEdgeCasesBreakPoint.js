@@ -193,7 +193,7 @@ contract('ThalesAMM', (accounts) => {
 
 			let calculatedOdds = calculateOdds(50720, strike, 13, 80);
 			console.log('calculatedOdds is:' + calculatedOdds);
-			let calculatedOddsContract = await thalesAMM.thalesAMMUtils(
+			let calculatedOddsContract = await thalesAMMUtils.calculateOdds(
 				toUnit(50720),
 				toUnit(strike),
 				toUnit(13),

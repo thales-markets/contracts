@@ -47,6 +47,11 @@ async function main() {
 		network = 'polygon';
 	}
 
+	if (networkObj.chainId == 42161) {
+		networkObj.name = 'arbitrumOne';
+		network = 'arbitrumOne';
+	}
+
 	const ammUtils = await ethers.getContractFactory('ThalesAMMUtils');
 	const ThalesAMMUtilsDeployed = await ammUtils.deploy();
 	await ThalesAMMUtilsDeployed.deployed();

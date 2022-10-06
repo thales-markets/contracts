@@ -710,6 +710,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
                 int amountInt = (balancePosition.add(amountToBeMinted)).toInt256();
 
                 priceImpact = (discountBalance.add(discountMinted)).div(amountInt);
+
+                if(priceImpact > 0) {
+                    int numerator = pricePosition.toInt256().mul(priceImpact);
+                    priceImpact = numerator.div(priceOtherPosition.toInt256());
+                }
             } else {
                 priceImpact = (
                     _buyPriceImpactImbalancedSkew(

@@ -67,6 +67,7 @@ contract('SportsAMM', (accounts) => {
 	let Thales;
 	let ThalesBonds;
 	let answer;
+	let verifier;
 	let minimumPositioningDuration = 0;
 	let minimumMarketMaturityDuration = 0;
 
@@ -330,6 +331,20 @@ contract('SportsAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		let ConsumerVerifier = artifacts.require('TherundownConsumerVerifier');
+		verifier = await ConsumerVerifier.new({ from: owner });
+
+		await verifier.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			['TDB TDB', 'TBA TBA'],
+			['create', 'resolve'],
+			20,
+			{
+				from: owner,
+			}
+		);
+
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
 		// 	TherundownConsumerDeployed.address
@@ -338,6 +353,7 @@ contract('SportsAMM', (accounts) => {
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
+			verifier.address,
 			{
 				from: owner,
 			}
@@ -409,23 +425,6 @@ contract('SportsAMM', (accounts) => {
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarketType('create'));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedMarketType('resolve'));
 			assert.equal(false, await TherundownConsumerDeployed.isSupportedMarketType('aaa'));
-
-			assert.equal(
-				true,
-				await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'Real Madrid')
-			);
-			assert.equal(
-				true,
-				await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'TBD TBD')
-			);
-			assert.equal(
-				true,
-				await TherundownConsumerDeployed.isSameTeamOrTBD('TBD TBD', 'Liverpool FC')
-			);
-			assert.equal(
-				false,
-				await TherundownConsumerDeployed.isSameTeamOrTBD('Real Madrid', 'Liverpool FC')
-			);
 
 			assert.equal(false, await TherundownConsumerDeployed.cancelGameStatuses(8));
 			assert.equal(true, await TherundownConsumerDeployed.cancelGameStatuses(1));
@@ -1993,9 +1992,13 @@ contract('SportsAMM', (accounts) => {
 				{ from: first }
 			);
 
-			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(deployedMarket.address, {
-				from: third,
-			});
+			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(
+				deployedMarket.address,
+				false,
+				{
+					from: third,
+				}
+			);
 
 			let stampedOdds;
 			stampedOdds = await deployedMarket.getStampedOdds();
@@ -2058,9 +2061,13 @@ contract('SportsAMM', (accounts) => {
 				{ from: first }
 			);
 
-			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(deployedMarket.address, {
-				from: third,
-			});
+			let cancelTx = await TherundownConsumerDeployed.cancelMarketManually(
+				deployedMarket.address,
+				false,
+				{
+					from: third,
+				}
+			);
 
 			answer = await SportsAMM.canExerciseMaturedMarket(deployedMarket.address);
 			console.log('Can exercise options: ', answer);

@@ -31,6 +31,11 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
+
 	const ExoticTagsContract = await ethers.getContractFactory('ExoticPositionalTags');
 	const ExoticMarketManagerAddress = getTargetAddress('ExoticMarketManager', network);
 	const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
@@ -113,7 +118,7 @@ async function main() {
 		// Add tags
 		for (let i = 0; i < labels.length; i++) {
 			tx = await ExoticTagsDeployed.addTag(labels[i], tagNumbers[i], { from: owner.address });
-			await tx.wait().then(e => {
+			await tx.wait().then((e) => {
 				console.log('New tag added ', labels[i], ' with number: ', tagNumbers[i]);
 			});
 			await delay(1000);
@@ -142,13 +147,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

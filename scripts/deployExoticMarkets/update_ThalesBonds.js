@@ -30,11 +30,17 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 	}
+
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
+
 	const ThalesBondsContract = await ethers.getContractFactory('ThalesBonds');
 	const ThalesBondsAddress = getTargetAddress('ThalesBonds', network);
 	let ThalesBondsImplementation;
 
-	if (networkObj.chainId == 69) {
+	if (networkObj.chainId == 69 || networkObj.chainId == 420) {
 		await upgrades.upgradeProxy(ThalesBondsAddress, ThalesBondsContract);
 		await delay(5000);
 		console.log('ThalesBondsAddress upgraded');
@@ -64,13 +70,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

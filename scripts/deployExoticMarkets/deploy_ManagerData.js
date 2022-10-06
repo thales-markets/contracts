@@ -74,7 +74,7 @@ async function main() {
 		},
 		{ from: owner.address }
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('\n setManagerDummyData: success');
 	});
 	await delay(1000);
@@ -82,13 +82,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

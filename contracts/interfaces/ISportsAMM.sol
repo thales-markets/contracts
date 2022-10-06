@@ -4,7 +4,11 @@ pragma solidity ^0.8.0;
 interface ISportsAMM {
     /* ========== VIEWS / VARIABLES ========== */
 
-    enum Position {Home, Away, Draw}
+    enum Position {
+        Home,
+        Away,
+        Draw
+    }
 
     function getMarketDefaultOdds(address _market, bool isSell) external view returns (uint[] memory);
 

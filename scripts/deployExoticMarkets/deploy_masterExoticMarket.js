@@ -65,6 +65,21 @@ async function main() {
 		TheRundownConsumer = addressZero;
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentTokenAddress = getTargetAddress('ExoticUSD', network);
+		SafeBoxAddress = owner.address;
+		OracleCouncilAddress = getTargetAddress('ThalesOracleCouncil', network);
+		ThalesBondsAddress = getTargetAddress('ThalesBonds', network);
+		ExoticTagsAddress = getTargetAddress('ExoticPositionalTags', network);
+		MarketDataAddress = getTargetAddress('ExoticPositionalMarketData', network);
+		ExoticRewardsAddress = getTargetAddress('ExoticRewards', network);
+		OpenBidMastercopy = getTargetAddress('ExoticMarketOpenBidMastercopy', network);
+		FixedBidMastercopy = getTargetAddress('ExoticMarketMasterCopy', network);
+		TheRundownConsumer = addressZero;
+	}
+
 	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalFixedMarket');
 	const ExoticMarketDeployed = await ExoticMarket.deploy();
 	await ExoticMarketDeployed.deployed();
@@ -90,7 +105,7 @@ async function main() {
 			SafeBoxAddress,
 			{ from: owner.address }
 		);
-		await tx.wait().then(e => {
+		await tx.wait().then((e) => {
 			console.log(
 				'\n setAddresses: \n',
 				'FixedBidMastercopy: ',
@@ -131,13 +146,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

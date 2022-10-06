@@ -10,6 +10,10 @@ const SECOND = 1;
 const HOUR = 3600;
 const DAY = 86400;
 
+const additionalSlippage = toUnit(0.02);
+const { toBN } = web3.utils;
+const usdcQuantity = toBN(10000 * 1e6); //100 USDC
+
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 // contracts
@@ -34,6 +38,7 @@ let ThalesBonds;
 let answer;
 let marketQuestion,
 	marketSource,
+	additionalInfo,
 	endOfPositioning,
 	fixedTicketPrice,
 	positionAmount1,
@@ -53,7 +58,11 @@ let marketQuestion,
 	totalAmount12,
 	totalAmount13,
 	totalAmount23,
-	totalAmount123;
+	totalAmount123,
+	testUSDC,
+	testDAI,
+	testUSDT,
+	curveSUSD;
 
 contract('Exotic Positional market', async (accounts) => {
 	const [
@@ -316,6 +325,7 @@ contract('Exotic Positional market', async (accounts) => {
 			const timestamp = await currentTime();
 			marketQuestion = 'Who will win the el clasico which will be played on 2022-02-22?';
 			marketSource = 'http://www.realmadrid.com';
+			additionalInfo = 'Barcelona is 6 points ahead so Real Madrid must win this one';
 			endOfPositioning = (timestamp + DAY).toString();
 			fixedTicketPrice = toUnit('10');
 			withdrawalAllowed = true;
@@ -335,7 +345,7 @@ contract('Exotic Positional market', async (accounts) => {
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				marketSource,
-				marketSource,
+				additionalInfo,
 				endOfPositioning,
 				fixedTicketPrice,
 				withdrawalAllowed,
@@ -356,6 +366,7 @@ contract('Exotic Positional market', async (accounts) => {
 			const timestamp = await currentTime();
 			marketQuestion = 'Who will win the el clasico which will be played on 2022-02-22?';
 			marketSource = 'http://www.realmadrid.com';
+			additionalInfo = 'Barcelona is 6 points ahead so Real Madrid must win this one';
 			endOfPositioning = (timestamp + DAY).toString();
 			fixedTicketPrice = '0';
 			let minFixedTicketPrice = toUnit('10');
@@ -377,7 +388,7 @@ contract('Exotic Positional market', async (accounts) => {
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				marketSource,
-				marketSource,
+				additionalInfo,
 				endOfPositioning,
 				fixedTicketPrice,
 				withdrawalAllowed,
@@ -400,6 +411,7 @@ contract('Exotic Positional market', async (accounts) => {
 			const timestamp = await currentTime();
 			marketQuestion = 'Who will win the el clasico which will be played on 2022-02-22?';
 			marketSource = 'http://www.realmadrid.com';
+			additionalInfo = 'Barcelona is 6 points ahead so Real Madrid must win this one';
 			endOfPositioning = (timestamp + DAY).toString();
 			fixedTicketPrice = toUnit('0');
 			let minFixedTicketPrice = toUnit('10');
@@ -415,9 +427,6 @@ contract('Exotic Positional market', async (accounts) => {
 			paymentToken = Thales.address;
 			phrases = ['Real Madrid', 'Draw', 'FC Barcelona'];
 			outcomePosition = '1';
-			let dummyText =
-				'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc, quis gravida magna mi a libero. Fusce vulputate eleifend sapien. Vestibulum purus quam, scelerisque ut, mollis sed, nonummy id, metus. Nullam accumsan lorem in dui. Cras ultricies mi eu turpis hendrerit fringilla. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; In ac dui quis mi consectetuer lacinia. Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet iaculis, ipsum. Sed aliquam ultrices mauris. Integer ante arcu, accumsan a, consectetuer eget, posuere ut, mauris. Praesent adipiscing. Phasellus ullamcorper ipsum rutrum nunc. Nunc nonummy metus. Vestibulum volutpat pretium libero. Cras id dui. Aenean ut eros et nisl sagittis vestibulum. Nullam nulla eros, ultricies sit amet, nonummy id, imperdiet feugiat, pede. Sed lectus. Donec mollis hendrerit risus. Phasellus nec sem in justo pellentesque facilisis. Etiam imperdiet imperdiet orci. Nunc nec neque. Phasellus leo dolor, tempus non, auctor et, hendrerit quis, nisi. Curabitur ligula sapien, tincidunt non, euismod vitae, posuere imperdiet, leo. Maecenas malesuada. Praesent congue erat at massa. Sed cursus turpis vitae tortor. Donec posuere vulputate arcu. Phasellus accumsan cursus velit. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Sed aliquam, nisi quis porttitor congue, elit erat euismod orci, ac placerat dolor lectus quis orci. Phasellus consectetuer vestibulum elit. Aenean tellus metus, bibendum sed, posuere ac, mattis non, nunc. Vestibulum fringilla pede sit amet augue. In turpis. Pellentesque posuere. Praesent turpis. Aenean posuere, tor';
-
 			answer = await Thales.increaseAllowance(
 				ThalesBonds.address,
 				fixedBondAmount.add(minFixedTicketPrice),
@@ -428,7 +437,7 @@ contract('Exotic Positional market', async (accounts) => {
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				marketSource,
-				dummyText,
+				additionalInfo,
 				endOfPositioning,
 				fixedTicketPrice,
 				withdrawalAllowed,
@@ -563,6 +572,9 @@ contract('Exotic Positional market', async (accounts) => {
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition],
 						[positionAmount1],
+						Thales.address,
+						0,
+						0,
 						{ from: userOne }
 					);
 				});
@@ -668,6 +680,9 @@ contract('Exotic Positional market', async (accounts) => {
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition, outcomePosition2],
 						[positionAmount1, positionAmount2],
+						Thales.address,
+						0,
+						0,
 						{ from: userOne }
 					);
 				});
@@ -773,11 +788,17 @@ contract('Exotic Positional market', async (accounts) => {
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition, outcomePosition2],
 						[positionAmount1, positionAmount2],
+						Thales.address,
+						0,
+						0,
 						{ from: userOne }
 					);
 					answer = await deployedOpenBidMarket.takeOpenBidPositions(
 						[outcomePosition2, outcomePosition3],
 						[positionAmount2, positionAmount3],
+						Thales.address,
+						0,
+						0,
 						{ from: userTwo }
 					);
 				});
@@ -907,6 +928,88 @@ contract('Exotic Positional market', async (accounts) => {
 				});
 			});
 		});
+		describe('user takes position with different collateral', async () => {
+			before('Set different collateral tokens and mint for user', async () => {
+				let TestUSDC = artifacts.require('TestUSDC');
+				testUSDC = await TestUSDC.new();
+				testUSDT = await TestUSDC.new();
+
+				let ERC20token = artifacts.require('Thales');
+				testDAI = await ERC20token.new();
+
+				let CurveSUSD = artifacts.require('MockCurveSUSD');
+
+				curveSUSD = await CurveSUSD.new(
+					Thales.address,
+					testUSDC.address,
+					testUSDT.address,
+					testDAI.address
+				);
+
+				console.log('minting');
+				await testUSDC.mint(userOne, positionAmount1);
+				await testUSDC.mint(curveSUSD.address, positionAmount1);
+				await testUSDC.approve(ThalesBonds.address, positionAmount1, { from: userOne });
+				console.log('done minting');
+			});
+			it('user takes positions with USDC when onramp disabled', async () => {
+				await ThalesBonds.setCurveSUSD(
+					curveSUSD.address,
+					testDAI.address,
+					testUSDC.address,
+					testUSDT.address,
+					false,
+					toUnit(0.02),
+					{ from: manager }
+				);
+
+				const collateralQuote = await ThalesBonds.getCurveQuoteForDifferentCollateral(
+					positionAmount1,
+					testUSDC.address,
+					true
+				);
+
+				await expect(
+					deployedOpenBidMarket.takeOpenBidPositions(
+						[outcomePosition],
+						[positionAmount1],
+						testUSDC.address,
+						collateralQuote,
+						additionalSlippage,
+						{ from: userOne }
+					)
+				).to.be.revertedWith('unsupported collateral');
+			});
+
+			it('user takes positions with USDC when onramp enabled', async () => {
+				await ThalesBonds.setCurveSUSD(
+					curveSUSD.address,
+					testDAI.address,
+					testUSDC.address,
+					testUSDT.address,
+					true,
+					toUnit(0.02),
+					{ from: manager }
+				);
+
+				const collateralQuote = await ThalesBonds.getCurveQuoteForDifferentCollateral(
+					positionAmount1,
+					testUSDC.address,
+					true
+				);
+
+				await testUSDC.approve(ThalesBonds.address, collateralQuote, { from: userOne });
+
+				answer = await deployedOpenBidMarket.takeOpenBidPositions(
+					[outcomePosition],
+					[positionAmount1],
+					testUSDC.address,
+					collateralQuote,
+					additionalSlippage,
+					{ from: userOne }
+				);
+			});
+		});
 	});
 
 	// /// FIXED TICKET MARKETS
@@ -916,6 +1019,7 @@ contract('Exotic Positional market', async (accounts) => {
 			const timestamp = await currentTime();
 			marketQuestion = 'Who will win the el clasico which will be played on 2022-02-22?';
 			marketSource = 'http://www.realmadrid.com';
+			additionalInfo = 'Barcelona is ahead 6 points so Real Madrid must win it';
 			endOfPositioning = (timestamp + DAY).toString();
 			fixedTicketPrice = toUnit('10');
 			withdrawalAllowed = true;
@@ -934,7 +1038,7 @@ contract('Exotic Positional market', async (accounts) => {
 			answer = await ExoticPositionalMarketManager.createExoticMarket(
 				marketQuestion,
 				marketSource,
-				marketSource,
+				additionalInfo,
 				endOfPositioning,
 				fixedTicketPrice,
 				withdrawalAllowed,
@@ -1065,7 +1169,9 @@ contract('Exotic Positional market', async (accounts) => {
 
 			describe('userOne takes position', async function () {
 				beforeEach(async () => {
-					answer = await deployedMarket.takeAPosition(outcomePosition, { from: userOne });
+					answer = await deployedMarket.takeAPosition(outcomePosition, Thales.address, 0, 0, {
+						from: userOne,
+					});
 				});
 				it('1 ticket holder', async function () {
 					answer = await deployedMarket.totalUsersTakenPositions();
@@ -1184,7 +1290,9 @@ contract('Exotic Positional market', async (accounts) => {
 
 			describe('userOne takes position', async function () {
 				beforeEach(async () => {
-					answer = await deployedMarket.takeAPosition(outcomePosition, { from: userOne });
+					answer = await deployedMarket.takeAPosition(outcomePosition, Thales.address, 0, 0, {
+						from: userOne,
+					});
 				});
 				it('1 ticket holder', async function () {
 					answer = await deployedMarket.totalUsersTakenPositions();
@@ -1569,17 +1677,29 @@ contract('Exotic Positional market', async (accounts) => {
 									assert.equal(answer, true);
 								});
 								it('3 ticket purchases with 3 different positions', async function () {
-									answer = await deployedMarket.takeAPosition('1', { from: userOne });
-									answer = await deployedMarket.takeAPosition('2', { from: userTwo });
-									answer = await deployedMarket.takeAPosition('3', { from: userThree });
+									answer = await deployedMarket.takeAPosition('1', Thales.address, 0, 0, {
+										from: userOne,
+									});
+									answer = await deployedMarket.takeAPosition('2', Thales.address, 0, 0, {
+										from: userTwo,
+									});
+									answer = await deployedMarket.takeAPosition('3', Thales.address, 0, 0, {
+										from: userThree,
+									});
 									answer = await deployedMarket.totalUsersTakenPositions();
 									assert.equal(answer.toString(), '4');
 								});
 								describe('ACCEPT_SLASH (Code 1)', function () {
 									beforeEach(async () => {
-										answer = await deployedMarket.takeAPosition('1', { from: userOne });
-										answer = await deployedMarket.takeAPosition('2', { from: userTwo });
-										answer = await deployedMarket.takeAPosition('3', { from: userThree });
+										answer = await deployedMarket.takeAPosition('1', Thales.address, 0, 0, {
+											from: userOne,
+										});
+										answer = await deployedMarket.takeAPosition('2', Thales.address, 0, 0, {
+											from: userTwo,
+										});
+										answer = await deployedMarket.takeAPosition('3', Thales.address, 0, 0, {
+											from: userThree,
+										});
 										answer = await ThalesOracleCouncil.voteForDispute(
 											deployedMarket.address,
 											disputeIndex,
@@ -1638,9 +1758,15 @@ contract('Exotic Positional market', async (accounts) => {
 									beforeEach(async () => {
 										creatorBalance = await Thales.balanceOf(owner);
 										disputorBalance = await Thales.balanceOf(userTwo);
-										answer = await deployedMarket.takeAPosition('1', { from: userOne });
-										answer = await deployedMarket.takeAPosition('2', { from: userTwo });
-										answer = await deployedMarket.takeAPosition('3', { from: userThree });
+										answer = await deployedMarket.takeAPosition('1', Thales.address, 0, 0, {
+											from: userOne,
+										});
+										answer = await deployedMarket.takeAPosition('2', Thales.address, 0, 0, {
+											from: userTwo,
+										});
+										answer = await deployedMarket.takeAPosition('3', Thales.address, 0, 0, {
+											from: userThree,
+										});
 
 										answer = await ThalesOracleCouncil.voteForDispute(
 											deployedMarket.address,
@@ -1710,9 +1836,15 @@ contract('Exotic Positional market', async (accounts) => {
 									beforeEach(async () => {
 										creatorBalance = await Thales.balanceOf(owner);
 										disputorBalance = await Thales.balanceOf(userTwo);
-										answer = await deployedMarket.takeAPosition('1', { from: userOne });
-										answer = await deployedMarket.takeAPosition('2', { from: userTwo });
-										answer = await deployedMarket.takeAPosition('3', { from: userThree });
+										answer = await deployedMarket.takeAPosition('1', Thales.address, 0, 0, {
+											from: userOne,
+										});
+										answer = await deployedMarket.takeAPosition('2', Thales.address, 0, 0, {
+											from: userTwo,
+										});
+										answer = await deployedMarket.takeAPosition('3', Thales.address, 0, 0, {
+											from: userThree,
+										});
 
 										answer = await ThalesOracleCouncil.voteForDispute(
 											deployedMarket.address,
@@ -1777,9 +1909,15 @@ contract('Exotic Positional market', async (accounts) => {
 								answer = await Thales.increaseAllowance(ThalesBonds.address, fixedBondAmount, {
 									from: owner,
 								});
-								answer = await deployedMarket.takeAPosition('1', { from: userOne });
-								answer = await deployedMarket.takeAPosition('2', { from: userTwo });
-								answer = await deployedMarket.takeAPosition('3', { from: userThree });
+								answer = await deployedMarket.takeAPosition('1', Thales.address, 0, 0, {
+									from: userOne,
+								});
+								answer = await deployedMarket.takeAPosition('2', Thales.address, 0, 0, {
+									from: userTwo,
+								});
+								answer = await deployedMarket.takeAPosition('3', Thales.address, 0, 0, {
+									from: userThree,
+								});
 								await fastForward(DAY + SECOND);
 								answer = await deployedMarket.canMarketBeResolved();
 								assert.equal(answer, true);

@@ -274,6 +274,11 @@
       "address": "0x0a6851C7D112A27019d84DCCb9cE0c0cd8b75325",
       "txHash": "0x2f32bf0cd7a2ec04f22bf138a2839038980e8a297a402e8a277663c759eaa56b",
       "kind": "transparent"
+    },
+    {
+      "address": "0x56d0A5098AD74F5e635797753644521173be89dB",
+      "txHash": "0x76b409812cc7081795d71e735259909deea2b5b86a673d5c916578656f41d244",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -33082,19 +33087,19 @@
           {
             "contract": "TherundownConsumer",
             "label": "gameCreated",
-            "type": "t_mapping(t_bytes32,t_struct(GameCreate)47214_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(GameCreate)952_storage)",
             "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:65"
           },
           {
             "contract": "TherundownConsumer",
             "label": "gameResolved",
-            "type": "t_mapping(t_bytes32,t_struct(GameResolve)47225_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(GameResolve)963_storage)",
             "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:66"
           },
           {
             "contract": "TherundownConsumer",
             "label": "gameOdds",
-            "type": "t_mapping(t_bytes32,t_struct(GameOdds)47234_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(GameOdds)972_storage)",
             "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:67"
           },
           {
@@ -33142,7 +33147,7 @@
           {
             "contract": "TherundownConsumer",
             "label": "sportsManager",
-            "type": "t_contract(ISportPositionalMarketManager)68585",
+            "type": "t_contract(ISportPositionalMarketManager)4523",
             "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:79"
           },
           {
@@ -33172,7 +33177,7 @@
           {
             "contract": "TherundownConsumer",
             "label": "queues",
-            "type": "t_contract(GamesQueue)47169",
+            "type": "t_contract(GamesQueue)907",
             "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:86"
           },
           {
@@ -33252,10 +33257,10 @@
           "t_bytes_storage": {
             "label": "bytes"
           },
-          "t_mapping(t_bytes32,t_struct(GameCreate)47214_storage)": {
+          "t_mapping(t_bytes32,t_struct(GameCreate)952_storage)": {
             "label": "mapping(bytes32 => struct TherundownConsumer.GameCreate)"
           },
-          "t_struct(GameCreate)47214_storage": {
+          "t_struct(GameCreate)952_storage": {
             "label": "struct TherundownConsumer.GameCreate",
             "members": [
               {
@@ -33297,10 +33302,10 @@
           "t_string_storage": {
             "label": "string"
           },
-          "t_mapping(t_bytes32,t_struct(GameResolve)47225_storage)": {
+          "t_mapping(t_bytes32,t_struct(GameResolve)963_storage)": {
             "label": "mapping(bytes32 => struct TherundownConsumer.GameResolve)"
           },
-          "t_struct(GameResolve)47225_storage": {
+          "t_struct(GameResolve)963_storage": {
             "label": "struct TherundownConsumer.GameResolve",
             "members": [
               {
@@ -33331,10 +33336,10 @@
           "t_uint40": {
             "label": "uint40"
           },
-          "t_mapping(t_bytes32,t_struct(GameOdds)47234_storage)": {
+          "t_mapping(t_bytes32,t_struct(GameOdds)972_storage)": {
             "label": "mapping(bytes32 => struct TherundownConsumer.GameOdds)"
           },
-          "t_struct(GameOdds)47234_storage": {
+          "t_struct(GameOdds)972_storage": {
             "label": "struct TherundownConsumer.GameOdds",
             "members": [
               {
@@ -33364,7 +33369,7 @@
           "t_mapping(t_uint256,t_bool)": {
             "label": "mapping(uint256 => bool)"
           },
-          "t_contract(ISportPositionalMarketManager)68585": {
+          "t_contract(ISportPositionalMarketManager)4523": {
             "label": "contract ISportPositionalMarketManager"
           },
           "t_mapping(t_bytes32,t_address)": {
@@ -33373,7 +33378,7 @@
           "t_mapping(t_address,t_bytes32)": {
             "label": "mapping(address => bytes32)"
           },
-          "t_contract(GamesQueue)47169": {
+          "t_contract(GamesQueue)907": {
             "label": "contract GamesQueue"
           },
           "t_mapping(t_uint256,t_array(t_bytes32)dyn_storage)": {
@@ -33560,6 +33565,1894 @@
           },
           "t_mapping(t_address,t_bool)": {
             "label": "mapping(address => bool)"
+          }
+        }
+      }
+    },
+    "f073b8c1bbedb7e33b512db18828346d1762de46064633c9cf62cbb455443d2a": {
+      "address": "0x50b35f6d6735B203FB72203880CB9EFFfC07bD4d",
+      "txHash": "0xa131addf20294bd2ec3a101287c19ee06bf6614a5dfde49e0fb4f8f54b53b565",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketManager",
+            "type": "t_contract(IExoticPositionalMarketManager)3705",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:26"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketBond",
+            "type": "t_mapping(t_address,t_struct(MarketBond)1353_storage)",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:37"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketFunds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:38"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "stakingThales",
+            "type": "t_contract(IStakingThales)3775",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:50"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "curveOnrampEnabled",
+            "type": "t_bool",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:52"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "curveSUSD",
+            "type": "t_contract(ICurveSUSD)3174",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:53"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "usdc",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:54"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "usdt",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:55"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "dai",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:56"
+          }
+        ],
+        "types": {
+          "t_contract(IExoticPositionalMarketManager)3705": {
+            "label": "contract IExoticPositionalMarketManager"
+          },
+          "t_mapping(t_address,t_struct(MarketBond)1353_storage)": {
+            "label": "mapping(address => struct ThalesBonds.MarketBond)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_struct(MarketBond)1353_storage": {
+            "label": "struct ThalesBonds.MarketBond",
+            "members": [
+              {
+                "label": "totalDepositedMarketBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "totalMarketBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "creatorBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "resolverBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorsTotalBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorsCount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorBond",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_contract(IStakingThales)3775": {
+            "label": "contract IStakingThales"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(ICurveSUSD)3174": {
+            "label": "contract ICurveSUSD"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "3ec74c6644a05ef29746dda472a1a594e1bac3a157e124831dc5604d72e983a6": {
+      "address": "0x8213C4052A5aC643E7E88b1633c1eAa332Dcdab3",
+      "txHash": "0x1bc00320cc46fee1c773238456312b041e016476ae74f09f3915f75006b02bdb",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketManager",
+            "type": "t_contract(IExoticPositionalMarketManager)64772",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:26"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketBond",
+            "type": "t_mapping(t_address,t_struct(MarketBond)29256_storage)",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:37"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketFunds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:38"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "stakingThales",
+            "type": "t_contract(IStakingThales)65690",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:50"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "curveOnrampEnabled",
+            "type": "t_bool",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:52"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "curveSUSD",
+            "type": "t_contract(ICurveSUSD)64148",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:53"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "usdc",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:54"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "usdt",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:55"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "dai",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:56"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "maxAllowedPegSlippagePercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ThalesBonds.sol:57"
+          }
+        ],
+        "types": {
+          "t_contract(IExoticPositionalMarketManager)64772": {
+            "label": "contract IExoticPositionalMarketManager"
+          },
+          "t_mapping(t_address,t_struct(MarketBond)29256_storage)": {
+            "label": "mapping(address => struct ThalesBonds.MarketBond)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_struct(MarketBond)29256_storage": {
+            "label": "struct ThalesBonds.MarketBond",
+            "members": [
+              {
+                "label": "totalDepositedMarketBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "totalMarketBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "creatorBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "resolverBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorsTotalBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorsCount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorBond",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_contract(IStakingThales)65690": {
+            "label": "contract IStakingThales"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(ICurveSUSD)64148": {
+            "label": "contract ICurveSUSD"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "4852e8b0326c3118ac7572a7802e610f84351ba37b0d4474d3872eb5e4e292a6": {
+      "address": "0xd4C0f91eFa1fF4cC32F86693f166125818D27277",
+      "txHash": "0x34447c2e1f06797536731b2a1aa65fd1386b87c6d83a4822c31d5a088f598437",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "_activeMarkets",
+            "type": "t_struct(AddressSet)10488_storage",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:32"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "fixedBondAmount",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:34"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "backstopTimeout",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:35"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "minimumPositioningDuration",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:36"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "claimTimeoutDefaultPeriod",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:37"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pDAOResolveTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:38"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:39"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creatorPercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:40"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "resolverPercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:41"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "withdrawalPercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:42"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maximumPositionsAllowed",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:43"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "disputePrice",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:44"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxOracleCouncilMembers",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:45"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pausersCount",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:46"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxNumberOfTags",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:47"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "backstopTimeoutGeneral",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:48"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxLowAmount",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:49"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "arbitraryRewardForDisputor",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:50"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "minFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:51"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "disputeStringLengthLimit",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:52"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketQuestionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:53"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketSourceStringLimit",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:54"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketPositionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:55"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "withdrawalTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:56"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creationRestrictedToOwner",
+            "type": "t_bool",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:57"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "openBidAllowed",
+            "type": "t_bool",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:58"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticMarketMastercopy",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:60"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "oracleCouncilAddress",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:61"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxAddress",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:62"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "thalesBonds",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:63"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "paymentToken",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:64"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "tagsAddress",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:65"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "theRundownConsumerAddress",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:66"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketDataAddress",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:67"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticMarketOpenBidMastercopy",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:68"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticRewards",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:69"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pauserAddress",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:71"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pauserIndex",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:72"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creatorAddress",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:74"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "resolverAddress",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:75"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "isChainLinkMarket",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:76"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "cancelledByCreator",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:77"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxAmountForOpenBidPosition",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:78"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxFinalWithdrawPercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:79"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:80"
+          }
+        ],
+        "types": {
+          "t_struct(AddressSet)10488_storage": {
+            "label": "struct AddressSetLib.AddressSet",
+            "members": [
+              {
+                "label": "elements",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "indices",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "3d4f9079b9d670297f7f13ff9724b221a079d375825d0c287db4197149e1b87d": {
+      "address": "0x0fA6b2516ce46013182f3F1F31aa7bfb04FD409B",
+      "txHash": "0xd9de65bf6345326671115c8d1aefa9747900a7987594fee530626ffc7c68289e",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "_activeMarkets",
+            "type": "t_struct(AddressSet)70582_storage",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:32"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "fixedBondAmount",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:34"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "backstopTimeout",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:35"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "minimumPositioningDuration",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:36"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "claimTimeoutDefaultPeriod",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:37"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pDAOResolveTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:38"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxPercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:39"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creatorPercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:40"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "resolverPercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:41"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "withdrawalPercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:42"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maximumPositionsAllowed",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:43"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "disputePrice",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:44"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxOracleCouncilMembers",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:45"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pausersCount",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:46"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxNumberOfTags",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:47"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "backstopTimeoutGeneral",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:48"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxLowAmount",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:49"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "arbitraryRewardForDisputor",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:50"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "minFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:51"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "disputeStringLengthLimit",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:52"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketQuestionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:53"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketSourceStringLimit",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:54"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketPositionStringLimit",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:55"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "withdrawalTimePeriod",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:56"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creationRestrictedToOwner",
+            "type": "t_bool",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:57"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "openBidAllowed",
+            "type": "t_bool",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:58"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticMarketMastercopy",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:60"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "oracleCouncilAddress",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:61"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "safeBoxAddress",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:62"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "thalesBonds",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:63"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "paymentToken",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:64"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "tagsAddress",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:65"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "theRundownConsumerAddress",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:66"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "marketDataAddress",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:67"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticMarketOpenBidMastercopy",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:68"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "exoticRewards",
+            "type": "t_address",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:69"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pauserAddress",
+            "type": "t_mapping(t_uint256,t_address)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:71"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "pauserIndex",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:72"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "creatorAddress",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:74"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "resolverAddress",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:75"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "isChainLinkMarket",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:76"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "cancelledByCreator",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:77"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxAmountForOpenBidPosition",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:78"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxFinalWithdrawPercentage",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:79"
+          },
+          {
+            "contract": "ExoticPositionalMarketManager",
+            "label": "maxFixedTicketPrice",
+            "type": "t_uint256",
+            "src": "contracts\\ExoticPositionalMarkets\\ExoticPositionalMarketManager.sol:80"
+          }
+        ],
+        "types": {
+          "t_struct(AddressSet)70582_storage": {
+            "label": "struct AddressSetLib.AddressSet",
+            "members": [
+              {
+                "label": "elements",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "indices",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "723dde855803140e3782a0a0cfc218996dc4f52e75760857204633673f458f77": {
+      "address": "0xC45Eb8d37917AB65D06806F35cC54e09dea135AC",
+      "txHash": "0xbf83658d21b785c300b9a425b821a80a489461f21903c2f290430b9a95704cbc",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketManager",
+            "type": "t_contract(IExoticPositionalMarketManager)64790",
+            "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:26"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketBond",
+            "type": "t_mapping(t_address,t_struct(MarketBond)29256_storage)",
+            "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:37"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "marketFunds",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:38"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "stakingThales",
+            "type": "t_contract(IStakingThales)65708",
+            "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:50"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "curveOnrampEnabled",
+            "type": "t_bool",
+            "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:52"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "curveSUSD",
+            "type": "t_contract(ICurveSUSD)64166",
+            "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:53"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "usdc",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:54"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "usdt",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:55"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "dai",
+            "type": "t_address",
+            "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:56"
+          },
+          {
+            "contract": "ThalesBonds",
+            "label": "maxAllowedPegSlippagePercentage",
+            "type": "t_uint256",
+            "src": "contracts/ExoticPositionalMarkets/ThalesBonds.sol:57"
+          }
+        ],
+        "types": {
+          "t_contract(IExoticPositionalMarketManager)64790": {
+            "label": "contract IExoticPositionalMarketManager"
+          },
+          "t_mapping(t_address,t_struct(MarketBond)29256_storage)": {
+            "label": "mapping(address => struct ThalesBonds.MarketBond)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_struct(MarketBond)29256_storage": {
+            "label": "struct ThalesBonds.MarketBond",
+            "members": [
+              {
+                "label": "totalDepositedMarketBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "totalMarketBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "creatorBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "resolverBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorsTotalBond",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorsCount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "disputorBond",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_contract(IStakingThales)65708": {
+            "label": "contract IStakingThales"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(ICurveSUSD)64166": {
+            "label": "contract ICurveSUSD"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "dc66b54a731ffa6dd67afa14201b5435162519c84481f17489f4cfff6036bd8b": {
+      "address": "0xEa71aACad9C7105859581AA7048126d6f98B391F",
+      "txHash": "0xcd40114e5209d6c97479c667954f42f98fcb48983d52c2f3692efb79a93cc98b",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "consumer",
+            "type": "t_contract(ITherundownConsumer)70328",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:24"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "invalidName",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:25"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "supportedMarketType",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:26"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "defaultOddsThreshold",
+            "type": "t_uint256",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:27"
+          },
+          {
+            "contract": "TherundownConsumerVerifier",
+            "label": "oddsThresholdForSport",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumerVerifier.sol:28"
+          }
+        ],
+        "types": {
+          "t_contract(ITherundownConsumer)70328": {
+            "label": "contract ITherundownConsumer"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_address": {
+            "label": "address"
+          }
+        }
+      }
+    },
+    "a2d41508c94da24a106fc5bada1481956ad032decc90a181a50a79b5ae2303eb": {
+      "address": "0x72376A5FC5758DD2b36C61960fd1936430A40A32",
+      "txHash": "0x3216ceaa7d886cfa369ad104157161e85c9027d5bf6cfa5b85d7ee2340b1cb73",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "wrapperAddress",
+            "type": "t_address",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:57"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "whitelistedAddresses",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:58"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "requestIdGamesCreated",
+            "type": "t_mapping(t_bytes32,t_array(t_bytes_storage)dyn_storage)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:61"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "requestIdGamesResolved",
+            "type": "t_mapping(t_bytes32,t_array(t_bytes_storage)dyn_storage)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:62"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "requestIdGamesOdds",
+            "type": "t_mapping(t_bytes32,t_array(t_bytes_storage)dyn_storage)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:63"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameCreated",
+            "type": "t_mapping(t_bytes32,t_struct(GameCreate)47631_storage)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:66"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameResolved",
+            "type": "t_mapping(t_bytes32,t_struct(GameResolve)47642_storage)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:67"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameOdds",
+            "type": "t_mapping(t_bytes32,t_struct(GameOdds)47651_storage)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:68"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "sportsIdPerGame",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:69"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameFulfilledCreated",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:70"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameFulfilledResolved",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:71"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "supportedSport",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:74"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "twoPositionSport",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:75"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "supportResolveGameStatuses",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:76"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "cancelGameStatuses",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:77"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "sportsManager",
+            "type": "t_contract(ISportPositionalMarketManager)69690",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:80"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "marketPerGameId",
+            "type": "t_mapping(t_bytes32,t_address)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:81"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameIdPerMarket",
+            "type": "t_mapping(t_address,t_bytes32)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:82"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "marketResolved",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:83"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "marketCanceled",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:84"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "queues",
+            "type": "t_contract(GamesQueue)47585",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:87"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "oddsLastPulledForGame",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:88"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gamesPerDate",
+            "type": "t_mapping(t_uint256,t_array(t_bytes32)dyn_storage)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:89"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "isSportOnADate",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_bool))",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:90"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "invalidOdds",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:91"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "marketCreated",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:92"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gamesPerDatePerSport",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_array(t_bytes32)dyn_storage))",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:93"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "isPausedByCanceledStatus",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:94"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "canMarketBeUpdated",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:95"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "gameOnADate",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:96"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "verifier",
+            "type": "t_contract(ITherundownConsumerVerifier)70413",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:98"
+          },
+          {
+            "contract": "TherundownConsumer",
+            "label": "backupOdds",
+            "type": "t_mapping(t_bytes32,t_struct(GameOdds)47651_storage)",
+            "src": "contracts/SportMarkets/Rundown/TherundownConsumer.sol:99"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_bytes32,t_array(t_bytes_storage)dyn_storage)": {
+            "label": "mapping(bytes32 => bytes[])"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_array(t_bytes_storage)dyn_storage": {
+            "label": "bytes[]"
+          },
+          "t_bytes_storage": {
+            "label": "bytes"
+          },
+          "t_mapping(t_bytes32,t_struct(GameCreate)47631_storage)": {
+            "label": "mapping(bytes32 => struct TherundownConsumer.GameCreate)"
+          },
+          "t_struct(GameCreate)47631_storage": {
+            "label": "struct TherundownConsumer.GameCreate",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "startTime",
+                "type": "t_uint256"
+              },
+              {
+                "label": "homeOdds",
+                "type": "t_int24"
+              },
+              {
+                "label": "awayOdds",
+                "type": "t_int24"
+              },
+              {
+                "label": "drawOdds",
+                "type": "t_int24"
+              },
+              {
+                "label": "homeTeam",
+                "type": "t_string_storage"
+              },
+              {
+                "label": "awayTeam",
+                "type": "t_string_storage"
+              }
+            ]
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_int24": {
+            "label": "int24"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_mapping(t_bytes32,t_struct(GameResolve)47642_storage)": {
+            "label": "mapping(bytes32 => struct TherundownConsumer.GameResolve)"
+          },
+          "t_struct(GameResolve)47642_storage": {
+            "label": "struct TherundownConsumer.GameResolve",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "homeScore",
+                "type": "t_uint8"
+              },
+              {
+                "label": "awayScore",
+                "type": "t_uint8"
+              },
+              {
+                "label": "statusId",
+                "type": "t_uint8"
+              },
+              {
+                "label": "lastUpdated",
+                "type": "t_uint40"
+              }
+            ]
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_uint40": {
+            "label": "uint40"
+          },
+          "t_mapping(t_bytes32,t_struct(GameOdds)47651_storage)": {
+            "label": "mapping(bytes32 => struct TherundownConsumer.GameOdds)"
+          },
+          "t_struct(GameOdds)47651_storage": {
+            "label": "struct TherundownConsumer.GameOdds",
+            "members": [
+              {
+                "label": "gameId",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "homeOdds",
+                "type": "t_int24"
+              },
+              {
+                "label": "awayOdds",
+                "type": "t_int24"
+              },
+              {
+                "label": "drawOdds",
+                "type": "t_int24"
+              }
+            ]
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_contract(ISportPositionalMarketManager)69690": {
+            "label": "contract ISportPositionalMarketManager"
+          },
+          "t_mapping(t_bytes32,t_address)": {
+            "label": "mapping(bytes32 => address)"
+          },
+          "t_mapping(t_address,t_bytes32)": {
+            "label": "mapping(address => bytes32)"
+          },
+          "t_contract(GamesQueue)47585": {
+            "label": "contract GamesQueue"
+          },
+          "t_mapping(t_uint256,t_array(t_bytes32)dyn_storage)": {
+            "label": "mapping(uint256 => bytes32[])"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(uint256 => mapping(uint256 => bool))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_array(t_bytes32)dyn_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => bytes32[]))"
+          },
+          "t_contract(ITherundownConsumerVerifier)70413": {
+            "label": "contract ITherundownConsumerVerifier"
           }
         }
       }

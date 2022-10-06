@@ -34,12 +34,17 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
+
 	const ExoticMarketManager = await ethers.getContractFactory('ExoticPositionalMarketManager');
 
 	const ExoticMarketManagerDeployed = await upgrades.deployProxy(ExoticMarketManager, [
 		owner.address,
 	]);
-	await ExoticMarketManagerDeployed.deployed;
+	await ExoticMarketManagerDeployed.deployed();
 
 	console.log('ExoticMarketManager Deployed on', ExoticMarketManagerDeployed.address);
 	setTargetAddress('ExoticMarketManager', network, ExoticMarketManagerDeployed.address);
@@ -71,13 +76,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

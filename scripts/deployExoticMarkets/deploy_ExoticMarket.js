@@ -30,6 +30,11 @@ async function main() {
 		network = 'optimisticEthereum';
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
+
 	const ExoticMarket = await ethers.getContractFactory('ExoticPositionalFixedMarket');
 	const ExoticMarketDeployed = await ExoticMarket.deploy();
 	await ExoticMarketDeployed.deployed();
@@ -61,13 +66,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

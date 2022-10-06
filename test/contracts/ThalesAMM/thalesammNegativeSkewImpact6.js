@@ -265,14 +265,6 @@ contract('ThalesAMM', (accounts) => {
 
 			console.log('Skew impact max up: ' + buyPriceImpactPostBuyDOWNNewMax / 1e16);
 
-			const buyPriceImpactTesting = await thalesAMM.buyPriceImpactTesting(
-				newMarket.address,
-				Position.UP,
-				toUnit(availableToBuyFromAMMUpNew / 1e18 - 1)
-			);
-
-			console.log('Skew impact testing: ' + buyPriceImpactTesting / 1e16);
-
 			const buyQuoteUpNewMax = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
 				Position.UP,

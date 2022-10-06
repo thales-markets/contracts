@@ -695,6 +695,11 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
                 int amountInt = int(balancePosition + amountToBeMinted);
 
                 priceImpact = (discountBalance + discountMinted) / amountInt;
+
+                if (priceImpact > 0) {
+                    int numerator = int(pricePosition) * priceImpact;
+                    priceImpact = numerator / int(priceOtherPosition);
+                }
             } else {
                 priceImpact = int(
                     _buyPriceImpactImbalancedSkew(

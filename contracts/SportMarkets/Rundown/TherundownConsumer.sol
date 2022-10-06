@@ -191,6 +191,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                                 gameForProcessing.startTime
                             );
                             gameCreated[gameForProcessing.gameId] = gameForProcessing;
+                            queues.updateGameStartDate(gameForProcessing.gameId, gameForProcessing.startTime);
                         }
                     } else {
                         // double-check if market existst

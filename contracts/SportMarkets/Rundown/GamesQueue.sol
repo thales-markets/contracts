@@ -110,6 +110,16 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
         emit GameProcessed(dataProccessed, index);
     }
 
+    /// @notice update a game start date
+    /// @param _gameId gameId which start date is updated
+    /// @param _date date
+    function updateGameStartDate(bytes32 _gameId, uint _date) public canExecuteFunction {
+        require(_date > block.timestamp, "Date must be in future");
+        require(gameStartPerGameId[_gameId] != 0, "Game not existing");
+        gameStartPerGameId[_gameId] = _date;
+        emit NewStartDateOnGame(_gameId, _date);
+    }
+
     /// @notice public function which will return length of unprocessed array
     /// @return index index in array
     function getLengthUnproccessedGames() public view returns (uint) {
@@ -145,4 +155,5 @@ contract GamesQueue is Initializable, ProxyOwned, ProxyPausable {
     event GameProcessed(bytes32 _gameId, uint _index);
     event NewConsumerAddress(address _consumer);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
+    event NewStartDateOnGame(bytes32 _gameId, uint _date);
 }

@@ -2574,6 +2574,8 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal('Atlanta Hawks', game.homeTeam);
 			assert.equal('Charlotte Hornets', game.awayTeam);
 
+			assert.bnEqual(gameTime, await gamesQueue.gameStartPerGameId(gameid1));
+
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'GameCreated', {
 				_requestId: reqIdCreate,
@@ -2625,9 +2627,14 @@ contract('TheRundownConsumer', (accounts) => {
 			// market not paused
 			assert.equal(false, await deployedMarket.paused());
 
+			assert.bnNotEqual(gameTime, await gamesQueue.gameStartPerGameId(gameid1));
+
 			maturity = await deployedMarket.times();
 			var maturityAfter = maturity[0];
 			var expiryAfter = maturity[1];
+
+			assert.bnNotEqual(maturityBefore, await gamesQueue.gameStartPerGameId(gameid1));
+			assert.bnEqual(maturityAfter, await gamesQueue.gameStartPerGameId(gameid1));
 
 			// updated values
 			console.log('Maturity before' + parseInt(maturityBefore));

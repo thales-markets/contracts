@@ -24,6 +24,7 @@ contract('ApexConsumerWrapper', (accounts) => {
 	let requestMetadataJobId;
 	let requestMatchupJobId;
 	let requestResultsJobId;
+	let supportedBetTypes;
 
 	beforeEach(async () => {
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
@@ -43,6 +44,7 @@ contract('ApexConsumerWrapper', (accounts) => {
 		requestMetadataJobId = '29d9ac9ad5244c0fbbbf02089c308be5';
 		requestMatchupJobId = '3712fada98f54c159d9ab653fd0547f4';
 		requestResultsJobId = '481d9a5f62744b75ae096ce2c27fceef';
+		supportedBetTypes = ['outright_head_to_head', 'top3', 'top5', 'top10'];
 
 		await consumer.initialize(owner, ['formula1'], MockPriceFeedDeployed.address, { from: owner });
 
@@ -57,6 +59,7 @@ contract('ApexConsumerWrapper', (accounts) => {
 			requestMetadataJobId,
 			requestMatchupJobId,
 			requestResultsJobId,
+			supportedBetTypes,
 			{ from: owner }
 		);
 
@@ -73,6 +76,8 @@ contract('ApexConsumerWrapper', (accounts) => {
 			assert.bnEqual(requestMetadataJobId, await wrapper.requestMetadataJobId());
 			assert.bnEqual(requestMatchupJobId, await wrapper.requestMatchupJobId());
 			assert.bnEqual(requestResultsJobId, await wrapper.requestResultsJobId());
+			assert.equal(true, await wrapper.supportedBetType('top3'));
+			assert.equal(false, await wrapper.supportedBetType('top7'));
 		});
 
 		it('Contract management', async () => {
@@ -157,6 +162,39 @@ contract('ApexConsumerWrapper', (accounts) => {
 			assert.eventEqual(tx_link.logs[0], 'NewLinkAddress', {
 				_link: first,
 			});
+
+			const tx_BetTypes1 = await wrapper.setSupportedBetType('top7', true, {
+				from: owner,
+			});
+			assert.equal(true, await wrapper.supportedBetType('top7'));
+
+			// check if event is emited
+			assert.eventEqual(tx_BetTypes1.logs[0], 'BetTypesChanged', {
+				_betType: 'top7',
+				_isSupported: true,
+			});
+
+			await expect(wrapper.setSupportedBetType('top7', true, { from: owner })).to.be.revertedWith(
+				'Already set'
+			);
+
+			await expect(wrapper.setSupportedBetType('top7', true, { from: first })).to.be.revertedWith(
+				'Ownable: caller is not the owner'
+			);
+
+			await expect(wrapper.setSupportedBetType('top3', true, { from: owner })).to.be.revertedWith(
+				'Already set'
+			);
+			const tx_BetTypes2 = await wrapper.setSupportedBetType('top3', false, {
+				from: owner,
+			});
+			assert.equal(false, await wrapper.supportedBetType('top3'));
+
+			// check if event is emited
+			assert.eventEqual(tx_BetTypes2.logs[0], 'BetTypesChanged', {
+				_betType: 'top3',
+				_isSupported: false,
+			});
 		});
 
 		it('Test requests', async () => {
@@ -173,19 +211,25 @@ contract('ApexConsumerWrapper', (accounts) => {
 			).to.be.revertedWith('SafeMath: subtraction overflow');
 
 			await expect(
-				wrapper.requestMatchup('f1r_16_22', '10', 'pre1', {
+				wrapper.requestMatchup('f1r_16_22', 'top3', '10', 'pre1', {
 					from: second,
 				})
 			).to.be.revertedWith('Qualifying status is not supported');
 
 			await expect(
-				wrapper.requestMatchup('f1r_16_22', '10', 'pre', {
+				wrapper.requestMatchup('f1r_16_22', 'top7', '10', 'pre', {
+					from: second,
+				})
+			).to.be.revertedWith('Bet type is not supported');
+
+			await expect(
+				wrapper.requestMatchup('f1r_16_22', 'top3', '10', 'pre', {
 					from: second,
 				})
 			).to.be.revertedWith('SafeMath: subtraction overflow');
 
 			await expect(
-				wrapper.requestResults('f1r_16_22', '10', {
+				wrapper.requestResults('f1r_16_22', 'top3', '10', {
 					from: second,
 				})
 			).to.be.revertedWith('SafeMath: subtraction overflow');

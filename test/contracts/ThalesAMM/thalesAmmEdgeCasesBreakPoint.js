@@ -165,7 +165,7 @@ contract('ThalesAMM', (accounts) => {
 			from: owner,
 		});
 		let ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
-		let thalesAMMUtils = await ThalesAMMUtils.new();
+		thalesAMMUtils = await ThalesAMMUtils.new();
 		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
 			from: owner,
 		});

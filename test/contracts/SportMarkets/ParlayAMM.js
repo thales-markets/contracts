@@ -149,6 +149,7 @@ contract('ParlayAMM', (accounts) => {
 	let oddsResult_2;
 	let oddsResultArray_2;
 	let reqIdOdds_2;
+	let verifier;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -396,6 +397,20 @@ contract('ParlayAMM', (accounts) => {
 			{ from: owner }
 		);
 
+		let ConsumerVerifier = artifacts.require('TherundownConsumerVerifier');
+		verifier = await ConsumerVerifier.new({ from: owner });
+
+		await verifier.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			['TDB TDB', 'TBA TBA'],
+			['create', 'resolve'],
+			20,
+			{
+				from: owner,
+			}
+		);
+
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
 		// 	TherundownConsumerDeployed.address
@@ -404,6 +419,7 @@ contract('ParlayAMM', (accounts) => {
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
+			verifier.address,
 			{
 				from: owner,
 			}

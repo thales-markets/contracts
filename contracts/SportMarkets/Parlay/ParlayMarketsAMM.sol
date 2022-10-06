@@ -560,11 +560,20 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint buyAMMQuote;
 
         for (uint i = 0; i < numOfMarkets; i++) {
-            buyAMMQuote = sportsAmm.buyFromAmmQuoteForParlayAMM(
-                _sportMarkets[i],
-                _obtainSportsAMMPosition(_positions[i]),
-                _proportionalAmounts[i]
-            );
+            if (reducedFeesEnabled) {
+                buyAMMQuote = sportsAmm.buyFromAmmQuoteForParlayAMM(
+                    _sportMarkets[i],
+                    _obtainSportsAMMPosition(_positions[i]),
+                    _proportionalAmounts[i]
+                );
+            }
+            else {
+                buyAMMQuote = sportsAmm.buyFromAmmQuote(
+                    _sportMarkets[i],
+                    _obtainSportsAMMPosition(_positions[i]),
+                    _proportionalAmounts[i]
+                );
+            }
 
             sportsAmm.buyFromAMM(
                 _sportMarkets[i],

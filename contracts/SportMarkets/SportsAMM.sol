@@ -103,20 +103,20 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return Curve usage is enabled?
     bool public curveOnrampEnabled;
 
-    /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
-    uint public maxAllowedPegSlippagePercentage;
-
     /// @return Referrals contract address
     address public referrals;
 
     /// @return Default referrer fee
     uint public referrerFee;
 
+    /// @return The address of Parlay AMM
+    address public parlayAMM;
+
     /// @return The address of Apex Consumer
     address public apexConsumer;
 
-    /// @return The address of Parlay AMM
-    address public parlayAMM;
+    /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
+    uint public maxAllowedPegSlippagePercentage;
 
     /// @return the cap per sportID. based on the tagID
     mapping(uint => uint) public capPerSport;
@@ -741,6 +741,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
+    /// @notice Setting the Cap per Sport ID
+    /// @param _sportID The tagID used for each market
+    /// @param _capPerSport The cap amount used for the sportID
     function setCapPerSport(uint _sportID, uint _capPerSport) external onlyOwner {
         capPerSport[_sportID] = _capPerSport;
     }

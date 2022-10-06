@@ -566,8 +566,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                     _obtainSportsAMMPosition(_positions[i]),
                     _proportionalAmounts[i]
                 );
-            }
-            else {
+            } else {
                 buyAMMQuote = sportsAmm.buyFromAmmQuote(
                     _sportMarkets[i],
                     _obtainSportsAMMPosition(_positions[i]),

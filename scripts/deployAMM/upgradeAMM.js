@@ -43,6 +43,11 @@ async function main() {
 		network = 'arbitrumOne';
 	}
 
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
+
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
@@ -54,6 +59,8 @@ async function main() {
 	// await upgrades.upgradeProxy(thalesAmmAddress, ThalesAMM);
 	console.log('ThalesAMM upgraded');
 	await delay(10000);
+
+	// const ThalesAMMImplementation = await getImplementationAddress(ethers.provider, thalesAmmAddress);
 
 	console.log('Implementation ThalesAMM: ', ThalesAMMImplementation);
 

@@ -184,6 +184,12 @@ contract('Vault', (accounts) => {
 			from: owner,
 		});
 
+		let ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
+		let thalesAMMUtils = await ThalesAMMUtils.new();
+		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
+			from: owner,
+		});
+
 		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);

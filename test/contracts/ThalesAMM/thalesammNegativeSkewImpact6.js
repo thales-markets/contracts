@@ -3,14 +3,14 @@
 const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
-const { toUnit, currentTime } = require('../../utils')();
+const { assert } = require('../../utils/common');
+const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupAllContracts } = require('../../utils/setup');
-const { assert } = require('../../utils/common');
 
 const { convertToDecimals } = require('../../utils/helpers');
 
-let PositionalMarketFactory, factory, PositionalMarketManager, manager, addressResolver;
+let factory, manager, addressResolver;
 let PositionalMarket, priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
 let market, up, down, position, Synth;
 
@@ -22,13 +22,14 @@ const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
 contract('ThalesAMM', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator, safeBox] = accounts;
-	const [first, owner, second, third, fourth] = accounts;
+	const [creator, owner] = accounts;
 	let creatorSigner, ownerSigner;
 
-	const sUSDQty = toUnit(100000);
-	const sUSDQtyAmm = toUnit(1000);
+	const sUSDQty = toUnit(1000000);
+	const sUSDQtyAmm = toUnit(100000);
 
 	const hour = 60 * 60;
+	const day = 24 * 60 * 60;
 
 	const sAUDKey = toBytes32('sAUD');
 	const sUSDKey = toBytes32('sUSD');
@@ -89,6 +90,9 @@ contract('ThalesAMM', (accounts) => {
 			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
 		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
 
+		await manager.connect(creatorSigner).setTimeframeBuffer(0);
+		await manager.connect(creatorSigner).setPriceBuffer(toUnit(0.01).toString());
+
 		aggregator_sAUD = await MockAggregator.new({ from: managerOwner });
 		aggregator_sETH = await MockAggregator.new({ from: managerOwner });
 		aggregator_sUSD = await MockAggregator.new({ from: managerOwner });
@@ -99,7 +103,7 @@ contract('ThalesAMM', (accounts) => {
 		const timestamp = await currentTime();
 
 		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
-		await aggregator_sETH.setLatestAnswer(convertToDecimals(3950, 8), timestamp);
+		await aggregator_sETH.setLatestAnswer(convertToDecimals(2290, 8), timestamp);
 		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
 
 		await priceFeed.connect(ownerSigner).addAggregator(sAUDKey, aggregator_sAUD.address);
@@ -124,7 +128,7 @@ contract('ThalesAMM', (accounts) => {
 	let deciMath;
 	let rewardTokenAddress;
 	let ThalesAMM;
-	let thalesAMM, thalesAMMUtils;
+	let thalesAMM;
 	let MockPriceFeedDeployed;
 
 	beforeEach(async () => {
@@ -133,10 +137,11 @@ contract('ThalesAMM', (accounts) => {
 
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
 		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
-		await MockPriceFeedDeployed.setPricetoReturn(10000);
+		await MockPriceFeedDeployed.setPricetoReturn(2290);
 
 		let DeciMath = artifacts.require('DeciMath');
 		deciMath = await DeciMath.new();
+
 		await deciMath.setLUT1();
 		await deciMath.setLUT2();
 		await deciMath.setLUT3_1();
@@ -153,24 +158,25 @@ contract('ThalesAMM', (accounts) => {
 			owner,
 			priceFeedAddress,
 			sUSDSynth.address,
-			toUnit(1000),
+			toUnit(10000),
 			deciMath.address,
-			toUnit(0.01),
-			toUnit(0.05),
+			toUnit(0.02),
+			toUnit(0.2),
 			hour * 2
 		);
 		await thalesAMM.setPositionalMarketManager(manager.address, { from: owner });
-		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
-		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
-		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
+		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(138), { from: owner });
+		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.03), { from: owner });
+		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(100), {
 			from: owner,
 		});
 		let ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
-		thalesAMMUtils = await ThalesAMMUtils.new();
+		let thalesAMMUtils = await ThalesAMMUtils.new();
 		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
 			from: owner,
 		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+
 		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 	});
 
@@ -179,39 +185,24 @@ contract('ThalesAMM', (accounts) => {
 		DOWN: toBN(1),
 	};
 
-	describe('Test AMM', () => {
-		it('Strike more than current price ', async () => {
+	describe('AMM Negative Skew Impact', () => {
+		it('buying test ', async () => {
 			let now = await currentTime();
 			let newMarket = await createMarket(
 				manager,
 				sETHKey,
-				toUnit(4000),
-				now + hour * 8,
+				toUnit(2800),
+				now + day * 6,
 				toUnit(10),
 				creatorSigner
 			);
 
-			let calculatedOdds = calculateOdds(3950, 4000, 0.25, 120);
-			console.log('calculatedOdds is:' + calculatedOdds);
-			let calculatedOddsContract = await thalesAMMUtils.calculateOdds(
-				toUnit(3950),
-				toUnit(4000),
-				toUnit(0.25),
-				toUnit(120)
-			);
-			console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
-			let ratio = calculatedOdds / (calculatedOddsContract / 1e18);
-			console.log('ratio is:' + ratio);
-			assert.equal(ratio > 0.99 && ratio < 1.01, true);
-
 			let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			console.log('priceUp:' + priceUp / 1e18);
 			let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
+			console.log('priceDown:' + priceDown / 1e18);
 
 			let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-				newMarket.address,
-				Position.UP
-			);
-			let availableToSellToAMM = await thalesAMM.availableToSellToAMM(
 				newMarket.address,
 				Position.UP
 			);
@@ -220,91 +211,67 @@ contract('ThalesAMM', (accounts) => {
 				newMarket.address,
 				Position.DOWN
 			);
+			console.log('available UP:' + availableToBuyFromAMM / 1e18);
+			console.log('available DOWN:' + availableToBuyFromAMMDown / 1e18);
 
-			let availableToSellToAMMDown = await thalesAMM.availableToSellToAMM(
+			let options = await newMarket.options();
+			up = await position.at(options.up);
+			down = await position.at(options.down);
+
+			let ammUpBalance = await up.balanceOf(thalesAMM.address);
+			console.log('amm Up Balance is:' + ammUpBalance / 1e18);
+
+			let ammDownBalance = await down.balanceOf(thalesAMM.address);
+			console.log('amm Down Balance is:' + ammDownBalance / 1e18);
+
+			let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
 				newMarket.address,
-				Position.DOWN
+				Position.DOWN,
+				toUnit(10)
 			);
+			console.log('buy Quote for 10 down: ' + buyFromAmmQuote / 1e18);
+			let additionalSlippage = toUnit(0.01);
+			await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: minter });
+			await thalesAMM.buyFromAMM(
+				newMarket.address,
+				Position.DOWN,
+				toUnit(10),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: minter }
+			);
+
+			priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+			console.log('priceUp now:' + priceUp / 1e18);
+
+			let buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.UP,
+				toUnit(1)
+			);
+			console.log('skew impact on UP for 1: ' + buyPriceImpactPostBuy / 1e16);
+
+			let availableToBuyFromAMMUpNew = await thalesAMM.availableToBuyFromAMM(
+				newMarket.address,
+				Position.UP
+			);
+			console.log('Available up:' + availableToBuyFromAMMUpNew / 1e18);
+
+			const buyPriceImpactPostBuyDOWNNewMax = await thalesAMM.buyPriceImpact(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMMUpNew / 1e18 - 1)
+			);
+
+			console.log('Skew impact max up: ' + buyPriceImpactPostBuyDOWNNewMax / 1e16);
+
+			const buyQuoteUpNewMax = await thalesAMM.buyFromAmmQuote(
+				newMarket.address,
+				Position.UP,
+				toUnit(availableToBuyFromAMMUpNew / 1e18 - 1)
+			);
+
+			console.log('Quote max up: ' + buyQuoteUpNewMax / 1e18);
 		});
 	});
-
-	it('Strike less than current price ', async () => {
-		let now = await currentTime();
-		let newMarket = await createMarket(
-			manager,
-			sETHKey,
-			toUnit(3900),
-			now + hour * 8,
-			toUnit(10),
-			creatorSigner
-		);
-
-		let calculatedOdds = calculateOdds(3950, 3900, 0.25, 120);
-		console.log('calculatedOdds is:' + calculatedOdds);
-		let calculatedOddsContract = await thalesAMMUtils.calculateOdds(
-			toUnit(3950),
-			toUnit(3900),
-			toUnit(0.25),
-			toUnit(120)
-		);
-		console.log('calculatedOddsContract is:' + calculatedOddsContract / 1e18);
-
-		let ratio = calculatedOdds / (calculatedOddsContract / 1e18);
-		console.log('ratio is:' + ratio);
-		assert.equal(ratio > 0.99 && ratio < 1.01, true);
-
-		let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
-		let priceDown = await thalesAMM.price(newMarket.address, Position.DOWN);
-		let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
-			newMarket.address,
-			Position.UP
-		);
-
-		let availableToSellToAMM = await thalesAMM.availableToSellToAMM(newMarket.address, Position.UP);
-
-		let availableToBuyFromAMMDown = await thalesAMM.availableToBuyFromAMM(
-			newMarket.address,
-			Position.DOWN
-		);
-
-		let availableToSellToAMMDown = await thalesAMM.availableToSellToAMM(
-			newMarket.address,
-			Position.DOWN
-		);
-	});
 });
-
-function calculateOdds(price, strike, days, volatility) {
-	let p = price;
-	let q = strike;
-	let t = days / 365;
-	let v = volatility / 100;
-
-	let tt = Math.sqrt(t);
-	let vt = v * tt;
-	let lnpq = Math.log(q / p);
-	let d1 = lnpq / vt;
-	let y9 = 1 + 0.2316419 * Math.abs(d1);
-
-	let y = Math.floor((1 / y9) * 100000) / 100000;
-	let z1 = Math.exp(-((d1 * d1) / 2));
-	let d2 = -((d1 * d1) / 2);
-	let d3 = Math.exp(d2);
-	let z = Math.floor(0.3989423 * d3 * 100000) / 100000;
-
-	let y5 = 1.330274 * Math.pow(y, 5);
-	let y4 = 1.821256 * Math.pow(y, 4);
-	let y3 = 1.781478 * Math.pow(y, 3);
-	let y2 = 0.356538 * Math.pow(y, 2);
-	let y1 = 0.3193815 * y;
-	let x1 = y5 + y3 + y1 - y4 - y2;
-	let x = 1 - z * (y5 - y4 + y3 - y2 + y1);
-
-	let x2 = z * x1;
-	x = Math.floor(x * 100000) / 100000;
-
-	if (d1 < 0) {
-		x = 1 - x;
-	}
-	return Math.floor((1 - x) * 1000) / 10;
-}

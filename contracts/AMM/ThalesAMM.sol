@@ -4,6 +4,8 @@ pragma solidity ^0.5.16;
 
 import "openzeppelin-solidity-2.3.0/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity-2.3.0/contracts/drafts/SignedSafeMath.sol";
+import "../utils/libraries/SafeCast.sol";
 import "openzeppelin-solidity-2.3.0/contracts/math/Math.sol";
 import "@openzeppelin/upgrades-core/contracts/Initializable.sol";
 
@@ -18,13 +20,31 @@ import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ICurveSUSD.sol";
+import "../interfaces/IThalesAMMUtils.sol";
 import "./DeciMath.sol";
 
 /// @title An AMM using BlackScholes odds algorithm to provide liqudidity for traders of UP or DOWN positions
-/// @author Danijel
 contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializable {
     using SafeMath for uint;
+    using SignedSafeMath for int;
+    using SafeCast for *;
     using SafeERC20 for IERC20;
+
+    struct PriceImpactParams {
+        uint amount;
+        uint balanceOtherSide;
+        uint balancePosition;
+        uint balanceOtherSideAfter;
+        uint balancePositionAfter;
+        uint availableToBuyFromAMM;
+    }
+
+    struct DiscountParams {
+        uint balancePosition;
+        uint balanceOtherSide;
+        uint amount;
+        uint availableToBuyFromAMM;
+    }
 
     DeciMath public deciMath;
 
@@ -78,6 +98,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     bool public curveOnrampEnabled;
 
     uint public maxAllowedPegSlippagePercentage;
+
+    IThalesAMMUtils ammUtils;
+
+    int private constant ONE_INT = 1e18;
+    int private constant ONE_PERCENT_INT = 1e16;
 
     function initialize(
         address _owner,
@@ -160,10 +185,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address market,
         Position position,
         uint amount
-    ) public view returns (uint _available) {
+    ) public view returns (int _available) {
+        Position positionOtherSide = position == Position.Up ? Position.Down : Position.Up;
         uint _availableToBuyFromAMM = availableToBuyFromAMM(market, position);
+        uint _availableToBuyFromAMMOtherSide = availableToBuyFromAMM(market, positionOtherSide);
         if (amount > 0 && amount <= _availableToBuyFromAMM) {
-            _available = _buyPriceImpact(market, position, amount, _availableToBuyFromAMM);
+            _available = _buyPriceImpact(market, position, amount, _availableToBuyFromAMM, _availableToBuyFromAMMOtherSide);
         }
     }
 
@@ -226,85 +253,16 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             (bytes32 key, uint strikePrice, ) = marketContract.getOracleDetails();
 
             if (position == Position.Up) {
-                priceToReturn = calculateOdds(
-                    oraclePrice,
-                    strikePrice,
-                    timeLeftToMaturityInDays,
-                    impliedVolatilityPerAsset[key]
-                ).div(1e2);
+                priceToReturn = ammUtils
+                    .calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
+                    .div(1e2);
             } else {
                 priceToReturn = ONE.sub(
-                    calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key]).div(
-                        1e2
-                    )
+                    ammUtils
+                        .calculateOdds(oraclePrice, strikePrice, timeLeftToMaturityInDays, impliedVolatilityPerAsset[key])
+                        .div(1e2)
                 );
             }
-        }
-    }
-
-    /// @notice get the algorithmic odds of market being in the money, taken from JS code https://gist.github.com/aasmith/524788/208694a9c74bb7dfcb3295d7b5fa1ecd1d662311
-    /// @param _price current price of the asset
-    /// @param strike price of the asset
-    /// @param timeLeftInDays when does the market mature
-    /// @param volatility implied yearly volatility of the asset
-    /// @return odds of market being in the money
-    function calculateOdds(
-        uint _price,
-        uint strike,
-        uint timeLeftInDays,
-        uint volatility
-    ) public view returns (uint) {
-        uint vt = volatility.div(100).mul(sqrt(timeLeftInDays.div(365))).div(1e9);
-        bool direction = strike >= _price;
-        uint lnBase = strike >= _price ? strike.mul(ONE).div(_price) : _price.mul(ONE).div(strike);
-        uint d1 = deciMath.ln(lnBase, 99).mul(ONE).div(vt);
-        uint y = ONE.mul(ONE).div(ONE.add(d1.mul(2316419).div(1e7)));
-        uint d2 = d1.mul(d1).div(2).div(ONE);
-        uint z = _expneg(d2).mul(3989423).div(1e7);
-
-        uint y5 = powerInt(y, 5).mul(1330274).div(1e6);
-        uint y4 = powerInt(y, 4).mul(1821256).div(1e6);
-        uint y3 = powerInt(y, 3).mul(1781478).div(1e6);
-        uint y2 = powerInt(y, 2).mul(356538).div(1e6);
-        uint y1 = y.mul(3193815).div(1e7);
-        uint x1 = y5.add(y3).add(y1).sub(y4).sub(y2);
-        uint x = ONE.sub(z.mul(x1).div(ONE));
-        uint result = ONE.mul(1e2).sub(x.mul(1e2));
-        if (direction) {
-            return result;
-        } else {
-            return ONE.mul(1e2).sub(result);
-        }
-    }
-
-    function calculateOddsGas(
-        uint _price,
-        uint strike,
-        uint timeLeftInDays,
-        uint volatility
-    ) public returns (uint) {
-        uint vt = volatility.div(100).mul(sqrt(timeLeftInDays.div(365))).div(1e9);
-        bool direction = strike >= _price;
-        uint lnBase = strike >= _price ? strike.mul(ONE).div(_price) : _price.mul(ONE).div(strike);
-        //        uint d1 = ONE;
-        uint d1 = deciMath.ln(lnBase, 99).mul(ONE).div(vt);
-        uint y = ONE.mul(ONE).div(ONE.add(d1.mul(2316419).div(1e7)));
-        uint d2 = d1.mul(d1).div(2).div(ONE);
-        //        uint z = ONE;
-        uint z = _expneg(d2).mul(3989423).div(1e7);
-
-        uint y5 = powerInt(y, 5).mul(1330274).div(1e6);
-        uint y4 = powerInt(y, 4).mul(1821256).div(1e6);
-        uint y3 = powerInt(y, 3).mul(1781478).div(1e6);
-        uint y2 = powerInt(y, 2).mul(356538).div(1e6);
-        uint y1 = y.mul(3193815).div(1e7);
-        uint x1 = y5.add(y3).add(y1).sub(y4).sub(y2);
-        uint x = ONE.sub(z.mul(x1).div(ONE));
-        uint result = ONE.mul(1e2).sub(x.mul(1e2));
-        if (direction) {
-            return result;
-        } else {
-            return ONE.mul(1e2).sub(result);
         }
     }
 
@@ -503,7 +461,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         Position position,
         uint basePrice
     ) internal view returns (uint _available) {
-        uint sell_max_price = _getSellMaxPrice(market, position, basePrice);
+        uint sell_max_price = _getSellMaxPrice(basePrice);
         if (sell_max_price > 0) {
             (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
             uint balanceOfTheOtherSide = position == Position.Up
@@ -544,25 +502,27 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address market,
         Position position,
         uint basePrice
-    ) internal view returns (uint) {
-        if (basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice) {
-            return 0;
+    ) internal view returns (uint availableAmount) {
+        if (basePrice > minSupportedPrice && basePrice < maxSupportedPrice) {
+            basePrice = basePrice.add(min_spread);
+            uint discountedPrice = basePrice.mul(ONE.sub(max_spread.div(4))).div(ONE);
+            uint balance = _balanceOfPositionOnMarket(market, position);
+            uint additionalBufferFromSelling = balance.mul(discountedPrice).div(ONE);
+
+            if (_capOnMarket(market).add(additionalBufferFromSelling) > spentOnMarket[market]) {
+                uint availableUntilCapSUSD = _capOnMarket(market).add(additionalBufferFromSelling).sub(
+                    spentOnMarket[market]
+                );
+                if (availableUntilCapSUSD > _capOnMarket(market)) {
+                    availableUntilCapSUSD = _capOnMarket(market);
+                }
+
+                uint midImpactPriceIncrease = ONE.sub(basePrice).mul(max_spread.div(2)).div(ONE);
+                uint divider_price = ONE.sub(basePrice.add(midImpactPriceIncrease));
+
+                availableAmount = balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
+            }
         }
-        basePrice = basePrice.add(min_spread);
-
-        uint balance = _balanceOfPositionOnMarket(market, position);
-        uint midImpactPriceIncrease = ONE.sub(basePrice).mul(max_spread.div(2)).div(ONE);
-
-        uint divider_price = ONE.sub(basePrice.add(midImpactPriceIncrease));
-
-        uint additionalBufferFromSelling = balance.mul(basePrice).div(ONE);
-
-        if (_capOnMarket(market).add(additionalBufferFromSelling) <= spentOnMarket[market]) {
-            return 0;
-        }
-        uint availableUntilCapSUSD = _capOnMarket(market).add(additionalBufferFromSelling).sub(spentOnMarket[market]);
-
-        return balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
     }
 
     function _buyFromAmmQuoteWithBasePrice(
@@ -570,26 +530,32 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         Position position,
         uint amount,
         uint basePrice
-    ) internal view returns (uint) {
+    ) internal view returns (uint returnQuote) {
+        Position positionOtherSide = position == Position.Up ? Position.Down : Position.Up;
         uint _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
-        if (amount < 1 || amount > _available) {
-            return 0;
+        uint _availableOtherSide = _availableToBuyFromAMMWithBasePrice(market, positionOtherSide, basePrice);
+        if (amount <= _available) {
+            int tempQuote;
+            int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
+            basePrice = basePrice.add(min_spread);
+            if (skewImpact >= 0) {
+                int impactPrice = ONE_INT.sub(basePrice.toInt256()).mul(skewImpact).div(ONE_INT);
+
+                //return impactPrice;
+                // add 2% to the price increase to avoid edge cases on the extremes
+                impactPrice = impactPrice.mul(ONE_INT.add(ONE_PERCENT_INT * 2)).div(ONE_INT);
+                tempQuote = (amount.toInt256()).mul((basePrice.toInt256()).add(impactPrice)).div(ONE_INT);
+            } else {
+                tempQuote = (amount.toInt256()).mul((basePrice.toInt256()).mul(ONE_INT.add(skewImpact)).div(ONE_INT)).div(
+                    ONE_INT
+                );
+            }
+            tempQuote = tempQuote.mul(ONE_INT.add((safeBoxImpact.toInt256()))).div(ONE_INT);
+            returnQuote = IPositionalMarketManager(manager).transformCollateral(tempQuote.toUint256());
         }
-        basePrice = basePrice.add(min_spread);
-        uint impactPriceIncrease = ONE.sub(basePrice).mul(_buyPriceImpact(market, position, amount, _available)).div(ONE);
-        // add 2% to the price increase to avoid edge cases on the extremes
-        impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
-        uint tempAmount = amount.mul(basePrice.add(impactPriceIncrease)).div(ONE);
-        uint returnQuote = tempAmount.mul(ONE.add(safeBoxImpact)).div(ONE);
-        return IPositionalMarketManager(manager).transformCollateral(returnQuote);
     }
 
-    function _getSellMaxPrice(
-        address market,
-        Position position,
-        uint basePrice
-    ) internal view returns (uint sell_max_price) {
-        // ignore extremes
+    function _getSellMaxPrice(uint basePrice) internal view returns (uint sell_max_price) {
         if (!(basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice)) {
             sell_max_price = basePrice.sub(min_spread).mul(ONE.sub(max_spread.div(2))).div(ONE);
         }
@@ -610,11 +576,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         uint availableToBuyFromAMMatm = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
         require(amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
-        //
+
         if (sendSUSD) {
             sUSDPaid = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
             require(sUSDPaid.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high");
-
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
         }
         uint toMint = _getMintableAmount(market, position, amount);
@@ -636,6 +601,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         }
         _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
 
+        if (amount > toMint) {
+            uint discountedAmount = amount.sub(toMint);
+            uint paidForDiscountedAmount = sUSDPaid.mul(discountedAmount).div(amount);
+            emit BoughtWithDiscount(msg.sender, discountedAmount, paidForDiscountedAmount);
+        }
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
         return sUSDPaid;
     }
@@ -646,12 +616,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint sUSDFromBurning,
         address seller
     ) internal {
-        uint safeBoxShare = sUSDPaid.mul(ONE).div(ONE.sub(safeBoxImpact)).sub(sUSDPaid);
+        uint safeBoxShare;
 
         if (safeBoxImpact > 0) {
+            safeBoxShare = sUSDPaid.mul(ONE).div(ONE.sub(safeBoxImpact)).sub(sUSDPaid);
             sUSD.safeTransfer(safeBox, safeBoxShare);
-        } else {
-            safeBoxShare = 0;
         }
 
         spentOnMarket[market] = spentOnMarket[market].add(
@@ -676,11 +645,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint sUSDPaid,
         address buyer
     ) internal {
-        uint safeBoxShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(safeBoxImpact)));
+        uint safeBoxShare;
         if (safeBoxImpact > 0) {
+            safeBoxShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(safeBoxImpact)));
             sUSD.safeTransfer(safeBox, safeBoxShare);
-        } else {
-            safeBoxShare = 0;
         }
 
         if (
@@ -703,53 +671,103 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address market,
         Position position,
         uint amount,
-        uint _availableToBuyFromAMM
-    ) internal view returns (uint) {
+        uint _availableToBuyFromAMM,
+        uint _availableToBuyFromAMMOtherSide
+    ) internal view returns (int priceImpact) {
         (uint balancePosition, uint balanceOtherSide) = _balanceOfPositionsOnMarket(market, position);
         uint balancePositionAfter = balancePosition > amount ? balancePosition.sub(amount) : 0;
         uint balanceOtherSideAfter = balancePosition > amount
             ? balanceOtherSide
             : balanceOtherSide.add(amount.sub(balancePosition));
         if (balancePositionAfter >= balanceOtherSideAfter) {
-            //minimal price impact as it will balance the AMM exposure
-            return 0;
+            priceImpact = _calculateDiscount(
+                DiscountParams(balancePosition, balanceOtherSide, amount, _availableToBuyFromAMMOtherSide)
+            );
         } else {
-            return
-                _buyPriceImpactImbalancedSkew(
-                    market,
-                    position,
-                    amount,
-                    balanceOtherSide,
-                    balancePosition,
-                    balanceOtherSideAfter,
-                    balancePositionAfter,
-                    _availableToBuyFromAMM
+            if (amount > balancePosition && balancePosition > 0) {
+                uint amountToBeMinted = amount.sub(balancePosition);
+                uint positiveSkew = _buyPriceImpactImbalancedSkew(
+                    PriceImpactParams(
+                        amountToBeMinted,
+                        balanceOtherSide.add(balancePosition),
+                        0,
+                        balanceOtherSide.add(amountToBeMinted),
+                        0,
+                        _availableToBuyFromAMM.sub(balancePosition)
+                    )
                 );
+
+                uint pricePosition = price(market, position);
+                uint priceOtherPosition = price(market, position == Position.Up ? Position.Down : Position.Up);
+                uint skew = priceOtherPosition.mul(positiveSkew).div(pricePosition);
+
+                int discount = _calculateDiscount(
+                    DiscountParams(balancePosition, balanceOtherSide, balancePosition, _availableToBuyFromAMMOtherSide)
+                );
+
+                int discountBalance = balancePosition.toInt256().mul(discount);
+                int discountMinted = amountToBeMinted.mul(skew).toInt256();
+                int amountInt = (balancePosition.add(amountToBeMinted)).toInt256();
+
+                priceImpact = (discountBalance.add(discountMinted)).div(amountInt);
+
+                if (priceImpact > 0) {
+                    int numerator = pricePosition.toInt256().mul(priceImpact);
+                    priceImpact = numerator.div(priceOtherPosition.toInt256());
+                }
+            } else {
+                priceImpact = (
+                    _buyPriceImpactImbalancedSkew(
+                        PriceImpactParams(
+                            amount,
+                            balanceOtherSide,
+                            balancePosition,
+                            balanceOtherSideAfter,
+                            balancePositionAfter,
+                            _availableToBuyFromAMM
+                        )
+                    )
+                ).toInt256();
+            }
         }
     }
 
-    function _buyPriceImpactImbalancedSkew(
-        address market,
-        Position position,
-        uint amount,
-        uint balanceOtherSide,
-        uint balancePosition,
-        uint balanceOtherSideAfter,
-        uint balancePositionAfter,
-        uint _availableToBuyFromAMM
-    ) internal view returns (uint) {
-        uint maxPossibleSkew = balanceOtherSide.add(_availableToBuyFromAMM).sub(balancePosition);
-        uint skew = balanceOtherSideAfter.sub(balancePositionAfter);
+    function _buyPriceImpactImbalancedSkew(PriceImpactParams memory params) internal view returns (uint) {
+        uint maxPossibleSkew = params.balanceOtherSide.add(params.availableToBuyFromAMM).sub(params.balancePosition);
+        uint skew = params.balanceOtherSideAfter.sub(params.balancePositionAfter);
         uint newImpact = max_spread.mul(skew.mul(ONE).div(maxPossibleSkew)).div(ONE);
-        if (balancePosition > 0) {
+        if (params.balancePosition > 0) {
             uint newPriceForMintedOnes = newImpact.div(2);
-            uint tempMultiplier = amount.sub(balancePosition).mul(newPriceForMintedOnes);
-            return tempMultiplier.mul(ONE).div(amount).div(ONE);
+            uint tempMultiplier = params.amount.sub(params.balancePosition).mul(newPriceForMintedOnes);
+            return tempMultiplier.mul(ONE).div(params.amount).div(ONE);
         } else {
-            uint previousSkew = balanceOtherSide;
+            uint previousSkew = params.balanceOtherSide;
             uint previousImpact = max_spread.mul(previousSkew.mul(ONE).div(maxPossibleSkew)).div(ONE);
             return newImpact.add(previousImpact).div(2);
         }
+    }
+
+    function _calculateDiscount(DiscountParams memory params) internal view returns (int) {
+        uint currentBuyImpactOtherSide = _buyPriceImpactImbalancedSkew(
+            PriceImpactParams(
+                params.amount,
+                params.balancePosition,
+                params.balanceOtherSide,
+                params.balanceOtherSide > ONE
+                    ? params.balancePosition
+                    : params.balancePosition.add(ONE.sub(params.balanceOtherSide)),
+                params.balanceOtherSide > ONE ? params.balanceOtherSide.sub(ONE) : 0,
+                params.availableToBuyFromAMM
+            )
+        );
+
+        uint startDiscount = currentBuyImpactOtherSide.div(2);
+        uint tempMultiplier = params.balancePosition.sub(params.amount);
+        int finalDiscount = (
+            startDiscount.div(2).mul((tempMultiplier.mul(ONE).div(params.balancePosition)).add(ONE)).div(ONE)
+        ).toInt256();
+
+        return -finalDiscount;
     }
 
     function _handleReferrer(
@@ -777,8 +795,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide.sub(amount) : 0;
         if (!(balancePositionAfter < balanceOtherSideAfter)) {
             _sellImpact = _sellPriceImpactImbalancedSkew(
-                market,
-                position,
                 amount,
                 balanceOtherSide,
                 _balancePosition,
@@ -790,8 +806,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     }
 
     function _sellPriceImpactImbalancedSkew(
-        address market,
-        Position position,
         uint amount,
         uint balanceOtherSide,
         uint _balancePosition,
@@ -843,35 +857,6 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     function _capOnMarket(address market) internal view returns (uint) {
         (bytes32 key, , ) = IPositionalMarket(market).getOracleDetails();
         return getCapPerAsset(key);
-    }
-
-    function _expneg(uint x) internal view returns (uint result) {
-        result = (ONE * ONE) / _expNegPow(x);
-    }
-
-    function _expNegPow(uint x) internal view returns (uint result) {
-        uint e = 2718280000000000000;
-        result = deciMath.pow(e, x);
-    }
-
-    function powerInt(uint A, int8 B) internal pure returns (uint result) {
-        result = ONE;
-        for (int8 i = 0; i < B; i++) {
-            result = result.mul(A).div(ONE);
-        }
-    }
-
-    function sqrt(uint y) internal pure returns (uint z) {
-        if (y > 3) {
-            z = y;
-            uint x = y / 2 + 1;
-            while (x < z) {
-                z = x;
-                x = (y / x + x) / 2;
-            }
-        } else if (y != 0) {
-            z = 1;
-        }
     }
 
     function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
@@ -945,7 +930,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner can change IV!"
         );
-        require(_impliedVolatility > ONE.mul(60) && _impliedVolatility < ONE.mul(300), "IV outside min/max range!");
+        require(_impliedVolatility > ONE.mul(40) && _impliedVolatility < ONE.mul(300), "IV outside min/max range!");
         require(priceFeed.rateForCurrency(asset) != 0, "Asset has no price!");
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
         emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);
@@ -960,6 +945,12 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
         sUSD = _sUSD;
         emit SetSUSD(address(sUSD));
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _ammUtils address of AMMUtils
+    function setAmmUtils(IThalesAMMUtils _ammUtils) external onlyOwner {
+        ammUtils = _ammUtils;
     }
 
     /// @notice Updates contract parametars
@@ -1042,6 +1033,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address susd,
         address asset
     );
+    event BoughtWithDiscount(address buyer, uint amount, uint sUSDPaid);
 
     event SetPositionalMarketManager(address _manager);
     event SetSUSD(address sUSD);

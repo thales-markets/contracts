@@ -20,7 +20,7 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-contract('ThalesAMM', accounts => {
+contract('ThalesAMM', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
 	const [first, owner, second, third, fourth] = accounts;
 	let creatorSigner, ownerSigner;
@@ -40,7 +40,7 @@ contract('ThalesAMM', accounts => {
 			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
-			event => event['event'] && event['event'] === 'MarketCreated'
+			(event) => event['event'] && event['event'] === 'MarketCreated'
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
@@ -169,6 +169,11 @@ contract('ThalesAMM', accounts => {
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
 			from: owner,
 		});
+		let ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
+		let thalesAMMUtils = await ThalesAMMUtils.new();
+		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
+			from: owner,
+		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 
 		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
@@ -241,8 +246,8 @@ contract('ThalesAMM', accounts => {
 
 			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
-			assert.bnGte(safeBoxsUSD, toUnit(37));
-			assert.bnLte(safeBoxsUSD, toUnit(38));
+			assert.bnGte(safeBoxsUSD, toUnit(35));
+			assert.bnLte(safeBoxsUSD, toUnit(36));
 
 			await newMarket.mint(toUnit(20000), {
 				from: minter,
@@ -274,8 +279,8 @@ contract('ThalesAMM', accounts => {
 
 			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
-			assert.bnGte(safeBoxsUSD, toUnit(63));
-			assert.bnLte(safeBoxsUSD, toUnit(64));
+			assert.bnGte(safeBoxsUSD, toUnit(58));
+			assert.bnLte(safeBoxsUSD, toUnit(60));
 		});
 
 		it('Safe box sell ', async () => {
@@ -330,7 +335,6 @@ contract('ThalesAMM', accounts => {
 				Position.UP,
 				toUnit(availableToSellToAMM / 1e18 - 1)
 			);
-
 			let sellToAmmQuote = await thalesAMM.sellToAmmQuote(
 				newMarket.address,
 				Position.UP,
@@ -371,8 +375,8 @@ contract('ThalesAMM', accounts => {
 
 			safeBoxsUSD = await sUSDSynth.balanceOf(safeBox.address);
 			console.log('safeBoxsUSD post buy decimal is:' + safeBoxsUSD / 1e18);
-			assert.bnGte(safeBoxsUSD, toUnit(65));
-			assert.bnLte(safeBoxsUSD, toUnit(66));
+			assert.bnGte(safeBoxsUSD, toUnit(60));
+			assert.bnLte(safeBoxsUSD, toUnit(61));
 		});
 	});
 

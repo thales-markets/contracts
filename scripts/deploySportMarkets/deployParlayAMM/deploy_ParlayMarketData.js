@@ -11,6 +11,7 @@ async function main() {
 	let network = networkObj.name;
 	let mainnetNetwork = 'mainnet';
 	let PaymentToken;
+	const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 	if (network == 'homestead') {
 		console.log(
@@ -48,18 +49,7 @@ async function main() {
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
 	const ParlayAMMDeployed = await ParlayAMM.attach(ParlayAMMAddress);
-
-	// const ParlayMarketDataAddress = getTargetAddress('ParlayMarketData', network);
-	// const SportsAMMContract = getTargetAddress('SportsAMM', network);
-
-	// await ParlayAMMDeployed.setAddresses(
-	// 	SportsAMMContract,
-	// 	owner.address,
-	// 	owner.address,
-	// 	owner.address,
-	// 	ParlayMarketDataAddress,
-	// 	{ from: owner.address }
-	// );
+	console.log('ParlayAMM found at: ', ParlayAMMAddress);
 
 	const ParlayMarketData = await ethers.getContractFactory('ParlayMarketData');
 
@@ -68,7 +58,6 @@ async function main() {
 		ParlayAMMAddress,
 	]);
 	await ParlayMarketDataDeployed.deployed;
-	await delay(10000);
 
 	console.log('ParlayMarketData Deployed on', ParlayMarketDataDeployed.address);
 	setTargetAddress('ParlayMarketData', network, ParlayMarketDataDeployed.address);
@@ -79,23 +68,23 @@ async function main() {
 		ParlayMarketDataDeployed.address
 	);
 
-	await delay(5000);
 	console.log('Implementation ParlayMarketData: ', ParlayMarketDataImplementation);
 	setTargetAddress('ParlayMarketDataImplementation', network, ParlayMarketDataImplementation);
 
 	await delay(5000);
 
-	SportsAMMContract = getTargetAddress('SportsAMM', network);
+	let SportsAMMContract = getTargetAddress('SportsAMM', network);
 
 	await ParlayAMMDeployed.setAddresses(
 		SportsAMMContract,
+		ZERO_ADDRESS,
 		owner.address,
-		owner.address,
-		owner.address,
+		ZERO_ADDRESS,
 		ParlayMarketDataDeployed.address,
 		{ from: owner.address }
 	);
 
+	console.log('ParlayMarketData address set on ParlayAMM');
 	await delay(65000);
 
 	try {

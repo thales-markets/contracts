@@ -376,7 +376,9 @@
 		"ApexConsumerOld": "0x14953ab06bA217Bc5DE7b7ADB48C88D7c0095f5e",
 		"ApexConsumerWrapper": "0x6b81a14cB40b038Edb183f0Ce53FddB5d2fEC726",
 		"TherundownConsumerVerifier": "0x264D0d84C7fE899aFBE049e3E86d896565564577",
-		"TherundownConsumerVerifierImplementation": "0x10C8F4041efa54B8FA23c154218EA88681df92FE"
+		"TherundownConsumerVerifierImplementation": "0x10C8F4041efa54B8FA23c154218EA88681df92FE",
+		"ParlayAMM": "0xDA10FEd3bf26BDC131f408Ec224C38816C2B15cB",
+		"ParlayAMMImplementation": "0x95820B7d30904BEa4419c0CAbd9AC93b35D488E9"
 	},
 	"optimisticGoerli": {
 		"ExoticUSD": "0xE1ceaa829525a08C1d39A5CEBe4b42aF58d77198",

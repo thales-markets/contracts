@@ -394,6 +394,12 @@
         "internalType": "address",
         "name": "_sportsManager",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_verifier",
+        "type": "address"
       }
     ],
     "name": "NewSportContracts",
@@ -683,20 +689,35 @@
   {
     "inputs": [
       {
-        "internalType": "int256",
-        "name": "_americanOdd",
-        "type": "int256"
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
-    "name": "calculateNormalizedOddFromAmerican",
+    "name": "backupOdds",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "odd",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "int24",
+        "name": "homeOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "awayOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "drawOdds",
+        "type": "int24"
       }
     ],
-    "stateMutability": "pure",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -743,6 +764,11 @@
         "internalType": "address",
         "name": "_market",
         "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_useBackupOdds",
+        "type": "bool"
       }
     ],
     "name": "cancelMarketManually",
@@ -1397,30 +1423,6 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "_teamA",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "_teamB",
-        "type": "string"
-      }
-    ],
-    "name": "isSameTeamOrTBD",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -1477,7 +1479,7 @@
         "type": "bool"
       }
     ],
-    "stateMutability": "pure",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1840,6 +1842,11 @@
         "internalType": "address",
         "name": "_sportsManager",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_verifier",
+        "type": "address"
       }
     ],
     "name": "setSportContracts",
@@ -2016,6 +2023,19 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "verifier",
+    "outputs": [
+      {
+        "internalType": "contract ITherundownConsumerVerifier",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

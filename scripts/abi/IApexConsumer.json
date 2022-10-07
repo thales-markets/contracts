@@ -45,6 +45,11 @@
         "internalType": "bool",
         "name": "_arePostQualifyingOdds",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_betType",
+        "type": "uint256"
       }
     ],
     "name": "fulfillMatchup",

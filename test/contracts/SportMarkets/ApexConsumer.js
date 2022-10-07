@@ -57,6 +57,7 @@ contract('ApexConsumer', (accounts) => {
 	const invalidOdds = 0;
 	const game1homeTeam = 'lance stroll';
 	const game1awayTeam = 'daniel ricciardo';
+	const game1betType = 0;
 
 	const homeWinResult = 'win/lose';
 	const homeWinResultDetails = '4.0/6.0';
@@ -224,6 +225,7 @@ contract('ApexConsumer', (accounts) => {
 					sportFormula1,
 					eventId,
 					false,
+					game1betType,
 					{ from: first }
 				)
 			).to.be.revertedWith('Only wrapper can call this function');
@@ -239,6 +241,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 
@@ -256,6 +259,7 @@ contract('ApexConsumer', (accounts) => {
 			assert.bnEqual(game1raceStartTime, game.startTime);
 			assert.equal(game1homeTeam, game.homeTeam);
 			assert.equal(game1awayTeam, game.awayTeam);
+			assert.equal(game1betType, game.betType);
 
 			// check if event is emited
 			assert.eventEqual(txCreateGame.logs[0], 'GameCreated', {
@@ -328,6 +332,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(
@@ -352,6 +357,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				true,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(
@@ -379,6 +385,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(false, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
@@ -406,6 +413,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(false, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
@@ -433,6 +441,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.raceFulfilledCreated(eventId));
@@ -468,6 +477,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -496,6 +506,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				true,
+				game1betType,
 				{ from: wrapper }
 			);
 
@@ -587,6 +598,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -686,6 +698,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -779,6 +792,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -910,6 +924,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -1023,6 +1038,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -1118,6 +1134,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -1201,6 +1218,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -1273,6 +1291,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(
@@ -1304,6 +1323,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				true,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(
@@ -1355,6 +1375,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 			assert.equal(true, await ApexConsumerDeployed.gameFulfilledCreated(gameid1));
@@ -1387,6 +1408,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 
@@ -1423,6 +1445,7 @@ contract('ApexConsumer', (accounts) => {
 				sportFormula1,
 				eventId,
 				false,
+				game1betType,
 				{ from: wrapper }
 			);
 

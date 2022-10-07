@@ -9,8 +9,15 @@ import "../interfaces/IPriceFeed.sol";
 interface IPositionalMarket {
     /* ========== TYPES ========== */
 
-    enum Phase {Trading, Maturity, Expiry}
-    enum Side {Up, Down}
+    enum Phase {
+        Trading,
+        Maturity,
+        Expiry
+    }
+    enum Side {
+        Up,
+        Down
+    }
 
     /* ========== VIEWS / VARIABLES ========== */
 

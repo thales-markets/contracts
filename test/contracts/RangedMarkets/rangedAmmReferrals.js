@@ -4,13 +4,8 @@ const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
 const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
-const {
-	fastForward,
-	toUnit,
-	currentTime,
-	multiplyDecimalRound,
-	divideDecimalRound,
-} = require('../../utils')();
+const { fastForward, toUnit, currentTime, multiplyDecimalRound, divideDecimalRound } =
+	require('../../utils')();
 const { toBytes32 } = require('../../../index');
 const { setupContract, setupAllContracts } = require('../../utils/setup');
 
@@ -45,7 +40,7 @@ const Phase = {
 	Expiry: toBN(2),
 };
 
-contract('RangedAMM', accounts => {
+contract('RangedAMM', (accounts) => {
 	const [
 		initialCreator,
 		managerOwner,
@@ -99,7 +94,7 @@ contract('RangedAMM', accounts => {
 			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
-			event => event['event'] && event['event'] === 'MarketCreated'
+			(event) => event['event'] && event['event'] === 'MarketCreated'
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
@@ -224,6 +219,11 @@ contract('RangedAMM', accounts => {
 		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
 		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
+			from: owner,
+		});
+		let ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
+		let thalesAMMUtils = await ThalesAMMUtils.new();
+		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
 			from: owner,
 		});
 		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);

@@ -17,8 +17,8 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     using Chainlink for Chainlink.Request;
     using SafeERC20 for IERC20;
 
-    string public constant BET_TYPE_PREFIX = "outright_head_to_head_";
-    string public constant GAME_ID_INFIX = "_h2h_";
+    string public constant H2H_BET_TYPE = "outright_head_to_head";
+    string public constant H2H_GAME_ID_INFIX = "h2h";
 
     IApexConsumer public consumer;
 
@@ -26,7 +26,11 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     mapping(bytes32 => string) public gameIdPerRequestId;
     mapping(bytes32 => string) public eventIdPerRequestId;
     mapping(bytes32 => string) public qualifyingStatusPerRequestId;
+    mapping(bytes32 => string) public betTypePerRequestId;
     mapping(string => string) public sportPerEventId;
+
+    mapping(string => bool) public supportedBetType;
+    mapping(string => uint) public betTypeIdPerBetType;
 
     uint public paymentMetadata;
     uint public paymentMatchup;
@@ -49,7 +53,8 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint _paymentResults,
         string memory _requestMetadataJobId,
         string memory _requestMatchupJobId,
-        string memory _requestResultsJobId
+        string memory _requestResultsJobId,
+        string[] memory _supportedBetTypes
     ) {
         setChainlinkToken(_link);
         setChainlinkOracle(_oracle);
@@ -61,6 +66,10 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         requestMatchupJobId = _requestMatchupJobId;
         requestResultsJobId = _requestResultsJobId;
         linkToken = IERC20(_link);
+        for (uint i; i < _supportedBetTypes.length; i++) {
+            supportedBetType[_supportedBetTypes[i]] = true;
+            betTypeIdPerBetType[_supportedBetTypes[i]] = i;
+        }
     }
 
     /* ========== CONSUMER REQUEST FUNCTIONS ========== */
@@ -83,13 +92,15 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
     /// @notice Returns the matchup information
     /// @param _eventId event ID which is provided from CL
+    /// @param _betType bet type for specific event ID
     /// @param _gameNumber game number for specific bet type
     /// @param _qualifyingStatus string which can be "pre" or "post" for pre-qualifying or post-qualifying probabilities
     function requestMatchup(
         string memory _eventId,
+        string memory _betType,
         string memory _gameNumber,
         string memory _qualifyingStatus
-    ) public whenNotPaused isValidMatchupRequest(_qualifyingStatus) {
+    ) public whenNotPaused isValidBetType(_betType) isValidMatchupRequest(_qualifyingStatus) {
         Chainlink.Request memory req = buildChainlinkRequest(
             _stringToBytes32(requestMatchupJobId),
             address(this),
@@ -97,7 +108,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         );
         req.add("event_id", _eventId);
         req.add("qualifying_status", _qualifyingStatus);
-        req.add("bet_type", _createBetType(_gameNumber));
+        req.add("bet_type", _createBetType(_betType, _gameNumber));
         req.add("stage_level", "null");
 
         _putLink(msg.sender, paymentMatchup);
@@ -105,14 +116,20 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         bytes32 requestId = sendChainlinkRequest(req, paymentMatchup);
         sportPerRequestId[requestId] = sportPerEventId[_eventId];
         eventIdPerRequestId[requestId] = _eventId;
-        gameIdPerRequestId[requestId] = _createGameId(_eventId, _gameNumber);
+        gameIdPerRequestId[requestId] = _createGameId(_eventId, _betType, _gameNumber);
         qualifyingStatusPerRequestId[requestId] = _qualifyingStatus;
+        betTypePerRequestId[requestId] = _betType;
     }
 
     /// @notice Returns the results information
     /// @param _eventId event ID which is provided from CL
+    /// @param _betType bet type for specific event ID
     /// @param _gameNumber game number for specific bet type
-    function requestResults(string memory _eventId, string memory _gameNumber) public whenNotPaused {
+    function requestResults(
+        string memory _eventId,
+        string memory _betType,
+        string memory _gameNumber
+    ) public whenNotPaused isValidBetType(_betType) {
         Chainlink.Request memory req = buildChainlinkRequest(
             _stringToBytes32(requestResultsJobId),
             address(this),
@@ -120,13 +137,13 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         );
         req.add("event_id", _eventId);
         req.add("result_type", "final");
-        req.add("bet_type", _createBetType(_gameNumber));
+        req.add("bet_type", _createBetType(_betType, _gameNumber));
 
         _putLink(msg.sender, paymentResults);
 
         bytes32 requestId = sendChainlinkRequest(req, paymentResults);
         sportPerRequestId[requestId] = sportPerEventId[_eventId];
-        gameIdPerRequestId[requestId] = _createGameId(_eventId, _gameNumber);
+        gameIdPerRequestId[requestId] = _createGameId(_eventId, _betType, _gameNumber);
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -174,6 +191,7 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         string memory eventId = eventIdPerRequestId[_requestId];
         bool arePostQualifyingOdds = keccak256(abi.encodePacked(qualifyingStatusPerRequestId[_requestId])) ==
             keccak256(abi.encodePacked("post"));
+        uint betTypeId = betTypeIdPerBetType[betTypePerRequestId[_requestId]];
 
         consumer.fulfillMatchup(
             _requestId,
@@ -184,7 +202,8 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
             gameId,
             sport,
             eventId,
-            arePostQualifyingOdds
+            arePostQualifyingOdds,
+            betTypeId
         );
     }
 
@@ -224,12 +243,19 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         linkToken.safeTransferFrom(_sender, address(this), _payment);
     }
 
-    function _createBetType(string memory _gameNumber) internal pure returns (string memory) {
-        return string(abi.encodePacked(BET_TYPE_PREFIX, _gameNumber));
+    function _createBetType(string memory _betType, string memory _gameNumber) internal pure returns (string memory) {
+        return string(abi.encodePacked(_betType, "_", _gameNumber));
     }
 
-    function _createGameId(string memory _eventId, string memory _gameNumber) internal pure returns (string memory) {
-        return string(abi.encodePacked(_eventId, GAME_ID_INFIX, _gameNumber));
+    function _createGameId(
+        string memory _eventId,
+        string memory _betType,
+        string memory _gameNumber
+    ) internal pure returns (string memory) {
+        string memory gameIdInfix = keccak256(abi.encodePacked(_betType)) == keccak256(abi.encodePacked(H2H_BET_TYPE))
+            ? H2H_GAME_ID_INFIX
+            : _betType;
+        return string(abi.encodePacked(_eventId, "_", gameIdInfix, "_", _gameNumber));
     }
 
     function _stringToBytes32(string memory source) internal pure returns (bytes32 result) {
@@ -304,6 +330,15 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewLinkAddress(_link);
     }
 
+    /// @notice Sets if bet type is suported or not (delete from bet type)
+    /// @param _betType bet type which needs to be supported or not
+    /// @param _isSupported true/false (supported or not)
+    function setSupportedBetType(string memory _betType, bool _isSupported) external onlyOwner {
+        require(supportedBetType[_betType] != _isSupported, "Already set");
+        supportedBetType[_betType] = _isSupported;
+        emit BetTypesChanged(_betType, _isSupported);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier isValidMetaDataRequest(string memory _sport) {
@@ -320,6 +355,11 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         _;
     }
 
+    modifier isValidBetType(string memory _betType) {
+        require(supportedBetType[_betType], "Bet type is not supported");
+        _;
+    }
+
     /* ========== EVENTS ========== */
 
     event NewOracleAddress(address _oracle);
@@ -327,4 +367,5 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     event NewRequestsJobIds(string _requestMetadataJobId, string _requestMatchupJobId, string _requestResultsJobId);
     event NewConsumer(address _consumer);
     event NewLinkAddress(address _link);
+    event BetTypesChanged(string _betType, bool _isSupported);
 }

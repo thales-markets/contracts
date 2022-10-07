@@ -38,6 +38,7 @@ async function main() {
 		networkObj.name = 'goerli';
 		network = 'goerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
+		SportsAMMContract = getTargetAddress('SportsAMM', network);
 	}
 
 	if (networkObj.chainId == 420) {

@@ -368,7 +368,7 @@
 		"SportPositionalMarketMastercopy": "0xE8b6CDd2eB0610D6B8F8B23F79eBc1dd67564190",
 		"SportPositionMastercopy": "0x9e7769409E3e5A6821eeDcF33371FCA929fE6A48",
 		"SportsAMM": "0x707075f0B619acF5A614Efb54FA8aC9B2FB55188",
-		"SportsAMMImplementation": "0x5306b884f9D2AFD0140c713803d2C25B1b424504",
+		"SportsAMMImplementation": "0x32F67A7f52275e915115799A728bFf5Ee393E2C1",
 		"SportPositionalMarketData": "0xC7D8c34048D8bf6eB24FC76c7A61F47754990c81",
 		"SportPositionalMarketDataImplementation": "0xd7C5dF8F490e0eFe8c043F888a39Ea247D4D3e10",
 		"OvertimeVoucher": "0x671f9654a594f8966b19c0b466f306E1dFe912a6",
@@ -379,7 +379,8 @@
 		"ApexConsumerOld": "0x14953ab06bA217Bc5DE7b7ADB48C88D7c0095f5e",
 		"ApexConsumerWrapper": "0xB93A46584906FBb2DCc99b243A1e66A9a1A72A03",
 		"TherundownConsumerVerifier": "0x264D0d84C7fE899aFBE049e3E86d896565564577",
-		"TherundownConsumerVerifierImplementation": "0x10C8F4041efa54B8FA23c154218EA88681df92FE"
+		"TherundownConsumerVerifierImplementation": "0x10C8F4041efa54B8FA23c154218EA88681df92FE",
+		"SportsAMMUtils": "0xB1023A002D579b402989fAA785d575b5e1DB1D2C"
 	},
 	"optimisticGoerli": {
 		"ExoticUSD": "0xE1ceaa829525a08C1d39A5CEBe4b42aF58d77198",

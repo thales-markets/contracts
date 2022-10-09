@@ -358,7 +358,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_available",
         "type": "uint256"
       }
     ],
@@ -539,7 +539,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_quote",
         "type": "uint256"
       }
     ],
@@ -606,9 +606,9 @@
     "name": "buyPriceImpact",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "int256",
+        "name": "impact",
+        "type": "int256"
       }
     ],
     "stateMutability": "view",
@@ -626,7 +626,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "canExercize",
         "type": "bool"
       }
     ],
@@ -734,7 +734,7 @@
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "",
+        "name": "odds",
         "type": "uint256[]"
       }
     ],
@@ -798,7 +798,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "isTrading",
         "type": "bool"
       }
     ],
@@ -939,7 +939,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "oddsToReturn",
         "type": "uint256"
       }
     ],
@@ -1090,7 +1090,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_impact",
         "type": "uint256"
       }
     ],
@@ -1152,7 +1152,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_quote",
         "type": "uint256"
       }
     ],
@@ -1193,6 +1193,19 @@
       }
     ],
     "name": "setAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract SportsAMMUtils",
+        "name": "_ammUtils",
+        "type": "address"
+      }
+    ],
+    "name": "setAmmUtils",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

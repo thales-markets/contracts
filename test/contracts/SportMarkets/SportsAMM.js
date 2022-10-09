@@ -58,6 +58,7 @@ contract('SportsAMM', (accounts) => {
 	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
+	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
 	let ExoticPositionalMarket;
 	let ExoticPositionalOpenBidMarket;
@@ -70,6 +71,7 @@ contract('SportsAMM', (accounts) => {
 	let verifier;
 	let minimumPositioningDuration = 0;
 	let minimumMarketMaturityDuration = 0;
+	let sportsAMMUtils;
 
 	let marketQuestion,
 		marketSource,
@@ -234,6 +236,11 @@ contract('SportsAMM', (accounts) => {
 		);
 
 		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
+			from: owner,
+		});
+
+		sportsAMMUtils = await SportsAMMUtils.new();
+		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
 			from: owner,
 		});
 

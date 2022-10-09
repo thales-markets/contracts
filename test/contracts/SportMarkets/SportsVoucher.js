@@ -58,7 +58,9 @@ contract('SportsVauchers', (accounts) => {
 	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
+	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
+	let sportsAMMUtils;
 	let Thales;
 	let voucher;
 	let consumer;
@@ -193,6 +195,11 @@ contract('SportsVauchers', (accounts) => {
 			toUnit('0.005'),
 			{ from: owner }
 		);
+
+		sportsAMMUtils = await SportsAMMUtils.new();
+		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
+			from: owner,
+		});
 
 		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
 			from: owner,

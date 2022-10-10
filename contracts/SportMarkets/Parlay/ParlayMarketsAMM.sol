@@ -190,9 +190,21 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint[] calldata _positions,
         uint _sUSDPaid,
         uint _additionalSlippage,
-        uint _expectedPayout
+        uint _expectedPayout,
+        address _differentRecepient
     ) external nonReentrant notPaused {
-        _buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, true);
+        if (_differentRecepient == address(0)) {
+            _differentRecepient = msg.sender;
+        }
+        _buyFromParlay(
+            _sportMarkets,
+            _positions,
+            _sUSDPaid,
+            _additionalSlippage,
+            _expectedPayout,
+            true,
+            _differentRecepient
+        );
     }
 
     function buyFromParlayWithDifferentCollateralAndReferrer(
@@ -231,7 +243,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         collateralToken.safeTransferFrom(msg.sender, address(this), collateralQuote);
         curveSUSD.exchange_underlying(curveIndex, 0, collateralQuote, _sUSDPaid);
 
-        _buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, false);
+        _buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, false, msg.sender);
         if (referrerFee > 0 && referrals != address(0)) {
             _handleReferrer(msg.sender, _sUSDPaid);
         }
@@ -302,16 +314,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _sUSDPaid,
         uint _additionalSlippage,
         uint _expectedPayout,
-        bool _sendSUSD
+        bool _sendSUSD,
+        address _differentRecepient
     ) internal {
         uint totalAmount;
-        uint initialQuote;
         uint totalQuote;
         uint[] memory amountsToBuy = new uint[](_sportMarkets.length);
         uint[] memory marketQuotes = new uint[](_sportMarkets.length);
         uint sUSDAfterFees;
         uint skewImpact;
-        (sUSDAfterFees, totalAmount, totalQuote, initialQuote, skewImpact, marketQuotes, amountsToBuy) = _buyQuoteFromParlay(
+        (sUSDAfterFees, totalAmount, totalQuote, , skewImpact, marketQuotes, amountsToBuy) = _buyQuoteFromParlay(
             _sportMarkets,
             _positions,
             _sUSDPaid
@@ -339,7 +351,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             sUSDAfterFees,
             sportManager.expiryDuration(),
             address(this),
-            msg.sender
+            _differentRecepient
         );
 
         emit NewParlayMarket(address(parlayMarket), _sportMarkets, _positions, totalAmount, sUSDAfterFees);
@@ -356,7 +368,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _sUSDPaid,
             sUSDAfterFees,
             totalQuote,
-            initialQuote,
+            totalQuote,
             skewImpact
         );
     }

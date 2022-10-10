@@ -814,6 +814,7 @@ contract('ParlayAMM', (accounts) => {
 				totalSUSDToPay,
 				slippage,
 				result[1],
+				ZERO_ADDRESS,
 				{ from: first }
 			);
 			// console.log("event: \n", buyParlayTX.logs[0]);
@@ -851,6 +852,7 @@ contract('ParlayAMM', (accounts) => {
 					totalSUSDToPay,
 					slippage,
 					toUnit(differentSlippage),
+					ZERO_ADDRESS,
 					{ from: first }
 				)
 			).to.be.revertedWith('Slippage too high');
@@ -958,6 +960,7 @@ contract('ParlayAMM', (accounts) => {
 				totalSUSDToPay,
 				slippage,
 				result[1],
+				ZERO_ADDRESS,
 				{ from: first }
 			);
 			// console.log("event: \n", buyParlayTX.logs[0]);
@@ -1020,6 +1023,7 @@ contract('ParlayAMM', (accounts) => {
 					totalSUSDToPay,
 					slippage,
 					result[1],
+					ZERO_ADDRESS,
 					{ from: first }
 				);
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');

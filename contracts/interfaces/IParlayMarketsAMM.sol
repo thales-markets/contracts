@@ -29,4 +29,13 @@ interface IParlayMarketsAMM {
     function triggerResolvedEvent(address _account, bool _userWon) external;
 
     function resolveParlay() external;
+
+    function buyFromParlay(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDPaid,
+        uint _additionalSlippage,
+        uint _expectedPayout,
+        address _differentRecepient
+    ) external;
 }

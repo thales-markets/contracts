@@ -10,6 +10,7 @@ import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
 import "../../interfaces/ISportsAMM.sol";
+import "../../interfaces/IParlayMarketsAMM.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/IPosition.sol";
 
@@ -35,6 +36,7 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
     string public tokenURIThousand;
 
     ISportsAMM public sportsAMM;
+    IParlayMarketsAMM public parlayAMM;
 
     IERC20 public sUSD;
     mapping(uint => uint) public amountInVoucher;
@@ -136,6 +138,31 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         emit BoughtFromAmmWithVoucher(msg.sender, market, position, amount, quote, address(sUSD), address(target));
     }
 
+    function buyFromParlayAMMWithVoucher(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDPaid,
+        uint _additionalSlippage,
+        uint _expectedPayout,
+        uint tokenId
+    ) external {
+        require(!paused, "Cant buy while paused");
+        require(ERC721.ownerOf(tokenId) == msg.sender, "You are not the voucher owner!");
+
+        // uint quote = parlayAMM._buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout);
+        require(_sUSDPaid < amountInVoucher[tokenId], "Insufficient amount in voucher");
+
+        parlayAMM.buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, msg.sender);
+        amountInVoucher[tokenId] = amountInVoucher[tokenId] - _sUSDPaid;
+
+        //if less than 1 sUSD, transfer the rest to the owner and burn
+        if (amountInVoucher[tokenId] < 1e18) {
+            sUSD.safeTransfer(address(msg.sender), amountInVoucher[tokenId]);
+            super._burn(tokenId);
+        }
+        emit BoughtFromParlayWithVoucher(msg.sender, _sportMarkets, _positions, _sUSDPaid, _expectedPayout, address(sUSD));
+    }
+
     /* ========== VIEW ========== */
 
     /* ========== INTERNALS ========== */
@@ -189,6 +216,14 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         uint sUSDPaid,
         address susd,
         address asset
+    );
+    event BoughtFromParlayWithVoucher(
+        address buyer,
+        address[] _sportMarkets,
+        uint[] _positions,
+        uint _sUSDPaid,
+        uint _expectedPayout,
+        address susd
     );
     event NewTokenUri(string _tokenURI);
     event NewSportsAMM(address _thalesRoyaleAddress);

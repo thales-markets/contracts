@@ -349,6 +349,11 @@
         "internalType": "uint256",
         "name": "_expectedPayout",
         "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_differentRecepient",
+        "type": "address"
       }
     ],
     "name": "buyFromParlay",

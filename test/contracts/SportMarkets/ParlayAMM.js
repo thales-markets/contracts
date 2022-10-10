@@ -824,6 +824,38 @@ contract('ParlayAMM', (accounts) => {
 			});
 		});
 
+		it('Create/Buy Parlay with different slippage', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			let differentSlippage =
+				parseInt(fromUnit(result[1])) + (parseInt(fromUnit(result[1])) * 1.5) / 100;
+			console.log('different expected: ', differentSlippage);
+			await expect(
+				ParlayAMM.buyFromParlay(
+					parlayMarketsAddress,
+					parlayPositions,
+					totalSUSDToPay,
+					slippage,
+					toUnit(differentSlippage),
+					{ from: first }
+				)
+			).to.be.revertedWith('Slippage too high');
+		});
+
 		it('Multi-collateral buy from amm', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);

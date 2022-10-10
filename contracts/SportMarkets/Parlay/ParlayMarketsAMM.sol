@@ -320,7 +320,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         // apply all checks
         require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");
         require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
-        require(((ONE * totalAmount) / _expectedPayout) <= (ONE + _additionalSlippage), "Slippage too high");
+        require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
 
         if (_sendSUSD) {
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDAfterFees);
@@ -397,15 +397,13 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 inverseQuotes
             );
             (totalQuote, totalBuyAmount, finalQuotes, ) = _calculateFinalQuotes(_sportMarkets, _positions, amountsToBuy);
-            if (totalQuote > 0 && totalQuote >= maxSupportedOdds) {
+            if (totalQuote > 0) {
                 uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
                 skewImpact = expectedPayout > totalBuyAmount
                     ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
                     : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
                 amountsToBuy = _applySkewImpactBatch(amountsToBuy, skewImpact, (expectedPayout > totalBuyAmount));
                 totalBuyAmount = _applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
-            } else {
-                totalQuote = 0;
             }
         }
     }

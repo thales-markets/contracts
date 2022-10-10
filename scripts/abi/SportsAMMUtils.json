@@ -80,7 +80,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -109,7 +109,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -338,7 +338,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -372,7 +372,7 @@
   {
     "inputs": [
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -464,7 +464,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "_position",
         "type": "uint8"
       },

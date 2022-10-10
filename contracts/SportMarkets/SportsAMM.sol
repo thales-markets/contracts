@@ -20,6 +20,7 @@ import "../interfaces/ITherundownConsumer.sol";
 import "../interfaces/IApexConsumer.sol";
 import "../interfaces/ICurveSUSD.sol";
 import "../interfaces/IReferrals.sol";
+import "../interfaces/ISportsAMM.sol";
 import "./SportsAMMUtils.sol";
 
 /// @title Sports AMM contract
@@ -141,7 +142,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param market The address of the SportPositional market created for a game
     /// @param position The position (home/away/draw) to check availability
     /// @return _available The amount of position options (tokens) available to buy from AMM.
-    function availableToBuyFromAMM(address market, Position position) public view returns (uint _available) {
+    function availableToBuyFromAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint baseOdds = obtainOdds(market, position);
             _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
@@ -150,7 +151,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _availableToBuyFromAMMWithbaseOdds(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint baseOdds
     ) internal view returns (uint availableAmount) {
         if (baseOdds > minSupportedOdds && baseOdds < maxSupportedOdds) {
@@ -177,7 +178,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return _quote The sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
     function buyFromAmmQuote(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount
     ) public view returns (uint _quote) {
         uint baseOdds = obtainOdds(market, position);
@@ -186,7 +187,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _buyFromAmmQuoteWithBaseOdds(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint baseOdds
     ) internal view returns (uint returnQuote) {
@@ -202,16 +203,20 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _getAvailableOtherSide(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount
     ) private view returns (uint _availableOtherSide) {
         uint _availableOtherSideFirst = availableToBuyFromAMM(
             market,
-            position == Position.Home ? Position.Draw : position == Position.Draw ? Position.Away : Position.Home
+            position == ISportsAMM.Position.Home ? ISportsAMM.Position.Draw : position == ISportsAMM.Position.Draw
+                ? ISportsAMM.Position.Away
+                : ISportsAMM.Position.Home
         );
         uint _availableOtherSideSecond = availableToBuyFromAMM(
             market,
-            position == Position.Home ? Position.Away : position == Position.Draw ? Position.Home : Position.Draw
+            position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : position == ISportsAMM.Position.Draw
+                ? ISportsAMM.Position.Home
+                : ISportsAMM.Position.Draw
         );
         _availableOtherSide = _availableOtherSideFirst > _availableOtherSideSecond
             ? _availableOtherSideFirst
@@ -227,7 +232,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return sUSDToPay The sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
     function buyFromAmmQuoteWithDifferentCollateral(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         address collateral
     ) public view returns (uint collateralQuote, uint sUSDToPay) {
@@ -247,7 +252,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return impact The buy price impact after the buy of the amount of positions for market
     function buyPriceImpact(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount
     ) public view returns (int impact) {
         uint _availableToBuyFromAMM = availableToBuyFromAMM(market, position);
@@ -261,11 +266,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param market The address of the SportPositional market of a game
     /// @param position The position (home/away/draw) to sell to AMM
     /// @return _available The maximum amount available to be sold to AMM
-    function availableToSellToAMM(address market, Position position) public view returns (uint _available) {
+    function availableToSellToAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
         uint sell_max_price = _getSellMaxPrice(market, position);
         if (sell_max_price > 0) {
             (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-            uint balanceOfTheOtherSide = position == Position.Home
+            uint balanceOfTheOtherSide = position == ISportsAMM.Position.Home
                 ? away.getBalanceOf(address(this))
                 : home.getBalanceOf(address(this));
 
@@ -288,7 +293,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
-    function _getSellMaxPrice(address market, Position position) internal view returns (uint sell_max_price) {
+    function _getSellMaxPrice(address market, ISportsAMM.Position position) internal view returns (uint sell_max_price) {
         uint baseOdds = obtainOdds(market, position);
         if (!(baseOdds <= minSupportedOdds || baseOdds >= maxSupportedOdds)) {
             sell_max_price = ((baseOdds - min_spread) * (ONE - (max_spread / (2)))) / ONE;
@@ -302,7 +307,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return _quote The sUSD to receive for the `amount` of `position` options if sold to AMM for `market`
     function sellToAmmQuote(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount
     ) public view returns (uint _quote) {
         uint baseOdds = obtainOdds(market, position);
@@ -312,7 +317,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _sellToAmmQuote(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint basePrice,
         uint _available
@@ -335,7 +340,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return _impact The price impact after selling the position amount to AMM
     function sellPriceImpact(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount
     ) public view returns (uint _impact) {
         uint _available = availableToSellToAMM(market, position);
@@ -348,7 +353,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _market The address of the SportPositional market of a game
     /// @param _position The position (home/away/draw) to get the odds
     /// @return oddsToReturn The oracle odds for `_position` of a `_market`
-    function obtainOdds(address _market, Position _position) public view returns (uint oddsToReturn) {
+    function obtainOdds(address _market, ISportsAMM.Position _position) public view returns (uint oddsToReturn) {
         oddsToReturn = sportAmmUtils.obtainOdds(_market, _position, apexConsumer, theRundownConsumer);
     }
 
@@ -373,14 +378,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function getMarketDefaultOdds(address _market, bool isSell) public view returns (uint[] memory odds) {
         odds = new uint[](ISportPositionalMarket(_market).optionsCount());
         if (isMarketInAMMTrading(_market)) {
-            Position position;
+            ISportsAMM.Position position;
             for (uint i = 0; i < odds.length; i++) {
                 if (i == 0) {
-                    position = Position.Home;
+                    position = ISportsAMM.Position.Home;
                 } else if (i == 1) {
-                    position = Position.Away;
+                    position = ISportsAMM.Position.Away;
                 } else {
-                    position = Position.Draw;
+                    position = ISportsAMM.Position.Draw;
                 }
                 if (isSell) {
                     odds[i] = sellToAmmQuote(_market, position, ONE);
@@ -403,7 +408,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _referrer who referred the buyer to SportsAMM
     function buyFromAMMWithDifferentCollateralAndReferrer(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage,
@@ -425,7 +430,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param collateral The address of the collateral used
     function buyFromAMMWithDifferentCollateral(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage,
@@ -442,7 +447,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param additionalSlippage The slippage percentage for the payout
     function buyFromAMM(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
@@ -458,7 +463,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param additionalSlippage The slippage percentage for the payout
     function buyFromAMMWithReferrer(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage,
@@ -472,7 +477,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _buyFromAMMWithDifferentCollateral(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage,
@@ -508,7 +513,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _buyFromAMM(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage,
@@ -536,9 +541,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             spentOnGame[market] = spentOnGame[market] + toMint;
         }
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        IPosition target = position == Position.Home ? home : away;
-        if (ISportPositionalMarket(market).optionsCount() > 2 && position != Position.Home) {
-            target = position == Position.Away ? away : draw;
+        IPosition target = position == ISportsAMM.Position.Home ? home : away;
+        if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
+            target = position == ISportsAMM.Position.Away ? away : draw;
         }
 
         IERC20Upgradeable(address(target)).safeTransfer(msg.sender, amount);
@@ -559,7 +564,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param additionalSlippage The slippage percentage for the payout
     function sellToAMM(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
@@ -576,9 +581,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         require((expectedPayout * ONE) / (pricePaid) <= (ONE + (additionalSlippage)), "Slippage too high");
 
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        IPosition target = position == Position.Home ? home : away;
-        if (ISportPositionalMarket(market).optionsCount() > 2 && position != Position.Home) {
-            target = position == Position.Away ? away : draw;
+        IPosition target = position == ISportsAMM.Position.Home ? home : away;
+        if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
+            target = position == ISportsAMM.Position.Away ? away : draw;
         }
 
         require(target.getBalanceOf(msg.sender) >= amount, "Low user options");
@@ -792,7 +797,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _buyPriceImpact(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint _availableToBuyFromAMM,
         uint _availableToBuyFromAMMOtherSide
@@ -822,7 +827,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         } else {
             if (isTwoPositional && amount > balancePosition && balancePosition > 0) {
                 uint pricePosition = obtainOdds(market, position);
-                uint priceOtherPosition = obtainOdds(market, position == Position.Home ? Position.Away : Position.Home);
+                uint priceOtherPosition = obtainOdds(
+                    market,
+                    position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home
+                );
                 sportAmmUtils.calculateDiscountFromNegativeToPositive(
                     SportsAMMUtils.NegativeDiscountsParams(
                         amount,
@@ -853,7 +861,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _sellPriceImpact(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint available
     ) internal view returns (uint _sellImpact) {
@@ -893,7 +901,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _getMintableAmount(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount
     ) internal view returns (uint mintable) {
         uint availableInContract = sportAmmUtils.balanceOfPositionOnMarket(market, position, address(this));
@@ -932,7 +940,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SoldToAMM(
         address seller,
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint sUSDPaid,
         address susd,
@@ -941,7 +949,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event BoughtFromAmm(
         address buyer,
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount,
         uint sUSDPaid,
         address susd,

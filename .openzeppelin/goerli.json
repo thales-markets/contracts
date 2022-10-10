@@ -219,6 +219,11 @@
       "address": "0x264D0d84C7fE899aFBE049e3E86d896565564577",
       "txHash": "0x37e8a1eef2b688fa1c175f9ffcc6a069f239df8613f39cf72b3abd08bfa09fec",
       "kind": "transparent"
+    },
+    {
+      "address": "0x11219262dD0B7715E728877bd263e35e18192ffA",
+      "txHash": "0x62e9463761dfc8d80c7545e1921a4d36087835174a8b1b1e7e20ef3d1478b03d",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -13635,151 +13640,151 @@
             "contract": "SportsAMM",
             "label": "sUSD",
             "type": "t_contract(IERC20Upgradeable)6720",
-            "src": "contracts/SportMarkets/SportsAMM.sol:36"
+            "src": "contracts/SportMarkets/SportsAMM.sol:37"
           },
           {
             "contract": "SportsAMM",
             "label": "manager",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:39"
+            "src": "contracts/SportMarkets/SportsAMM.sol:40"
           },
           {
             "contract": "SportsAMM",
             "label": "defaultCapPerGame",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:43"
+            "src": "contracts/SportMarkets/SportsAMM.sol:44"
           },
           {
             "contract": "SportsAMM",
             "label": "min_spread",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:46"
+            "src": "contracts/SportMarkets/SportsAMM.sol:47"
           },
           {
             "contract": "SportsAMM",
             "label": "max_spread",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:49"
+            "src": "contracts/SportMarkets/SportsAMM.sol:50"
           },
           {
             "contract": "SportsAMM",
             "label": "minimalTimeLeftToMaturity",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:53"
+            "src": "contracts/SportMarkets/SportsAMM.sol:54"
           },
           {
             "contract": "SportsAMM",
             "label": "spentOnGame",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:62"
+            "src": "contracts/SportMarkets/SportsAMM.sol:63"
           },
           {
             "contract": "SportsAMM",
             "label": "safeBox",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:65"
+            "src": "contracts/SportMarkets/SportsAMM.sol:66"
           },
           {
             "contract": "SportsAMM",
             "label": "theRundownConsumer",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:68"
+            "src": "contracts/SportMarkets/SportsAMM.sol:69"
           },
           {
             "contract": "SportsAMM",
             "label": "safeBoxImpact",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:71"
+            "src": "contracts/SportMarkets/SportsAMM.sol:72"
           },
           {
             "contract": "SportsAMM",
             "label": "stakingThales",
-            "type": "t_contract(IStakingThales)68499",
-            "src": "contracts/SportMarkets/SportsAMM.sol:74"
+            "type": "t_contract(IStakingThales)68526",
+            "src": "contracts/SportMarkets/SportsAMM.sol:75"
           },
           {
             "contract": "SportsAMM",
             "label": "minSupportedOdds",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:77"
+            "src": "contracts/SportMarkets/SportsAMM.sol:78"
           },
           {
             "contract": "SportsAMM",
             "label": "maxSupportedOdds",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:80"
+            "src": "contracts/SportMarkets/SportsAMM.sol:81"
           },
           {
             "contract": "SportsAMM",
             "label": "curveSUSD",
-            "type": "t_contract(ICurveSUSD)66936",
-            "src": "contracts/SportMarkets/SportsAMM.sol:83"
+            "type": "t_contract(ICurveSUSD)66963",
+            "src": "contracts/SportMarkets/SportsAMM.sol:84"
           },
           {
             "contract": "SportsAMM",
             "label": "usdc",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:86"
+            "src": "contracts/SportMarkets/SportsAMM.sol:87"
           },
           {
             "contract": "SportsAMM",
             "label": "usdt",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:89"
+            "src": "contracts/SportMarkets/SportsAMM.sol:90"
           },
           {
             "contract": "SportsAMM",
             "label": "dai",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:92"
+            "src": "contracts/SportMarkets/SportsAMM.sol:93"
           },
           {
             "contract": "SportsAMM",
             "label": "curveOnrampEnabled",
             "type": "t_bool",
-            "src": "contracts/SportMarkets/SportsAMM.sol:95"
+            "src": "contracts/SportMarkets/SportsAMM.sol:96"
           },
           {
             "contract": "SportsAMM",
             "label": "referrals",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:98"
+            "src": "contracts/SportMarkets/SportsAMM.sol:99"
           },
           {
             "contract": "SportsAMM",
             "label": "referrerFee",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:101"
+            "src": "contracts/SportMarkets/SportsAMM.sol:102"
           },
           {
             "contract": "SportsAMM",
             "label": "parlayAMM",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:104"
+            "src": "contracts/SportMarkets/SportsAMM.sol:105"
           },
           {
             "contract": "SportsAMM",
             "label": "apexConsumer",
             "type": "t_address",
-            "src": "contracts/SportMarkets/SportsAMM.sol:107"
+            "src": "contracts/SportMarkets/SportsAMM.sol:108"
           },
           {
             "contract": "SportsAMM",
             "label": "maxAllowedPegSlippagePercentage",
             "type": "t_uint256",
-            "src": "contracts/SportMarkets/SportsAMM.sol:110"
+            "src": "contracts/SportMarkets/SportsAMM.sol:111"
           },
           {
             "contract": "SportsAMM",
             "label": "capPerSport",
             "type": "t_mapping(t_uint256,t_uint256)",
-            "src": "contracts/SportMarkets/SportsAMM.sol:113"
+            "src": "contracts/SportMarkets/SportsAMM.sol:114"
           },
           {
             "contract": "SportsAMM",
             "label": "sportAmmUtils",
-            "type": "t_contract(SportsAMMUtils)57870",
-            "src": "contracts/SportMarkets/SportsAMM.sol:115"
+            "type": "t_contract(SportsAMMUtils)57897",
+            "src": "contracts/SportMarkets/SportsAMM.sol:116"
           }
         ],
         "types": {
@@ -13795,10 +13800,10 @@
           "t_mapping(t_address,t_uint256)": {
             "label": "mapping(address => uint256)"
           },
-          "t_contract(IStakingThales)68499": {
+          "t_contract(IStakingThales)68526": {
             "label": "contract IStakingThales"
           },
-          "t_contract(ICurveSUSD)66936": {
+          "t_contract(ICurveSUSD)66963": {
             "label": "contract ICurveSUSD"
           },
           "t_bool": {
@@ -13807,7 +13812,7 @@
           "t_mapping(t_uint256,t_uint256)": {
             "label": "mapping(uint256 => uint256)"
           },
-          "t_contract(SportsAMMUtils)57870": {
+          "t_contract(SportsAMMUtils)57897": {
             "label": "contract SportsAMMUtils"
           },
           "t_array(t_uint256)49_storage": {

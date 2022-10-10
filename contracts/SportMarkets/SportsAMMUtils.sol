@@ -6,7 +6,7 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/ITherundownConsumer.sol";
 import "../interfaces/IApexConsumer.sol";
-import "./SportsAMM.sol";
+import "../interfaces/ISportsAMM.sol";
 
 /// @title Sports AMM utils
 contract SportsAMMUtils {
@@ -228,7 +228,7 @@ contract SportsAMMUtils {
 
     function obtainOdds(
         address _market,
-        SportsAMM.Position _position,
+        ISportsAMM.Position _position,
         address apexConsumer,
         address theRundownConsumer
     ) public view returns (uint oddsToReturn) {
@@ -244,7 +244,7 @@ contract SportsAMMUtils {
     }
 
     function getBalanceOtherSideOnThreePositions(
-        SportsAMM.Position position,
+        ISportsAMM.Position position,
         address addressToCheck,
         address market
     ) public view returns (uint balanceOfTheOtherSide) {
@@ -253,9 +253,9 @@ contract SportsAMMUtils {
             position,
             addressToCheck
         );
-        if (position == SportsAMM.Position.Home) {
+        if (position == ISportsAMM.Position.Home) {
             balanceOfTheOtherSide = awayBalance < drawBalance ? awayBalance : drawBalance;
-        } else if (position == SportsAMM.Position.Away) {
+        } else if (position == ISportsAMM.Position.Away) {
             balanceOfTheOtherSide = homeBalance < drawBalance ? homeBalance : drawBalance;
         } else {
             balanceOfTheOtherSide = homeBalance < awayBalance ? homeBalance : awayBalance;
@@ -264,7 +264,7 @@ contract SportsAMMUtils {
 
     function getBalanceOfPositionsOnMarket(
         address market,
-        SportsAMM.Position position,
+        ISportsAMM.Position position,
         address addressToCheck
     )
         public
@@ -285,7 +285,7 @@ contract SportsAMMUtils {
 
     function balanceOfPositionsOnMarket(
         address market,
-        SportsAMM.Position position,
+        ISportsAMM.Position position,
         address addressToCheck
     )
         public
@@ -297,10 +297,10 @@ contract SportsAMMUtils {
         )
     {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        uint balance = position == SportsAMM.Position.Home
+        uint balance = position == ISportsAMM.Position.Home
             ? home.getBalanceOf(addressToCheck)
             : away.getBalanceOf(addressToCheck);
-        uint balanceOtherSideMax = position == SportsAMM.Position.Home
+        uint balanceOtherSideMax = position == ISportsAMM.Position.Home
             ? away.getBalanceOf(addressToCheck)
             : home.getBalanceOf(addressToCheck);
         uint balanceOtherSideMin = balanceOtherSideMax;
@@ -310,7 +310,7 @@ contract SportsAMMUtils {
                 position,
                 addressToCheck
             );
-            if (position == SportsAMM.Position.Home) {
+            if (position == ISportsAMM.Position.Home) {
                 balance = homeBalance;
                 if (awayBalance < drawBalance) {
                     balanceOtherSideMax = drawBalance;
@@ -319,7 +319,7 @@ contract SportsAMMUtils {
                     balanceOtherSideMax = awayBalance;
                     balanceOtherSideMin = drawBalance;
                 }
-            } else if (position == SportsAMM.Position.Away) {
+            } else if (position == ISportsAMM.Position.Away) {
                 balance = awayBalance;
                 if (homeBalance < drawBalance) {
                     balanceOtherSideMax = drawBalance;
@@ -328,7 +328,7 @@ contract SportsAMMUtils {
                     balanceOtherSideMax = homeBalance;
                     balanceOtherSideMin = drawBalance;
                 }
-            } else if (position == SportsAMM.Position.Draw) {
+            } else if (position == ISportsAMM.Position.Draw) {
                 balance = drawBalance;
                 if (homeBalance < awayBalance) {
                     balanceOtherSideMax = awayBalance;
@@ -344,15 +344,15 @@ contract SportsAMMUtils {
 
     function balanceOfPositionOnMarket(
         address market,
-        SportsAMM.Position position,
+        ISportsAMM.Position position,
         address addressToCheck
     ) public view returns (uint) {
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        uint balance = position == SportsAMM.Position.Home
+        uint balance = position == ISportsAMM.Position.Home
             ? home.getBalanceOf(addressToCheck)
             : away.getBalanceOf(addressToCheck);
-        if (ISportPositionalMarket(market).optionsCount() == 3 && position != SportsAMM.Position.Home) {
-            balance = position == SportsAMM.Position.Away
+        if (ISportPositionalMarket(market).optionsCount() == 3 && position != ISportsAMM.Position.Home) {
+            balance = position == ISportsAMM.Position.Away
                 ? away.getBalanceOf(addressToCheck)
                 : draw.getBalanceOf(addressToCheck);
         }

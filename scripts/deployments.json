@@ -380,7 +380,7 @@
 		"ApexConsumerWrapper": "0xB93A46584906FBb2DCc99b243A1e66A9a1A72A03",
 		"TherundownConsumerVerifier": "0x264D0d84C7fE899aFBE049e3E86d896565564577",
 		"TherundownConsumerVerifierImplementation": "0x10C8F4041efa54B8FA23c154218EA88681df92FE",
-		"SportsAMMUtils": "0xB1023A002D579b402989fAA785d575b5e1DB1D2C"
+		"SportsAMMUtils": "0xba3c17Cb0C0ec025A766015DB3F3Ba6316E36E38"
 	},
 	"optimisticGoerli": {
 		"ExoticUSD": "0xE1ceaa829525a08C1d39A5CEBe4b42aF58d77198",
@@ -435,7 +435,8 @@
 		"RangedPositionMastercopy": "0xc4Db40A9Bf954bD8c2266ACfdA227d576d9Cc89c",
 		"RangedMarketMastercopy": "0xD792b54AD28aeA550AaE878665F6a0De00793E81",
 		"TherundownConsumerVerifier": "0x86991efb34B0Cf55af38E9dACE3f82CD8B70188F",
-		"TherundownConsumerVerifierImplementation": "0x4a2Cdf88AeE68df88c90F6377bb556d686e3099C"
+		"TherundownConsumerVerifierImplementation": "0x4a2Cdf88AeE68df88c90F6377bb556d686e3099C",
+		"SportsAMMUtils": "0x3C82cD0eeC9aA80c63eCa2F2D2Cec6C469A84a35"
 	},
 	"localhost": {
 		"Airdrop": "",

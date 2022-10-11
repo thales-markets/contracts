@@ -407,6 +407,7 @@ contract('SportsVauchers', (accounts) => {
 				'',
 				'',
 				'',
+				SportsAMM.address,
 				SportsAMM.address
 			);
 

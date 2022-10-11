@@ -507,6 +507,11 @@
         "internalType": "uint256",
         "name": "totalQuote",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "skewImpact",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

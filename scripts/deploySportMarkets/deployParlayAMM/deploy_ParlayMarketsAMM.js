@@ -56,7 +56,7 @@ async function main() {
 
 	const parlayAMMfee = '5';
 	const maxSupportedAmount = w3utils.toWei('20000');
-	const maxSupportedOdds = w3utils.toWei('0.005');
+	const maxSupportedOdds = w3utils.toWei('0.05');
 	const safeBoxImpact = '5';
 
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');

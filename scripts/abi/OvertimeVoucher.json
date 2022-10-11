@@ -40,6 +40,11 @@
         "internalType": "address",
         "name": "_sportsamm",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayAMM",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -193,7 +198,20 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_thalesRoyaleAddress",
+        "name": "_parlayAMM",
+        "type": "address"
+      }
+    ],
+    "name": "NewParlayAMM",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_sportsAMM",
         "type": "address"
       }
     ],
@@ -659,6 +677,19 @@
       }
     ],
     "name": "setApprovalForAll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setParlayAMM",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

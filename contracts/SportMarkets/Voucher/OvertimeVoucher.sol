@@ -60,7 +60,8 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         string memory _tokenURITwoHundred,
         string memory _tokenURIFiveHundred,
         string memory _tokenURIThousand,
-        address _sportsamm
+        address _sportsamm,
+        address _parlayAMM
     ) ERC721(_name, _symbol) {
         sUSD = IERC20(_sUSD);
         tokenURITwenty = _tokenURITwenty;
@@ -71,6 +72,8 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         tokenURIThousand = _tokenURIThousand;
         sportsAMM = ISportsAMM(_sportsamm);
         sUSD.approve(_sportsamm, type(uint256).max);
+        parlayAMM = IParlayMarketsAMM(_parlayAMM);
+        sUSD.approve(_parlayAMM, type(uint256).max);
     }
 
     /* ========== TRV ========== */
@@ -150,7 +153,7 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         require(ERC721.ownerOf(tokenId) == msg.sender, "You are not the voucher owner!");
 
         // uint quote = parlayAMM._buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout);
-        require(_sUSDPaid < amountInVoucher[tokenId], "Insufficient amount in voucher");
+        require(_sUSDPaid <= amountInVoucher[tokenId], "Insufficient amount in voucher");
 
         parlayAMM.buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, msg.sender);
         amountInVoucher[tokenId] = amountInVoucher[tokenId] - _sUSDPaid;
@@ -197,6 +200,15 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         emit Paused(_state);
     }
 
+    function setParlayAMM(address _parlayAMM) external onlyOwner {
+        if (address(_parlayAMM) != address(0)) {
+            sUSD.approve(address(sportsAMM), 0);
+        }
+        parlayAMM = IParlayMarketsAMM(_parlayAMM);
+        sUSD.approve(_parlayAMM, type(uint256).max);
+        emit NewParlayAMM(_parlayAMM);
+    }
+
     function setSportsAMM(address _sportsAMM) external onlyOwner {
         if (address(_sportsAMM) != address(0)) {
             sUSD.approve(address(sportsAMM), 0);
@@ -226,6 +238,7 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         address susd
     );
     event NewTokenUri(string _tokenURI);
-    event NewSportsAMM(address _thalesRoyaleAddress);
+    event NewSportsAMM(address _sportsAMM);
+    event NewParlayAMM(address _parlayAMM);
     event Paused(bool _state);
 }

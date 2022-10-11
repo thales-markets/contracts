@@ -140,15 +140,20 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint collateralQuote,
             uint sUSDAfterFees,
             uint totalBuyAmount,
-            uint totalQuote
+            uint totalQuote,
+            uint skewImpact
         )
     {
         int128 curveIndex = _mapCollateralToCurveIndex(_collateral);
         if (curveIndex == 0 || !curveOnrampEnabled) {
-            return (collateralQuote, sUSDAfterFees, totalBuyAmount, totalQuote);
+            return (collateralQuote, sUSDAfterFees, totalBuyAmount, totalQuote, skewImpact);
         }
 
-        (sUSDAfterFees, totalBuyAmount, totalQuote, , , , ) = _buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid);
+        (sUSDAfterFees, totalBuyAmount, totalQuote, , skewImpact, , ) = _buyQuoteFromParlay(
+            _sportMarkets,
+            _positions,
+            _sUSDPaid
+        );
         //cant get a quote on how much collateral is needed from curve for sUSD,
         //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
         collateralQuote = curveSUSD.get_dy_underlying(0, curveIndex, _sUSDPaid).mul(ONE.add(ONE_PERCENT.div(5))).div(ONE);

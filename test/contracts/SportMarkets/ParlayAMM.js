@@ -189,6 +189,7 @@ contract('ParlayAMM', (accounts) => {
 	let parlayPositions = [];
 	let parlaySingleMarketAddress;
 	let parlaySingleMarket;
+	let voucher;
 
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
@@ -996,6 +997,148 @@ contract('ParlayAMM', (accounts) => {
 			assert.approximately(parseFloat(fromUnit(totalResultQuote)), calculatedQuote, 0.00000000001);
 			let calculatedAmount = feesApplied / calculatedQuote;
 			assert.approximately(parseFloat(fromUnit(parlayAmount)), calculatedAmount, 0.00000000001);
+		});
+
+		it('Mint voucher', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+			let OvertimeVoucher = artifacts.require('OvertimeVoucher');
+
+			voucher = await OvertimeVoucher.new(
+				Thales.address,
+				'',
+				'',
+				'',
+				'',
+				'',
+				'',
+				SportsAMM.address,
+				ParlayAMM.address,
+				{ from: owner }
+			);
+
+			await voucher.setSportsAMM(SportsAMM.address, { from: owner });
+			await voucher.setParlayAMM(ParlayAMM.address, { from: owner });
+			await voucher.setPause(false, { from: owner });
+			await voucher.setTokenUris('', '', '', '', '', '', { from: owner });
+
+			Thales.approve(voucher.address, toUnit(20), { from: third });
+
+			let balanceOfMinter = await Thales.balanceOf(third);
+			console.log('sUSD balance of third = ' + balanceOfMinter);
+			const id = 1;
+
+			const tenSUSD = toUnit(10);
+			await expect(voucher.mint(first, tenSUSD, { from: third })).to.be.revertedWith(
+				'Invalid amount'
+			);
+
+			const twentysUSD = toUnit(20);
+			await voucher.mint(first, twentysUSD, { from: third });
+			balanceOfMinter = await Thales.balanceOf(third);
+			console.log('sUSD balance of third = ' + balanceOfMinter);
+
+			let balanceOfVoucher = await Thales.balanceOf(voucher.address);
+			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
+
+			assert.bnEqual(1, await voucher.balanceOf(first));
+			assert.equal(first, await voucher.ownerOf(id));
+			assert.bnEqual(toUnit(20), await voucher.amountInVoucher(id));
+
+			await voucher.safeTransferFrom(first, second, id, { from: first });
+			assert.equal(second, await voucher.ownerOf(id));
+
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				toUnit(10)
+			);
+			console.log('Quote is ' + result[1] / 1e18);
+
+			let buyParlayTX = await voucher.buyFromParlayAMMWithVoucher(
+				parlayMarketsAddress,
+				parlayPositions,
+				toUnit(10),
+				slippage,
+				result[1],
+				id,
+				{ from: second }
+			);
+
+			assert.eventEqual(buyParlayTX.logs[0], 'BoughtFromParlayWithVoucher', {
+				buyer: second,
+				_sUSDPaid: toUnit(10),
+				_expectedPayout: result[1],
+			});
+
+			balanceOfVoucher = await Thales.balanceOf(voucher.address);
+			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
+
+			let amountInVoucher = await voucher.amountInVoucher(id);
+			console.log('Amount in voucher is ' + amountInVoucher / 1e18);
+
+			result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				toUnit(100)
+			);
+			await expect(
+				voucher.buyFromParlayAMMWithVoucher(
+					parlayMarketsAddress,
+					parlayPositions,
+					toUnit(100),
+					slippage,
+					result[1],
+					id,
+					{ from: second }
+				)
+			).to.be.revertedWith('Insufficient amount in voucher');
+			await expect(
+				voucher.buyFromParlayAMMWithVoucher(
+					parlayMarketsAddress,
+					parlayPositions,
+					toUnit(100),
+					slippage,
+					result[1],
+					id,
+					{ from: first }
+				)
+			).to.be.revertedWith('You are not the voucher owner!');
+
+			let secondBalanceBeforeBurn = await voucher.balanceOf(second);
+			console.log('Second balance before burn is ' + secondBalanceBeforeBurn);
+
+			result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				toUnit(10)
+			);
+			buyParlayTX = await voucher.buyFromParlayAMMWithVoucher(
+				parlayMarketsAddress,
+				parlayPositions,
+				toUnit(10),
+				slippage,
+				result[1],
+				id,
+				{ from: second }
+			);
+
+			balanceOfVoucher = await Thales.balanceOf(voucher.address);
+			console.log('sUSD balance of voucher = ' + balanceOfVoucher);
+
+			let secondBalanceAfterBurn = await voucher.balanceOf(second);
+			console.log('Second balance after burn is ' + secondBalanceAfterBurn);
+
+			assert.bnEqual(0, secondBalanceAfterBurn);
 		});
 
 		describe('Exercise Parlay', () => {

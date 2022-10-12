@@ -1178,6 +1178,17 @@ contract('ParlayAMM', (accounts) => {
 				let result = await ParlayAMM.isActiveParlay(activeParlays[0]);
 				assert.equal(result, true);
 			});
+			it('Read from Parlay market', async () => {
+				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
+				let result = await ParlayAMM.isActiveParlay(activeParlays[0]);
+				parlaySingleMarketAddress = activeParlays[0];
+				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
+				let phase = await parlaySingleMarket.phase();
+				assert.equal(phase, 0);
+				let userWon = await parlaySingleMarket.isUserTheWinner();
+				assert.equal(userWon, false);
+				await ParlayAMM.setPausedMarkets([parlaySingleMarket.address], true, { from: owner });
+			});
 			it('Can exercise any SportPosition', async () => {
 				let answer = await parlaySingleMarket.isAnySportMarketResolved();
 				let result = await ParlayAMM.exercisableSportPositionsInParlay(parlaySingleMarket.address);

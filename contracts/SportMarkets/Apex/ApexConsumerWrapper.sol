@@ -192,11 +192,15 @@ contract ApexConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         bool arePostQualifyingOdds = keccak256(abi.encodePacked(qualifyingStatusPerRequestId[_requestId])) ==
             keccak256(abi.encodePacked("post"));
         uint betTypeId = betTypeIdPerBetType[betTypePerRequestId[_requestId]];
+        string memory betTypeDetail2 = keccak256(abi.encodePacked(betTypePerRequestId[_requestId])) ==
+            keccak256(abi.encodePacked(H2H_BET_TYPE))
+            ? _betTypeDetail2
+            : betTypePerRequestId[_requestId];
 
         consumer.fulfillMatchup(
             _requestId,
             _betTypeDetail1,
-            _betTypeDetail2,
+            betTypeDetail2,
             _probA,
             _probB,
             gameId,

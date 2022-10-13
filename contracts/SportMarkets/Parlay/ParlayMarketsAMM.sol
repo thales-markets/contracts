@@ -290,23 +290,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         emit ParlayResolved(_account, _userWon);
     }
 
-    // function transferRestOfSUSDAmount(
-    //     address receiver,
-    //     uint amount,
-    //     bool dueToCancellation
-    // ) external nonReentrant notPaused {
-    //     require(_knownMarkets.contains(msg.sender), "Not a known parlay market");
-    //     if (dueToCancellation) {
-    //         emit ExtraAmountTransferredDueToCancellation(receiver, amount);
-    //     }
-    //     sUSD.safeTransfer(receiver, amount);
-    // }
-
-    // function transferSusdTo(address receiver, uint amount) external nonReentrant notPaused {
-    //     require(_knownMarkets.contains(msg.sender), "Not a known parlay market");
-    //     sUSD.safeTransfer(receiver, amount);
-    // }
-
     function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
         sUSD.safeTransfer(account, amount);
     }

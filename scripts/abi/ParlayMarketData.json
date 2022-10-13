@@ -90,6 +90,24 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayOwner",
+        "type": "address"
+      }
+    ],
+    "name": "addUserParlay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address[]",
         "name": "_parlayMarket",
         "type": "address[]"
@@ -136,7 +154,7 @@
         "type": "uint256"
       }
     ],
-    "name": "gamePositionParlay",
+    "name": "gameAddressPositionParlay",
     "outputs": [
       {
         "internalType": "address",
@@ -359,7 +377,7 @@
         "type": "uint256"
       }
     ],
-    "name": "numOfparlaysInGamePosition",
+    "name": "numOfParlaysInGamePosition",
     "outputs": [
       {
         "internalType": "uint256",
@@ -506,6 +524,49 @@
     "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "userNumOfParlays",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "userParlays",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

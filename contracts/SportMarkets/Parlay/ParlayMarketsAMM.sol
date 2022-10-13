@@ -464,19 +464,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         finalQuotes = new uint[](_sportMarkets.length);
         for (uint i = 0; i < _sportMarkets.length; i++) {
             totalBuyAmount += _buyQuoteAmounts[i];
-            if (reducedFeesEnabled) {
-                buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuoteForParlayAMM(
-                    _sportMarkets[i],
-                    _obtainSportsAMMPosition(_positions[i]),
-                    _buyQuoteAmounts[i]
-                );
-            } else {
-                buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
-                    _sportMarkets[i],
-                    _obtainSportsAMMPosition(_positions[i]),
-                    _buyQuoteAmounts[i]
-                );
-            }
+            // buyQuote always calculated with added SportsAMM fees
+            buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
+                _sportMarkets[i],
+                _obtainSportsAMMPosition(_positions[i]),
+                _buyQuoteAmounts[i]
+            );
             if (buyAmountPerMarket[i] == 0) {
                 totalQuote = 0;
                 totalBuyAmount = 0;
@@ -572,6 +565,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint buyAMMQuote;
 
         for (uint i = 0; i < numOfMarkets; i++) {
+            // pending to be default behavior
             if (reducedFeesEnabled) {
                 buyAMMQuote = sportsAmm.buyFromAmmQuoteForParlayAMM(
                     _sportMarkets[i],

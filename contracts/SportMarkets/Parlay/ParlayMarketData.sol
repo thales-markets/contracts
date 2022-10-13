@@ -19,10 +19,11 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     mapping(address => mapping(uint => AddressSetLib.AddressSet)) internal _parlaysInGamePosition;
-    mapping(address => mapping(uint => mapping(uint => address))) public gamePositionParlay;
-    mapping(address => mapping(uint => uint)) public numOfparlaysInGamePosition;
+    mapping(address => mapping(uint => mapping(uint => address))) public gameAddressPositionParlay;
+    mapping(address => mapping(uint => uint)) public numOfParlaysInGamePosition;
     mapping(address => ParlayDetails) public parlayDetails;
-
+    mapping(address => mapping(uint => address)) public userParlays;
+    mapping(address => uint) public userNumOfParlays;
     address public parlayMarketsAMM;
 
     function initialize(address _owner, address _parlayMarketsAMM) external initializer {
@@ -99,6 +100,11 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    function addUserParlay(address _parlayMarket, address _parlayOwner) external onlyParlayAMM {
+        userNumOfParlays[_parlayOwner] = userNumOfParlays[_parlayOwner] + 1;
+        userParlays[_parlayOwner][userNumOfParlays[_parlayOwner]] = _parlayMarket;
+    }
+
     function addParlayForGamePosition(
         address _game,
         uint _position,
@@ -106,6 +112,8 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     ) external onlyParlayAMM {
         require(msg.sender == parlayMarketsAMM, "Invalid sender");
         _parlaysInGamePosition[_game][_position].add(_parlayMarket);
+        gameAddressPositionParlay[_game][_position][numOfParlaysInGamePosition[_game][_position]] = _parlayMarket;
+        numOfParlaysInGamePosition[_game][_position] += 1;
     }
 
     function removeParlayForGamePosition(

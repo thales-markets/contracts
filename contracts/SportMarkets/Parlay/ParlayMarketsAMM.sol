@@ -17,6 +17,7 @@ import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "../../utils/libraries/AddressSetLib.sol";
 
 import "./ParlayMarket.sol";
+import "./ParlayVerifier.sol";
 import "../../interfaces/IParlayMarketData.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
@@ -64,6 +65,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     AddressSetLib.AddressSet internal _knownMarkets;
     mapping(address => bool) public resolvedParlay;
     uint maxAllowedPegSlippagePercentage;
+    ParlayVerifier public parlayVerifier;
 
     function initialize(
         address _owner,
@@ -318,6 +320,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
 
         // apply all checks
+        require(_sUSDPaid >= ONE, "Low sUSD buy");
         require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");
         require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
         require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
@@ -348,14 +351,20 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         parlayMarket.updateQuotes(marketQuotes, totalQuote);
 
         // buy the positions
-        _buyPositionsFromSportAMM(_sportMarkets, _positions, amountsToBuy, _additionalSlippage, address(parlayMarket));
+        _buyPositionsFromSportAMM(
+            _sportMarkets,
+            _positions,
+            amountsToBuy,
+            _additionalSlippage,
+            address(parlayMarket),
+            _differentRecepient
+        );
         emit ParlayMarketCreated(
             address(parlayMarket),
             msg.sender,
             totalAmount,
             _sUSDPaid,
             sUSDAfterFees,
-            totalQuote,
             totalQuote,
             skewImpact
         );
@@ -383,157 +392,38 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint[] memory inverseQuotes;
         uint inverseSum;
         sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee) * ONE_PERCENT)) * _sUSDPaid) / ONE;
-        (initialQuote, sumQuotes, inverseSum, marketQuotes, inverseQuotes, ) = _calculateInitialQuotesForParlay(
-            _sportMarkets,
-            _positions,
-            sUSDAfterFees
-        );
+        (initialQuote, sumQuotes, inverseSum, marketQuotes, inverseQuotes, ) = parlayVerifier
+            .calculateInitialQuotesForParlay(_sportMarkets, _positions, sUSDAfterFees, parlaySize, sportsAmm);
         if (initialQuote > 0) {
-            (totalBuyAmount, amountsToBuy) = _calculateBuyQuoteAmounts(
+            (totalBuyAmount, amountsToBuy) = parlayVerifier.calculateBuyQuoteAmounts(
                 initialQuote,
                 sumQuotes,
                 inverseSum,
                 sUSDAfterFees,
                 inverseQuotes
             );
-            (totalQuote, totalBuyAmount, finalQuotes, ) = _calculateFinalQuotes(_sportMarkets, _positions, amountsToBuy);
+            (totalQuote, totalBuyAmount, finalQuotes, ) = parlayVerifier.calculateFinalQuotes(
+                _sportMarkets,
+                _positions,
+                amountsToBuy,
+                sportsAmm
+            );
             if (totalQuote > 0) {
                 uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
                 skewImpact = expectedPayout > totalBuyAmount
                     ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
                     : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
-                amountsToBuy = _applySkewImpactBatch(amountsToBuy, skewImpact, (expectedPayout > totalBuyAmount));
-                totalBuyAmount = _applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
+                amountsToBuy = parlayVerifier.applySkewImpactBatch(
+                    amountsToBuy,
+                    skewImpact,
+                    (expectedPayout > totalBuyAmount)
+                );
+                totalBuyAmount = parlayVerifier.applySkewImpact(
+                    totalBuyAmount,
+                    skewImpact,
+                    (expectedPayout > totalBuyAmount)
+                );
             }
-        }
-    }
-
-    function _applySkewImpact(
-        uint _value,
-        uint _skewImpact,
-        bool _addition
-    ) internal pure returns (uint newValue) {
-        newValue = _addition ? (((ONE + _skewImpact) * _value) / ONE) : (((ONE - _skewImpact) * _value) / ONE);
-    }
-
-    function _applySkewImpactBatch(
-        uint[] memory _values,
-        uint _skewImpact,
-        bool _addition
-    ) internal pure returns (uint[] memory newValues) {
-        uint totalAmount;
-        newValues = new uint[](_values.length);
-        for (uint i = 0; i < _values.length; i++) {
-            newValues[i] = _applySkewImpact(_values[i], _skewImpact, _addition);
-            totalAmount += newValues[i];
-        }
-    }
-
-    function _calculateFinalQuotes(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint[] memory _buyQuoteAmounts
-    )
-        internal
-        view
-        returns (
-            uint totalQuote,
-            uint totalBuyAmount,
-            uint[] memory finalQuotes,
-            uint[] memory buyAmountPerMarket
-        )
-    {
-        buyAmountPerMarket = new uint[](_sportMarkets.length);
-        finalQuotes = new uint[](_sportMarkets.length);
-        for (uint i = 0; i < _sportMarkets.length; i++) {
-            totalBuyAmount += _buyQuoteAmounts[i];
-            // buyQuote always calculated with added SportsAMM fees
-            buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
-                _sportMarkets[i],
-                _obtainSportsAMMPosition(_positions[i]),
-                _buyQuoteAmounts[i]
-            );
-            if (buyAmountPerMarket[i] == 0) {
-                totalQuote = 0;
-                totalBuyAmount = 0;
-                break;
-            }
-        }
-        for (uint i = 0; i < _sportMarkets.length; i++) {
-            finalQuotes[i] = ((buyAmountPerMarket[i] * ONE * ONE) / _buyQuoteAmounts[i]) / ONE;
-            totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
-        }
-    }
-
-    function _calculateBuyQuoteAmounts(
-        uint _totalQuote,
-        uint _sumOfQuotes,
-        uint _inverseSum,
-        uint _sUSDPaid,
-        uint[] memory _marketQuotes
-    ) internal pure returns (uint totalAmount, uint[] memory buyQuoteAmounts) {
-        buyQuoteAmounts = new uint[](_marketQuotes.length);
-        for (uint i = 0; i < _marketQuotes.length; i++) {
-            buyQuoteAmounts[i] =
-                ((ONE * _marketQuotes[i] * _sUSDPaid * _sumOfQuotes)) /
-                (_totalQuote * _inverseSum * _sumOfQuotes);
-            totalAmount += buyQuoteAmounts[i];
-        }
-    }
-
-    function _calculateInitialQuotesForParlay(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _totalSUSDToPay
-    )
-        internal
-        view
-        returns (
-            uint totalResultQuote,
-            uint sumQuotes,
-            uint inverseSum,
-            uint[] memory marketQuotes,
-            uint[] memory inverseQuotes,
-            uint totalAmount
-        )
-    {
-        uint numOfMarkets = _sportMarkets.length;
-        uint numOfPositions = _positions.length;
-        if (_totalSUSDToPay < ONE) {
-            _totalSUSDToPay = ONE;
-        }
-        if (numOfMarkets == numOfPositions && numOfMarkets > 0 && numOfMarkets <= parlaySize) {
-            marketQuotes = new uint[](numOfMarkets);
-            inverseQuotes = new uint[](numOfMarkets);
-            uint[] memory marketOdds;
-            for (uint i = 0; i < numOfMarkets; i++) {
-                if (_positions[i] > 2) {
-                    totalResultQuote = 0;
-                    break;
-                }
-                marketOdds = sportsAmm.getMarketDefaultOdds(_sportMarkets[i], false);
-                if (marketOdds.length == 0) {
-                    totalResultQuote = 0;
-                    break;
-                }
-                marketQuotes[i] = marketOdds[_positions[i]];
-                totalResultQuote = totalResultQuote == 0 ? marketQuotes[i] : (totalResultQuote * marketQuotes[i]) / ONE;
-                inverseQuotes[i] = ONE - marketQuotes[i];
-                inverseSum = inverseSum + inverseQuotes[i];
-                sumQuotes = sumQuotes + marketQuotes[i];
-                if (totalResultQuote == 0) {
-                    totalResultQuote = 0;
-                    break;
-                }
-                // two markets can't be equal:
-                for (uint j = 0; j < i; j++) {
-                    if (_sportMarkets[i] == _sportMarkets[j]) {
-                        totalResultQuote = 0;
-                        break;
-                    }
-                }
-            }
-            totalAmount = totalResultQuote > 0 ? ((_totalSUSDToPay * ONE * ONE) / totalResultQuote) / ONE : 0;
         }
     }
 
@@ -542,45 +432,38 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint[] memory _positions,
         uint[] memory _proportionalAmounts,
         uint _additionalSlippage,
-        address _parlayMarket
+        address _parlayMarket,
+        address _parlayOwner
     ) internal {
         uint numOfMarkets = _sportMarkets.length;
         uint buyAMMQuote;
-
+        ISportsAMM.Position sportPosition;
         for (uint i = 0; i < numOfMarkets; i++) {
+            sportPosition = parlayVerifier.obtainSportsAMMPosition(_positions[i]);
             // pending to be default behavior
             if (reducedFeesEnabled) {
                 buyAMMQuote = sportsAmm.buyFromAmmQuoteForParlayAMM(
                     _sportMarkets[i],
-                    _obtainSportsAMMPosition(_positions[i]),
+                    sportPosition,
                     _proportionalAmounts[i]
                 );
             } else {
-                buyAMMQuote = sportsAmm.buyFromAmmQuote(
-                    _sportMarkets[i],
-                    _obtainSportsAMMPosition(_positions[i]),
-                    _proportionalAmounts[i]
-                );
+                buyAMMQuote = sportsAmm.buyFromAmmQuote(_sportMarkets[i], sportPosition, _proportionalAmounts[i]);
             }
 
-            sportsAmm.buyFromAMM(
-                _sportMarkets[i],
-                _obtainSportsAMMPosition(_positions[i]),
-                _proportionalAmounts[i],
-                buyAMMQuote,
-                _additionalSlippage
-            );
+            sportsAmm.buyFromAMM(_sportMarkets[i], sportPosition, _proportionalAmounts[i], buyAMMQuote, _additionalSlippage);
             _sendPositionsToMarket(_sportMarkets[i], _positions[i], _parlayMarket, _proportionalAmounts[i]);
-            _updateMarketData(_sportMarkets[i], _positions[i], _parlayMarket);
+            _updateMarketData(_sportMarkets[i], _positions[i], _parlayMarket, _parlayOwner);
         }
     }
 
     function _updateMarketData(
         address _market,
         uint _position,
-        address _parlayMarket
+        address _parlayMarket,
+        address _parlayOwner
     ) internal {
-        IParlayMarketData(parlayMarketData).addParlayForGamePosition(_market, _position, _parlayMarket);
+        IParlayMarketData(parlayMarketData).addParlayForGamePosition(_market, _position, _parlayMarket, _parlayOwner);
     }
 
     function _sendPositionsToMarket(
@@ -598,14 +481,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         } else {
             (, , IPosition drawPosition) = ISportPositionalMarket(_sportMarket).getOptions();
             IERC20Upgradeable(address(drawPosition)).safeTransfer(address(_parlayMarket), _amount);
-        }
-    }
-
-    function _obtainSportsAMMPosition(uint _position) internal pure returns (ISportsAMM.Position position) {
-        if (_position == 0) {
-            position = ISportsAMM.Position.Home;
-        } else {
-            position = _position == 1 ? ISportsAMM.Position.Away : ISportsAMM.Position.Draw;
         }
     }
 
@@ -668,7 +543,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         IStakingThales _stakingThales,
         address _safeBox,
         address _referrals,
-        address _parlayMarketData
+        address _parlayMarketData,
+        address _parlayVerifier
     ) external onlyOwner {
         sportsAmm = ISportsAMM(_sportsAMM);
         sUSD.approve(address(sportsAmm), type(uint256).max);
@@ -676,7 +552,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         safeBox = _safeBox;
         referrals = _referrals;
         parlayMarketData = _parlayMarketData;
-        emit AddressesSet(_sportsAMM, address(_stakingThales), _safeBox, _referrals, _parlayMarketData);
+        parlayVerifier = ParlayVerifier(_parlayVerifier);
+        emit AddressesSet(_sportsAMM, address(_stakingThales), _safeBox, _referrals, _parlayMarketData, _parlayVerifier);
     }
 
     /// @notice Setting the Curve collateral addresses for all collaterals
@@ -720,7 +597,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint sUSDPaid,
         uint sUSDAfterFees,
         uint totalQuote,
-        uint initialQuote,
         uint skewImpact
     );
     event SetAmounts(uint max_amount, uint max_odds, uint _parlayAMMFee, uint _safeBoxImpact, uint _referrerFee);
@@ -729,7 +605,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address _stakingThales,
         address _safeBox,
         address _referrals,
-        address _parlayMarketData
+        address _parlayMarketData,
+        address _parlayVerifier
     );
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event ExtraAmountTransferredDueToCancellation(address receiver, uint amount);

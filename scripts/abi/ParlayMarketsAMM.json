@@ -31,6 +31,12 @@
         "internalType": "address",
         "name": "_parlayMarketData",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_parlayVerifier",
+        "type": "address"
       }
     ],
     "name": "AddressesSet",
@@ -161,12 +167,6 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "totalQuote",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "initialQuote",
         "type": "uint256"
       },
       {
@@ -864,6 +864,19 @@
   },
   {
     "inputs": [],
+    "name": "parlayVerifier",
+    "outputs": [
+      {
+        "internalType": "contract ParlayVerifier",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -1046,6 +1059,11 @@
       {
         "internalType": "address",
         "name": "_parlayMarketData",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayVerifier",
         "type": "address"
       }
     ],

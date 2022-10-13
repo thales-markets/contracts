@@ -62,6 +62,7 @@ contract('ParlayAMM', (accounts) => {
 	const ParlayAMMContract = artifacts.require('ParlayMarketsAMM');
 	const ParlayMarketContract = artifacts.require('ParlayMarketMastercopy');
 	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
+	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
 
 	let ParlayAMM;
 	let ParlayMarket;
@@ -167,6 +168,7 @@ contract('ParlayAMM', (accounts) => {
 		testUSDT,
 		testDAI,
 		Referrals,
+		ParlayVerifier,
 		SportsAMM;
 
 	const game1NBATime = 1646958600;
@@ -288,6 +290,7 @@ contract('ParlayAMM', (accounts) => {
 			second,
 			second,
 			second,
+
 			{ from: owner }
 		);
 
@@ -498,6 +501,7 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.approve(ParlayAMM.address, toUnit('1000'), { from: third });
 
 		ParlayMarketData = await ParlayMarketDataContract.new({ from: manager });
+		ParlayVerifier = await ParlayVerifierContract.new({ from: manager });
 
 		await ParlayMarketData.initialize(owner, ParlayAMM.address);
 
@@ -507,6 +511,7 @@ contract('ParlayAMM', (accounts) => {
 			safeBox,
 			Referrals.address,
 			ParlayMarketData.address,
+			ParlayVerifier.address,
 			{ from: owner }
 		);
 
@@ -550,11 +555,13 @@ contract('ParlayAMM', (accounts) => {
 			});
 		});
 		it('set Addresses', async () => {
-			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, { from: owner });
+			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, owner, {
+				from: owner,
+			});
 		});
 		it('ParlayMarketData', async () => {
 			await ParlayMarketData.setParlayMarketsAMM(third, { from: owner });
-			await ParlayMarketData.addParlayForGamePosition(first, '1', second, { from: third });
+			await ParlayMarketData.addParlayForGamePosition(first, '1', second, second, { from: third });
 			let hasData = await ParlayMarketData.isGamePositionInParlay(first, '1', second);
 			assert.equal(hasData, true);
 			hasData = await ParlayMarketData.isGameInParlay(first, second);

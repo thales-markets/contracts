@@ -80,6 +80,11 @@
         "internalType": "address",
         "name": "_parlayMarket",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayOwner",
+        "type": "address"
       }
     ],
     "name": "addParlayForGamePosition",
@@ -428,6 +433,25 @@
   {
     "inputs": [],
     "name": "parlayMarketsAMM",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "parlayOwner",
     "outputs": [
       {
         "internalType": "address",

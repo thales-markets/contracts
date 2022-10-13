@@ -15,6 +15,11 @@
         "internalType": "address",
         "name": "_parlayMarket",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayOwner",
+        "type": "address"
       }
     ],
     "name": "addParlayForGamePosition",

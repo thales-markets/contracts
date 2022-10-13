@@ -23,6 +23,7 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => mapping(uint => uint)) public numOfParlaysInGamePosition;
     mapping(address => ParlayDetails) public parlayDetails;
     mapping(address => mapping(uint => address)) public userParlays;
+    mapping(address => address) public parlayOwner;
     mapping(address => uint) public userNumOfParlays;
     address public parlayMarketsAMM;
 
@@ -108,9 +109,15 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     function addParlayForGamePosition(
         address _game,
         uint _position,
-        address _parlayMarket
+        address _parlayMarket,
+        address _parlayOwner
     ) external onlyParlayAMM {
         require(msg.sender == parlayMarketsAMM, "Invalid sender");
+        if (parlayOwner[_parlayMarket] == address(0)) {
+            parlayOwner[_parlayMarket] = _parlayOwner;
+            userNumOfParlays[_parlayOwner] = userNumOfParlays[_parlayOwner] + 1;
+            userParlays[_parlayOwner][userNumOfParlays[_parlayOwner]] = _parlayMarket;
+        }
         _parlaysInGamePosition[_game][_position].add(_parlayMarket);
         gameAddressPositionParlay[_game][_position][numOfParlaysInGamePosition[_game][_position]] = _parlayMarket;
         numOfParlaysInGamePosition[_game][_position] += 1;

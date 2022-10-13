@@ -244,11 +244,6 @@ contract ParlayMarket is OwnedWithInit {
                 if (calculatedAmount < totalSUSDamount) {
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
                     parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount - calculatedAmount));
-                } else if (calculatedAmount > totalSUSDamount) {
-                    parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
-                    if ((calculatedAmount - totalSUSDamount) >= TWELVE_DECIMAL) {
-                        parlayMarketsAMM.transferRestOfSUSDAmount(parlayOwner, (calculatedAmount - totalSUSDamount), true);
-                    }
                 } else {
                     parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
                 }

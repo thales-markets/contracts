@@ -20,12 +20,6 @@ interface IParlayMarketsAMM {
 
     function exerciseSportMarketInParlay(address _parlayMarket, address _sportMarket) external;
 
-    function transferRestOfSUSDAmount(
-        address receiver,
-        uint amount,
-        bool dueToCancellation
-    ) external;
-
     function triggerResolvedEvent(address _account, bool _userWon) external;
 
     function resolveParlay() external;

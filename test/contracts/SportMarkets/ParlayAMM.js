@@ -1201,6 +1201,11 @@ contract('ParlayAMM', (accounts) => {
 				let result = await ParlayAMM.exercisableSportPositionsInParlay(parlaySingleMarket.address);
 				assert.equal(result.isExercisable, answer.isResolved);
 			});
+			it('Can exercise any SportPosition in Parlay', async () => {
+				let answer = await parlaySingleMarket.getNewResolvedAndWinningPositions();
+				let result = await ParlayAMM.exercisableSportPositionsInParlay(parlaySingleMarket.address);
+				assert.equal(result.isExercisable, answer.newResolvedMarkets[0]);
+			});
 
 			it('All games resolved', async () => {
 				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);

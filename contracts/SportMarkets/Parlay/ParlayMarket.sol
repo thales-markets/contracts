@@ -142,6 +142,8 @@ contract ParlayMarket is OwnedWithInit {
         view
         returns (bool[] memory newResolvedMarkets, bool[] memory newWinningMarkets)
     {
+        newResolvedMarkets = new bool[](numOfSportMarkets);
+        newWinningMarkets = new bool[](numOfSportMarkets);
         for (uint i = 0; i < numOfSportMarkets; i++) {
             if (!sportMarket[i].exercised || !sportMarket[i].resolved) {
                 (bool exercisable, bool isResolved) = _isWinningSportMarket(

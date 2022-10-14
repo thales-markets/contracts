@@ -19,8 +19,10 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     mapping(address => mapping(uint => AddressSetLib.AddressSet)) internal _parlaysInGamePosition;
+
     mapping(address => mapping(uint => mapping(uint => address))) public gameAddressPositionParlay;
     mapping(address => mapping(uint => uint)) public numOfParlaysInGamePosition;
+
     mapping(address => ParlayDetails) public parlayDetails;
     mapping(address => mapping(uint => address)) public userParlays;
     mapping(address => address) public parlayOwner;
@@ -80,6 +82,36 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
 
                 ) = parlay.sportMarket(i);
             }
+        }
+    }
+
+    function getUserParlays(address _userAccount) external view returns (address[] memory userAllParlays) {
+        for (uint i = 0; i < userNumOfParlays[_userAccount]; i++) {
+            userAllParlays[i] = userParlays[_userAccount][i];
+        }
+    }
+
+    function getAllParlaysForGamePosition(address _sportMarket, uint _position)
+        external
+        view
+        returns (address[] memory allParlays)
+    {
+        allParlays = _getAllParlaysForGamePosition(_sportMarket, _position);
+    }
+
+    function getAllParlaysForGame(address _sportMarket)
+        external
+        view
+        returns (
+            address[] memory homeParlays,
+            address[] memory awayParlays,
+            address[] memory drawParlays
+        )
+    {
+        homeParlays = _getAllParlaysForGamePosition(_sportMarket, 0);
+        awayParlays = _getAllParlaysForGamePosition(_sportMarket, 1);
+        if (ISportPositionalMarket(_sportMarket).optionsCount() > 2) {
+            drawParlays = _getAllParlaysForGamePosition(_sportMarket, 2);
         }
     }
 
@@ -147,6 +179,16 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         address _parlay
     ) public view returns (bool containsParlay) {
         containsParlay = _parlaysInGamePosition[_game][_position].contains(_parlay);
+    }
+
+    function _getAllParlaysForGamePosition(address _sportMarket, uint _position)
+        internal
+        view
+        returns (address[] memory allParlays)
+    {
+        for (uint i = 0; i < numOfParlaysInGamePosition[_sportMarket][_position]; i++) {
+            allParlays[i] = gameAddressPositionParlay[_sportMarket][_position][i];
+        }
     }
 
     function setParlayMarketsAMM(address _parlayMarketsAMM) external onlyOwner {

@@ -174,6 +174,59 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_sportMarket",
+        "type": "address"
+      }
+    ],
+    "name": "getAllParlaysForGame",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "homeParlays",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "awayParlays",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "drawParlays",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAllParlaysForGamePosition",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "allParlays",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_parlayMarket",
         "type": "address"
       }
@@ -249,6 +302,25 @@
         "internalType": "bool[]",
         "name": "exercisedMarkets",
         "type": "bool[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_userAccount",
+        "type": "address"
+      }
+    ],
+    "name": "getUserParlays",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "userAllParlays",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",

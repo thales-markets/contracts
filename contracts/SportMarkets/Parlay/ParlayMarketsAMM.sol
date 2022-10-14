@@ -102,6 +102,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         return _knownMarkets.getPage(index, pageSize);
     }
 
+    function numActiveParlayMarkets() external view returns (uint) {
+        return _knownMarkets.elements.length;
+    }
+
     function buyQuoteFromParlay(
         address[] calldata _sportMarkets,
         uint[] calldata _positions,

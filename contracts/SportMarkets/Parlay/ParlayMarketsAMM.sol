@@ -218,6 +218,35 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
     }
 
+    function buyFromParlayWithReferrer(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDPaid,
+        uint _additionalSlippage,
+        uint _expectedPayout,
+        address _differentRecepient,
+        address _referrer
+    ) external nonReentrant notPaused {
+        if (_differentRecepient == address(0)) {
+            _differentRecepient = msg.sender;
+        }
+        if (_referrer != address(0)) {
+            IReferrals(referrals).setReferrer(_referrer, msg.sender);
+        }
+        _buyFromParlay(
+            _sportMarkets,
+            _positions,
+            _sUSDPaid,
+            _additionalSlippage,
+            _expectedPayout,
+            true,
+            _differentRecepient
+        );
+        if (referrerFee > 0 && referrals != address(0)) {
+            _handleReferrer(msg.sender, _sUSDPaid);
+        }
+    }
+
     function buyFromParlayWithDifferentCollateralAndReferrer(
         address[] calldata _sportMarkets,
         uint[] calldata _positions,

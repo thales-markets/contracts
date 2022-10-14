@@ -559,6 +559,11 @@ contract('ParlayAMM', (accounts) => {
 				from: owner,
 			});
 		});
+		it('retrieve SUSDAmount', async () => {
+			await ParlayAMM.retrieveSUSDAmount(first, toUnit('20000'), {
+				from: owner,
+			});
+		});
 		it('ParlayMarketData', async () => {
 			await ParlayMarketData.setParlayMarketsAMM(third, { from: owner });
 			await ParlayMarketData.addParlayForGamePosition(first, '1', second, second, { from: third });
@@ -823,6 +828,88 @@ contract('ParlayAMM', (accounts) => {
 				slippage,
 				result[1],
 				ZERO_ADDRESS,
+				{ from: first }
+			);
+			// console.log("event: \n", buyParlayTX.logs[0]);
+
+			assert.eventEqual(buyParlayTX.logs[2], 'ParlayMarketCreated', {
+				account: first,
+				sUSDPaid: totalSUSDToPay,
+			});
+		});
+
+		it('ParlayData after buying', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			let buyParlayTX = await ParlayAMM.buyFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				{ from: first }
+			);
+			// console.log("event: \n", buyParlayTX.logs[0]);
+
+			let newAnswer = await ParlayMarketData.getUserParlays(first);
+			// console.log("User parlay: ", newAnswer);
+			let newResult;
+			newResult = await ParlayMarketData.getAllParlaysForGamePosition(
+				parlayMarketsAddress[0],
+				parlayPositions[0]
+			);
+			// console.log("Parlays in Game | Position: ", newResult);
+			let newResult2 = await ParlayMarketData.getAllParlaysForGame(parlayMarketsAddress[0]);
+			// console.log("Parlays in Game: ", newResult2);
+			assert.equal(newResult[0], newResult2[1]);
+			// let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
+			// parlaySingleMarketAddress = activeParlays[0];
+			// parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
+
+			// answer = await ParlayMarketData.getParlayDetails(parlaySingleMarket);
+			// console.log("Parlay Details (num of SportMarkets): ", answer.numOfSportMarkets);
+		});
+
+		it('Buy Parlay with referral', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			let buyParlayTX = await ParlayAMM.buyFromParlayWithReferrer(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				second,
 				{ from: first }
 			);
 			// console.log("event: \n", buyParlayTX.logs[0]);
@@ -1180,6 +1267,10 @@ contract('ParlayAMM', (accounts) => {
 				parlaySingleMarketAddress = activeParlays[0];
 				parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 			});
+			it('Get num of active parlays', async () => {
+				let activeParlays = await ParlayAMM.numActiveParlayMarkets();
+				assert.equal(activeParlays, 1);
+			});
 			it('Get active parlay address', async () => {
 				let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
 				let result = await ParlayAMM.isActiveParlay(activeParlays[0]);
@@ -1336,6 +1427,17 @@ contract('ParlayAMM', (accounts) => {
 				});
 				it('Parlay exercised', async () => {
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
+					assert.equal(await ParlayAMM.resolvedParlay(parlaySingleMarket.address), true);
+				});
+				it('Exercise single sportMarket through ParlayData', async () => {
+					await ParlayMarketData.exerciseSportMarketInParlays(
+						[parlaySingleMarket.address],
+						parlayMarkets[0].address
+					);
+					assert.equal(await ParlayAMM.resolvedParlay(parlaySingleMarket.address), false);
+				});
+				it('Parlay exercised through ParlayData', async () => {
+					await ParlayMarketData.exerciseParlays([parlaySingleMarket.address]);
 					assert.equal(await ParlayAMM.resolvedParlay(parlaySingleMarket.address), true);
 				});
 				it('Parlay exercised (balances checked)', async () => {

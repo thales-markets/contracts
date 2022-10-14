@@ -216,7 +216,7 @@
     "outputs": [
       {
         "internalType": "address[]",
-        "name": "allParlays",
+        "name": "",
         "type": "address[]"
       }
     ],

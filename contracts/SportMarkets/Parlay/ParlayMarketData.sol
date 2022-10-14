@@ -86,17 +86,14 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function getUserParlays(address _userAccount) external view returns (address[] memory userAllParlays) {
+        userAllParlays = new address[](userNumOfParlays[_userAccount]);
         for (uint i = 0; i < userNumOfParlays[_userAccount]; i++) {
             userAllParlays[i] = userParlays[_userAccount][i];
         }
     }
 
-    function getAllParlaysForGamePosition(address _sportMarket, uint _position)
-        external
-        view
-        returns (address[] memory allParlays)
-    {
-        allParlays = _getAllParlaysForGamePosition(_sportMarket, _position);
+    function getAllParlaysForGamePosition(address _sportMarket, uint _position) external view returns (address[] memory) {
+        return _getAllParlaysForGamePosition(_sportMarket, _position);
     }
 
     function getAllParlaysForGame(address _sportMarket)
@@ -186,6 +183,7 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         view
         returns (address[] memory allParlays)
     {
+        allParlays = new address[](numOfParlaysInGamePosition[_sportMarket][_position]);
         for (uint i = 0; i < numOfParlaysInGamePosition[_sportMarket][_position]; i++) {
             allParlays[i] = gameAddressPositionParlay[_sportMarket][_position][i];
         }

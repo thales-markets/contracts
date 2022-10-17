@@ -4,6 +4,7 @@ const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 const w3utils = require('web3-utils');
 
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
+const { ZERO_ADDRESS } = require('@openzeppelin/test-helpers/src/constants');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -68,6 +69,23 @@ async function main() {
 	setTargetAddress('ParlayAMMImplementation', network, ParlayAMMImplementation);
 
 	await delay(2000);
+
+	// const ReferralsContract = getTargetAddress('Referrals', network);
+	// const ParlayMarketDataContract = getTargetAddress('ParlayMarketData', network);
+	// const ParlayVerifierContract = getTargetAddress('ParlayVerifier', network);
+	// const ParlayAMMDeployed = ParlayAMM.attach(ParlayAMMAddress);
+
+	// await ParlayAMMDeployed.setAddresses(
+	// 	SportsAMMContract,
+	// 	ZERO_ADDRESS,
+	// 	owner.address,
+	// 	ReferralsContract,
+	// 	ParlayMarketDataContract,
+	// 	ParlayVerifierContract,
+	// 	{from:owner.address}
+	// 	);
+	// 	console.log('Addresses set');
+	// await delay(2000);
 
 	try {
 		await hre.run('verify:verify', {

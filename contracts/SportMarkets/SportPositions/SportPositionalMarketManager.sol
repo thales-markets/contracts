@@ -364,6 +364,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         }
     }
 
+    function isWhitelistedAddress(address _address) external view override returns (bool) {
+        return whitelistedAddresses[_address];
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyActiveMarkets() {

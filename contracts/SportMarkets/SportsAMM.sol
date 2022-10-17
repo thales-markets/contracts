@@ -115,6 +115,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     SportsAMMUtils sportAmmUtils;
 
+    /// @return the cap per market. based on the marketId
+    mapping(address => uint) public capPerMarket;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -158,11 +161,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             baseOdds = baseOdds + min_spread;
             uint balance = sportAmmUtils.balanceOfPositionOnMarket(market, position, address(this));
 
-            uint capUsed = capPerSport[ISportPositionalMarket(market).tags(0)] > 0
-                ? capPerSport[ISportPositionalMarket(market).tags(0)]
-                : defaultCapPerGame;
             availableAmount = sportAmmUtils._calculateAvailableToBuy(
-                capUsed,
+                _calculateCapToBeUsed(market),
                 spentOnGame[market],
                 baseOdds,
                 max_spread,
@@ -279,15 +279,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 balanceOfTheOtherSide = sportAmmUtils.getBalanceOtherSideOnThreePositions(position, address(this), market);
             }
 
-            // can burn straight away balanceOfTheOtherSide
-            uint capPlusBalance = capPerSport[ISportPositionalMarket(market).tags(0)] > 0
-                ? capPerSport[ISportPositionalMarket(market).tags(0)]
-                : defaultCapPerGame;
-
             _available = sportAmmUtils._calculateAvailableToSell(
                 balanceOfTheOtherSide,
                 sell_max_price,
-                capPlusBalance,
+                _calculateCapToBeUsed(market),
                 spentOnGame[market]
             );
         }
@@ -731,9 +726,35 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _capPerSport The cap amount used for the sportID
     function setCapPerSport(uint _sportID, uint _capPerSport) external onlyOwner {
         capPerSport[_sportID] = _capPerSport;
+        emit SetCapPerSport(_sportID, _capPerSport);
+    }
+
+    /// @notice Setting the Cap per spec. market
+    /// @param _markets market addresses
+    /// @param _capPerMarket The cap amount used for the specific markets
+    function setCapPerMarket(address[] memory _markets, uint _capPerMarket) external {
+        require(
+            msg.sender == owner || ISportPositionalMarketManager(manager).isWhitelistedAddress(msg.sender),
+            "Invalid sender"
+        );
+        require(_capPerMarket < defaultCapPerGame, "Must be less then default");
+        for (uint i; i < _markets.length; i++) {
+            capPerMarket[_markets[i]] = _capPerMarket;
+            emit SetCapPerMarket(_markets[i], _capPerMarket);
+        }
     }
 
     // Internal
+
+    function _calculateCapToBeUsed(address market) internal view returns (uint) {
+        if (capPerMarket[market] == 0) {
+            return
+                capPerSport[ISportPositionalMarket(market).tags(0)] > 0
+                    ? capPerSport[ISportPositionalMarket(market).tags(0)]
+                    : defaultCapPerGame;
+        }
+        return capPerMarket[market];
+    }
 
     function _updateSpentOnMarketOnSell(
         address market,
@@ -977,4 +998,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     event SetSportsPositionalMarketManager(address _manager);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
+    event SetCapPerSport(uint _sport, uint _cap);
+    event SetCapPerMarket(address _market, uint _cap);
 }

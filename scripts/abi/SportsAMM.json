@@ -228,6 +228,44 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_cap",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetCapPerMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sport",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_cap",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetCapPerSport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_manager",
         "type": "address"
       }
@@ -628,6 +666,25 @@
         "internalType": "bool",
         "name": "canExercize",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "capPerMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1206,6 +1263,24 @@
       }
     ],
     "name": "setAmmUtils",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_markets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_capPerMarket",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCapPerMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

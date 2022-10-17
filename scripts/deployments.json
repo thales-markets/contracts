@@ -382,7 +382,7 @@
 		"ParlayMarketMastercopy": "0x8eF3a39a2d1362FCF62213012618C4d463B2a0cC",
 		"ParlayMarketData": "0x986D3cF073448786Ba8EE9E55E6dCacDD84C3139",
 		"ParlayMarketDataImplementation": "0x932640C17b6736D656A2ed3826C62ED0C85BF0f3",
-		"ParlayVerifier": "0x3090455A284EB87A8dde46d3352Be73C17deaB0A"
+		"ParlayVerifier": "0x0db550f1F2b538D763393760FedC33be7945c577"
 	},
 	"optimisticGoerli": {
 		"ExoticUSD": "0xE1ceaa829525a08C1d39A5CEBe4b42aF58d77198",

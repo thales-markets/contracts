@@ -19,24 +19,6 @@ contract ParlayVerifier {
     uint private constant DEFAULT_PARLAY_SIZE = 4;
     uint private constant MAX_APPROVAL = type(uint256).max;
 
-    function checkIfAmountAreOverAvailablePositions(
-        address[] memory _sportMarkets,
-        uint[] memory _sportPositions,
-        uint[] memory _amountsToBuy,
-        ISportsAMM _sportsAMM
-    ) external view returns (bool isExceededByAMarket, bool[] memory availabilityExceeded) {
-        availabilityExceeded = new bool[](_sportMarkets.length);
-        for (uint i = 0; i < _sportMarkets.length; i++) {
-            if (
-                _sportsAMM.availableToBuyFromAMM(_sportMarkets[i], obtainSportsAMMPosition(_sportPositions[i])) <
-                _amountsToBuy[i]
-            ) {
-                availabilityExceeded[i] = true;
-                isExceededByAMarket = true;
-            }
-        }
-    }
-
     function calculateInitialQuotesForParlay(
         address[] memory _sportMarkets,
         uint[] memory _positions,

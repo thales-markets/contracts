@@ -181,8 +181,8 @@ contract('ParlayAMM', (accounts) => {
 
 	let gameMarket;
 
-	let parlayAMMfee = '5';
-	let safeBoxImpact = '2';
+	let parlayAMMfee = toUnit('0.05');
+	let safeBoxImpact = toUnit('0.02');
 	let maxSupportedAmount = '20000';
 	let maxSupportedOdd = '0.005';
 
@@ -1072,7 +1072,7 @@ contract('ParlayAMM', (accounts) => {
 			console.log('\n parlayAmount: ', fromUnit(parlayAmount));
 			let parlaysUSDPaid = await parlaySingleMarket.sUSDPaid();
 			console.log('parlaysUSDPaid: ', fromUnit(parlaysUSDPaid));
-			let feesApplied = parseFloat(parlayAMMfee) + parseFloat(safeBoxImpact);
+			let feesApplied = parseFloat(5) + parseFloat(2);
 			feesApplied = parseFloat(fromUnit(totalSUSDToPay)) * ((100.0 - feesApplied) / 100.0);
 			console.log('feesApplied: ', feesApplied);
 			assert.equal(fromUnit(parlaysUSDPaid), feesApplied);

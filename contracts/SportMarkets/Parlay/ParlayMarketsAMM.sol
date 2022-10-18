@@ -424,7 +424,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint[] memory marketQuotes;
         uint[] memory inverseQuotes;
         uint inverseSum;
-        sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee) * ONE_PERCENT)) * _sUSDPaid) / ONE;
+        sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee))) * _sUSDPaid) / ONE;
         (initialQuote, sumQuotes, inverseSum, marketQuotes, inverseQuotes, ) = parlayVerifier
             .calculateInitialQuotesForParlay(_sportMarkets, _positions, sUSDAfterFees, parlaySize, sportsAmm);
         if (initialQuote > 0) {

@@ -40,6 +40,11 @@ async function main() {
 		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+	if (networkObj.chainId == 5) {
+		networkObj.name = 'goerli';
+		network = 'goerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 	sUSDAddress = PaymentToken;
 
 	console.log('Account is: ' + owner.address);
@@ -54,7 +59,9 @@ async function main() {
 	console.log('Proxy USD :', sUSDAddress);
 
 	sportsAMMAddress = getTargetAddress('SportsAMM', network);
+	let ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
 	console.log('Found sportsAMMAddress at:' + sportsAMMAddress);
+	console.log('Found ParlayAMMAddress at:' + ParlayAMMAddress);
 
 	const OvertimeVoucher = await ethers.getContractFactory('OvertimeVoucher');
 	const OvertimeVoucherDeployed = await OvertimeVoucher.deploy(
@@ -65,8 +72,11 @@ async function main() {
 		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-200.png',
 		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-500.png',
 		'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-1000.png',
-		sportsAMMAddress
+		sportsAMMAddress,
+		ParlayAMMAddress
 	);
+	console.log('OvertimeVoucher deploying:');
+	await delay(2000);
 	await OvertimeVoucherDeployed.deployed();
 	setTargetAddress('OvertimeVoucher', network, OvertimeVoucherDeployed.address);
 
@@ -83,6 +93,7 @@ async function main() {
 			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-500.png',
 			'https://thales-protocol.s3.eu-north-1.amazonaws.com/voucher1-1000.png',
 			sportsAMMAddress,
+			ParlayAMMAddress,
 		],
 	});
 }
@@ -93,3 +104,9 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
+
+function delay(time) {
+	return new Promise(function (resolve) {
+		setTimeout(resolve, time);
+	});
+}

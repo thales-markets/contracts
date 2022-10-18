@@ -53,11 +53,13 @@ async function main() {
 
 	const ParlayMarketData = await ethers.getContractFactory('ParlayMarketData');
 
+	await delay(2000);
 	const ParlayMarketDataDeployed = await upgrades.deployProxy(ParlayMarketData, [
 		owner.address,
 		ParlayAMMAddress,
 	]);
-	await ParlayMarketDataDeployed.deployed;
+	await delay(2000);
+	await ParlayMarketDataDeployed.deployed();
 
 	console.log('ParlayMarketData Deployed on', ParlayMarketDataDeployed.address);
 	setTargetAddress('ParlayMarketData', network, ParlayMarketDataDeployed.address);
@@ -74,13 +76,16 @@ async function main() {
 	await delay(5000);
 
 	let SportsAMMContract = getTargetAddress('SportsAMM', network);
+	let Referrals = getTargetAddress('Referrals', network);
+	let ParlayVerifier = getTargetAddress('ParlayVerifier', network);
 
 	await ParlayAMMDeployed.setAddresses(
 		SportsAMMContract,
 		ZERO_ADDRESS,
 		owner.address,
-		ZERO_ADDRESS,
+		Referrals,
 		ParlayMarketDataDeployed.address,
+		ParlayVerifier,
 		{ from: owner.address }
 	);
 

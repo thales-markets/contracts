@@ -36,6 +36,11 @@ async function main() {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
 	}
+	if (networkObj.chainId == 5) {
+		networkObj.name = 'goerli';
+		network = 'goerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
@@ -52,6 +57,7 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		ReferralsImplementation = await upgrades.prepareUpgrade(referralsAddress, Referrals);
 	} else {
+		console.log('HERE');
 		await upgrades.upgradeProxy(referralsAddress, Referrals);
 		await delay(10000);
 		ReferralsImplementation = await getImplementationAddress(ethers.provider, referralsAddress);

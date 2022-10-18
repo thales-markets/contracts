@@ -833,18 +833,16 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint balanceOtherSideAfter = balancePosition > amount
             ? balanceOtherSide
             : balanceOtherSide + (amount - balancePosition);
-        if (amount <= balancePosition) {
-            if (isTwoPositional) {
-                priceImpact = sportAmmUtils.calculateDiscount(
-                    SportsAMMUtils.DiscountParams(
-                        balancePosition,
-                        balanceOtherSide,
-                        amount,
-                        _availableToBuyFromAMMOtherSide,
-                        max_spread
-                    )
-                );
-            }
+        if (balancePositionAfter >= balanceOtherSideAfter && isTwoPositional) {
+            priceImpact = sportAmmUtils.calculateDiscount(
+                SportsAMMUtils.DiscountParams(
+                    balancePosition,
+                    balanceOtherSide,
+                    amount,
+                    _availableToBuyFromAMMOtherSide,
+                    max_spread
+                )
+            );
         } else {
             if (isTwoPositional && amount > balancePosition && balancePosition > 0) {
                 uint pricePosition = obtainOdds(market, position);
@@ -852,7 +850,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                     market,
                     position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home
                 );
-                sportAmmUtils.calculateDiscountFromNegativeToPositive(
+                priceImpact = sportAmmUtils.calculateDiscountFromNegativeToPositive(
                     SportsAMMUtils.NegativeDiscountsParams(
                         amount,
                         balancePosition,

@@ -877,12 +877,12 @@ contract('ParlayAMM', (accounts) => {
 			let newResult2 = await ParlayMarketData.getAllParlaysForGame(parlayMarketsAddress[0]);
 			// console.log("Parlays in Game: ", newResult2);
 			assert.equal(newResult[0], newResult2[1]);
-			// let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
-			// parlaySingleMarketAddress = activeParlays[0];
-			// parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
+			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
+			parlaySingleMarketAddress = activeParlays[0];
+			parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
 
-			// answer = await ParlayMarketData.getParlayDetails(parlaySingleMarket);
-			// console.log("Parlay Details (num of SportMarkets): ", answer.numOfSportMarkets);
+			answer = await ParlayMarketData.getParlayDetails(parlaySingleMarket.address);
+			assert.equal(answer.numOfSportMarkets, 4);
 		});
 
 		it('Buy Parlay with referral', async () => {

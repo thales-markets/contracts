@@ -67,13 +67,13 @@
 		"USDC": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
 		"USDT": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
 		"SportPositionalMarketManager": "0xFBffEbfA2bF2cF84fdCf77917b358fC59Ff5771e",
-		"SportPositionalMarketManagerImplementation": "0x73AAe33A9ec285d542fDC1cA7e293EADAD5247C1",
+		"SportPositionalMarketManagerImplementation": "0xabbfAc523537082f1C55097acfeE8C07c8958885",
 		"SportPositionalMarketFactory": "0x795BA11D575E6703282b1Db0cB849A15E304115d",
 		"SportPositionalMarketFactoryImplementation": "0x91C5A519023620066B5fEc2f28E4d899DEd79465",
-		"SportPositionalMarketMastercopy": "0xDCd5C5dD3b108FABd8a61a6E0549fFefa99d166C",
+		"SportPositionalMarketMastercopy": "0x335d3c3802Ea2bBa9DB4968317dc8BC2D3139F4f",
 		"SportPositionMastercopy": "0x13D6616B61440c2B80FB9354C1c28504e6C31855",
 		"SportsAMM": "0x170a5714112daEfF20E798B6e92e25B86Ea603C1",
-		"SportsAMMImplementation": "0x0Eb894b1CF3415538b9D64f12a3B3Ab013966f50",
+		"SportsAMMImplementation": "0x8612704049460f7a999fE06D6d11830A4baF6cEC",
 		"SportPositionalMarketData": "0x4f2B4e7d0A61622D2bBaeeCCD34888163e175647",
 		"SportPositionalMarketDataImplementation": "0xfA2A9D305f2009F2A7a2a95bA501B51F9a06B815",
 		"GamesQueue": "0x5417c847b6ce4163C43116E8D9670395Ba08B503",
@@ -89,7 +89,8 @@
 		"ThalesAMMUtils": "0xe1095DCeb4e4184BfB6adE590998fae94B815f2C",
 		"ApexConsumerWrapper": "0x8f98690B1dDb25e43A50fF878fBD13E439cA52B2",
 		"TherundownConsumerVerifier": "0x56d0A5098AD74F5e635797753644521173be89dB",
-		"TherundownConsumerVerifierImplementation": "0xEa71aACad9C7105859581AA7048126d6f98B391F"
+		"TherundownConsumerVerifierImplementation": "0xEa71aACad9C7105859581AA7048126d6f98B391F",
+		"SportsAMMUtils": "0x80Ae4Cf36564AC107744946265A331b7b3321828"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

@@ -60,8 +60,10 @@ async function main() {
 
 	await delay(12000);
 
-	await SportsAMMDeployed.setAmmUtils(SportsAMMUtilsDeployed.address, { from: owner.address });
-	console.log('set SportsAMMUtils in SportsAMM');
+	if (networkObj.chainId != 10) {
+		await SportsAMMDeployed.setAmmUtils(SportsAMMUtilsDeployed.address, { from: owner.address });
+		console.log('set SportsAMMUtils in SportsAMM');
+	}
 	await delay(5000);
 
 	try {

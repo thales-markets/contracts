@@ -917,7 +917,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner can change IV!"
         );
-        require(_impliedVolatility > ONE * (60) && _impliedVolatility < ONE * (300), "IV outside min/max range!");
+        require(_impliedVolatility > ONE * (40) && _impliedVolatility < ONE * (300), "IV outside min/max range!");
         require(priceFeed.rateForCurrency(asset) != 0, "Asset has no price!");
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
         emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);

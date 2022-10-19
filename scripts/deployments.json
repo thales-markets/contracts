@@ -434,7 +434,8 @@
 		"RangedPositionMastercopy": "0xc4Db40A9Bf954bD8c2266ACfdA227d576d9Cc89c",
 		"RangedMarketMastercopy": "0xD792b54AD28aeA550AaE878665F6a0De00793E81",
 		"TherundownConsumerVerifier": "0x86991efb34B0Cf55af38E9dACE3f82CD8B70188F",
-		"TherundownConsumerVerifierImplementation": "0x4a2Cdf88AeE68df88c90F6377bb556d686e3099C"
+		"TherundownConsumerVerifierImplementation": "0x4a2Cdf88AeE68df88c90F6377bb556d686e3099C",
+		"FIFAFavoriteTeam": "0x381e03Be2Ba2629f86BFd775225C4DdAF19E135c"
 	},
 	"localhost": {
 		"Airdrop": "",

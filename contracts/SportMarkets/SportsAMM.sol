@@ -823,7 +823,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint _availableToBuyFromAMM,
         uint _availableToBuyFromAMMOtherSide
     ) internal view returns (int priceImpact) {
-        (uint balancePosition, uint balanceOtherSide, ) = sportAmmUtils.balanceOfPositionsOnMarket(
+        (uint balancePosition, uint balanceOtherSide2, uint balanceOtherSide) = sportAmmUtils.balanceOfPositionsOnMarket(
             market,
             position,
             address(this)
@@ -833,7 +833,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint balanceOtherSideAfter = balancePosition > amount
             ? balanceOtherSide
             : balanceOtherSide + (amount - balancePosition);
-        if (balancePositionAfter >= balanceOtherSideAfter && isTwoPositional) {
+        if (amount <= balancePosition) {
             priceImpact = sportAmmUtils.calculateDiscount(
                 SportsAMMUtils.DiscountParams(
                     balancePosition,
@@ -844,12 +844,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 )
             );
         } else {
-            if (isTwoPositional && amount > balancePosition && balancePosition > 0) {
+            if (balancePosition > 0) {
                 uint pricePosition = obtainOdds(market, position);
-                uint priceOtherPosition = obtainOdds(
-                    market,
-                    position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home
-                );
+                uint priceOtherPosition = isTwoPositional
+                    ? obtainOdds(
+                        market,
+                        position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home
+                    )
+                    : ONE - pricePosition;
                 priceImpact = sportAmmUtils.calculateDiscountFromNegativeToPositive(
                     SportsAMMUtils.NegativeDiscountsParams(
                         amount,

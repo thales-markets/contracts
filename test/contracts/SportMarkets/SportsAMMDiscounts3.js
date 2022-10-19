@@ -429,27 +429,41 @@ contract('SportsAMM', (accounts) => {
 		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 	});
 
-	describe('Test SportsAMM', () => {
+	describe('Test 3 options game', () => {
 		let deployedMarket;
 		let answer;
 		beforeEach(async () => {
+			let _currentTime = await currentTime();
+			// await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward(gameFootballTime - (await currentTime()) - SECOND);
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// console.log("Fast forward: ", (gameFootballTime - _currentTime - SECOND).toString());
+
 			// req. games
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
-				reqIdCreate,
-				gamesCreated,
-				sportId_4,
+				reqIdFootballCreate,
+				gamesFootballCreated,
+				sportId_16,
 				game1NBATime,
 				{ from: wrapper }
 			);
 
-			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
-			let gameTime = game.startTime;
-			await TherundownConsumerDeployed.createMarketForGame(gameid1);
-			await TherundownConsumerDeployed.marketPerGameId(gameid1);
-			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
-			deployedMarket = await SportPositionalMarketContract.at(answer.toString());
+			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			// console.log("Current time: ", _currentTime.toString());
+			// console.log("Start time: ", game.startTime.toString());
+			// console.log("Difference: ", (_currentTime - game.startTime).toString());
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+
+			// check if event is emited
+			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			// console.log("Active market: ", answer.toString());
+			deployedMarket = await SportPositionalMarketContract.at(answer);
 		});
+
 		let position = 0;
 		let value = 100;
 
@@ -466,28 +480,13 @@ contract('SportsAMM', (accounts) => {
 			console.log('Total odds: ', fromUnit(sumOfOdds));
 		});
 
-		it('Get american odds', async () => {
-			answer = await TherundownConsumerDeployed.getOddsForGame(gameid1);
-			let sumOfOdds = answer[0];
-			sumOfOdds = sumOfOdds.add(answer[1]);
-			sumOfOdds = sumOfOdds.add(answer[2]);
-		});
-
-		it('Get price', async () => {
-			answer = await SportsAMM.obtainOdds(deployedMarket.address, 0);
-			let sumOfPrices = answer;
-			console.log('Price for pos 0: ', fromUnit(answer));
-			sumOfPrices = sumOfPrices.add(answer);
-			answer = await SportsAMM.obtainOdds(deployedMarket.address, 1);
-			console.log('Price for pos 1: ', fromUnit(answer));
-			sumOfPrices = sumOfPrices.add(answer);
-			answer = await SportsAMM.obtainOdds(deployedMarket.address, 2);
-			console.log('Price for pos 2: ', fromUnit(answer));
-			console.log('Total price: ', fromUnit(sumOfPrices));
-		});
-		it('Get Available to buy from SportsAMM, position 1', async () => {
+		it('Get Available to buy from SportsAMM, positions', async () => {
 			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
-			console.log('Available to buy: ', fromUnit(answer));
+			console.log('Available to buy 1: ', fromUnit(answer));
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 0);
+			console.log('Available to buy 0: ', fromUnit(answer));
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
+			console.log('Available to buy 2: ', fromUnit(answer));
 		});
 
 		it('Get BuyQuote from SportsAMM, position 1, value: 100', async () => {
@@ -501,7 +500,7 @@ contract('SportsAMM', (accounts) => {
 			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
 				deployedMarket.address,
 				1,
-				toUnit(72000)
+				toUnit(12600)
 			);
 			answer = await Thales.balanceOf(first);
 			let before_balance = answer;
@@ -510,15 +509,21 @@ contract('SportsAMM', (accounts) => {
 			answer = await SportsAMM.buyFromAMM(
 				deployedMarket.address,
 				1,
-				toUnit(72000),
+				toUnit(12600),
 				buyFromAmmQuote,
 				additionalSlippage,
 				{ from: first }
 			);
+			answer = await Thales.balanceOf(first);
+			console.log('acc after buy balance: ', fromUnit(answer));
+			console.log('cost: ', fromUnit(before_balance.sub(answer)));
+			let options = await deployedMarket.balancesOf(first);
+			console.log('Balances', options[0].toString(), fromUnit(options[1]), options[2].toString());
+
 			let buyPriceImpactFirst = await SportsAMM.buyPriceImpact(
 				deployedMarket.address,
 				1,
-				toUnit(100)
+				toUnit(1)
 			);
 			console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
 			let buyPriceImpactSecond = await SportsAMM.buyPriceImpact(
@@ -527,19 +532,75 @@ contract('SportsAMM', (accounts) => {
 				toUnit(1)
 			);
 			console.log('buyPriceImpactSecond: ', fromUnit(buyPriceImpactSecond));
-			buyPriceImpactSecond = await SportsAMM.buyPriceImpact(
+			let buyPriceImpactThird = await SportsAMM.buyPriceImpact(
 				deployedMarket.address,
-				0,
-				toUnit(72000)
+				2,
+				toUnit(1)
 			);
-			console.log('buyPriceImpactSecond ALL: ', fromUnit(buyPriceImpactSecond));
+			console.log('buyPriceImpactThird: ', fromUnit(buyPriceImpactThird));
 
-			buyPriceImpactSecond = await SportsAMM.buyPriceImpact(
+			let availableToBuy2 = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
+			console.log('availableToBuy2 : ', fromUnit(availableToBuy2));
+			let buyPriceImpactThirdMid = await SportsAMM.buyPriceImpact(
+				deployedMarket.address,
+				2,
+				toUnit(12600)
+			);
+			console.log('buyPriceImpactThirdMid: ', fromUnit(buyPriceImpactThirdMid));
+
+			let optionsAmm = await deployedMarket.balancesOf(SportsAMM.address);
+			console.log(
+				'Balances',
+				fromUnit(optionsAmm[0]),
+				fromUnit(optionsAmm[1]),
+				fromUnit(optionsAmm[2])
+			);
+
+			let buyPriceImpactThirdMidTwo = await SportsAMM.buyPriceImpact(
+				deployedMarket.address,
+				2,
+				toUnit(17000)
+			);
+			console.log('buyPriceImpactThirdMidTwo: ', fromUnit(buyPriceImpactThirdMidTwo));
+			let buyFromAmmQuote2 = await SportsAMM.buyFromAmmQuote(
+				deployedMarket.address,
+				2,
+				toUnit(12600)
+			);
+			answer = await Thales.balanceOf(first);
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				2,
+				toUnit(12600),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+			let buyPriceImpactFirst2 = await SportsAMM.buyPriceImpact(
+				deployedMarket.address,
+				1,
+				toUnit(100)
+			);
+			console.log('buyPriceImpactFirst2: ', fromUnit(buyPriceImpactFirst));
+			let buyPriceImpactSecond2 = await SportsAMM.buyPriceImpact(
 				deployedMarket.address,
 				0,
-				toUnit(80000)
+				toUnit(1)
 			);
-			console.log('buyPriceImpactSecond with positive: ', fromUnit(buyPriceImpactSecond));
+			console.log('buyPriceImpactSecond2: ', fromUnit(buyPriceImpactSecond2));
+			let buyPriceImpactThird2 = await SportsAMM.buyPriceImpact(
+				deployedMarket.address,
+				2,
+				toUnit(1)
+			);
+			console.log('buyPriceImpactThird2: ', fromUnit(buyPriceImpactThird2));
+
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			console.log('Available to buy 1: ', fromUnit(answer));
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 0);
+			console.log('Available to buy 0: ', fromUnit(answer));
+			answer = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 2);
+			console.log('Available to buy 2: ', fromUnit(answer));
 		});
 	});
 });

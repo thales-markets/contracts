@@ -152,7 +152,6 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
         require(!paused, "Cant buy while paused");
         require(ERC721.ownerOf(tokenId) == msg.sender, "You are not the voucher owner!");
 
-        // uint quote = parlayAMM._buyQuoteFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout);
         require(_sUSDPaid <= amountInVoucher[tokenId], "Insufficient amount in voucher");
 
         parlayAMM.buyFromParlay(_sportMarkets, _positions, _sUSDPaid, _additionalSlippage, _expectedPayout, msg.sender);
@@ -178,6 +177,14 @@ contract OvertimeVoucher is ERC721URIStorage, Ownable {
     function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
         sUSD.safeTransfer(account, amount);
     }
+
+    // function burnToken(uint _tokenId, address _recepient) external onlyOwner {
+    //     require(amountInVoucher[_tokenId] > 0, "Amount is zero");
+    //     if(_recepient != address(0)) {
+    //         sUSD.safeTransfer(_recepient, amountInVoucher[_tokenId]);
+    //     }
+    //     super._burn(_tokenId);
+    // }
 
     function setTokenUris(
         string memory _tokenURITwenty,

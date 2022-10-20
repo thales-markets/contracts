@@ -182,21 +182,22 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount
     ) public view returns (uint _quote) {
         uint baseOdds = obtainOdds(market, position);
-        _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds);
+        _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, safeBoxImpact);
     }
 
     function _buyFromAmmQuoteWithBaseOdds(
         address market,
         ISportsAMM.Position position,
         uint amount,
-        uint baseOdds
+        uint baseOdds,
+        uint useSafeBoxSkewImpact
     ) internal view returns (uint returnQuote) {
         uint _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
         uint _availableOtherSide = _getAvailableOtherSide(market, position, amount);
         if (amount <= _available) {
             int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
             baseOdds = baseOdds + min_spread;
-            int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, safeBoxImpact, amount);
+            int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
             returnQuote = ISportPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
         }
     }
@@ -227,21 +228,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param market The address of the SportPositional market of a game
     /// @param position The position (home/away/draw) quoted to buy from AMM
     /// @param amount The position amount quoted to buy from AMM
-    /// @return The sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
+    /// @return _quote The sUSD cost for buying the `amount` of `position` options (tokens) from AMM for `market`.
     function buyFromAmmQuoteForParlayAMM(
         address market,
-        Position position,
+        ISportsAMM.Position position,
         uint amount
-    ) public view returns (uint) {
-        if (amount < 1 || amount > availableToBuyFromAMM(market, position)) {
-            return 0;
-        }
-        uint baseOdds = obtainOdds(market, position).add(min_spread);
-        uint impactPriceIncrease = ONE.sub(baseOdds).mul(_buyPriceImpact(market, position, amount)).div(ONE);
-        // add 2% to the price increase to avoid edge cases on the extremes
-        impactPriceIncrease = impactPriceIncrease.mul(ONE.add(ONE_PERCENT * 2)).div(ONE);
-        uint tempAmount = amount.mul(baseOdds.add(impactPriceIncrease)).div(ONE);
-        return ISportPositionalMarketManager(manager).transformCollateral(tempAmount);
+    ) public view returns (uint _quote) {
+        uint baseOdds = obtainOdds(market, position);
+        _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, 0);
     }
 
     /// @notice Calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game

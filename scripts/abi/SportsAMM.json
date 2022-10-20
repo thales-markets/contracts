@@ -606,7 +606,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_quote",
         "type": "uint256"
       }
     ],
@@ -621,7 +621,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },

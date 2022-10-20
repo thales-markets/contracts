@@ -411,8 +411,6 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             IPositionalMarket(market).burnOptionsMaximum();
         }
 
-        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
-
         sUSD.safeTransfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
@@ -520,8 +518,6 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             basePrice = basePrice + min_spread;
             if (skewImpact >= 0) {
                 int impactPrice = ((ONE_INT - int(basePrice)) * skewImpact) / ONE_INT;
-
-                //return impactPrice;
                 // add 2% to the price increase to avoid edge cases on the extremes
                 impactPrice = (impactPrice * (ONE_INT + (ONE_PERCENT_INT * 2))) / ONE_INT;
                 tempQuote = (int(amount) * (int(basePrice) + impactPrice)) / ONE_INT;

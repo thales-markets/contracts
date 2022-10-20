@@ -1,6 +1,7 @@
 const path = require('path');
 const { ethers, upgrades } = require('hardhat');
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
+const w3utils = require('web3-utils');
 
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
@@ -11,7 +12,7 @@ async function main() {
 	let network = networkObj.name;
 	let mainnetNetwork = 'mainnet';
 	let PaymentToken;
-	let SportsAMMContract;
+	const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 	if (network == 'homestead') {
 		console.log(
@@ -33,61 +34,44 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
+		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
 	if (networkObj.chainId == 5) {
 		networkObj.name = 'goerli';
 		network = 'goerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
-		SportsAMMContract = getTargetAddress('SportsAMM', network);
 	}
-
 	if (networkObj.chainId == 420) {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
-		SportsAMMContract = getTargetAddress('SportsAMM', network);
 	}
 
 	const SportsAMMAddress = getTargetAddress('SportsAMM', network);
 	const SportsAMM = await ethers.getContractFactory('SportsAMM');
+	const SportsAMMDeployed = SportsAMM.attach(SportsAMMAddress);
 
-	if (networkObj.chainId == 42 || networkObj.chainId == 5 || networkObj.chainId == 420) {
-		await upgrades.upgradeProxy(SportsAMMAddress, SportsAMM);
-		await delay(15000);
+	const SportsAMMUtils = await ethers.getContractFactory('SportsAMMUtils');
+	const SportsAMMUtilsDeployed = await SportsAMMUtils.deploy();
+	await SportsAMMUtilsDeployed.deployed();
 
-		const SportsAMMImplementation = await getImplementationAddress(
-			ethers.provider,
-			SportsAMMAddress
-		);
-		console.log('SportsAMM upgraded');
+	console.log('Implementation SportsAMMUtils: ', SportsAMMUtilsDeployed.address);
+	setTargetAddress('SportsAMMUtils', network, SportsAMMUtilsDeployed.address);
 
-		console.log('Implementation SportsAMM: ', SportsAMMImplementation);
-		setTargetAddress('SportsAMMImplementation', network, SportsAMMImplementation);
+	await delay(12000);
 
-		try {
-			await hre.run('verify:verify', {
-				address: SportsAMMImplementation,
-			});
-		} catch (e) {
-			console.log(e);
-		}
+	if (networkObj.chainId != 10) {
+		await SportsAMMDeployed.setAmmUtils(SportsAMMUtilsDeployed.address, { from: owner.address });
+		console.log('set SportsAMMUtils in SportsAMM');
 	}
+	await delay(5000);
 
-	if (networkObj.chainId == 10) {
-		const implementation = await upgrades.prepareUpgrade(SportsAMMAddress, SportsAMM);
-		await delay(5000);
-
-		console.log('SportsAMM upgraded');
-
-		console.log('Implementation SportsAMM: ', implementation);
-		setTargetAddress('SportsAMMImplementation', network, implementation);
-		try {
-			await hre.run('verify:verify', {
-				address: implementation,
-			});
-		} catch (e) {
-			console.log(e);
-		}
+	try {
+		await hre.run('verify:verify', {
+			address: SportsAMMUtilsDeployed.address,
+		});
+	} catch (e) {
+		console.log(e);
 	}
 }
 

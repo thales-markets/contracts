@@ -63,6 +63,7 @@ contract('ParlayAMM', (accounts) => {
 	const ParlayMarketContract = artifacts.require('ParlayMarketMastercopy');
 	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
 	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
+	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
 	let ParlayAMM;
 	let ParlayMarket;
@@ -193,6 +194,8 @@ contract('ParlayAMM', (accounts) => {
 	let parlaySingleMarket;
 	let voucher;
 
+	let sportsAMMUtils;
+
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
 			from: manager,
@@ -264,6 +267,11 @@ contract('ParlayAMM', (accounts) => {
 			toUnit('0.005'),
 			{ from: owner }
 		);
+
+		sportsAMMUtils = await SportsAMMUtils.new();
+		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
+			from: owner,
+		});
 
 		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
 			from: owner,

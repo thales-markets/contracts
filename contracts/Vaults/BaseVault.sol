@@ -29,6 +29,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /* ========== CONSTANTS ========== */
     uint private constant HUNDRED = 1e20;
+    uint private constant ONE = 1e18;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -52,10 +53,16 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     mapping(uint => uint) public allocationPerRound;
 
     mapping(uint => address[]) public tradingMarketsPerRound;
+    mapping(uint => mapping(address => IThalesAMM.Position)) public tradingMarketPositionPerRound;
     mapping(uint => mapping(address => bool)) public isTradingMarketInARound;
 
     mapping(uint => uint) public profitAndLossPerRound;
     mapping(uint => uint) public cumulativeProfitAndLoss;
+
+    uint public maxAllowedDeposit;
+    uint public utilizationRate;
+
+    mapping(uint => uint) public capPerRound;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -63,13 +70,17 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _owner,
         IThalesAMM _thalesAmm,
         IERC20Upgradeable _sUSD,
-        uint _roundLength
+        uint _roundLength,
+        uint _maxAllowedDeposit,
+        uint _utilizationRate
     ) internal onlyInitializing {
         setOwner(_owner);
         initNonReentrant();
         thalesAMM = IThalesAMM(_thalesAmm);
         sUSD = _sUSD;
         roundLength = _roundLength;
+        maxAllowedDeposit = _maxAllowedDeposit;
+        utilizationRate = _utilizationRate;
         sUSD.approve(address(thalesAMM), type(uint256).max);
     }
 
@@ -80,8 +91,6 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         roundStartTime[round] = block.timestamp;
         roundEndTime[round] = roundStartTime[round] + roundLength;
-
-        allocationPerRound[round] = sUSD.balanceOf(address(this));
 
         vaultStarted = true;
 
@@ -105,17 +114,17 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (allocationPerRound[round] == 0) {
             profitAndLossPerRound[round] = 1;
         } else {
-            profitAndLossPerRound[round] = (currentVaultBalance * 1e18) / allocationPerRound[round];
+            profitAndLossPerRound[round] = (currentVaultBalance * ONE) / allocationPerRound[round];
         }
 
         if (round == 1) {
             cumulativeProfitAndLoss[round] = profitAndLossPerRound[round];
         } else {
-            cumulativeProfitAndLoss[round] = (cumulativeProfitAndLoss[round - 1] * profitAndLossPerRound[round]) / 1e18;
+            cumulativeProfitAndLoss[round] = (cumulativeProfitAndLoss[round - 1] * profitAndLossPerRound[round]) / ONE;
         }
 
         // calculate withdrawal amount share
-        withdrawalQueueAmount[round] = (withdrawalQueueAmount[round] * profitAndLossPerRound[round]) / 1e18;
+        withdrawalQueueAmount[round] = (withdrawalQueueAmount[round] * profitAndLossPerRound[round]) / ONE;
 
         // start next round
         round += 1;
@@ -125,6 +134,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         // allocation for next round doesn't include withdrawal queue share from previous round
         allocationPerRound[round] = sUSD.balanceOf(address(this)) - withdrawalQueueAmount[round - 1];
+        capPerRound[round + 1] = allocationPerRound[round];
 
         emit RoundClosed(round - 1);
     }
@@ -151,6 +161,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         depositReceipts[msg.sender] = DepositReceipt(nextRound, balancesPerRound[nextRound][msg.sender]);
 
         allocationPerRound[nextRound] += amount;
+        capPerRound[nextRound] += amount;
 
         emit Deposited(msg.sender, amount);
     }
@@ -165,21 +176,25 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         withdrawalQueueAmount[round] += balancesPerRound[round][msg.sender];
 
+        if (capPerRound[round + 1] > balancesPerRound[round][msg.sender]) {
+            capPerRound[round + 1] -= balancesPerRound[round][msg.sender];
+        }
+
         emit WithdrawalRequested(msg.sender);
     }
 
     /// @notice Transfer sUSD to user based on vault success and user deposits
     /// @dev During a round, user can claim amount only from previous rounds if withdrawal request is sent
     function claim() external nonReentrant whenNotPaused {
-        WithdrawalRequest memory withdrawalRequest = withdrawalQueue[msg.sender];
-        require(withdrawalRequest.requested, "Withdrawal request has not been sent");
+        WithdrawalRequest memory userWithdrawalRequest = withdrawalQueue[msg.sender];
+        require(userWithdrawalRequest.requested, "Withdrawal request has not been sent");
 
-        uint amount = (withdrawalRequest.amount * profitAndLossPerRound[withdrawalRequest.round]) / 1e18;
+        uint amount = (userWithdrawalRequest.amount * profitAndLossPerRound[userWithdrawalRequest.round]) / ONE;
         require(amount > 0, "Nothing to claim");
 
         sUSD.safeTransfer(msg.sender, amount);
-        claimedPerRound[withdrawalRequest.round][msg.sender] = true;
-        withdrawalQueueAmount[withdrawalRequest.round] -= amount;
+        claimedPerRound[userWithdrawalRequest.round][msg.sender] = true;
+        withdrawalQueueAmount[userWithdrawalRequest.round] -= amount;
 
         // reset withdrawal request;
         withdrawalQueue[msg.sender].requested = false;
@@ -207,6 +222,20 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit ThalesAMMChanged(address(_thalesAMM));
     }
 
+    /// @notice Set utilization rate parameter
+    /// @param _utilizationRate Value in percents
+    function setUtilizationRate(uint _utilizationRate) external onlyOwner {
+        utilizationRate = _utilizationRate;
+        emit UtilizationRateChanged(_utilizationRate);
+    }
+
+    /// @notice Set max allowed deposit
+    /// @param _maxAllowedDeposit Deposit value
+    function setMaxAllowedDeposit(uint _maxAllowedDeposit) external onlyOwner {
+        maxAllowedDeposit = _maxAllowedDeposit;
+        emit MaxAllowedDepositChanged(_maxAllowedDeposit);
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     /// @notice Calculate user balance in a round based on vaults' PnL
@@ -216,7 +245,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         for (uint i = 1; i < _round; i++) {
             if (claimedPerRound[i][user]) continue;
 
-            balancesPerRound[i][user] = (balancesPerRound[i][user] * profitAndLossPerRound[i]) / 1e18;
+            balancesPerRound[i][user] = (balancesPerRound[i][user] * profitAndLossPerRound[i]) / ONE;
             balancesPerRound[i + 1][user] += balancesPerRound[i][user];
             claimedPerRound[i][user] = true;
         }
@@ -228,6 +257,12 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return uint
     function _cumulativePnLBetweenRounds(uint roundA, uint roundB) internal view returns (uint) {
         return (cumulativeProfitAndLoss[roundB] * profitAndLossPerRound[roundA]) / cumulativeProfitAndLoss[roundA];
+    }
+
+    /// @notice Return trading allocation in current round based on utilization rate param
+    /// @return uint
+    function _tradingAllocation() internal view returns (uint) {
+        return (allocationPerRound[round] * utilizationRate) / ONE;
     }
 
     /* ========== VIEWS ========== */
@@ -252,20 +287,20 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param user Address of the user
     /// @return amount Amount to be claimed
     function getAvailableToClaim(address user) external view returns (uint) {
-        WithdrawalRequest memory withdrawalRequest = withdrawalQueue[user];
+        WithdrawalRequest memory userWithdrawalRequest = withdrawalQueue[user];
         DepositReceipt memory depositReceipt = depositReceipts[user];
 
         // if no round has been finished or user already claimed (no withdrawal request and no deposit)
-        if (!vaultStarted || round == 1 || (!withdrawalRequest.requested && depositReceipt.round == 0)) {
+        if (!vaultStarted || round == 1 || (!userWithdrawalRequest.requested && depositReceipt.round == 0)) {
             return 0;
         }
 
         //if user requested withrawal, share in previous rounds is already calculated
-        if (withdrawalRequest.requested) {
+        if (userWithdrawalRequest.requested) {
             return
-                withdrawalRequest.round == round
-                    ? withdrawalRequest.amount
-                    : (withdrawalRequest.amount * profitAndLossPerRound[withdrawalRequest.round]) / 1e18;
+                userWithdrawalRequest.round == round
+                    ? userWithdrawalRequest.amount
+                    : (userWithdrawalRequest.amount * profitAndLossPerRound[userWithdrawalRequest.round]) / ONE;
         }
 
         if (depositReceipt.round >= round) {
@@ -275,10 +310,10 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         } else {
             uint initialBalance = (balancesPerRound[depositReceipt.round - 1][user] *
                 profitAndLossPerRound[depositReceipt.round - 1]) /
-                1e18 +
+                ONE +
                 balancesPerRound[depositReceipt.round][user];
 
-            return (initialBalance * _cumulativePnLBetweenRounds(depositReceipt.round, round - 1)) / 1e18;
+            return (initialBalance * _cumulativePnLBetweenRounds(depositReceipt.round, round - 1)) / ONE;
         }
     }
 
@@ -289,6 +324,8 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         require(amount > 0, "Invalid amount");
         require(sUSD.balanceOf(msg.sender) >= amount, "No enough sUSD");
         require(sUSD.allowance(msg.sender, address(this)) >= amount, "No allowance");
+
+        require(capPerRound[round + 1] + amount <= maxAllowedDeposit, "Deposit amount exceeds vault cap");
         _;
     }
 
@@ -308,4 +345,6 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event Deposited(address user, uint amount);
     event Claimed(address user, uint amount);
     event WithdrawalRequested(address user);
+    event UtilizationRateChanged(uint utilizationRate);
+    event MaxAllowedDepositChanged(uint maxAllowedDeposit);
 }

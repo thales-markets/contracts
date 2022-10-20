@@ -151,18 +151,25 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "priceLowerLimit",
-        "type": "uint256"
-      },
+        "internalType": "int256",
+        "name": "discountLimit",
+        "type": "int256"
+      }
+    ],
+    "name": "SetDiscountLimit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "priceUpperLimit",
+        "name": "priceLowerLimit",
         "type": "uint256"
       }
     ],
-    "name": "SetPriceLimits",
+    "name": "SetPriceLimit",
     "type": "event"
   },
   {
@@ -176,19 +183,6 @@
       }
     ],
     "name": "SetSUSD",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "int256",
-        "name": "skewImpact",
-        "type": "int256"
-      }
-    ],
-    "name": "SetSkewImpactLimit",
     "type": "event"
   },
   {
@@ -221,7 +215,7 @@
       },
       {
         "indexed": false,
-        "internalType": "enum Vault.Asset",
+        "internalType": "enum DiscountVault.Asset",
         "name": "asset",
         "type": "uint8"
       },
@@ -297,7 +291,7 @@
     "name": "_getAsset",
     "outputs": [
       {
-        "internalType": "enum Vault.Asset",
+        "internalType": "enum DiscountVault.Asset",
         "name": "asset",
         "type": "uint8"
       }
@@ -315,7 +309,7 @@
   {
     "inputs": [
       {
-        "internalType": "enum Vault.Asset",
+        "internalType": "enum DiscountVault.Asset",
         "name": "",
         "type": "uint8"
       }
@@ -358,7 +352,7 @@
         "type": "uint256"
       },
       {
-        "internalType": "enum Vault.Asset",
+        "internalType": "enum DiscountVault.Asset",
         "name": "",
         "type": "uint8"
       }
@@ -512,6 +506,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "discountLimit",
+    "outputs": [
+      {
+        "internalType": "int256",
+        "name": "",
+        "type": "int256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -519,7 +526,7 @@
         "type": "uint256"
       },
       {
-        "internalType": "enum Vault.Asset",
+        "internalType": "enum DiscountVault.Asset",
         "name": "asset",
         "type": "uint8"
       }
@@ -543,7 +550,7 @@
         "type": "uint256"
       },
       {
-        "internalType": "enum Vault.Asset",
+        "internalType": "enum DiscountVault.Asset",
         "name": "asset",
         "type": "uint8"
       }
@@ -657,17 +664,12 @@
       },
       {
         "internalType": "uint256",
-        "name": "_priceLowerLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_priceUpperLimit",
+        "name": "_priceLimit",
         "type": "uint256"
       },
       {
         "internalType": "int256",
-        "name": "_skewImpactLimit",
+        "name": "_discountLimit",
         "type": "int256"
       },
       {
@@ -792,20 +794,7 @@
   },
   {
     "inputs": [],
-    "name": "priceLowerLimit",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "priceUpperLimit",
+    "name": "priceLimit",
     "outputs": [
       {
         "internalType": "uint256",
@@ -938,6 +927,19 @@
   {
     "inputs": [
       {
+        "internalType": "int256",
+        "name": "_discountLimit",
+        "type": "int256"
+      }
+    ],
+    "name": "setDiscountLimit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_maxAllowedDeposit",
         "type": "uint256"
@@ -965,16 +967,11 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_priceLowerLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_priceUpperLimit",
+        "name": "_priceLimit",
         "type": "uint256"
       }
     ],
-    "name": "setPriceLimits",
+    "name": "setPriceLimit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -988,19 +985,6 @@
       }
     ],
     "name": "setRoundLength",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "int256",
-        "name": "_skewImpactLimit",
-        "type": "int256"
-      }
-    ],
-    "name": "setSkewImpactLimit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1029,19 +1013,6 @@
     "name": "setUtilizationRate",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "skewImpactLimit",
-    "outputs": [
-      {
-        "internalType": "int256",
-        "name": "",
-        "type": "int256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

@@ -51,5 +51,5 @@ interface IThalesAMM {
         address market,
         Position position,
         uint amount
-    ) external view returns (uint);
+    ) external view returns (int);
 }

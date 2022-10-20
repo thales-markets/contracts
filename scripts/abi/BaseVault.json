@@ -42,6 +42,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "maxAllowedDeposit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MaxAllowedDepositChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -149,6 +162,19 @@
   },
   {
     "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "utilizationRate",
+        "type": "uint256"
+      }
+    ],
+    "name": "UtilizationRateChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
     "inputs": [],
     "name": "VaultStarted",
     "type": "event"
@@ -206,6 +232,25 @@
       }
     ],
     "name": "balancesPerRound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "capPerRound",
     "outputs": [
       {
         "internalType": "uint256",
@@ -409,6 +454,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "maxAllowedDeposit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -559,6 +617,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_maxAllowedDeposit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxAllowedDeposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -596,6 +667,19 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_utilizationRate",
+        "type": "uint256"
+      }
+    ],
+    "name": "setUtilizationRate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "startVault",
     "outputs": [],
@@ -610,6 +694,30 @@
         "internalType": "contract IThalesAMM",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "tradingMarketPositionPerRound",
+    "outputs": [
+      {
+        "internalType": "enum IThalesAMM.Position",
+        "name": "",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -671,6 +779,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "utilizationRate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

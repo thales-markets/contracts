@@ -55,10 +55,10 @@ async function main() {
 
 	let marketAddress;
 
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('Market created');
 		// console.log(e.events?.filter((x)=> {return x.event == "MarketCreated"}));
-		let event = e.events?.filter(x => {
+		let event = e.events?.filter((x) => {
 			return x.event == 'MarketCreated';
 		});
 		console.log('At address:', event[0].args.marketAddress);
@@ -94,13 +94,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

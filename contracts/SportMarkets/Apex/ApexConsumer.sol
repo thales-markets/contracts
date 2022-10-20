@@ -200,7 +200,7 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
                         game.homeOdds = _probA;
                         game.awayOdds = _probB;
                         game.homeTeam = _betTypeDetail1;
-                        game.awayTeam = _betType == BET_TYPE_H2H ? _betTypeDetail2 : "";
+                        game.awayTeam = _betTypeDetail2;
                         game.raceId = _eventId;
                         game.startTime = race.startTime;
                         game.betType = _betType;

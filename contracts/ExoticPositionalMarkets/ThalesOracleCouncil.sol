@@ -274,20 +274,17 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
                 disputeWinningPositionChoosenByMember[_market][_disputeIndex][msg.sender] = _winningPosition;
                 disputeWinningPositionVotes[_market][_disputeIndex][_winningPosition] = disputeWinningPositionVotes[_market][
                     _disputeIndex
-                ][_winningPosition]
-                    .add(1);
+                ][_winningPosition].add(1);
             } else {
                 disputeWinningPositionVotes[_market][_disputeIndex][
                     disputeWinningPositionChoosenByMember[_market][_disputeIndex][msg.sender]
                 ] = disputeWinningPositionVotes[_market][_disputeIndex][
                     disputeWinningPositionChoosenByMember[_market][_disputeIndex][msg.sender]
-                ]
-                    .sub(1);
+                ].sub(1);
                 disputeWinningPositionChoosenByMember[_market][_disputeIndex][msg.sender] = _winningPosition;
                 disputeWinningPositionVotes[_market][_disputeIndex][_winningPosition] = disputeWinningPositionVotes[_market][
                     _disputeIndex
-                ][_winningPosition]
-                    .add(1);
+                ][_winningPosition].add(1);
             }
         }
 
@@ -297,23 +294,23 @@ contract ThalesOracleCouncil is Initializable, ProxyOwned, PausableUpgradeable, 
                 disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]]
             ] = disputeVotesCount[_market][_disputeIndex][
                 disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]]
-            ]
-                .sub(1);
+            ].sub(1);
         }
 
         // record the voting option
         disputeVote[_market][_disputeIndex][councilMemberIndex[msg.sender]] = _disputeCodeVote;
         disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] = disputeVotesCount[_market][_disputeIndex][
             _disputeCodeVote
-        ]
-            .add(1);
+        ].add(1);
 
         emit VotedAddedForDispute(_market, _disputeIndex, _disputeCodeVote, _winningPosition, msg.sender);
 
         if (disputeVotesCount[_market][_disputeIndex][_disputeCodeVote] > (councilMemberCount.div(2))) {
             if (_disputeCodeVote == ACCEPT_RESULT) {
-                (uint maxVotesForPosition, uint chosenPosition) =
-                    calculateWinningPositionBasedOnVotes(_market, _disputeIndex);
+                (uint maxVotesForPosition, uint chosenPosition) = calculateWinningPositionBasedOnVotes(
+                    _market,
+                    _disputeIndex
+                );
                 if (maxVotesForPosition > (councilMemberCount.div(2))) {
                     disputeWinningPositionChoosen[_market][_disputeIndex] = chosenPosition;
                     closeDispute(_market, _disputeIndex, _disputeCodeVote);

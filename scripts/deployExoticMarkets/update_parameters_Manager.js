@@ -145,7 +145,7 @@ async function main() {
 		maxFinalWithdrawPercentage,
 		{ from: owner.address }
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log(
 			'\n setPercentages: \n',
 			'safeBoxPercentage: ',
@@ -175,7 +175,7 @@ async function main() {
 		claimTimeoutDefaultPeriod,
 		{ from: owner.address }
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log(
 			'\n setDurations: \n',
 			'defaultBackstopTimeout: ',
@@ -207,7 +207,7 @@ async function main() {
 		maxOracleCouncilMembers,
 		{ from: owner.address }
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log(
 			'\n setLimits: \n',
 			'marketQuestionStringLimit: ',
@@ -245,7 +245,7 @@ async function main() {
 		maxAmountForOpenBidPosition,
 		{ from: owner.address }
 	);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log(
 			'\n setAmounts: \n',
 			'minFixedTicketPrice: ',
@@ -276,7 +276,7 @@ async function main() {
 	tx = await ExoticManagerDeployed.setFlags(creationRestrictedToOwner, openBidAllowed, {
 		from: owner.address,
 	});
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log(
 			'\n setFlags: \n',
 			'creationRestrictedToOwner: ',
@@ -348,13 +348,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

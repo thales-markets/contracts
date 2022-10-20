@@ -61,7 +61,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     ITherundownConsumer public theRundownConsumer;
     IERC20 public sUSD;
     address public sportsAMM;
-    uint[] public tags;
+    uint[] public override tags;
     uint public finalResult;
 
     // `deposited` tracks the sum of all deposits.
@@ -71,6 +71,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     address public override creator;
     bool public override resolved;
     bool public override cancelled;
+    uint public cancelTimestamp;
     uint public homeOddsOnCancellation;
     uint public awayOddsOnCancellation;
     uint public drawOddsOnCancellation;
@@ -384,6 +385,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         require(_outcome <= optionsCount, "Invalid outcome");
         if (_outcome == 0) {
             cancelled = true;
+            cancelTimestamp = block.timestamp;
             stampOdds();
         } else {
             require(canResolve(), "Can not resolve market");
@@ -433,7 +435,10 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             payout = _result() == Side.Away ? awayBalance : drawBalance;
         }
         if (cancelled) {
-            require(!invalidOdds, "Invalid stamped odds");
+            require(
+                block.timestamp > cancelTimestamp.add(_manager().cancelTimeout()) && !invalidOdds,
+                "Unexpired timeout/ invalid odds"
+            );
             payout = calculatePayoutOnCancellation(homeBalance, awayBalance, drawBalance);
         }
         emit OptionsExercised(msg.sender, payout);

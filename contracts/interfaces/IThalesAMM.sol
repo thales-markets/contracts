@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.5.16;
 
+import "./IPriceFeed.sol";
+
 interface IThalesAMM {
     enum Position {
         Up,
@@ -52,4 +54,6 @@ interface IThalesAMM {
         Position position,
         uint amount
     ) external view returns (int);
+
+    function priceFeed() external view returns (IPriceFeed);
 }

@@ -399,11 +399,10 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint pricePaid = _sellToAmmQuote(market, position, amount, basePrice, availableToSellToAMMATM);
         require((expectedPayout * ONE) / (pricePaid) <= (ONE + (additionalSlippage)), "Slippage too high");
 
-        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
-        IPosition target = position == Position.Up ? up : down;
+        address target = _getTarget(market, position);
 
         //transfer options first to have max burn available
-        IERC20Upgradeable(address(target)).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20Upgradeable(target).safeTransferFrom(msg.sender, address(this), amount);
 
         uint sUSDFromBurning = IPositionalMarketManager(manager).transformCollateral(
             IPositionalMarket(market).getMaximumBurnable(address(this))
@@ -412,8 +411,6 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             IPositionalMarket(market).burnOptionsMaximum();
         }
 
-        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
-
         sUSD.safeTransfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
@@ -421,7 +418,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         }
         _updateSpentOnMarketOnSell(market, pricePaid, sUSDFromBurning, msg.sender);
 
-        emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), address(target));
+        emit SoldToAMM(msg.sender, market, position, amount, pricePaid, address(sUSD), target);
         return pricePaid;
     }
 
@@ -521,8 +518,6 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             basePrice = basePrice + min_spread;
             if (skewImpact >= 0) {
                 int impactPrice = ((ONE_INT - int(basePrice)) * skewImpact) / ONE_INT;
-
-                //return impactPrice;
                 // add 2% to the price increase to avoid edge cases on the extremes
                 impactPrice = (impactPrice * (ONE_INT + (ONE_PERCENT_INT * 2))) / ONE_INT;
                 tempQuote = (int(amount) * (int(basePrice) + impactPrice)) / ONE_INT;
@@ -548,9 +543,11 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint expectedPayout,
         uint additionalSlippage,
         bool sendSUSD,
-        uint sUSDPaid
-    ) internal returns (uint) {
+        uint sUSDPaidCarried
+    ) internal returns (uint sUSDPaid) {
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
+
+        sUSDPaid = sUSDPaidCarried;
 
         uint basePrice = price(market, position);
 
@@ -573,9 +570,8 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             spentOnMarket[market] = spentOnMarket[market] + (toMint);
         }
 
-        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
-        IPosition target = position == Position.Up ? up : down;
-        IERC20Upgradeable(address(target)).safeTransfer(msg.sender, amount);
+        address target = _getTarget(market, position);
+        IERC20Upgradeable(target).safeTransfer(msg.sender, amount);
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, sUSDPaid);
@@ -588,9 +584,17 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             emit BoughtWithDiscount(msg.sender, discountedAmount, paidForDiscountedAmount);
         }
 
-        emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
+        emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), target);
 
-        return sUSDPaid;
+        (bytes32 key, uint strikePrice, ) = IPositionalMarket(market).getOracleDetails();
+        uint currentAssetPrice = priceFeed.rateForCurrency(key);
+        bool inTheMoney = position == Position.Up ? currentAssetPrice >= strikePrice : currentAssetPrice < strikePrice;
+        emit BoughtOptionType(msg.sender, sUSDPaid, inTheMoney);
+    }
+
+    function _getTarget(address market, Position position) internal view returns (address target) {
+        (IPosition up, IPosition down) = IPositionalMarket(market).getOptions();
+        target = address(position == Position.Up ? up : down);
     }
 
     function _updateSpentOnMarketOnSell(
@@ -913,7 +917,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner can change IV!"
         );
-        require(_impliedVolatility > ONE * (60) && _impliedVolatility < ONE * (300), "IV outside min/max range!");
+        require(_impliedVolatility > ONE * (40) && _impliedVolatility < ONE * (300), "IV outside min/max range!");
         require(priceFeed.rateForCurrency(asset) != 0, "Asset has no price!");
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
         emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);
@@ -1018,6 +1022,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     );
 
     event BoughtWithDiscount(address buyer, uint amount, uint sUSDPaid);
+    event BoughtOptionType(address buyer, uint sUSDPaid, bool inTheMoney);
     event SetPositionalMarketManager(address _manager);
     event SetSUSD(address sUSD);
     event SetPriceFeed(address _priceFeed);

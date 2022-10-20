@@ -216,14 +216,12 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address collateral
     ) public view returns (uint collateralQuote, uint sUSDToPay) {
         int128 curveIndex = _mapCollateralToCurveIndex(collateral);
-        if (curveIndex == 0 || !curveOnrampEnabled) {
-            return (0, 0);
+        if (curveIndex > 0 && curveOnrampEnabled) {
+            sUSDToPay = buyFromAmmQuote(rangedMarket, position, amount);
+            //cant get a quote on how much collateral is needed from curve for sUSD,
+            //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
+            collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay) * (ONE + (ONE_PERCENT / 5))) / ONE;
         }
-
-        sUSDToPay = buyFromAmmQuote(rangedMarket, position, amount);
-        //cant get a quote on how much collateral is needed from curve for sUSD,
-        //so rather get how much of collateral you get for the sUSD quote and add 0.2% to that
-        collateralQuote = (curveSUSD.get_dy_underlying(0, curveIndex, sUSDToPay) * (ONE + (ONE_PERCENT / 5))) / ONE;
     }
 
     function buyFromAMMWithReferrer(
@@ -297,7 +295,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint leftQuote,
         uint rightQuote
     ) internal view returns (uint quoteWithFees) {
-        if (leftQuote != 0 && rightQuote != 0) {
+        if (leftQuote > 0 && rightQuote > 0) {
             uint summedQuotes = leftQuote + rightQuote;
             if (position == RangedMarket.Position.Out) {
                 quoteWithFees = (summedQuotes * (rangedAmmFee + ONE)) / ONE;
@@ -353,6 +351,14 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
 
         emit BoughtFromAmm(msg.sender, address(rangedMarket), position, amount, sUSDPaid, address(sUSD), target);
+
+        (bytes32 leftkey, uint leftstrikePrice, ) = IPositionalMarket(rangedMarket.leftMarket()).getOracleDetails();
+        (, uint rightstrikePrice, ) = IPositionalMarket(rangedMarket.rightMarket()).getOracleDetails();
+        uint currentAssetPrice = thalesAmm.priceFeed().rateForCurrency(leftkey);
+        bool inTheMoney = position == RangedMarket.Position.In
+            ? currentAssetPrice >= leftstrikePrice && currentAssetPrice < rightstrikePrice
+            : currentAssetPrice < leftstrikePrice || currentAssetPrice >= rightstrikePrice;
+        emit BoughtOptionType(msg.sender, sUSDPaid, inTheMoney);
     }
 
     function _buyOUT(RangedMarket rangedMarket, uint amount) internal returns (uint) {
@@ -504,9 +510,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint leftQuote,
         uint rightQuote
     ) internal view returns (uint quoteWithFees) {
-        if (leftQuote == 0 || rightQuote == 0) {
-            quoteWithFees = 0;
-        } else {
+        if (leftQuote > 0 && rightQuote > 0) {
             uint summedQuotes = leftQuote + rightQuote;
             if (position == RangedMarket.Position.Out) {
                 quoteWithFees = (summedQuotes * (ONE - rangedAmmFee)) / ONE;
@@ -714,6 +718,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         address susd,
         address asset
     );
+    event BoughtOptionType(address buyer, uint sUSDPaid, bool inTheMoney);
 
     event RangedMarketCreated(address market, address leftMarket, address rightMarket);
     event SafeBoxChanged(uint _safeBoxImpact, address _safeBox);

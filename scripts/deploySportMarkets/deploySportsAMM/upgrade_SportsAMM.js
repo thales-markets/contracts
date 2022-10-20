@@ -11,6 +11,7 @@ async function main() {
 	let network = networkObj.name;
 	let mainnetNetwork = 'mainnet';
 	let PaymentToken;
+	let SportsAMMContract;
 
 	if (network == 'homestead') {
 		console.log(
@@ -37,6 +38,14 @@ async function main() {
 		networkObj.name = 'goerli';
 		network = 'goerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
+		SportsAMMContract = getTargetAddress('SportsAMM', network);
+	}
+
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+		SportsAMMContract = getTargetAddress('SportsAMM', network);
 	}
 
 	if (networkObj.chainId == 420) {

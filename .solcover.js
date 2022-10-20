@@ -13,6 +13,7 @@ module.exports = {
 		'SafeBox.sol',
 		'SafeBoxBuyback.sol',
 		'utils/libraries/DateTime.sol',
+		'utils/libraries/SafeCast.sol',
 	],
 	providerOptions: {
 		default_balance_ether: 10000000000000, // extra zero just in case (coverage consumes more gas)

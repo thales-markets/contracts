@@ -32,6 +32,8 @@ interface ISportPositionalMarketManager {
 
     function expiryDuration() external view returns (uint);
 
+    function isWhitelistedAddress(address _address) external view returns (bool);
+
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     function createMarket(

@@ -123,7 +123,7 @@ contract('ThalesAMM', (accounts) => {
 	let deciMath;
 	let rewardTokenAddress;
 	let ThalesAMM;
-	let thalesAMM;
+	let thalesAMM, thalesAMMUtils;
 	let MockPriceFeedDeployed;
 
 	beforeEach(async () => {
@@ -164,6 +164,11 @@ contract('ThalesAMM', (accounts) => {
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
 			from: owner,
 		});
+		let ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
+		thalesAMMUtils = await ThalesAMMUtils.new();
+		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
+			from: owner,
+		});
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
 		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 	});
@@ -188,7 +193,7 @@ contract('ThalesAMM', (accounts) => {
 
 			let calculatedOdds = calculateOdds(50720, strike, 13, 80);
 			console.log('calculatedOdds is:' + calculatedOdds);
-			let calculatedOddsContract = await thalesAMM.calculateOdds(
+			let calculatedOddsContract = await thalesAMMUtils.calculateOdds(
 				toUnit(50720),
 				toUnit(strike),
 				toUnit(13),

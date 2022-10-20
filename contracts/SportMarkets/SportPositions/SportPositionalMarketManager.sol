@@ -15,6 +15,8 @@ import "./SportPositionalMarket.sol";
 import "./SportPosition.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
+import "../../interfaces/ITherundownConsumer.sol";
+import "../../interfaces/IApexConsumer.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
@@ -45,6 +47,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     bool public needsTransformingCollateral;
     mapping(address => bool) public whitelistedAddresses;
     address public apexConsumer;
+    uint public cancelTimeout;
+    mapping(address => bool) public whitelistedCancelAddresses;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -78,13 +82,25 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     /// @notice setWhitelistedAddresses enables whitelist addresses of given array
     /// @param _whitelistedAddresses array of whitelisted addresses
     /// @param _flag adding or removing from whitelist (true: add, false: remove)
-    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
+    function setWhitelistedAddresses(
+        address[] calldata _whitelistedAddresses,
+        bool _flag,
+        uint8 _group
+    ) external onlyOwner {
         require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
         for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
             // only if current flag is different, if same skip it
-            if (whitelistedAddresses[_whitelistedAddresses[index]] != _flag) {
-                whitelistedAddresses[_whitelistedAddresses[index]] = _flag;
-                emit AddedIntoWhitelist(_whitelistedAddresses[index], _flag);
+            if (_group == 1) {
+                if (whitelistedAddresses[_whitelistedAddresses[index]] != _flag) {
+                    whitelistedAddresses[_whitelistedAddresses[index]] = _flag;
+                    emit AddedIntoWhitelist(_whitelistedAddresses[index], _flag);
+                }
+            }
+            if (_group == 2) {
+                if (whitelistedCancelAddresses[_whitelistedAddresses[index]] != _flag) {
+                    whitelistedCancelAddresses[_whitelistedAddresses[index]] = _flag;
+                    emit AddedIntoWhitelist(_whitelistedAddresses[index], _flag);
+                }
             }
         }
     }
@@ -255,7 +271,13 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function resolveMarket(address market, uint _outcome) external override {
-        require(msg.sender == theRundownConsumer || msg.sender == apexConsumer || msg.sender == owner, "Invalid resolver");
+        require(
+            msg.sender == theRundownConsumer ||
+                msg.sender == apexConsumer ||
+                msg.sender == owner ||
+                whitelistedCancelAddresses[msg.sender],
+            "Invalid resolver"
+        );
         require(_activeMarkets.contains(market), "Not an active market");
         // unpause if paused
         if (ISportPositionalMarket(market).paused()) {
@@ -264,6 +286,21 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         SportPositionalMarket(market).resolve(_outcome);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
+    }
+
+    function resolveMarketWithResult(
+        address _market,
+        uint _outcome,
+        uint8 _homeScore,
+        uint8 _awayScore,
+        address _consumer
+    ) external {
+        require(msg.sender == owner || whitelistedCancelAddresses[msg.sender], "Invalid resolver");
+        if (_consumer == theRundownConsumer) {
+            ITherundownConsumer(theRundownConsumer).resolveMarketManually(_market, _outcome, _homeScore, _awayScore);
+        } else if (_consumer == apexConsumer) {
+            IApexConsumer(apexConsumer).resolveMarketManually(_market, _outcome, _homeScore, _awayScore);
+        }
     }
 
     function expireMarkets(address[] calldata markets) external override notPaused onlyOwner {
@@ -302,6 +339,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         }
     }
 
+    function setCancelTimeout(uint _cancelTimeout) external onlyOwner {
+        cancelTimeout = _cancelTimeout;
+    }
+
     // support USDC with 6 decimals
     function transformCollateral(uint value) external view override returns (uint) {
         return _transformCollateral(value);
@@ -321,6 +362,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         } else {
             return value;
         }
+    }
+
+    function isWhitelistedAddress(address _address) external view override returns (bool) {
+        return whitelistedAddresses[_address];
     }
 
     /* ========== MODIFIERS ========== */

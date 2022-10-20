@@ -30,7 +30,8 @@ interface IApexConsumer {
         bytes32 _gameId,
         string memory _sport,
         string memory _eventId,
-        bool _arePostQualifyingOdds
+        bool _arePostQualifyingOdds,
+        uint _betType
     ) external;
 
     function fulfillResults(
@@ -39,5 +40,12 @@ interface IApexConsumer {
         string memory _resultDetails,
         bytes32 _gameId,
         string memory _sport
+    ) external;
+
+    function resolveMarketManually(
+        address _market,
+        uint _outcome,
+        uint8 _homeScore,
+        uint8 _awayScore
     ) external;
 }

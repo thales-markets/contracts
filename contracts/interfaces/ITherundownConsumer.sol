@@ -35,4 +35,11 @@ interface ITherundownConsumer {
         bytes[] memory _games,
         uint _date
     ) external;
+
+    function resolveMarketManually(
+        address _market,
+        uint _outcome,
+        uint8 _homeScore,
+        uint8 _awayScore
+    ) external;
 }

@@ -221,6 +221,11 @@ contract('RangedAMM', (accounts) => {
 		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(1000), {
 			from: owner,
 		});
+		let ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
+		let thalesAMMUtils = await ThalesAMMUtils.new();
+		await thalesAMM.setAmmUtils(thalesAMMUtils.address, {
+			from: owner,
+		});
 		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 
 		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);

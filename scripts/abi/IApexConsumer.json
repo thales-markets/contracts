@@ -45,6 +45,11 @@
         "internalType": "bool",
         "name": "_arePostQualifyingOdds",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_betType",
+        "type": "uint256"
       }
     ],
     "name": "fulfillMatchup",
@@ -183,6 +188,34 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_homeScore",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_awayScore",
+        "type": "uint8"
+      }
+    ],
+    "name": "resolveMarketManually",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

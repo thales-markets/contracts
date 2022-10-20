@@ -117,6 +117,8 @@ contract ParlayMarket is OwnedWithInit {
     function isUserTheWinner() external view returns (bool finalResult) {
         if (resolved) {
             finalResult = !parlayAlreadyLost;
+        } else {
+            (finalResult, ) = isParlayExercisable();
         }
     }
 
@@ -135,6 +137,25 @@ contract ParlayMarket is OwnedWithInit {
         } else {
             return Phase.Trading;
         }
+    }
+
+    function isParlayExercisable() public view returns (bool isExercisable, bool[] memory exercisedOrExercisableMarkets) {
+        exercisedOrExercisableMarkets = new bool[](numOfSportMarkets);
+        bool alreadyFalse;
+        for (uint i = 0; i < numOfSportMarkets; i++) {
+            if (sportMarket[i].exercised) {
+                exercisedOrExercisableMarkets[i] = true;
+            } else if (!sportMarket[i].exercised || !sportMarket[i].resolved) {
+                (exercisedOrExercisableMarkets[i], ) = _isWinningSportMarket(
+                    sportMarket[i].sportAddress,
+                    sportMarket[i].position
+                );
+            }
+            if (exercisedOrExercisableMarkets[i] == false && !alreadyFalse) {
+                alreadyFalse = true;
+            }
+        }
+        isExercisable = !alreadyFalse;
     }
 
     function getNewResolvedAndWinningPositions()

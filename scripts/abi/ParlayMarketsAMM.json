@@ -776,6 +776,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "isParlayOwnerTheWinner",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isUserTheWinner",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "lastPauseTime",
     "outputs": [

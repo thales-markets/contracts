@@ -59,16 +59,44 @@ async function main() {
 
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 
-	await upgrades.upgradeProxy(ParlayAMMAddress, ParlayAMM);
+	if (networkObj.chainId == 10 || networkObj.chainId == 5) {
+		console.log('HERE');
+		const implementation = await upgrades.prepareUpgrade(ParlayAMMAddress, ParlayAMM);
+		await delay(5000);
 
-	await delay(60000);
+		console.log('ParlayAMM upgraded');
 
-	const ParlayAMMImplementation = await getImplementationAddress(ethers.provider, ParlayAMMAddress);
+		console.log('Implementation ParlayAMM: ', implementation);
+		setTargetAddress('ParlayAMMImplementation', network, implementation);
+		try {
+			await hre.run('verify:verify', {
+				address: implementation,
+			});
+		} catch (e) {
+			console.log(e);
+		}
+	} else {
+		await upgrades.upgradeProxy(ParlayAMMAddress, ParlayAMM);
 
-	console.log('Implementation ParlayAMM: ', ParlayAMMImplementation);
-	setTargetAddress('ParlayAMMImplementation', network, ParlayAMMImplementation);
+		await delay(60000);
 
-	await delay(2000);
+		const ParlayAMMImplementation = await getImplementationAddress(
+			ethers.provider,
+			ParlayAMMAddress
+		);
+
+		console.log('Implementation ParlayAMM: ', ParlayAMMImplementation);
+		setTargetAddress('ParlayAMMImplementation', network, ParlayAMMImplementation);
+
+		await delay(2000);
+		try {
+			await hre.run('verify:verify', {
+				address: ParlayAMMImplementation,
+			});
+		} catch (e) {
+			console.log(e);
+		}
+	}
 
 	// const ReferralsContract = getTargetAddress('Referrals', network);
 	// const ParlayMarketDataContract = getTargetAddress('ParlayMarketData', network);
@@ -86,14 +114,6 @@ async function main() {
 	// 	);
 	// 	console.log('Addresses set');
 	// await delay(2000);
-
-	try {
-		await hre.run('verify:verify', {
-			address: ParlayAMMImplementation,
-		});
-	} catch (e) {
-		console.log(e);
-	}
 }
 
 main()

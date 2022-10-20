@@ -885,6 +885,42 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(answer.numOfSportMarkets, 4);
 		});
 
+		it('Is exercisable after buying', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			let buyParlayTX = await ParlayAMM.buyFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				{ from: first }
+			);
+			// console.log("event: \n", buyParlayTX.logs[0]);
+
+			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
+			parlaySingleMarketAddress = activeParlays[0];
+			parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
+
+			let newResult5 = await parlaySingleMarket.isParlayExercisable();
+			assert.equal(newResult5.isExercisable, false);
+		});
+
 		it('Buy Parlay with referral', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
@@ -1428,6 +1464,28 @@ contract('ParlayAMM', (accounts) => {
 				it('Parlay exercised', async () => {
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
 					assert.equal(await ParlayAMM.resolvedParlay(parlaySingleMarket.address), true);
+				});
+				it('Read from ParlayMarket for new resolved or wining positions', async () => {
+					let result = await parlaySingleMarket.getNewResolvedAndWinningPositions();
+					for (let i = 0; i < result.newWinningMarkets.length; i++) {
+						assert.equal(result.newWinningMarkets[i], true);
+						assert.equal(result.newResolvedMarkets[i], true);
+					}
+				});
+				it('Read from ParlayMarket isExercisable', async () => {
+					let result = await parlaySingleMarket.isParlayExercisable();
+					assert.equal(result.isExercisable, true);
+					for (let i = 0; i < result.exercisedOrExercisableMarkets.length; i++) {
+						assert.equal(result.exercisedOrExercisableMarkets[i], true);
+					}
+				});
+				it('IsUserTheWinner', async () => {
+					let result = await parlaySingleMarket.isUserTheWinner();
+					assert.equal(result, true);
+				});
+				it('IsParlayOwnerTheWinner', async () => {
+					let result = await ParlayAMM.isParlayOwnerTheWinner(parlaySingleMarket.address);
+					assert.equal(result, true);
 				});
 				it('Exercise single sportMarket through ParlayData', async () => {
 					await ParlayMarketData.exerciseSportMarketInParlays(

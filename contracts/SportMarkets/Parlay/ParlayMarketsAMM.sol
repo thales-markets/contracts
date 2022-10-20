@@ -194,6 +194,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
+    function isParlayOwnerTheWinner(address _parlayMarket) external view returns (bool isUserTheWinner) {
+        if (_knownMarkets.contains(_parlayMarket)) {
+            isUserTheWinner = ParlayMarket(_parlayMarket).isUserTheWinner();
+        }
+    }
+
     /* ========== EXTERNAL FUNCTIONS ========== */
 
     function buyFromParlay(

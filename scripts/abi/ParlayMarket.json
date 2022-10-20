@@ -274,6 +274,24 @@
   },
   {
     "inputs": [],
+    "name": "isParlayExercisable",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isExercisable",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "exercisedOrExercisableMarkets",
+        "type": "bool[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "isUserTheWinner",
     "outputs": [
       {

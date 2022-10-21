@@ -11,12 +11,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_stakingThales",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "_safeBox",
         "type": "address"
       },
@@ -1133,11 +1127,6 @@
       {
         "internalType": "address",
         "name": "_sportsAMM",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IStakingThales",
-        "name": "_stakingThales",
         "type": "address"
       },
       {

@@ -517,7 +517,6 @@ contract('ParlayAMM', (accounts) => {
 
 		await ParlayAMM.setAddresses(
 			SportsAMM.address,
-			ZERO_ADDRESS,
 			safeBox,
 			Referrals.address,
 			ParlayMarketData.address,
@@ -573,7 +572,7 @@ contract('ParlayAMM', (accounts) => {
 			);
 		});
 		it('set Addresses', async () => {
-			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, owner, {
+			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, {
 				from: owner,
 			});
 		});

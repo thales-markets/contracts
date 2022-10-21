@@ -161,12 +161,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             address(rangedMarket.rightMarket()),
             position == RangedMarket.Position.Out ? IThalesAMM.Position.Up : IThalesAMM.Position.Down
         );
-        if (position == RangedMarket.Position.Out) {
-            return availableLeft < availableRight ? availableLeft : availableRight;
-        } else {
-            uint availableThalesAMM = (availableLeft < availableRight ? availableLeft : availableRight) * 2;
-            return availableThalesAMM;
-        }
+        return availableLeft < availableRight ? availableLeft : availableRight;
     }
 
     function buyFromAmmQuote(
@@ -321,6 +316,8 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint additionalSlippage,
         bool sendSUSD
     ) internal {
+        require(availableToBuyFromAMM(rangedMarket, position) >= amount, "insufficient liquidity");
+
         uint sUSDPaid;
         address target;
         (RangedPosition inp, RangedPosition outp) = rangedMarket.positions();

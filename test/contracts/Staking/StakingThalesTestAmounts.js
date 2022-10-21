@@ -13,7 +13,7 @@ const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { encodeCall, convertToDecimals } = require('../../utils/helpers');
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-contract('StakingThales', accounts => {
+contract('StakingThales', (accounts) => {
 	const [first, second, third, owner] = accounts;
 	const [initialCreator, managerOwner, minter, dummy] = accounts;
 	let ThalesDeployed,
@@ -171,6 +171,7 @@ contract('StakingThales', accounts => {
 		await StakingThalesDeployed.setStakingParameters(true, true, WEEK, WEEK, true, { from: owner });
 		await StakingThalesDeployed.setAddresses(
 			SNXRewardsDeployed.address,
+			dummy,
 			dummy,
 			dummy,
 			dummy,

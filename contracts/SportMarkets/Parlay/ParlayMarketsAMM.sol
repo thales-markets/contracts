@@ -390,6 +390,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         _knownMarkets.add(address(parlayMarket));
         parlayMarket.updateQuotes(marketQuotes, totalQuote);
 
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(msg.sender, _sUSDPaid);
+        }
         // buy the positions
         _buyPositionsFromSportAMM(
             _sportMarkets,

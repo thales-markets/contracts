@@ -12,7 +12,7 @@ const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { encodeCall, convertToDecimals } = require('../../utils/helpers');
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-contract('StakingThales', accounts => {
+contract('StakingThales', (accounts) => {
 	const [first, second, third, owner] = accounts;
 	const [initialCreator, managerOwner, minter, dummy] = accounts;
 	let ThalesDeployed,
@@ -182,6 +182,7 @@ contract('StakingThales', accounts => {
 			dummy,
 			dummy,
 			dummy,
+			dummy,
 			PriceFeedInstance.address,
 			ThalesStakingRewardsPoolDeployed.address,
 			AddressResolverDeployed.address,
@@ -264,7 +265,8 @@ contract('StakingThales', accounts => {
 			let totalAccountEscrowedAmount = await EscrowThalesDeployed.totalAccountEscrowedAmount(first);
 			//console.log('totalAccountEscrowedAmount' + totalAccountEscrowedAmount);
 
-			let totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			let totalEscrowBalanceNotIncludedInStaking =
+				await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
 			// console.log(
 			// 	'totalEscrowBalanceNotIncludedInStaking ' + totalEscrowBalanceNotIncludedInStaking
 			// );
@@ -280,7 +282,8 @@ contract('StakingThales', accounts => {
 			stakedBalanceOf = await StakingThalesDeployed.stakedBalanceOf(first);
 			//console.log('stakedBalanceOf after ' + stakedBalanceOf);
 
-			totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			totalEscrowBalanceNotIncludedInStaking =
+				await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
 			// console.log(
 			// 	'totalEscrowBalanceNotIncludedInStaking ' + totalEscrowBalanceNotIncludedInStaking
 			// );

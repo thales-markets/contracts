@@ -16,7 +16,7 @@ const { fastForward, toUnit, fromUnit, currentTime } = require('../../utils')();
 const { encodeCall, convertToDecimals } = require('../../utils/helpers');
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-contract('StakingThales', accounts => {
+contract('StakingThales', (accounts) => {
 	const [first, second, third, owner] = accounts;
 	const [initialCreator, managerOwner, minter, dummy] = accounts;
 	let ThalesDeployed,
@@ -254,6 +254,7 @@ contract('StakingThales', accounts => {
 		);
 		await StakingThalesDeployed.setAddresses(
 			SNXRewardsDeployed.address,
+			dummy,
 			dummy,
 			dummy,
 			dummy,
@@ -1561,7 +1562,8 @@ contract('StakingThales', accounts => {
 				{ from: second }
 			);
 
-			let totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			let totalEscrowBalanceNotIncludedInStaking =
+				await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
 			assert.bnEqual(totalEscrowBalanceNotIncludedInStaking, deposit.mul(toBN(weeks)).div(toBN(4)));
 
 			await fastForward(WEEK + 5 * SECOND);
@@ -1587,7 +1589,8 @@ contract('StakingThales', accounts => {
 			claimable = await EscrowThalesDeployed.claimable(first);
 			assert.bnEqual(claimable, toUnit(0));
 
-			totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			totalEscrowBalanceNotIncludedInStaking =
+				await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
 			assert.bnEqual(totalEscrowBalanceNotIncludedInStaking, toUnit(0));
 
 			let vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 0);
@@ -1662,13 +1665,11 @@ contract('StakingThales', accounts => {
 				from: first,
 			});
 
-			let totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			let totalEscrowBalanceNotIncludedInStaking =
+				await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
 			assert.bnEqual(
 				totalEscrowBalanceNotIncludedInStaking,
-				deposit
-					.mul(toBN(weeks))
-					.div(toBN(4))
-					.mul(toBN(3))
+				deposit.mul(toBN(weeks)).div(toBN(4)).mul(toBN(3))
 			);
 
 			await fastForward(WEEK + 5 * SECOND);
@@ -1694,7 +1695,8 @@ contract('StakingThales', accounts => {
 			claimable = await EscrowThalesDeployed.claimable(first);
 			assert.bnEqual(claimable, toUnit(0));
 
-			totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			totalEscrowBalanceNotIncludedInStaking =
+				await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
 			assert.bnEqual(totalEscrowBalanceNotIncludedInStaking, toUnit(0));
 
 			let vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 0);
@@ -1774,7 +1776,8 @@ contract('StakingThales', accounts => {
 				);
 			}
 
-			let totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			let totalEscrowBalanceNotIncludedInStaking =
+				await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
 			assert.bnEqual(totalEscrowBalanceNotIncludedInStaking, deposit.mul(toBN(weeks)));
 
 			await fastForward(WEEK + 5 * SECOND);
@@ -1802,7 +1805,8 @@ contract('StakingThales', accounts => {
 			claimable = await EscrowThalesDeployed.claimable(first);
 			assert.bnEqual(claimable, toUnit(0));
 
-			totalEscrowBalanceNotIncludedInStaking = await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
+			totalEscrowBalanceNotIncludedInStaking =
+				await EscrowThalesDeployed.totalEscrowBalanceNotIncludedInStaking();
 			assert.bnEqual(totalEscrowBalanceNotIncludedInStaking, deposit.mul(toBN(weeks)));
 
 			let vestingEntryAmount = await EscrowThalesDeployed.getStakerAmounts(second, 0);

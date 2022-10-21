@@ -112,6 +112,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     bool public mergeAccountEnabled;
 
+    mapping(address => uint) private lastParlayAMMUpdatePeriod;
+    mapping(address => AMMVolumeEntry[AMM_EXTRA_REWARD_PERIODS]) private parlayAMMVolume;
+    address public parlayAMM;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -276,6 +280,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address _thalesRangedAMM,
         address _exoticBonds,
         address _sportsAMM,
+        address _parlayAMM,
         address _priceFeed,
         address _thalesStakingRewardsPool,
         address _addressResolver
@@ -287,6 +292,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
                 _thalesRangedAMM != address(0) &&
                 _exoticBonds != address(0) &&
                 _sportsAMM != address(0) &&
+                _parlayAMM != address(0) &&
                 _priceFeed != address(0) &&
                 _thalesStakingRewardsPool != address(0) &&
                 _addressResolver != address(0),
@@ -299,6 +305,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         thalesRangedAMM = _thalesRangedAMM;
         exoticBonds = _exoticBonds;
         sportsAMM = _sportsAMM;
+        parlayAMM = _parlayAMM;
         priceFeed = IPriceFeed(_priceFeed);
         ThalesStakingRewardsPool = IThalesStakingRewardsPool(_thalesStakingRewardsPool);
         addressResolver = IAddressResolver(_addressResolver);
@@ -310,6 +317,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             _thalesRangedAMM,
             _exoticBonds,
             _sportsAMM,
+            _parlayAMM,
             _priceFeed,
             _thalesStakingRewardsPool,
             _addressResolver
@@ -647,7 +655,11 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     function updateVolume(address account, uint amount) external {
         require(account != address(0) && amount > 0, "Invalid params");
         require(
-            msg.sender == thalesAMM || msg.sender == exoticBonds || msg.sender == thalesRangedAMM || msg.sender == sportsAMM,
+            msg.sender == thalesAMM ||
+                msg.sender == exoticBonds ||
+                msg.sender == thalesRangedAMM ||
+                msg.sender == sportsAMM ||
+                msg.sender == parlayAMM,
             "Invalid address"
         );
         if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
@@ -657,9 +669,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         }
         stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = stakerAMMVolume[account][
             periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-        ]
-            .amount
-            .add(amount);
+        ].amount.add(amount);
 
         if (msg.sender == thalesAMM) {
             if (lastThalesAMMUpdatePeriod[account] < periodsOfStaking) {
@@ -669,9 +679,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             thalesAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = thalesAMMVolume[account][
                 periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-            ]
-                .amount
-                .add(amount);
+            ].amount.add(amount);
         }
 
         if (msg.sender == thalesRangedAMM) {
@@ -682,9 +690,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             thalesRangedAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = thalesRangedAMMVolume[
                 account
-            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)]
-                .amount
-                .add(amount);
+            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
         }
 
         if (msg.sender == exoticBonds) {
@@ -695,9 +701,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             exoticMarketsVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = exoticMarketsVolume[
                 account
-            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)]
-                .amount
-                .add(amount);
+            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
         }
 
         if (msg.sender == sportsAMM) {
@@ -708,9 +712,18 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             }
             sportsAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = sportsAMMVolume[account][
                 periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
-            ]
-                .amount
-                .add(amount);
+            ].amount.add(amount);
+        }
+
+        if (msg.sender == parlayAMM) {
+            if (lastParlayAMMUpdatePeriod[account] < periodsOfStaking) {
+                parlayAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
+                parlayAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
+                lastParlayAMMUpdatePeriod[account] = periodsOfStaking;
+            }
+            parlayAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = parlayAMMVolume[account][
+                periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
+            ].amount.add(amount);
         }
 
         emit AMMVolumeUpdated(account, amount, msg.sender);
@@ -756,9 +769,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             if (stakerAMMVolumePeriod == stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].period) {
                 stakerAMMVolume[destAccount][stakerAMMVolumeIndex].amount = stakerAMMVolume[destAccount][
                     stakerAMMVolumeIndex
-                ]
-                    .amount
-                    .add(stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].amount);
+                ].amount.add(stakerAMMVolume[msg.sender][stakerAMMVolumeIndex].amount);
             }
         }
 
@@ -936,6 +947,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address thalesRangedAMM,
         address exoticBonds,
         address sportsAMM,
+        address parlayAMM,
         address priceFeed,
         address ThalesStakingRewardsPool,
         address addressResolver

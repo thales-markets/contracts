@@ -39,6 +39,11 @@ async function main() {
 		network = 'goerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+		PaymentToken = getTargetAddress('ExoticUSD', network);
+	}
 
 	const ParlayMarketDataAddress = getTargetAddress('ParlayMarketData', network);
 	const ParlayMarketData = await ethers.getContractFactory('ParlayMarketData');

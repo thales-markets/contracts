@@ -316,7 +316,7 @@ contract RangedMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint additionalSlippage,
         bool sendSUSD
     ) internal {
-        require(availableToBuyFromAMM(rangedMarket, position) >= amount, "insufficient liquidity");
+        require(availableToBuyFromAMM(rangedMarket, position) >= amount, "Insufficient liquidity");
 
         uint sUSDPaid;
         address target;

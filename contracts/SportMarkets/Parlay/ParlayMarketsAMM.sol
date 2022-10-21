@@ -66,6 +66,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     mapping(address => bool) public resolvedParlay;
     uint maxAllowedPegSlippagePercentage;
     ParlayVerifier public parlayVerifier;
+    uint public minUSDAmount;
 
     function initialize(
         address _owner,
@@ -359,7 +360,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         );
 
         // apply all checks
-        require(_sUSDPaid >= ONE, "Low sUSD buy");
+        require(_sUSDPaid >= minUSDAmount, "Low sUSD buy");
         require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");
         require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
         require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
@@ -448,6 +449,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
                 sportsAmm
             );
             if (totalQuote > 0) {
+                if (totalQuote < maxSupportedOdds) {
+                    totalQuote = maxSupportedOdds;
+                }
                 uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
                 skewImpact = expectedPayout > totalBuyAmount
                     ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
@@ -563,18 +567,20 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     }
 
     function setAmounts(
+        uint _minUSDAmount,
         uint _maxSupportedAmount,
         uint _maxSupportedOdds,
         uint _parlayAMMFee,
         uint _safeBoxImpact,
         uint _referrerFee
     ) external onlyOwner {
+        minUSDAmount = _minUSDAmount;
         maxSupportedAmount = _maxSupportedAmount;
         maxSupportedOdds = _maxSupportedOdds;
         parlayAmmFee = _parlayAMMFee;
         safeBoxImpact = _safeBoxImpact;
         referrerFee = _referrerFee;
-        emit SetAmounts(_maxSupportedAmount, maxSupportedOdds, _parlayAMMFee, _safeBoxImpact, _referrerFee);
+        emit SetAmounts(_minUSDAmount, _maxSupportedAmount, maxSupportedOdds, _parlayAMMFee, _safeBoxImpact, _referrerFee);
     }
 
     function setAddresses(
@@ -638,7 +644,14 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint totalQuote,
         uint skewImpact
     );
-    event SetAmounts(uint max_amount, uint max_odds, uint _parlayAMMFee, uint _safeBoxImpact, uint _referrerFee);
+    event SetAmounts(
+        uint minUSDamount,
+        uint max_amount,
+        uint max_odds,
+        uint _parlayAMMFee,
+        uint _safeBoxImpact,
+        uint _referrerFee
+    );
     event AddressesSet(
         address _thalesAMM,
         address _stakingThales,

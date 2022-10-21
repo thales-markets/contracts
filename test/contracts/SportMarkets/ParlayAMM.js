@@ -184,6 +184,7 @@ contract('ParlayAMM', (accounts) => {
 
 	let parlayAMMfee = toUnit('0.05');
 	let safeBoxImpact = toUnit('0.02');
+	let minUSDAmount = '10';
 	let maxSupportedAmount = '20000';
 	let maxSupportedOdd = '0.005';
 
@@ -494,6 +495,7 @@ contract('ParlayAMM', (accounts) => {
 		);
 
 		await ParlayAMM.setAmounts(
+			toUnit(minUSDAmount),
 			toUnit(maxSupportedAmount),
 			toUnit(maxSupportedOdd),
 			parlayAMMfee,
@@ -558,9 +560,17 @@ contract('ParlayAMM', (accounts) => {
 
 	describe('Parlay AMM setters', () => {
 		it('SetAmounts', async () => {
-			await ParlayAMM.setAmounts(toUnit(0.1), toUnit(0.1), toUnit(0.1), toUnit(0.1), toUnit(0.1), {
-				from: owner,
-			});
+			await ParlayAMM.setAmounts(
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				toUnit(0.1),
+				{
+					from: owner,
+				}
+			);
 		});
 		it('set Addresses', async () => {
 			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, owner, {
@@ -790,6 +800,39 @@ contract('ParlayAMM', (accounts) => {
 				parlayPositions,
 				totalSUSDToPay
 			);
+			console.log('sUSDAfterFees: ', fromUnit(result.sUSDAfterFees));
+			console.log('totalQuote: ', fromUnit(result.totalQuote));
+			console.log('totalBuyAmount: ', fromUnit(result.totalBuyAmount));
+			console.log('initialQuote: ', fromUnit(result.initialQuote));
+			console.log('skewImpact: ', fromUnit(result.skewImpact));
+		});
+
+		it('BuyQuoteHigh for Parlay', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '2'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			assert.equal(fromUnit(result.totalQuote), '0.005');
+			console.log('sUSDAfterFees: ', fromUnit(result.sUSDAfterFees));
+			console.log('totalQuote: ', fromUnit(result.totalQuote));
+			console.log('totalBuyAmount: ', fromUnit(result.totalBuyAmount));
+			console.log('initialQuote: ', fromUnit(result.initialQuote));
+			console.log('skewImpact: ', fromUnit(result.skewImpact));
+			console.log('amountsToBuy[0]: ', fromUnit(result.amountsToBuy[0]));
+			console.log('amountsToBuy[1]: ', fromUnit(result.amountsToBuy[1]));
+			console.log('amountsToBuy[2]: ', fromUnit(result.amountsToBuy[2]));
+			console.log('amountsToBuy[3]: ', fromUnit(result.amountsToBuy[3]));
 		});
 
 		it('BuyQuote Multicollateral for Parlay', async () => {

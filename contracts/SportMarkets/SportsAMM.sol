@@ -965,6 +965,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return 0;
     }
 
+    function updateParlayVolume(address _account, uint _amount) external {
+        require(msg.sender == parlayAMM, "Invalid caller");
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(_account, _amount);
+        }
+    }
+
     /// @notice Retrive all sUSD funds of the SportsAMM contract, in case of destroying
     /// @param account Address where to send the funds
     /// @param amount Amount of sUSD to be sent

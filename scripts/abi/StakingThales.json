@@ -85,12 +85,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "parlayAMM",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "priceFeed",
         "type": "address"
       },
@@ -1499,21 +1493,6 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "parlayAMM",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -1602,11 +1581,6 @@
       {
         "internalType": "address",
         "name": "_sportsAMM",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_parlayAMM",
         "type": "address"
       },
       {

@@ -35,4 +35,6 @@ interface ISportsAMM {
         Position position,
         uint amount
     ) external view returns (uint);
+
+    function updateParlayVolume(address _account, uint _amount) external;
 }

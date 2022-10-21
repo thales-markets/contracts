@@ -40,6 +40,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     ISportsAMM public sportsAmm;
     ISportPositionalMarketManager public sportManager;
     IERC20Upgradeable public sUSD;
+    //REMOVE stakingThales prior to deploy on mainnet
     IStakingThales public stakingThales;
     ICurveSUSD public curveSUSD;
 
@@ -389,10 +390,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         _knownMarkets.add(address(parlayMarket));
         parlayMarket.updateQuotes(marketQuotes, totalQuote);
-
-        if (address(stakingThales) != address(0)) {
-            stakingThales.updateVolume(msg.sender, _sUSDPaid);
-        }
+        sportsAmm.updateParlayVolume(_differentRecepient, _sUSDPaid);
         // buy the positions
         _buyPositionsFromSportAMM(
             _sportMarkets,
@@ -588,7 +586,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function setAddresses(
         address _sportsAMM,
-        IStakingThales _stakingThales,
         address _safeBox,
         address _referrals,
         address _parlayMarketData,
@@ -596,12 +593,11 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     ) external onlyOwner {
         sportsAmm = ISportsAMM(_sportsAMM);
         sUSD.approve(address(sportsAmm), type(uint256).max);
-        stakingThales = _stakingThales;
         safeBox = _safeBox;
         referrals = _referrals;
         parlayMarketData = _parlayMarketData;
         parlayVerifier = ParlayVerifier(_parlayVerifier);
-        emit AddressesSet(_sportsAMM, address(_stakingThales), _safeBox, _referrals, _parlayMarketData, _parlayVerifier);
+        emit AddressesSet(_sportsAMM, _safeBox, _referrals, _parlayMarketData, _parlayVerifier);
     }
 
     /// @notice Setting the Curve collateral addresses for all collaterals
@@ -657,7 +653,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     );
     event AddressesSet(
         address _thalesAMM,
-        address _stakingThales,
         address _safeBox,
         address _referrals,
         address _parlayMarketData,

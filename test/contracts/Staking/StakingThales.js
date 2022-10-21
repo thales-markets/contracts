@@ -259,7 +259,6 @@ contract('StakingThales', (accounts) => {
 			dummy,
 			dummy,
 			dummy,
-			dummy,
 			PriceFeedInstance.address,
 			ThalesStakingRewardsPoolDeployed.address,
 			AddressResolverDeployed.address,

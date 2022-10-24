@@ -9,10 +9,10 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
-import "../interfaces/IThalesAMM.sol";
-import "../interfaces/IPositionalMarket.sol";
+import "../interfaces/ISportsAMM.sol";
+import "../interfaces/ISportPositionalMarket.sol";
 
-contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
+contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     /* ========== LIBRARIES ========== */
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -33,7 +33,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /* ========== STATE VARIABLES ========== */
 
-    IThalesAMM public thalesAMM;
+    ISportsAMM public sportsAMM;
     IERC20Upgradeable public sUSD;
 
     bool public vaultStarted;
@@ -53,7 +53,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     mapping(uint => uint) public allocationPerRound;
 
     mapping(uint => address[]) public tradingMarketsPerRound;
-    mapping(uint => mapping(address => IThalesAMM.Position)) public tradingMarketPositionPerRound;
+    mapping(uint => mapping(address => ISportsAMM.Position)) public tradingMarketPositionPerRound;
     mapping(uint => mapping(address => bool)) public isTradingMarketInARound;
 
     mapping(uint => uint) public profitAndLossPerRound;
@@ -66,9 +66,9 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     /* ========== CONSTRUCTOR ========== */
 
-    function __BaseVault_init(
+    function __BaseSportVault_init(
         address _owner,
-        IThalesAMM _thalesAmm,
+        ISportsAMM _sportAmm,
         IERC20Upgradeable _sUSD,
         uint _roundLength,
         uint _maxAllowedDeposit,
@@ -76,12 +76,12 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal onlyInitializing {
         setOwner(_owner);
         initNonReentrant();
-        thalesAMM = IThalesAMM(_thalesAmm);
+        sportsAMM = ISportsAMM(_sportAmm);
         sUSD = _sUSD;
         roundLength = _roundLength;
         maxAllowedDeposit = _maxAllowedDeposit;
         utilizationRate = _utilizationRate;
-        sUSD.approve(address(thalesAMM), type(uint256).max);
+        sUSD.approve(address(sportsAMM), type(uint256).max);
     }
 
     /// @notice Start vault and begin round #1
@@ -102,7 +102,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function closeRound() external nonReentrant whenNotPaused canCloseRound {
         // excercise market options
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            IPositionalMarket(tradingMarketsPerRound[round][i]).exerciseOptions();
+            ISportPositionalMarket(tradingMarketsPerRound[round][i]).exerciseOptions();
         }
 
         // balance in next round does not affect PnL in a current round
@@ -215,11 +215,11 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     /// @notice Set ThalesAMM contract
-    /// @param _thalesAMM ThalesAMM address
-    function setThalesAMM(IThalesAMM _thalesAMM) external onlyOwner {
-        thalesAMM = _thalesAMM;
-        sUSD.approve(address(thalesAMM), type(uint256).max);
-        emit ThalesAMMChanged(address(_thalesAMM));
+    /// @param _sportAMM ThalesAMM address
+    function setSportAmm(ISportsAMM _sportAMM) external onlyOwner {
+        sportsAMM = _sportAMM;
+        sUSD.approve(address(sportsAMM), type(uint256).max);
+        emit SportAMMChanged(address(_sportAMM));
     }
 
     /// @notice Set utilization rate parameter
@@ -340,7 +340,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event VaultStarted();
     event RoundClosed(uint round);
     event RoundLengthChanged(uint roundLength);
-    event ThalesAMMChanged(address thalesAmm);
+    event SportAMMChanged(address thalesAmm);
     event SetSUSD(address sUSD);
     event Deposited(address user, uint amount);
     event Claimed(address user, uint amount);

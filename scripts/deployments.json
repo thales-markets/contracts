@@ -437,7 +437,9 @@
 		"RangedMarketMastercopy": "0xD792b54AD28aeA550AaE878665F6a0De00793E81",
 		"TherundownConsumerVerifier": "0x86991efb34B0Cf55af38E9dACE3f82CD8B70188F",
 		"TherundownConsumerVerifierImplementation": "0x4a2Cdf88AeE68df88c90F6377bb556d686e3099C",
-		"SportsAMMUtils": "0x7ef54B7aF71D9F491D9735d8Cb093fFc4A51d01d"
+		"SportsAMMUtils": "0x7ef54B7aF71D9F491D9735d8Cb093fFc4A51d01d",
+		"SportVault": "0xE9bd38dB165F83B138d7F3F5cf033ea743FCA264",
+		"SportVaultImplementation": "0x076F54beAfD3d219160Dd36b4e76a2fAD4b51055"
 	},
 	"localhost": {
 		"Airdrop": "",

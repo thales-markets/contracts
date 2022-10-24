@@ -381,7 +381,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _positions,
             totalAmount,
             sUSDAfterFees,
-            sportManager.expiryDuration(),
+            (block.timestamp + sportManager.expiryDuration()),
             address(this),
             _differentRecepient
         );

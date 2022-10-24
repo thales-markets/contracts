@@ -264,14 +264,16 @@ contract ParlayMarket is OwnedWithInit {
                 uint totalSUSDamount = parlayMarketsAMM.sUSD().balanceOf(address(this));
                 uint calculatedAmount = _recalculateAmount();
                 _resolve(true);
-                if (calculatedAmount < totalSUSDamount) {
-                    parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
-                    parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount - calculatedAmount));
-                } else {
-                    parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+                if (phase() != Phase.Expiry) {
+                    if (calculatedAmount < totalSUSDamount) {
+                        parlayMarketsAMM.sUSD().transfer(parlayOwner, calculatedAmount);
+                        parlayMarketsAMM.sUSD().transfer(address(parlayMarketsAMM), (totalSUSDamount - calculatedAmount));
+                    } else {
+                        parlayMarketsAMM.sUSD().transfer(parlayOwner, totalSUSDamount);
+                    }
+                    fundsIssued = true;
+                    parlayMarketsAMM.resolveParlay();
                 }
-                fundsIssued = true;
-                parlayMarketsAMM.resolveParlay();
             }
         } else {
             if (!parlayAlreadyLost) {
@@ -353,9 +355,16 @@ contract ParlayMarket is OwnedWithInit {
     function _selfDestruct(address payable beneficiary) internal {
         // Transfer the balance rather than the deposit value in case there are any synths left over
         // from direct transfers.
+        for (uint i = 0; i < numOfSportMarkets; i++) {
+            _updateSportMarketParameters(sportMarket[i].sportAddress, i);
+            if (sportMarket[i].resolved && !sportMarket[i].exercised) {
+                _exerciseSpecificSportMarket(sportMarket[i].sportAddress, i);
+            }
+        }
         uint balance = parlayMarketsAMM.sUSD().balanceOf(address(this));
         if (balance != 0) {
             parlayMarketsAMM.sUSD().transfer(beneficiary, balance);
+            fundsIssued = true;
         }
 
         // Destroy the option tokens before destroying the market itself.

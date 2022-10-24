@@ -501,6 +501,7 @@ contract('ParlayAMM', (accounts) => {
 			parlayAMMfee,
 			safeBoxImpact,
 			toUnit(0.05),
+			toUnit(10),
 			{
 				from: owner,
 			}
@@ -560,6 +561,7 @@ contract('ParlayAMM', (accounts) => {
 	describe('Parlay AMM setters', () => {
 		it('SetAmounts', async () => {
 			await ParlayAMM.setAmounts(
+				toUnit(0.1),
 				toUnit(0.1),
 				toUnit(0.1),
 				toUnit(0.1),
@@ -843,7 +845,7 @@ contract('ParlayAMM', (accounts) => {
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
 			for (let i = 0; i < parlayMarkets.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address;
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toLowerCase();
 			}
 			let result = await ParlayAMM.buyQuoteFromParlayWithDifferentCollateral(
 				parlayMarketsAddress,
@@ -863,7 +865,8 @@ contract('ParlayAMM', (accounts) => {
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
 			for (let i = 0; i < parlayMarkets.length; i++) {
-				parlayMarketsAddress[i] = parlayMarkets[i].address;
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().toUpperCase();
+				parlayMarketsAddress[i] = parlayMarkets[i].address.toString().replace('0X', '0x');
 			}
 			let slippage = toUnit('0.01');
 			let result = await ParlayAMM.buyQuoteFromParlay(
@@ -961,6 +964,58 @@ contract('ParlayAMM', (accounts) => {
 				ZERO_ADDRESS,
 				{ from: first }
 			);
+			// console.log("event: \n", buyParlayTX.logs[0]);
+
+			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
+			parlaySingleMarketAddress = activeParlays[0];
+			parlaySingleMarket = await ParlayMarketContract.at(activeParlays[0].toString());
+
+			let newResult5 = await parlaySingleMarket.isParlayExercisable();
+			assert.equal(newResult5.isExercisable, false);
+		});
+
+		it('Risk amount per combination exceeded', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = parlayMarkets[i].address;
+			}
+			let slippage = toUnit('0.01');
+			let result = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			let buyParlayTX = await ParlayAMM.buyFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay,
+				slippage,
+				result[1],
+				ZERO_ADDRESS,
+				{ from: first }
+			);
+			let result1 = await ParlayAMM.buyQuoteFromParlay(
+				parlayMarketsAddress,
+				parlayPositions,
+				totalSUSDToPay
+			);
+			await expect(
+				ParlayAMM.buyFromParlay(
+					parlayMarketsAddress,
+					parlayPositions,
+					totalSUSDToPay,
+					slippage,
+					result[1],
+					ZERO_ADDRESS,
+					{ from: first }
+				)
+			).to.be.revertedWith('Can not create parlay market!');
 			// console.log("event: \n", buyParlayTX.logs[0]);
 
 			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
@@ -1181,6 +1236,19 @@ contract('ParlayAMM', (accounts) => {
 
 		it('Mint voucher', async () => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			//for the voucher to be twice used
+			await ParlayAMM.setAmounts(
+				toUnit(minUSDAmount),
+				toUnit(maxSupportedAmount),
+				toUnit(maxSupportedOdd),
+				parlayAMMfee,
+				safeBoxImpact,
+				toUnit(0.05),
+				toUnit(20),
+				{
+					from: owner,
+				}
+			);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
 			assert.equal(answer.toString(), '5');
@@ -2427,8 +2495,6 @@ contract('ParlayAMM', (accounts) => {
 						'\nUser won: ',
 						fromUnit(userBalanceAfter.sub(userBalanceBefore))
 					);
-
-					// assert.bnGt(balanceAfter.sub(balanceBefore), toUnit(0));
 				});
 			});
 		});

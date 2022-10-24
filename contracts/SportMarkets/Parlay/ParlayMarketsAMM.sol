@@ -69,6 +69,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     ParlayVerifier public parlayVerifier;
     uint public minUSDAmount;
 
+    uint public maxAllowedRiskPerCombination;
+    mapping(address => mapping(uint => mapping(address => mapping(uint => mapping(address => mapping(uint => mapping(address => mapping(uint => uint))))))))
+        public riskPerCombination;
+
     function initialize(
         address _owner,
         ISportsAMM _sportsAmm,
@@ -400,6 +404,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             address(parlayMarket),
             _differentRecepient
         );
+        (_sportMarkets, _positions) = parlayVerifier.sort(_sportMarkets, _positions);
         emit ParlayMarketCreated(
             address(parlayMarket),
             msg.sender,
@@ -409,6 +414,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             totalQuote,
             skewImpact
         );
+        _storeRisk(_sportMarkets, _positions, _sUSDPaid);
     }
 
     function _buyQuoteFromParlay(
@@ -432,41 +438,43 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint[] memory marketQuotes;
         uint[] memory inverseQuotes;
         uint inverseSum;
-        sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee))) * _sUSDPaid) / ONE;
-        (initialQuote, sumQuotes, inverseSum, marketQuotes, inverseQuotes, ) = parlayVerifier
-            .calculateInitialQuotesForParlay(_sportMarkets, _positions, sUSDAfterFees, parlaySize, sportsAmm);
-        if (initialQuote > 0) {
-            (totalBuyAmount, amountsToBuy) = parlayVerifier.calculateBuyQuoteAmounts(
-                initialQuote,
-                sumQuotes,
-                inverseSum,
-                sUSDAfterFees,
-                inverseQuotes
-            );
-            (totalQuote, totalBuyAmount, finalQuotes, ) = parlayVerifier.calculateFinalQuotes(
-                _sportMarkets,
-                _positions,
-                amountsToBuy,
-                sportsAmm
-            );
-            if (totalQuote > 0) {
-                if (totalQuote < maxSupportedOdds) {
-                    totalQuote = maxSupportedOdds;
-                }
-                uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
-                skewImpact = expectedPayout > totalBuyAmount
-                    ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
-                    : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
-                amountsToBuy = parlayVerifier.applySkewImpactBatch(
+        if (parlayVerifier.verifyMarkets(_sportMarkets, _positions, _sUSDPaid, sportsAmm, address(this))) {
+            sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee))) * _sUSDPaid) / ONE;
+            (initialQuote, sumQuotes, inverseSum, marketQuotes, inverseQuotes, ) = parlayVerifier
+                .calculateInitialQuotesForParlay(_sportMarkets, _positions, sUSDAfterFees, parlaySize, sportsAmm);
+            if (initialQuote > 0) {
+                (totalBuyAmount, amountsToBuy) = parlayVerifier.calculateBuyQuoteAmounts(
+                    initialQuote,
+                    sumQuotes,
+                    inverseSum,
+                    sUSDAfterFees,
+                    inverseQuotes
+                );
+                (totalQuote, totalBuyAmount, finalQuotes, ) = parlayVerifier.calculateFinalQuotes(
+                    _sportMarkets,
+                    _positions,
                     amountsToBuy,
-                    skewImpact,
-                    (expectedPayout > totalBuyAmount)
+                    sportsAmm
                 );
-                totalBuyAmount = parlayVerifier.applySkewImpact(
-                    totalBuyAmount,
-                    skewImpact,
-                    (expectedPayout > totalBuyAmount)
-                );
+                if (totalQuote > 0) {
+                    if (totalQuote < maxSupportedOdds) {
+                        totalQuote = maxSupportedOdds;
+                    }
+                    uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
+                    skewImpact = expectedPayout > totalBuyAmount
+                        ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
+                        : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
+                    amountsToBuy = parlayVerifier.applySkewImpactBatch(
+                        amountsToBuy,
+                        skewImpact,
+                        (expectedPayout > totalBuyAmount)
+                    );
+                    totalBuyAmount = parlayVerifier.applySkewImpact(
+                        totalBuyAmount,
+                        skewImpact,
+                        (expectedPayout > totalBuyAmount)
+                    );
+                }
             }
         }
     }
@@ -528,6 +536,26 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
+    function _storeRisk(
+        address[] memory _sportMarkets,
+        uint[] memory _positions,
+        uint _sUSDPaid
+    ) internal {
+        if (_sportMarkets.length == 2) {
+            riskPerCombination[_sportMarkets[0]][_positions[0]][_sportMarkets[1]][_positions[1]][address(0)][0][address(0)][
+                0
+            ] += _sUSDPaid;
+        } else if (_sportMarkets.length == 3) {
+            riskPerCombination[_sportMarkets[0]][_positions[0]][_sportMarkets[1]][_positions[1]][_sportMarkets[2]][
+                _positions[2]
+            ][address(0)][0] += _sUSDPaid;
+        } else if (_sportMarkets.length == 4) {
+            riskPerCombination[_sportMarkets[0]][_positions[0]][_sportMarkets[1]][_positions[1]][_sportMarkets[2]][
+                _positions[2]
+            ][_sportMarkets[3]][_positions[3]] += _sUSDPaid;
+        }
+    }
+
     function _resolveParlay(address _parlayMarket) internal {
         if (ParlayMarket(_parlayMarket).numOfResolvedSportMarkets() == ParlayMarket(_parlayMarket).numOfSportMarkets()) {
             resolvedParlay[_parlayMarket] = true;
@@ -573,7 +601,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint _maxSupportedOdds,
         uint _parlayAMMFee,
         uint _safeBoxImpact,
-        uint _referrerFee
+        uint _referrerFee,
+        uint _maxAllowedRiskPerCombination
     ) external onlyOwner {
         minUSDAmount = _minUSDAmount;
         maxSupportedAmount = _maxSupportedAmount;
@@ -581,7 +610,16 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         parlayAmmFee = _parlayAMMFee;
         safeBoxImpact = _safeBoxImpact;
         referrerFee = _referrerFee;
-        emit SetAmounts(_minUSDAmount, _maxSupportedAmount, maxSupportedOdds, _parlayAMMFee, _safeBoxImpact, _referrerFee);
+        maxAllowedRiskPerCombination = _maxAllowedRiskPerCombination;
+        emit SetAmounts(
+            _minUSDAmount,
+            _maxSupportedAmount,
+            maxSupportedOdds,
+            _parlayAMMFee,
+            _safeBoxImpact,
+            _referrerFee,
+            _maxAllowedRiskPerCombination
+        );
     }
 
     function setAddresses(
@@ -649,7 +687,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint max_odds,
         uint _parlayAMMFee,
         uint _safeBoxImpact,
-        uint _referrerFee
+        uint _referrerFee,
+        uint _maxAllowedRiskPerCombination
     );
     event AddressesSet(
         address _thalesAMM,

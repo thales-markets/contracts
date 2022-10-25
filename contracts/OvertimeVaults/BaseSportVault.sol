@@ -94,6 +94,8 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
 
         vaultStarted = true;
 
+        capPerRound[2] = capPerRound[1];
+
         emit VaultStarted();
     }
 

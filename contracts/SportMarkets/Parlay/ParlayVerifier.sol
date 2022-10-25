@@ -34,22 +34,21 @@ contract ParlayVerifier {
         address[] memory sortedAddresses = new address[](_sportMarkets.length);
         uint[] memory positions = new uint[](_sportMarkets.length);
         (sortedAddresses, positions) = _sort(_sportMarkets, _positions);
-        if (_checkRisk(sortedAddresses, positions, _totalSUSDToPay, _parlayAMM)) {
-            eligible = true;
-            uint motoCounter = 0;
-            for (uint i = 0; i < _sportMarkets.length; i++) {
-                if (!_verifyMarket(_sportMarkets, i)) {
+        require(_checkRisk(sortedAddresses, positions, _totalSUSDToPay, _parlayAMM), "RiskPerComb exceeded");
+        eligible = true;
+        uint motoCounter = 0;
+        for (uint i = 0; i < _sportMarkets.length; i++) {
+            if (!_verifyMarket(_sportMarkets, i)) {
+                eligible = false;
+                break;
+            }
+            uint marketTag = ISportPositionalMarket(_sportMarkets[i]).tags(0);
+            if (marketTag == 9100 || marketTag == 9101) {
+                if (motoCounter > 0) {
                     eligible = false;
                     break;
                 }
-                uint marketTag = ISportPositionalMarket(_sportMarkets[i]).tags(0);
-                if (marketTag == 9100 || marketTag == 9101) {
-                    if (motoCounter > 0) {
-                        eligible = false;
-                        break;
-                    }
-                    motoCounter++;
-                }
+                motoCounter++;
             }
         }
     }

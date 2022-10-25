@@ -814,7 +814,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address buyer
     ) internal {
         uint safeBoxShare = (sUSDPaid - (sUSDPaid * ONE) / (ONE + (safeBoxImpact)));
-        if (safeBoxImpact > 0) {
+        if (safeBoxImpact > 0 && buyer != parlayAMM) {
             sUSD.safeTransfer(safeBox, safeBoxShare);
         } else {
             safeBoxShare = 0;

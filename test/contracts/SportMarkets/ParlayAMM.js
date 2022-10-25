@@ -1000,23 +1000,9 @@ contract('ParlayAMM', (accounts) => {
 				ZERO_ADDRESS,
 				{ from: first }
 			);
-			let result1 = await ParlayAMM.buyQuoteFromParlay(
-				parlayMarketsAddress,
-				parlayPositions,
-				totalSUSDToPay
-			);
 			await expect(
-				ParlayAMM.buyFromParlay(
-					parlayMarketsAddress,
-					parlayPositions,
-					totalSUSDToPay,
-					slippage,
-					result[1],
-					ZERO_ADDRESS,
-					{ from: first }
-				)
-			).to.be.revertedWith('Can not create parlay market!');
-			// console.log("event: \n", buyParlayTX.logs[0]);
+				ParlayAMM.buyQuoteFromParlay(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
+			).to.be.revertedWith('RiskPerComb exceeded');
 
 			let activeParlays = await ParlayAMM.activeParlayMarkets('0', '100');
 			parlaySingleMarketAddress = activeParlays[0];

@@ -405,6 +405,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _differentRecepient
         );
         (_sportMarkets, _positions) = parlayVerifier.sort(_sportMarkets, _positions);
+        _storeRisk(_sportMarkets, _positions, _sUSDPaid);
+
         emit ParlayMarketCreated(
             address(parlayMarket),
             msg.sender,
@@ -414,7 +416,6 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             totalQuote,
             skewImpact
         );
-        _storeRisk(_sportMarkets, _positions, _sUSDPaid);
     }
 
     function _buyQuoteFromParlay(

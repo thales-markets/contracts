@@ -22,6 +22,10 @@ async function main() {
 	if (networkObj.chainId == 42) {
 		network = 'kovan';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
 	let durationPeriod, unstakeDurationPeriod;
 	if (network == 'homestead') {
 		console.log('Setting duration to WEEK');
@@ -68,117 +72,42 @@ async function main() {
 	let PriceFeedAddress = getTargetAddress('PriceFeed', network);
 	let ExoticBondsAddress = getTargetAddress('ThalesBonds', network);
 
-	tx = await StakingThales.setThalesAMM(ThalesAMMAddress, { from: owner.address });
-	await tx.wait().then(e => {
+	delay(1000);
+
+	tx = await StakingThales.setStakingRewardsParameters(
+		fixedReward,
+		extraReward,
+		true,
+		maxSNXPercentage,
+		maxAMMPercentage,
+		maxRoyalePercentage,
+		SNXMultiplier,
+		AMMMultiplier,
+		{ from: owner.address }
+	);
+	await tx.wait().then((e) => {
 		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
 	});
 	delay(1000);
 
-	tx = await StakingThales.setThalesRoyale(ThalesRoyaleAddress, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setThalesRoyale ', ThalesRoyaleAddress);
-	});
-	delay(1000);
+	// delay(1000);
 
-	tx = await StakingThales.setPriceFeed(PriceFeedAddress, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setPriceFeed ', PriceFeedAddress);
-	});
-	delay(1000);
-
-	tx = await StakingThales.setMaxSNXRewardsPercentage(maxSNXPercentage, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setMaxSNXRewardsPercentage ', maxSNXPercentage);
-	});
-	delay(1000);
-
-	tx = await StakingThales.setMaxAMMVolumeRewardsPercentage(maxAMMPercentage, {
-		from: owner.address,
-	});
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setMaxAMMVolumeRewardsPercentage ', maxAMMPercentage);
-	});
-	delay(1000);
-
-	tx = await StakingThales.setAMMVolumeRewardsMultiplier(AMMMultiplier, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setAMMVolumeRewardsMultiplier ', AMMMultiplier);
-	});
-	delay(1000);
-
-	tx = await StakingThales.setSNXVolumeRewardsMultiplier(SNXMultiplier, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setSNXVolumeRewardsMultiplier ', SNXMultiplier);
-	});
-	delay(1000);
-
-	tx = await EscrowThales.setThalesStakingRewardsPool(ThalesStakingRewardsPoolAddress, {
-		from: owner.address,
-	});
-	await tx.wait().then(e => {
-		console.log('Escrow Thales: ThalesStakingRewardsPoolAddress ', ThalesStakingRewardsPoolAddress);
-	});
-	delay(1000);
-
-	tx = await StakingThales.setMaxThalesRoyaleRewardsPercentage(maxRoyalePercentage, {
-		from: owner.address,
-	});
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setMaxThalesRoyaleRewardsPercentage ', maxRoyalePercentage);
-	});
-	delay(1000);
-
-	tx = await StakingThales.setThalesStakingRewardsPool(ThalesStakingRewardsPoolAddress, {
-		from: owner.address,
-	});
-	await tx.wait().then(e => {
-		console.log(
-			'Staking Thales: ThalesStakingRewardsPoolAddress ',
-			ThalesStakingRewardsPoolAddress
-		);
-	});
-	delay(1000);
-
-	tx = await StakingThales.setClaimEnabled(true, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setClaimEnabled ', true);
-	});
-	delay(1000);
-
-	tx = await StakingThales.setFixedPeriodReward(fixedReward, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setFixedPeriodReward ', fixedReward);
-	});
-	delay(1000);
-
-	tx = await StakingThales.setPeriodExtraReward(extraReward, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setFixedPeriodReward ', extraReward);
-	});
-	delay(1000);
-
-	tx = await StakingThales.setExoticBonds(ExoticBondsAddress, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setExoticBonds ', ExoticBondsAddress);
-	});
-	delay(1000);
-
-	tx = await EscrowThales.setStakingThalesContract(StakingThales.address, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Escrow Thales: setStakingThalesContract ', StakingThales.address);
-	});
-	delay(1000);
+	// tx = await EscrowThales.setStakingThalesContract(StakingThales.address, { from: owner.address });
+	// await tx.wait().then(e => {
+	// 	console.log('Escrow Thales: setStakingThalesContract ', StakingThales.address);
+	// });
+	// delay(1000);
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

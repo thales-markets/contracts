@@ -21,6 +21,10 @@ async function main() {
 	if (networkObj.chainId == 42) {
 		network = 'kovan';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
 	if (network == 'homestead') {
 		console.log('Setting duration to WEEK');
 		network = 'mainnet';
@@ -50,8 +54,8 @@ async function main() {
 			thalesAddress = getTargetAddress('OpThales_L2', network);
 			ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
 		} else {
-			thalesAddress = getTargetAddress('Thales', network);
-			ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
+			thalesAddress = getTargetAddress('OpThales_L2', network);
+			ProxyERC20sUSD_address = getTargetAddress('ExoticUSD', network);
 		}
 	}
 	console.log('Thales address: ', thalesAddress);
@@ -104,7 +108,7 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

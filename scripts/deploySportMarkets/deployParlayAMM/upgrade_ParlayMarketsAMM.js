@@ -78,7 +78,7 @@ async function main() {
 	} else {
 		await upgrades.upgradeProxy(ParlayAMMAddress, ParlayAMM);
 
-		await delay(60000);
+		await delay(10000);
 
 		const ParlayAMMImplementation = await getImplementationAddress(
 			ethers.provider,

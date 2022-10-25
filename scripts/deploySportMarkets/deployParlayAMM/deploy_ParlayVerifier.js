@@ -73,7 +73,6 @@ async function main() {
 
 	await ParlayAMMDeployed.setAddresses(
 		SportsAMMContract,
-		ZERO_ADDRESS,
 		owner.address,
 		ReferralsContract,
 		ParlayMarketDataContract,

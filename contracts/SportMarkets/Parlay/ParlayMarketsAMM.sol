@@ -334,7 +334,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     function triggerResolvedEvent(address _account, bool _userWon) external {
         require(_knownMarkets.contains(msg.sender), "Not valid Parlay");
-        emit ParlayResolved(_account, _userWon);
+        emit ParlayResolved(msg.sender, _account, _userWon);
     }
 
     function retrieveSUSDAmount(address payable account, uint amount) external onlyOwner {
@@ -700,5 +700,5 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     );
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event ExtraAmountTransferredDueToCancellation(address receiver, uint amount);
-    event ParlayResolved(address _parlayOwner, bool _userWon);
+    event ParlayResolved(address _parlayMarket, address _parlayOwner, bool _userWon);
 }

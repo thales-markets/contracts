@@ -179,6 +179,12 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_parlayOwner",
         "type": "address"
       },

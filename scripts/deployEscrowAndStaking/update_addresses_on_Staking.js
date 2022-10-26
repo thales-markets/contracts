@@ -90,6 +90,14 @@ async function main() {
 	});
 	delay(1000);
 
+	tx = await StakingThales.setStakingParameters(true, false, MINUTE, MINUTE, false, {
+		from: owner.address,
+	});
+	await tx.wait().then((e) => {
+		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
+	});
+	delay(1000);
+
 	// delay(1000);
 
 	// tx = await EscrowThales.setStakingThalesContract(StakingThales.address, { from: owner.address });

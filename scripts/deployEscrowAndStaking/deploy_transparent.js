@@ -64,56 +64,59 @@ async function main() {
 	const ProxyEscrow = await ethers.getContractFactory('EscrowThales');
 	const ProxyStaking = await ethers.getContractFactory('StakingThales');
 
-	// let ProxyEscrow_deployed = await upgrades.deployProxy(ProxyEscrow, [
-	// 	owner.address,
-	// 	thalesAddress,
-	// ]);
-	// await ProxyEscrow_deployed.deployed();
+	let ProxyEscrow_deployed = await upgrades.deployProxy(ProxyEscrow, [
+		owner.address,
+		thalesAddress,
+	]);
+	await ProxyEscrow_deployed.deployed();
+	await delay(5000);
 
-	// let ProxyStaking_deployed = await upgrades.deployProxy(ProxyStaking, [
-	// 	owner.address,
-	// 	ProxyEscrow_deployed.address,
-	// 	thalesAddress,
-	// 	ProxyERC20sUSD_address,
-	// 	durationPeriod,
-	// 	unstakeDurationPeriod,
-	// 	SNXIssuerAddress,
-	// ]);
-	// let tx = await ProxyStaking_deployed.deployed();
+	let ProxyStaking_deployed = await upgrades.deployProxy(ProxyStaking, [
+		owner.address,
+		ProxyEscrow_deployed.address,
+		thalesAddress,
+		ProxyERC20sUSD_address,
+		durationPeriod,
+		unstakeDurationPeriod,
+		SNXIssuerAddress,
+	]);
+	let tx = await ProxyStaking_deployed.deployed();
 
-	// console.log('Escrow proxy:', ProxyEscrow_deployed.address);
-	// console.log('Staking proxy:', ProxyStaking_deployed.address);
+	console.log('Escrow proxy:', ProxyEscrow_deployed.address);
+	console.log('Staking proxy:', ProxyStaking_deployed.address);
 
-	// await delay(5000);
+	await delay(15000);
 
-	// console.log('Implementation Escrow: ', EscrowImplementation);
-	// console.log('Implementation Staking: ', StakingImplementation);
+	const EscrowImplementation = await getImplementationAddress(
+		ethers.provider,
+		ProxyEscrow_deployed.address
+	);
+	const StakingImplementation = await getImplementationAddress(
+		ethers.provider,
+		ProxyStaking_deployed.address
+	);
 
-	// setTargetAddress('StakingThales', network, ProxyStaking_deployed.address);
-	// setTargetAddress('EscrowThales', network, ProxyEscrow_deployed.address);
-	// setTargetAddress('StakingThalesImplementation', network, StakingImplementation);
-	// setTargetAddress('EscrowThalesImplementation', network, EscrowImplementation);
+	console.log('Implementation Escrow: ', EscrowImplementation);
+	console.log('Implementation Staking: ', StakingImplementation);
 
-	// await delay(5000);
+	setTargetAddress('StakingThales', network, ProxyStaking_deployed.address);
+	setTargetAddress('EscrowThales', network, ProxyEscrow_deployed.address);
+	setTargetAddress('StakingThalesImplementation', network, StakingImplementation);
+	setTargetAddress('EscrowThalesImplementation', network, EscrowImplementation);
+
+	await delay(15000);
 
 	let ThalesAMMAddress = getTargetAddress('ThalesAMM', network);
 	let PriceFeedAddress = getTargetAddress('PriceFeed', network);
 	let SportsAMMAddress = getTargetAddress('SportsAMM', network);
 	let ThalesBondsAddress = getTargetAddress('ThalesBonds', network);
 	let AddressResolverAddress = getTargetAddress('AddressResolver', network);
-	let StakingContractAddress = getTargetAddress('StakingThales', network);
+	let ThalesStakingRewardsPoolAddress = getTargetAddress('ThalesStakingRewardsPool', network);
 	let EscrowContractAddress = getTargetAddress('EscrowThales', network);
 
-	let ProxyStaking_deployed = ProxyStaking.attach(StakingContractAddress);
+	// let ProxyStaking_deployed = ProxyStaking.attach(StakingContractAddress);
+	// await delay(5000);
 
-	const EscrowImplementation = await getImplementationAddress(
-		ethers.provider,
-		EscrowContractAddress
-	);
-	const StakingImplementation = await getImplementationAddress(
-		ethers.provider,
-		ProxyStaking_deployed.address
-	);
 	// tx = await ProxyStaking_deployed.setThalesAMM(ThalesAMMAddress, { from: owner.address });
 	// await tx.wait().then(e => {
 	// 	console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
@@ -127,7 +130,7 @@ async function main() {
 		ThalesBondsAddress,
 		SportsAMMAddress,
 		PriceFeedAddress,
-		owner.address,
+		ThalesStakingRewardsPoolAddress,
 		AddressResolverAddress,
 		{ from: owner.address, gasLimit: 5000000 }
 	);
@@ -151,20 +154,20 @@ async function main() {
 		console.log(e);
 	}
 
-	try {
-		await hre.run('verify:verify', {
-			address: ProxyEscrow_deployed.address,
-		});
-	} catch (e) {
-		console.log(e);
-	}
-	try {
-		await hre.run('verify:verify', {
-			address: ProxyStaking_deployed.address,
-		});
-	} catch (e) {
-		console.log(e);
-	}
+	// try {
+	// 	await hre.run('verify:verify', {
+	// 		address: ProxyEscrow_deployed.address,
+	// 	});
+	// } catch (e) {
+	// 	console.log(e);
+	// }
+	// try {
+	// 	await hre.run('verify:verify', {
+	// 		address: ProxyStaking_deployed.address,
+	// 	});
+	// } catch (e) {
+	// 	console.log(e);
+	// }
 }
 
 main()

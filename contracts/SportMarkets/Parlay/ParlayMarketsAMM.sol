@@ -414,7 +414,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _sUSDPaid,
             sUSDAfterFees,
             totalQuote,
-            skewImpact
+            skewImpact,
+            marketQuotes
         );
     }
 
@@ -680,7 +681,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint sUSDPaid,
         uint sUSDAfterFees,
         uint totalQuote,
-        uint skewImpact
+        uint skewImpact,
+        uint[] marketQuotes
     );
     event SetAmounts(
         uint minUSDamount,

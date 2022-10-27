@@ -168,6 +168,12 @@
         "internalType": "uint256",
         "name": "skewImpact",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "marketQuotes",
+        "type": "uint256[]"
       }
     ],
     "name": "ParlayMarketCreated",

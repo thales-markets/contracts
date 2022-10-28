@@ -59,7 +59,7 @@
       },
       {
         "indexed": false,
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -228,6 +228,44 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_cap",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetCapPerMarket",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sport",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_cap",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetCapPerSport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "_manager",
         "type": "address"
       }
@@ -252,7 +290,7 @@
       },
       {
         "indexed": false,
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -325,7 +363,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       }
@@ -349,7 +387,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       }
@@ -358,7 +396,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_available",
         "type": "uint256"
       }
     ],
@@ -373,7 +411,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -406,7 +444,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -444,7 +482,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -487,7 +525,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -525,7 +563,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -539,7 +577,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_quote",
         "type": "uint256"
       }
     ],
@@ -554,7 +592,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -593,7 +631,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -606,9 +644,9 @@
     "name": "buyPriceImpact",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "int256",
+        "name": "impact",
+        "type": "int256"
       }
     ],
     "stateMutability": "view",
@@ -626,8 +664,46 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "canExercize",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "capPerMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "capPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -715,7 +791,7 @@
     "outputs": [
       {
         "internalType": "uint256[]",
-        "name": "",
+        "name": "odds",
         "type": "uint256[]"
       }
     ],
@@ -779,7 +855,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "isTrading",
         "type": "bool"
       }
     ],
@@ -911,7 +987,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "_position",
         "type": "uint8"
       }
@@ -920,7 +996,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "oddsToReturn",
         "type": "uint256"
       }
     ],
@@ -1057,7 +1133,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -1071,7 +1147,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_impact",
         "type": "uint256"
       }
     ],
@@ -1086,7 +1162,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -1119,7 +1195,7 @@
         "type": "address"
       },
       {
-        "internalType": "enum SportsAMM.Position",
+        "internalType": "enum ISportsAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -1133,7 +1209,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_quote",
         "type": "uint256"
       }
     ],
@@ -1174,6 +1250,55 @@
       }
     ],
     "name": "setAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract SportsAMMUtils",
+        "name": "_ammUtils",
+        "type": "address"
+      }
+    ],
+    "name": "setAmmUtils",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_markets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_capPerMarket",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCapPerMarket",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_capPerSport",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCapPerSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

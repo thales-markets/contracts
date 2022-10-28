@@ -38,13 +38,13 @@ contract OraclePausable is ProxyOwned {
 
     event PauseChanged(bool isPaused);
 
-    modifier notPaused {
+    modifier notPaused() {
         require(!IExoticPositionalMarketManager(owner).paused(), "Manager paused.");
         require(!paused, "Contract is paused");
         _;
     }
 
-    modifier pauserOnly {
+    modifier pauserOnly() {
         require(
             IExoticPositionalMarketManager(owner).isPauserAddress(msg.sender) ||
                 IExoticPositionalMarketManager(owner).owner() == msg.sender ||

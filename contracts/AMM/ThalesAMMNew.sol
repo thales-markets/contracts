@@ -411,8 +411,6 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             IPositionalMarket(market).burnOptionsMaximum();
         }
 
-        require(sUSD.balanceOf(address(this)) >= pricePaid, "Not enough sUSD in contract.");
-
         sUSD.safeTransfer(msg.sender, pricePaid);
 
         if (address(stakingThales) != address(0)) {
@@ -520,8 +518,6 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             basePrice = basePrice + min_spread;
             if (skewImpact >= 0) {
                 int impactPrice = ((ONE_INT - int(basePrice)) * skewImpact) / ONE_INT;
-
-                //return impactPrice;
                 // add 2% to the price increase to avoid edge cases on the extremes
                 impactPrice = (impactPrice * (ONE_INT + (ONE_PERCENT_INT * 2))) / ONE_INT;
                 tempQuote = (int(amount) * (int(basePrice) + impactPrice)) / ONE_INT;
@@ -921,7 +917,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner can change IV!"
         );
-        require(_impliedVolatility > ONE * (60) && _impliedVolatility < ONE * (300), "IV outside min/max range!");
+        require(_impliedVolatility > ONE * (40) && _impliedVolatility < ONE * (300), "IV outside min/max range!");
         require(priceFeed.rateForCurrency(asset) != 0, "Asset has no price!");
         impliedVolatilityPerAsset[asset] = _impliedVolatility;
         emit SetImpliedVolatilityPerAsset(asset, _impliedVolatility);

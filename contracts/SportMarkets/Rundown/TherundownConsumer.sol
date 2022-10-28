@@ -160,13 +160,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 _createGameFulfill(_requestId, gameForProcessing, _sportId);
             }
             // old game UFC checking fighters
-            else if (queues.existingGamesInCreatedQueue(gameForProcessing.gameId) && _sportId == 7) {
+            else if (queues.existingGamesInCreatedQueue(gameForProcessing.gameId)) {
                 GameCreate memory currentGameValues = getGameCreatedById(gameForProcessing.gameId);
 
                 // if name of fighter (away or home) is not the same
                 if (
-                    !verifier.areTeamsEqual(gameForProcessing.homeTeam, currentGameValues.homeTeam) ||
-                    !verifier.areTeamsEqual(gameForProcessing.awayTeam, currentGameValues.awayTeam)
+                    (!verifier.areTeamsEqual(gameForProcessing.homeTeam, currentGameValues.homeTeam) ||
+                        !verifier.areTeamsEqual(gameForProcessing.awayTeam, currentGameValues.awayTeam)) && _sportId == 7
                 ) {
                     // double-check if market exists -> cancel market -> create new for queue
                     if (marketCreated[marketPerGameId[gameForProcessing.gameId]]) {
@@ -174,13 +174,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                         _updateGameOnADate(gameForProcessing.gameId, _date, _sportId);
                         _createGameFulfill(_requestId, gameForProcessing, _sportId);
                     }
-                }
-            }
-            // old game checking data start data
-            else if (queues.existingGamesInCreatedQueue(gameForProcessing.gameId)) {
-                GameCreate memory currentGameValues = getGameCreatedById(gameForProcessing.gameId);
-                // checking time
-                if (gameForProcessing.startTime != currentGameValues.startTime) {
+                    // checking time
+                } else if (gameForProcessing.startTime != currentGameValues.startTime) {
                     _updateGameOnADate(gameForProcessing.gameId, _date, _sportId);
                     // if NEW start time is in future
                     if (gameForProcessing.startTime > block.timestamp) {

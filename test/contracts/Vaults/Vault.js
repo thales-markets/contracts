@@ -207,7 +207,9 @@ contract('Vault', (accounts) => {
 			toUnit(1),
 			toUnit(40), // 40%
 			toUnit(40), // 40%
-			toUnit(20) // 20%
+			toUnit(20), // 20%
+			toUnit(2000),
+			toUnit(0.6)
 		);
 	});
 
@@ -508,6 +510,7 @@ contract('Vault', (accounts) => {
 
 			// available to claim before round is closed
 			assert.bnEqual(await vault.getAvailableToClaim(minter), toUnit(0));
+			console.log('cap per round', (await vault.capPerRound(2)) / 1e18);
 			await vault.withdrawalRequest({ from: minter });
 
 			// CLOSE ROUND #1 - START ROUND #2
@@ -539,6 +542,7 @@ contract('Vault', (accounts) => {
 
 			assert.bnEqual(await vault.getAvailableToClaim(minter), toUnit(100));
 			await vault.withdrawalRequest({ from: minter });
+			assert.bnEqual(await vault.capPerRound(6), toUnit(200));
 			fastForward(week);
 			await vault.closeRound();
 
@@ -681,20 +685,20 @@ contract('Vault', (accounts) => {
 			quote = await thalesAMM.buyFromAmmQuote(
 				market1.address,
 				Position.DOWN,
-				toUnit(60).toString()
+				toUnit(30).toString()
 			);
 
 			console.log('quote', quote / 1e18);
 
-			await vault.trade(market1.address, toUnit(60).toString());
-			console.log('after 60 positions', (await sUSDSynth.balanceOf(vault.address)) / 1e18);
+			await vault.trade(market1.address, toUnit(20).toString());
+			console.log('after 20 positions', (await sUSDSynth.balanceOf(vault.address)) / 1e18);
 			console.log('eth spent', (await vault.getAllocationSpentPerRound(round, Asset.ETH)) / 1e18);
 			console.log(
 				'alloc for eth left',
 				(await vault.getAvailableAllocationPerAsset(round, Asset.ETH)) / 1e18
 			);
-			await vault.trade(market1.address, toUnit(20).toString());
-			console.log('after 20 positions', (await sUSDSynth.balanceOf(vault.address)) / 1e18);
+			await vault.trade(market1.address, toUnit(10).toString());
+			console.log('after 10 positions', (await sUSDSynth.balanceOf(vault.address)) / 1e18);
 			console.log('eth spent', (await vault.getAllocationSpentPerRound(round, Asset.ETH)) / 1e18);
 			console.log(
 				'alloc for eth left',
@@ -719,7 +723,7 @@ contract('Vault', (accounts) => {
 			);
 
 			const REVERT = 'Amount exceeds available allocation for asset';
-			await vault.trade(market1.address, toUnit(50).toString());
+			await vault.trade(market1.address, toUnit(30).toString());
 			await assert.revert(vault.trade(market1.address, toUnit(50).toString()), REVERT);
 		});
 
@@ -839,12 +843,19 @@ contract('Vault', (accounts) => {
 
 			await sUSDSynth.approve(vault.address, toUnit(70), { from: minter });
 			await sUSDSynth.approve(vault.address, toUnit(80), { from: dummy });
-			await sUSDSynth.approve(vault.address, toUnit(1000), { from: exersicer });
-			await sUSDSynth.approve(vault.address, toUnit(500), { from: secondCreator });
+			await sUSDSynth.approve(vault.address, toUnit(1500), { from: exersicer });
+			await sUSDSynth.approve(vault.address, toUnit(2000), { from: secondCreator });
 			await vault.deposit(toUnit(70), { from: minter });
 			await vault.deposit(toUnit(80), { from: dummy });
-			await vault.deposit(toUnit(1000), { from: exersicer }); // in #1 for #2
-			await vault.deposit(toUnit(500), { from: secondCreator });
+			await vault.deposit(toUnit(500), { from: exersicer }); // in #1 for #2
+			await vault.deposit(toUnit(500), { from: secondCreator }); // in #1 for #2
+
+			const REVERT = 'Deposit amount exceeds vault cap';
+
+			console.log('CAP 1', (await vault.capPerRound(1)) / 1e18);
+			console.log('CAP 2', (await vault.capPerRound(2)) / 1e18);
+			console.log('max allowed deposit', (await vault.maxAllowedDeposit()) / 1e18);
+			await assert.revert(vault.deposit(toUnit(1500), { from: secondCreator }), REVERT);
 
 			assert.bnEqual(await vault.getAvailableToClaim(minter), toUnit(0));
 			assert.bnEqual(await vault.getAvailableToClaim(dummy), toUnit(0));
@@ -878,6 +889,7 @@ contract('Vault', (accounts) => {
 
 			await sUSDSynth.approve(vault.address, toUnit(50), { from: minter });
 			await sUSDSynth.approve(vault.address, toUnit(60), { from: dummy });
+			console.log('CAP 3', (await vault.capPerRound(3)) / 1e18);
 			await vault.deposit(toUnit(50), { from: minter });
 			await vault.deposit(toUnit(60), { from: dummy });
 
@@ -1077,7 +1089,7 @@ contract('Vault', (accounts) => {
 			console.log('#4 available to claim minter', (await vault.getAvailableToClaim(minter)) / 1e18);
 			console.log('#4 available to claim dummy', (await vault.getAvailableToClaim(dummy)) / 1e18);
 
-			let availableExerciser = 1000 * pnl2 * pnl3;
+			let availableExerciser = 500 * pnl2 * pnl3;
 			let availableSecondCreator = 500 * pnl2 * pnl3;
 			expect((await vault.getAvailableToClaim(exersicer)) / 1e18).to.be.approximately(
 				availableExerciser,
@@ -1150,7 +1162,7 @@ contract('Vault', (accounts) => {
 			assert.equal(await vault.getBalancesPerRound(5, minter), 0);
 			assert.equal(await vault.getBalancesPerRound(5, dummy), 0);
 
-			availableExerciser = 1000 * pnl2 * pnl3 * pnl4;
+			availableExerciser = 500 * pnl2 * pnl3 * pnl4;
 			availableSecondCreator = 500 * pnl2 * pnl3 * pnl4;
 			assert.bnEqual(await vault.getAvailableToClaim(minter), 0);
 			assert.bnEqual(await vault.getAvailableToClaim(dummy), 0);

@@ -6,7 +6,7 @@ import "./BaseVault.sol";
 import "../interfaces/IThalesAMM.sol";
 import "../interfaces/IPositionalMarket.sol";
 
-contract Vault is BaseVault {
+contract DiscountVault is BaseVault {
     /* ========== CONSTANTS ========== */
     uint private constant HUNDRED = 1e20;
 
@@ -21,9 +21,8 @@ contract Vault is BaseVault {
     mapping(Asset => uint) public allocationLimits;
     mapping(uint => mapping(Asset => uint)) public allocationSpentPerRound;
 
-    uint public priceLowerLimit;
-    uint public priceUpperLimit;
-    int public skewImpactLimit;
+    uint public priceLimit;
+    int public discountLimit;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -32,9 +31,8 @@ contract Vault is BaseVault {
         IThalesAMM _thalesAmm,
         IERC20Upgradeable _sUSD,
         uint _roundLength,
-        uint _priceLowerLimit,
-        uint _priceUpperLimit,
-        int _skewImpactLimit,
+        uint _priceLimit,
+        int _discountLimit,
         uint _allocationLimitBTC,
         uint _allocationLimitETH,
         uint _allocationLimitOtherAssets,
@@ -42,9 +40,8 @@ contract Vault is BaseVault {
         uint _utilizationRate
     ) external initializer {
         __BaseVault_init(_owner, _thalesAmm, _sUSD, _roundLength, _maxAllowedDeposit, _utilizationRate);
-        priceLowerLimit = _priceLowerLimit;
-        priceUpperLimit = _priceUpperLimit;
-        skewImpactLimit = _skewImpactLimit;
+        priceLimit = _priceLimit;
+        discountLimit = _discountLimit;
         allocationLimits[Asset.ETH] = _allocationLimitETH;
         allocationLimits[Asset.BTC] = _allocationLimitBTC;
         allocationLimits[Asset.Other] = _allocationLimitOtherAssets;
@@ -66,10 +63,22 @@ contract Vault is BaseVault {
         int priceUpImpact = thalesAMM.buyPriceImpact(address(market), IThalesAMM.Position.Up, amount);
         int priceDownImpact = thalesAMM.buyPriceImpact(address(market), IThalesAMM.Position.Down, amount);
 
-        if (priceUp >= priceLowerLimit && priceUp <= priceUpperLimit && priceUpImpact < skewImpactLimit) {
-            _buyFromAmm(market, _getAsset(key), IThalesAMM.Position.Up, amount);
-        } else if (priceDown >= priceLowerLimit && priceDown <= priceUpperLimit && priceDownImpact < skewImpactLimit) {
-            _buyFromAmm(market, _getAsset(key), IThalesAMM.Position.Down, amount);
+        if (priceUpImpact < discountLimit) {
+            if (priceLimit > 0 && priceUp >= priceLimit) {
+                _buyFromAmm(market, _getAsset(key), IThalesAMM.Position.Up, amount);
+            } else if (priceLimit > 0 && priceUp < priceLimit) {
+                revert("Market not valid");
+            } else {
+                _buyFromAmm(market, _getAsset(key), IThalesAMM.Position.Up, amount);
+            }
+        } else if (priceDownImpact < discountLimit) {
+            if (priceLimit > 0 && priceDown >= priceLimit) {
+                _buyFromAmm(market, _getAsset(key), IThalesAMM.Position.Down, amount);
+            } else if (priceLimit > 0 && priceDown < priceLimit) {
+                revert("Market not valid");
+            } else {
+                _buyFromAmm(market, _getAsset(key), IThalesAMM.Position.Down, amount);
+            }
         } else {
             revert("Market not valid");
         }
@@ -97,20 +106,18 @@ contract Vault is BaseVault {
     }
 
     /// @notice Set price limit for options to be bought from AMM
-    /// @param _priceLowerLimit lower limit
-    /// @param _priceUpperLimit upper limit
-    function setPriceLimits(uint _priceLowerLimit, uint _priceUpperLimit) external onlyOwner {
-        require(_priceLowerLimit < _priceUpperLimit, "Invalid price limit values");
-        priceLowerLimit = _priceLowerLimit;
-        priceUpperLimit = _priceUpperLimit;
-        emit SetPriceLimits(_priceLowerLimit, _priceUpperLimit);
+    /// @param _priceLimit lower limit
+    function setPriceLimit(uint _priceLimit) external onlyOwner {
+        priceLimit = _priceLimit;
+        emit SetPriceLimit(priceLimit);
     }
 
-    /// @notice Set skew impact limit for AMM
-    /// @param _skewImpactLimit limit in percents
-    function setSkewImpactLimit(int _skewImpactLimit) external onlyOwner {
-        skewImpactLimit = _skewImpactLimit;
-        emit SetSkewImpactLimit(_skewImpactLimit);
+    /// @notice Set discount limit for AMM
+    /// @param _discountLimit limit in percents, negative values or 0 only
+    function setDiscountLimit(int _discountLimit) external onlyOwner {
+        require(_discountLimit <= 0, "Invalid discount value");
+        discountLimit = _discountLimit;
+        emit SetDiscountLimit(_discountLimit);
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
@@ -189,7 +196,7 @@ contract Vault is BaseVault {
     /* ========== EVENTS ========== */
 
     event SetAllocationLimits(uint allocationETH, uint allocationBTC, uint allocationOtherAssets);
-    event SetPriceLimits(uint priceLowerLimit, uint priceUpperLimit);
-    event SetSkewImpactLimit(int skewImpact);
+    event SetPriceLimit(uint priceLowerLimit);
+    event SetDiscountLimit(int discountLimit);
     event TradeExecuted(address market, IThalesAMM.Position position, Asset asset, uint amount, uint quote);
 }

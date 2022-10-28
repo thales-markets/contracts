@@ -55,6 +55,32 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "MaxAllowedUsersChanged",
+        "type": "uint256"
+      }
+    ],
+    "name": "MaxAllowedUsersChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minAllowedDeposit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinAllowedDepositChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "oldOwner",
         "type": "address"
@@ -132,6 +158,19 @@
       }
     ],
     "name": "SetAllocationLimits",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "SetMinTradeAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMinTradeAmount",
     "type": "event"
   },
   {
@@ -356,6 +395,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "canCloseCurrentRound",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -376,59 +428,9 @@
   },
   {
     "inputs": [],
-    "name": "claim",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "claimedPerRound",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "closeRound",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "cumulativeProfitAndLoss",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -469,14 +471,34 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "exerciseMarketsReadyToExercise",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
-        "name": "user",
+        "name": "market",
         "type": "address"
       }
     ],
-    "name": "getAvailableToClaim",
+    "name": "getAvailableAllocationForMarket",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAvailableToDeposit",
     "outputs": [
       {
         "internalType": "uint256",
@@ -512,19 +534,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_round",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
-    "name": "getClaimedPerRound",
+    "inputs": [],
+    "name": "hasMarketsReadyToExercise",
     "outputs": [
       {
         "internalType": "bool",
@@ -545,54 +556,76 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_owner",
-        "type": "address"
-      },
-      {
-        "internalType": "contract ISportsAMM",
-        "name": "_sportsAmm",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IERC20Upgradeable",
-        "name": "_sUSD",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_roundLength",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_priceLowerLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_priceUpperLimit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "int256",
-        "name": "_skewImpactLimit",
-        "type": "int256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_allocationLimitsPerMarketPerRound",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxAllowedDeposit",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_utilizationRate",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "_owner",
+            "type": "address"
+          },
+          {
+            "internalType": "contract ISportsAMM",
+            "name": "_sportsAmm",
+            "type": "address"
+          },
+          {
+            "internalType": "contract IERC20Upgradeable",
+            "name": "_sUSD",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_roundLength",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_priceLowerLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_priceUpperLimit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int256",
+            "name": "_skewImpactLimit",
+            "type": "int256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_allocationLimitsPerMarketPerRound",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_maxAllowedDeposit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_utilizationRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_minDepositAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_maxAllowedUsers",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_minTradeAmount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SportVault.InitParams",
+        "name": "params",
+        "type": "tuple"
       }
     ],
     "name": "initialize",
@@ -627,6 +660,45 @@
   {
     "inputs": [],
     "name": "maxAllowedDeposit",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxAllowedUsers",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minDepositAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minTradeAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -748,25 +820,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "roundEndTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "roundLength",
     "outputs": [
@@ -833,6 +886,45 @@
       }
     ],
     "name": "setMaxAllowedDeposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxAllowedUsers",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxAllowedUsers",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minDepositAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinAllowedDeposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minTradeAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinTradeAmount",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -977,6 +1069,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "tradingAllocation",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1045,6 +1150,43 @@
         "type": "uint256"
       },
       {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "userInRound",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "usersCurrentlyInVault",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
@@ -1088,6 +1230,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "withdrawalRequest",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1095,51 +1244,15 @@
         "type": "address"
       }
     ],
-    "name": "withdrawalQueue",
+    "name": "withdrawalRequested",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "round",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
         "internalType": "bool",
-        "name": "requested",
+        "name": "",
         "type": "bool"
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdrawalQueueAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "withdrawalRequest",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

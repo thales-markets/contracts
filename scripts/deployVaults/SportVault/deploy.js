@@ -67,7 +67,7 @@ async function main() {
 		w3utils.toWei('-3'), // -3% skew impact
 		w3utils.toWei('10'), // 10% limit per market
 		w3utils.toWei('10000'), // 10k% max deposit per round
-		w3utils.toWei('50'), // 50% utilization rate
+		w3utils.toWei('0.50'), // 50% utilization rate
 	]);
 
 	await vault.deployed();

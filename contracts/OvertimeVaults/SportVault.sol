@@ -11,6 +11,22 @@ contract SportVault is BaseSportVault {
     uint private constant HUNDRED = 1e20;
     uint private constant ONE = 1e18;
 
+    struct InitParams {
+        address _owner;
+        ISportsAMM _sportsAmm;
+        IERC20Upgradeable _sUSD;
+        uint _roundLength;
+        uint _priceLowerLimit;
+        uint _priceUpperLimit;
+        int _skewImpactLimit;
+        uint _allocationLimitsPerMarketPerRound;
+        uint _maxAllowedDeposit;
+        uint _utilizationRate;
+        uint _minDepositAmount;
+        uint _maxAllowedUsers;
+        uint _minTradeAmount;
+    }
+
     /* ========== STATE VARIABLES ========== */
 
     uint public allocationLimitsPerMarketPerRound;
@@ -21,25 +37,26 @@ contract SportVault is BaseSportVault {
     uint public priceUpperLimit;
     int public skewImpactLimit;
 
+    uint public minTradeAmount;
+
     /* ========== CONSTRUCTOR ========== */
 
-    function initialize(
-        address _owner,
-        ISportsAMM _sportsAmm,
-        IERC20Upgradeable _sUSD,
-        uint _roundLength,
-        uint _priceLowerLimit,
-        uint _priceUpperLimit,
-        int _skewImpactLimit,
-        uint _allocationLimitsPerMarketPerRound,
-        uint _maxAllowedDeposit,
-        uint _utilizationRate
-    ) external initializer {
-        __BaseSportVault_init(_owner, _sportsAmm, _sUSD, _roundLength, _maxAllowedDeposit, _utilizationRate);
-        priceLowerLimit = _priceLowerLimit;
-        priceUpperLimit = _priceUpperLimit;
-        skewImpactLimit = _skewImpactLimit;
-        allocationLimitsPerMarketPerRound = _allocationLimitsPerMarketPerRound;
+    function initialize(InitParams calldata params) external initializer {
+        __BaseSportVault_init(
+            params._owner,
+            params._sportsAmm,
+            params._sUSD,
+            params._roundLength,
+            params._maxAllowedDeposit,
+            params._utilizationRate,
+            params._minDepositAmount,
+            params._maxAllowedUsers
+        );
+        priceLowerLimit = params._priceLowerLimit;
+        priceUpperLimit = params._priceUpperLimit;
+        skewImpactLimit = params._skewImpactLimit;
+        allocationLimitsPerMarketPerRound = params._allocationLimitsPerMarketPerRound;
+        minTradeAmount = params._minTradeAmount;
     }
 
     /// @notice Buy market options from Thales AMM
@@ -55,7 +72,7 @@ contract SportVault is BaseSportVault {
 
         ISportPositionalMarket marketContract = ISportPositionalMarket(market);
         (uint maturity, ) = marketContract.times();
-        require(maturity < roundEndTime[round], "Market not valid");
+        require(maturity < roundStartTime[round] + roundLength, "Market not valid");
 
         uint pricePosition = sportsAMM.buyFromAmmQuote(address(market), position, ONE);
         require(pricePosition > 0, "Market not valid");
@@ -99,6 +116,13 @@ contract SportVault is BaseSportVault {
         emit SetSkewImpactLimit(_skewImpactLimit);
     }
 
+    /// @notice Set _minTradeAmount
+    /// @param _minTradeAmount limit in percents
+    function setMinTradeAmount(uint _minTradeAmount) external onlyOwner {
+        minTradeAmount = _minTradeAmount;
+        emit SetMinTradeAmount(_minTradeAmount);
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
 
     /// @notice Buy options from AMM
@@ -117,7 +141,7 @@ contract SportVault is BaseSportVault {
             );
         }
         uint quote = sportsAMM.buyFromAmmQuote(market, position, amount);
-        uint allocationAsset = (_tradingAllocation() * allocationLimitsPerMarketPerRound) / HUNDRED;
+        uint allocationAsset = (tradingAllocation() * allocationLimitsPerMarketPerRound) / HUNDRED;
         require(
             (quote + allocationSpentPerRound[round][market]) < allocationAsset,
             "Amount exceeds available allocation for asset"
@@ -136,11 +160,20 @@ contract SportVault is BaseSportVault {
     }
 
     /* ========== VIEWS ========== */
+    /// @notice Get available amount to spend on an asset in a round
+    /// @param market to fetch available allocation for
+    /// @return uint
+    function getAvailableAllocationForMarket(address market) external view returns (uint) {
+        uint allocationMarket = (tradingAllocation() * allocationLimitsPerMarketPerRound) / HUNDRED;
+
+        return allocationMarket - allocationSpentPerRound[round][market];
+    }
 
     /* ========== EVENTS ========== */
 
     event SetAllocationLimits(uint allocationLimitsPerMarketPerRound);
     event SetPriceLimits(uint priceLowerLimit, uint priceUpperLimit);
     event SetSkewImpactLimit(int skewImpact);
+    event SetMinTradeAmount(uint SetMinTradeAmount);
     event TradeExecuted(address market, ISportsAMM.Position position, uint amount, uint quote);
 }

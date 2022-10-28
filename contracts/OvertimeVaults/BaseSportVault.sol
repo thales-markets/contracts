@@ -16,12 +16,6 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
     /* ========== LIBRARIES ========== */
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    struct WithdrawalRequest {
-        uint round;
-        uint amount;
-        bool requested;
-    }
-
     struct DepositReceipt {
         uint round;
         uint amount;
@@ -41,14 +35,13 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
     uint public round;
     uint public roundLength;
     mapping(uint => uint) public roundStartTime;
-    mapping(uint => uint) public roundEndTime;
 
     mapping(uint => address[]) public usersPerRound;
+    mapping(uint => mapping(address => bool)) public userInRound;
+
     mapping(uint => mapping(address => uint)) public balancesPerRound;
-    mapping(uint => mapping(address => bool)) public claimedPerRound;
-    mapping(address => WithdrawalRequest) public withdrawalQueue;
+    mapping(address => bool) public withdrawalRequested;
     mapping(address => DepositReceipt) public depositReceipts;
-    mapping(uint => uint) public withdrawalQueueAmount;
 
     mapping(uint => uint) public allocationPerRound;
 
@@ -57,12 +50,18 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
     mapping(uint => mapping(address => bool)) public isTradingMarketInARound;
 
     mapping(uint => uint) public profitAndLossPerRound;
-    mapping(uint => uint) public cumulativeProfitAndLoss;
 
     uint public maxAllowedDeposit;
     uint public utilizationRate;
 
     mapping(uint => uint) public capPerRound;
+
+    uint public minDepositAmount;
+
+    uint public maxAllowedUsers;
+    uint public usersCurrentlyInVault;
+
+    //TODO: add staking thales so gamified staking bonuses are updated on every round closing
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -72,15 +71,21 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         IERC20Upgradeable _sUSD,
         uint _roundLength,
         uint _maxAllowedDeposit,
-        uint _utilizationRate
+        uint _utilizationRate,
+        uint _minDepositAmount,
+        uint _maxAllowedUsers
     ) internal onlyInitializing {
         setOwner(_owner);
         initNonReentrant();
         sportsAMM = ISportsAMM(_sportAmm);
+
         sUSD = _sUSD;
         roundLength = _roundLength;
         maxAllowedDeposit = _maxAllowedDeposit;
         utilizationRate = _utilizationRate;
+        minDepositAmount = _minDepositAmount;
+        maxAllowedUsers = _maxAllowedUsers;
+
         sUSD.approve(address(sportsAMM), type(uint256).max);
     }
 
@@ -90,7 +95,6 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         round = 1;
 
         roundStartTime[round] = block.timestamp;
-        roundEndTime[round] = roundStartTime[round] + roundLength;
 
         vaultStarted = true;
 
@@ -101,11 +105,10 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
 
     /// @notice Close current round and begin next round,
     /// excercise options of trading markets and calculate profit and loss
-    function closeRound() external nonReentrant whenNotPaused canCloseRound {
+    function closeRound() external nonReentrant whenNotPaused {
+        require(canCloseCurrentRound(), "Can't close current round");
         // excercise market options
-        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            ISportPositionalMarket(tradingMarketsPerRound[round][i]).exerciseOptions();
-        }
+        exerciseMarketsReadyToExercise();
 
         // balance in next round does not affect PnL in a current round
         uint currentVaultBalance = sUSD.balanceOf(address(this)) - allocationPerRound[round + 1];
@@ -118,23 +121,35 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
             profitAndLossPerRound[round] = (currentVaultBalance * ONE) / allocationPerRound[round];
         }
 
-        if (round == 1) {
-            cumulativeProfitAndLoss[round] = profitAndLossPerRound[round];
-        } else {
-            cumulativeProfitAndLoss[round] = (cumulativeProfitAndLoss[round - 1] * profitAndLossPerRound[round]) / ONE;
+        for (uint i = 0; i < usersPerRound[round].length; i++) {
+            address user = usersPerRound[round][i];
+            if (userInRound[round][user]) {
+                if (!withdrawalRequested[user]) {
+                    balancesPerRound[round + 1][user] =
+                        ((balancesPerRound[round][user] + balancesPerRound[round + 1][user]) *
+                            profitAndLossPerRound[round]) /
+                        ONE;
+                    userInRound[round + 1][user] = true;
+                    usersPerRound[round + 1].push(user);
+                } else {
+                    balancesPerRound[round + 1][user] = 0;
+                    uint withdrawable = (balancesPerRound[round][user] * profitAndLossPerRound[round]) / ONE;
+                    sUSD.safeTransfer(user, withdrawable);
+                    withdrawalRequested[user] = false;
+                    userInRound[round + 1][user] = false;
+                    usersCurrentlyInVault = usersCurrentlyInVault - 1;
+                    emit Claimed(user, withdrawable);
+                }
+            }
         }
-
-        // calculate withdrawal amount share
-        withdrawalQueueAmount[round] = (withdrawalQueueAmount[round] * profitAndLossPerRound[round]) / ONE;
 
         // start next round
         round += 1;
 
         roundStartTime[round] = block.timestamp;
-        roundEndTime[round] = roundStartTime[round] + roundLength;
 
         // allocation for next round doesn't include withdrawal queue share from previous round
-        allocationPerRound[round] = sUSD.balanceOf(address(this)) - withdrawalQueueAmount[round - 1];
+        allocationPerRound[round] = sUSD.balanceOf(address(this));
         capPerRound[round + 1] = allocationPerRound[round];
 
         emit RoundClosed(round - 1);
@@ -145,15 +160,14 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
     function deposit(uint amount) external canDeposit(amount) {
         sUSD.safeTransferFrom(msg.sender, address(this), amount);
 
-        // calculate previous shares
-        if (vaultStarted) {
-            _calculateBalanceInARound(msg.sender, round);
-        }
-
         uint nextRound = round + 1;
 
-        if (balancesPerRound[nextRound][msg.sender] == 0) {
+        // new user enters the vault
+        if (balancesPerRound[round][msg.sender] == 0) {
+            require(usersCurrentlyInVault < maxAllowedUsers, "Max amount of users reached");
             usersPerRound[nextRound].push(msg.sender);
+            userInRound[nextRound][msg.sender] = true;
+            usersCurrentlyInVault = usersCurrentlyInVault + 1;
         }
 
         balancesPerRound[nextRound][msg.sender] += amount;
@@ -169,44 +183,32 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
 
     function withdrawalRequest() external {
         require(vaultStarted, "Vault has not started");
-        require(!withdrawalQueue[msg.sender].requested, "Withdrawal already requested");
+        require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
+        require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
+        require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round.");
 
-        _calculateBalanceInARound(msg.sender, round);
-
-        withdrawalQueue[msg.sender] = WithdrawalRequest(round, balancesPerRound[round][msg.sender], true);
-
-        withdrawalQueueAmount[round] += balancesPerRound[round][msg.sender];
-
-        if (capPerRound[round + 1] > balancesPerRound[round][msg.sender]) {
-            capPerRound[round + 1] -= balancesPerRound[round][msg.sender];
+        uint nextRound = round + 1;
+        if (capPerRound[nextRound] > balancesPerRound[round][msg.sender]) {
+            capPerRound[nextRound] -= balancesPerRound[round][msg.sender];
         }
 
+        withdrawalRequested[msg.sender] = true;
         emit WithdrawalRequested(msg.sender);
     }
 
-    /// @notice Transfer sUSD to user based on vault success and user deposits
-    /// @dev During a round, user can claim amount only from previous rounds if withdrawal request is sent
-    function claim() external nonReentrant whenNotPaused {
-        WithdrawalRequest memory userWithdrawalRequest = withdrawalQueue[msg.sender];
-        require(userWithdrawalRequest.requested, "Withdrawal request has not been sent");
-
-        uint amount = (userWithdrawalRequest.amount * profitAndLossPerRound[userWithdrawalRequest.round]) / ONE;
-        require(amount > 0, "Nothing to claim");
-
-        sUSD.safeTransfer(msg.sender, amount);
-        claimedPerRound[userWithdrawalRequest.round][msg.sender] = true;
-        withdrawalQueueAmount[userWithdrawalRequest.round] -= amount;
-
-        // reset withdrawal request;
-        withdrawalQueue[msg.sender].requested = false;
-        withdrawalQueue[msg.sender].amount = 0;
-        withdrawalQueue[msg.sender].round = 0;
-
-        // reset deposit receipt;
-        depositReceipts[msg.sender].round = 0;
-        depositReceipts[msg.sender].amount = 0;
-
-        emit Claimed(msg.sender, amount);
+    function exerciseMarketsReadyToExercise() public {
+        ISportPositionalMarket market;
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
+            if (!market.paused()) {
+                if (market.resolved() || market.canResolve()) {
+                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(msg.sender);
+                    if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+                        market.exerciseOptions();
+                    }
+                }
+            }
+        }
     }
 
     /// @notice Set length of rounds
@@ -238,36 +240,58 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         emit MaxAllowedDepositChanged(_maxAllowedDeposit);
     }
 
+    /// @notice Set min allowed deposit
+    /// @param _minDepositAmount Deposit value
+    function setMinAllowedDeposit(uint _minDepositAmount) external onlyOwner {
+        minDepositAmount = _minDepositAmount;
+        emit MinAllowedDepositChanged(_minDepositAmount);
+    }
+
+    /// @notice Set _maxAllowedUsers
+    /// @param _maxAllowedUsers Deposit value
+    function setMaxAllowedUsers(uint _maxAllowedUsers) external onlyOwner {
+        maxAllowedUsers = _maxAllowedUsers;
+        emit MaxAllowedUsersChanged(_maxAllowedUsers);
+    }
+
     /* ========== INTERNAL FUNCTIONS ========== */
-
-    /// @notice Calculate user balance in a round based on vaults' PnL
-    /// @param user Address of the user
-    /// @param _round Round number
-    function _calculateBalanceInARound(address user, uint _round) internal {
-        for (uint i = 1; i < _round; i++) {
-            if (claimedPerRound[i][user]) continue;
-
-            balancesPerRound[i][user] = (balancesPerRound[i][user] * profitAndLossPerRound[i]) / ONE;
-            balancesPerRound[i + 1][user] += balancesPerRound[i][user];
-            claimedPerRound[i][user] = true;
-        }
-    }
-
-    /// @notice Return multiplied PnLs between rounds
-    /// @param roundA Round number from
-    /// @param roundB Round number to
-    /// @return uint
-    function _cumulativePnLBetweenRounds(uint roundA, uint roundB) internal view returns (uint) {
-        return (cumulativeProfitAndLoss[roundB] * profitAndLossPerRound[roundA]) / cumulativeProfitAndLoss[roundA];
-    }
 
     /// @notice Return trading allocation in current round based on utilization rate param
     /// @return uint
-    function _tradingAllocation() internal view returns (uint) {
+    function tradingAllocation() public view returns (uint) {
         return (allocationPerRound[round] * utilizationRate) / ONE;
     }
 
     /* ========== VIEWS ========== */
+
+    function canCloseCurrentRound() public view returns (bool) {
+        if (!vaultStarted || block.timestamp < (roundStartTime[round] + roundLength)) {
+            return false;
+        }
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            ISportPositionalMarket market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
+            if ((!market.resolved() && !market.canResolve()) || market.paused()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function hasMarketsReadyToExercise() external view returns (bool) {
+        ISportPositionalMarket market;
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
+            if (!market.paused()) {
+                if (market.resolved() || market.canResolve()) {
+                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(msg.sender);
+                    if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     /// @notice Return user balance in a round
     /// @param _round Round number
@@ -277,63 +301,16 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         return balancesPerRound[_round][user];
     }
 
-    /// @notice Return if user has claimed in a round
-    /// @param _round Round number
-    /// @param user Address of the user
-    /// @return bool
-    function getClaimedPerRound(uint _round, address user) external view returns (bool) {
-        return claimedPerRound[_round][user];
-    }
-
-    /// @notice Return user's available amount to claim
-    /// @param user Address of the user
-    /// @return amount Amount to be claimed
-    function getAvailableToClaim(address user) external view returns (uint) {
-        WithdrawalRequest memory userWithdrawalRequest = withdrawalQueue[user];
-        DepositReceipt memory depositReceipt = depositReceipts[user];
-
-        // if no round has been finished or user already claimed (no withdrawal request and no deposit)
-        if (!vaultStarted || round == 1 || (!userWithdrawalRequest.requested && depositReceipt.round == 0)) {
-            return 0;
-        }
-
-        //if user requested withrawal, share in previous rounds is already calculated
-        if (userWithdrawalRequest.requested) {
-            return
-                userWithdrawalRequest.round == round
-                    ? userWithdrawalRequest.amount
-                    : (userWithdrawalRequest.amount * profitAndLossPerRound[userWithdrawalRequest.round]) / ONE;
-        }
-
-        if (depositReceipt.round >= round) {
-            // if user claimed and deposited in the same round
-            if (claimedPerRound[round][user] == true) return 0;
-            return balancesPerRound[round - 1][user];
-        } else {
-            uint initialBalance = (balancesPerRound[depositReceipt.round - 1][user] *
-                profitAndLossPerRound[depositReceipt.round - 1]) /
-                ONE +
-                balancesPerRound[depositReceipt.round][user];
-
-            return (initialBalance * _cumulativePnLBetweenRounds(depositReceipt.round, round - 1)) / ONE;
-        }
+    function getAvailableToDeposit() external view returns (uint) {
+        return maxAllowedDeposit - capPerRound[round + 1];
     }
 
     /* ========== MODIFIERS ========== */
 
     modifier canDeposit(uint amount) {
-        require(!withdrawalQueue[msg.sender].requested, "Withdrawal is requested, cannot deposit");
-        require(amount > 0, "Invalid amount");
-        require(sUSD.balanceOf(msg.sender) >= amount, "No enough sUSD");
-        require(sUSD.allowance(msg.sender, address(this)) >= amount, "No allowance");
-
+        require(!withdrawalRequested[msg.sender], "Withdrawal is requested, cannot deposit");
+        require(amount >= minDepositAmount, "Invalid amount");
         require(capPerRound[round + 1] + amount <= maxAllowedDeposit, "Deposit amount exceeds vault cap");
-        _;
-    }
-
-    modifier canCloseRound() {
-        require(vaultStarted, "Vault has not started");
-        require(block.timestamp > (roundStartTime[round] + roundLength), "Can't close round yet");
         _;
     }
 
@@ -349,4 +326,6 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
     event WithdrawalRequested(address user);
     event UtilizationRateChanged(uint utilizationRate);
     event MaxAllowedDepositChanged(uint maxAllowedDeposit);
+    event MinAllowedDepositChanged(uint minAllowedDeposit);
+    event MaxAllowedUsersChanged(uint MaxAllowedUsersChanged);
 }

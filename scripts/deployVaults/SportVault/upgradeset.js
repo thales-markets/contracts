@@ -1,5 +1,6 @@
 const { ethers, upgrades } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
+const w3utils = require('web3-utils');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -50,21 +51,10 @@ async function main() {
 	console.log('Found Vault at:', vaultAddress);
 
 	const Vault = await ethers.getContractFactory('SportVault');
-	const implementation = await upgrades.prepareUpgrade(vaultAddress, Vault);
+	const Vaultdeployed = await Vault.attach('0xE9bd38dB165F83B138d7F3F5cf033ea743FCA264');
 
-	if (networkObj.chainId == 420) {
-		await upgrades.upgradeProxy(vaultAddress, Vault);
-		console.log('Vault upgraded');
-	}
-
-	console.log('VaultImplementation: ', implementation);
-	setTargetAddress('VaultImplementation', network, implementation);
-
-	await hre.run('verify:verify', {
-		address: implementation,
-	});
+	await Vaultdeployed.setSkewImpactLimit(w3utils.toWei('-0.03'), { from: owner.address });
 }
-
 main()
 	.then(() => process.exit(0))
 	.catch((error) => {

@@ -471,13 +471,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "exerciseMarketsReadyToExercise",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -535,12 +528,12 @@
   },
   {
     "inputs": [],
-    "name": "hasMarketsReadyToExercise",
+    "name": "getCurrentRoundEnd",
     "outputs": [
       {
-        "internalType": "bool",
+        "internalType": "uint256",
         "name": "",
-        "type": "bool"
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

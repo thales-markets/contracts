@@ -108,7 +108,7 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
     function closeRound() external nonReentrant whenNotPaused {
         require(canCloseCurrentRound(), "Can't close current round");
         // excercise market options
-        exerciseMarketsReadyToExercise();
+        _exerciseMarketsReadyToExercised();
 
         // balance in next round does not affect PnL in a current round
         uint currentVaultBalance = sUSD.balanceOf(address(this)) - allocationPerRound[round + 1];
@@ -185,7 +185,7 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         require(vaultStarted, "Vault has not started");
         require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
         require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
-        require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round.");
+        require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round");
 
         uint nextRound = round + 1;
         if (capPerRound[nextRound] > balancesPerRound[round][msg.sender]) {
@@ -194,21 +194,6 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
 
         withdrawalRequested[msg.sender] = true;
         emit WithdrawalRequested(msg.sender);
-    }
-
-    function exerciseMarketsReadyToExercise() public {
-        ISportPositionalMarket market;
-        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            if (!market.paused()) {
-                if (market.resolved() || market.canResolve()) {
-                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(msg.sender);
-                    if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
-                        market.exerciseOptions();
-                    }
-                }
-            }
-        }
     }
 
     /// @notice Set length of rounds
@@ -256,6 +241,21 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
 
     /* ========== INTERNAL FUNCTIONS ========== */
 
+    function _exerciseMarketsReadyToExercised() internal {
+        ISportPositionalMarket market;
+        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
+            if (!market.paused()) {
+                if (market.resolved()) {
+                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(msg.sender);
+                    if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+                        market.exerciseOptions();
+                    }
+                }
+            }
+        }
+    }
+
     /// @notice Return trading allocation in current round based on utilization rate param
     /// @return uint
     function tradingAllocation() public view returns (uint) {
@@ -270,28 +270,28 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         }
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
             ISportPositionalMarket market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            if ((!market.resolved() && !market.canResolve()) || market.paused()) {
+            if ((!market.resolved()) || market.paused()) {
                 return false;
             }
         }
         return true;
     }
 
-    function hasMarketsReadyToExercise() external view returns (bool) {
-        ISportPositionalMarket market;
-        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            if (!market.paused()) {
-                if (market.resolved() || market.canResolve()) {
-                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(msg.sender);
-                    if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
+    //    function hasMarketsReadyToExercise() external view returns (bool) {
+    //        ISportPositionalMarket market;
+    //        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
+    //            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
+    //            if (!market.paused()) {
+    //                if (market.resolved()) {
+    //                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(msg.sender);
+    //                    if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+    //                        return true;
+    //                    }
+    //                }
+    //            }
+    //        }
+    //        return false;
+    //    }
 
     /// @notice Return user balance in a round
     /// @param _round Round number
@@ -303,6 +303,10 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
 
     function getAvailableToDeposit() external view returns (uint) {
         return maxAllowedDeposit - capPerRound[round + 1];
+    }
+
+    function getCurrentRoundEnd() external view returns (uint) {
+        return roundStartTime[round] + roundLength;
     }
 
     /* ========== MODIFIERS ========== */

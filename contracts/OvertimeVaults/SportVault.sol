@@ -69,21 +69,20 @@ contract SportVault is BaseSportVault {
         ISportsAMM.Position position
     ) external nonReentrant whenNotPaused {
         require(vaultStarted, "Vault has not started");
+        require(amount >= minTradeAmount, "Amount less than minimum");
 
         ISportPositionalMarket marketContract = ISportPositionalMarket(market);
         (uint maturity, ) = marketContract.times();
-        require(maturity < roundStartTime[round] + roundLength, "Market not valid");
+        require(maturity < (roundStartTime[round] + roundLength), "Market time not valid");
 
         uint pricePosition = sportsAMM.buyFromAmmQuote(address(market), position, ONE);
-        require(pricePosition > 0, "Market not valid");
+        require(pricePosition > 0, "Price not more than 0");
 
         int pricePositionImpact = sportsAMM.buyPriceImpact(address(market), position, amount);
 
-        if (pricePosition >= priceLowerLimit && pricePosition <= priceUpperLimit && pricePositionImpact < skewImpactLimit) {
-            _buyFromAmm(market, position, amount);
-        } else {
-            revert("Market not valid");
-        }
+        require(pricePosition >= priceLowerLimit && pricePosition <= priceUpperLimit, "Market price not valid");
+        require(pricePositionImpact < skewImpactLimit, "Skew impact too high");
+        _buyFromAmm(market, position, amount);
 
         if (!isTradingMarketInARound[round][market]) {
             tradingMarketsPerRound[round].push(market);

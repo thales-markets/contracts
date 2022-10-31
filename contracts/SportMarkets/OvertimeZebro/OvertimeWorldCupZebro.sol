@@ -5,35 +5,33 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts-4.4.1/utils/Counters.sol";
 import "@openzeppelin/contracts-4.4.1/access/Ownable.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts-4.4.1/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts-4.4.1/utils/Strings.sol";
 
 import "../../interfaces/IStakingThales.sol";
 
-contract FIFAFavoriteTeam is ERC721URIStorage, Ownable {
+contract OvertimeWorldCupZebro is ERC721URIStorage, Ownable {
     /* ========== LIBRARIES ========== */
 
     using Counters for Counters.Counter;
-    using SafeMath for uint;
 
     /* ========== STATE VARIABLES ========== */
 
     Counters.Counter private _tokenIds;
 
     // NFT Global
-    string public _name = "FIFA Favorite Team";
-    string public _symbol = "FFT";
+    string public _name = "Overtime World Cup Zebro";
+    string public _symbol = "OWC";
     bool public paused = false;
-    string public tokenURI;
 
     // NFT props.
     mapping(uint => bool) public allowedCountryNumber;
     mapping(uint => string) public countryNameByNumber;
+    mapping(uint => string) public countryUrl;
     mapping(address => bool) public whitelistedAddressesForMinting;
 
     // user props.
-    mapping(address => uint) public usersFavoriteTeamById;
-    mapping(address => string) public usersFavoriteTeamByName;
+    mapping(address => uint) public usersFavoriteTeamId;
+    mapping(address => string) public usersFavoriteTeamName;
+    mapping(address => string) public usersFavoriteTeamUrl;
     mapping(uint => address[]) public listOfUsersByCountry;
 
     IStakingThales public staking;
@@ -42,46 +40,49 @@ contract FIFAFavoriteTeam is ERC721URIStorage, Ownable {
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
-        string memory _tokenURI,
         string[] memory _allowedCountries,
+        string[] memory _countryURLs,
         address _staking,
         uint _minimumStake
     ) ERC721(_name, _symbol) {
+        require(_countryURLs.length == _allowedCountries.length, "Provide same length in country array");
         // countries start from 1
         uint countryIndex = 1;
         // populate allowed countries
         for (uint i; i < _allowedCountries.length; i++) {
             allowedCountryNumber[countryIndex] = true;
             countryNameByNumber[countryIndex] = _allowedCountries[i];
+            countryUrl[countryIndex] = _countryURLs[i];
             countryIndex++;
         }
-        tokenURI = _tokenURI;
         staking = IStakingThales(_staking);
         minimumStake = _minimumStake;
     }
 
-    /* ========== FFT ========== */
+    /* ========== OWC ========== */
 
-    function mint(address recipient, uint country) external returns (uint newItemId) {
+    function mint(address _recipient, uint _country) external returns (uint newItemId) {
         require(!paused, "Cant mint while paused");
-        require(recipient == msg.sender, "Soulbound NFT can be only minted for his owner");
-        require(allowedCountryNumber[country], "Country not allowed");
-        require(usersFavoriteTeamById[recipient] == 0, "Recipient has picked the team already");
-        require(isMinterEligibleToMint(recipient), "User is not allowed to mint this NFT");
+        require(_recipient == msg.sender, "Soulbound NFT can be only minted for his owner");
+        require(allowedCountryNumber[_country], "Country not allowed");
+        require(usersFavoriteTeamId[_recipient] == 0, "Recipient has picked the team already");
+        require(isMinterEligibleToMint(_recipient), "User is not allowed to mint this NFT");
 
         _tokenIds.increment();
 
         newItemId = _tokenIds.current();
 
-        _mint(recipient, newItemId);
+        _mint(_recipient, newItemId);
 
-        _setTokenURI(newItemId, _makeTeamURI(country));
+        _setTokenURI(newItemId, countryUrl[_country]);
 
-        usersFavoriteTeamById[recipient] = country;
-        usersFavoriteTeamByName[recipient] = countryNameByNumber[country];
-        listOfUsersByCountry[country].push(recipient);
+        usersFavoriteTeamId[_recipient] = _country;
+        usersFavoriteTeamName[_recipient] = countryNameByNumber[_country];
+        usersFavoriteTeamUrl[_recipient] = countryUrl[_country];
 
-        emit Mint(recipient, newItemId, country, countryNameByNumber[country]);
+        listOfUsersByCountry[_country].push(_recipient);
+
+        emit Mint(_recipient, newItemId, _country, countryNameByNumber[_country], usersFavoriteTeamUrl[_recipient]);
     }
 
     function burn(uint _tokenId) external {
@@ -92,8 +93,16 @@ contract FIFAFavoriteTeam is ERC721URIStorage, Ownable {
 
     /* ========== VIEW ========== */
 
-    function getFavoriteTeamForUser(address _user) external view returns (uint, string memory) {
-        return (usersFavoriteTeamById[_user], usersFavoriteTeamByName[_user]);
+    function getFavoriteTeamForUser(address _user)
+        external
+        view
+        returns (
+            uint _id,
+            string memory _name,
+            string memory _url
+        )
+    {
+        return (usersFavoriteTeamId[_user], usersFavoriteTeamName[_user], usersFavoriteTeamUrl[_user]);
     }
 
     function getListOfUsersPerTeam(uint _country) external view returns (address[] memory) {
@@ -106,10 +115,6 @@ contract FIFAFavoriteTeam is ERC721URIStorage, Ownable {
 
     /* ========== INTERNALS ========== */
 
-    function _makeTeamURI(uint256 _country) internal view returns (string memory) {
-        return string(abi.encodePacked(tokenURI, "/", Strings.toString(_country), ".png"));
-    }
-
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -119,11 +124,6 @@ contract FIFAFavoriteTeam is ERC721URIStorage, Ownable {
     }
 
     /* ========== CONTRACT MANAGEMENT ========== */
-
-    function setTokenURI(string memory _tokenURI) external onlyOwner {
-        tokenURI = _tokenURI;
-        emit NewTokenUri(_tokenURI);
-    }
 
     function setPause(bool _state) external onlyOwner {
         require(_state != paused, "Already in that state");
@@ -144,6 +144,12 @@ contract FIFAFavoriteTeam is ERC721URIStorage, Ownable {
         );
         countryNameByNumber[_country] = _name;
         emit SetCountryNameByNumber(_country, _name);
+    }
+
+    function setCountryURL(uint _country, string memory _url) external onlyOwner {
+        require(keccak256(abi.encodePacked(countryUrl[_country])) != keccak256(abi.encodePacked(_url)), "Same as before");
+        countryUrl[_country] = _url;
+        emit SetCountryURLByNumber(_country, _url);
     }
 
     function setWhitelistedAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
@@ -171,13 +177,13 @@ contract FIFAFavoriteTeam is ERC721URIStorage, Ownable {
 
     /* ========== EVENTS ========== */
 
-    event NewTokenUri(string _tokenURI);
     event Paused(bool _state);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
-    event Mint(address _recipient, uint _id, uint _country, string _countryName);
+    event Mint(address _recipient, uint _id, uint _country, string _countryName, string _url);
     event NewStakingAddress(address _staking);
     event SetAllowedCountryNumber(uint _country, bool _flag);
     event SetCountryNameByNumber(uint _country, string _name);
+    event SetCountryURLByNumber(uint _country, string _url);
     event Burn(uint _tokenId, address _exHolder);
     event NewMinimumStakeAmount(uint _minimumAmount);
 }

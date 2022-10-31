@@ -8,8 +8,8 @@ async function main() {
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
 	let users = [];
-	let FIFAFavoriteTeam;
-	let fifaAddress;
+	let OvertimeWorldCupZebro;
+	let zebroAddress;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -61,11 +61,11 @@ async function main() {
 
 	/* ========== MINT ROYALE PASSES ========== */
 
-	FIFAFavoriteTeam = await ethers.getContractFactory('FIFAFavoriteTeam');
-	fifaAddress = getTargetAddress('FIFAFavoriteTeam', network);
-	console.log('Found FIFAFavoriteTeam at:', fifaAddress);
+	OvertimeWorldCupZebro = await ethers.getContractFactory('OvertimeWorldCupZebro');
+	zebroAddress = getTargetAddress('OvertimeWorldCupZebro', network);
+	console.log('Found OvertimeWorldCupZebro at:', zebroAddress);
 
-	const fifa = await FIFAFavoriteTeam.attach(fifaAddress);
+	const fifa = await OvertimeWorldCupZebro.attach(zebroAddress);
 
 	console.log('No. users: ' + users.length);
 

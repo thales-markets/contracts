@@ -2,13 +2,13 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "_tokenURI",
-        "type": "string"
+        "internalType": "string[]",
+        "name": "_allowedCountries",
+        "type": "string[]"
       },
       {
         "internalType": "string[]",
-        "name": "_allowedCountries",
+        "name": "_countryURLs",
         "type": "string[]"
       },
       {
@@ -139,6 +139,12 @@
         "internalType": "string",
         "name": "_countryName",
         "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "_url",
+        "type": "string"
       }
     ],
     "name": "Mint",
@@ -168,19 +174,6 @@
       }
     ],
     "name": "NewStakingAddress",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "_tokenURI",
-        "type": "string"
-      }
-    ],
-    "name": "NewTokenUri",
     "type": "event"
   },
   {
@@ -251,6 +244,25 @@
       }
     ],
     "name": "SetCountryNameByNumber",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_country",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "_url",
+        "type": "string"
+      }
+    ],
+    "name": "SetCountryURLByNumber",
     "type": "event"
   },
   {
@@ -396,6 +408,25 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "countryUrl",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
       }
@@ -423,12 +454,17 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_id",
         "type": "uint256"
       },
       {
         "internalType": "string",
-        "name": "",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_url",
         "type": "string"
       }
     ],
@@ -538,12 +574,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "recipient",
+        "name": "_recipient",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "country",
+        "name": "_country",
         "type": "uint256"
       }
     ],
@@ -732,6 +768,24 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_country",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_url",
+        "type": "string"
+      }
+    ],
+    "name": "setCountryURL",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_minimumAmount",
         "type": "uint256"
       }
@@ -763,19 +817,6 @@
       }
     ],
     "name": "setStakingAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_tokenURI",
-        "type": "string"
-      }
-    ],
-    "name": "setTokenURI",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -833,19 +874,6 @@
   {
     "inputs": [],
     "name": "symbol",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "tokenURI",
     "outputs": [
       {
         "internalType": "string",
@@ -919,7 +947,7 @@
         "type": "address"
       }
     ],
-    "name": "usersFavoriteTeamById",
+    "name": "usersFavoriteTeamId",
     "outputs": [
       {
         "internalType": "uint256",
@@ -938,7 +966,26 @@
         "type": "address"
       }
     ],
-    "name": "usersFavoriteTeamByName",
+    "name": "usersFavoriteTeamName",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "usersFavoriteTeamUrl",
     "outputs": [
       {
         "internalType": "string",

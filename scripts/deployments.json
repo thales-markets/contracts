@@ -437,8 +437,8 @@
 		"RangedMarketMastercopy": "0xD792b54AD28aeA550AaE878665F6a0De00793E81",
 		"TherundownConsumerVerifier": "0x86991efb34B0Cf55af38E9dACE3f82CD8B70188F",
 		"TherundownConsumerVerifierImplementation": "0x4a2Cdf88AeE68df88c90F6377bb556d686e3099C",
-		"FIFAFavoriteTeam": "0x381e03Be2Ba2629f86BFd775225C4DdAF19E135c",
-		"SportsAMMUtils": "0x7ef54B7aF71D9F491D9735d8Cb093fFc4A51d01d"
+		"SportsAMMUtils": "0x7ef54B7aF71D9F491D9735d8Cb093fFc4A51d01d",
+		"OvertimeWorldCupZebro": "0xD66eE2D0F8810304402F6bE0E57E7C0a261b54A3"
 	},
 	"localhost": {
 		"Airdrop": "",

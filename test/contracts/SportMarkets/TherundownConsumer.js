@@ -93,7 +93,12 @@ contract('TheRundownConsumer', (accounts) => {
 	let game_1_update_before;
 	let game_1_resolve;
 	let fightId;
+	let fightIdTime;
 	let fight_create;
+	let fight_create_time;
+	let fight_create_time_update;
+	let fightCreatedTime;
+	let fightCreatedTimeUpdate;
 	let fightCreated;
 	let fight_update;
 	let fightUpdated;
@@ -102,6 +107,8 @@ contract('TheRundownConsumer', (accounts) => {
 	let game_fight_resolve_draw;
 	let gamesFightResolvedDraw;
 	let reqIdFightCreate;
+	let reqIdFightCreateTime;
+	let reqIdFightCreateTimeUpdate;
 	let reqIdFightUpdate;
 	let reqIdFightResolve;
 	let reqIdFightResolveDraw;
@@ -216,6 +223,7 @@ contract('TheRundownConsumer', (accounts) => {
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';
 		gameid2 = '0x3937346533663036386233333764313239656435633133646632376133326662';
 		fightId = '0x3234376564326334663865313462396538343833353636353361373863393962';
+		fightIdTime = '0x3837656631326534343130616538653331313830613663613464613961626363';
 
 		// create game props
 		game_1_create =
@@ -230,6 +238,17 @@ contract('TheRundownConsumer', (accounts) => {
 			'0x000000000000000000000000000000000000000000000000000000000000002032343765643263346638653134623965383438333536363533613738633939620000000000000000000000000000000000000000000000000000000062f2f500ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5f100000000000000000000000000000000000000000000000000000000000007c9c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000011436c6179746f6e2043617270656e746572000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d4564676172204368616972657a00000000000000000000000000000000000000';
 		fightCreated = [fight_create];
 		reqIdFightCreate = '0x1e4ef9996d321a4445068689e63fe393a5860cc98a0df22da1ac877d8cfd37d3';
+
+		fight_create_time =
+			'0x0000000000000000000000000000000000000000000000000000000000000020383765663132653434313061653865333131383061366361346461396162636300000000000000000000000000000000000000000000000000000000635d8640ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd634ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd634000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000000c41726e6f6c6420416c6c656e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d43616c76696e204b617474617200000000000000000000000000000000000000';
+		fightCreatedTime = [fight_create_time];
+		reqIdFightCreateTime = '0x96855b411bc67057713b65061aaf3e24505a86ffe51fa0ac28e4b8dd3f2c4f4a';
+
+		fight_create_time_update =
+			'0x0000000000000000000000000000000000000000000000000000000000000020383765663132653434313061653865333131383061366361346461396162636300000000000000000000000000000000000000000000000000000000635db070ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd634ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd634000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000000c41726e6f6c6420416c6c656e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d43616c76696e204b617474617200000000000000000000000000000000000000';
+		fightCreatedTimeUpdate = [fight_create_time_update];
+		reqIdFightCreateTimeUpdate =
+			'0x96855b411bc67057713b65061aaf3e24505a86ffe51fa0ac28e4b8dd3f2c4f4b';
 
 		// update fight props
 		fight_update =
@@ -2643,6 +2662,74 @@ contract('TheRundownConsumer', (accounts) => {
 			console.log('Expiry before' + parseInt(expiryBefore));
 			console.log('Expiry after' + parseInt(expiryAfter));
 			assert.isAbove(parseInt(expiryAfter), parseInt(expiryBefore));
+		});
+
+		it('Fulfill Games Created - UFC, update date, if time to game is in future', async () => {
+			await fastForward(fightTime - (await currentTime()) - SECOND);
+
+			// req games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFightCreateTime,
+				fightCreatedTime,
+				sportId_7,
+				fightTime,
+				{ from: wrapper }
+			);
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
+
+			assert.equal(fightIdTime, await gamesQueue.gamesCreateQueue(1));
+
+			assert.equal(1, await gamesQueue.getLengthUnproccessedGames());
+			assert.equal(0, await gamesQueue.unproccessedGamesIndex(fightIdTime));
+
+			// added into queue!!!
+			assert.equal(1, await gamesQueue.firstCreated());
+			assert.equal(1, await gamesQueue.lastCreated());
+
+			assert.equal(
+				fight_create_time,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreateTime, 0)
+			);
+
+			let fight = await TherundownConsumerDeployed.gameCreated(fightIdTime);
+			assert.equal('Arnold Allen', fight.homeTeam);
+			assert.equal('Calvin Kattar', fight.awayTeam);
+			assert.bnEqual(1667073600, fight.startTime); // first date
+
+			// check if event is emited
+			assert.eventEqual(tx.logs[0], 'GameCreated', {
+				_requestId: reqIdFightCreateTime,
+				_sportId: sportId_7,
+				_id: fightIdTime,
+				_game: fight,
+			});
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(fightIdTime);
+
+			// req games updated
+			const tx_update = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdFightCreateTimeUpdate,
+				fightCreatedTimeUpdate,
+				sportId_7,
+				fightTime,
+				{ from: wrapper }
+			);
+
+			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
+			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
+
+			assert.equal(
+				fight_create_time_update,
+				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreateTimeUpdate, 0)
+			);
+
+			let fight_updated = await TherundownConsumerDeployed.gameCreated(fightIdTime);
+			assert.equal('Arnold Allen', fight_updated.homeTeam);
+			assert.equal('Calvin Kattar', fight_updated.awayTeam);
+			assert.bnEqual(1667084400, fight_updated.startTime); // new date
 		});
 	});
 

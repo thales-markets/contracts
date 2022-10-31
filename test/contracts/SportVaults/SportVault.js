@@ -665,6 +665,29 @@ contract('SportsAMM', (accounts) => {
 
 			await vault.trade(deployedMarket.address, toUnit(20), 0);
 
+			await assert.revert(
+				vault.trade(deployedMarket.address, toUnit(20), 1),
+				'Skew impact too high'
+			);
+
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(200));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+			answer = await SportsAMM.buyFromAMM(
+				deployedMarket.address,
+				0,
+				toUnit(200),
+				buyFromAmmQuote,
+				additionalSlippage,
+				{ from: first }
+			);
+
+			buyPriceImpactFirst = await SportsAMM.buyPriceImpact(deployedMarket.address, 1, toUnit(20));
+			console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
+			await assert.revert(
+				vault.trade(deployedMarket.address, toUnit(20), 1),
+				'Cannot trade different options on the same market'
+			);
+
 			let canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
 

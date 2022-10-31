@@ -58,19 +58,21 @@ async function main() {
 
 	const Vault = await ethers.getContractFactory('SportVault');
 	const vault = await upgrades.deployProxy(Vault, [
-		owner.address,
-		sportsAMM,
-		proxySUSD,
-		week,
-		w3utils.toWei('0.50'),
-		w3utils.toWei('0.95'),
-		w3utils.toWei('-0.03'), // -3% skew impact
-		w3utils.toWei('10'), // 10% limit per market
-		w3utils.toWei('20000'), // 10k% max deposit per round
-		w3utils.toWei('0.50'), // 50% utilization rate
-		w3utils.toWei('20'), // min deposit
-		100, // maximum 100 users allowed at a time in the vault
-		w3utils.toWei('10'), // minimum trade amount
+		{
+			_owner: owner.address,
+			_sportsAmm: sportsAMM,
+			_sUSD: proxySUSD,
+			_roundLength: week,
+			_priceLowerLimit: w3utils.toWei('0.50'),
+			_priceUpperLimit: w3utils.toWei('0.95'),
+			_skewImpactLimit: w3utils.toWei('-0.03'), // -3% skew impact
+			_allocationLimitsPerMarketPerRound: w3utils.toWei('10'), // 10% limit per market
+			_maxAllowedDeposit: w3utils.toWei('1000'), // 10k% max deposit per round
+			_utilizationRate: w3utils.toWei('0.50'), // 50% utilization rate
+			_minDepositAmount: w3utils.toWei('20'), // min deposit
+			_maxAllowedUsers: 3, // maximum 100 users allowed at a time in the vault
+			_minTradeAmount: w3utils.toWei('10'), // minimum trade amount
+		},
 	]);
 
 	//	await vault.initialize({

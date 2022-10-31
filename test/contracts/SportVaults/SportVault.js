@@ -607,7 +607,7 @@ contract('SportsAMM', (accounts) => {
 				reqIdCreate,
 				gamesCreated,
 				sportId_4,
-				roundStartTime,
+				game1NBATime,
 				{ from: wrapper }
 			);
 

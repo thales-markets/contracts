@@ -64,11 +64,30 @@ async function main() {
 		week,
 		w3utils.toWei('0.50'),
 		w3utils.toWei('0.95'),
-		w3utils.toWei('-3'), // -3% skew impact
+		w3utils.toWei('-0.03'), // -3% skew impact
 		w3utils.toWei('10'), // 10% limit per market
-		w3utils.toWei('10000'), // 10k% max deposit per round
+		w3utils.toWei('20000'), // 10k% max deposit per round
 		w3utils.toWei('0.50'), // 50% utilization rate
+		w3utils.toWei('20'), // min deposit
+		100, // maximum 100 users allowed at a time in the vault
+		w3utils.toWei('10'), // minimum trade amount
 	]);
+
+	//	await vault.initialize({
+	// 			_owner: owner,
+	// 			_sportsAmm: SportsAMM.address,
+	// 			_sUSD: Thales.address,
+	// 			_roundLength: week,
+	// 			_priceLowerLimit: toUnit(0.2).toString(),
+	// 			_priceUpperLimit: toUnit(1).toString(),
+	// 			_skewImpactLimit: toUnit(-0.03).toString(), // 40%
+	// 			_allocationLimitsPerMarketPerRound: toUnit(10).toString(), // 40%
+	// 			_maxAllowedDeposit: toUnit(1000).toString(), // 20%
+	// 			_utilizationRate: toUnit(0.5).toString(),
+	// 			_minDepositAmount: toUnit(100).toString(),
+	// 			_maxAllowedUsers: 100,
+	// 			_minTradeAmount: toUnit(10).toString(),
+	// 		});
 
 	await vault.deployed();
 

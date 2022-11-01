@@ -123,22 +123,18 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
 
         for (uint i = 0; i < usersPerRound[round].length; i++) {
             address user = usersPerRound[round][i];
+            uint balanceAfterCurRound = (balancesPerRound[round][user] * profitAndLossPerRound[round]) / ONE;
             if (userInRound[round][user]) {
                 if (!withdrawalRequested[user]) {
-                    balancesPerRound[round + 1][user] =
-                        ((balancesPerRound[round][user] + balancesPerRound[round + 1][user]) *
-                            profitAndLossPerRound[round]) /
-                        ONE;
+                    balancesPerRound[round + 1][user] = balancesPerRound[round + 1][user] + balanceAfterCurRound;
                     userInRound[round + 1][user] = true;
                     usersPerRound[round + 1].push(user);
                 } else {
                     balancesPerRound[round + 1][user] = 0;
-                    uint withdrawable = (balancesPerRound[round][user] * profitAndLossPerRound[round]) / ONE;
-                    sUSD.safeTransfer(user, withdrawable);
+                    sUSD.safeTransfer(user, balanceAfterCurRound);
                     withdrawalRequested[user] = false;
                     userInRound[round + 1][user] = false;
-                    usersCurrentlyInVault = usersCurrentlyInVault - 1;
-                    emit Claimed(user, withdrawable);
+                    emit Claimed(user, balanceAfterCurRound);
                 }
             }
         }
@@ -152,7 +148,7 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         allocationPerRound[round] = sUSD.balanceOf(address(this));
         capPerRound[round + 1] = allocationPerRound[round];
 
-        emit RoundClosed(round - 1);
+        emit RoundClosed(round - 1, profitAndLossPerRound[round - 1]);
     }
 
     /// @notice Deposit funds from user into vault for the next round
@@ -163,7 +159,7 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         uint nextRound = round + 1;
 
         // new user enters the vault
-        if (balancesPerRound[round][msg.sender] == 0) {
+        if (balancesPerRound[round][msg.sender] == 0 && balancesPerRound[nextRound][msg.sender] == 0) {
             require(usersCurrentlyInVault < maxAllowedUsers, "Max amount of users reached");
             usersPerRound[nextRound].push(msg.sender);
             userInRound[nextRound][msg.sender] = true;
@@ -192,6 +188,7 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
             capPerRound[nextRound] -= balancesPerRound[round][msg.sender];
         }
 
+        usersCurrentlyInVault = usersCurrentlyInVault - 1;
         withdrawalRequested[msg.sender] = true;
         emit WithdrawalRequested(msg.sender);
     }
@@ -321,7 +318,7 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
     /* ========== EVENTS ========== */
 
     event VaultStarted();
-    event RoundClosed(uint round);
+    event RoundClosed(uint round, uint roundPnL);
     event RoundLengthChanged(uint roundLength);
     event SportAMMChanged(address thalesAmm);
     event SetSUSD(address sUSD);

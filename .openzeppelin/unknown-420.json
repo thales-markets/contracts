@@ -13200,7 +13200,7 @@
           {
             "contract": "BaseSportVault",
             "label": "sportsAMM",
-            "type": "t_contract(ISportsAMM)71077",
+            "type": "t_contract(ISportsAMM)71075",
             "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:30"
           },
           {
@@ -13278,7 +13278,7 @@
           {
             "contract": "BaseSportVault",
             "label": "tradingMarketPositionPerRound",
-            "type": "t_mapping(t_uint256,t_mapping(t_address,t_enum(Position)71028))",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_enum(Position)71026))",
             "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:49"
           },
           {
@@ -13382,7 +13382,7 @@
           "t_int256": {
             "label": "int256"
           },
-          "t_contract(ISportsAMM)71077": {
+          "t_contract(ISportsAMM)71075": {
             "label": "contract ISportsAMM"
           },
           "t_contract(IERC20Upgradeable)6720": {
@@ -13422,13 +13422,651 @@
               }
             ]
           },
-          "t_mapping(t_uint256,t_mapping(t_address,t_enum(Position)71028))": {
+          "t_mapping(t_uint256,t_mapping(t_address,t_enum(Position)71026))": {
             "label": "mapping(uint256 => mapping(address => enum ISportsAMM.Position))"
           },
-          "t_mapping(t_address,t_enum(Position)71028)": {
+          "t_mapping(t_address,t_enum(Position)71026)": {
             "label": "mapping(address => enum ISportsAMM.Position)"
           },
-          "t_enum(Position)71028": {
+          "t_enum(Position)71026": {
+            "label": "enum ISportsAMM.Position",
+            "members": [
+              "Home",
+              "Away",
+              "Draw"
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "c8480115eb5ab60ea4a7bfdebb6c6bc612b178d983d239d435815dd983c02cf5": {
+      "address": "0xfD4892Ad5772a0BcB784afDfF6d8410765cabEa4",
+      "txHash": "0xb3f2f25e8782cfb28c7142aad8372dbd56b81c31ce7b4bd0224d8adadee7721f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "sportsAMM",
+            "type": "t_contract(ISportsAMM)3035",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:30"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)390",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:31"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "vaultStarted",
+            "type": "t_bool",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:33"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "round",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:35"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "roundLength",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:36"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "roundStartTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:37"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "usersPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:39"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "userInRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:40"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "balancesPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:42"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "withdrawalRequested",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:43"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "depositReceipts",
+            "type": "t_mapping(t_address,t_struct(DepositReceipt)930_storage)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:44"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "allocationPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:46"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "tradingMarketsPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:48"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "tradingMarketPositionPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_enum(Position)2986))",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:49"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "isTradingMarketInARound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:50"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "profitAndLossPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:52"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "maxAllowedDeposit",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:54"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "utilizationRate",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:55"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "capPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:57"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "minDepositAmount",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:59"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "maxAllowedUsers",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:61"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "usersCurrentlyInVault",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:62"
+          },
+          {
+            "contract": "SportVault",
+            "label": "allocationLimitsPerMarketPerRound",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:32"
+          },
+          {
+            "contract": "SportVault",
+            "label": "allocationSpentPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:34"
+          },
+          {
+            "contract": "SportVault",
+            "label": "priceLowerLimit",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:36"
+          },
+          {
+            "contract": "SportVault",
+            "label": "priceUpperLimit",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:37"
+          },
+          {
+            "contract": "SportVault",
+            "label": "skewImpactLimit",
+            "type": "t_int256",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:38"
+          },
+          {
+            "contract": "SportVault",
+            "label": "minTradeAmount",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:40"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_int256": {
+            "label": "int256"
+          },
+          "t_contract(ISportsAMM)3035": {
+            "label": "contract ISportsAMM"
+          },
+          "t_contract(IERC20Upgradeable)390": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_address,t_struct(DepositReceipt)930_storage)": {
+            "label": "mapping(address => struct BaseSportVault.DepositReceipt)"
+          },
+          "t_struct(DepositReceipt)930_storage": {
+            "label": "struct BaseSportVault.DepositReceipt",
+            "members": [
+              {
+                "label": "round",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_enum(Position)2986))": {
+            "label": "mapping(uint256 => mapping(address => enum ISportsAMM.Position))"
+          },
+          "t_mapping(t_address,t_enum(Position)2986)": {
+            "label": "mapping(address => enum ISportsAMM.Position)"
+          },
+          "t_enum(Position)2986": {
+            "label": "enum ISportsAMM.Position",
+            "members": [
+              "Home",
+              "Away",
+              "Draw"
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "d8268f0a4eb2ffe897b976c87b0e4990be36d519085893c0ff02660ae361bd63": {
+      "address": "0x4D3C3D40A6d9f1A0896db3F24DE539858e74543f",
+      "txHash": "0xa7f6ca2964decd9360bff6a369941294ee0eefe6690426927c8520ccf09ebe3f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "sportsAMM",
+            "type": "t_contract(ISportsAMM)71079",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:30"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)6720",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:31"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "vaultStarted",
+            "type": "t_bool",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:33"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "round",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:35"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "roundLength",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:36"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "roundStartTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:37"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "usersPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:39"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "userInRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:40"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "balancesPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:42"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "withdrawalRequested",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:43"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "depositReceipts",
+            "type": "t_mapping(t_address,t_struct(DepositReceipt)30911_storage)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:44"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "allocationPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:46"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "tradingMarketsPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:48"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "tradingMarketPositionPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_enum(Position)71030))",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:49"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "isTradingMarketInARound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:50"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "profitAndLossPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:52"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "maxAllowedDeposit",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:54"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "utilizationRate",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:55"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "capPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:57"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "minDepositAmount",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:59"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "maxAllowedUsers",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:61"
+          },
+          {
+            "contract": "BaseSportVault",
+            "label": "usersCurrentlyInVault",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\BaseSportVault.sol:62"
+          },
+          {
+            "contract": "SportVault",
+            "label": "allocationLimitsPerMarketPerRound",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:32"
+          },
+          {
+            "contract": "SportVault",
+            "label": "allocationSpentPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:34"
+          },
+          {
+            "contract": "SportVault",
+            "label": "priceLowerLimit",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:36"
+          },
+          {
+            "contract": "SportVault",
+            "label": "priceUpperLimit",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:37"
+          },
+          {
+            "contract": "SportVault",
+            "label": "skewImpactLimit",
+            "type": "t_int256",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:38"
+          },
+          {
+            "contract": "SportVault",
+            "label": "minTradeAmount",
+            "type": "t_uint256",
+            "src": "contracts\\OvertimeVaults\\SportVault.sol:40"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_int256": {
+            "label": "int256"
+          },
+          "t_contract(ISportsAMM)71079": {
+            "label": "contract ISportsAMM"
+          },
+          "t_contract(IERC20Upgradeable)6720": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_address,t_struct(DepositReceipt)30911_storage)": {
+            "label": "mapping(address => struct BaseSportVault.DepositReceipt)"
+          },
+          "t_struct(DepositReceipt)30911_storage": {
+            "label": "struct BaseSportVault.DepositReceipt",
+            "members": [
+              {
+                "label": "round",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_enum(Position)71030))": {
+            "label": "mapping(uint256 => mapping(address => enum ISportsAMM.Position))"
+          },
+          "t_mapping(t_address,t_enum(Position)71030)": {
+            "label": "mapping(address => enum ISportsAMM.Position)"
+          },
+          "t_enum(Position)71030": {
             "label": "enum ISportsAMM.Position",
             "members": [
               "Home",

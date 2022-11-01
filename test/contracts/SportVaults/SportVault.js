@@ -447,7 +447,7 @@ contract('SportsAMM', (accounts) => {
 			_sportsAmm: SportsAMM.address,
 			_sUSD: Thales.address,
 			_roundLength: week,
-			_priceLowerLimit: toUnit(0.2).toString(),
+			_priceLowerLimit: toUnit(0.1).toString(),
 			_priceUpperLimit: toUnit(1).toString(),
 			_skewImpactLimit: toUnit(-0.03).toString(), // 40%
 			_allocationLimitsPerMarketPerRound: toUnit(10).toString(), // 40%
@@ -628,7 +628,6 @@ contract('SportsAMM', (accounts) => {
 			await fastForward(gameTime - now - day * 3);
 			// CLOSE ROUND #1 - START ROUND #7
 			await vault.closeRound();
-
 			round = await vault.round();
 			console.log('round is:' + round);
 			roundStartTime = await vault.roundStartTime(round);
@@ -686,6 +685,8 @@ contract('SportsAMM', (accounts) => {
 
 			buyPriceImpactFirst = await SportsAMM.buyPriceImpact(deployedMarket.address, 1, toUnit(20));
 			console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(1));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
 			await assert.revert(
 				vault.trade(deployedMarket.address, toUnit(20), 1),
 				'Cannot trade different options on the same market'
@@ -741,6 +742,7 @@ contract('SportsAMM', (accounts) => {
 			let profitAndLossPerRound = await vault.profitAndLossPerRound(round - 1);
 			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
 
+			await fastForward(week);
 			await vault.closeRound();
 
 			round = await vault.round();

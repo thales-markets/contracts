@@ -603,6 +603,7 @@ contract('SportsAMM', (accounts) => {
 			let roundStartTime = await vault.roundStartTime(round);
 			console.log('roundStartTime is:' + roundStartTime);
 
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdCreate,
 				gamesCreated,

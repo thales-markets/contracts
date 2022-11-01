@@ -223,12 +223,12 @@ contract('SportsAMM', (accounts) => {
 			toUnit('100'),
 			toUnit('0.02'),
 			toUnit('0.2'),
-			DAY,
+			HOUR,
 			{ from: owner }
 		);
 
 		await SportsAMM.setParameters(
-			DAY,
+			HOUR,
 			toUnit('0.02'),
 			toUnit('0.2'),
 			toUnit('0.001'),
@@ -446,7 +446,7 @@ contract('SportsAMM', (accounts) => {
 			_owner: owner,
 			_sportsAmm: SportsAMM.address,
 			_sUSD: Thales.address,
-			_roundLength: week,
+			_roundLength: day,
 			_priceLowerLimit: toUnit(0.1).toString(),
 			_priceUpperLimit: toUnit(1).toString(),
 			_skewImpactLimit: toUnit(-0.03).toString(), // 40%
@@ -537,7 +537,7 @@ contract('SportsAMM', (accounts) => {
 			usersCurrentlyInVault = await vault.usersCurrentlyInVault();
 			console.log('usersCurrentlyInVault is:' + usersCurrentlyInVault);
 
-			await fastForward(week);
+			await fastForward(day);
 			// CLOSE ROUND #1 - START ROUND #2
 			await vault.closeRound();
 			round = 2;
@@ -550,7 +550,7 @@ contract('SportsAMM', (accounts) => {
 			usersCurrentlyInVault = await vault.usersCurrentlyInVault();
 			console.log('usersCurrentlyInVault is:' + usersCurrentlyInVault);
 
-			await fastForward(week);
+			await fastForward(day);
 			// CLOSE ROUND #1 - START ROUND #3
 			await vault.closeRound();
 			round = 3;
@@ -566,7 +566,7 @@ contract('SportsAMM', (accounts) => {
 
 			await vault.withdrawalRequest({ from: first });
 
-			await fastForward(week);
+			await fastForward(day);
 			// CLOSE ROUND #1 - START ROUND #4
 			await vault.closeRound();
 			round = 4;
@@ -580,7 +580,7 @@ contract('SportsAMM', (accounts) => {
 			await vault.deposit(toUnit(200), { from: second });
 			await vault.deposit(toUnit(300), { from: first });
 
-			await fastForward(week);
+			await fastForward(day);
 			// CLOSE ROUND #1 - START ROUND #5
 			await vault.closeRound();
 
@@ -590,7 +590,7 @@ contract('SportsAMM', (accounts) => {
 				"Can't withdraw as you already deposited for next round"
 			);
 
-			await fastForward(week);
+			await fastForward(day);
 			// CLOSE ROUND #1 - START ROUND #6
 			await vault.closeRound();
 
@@ -625,7 +625,7 @@ contract('SportsAMM', (accounts) => {
 			deployedMarket = await SportPositionalMarketContract.at(answer.toString());
 
 			let now = await currentTime();
-			await fastForward(gameTime - now - day * 3);
+			await fastForward(gameTime - now - day);
 			// CLOSE ROUND #1 - START ROUND #7
 			await vault.closeRound();
 			round = await vault.round();
@@ -695,7 +695,7 @@ contract('SportsAMM', (accounts) => {
 			let canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
 
-			await fastForward(week);
+			await fastForward(day);
 			canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
 
@@ -742,7 +742,7 @@ contract('SportsAMM', (accounts) => {
 			let profitAndLossPerRound = await vault.profitAndLossPerRound(round - 1);
 			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
 
-			await fastForward(week);
+			await fastForward(day);
 			await vault.closeRound();
 
 			round = await vault.round();

@@ -614,6 +614,8 @@ contract('SportsAMM', (accounts) => {
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
 
+			assert.equal(await TherundownConsumerDeployed.gameFulfilledCreated(gameid1), true);
+
 			console.log('gameTime ' + gameTime);
 
 			await TherundownConsumerDeployed.createMarketForGame(gameid1);

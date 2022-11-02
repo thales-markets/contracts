@@ -455,6 +455,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
             ) {
                 _pauseOrUnpauseMarket(marketPerGameId[_game.gameId], true);
                 backupOdds[_game.gameId] = currentOddsBeforeSave;
+                emit OddsCircuitBreaker(marketPerGameId[_game.gameId], _game.gameId);
             }
             emit GameOddsAdded(requestId, _game.gameId, _game, getNormalizedOdds(_game.gameId));
         } else {
@@ -811,4 +812,5 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     event NewQueueAddress(GamesQueue _queues); // deprecated
     event NewSportContracts(address _wrapperAddress, GamesQueue _queues, address _sportsManager, address _verifier);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
+    event OddsCircuitBreaker(address _marketAddress, bytes32 _id);
 }

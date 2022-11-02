@@ -409,7 +409,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         emit ParlayMarketCreated(
             address(parlayMarket),
-            msg.sender,
+            _differentRecepient,
             totalAmount,
             _sUSDPaid,
             sUSDAfterFees,

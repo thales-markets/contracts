@@ -158,6 +158,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "theRundownConsumer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",

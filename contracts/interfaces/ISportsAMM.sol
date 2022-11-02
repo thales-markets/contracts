@@ -10,6 +10,8 @@ interface ISportsAMM {
         Draw
     }
 
+    function theRundownConsumer() external view returns (address);
+
     function getMarketDefaultOdds(address _market, bool isSell) external view returns (uint[] memory);
 
     function isMarketInAMMTrading(address _market) external view returns (bool);

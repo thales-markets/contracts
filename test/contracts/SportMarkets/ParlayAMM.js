@@ -190,6 +190,7 @@ contract('ParlayAMM', (accounts) => {
 
 	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
 	let parlayMarkets = [];
+	let equalParlayMarkets = [];
 	let parlayPositions = [];
 	let parlaySingleMarketAddress;
 	let parlaySingleMarket;
@@ -639,6 +640,14 @@ contract('ParlayAMM', (accounts) => {
 				_game: game_2,
 			});
 
+			// console.log("1. game:");
+			// console.log("==> home: ", game.homeTeam);
+			// console.log("==> away: ", game.awayTeam);
+
+			// console.log("2. game:");
+			// console.log("==> home: ", game_2.homeTeam);
+			// console.log("==> away: ", game_2.awayTeam);
+
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
 			let deployedMarket_1 = await SportPositionalMarketContract.at(answer);
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('1');
@@ -688,6 +697,10 @@ contract('ParlayAMM', (accounts) => {
 				_game: fight,
 			});
 
+			// console.log("3. game:");
+			// console.log("==> home: ", fight.homeTeam);
+			// console.log("==> away: ", fight.awayTeam);
+
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('2');
 			let deployedMarket_3 = await SportPositionalMarketContract.at(answer);
 
@@ -720,6 +733,7 @@ contract('ParlayAMM', (accounts) => {
 			assert.bnEqual(27200, result[2]);
 
 			let game_4 = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
+			let game_5 = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
 			assert.equal('Atletico Madrid Atletico Madrid', game_4.homeTeam);
 			assert.equal('Manchester City Manchester City', game_4.awayTeam);
 
@@ -731,14 +745,25 @@ contract('ParlayAMM', (accounts) => {
 				_game: game_4,
 			});
 
+			// console.log("4. game:");
+			// console.log("==> home: ", game_4.homeTeam);
+			// console.log("==> away: ", game_4.awayTeam);
+
+			// console.log("5. game:");
+			// console.log("==> home: ", game_5.homeTeam);
+			// console.log("==> away: ", game_5.awayTeam);
+
 			// create markets
 			const tx_create_4 = await TherundownConsumerDeployed.createMarketForGame(gameFootballid1);
 			await TherundownConsumerDeployed.createMarketForGame(gameFootballid2);
 
 			let marketAdd_4 = await TherundownConsumerDeployed.marketPerGameId(gameFootballid1);
+			let marketAdd_5 = await TherundownConsumerDeployed.marketPerGameId(gameFootballid2);
 
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('3');
 			let deployedMarket_4 = await SportPositionalMarketContract.at(answer);
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('4');
+			let deployedMarket_5 = await SportPositionalMarketContract.at(answer);
 
 			// check if event is emited
 			assert.eventEqual(tx_create_4.logs[1], 'CreateSportsMarket', {
@@ -748,6 +773,7 @@ contract('ParlayAMM', (accounts) => {
 			});
 
 			assert.equal(deployedMarket_4.address, marketAdd_4);
+			assert.equal(deployedMarket_5.address, marketAdd_5);
 
 			answer = await SportPositionalMarketManager.numActiveMarkets();
 			assert.equal(answer.toString(), '5');
@@ -757,13 +783,15 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(true, await deployedMarket_2.canResolve());
 			assert.equal(true, await deployedMarket_3.canResolve());
 			assert.equal(true, await deployedMarket_4.canResolve());
+			assert.equal(true, await deployedMarket_5.canResolve());
 
 			// console.log('parlay 1: ', deployedMarket_1.address);
 			// console.log('parlay 2: ', deployedMarket_2.address);
 			// console.log('parlay 3: ', deployedMarket_3.address);
 			// console.log('parlay 4: ', deployedMarket_4.address);
 
-			parlayMarkets = [deployedMarket_1, deployedMarket_2, deployedMarket_3, deployedMarket_4];
+			parlayMarkets = [deployedMarket_1, deployedMarket_5, deployedMarket_3, deployedMarket_4];
+			equalParlayMarkets = [deployedMarket_1, deployedMarket_2, deployedMarket_3, deployedMarket_4];
 		});
 
 		it('Can create Parlay: YES', async () => {
@@ -783,6 +811,22 @@ contract('ParlayAMM', (accounts) => {
 				totalSUSDToPay
 			);
 			assert.equal(canCreateParlay, true);
+		});
+
+		it('Can create Parlay with equal home/away teams: NO', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+			// await fastForward((await currentTime()) - SECOND);
+			answer = await SportPositionalMarketManager.numActiveMarkets();
+			assert.equal(answer.toString(), '5');
+			let totalSUSDToPay = toUnit('10');
+			parlayPositions = ['1', '1', '1', '1'];
+			let parlayMarketsAddress = [];
+			for (let i = 0; i < parlayMarkets.length; i++) {
+				parlayMarketsAddress[i] = equalParlayMarkets[i].address;
+			}
+			await expect(
+				ParlayAMM.canCreateParlayMarket(parlayMarketsAddress, parlayPositions, totalSUSDToPay)
+			).to.be.revertedWith('SameTeamOnParlay');
 		});
 
 		it('BuyQuote for Parlay', async () => {
@@ -1165,7 +1209,7 @@ contract('ParlayAMM', (accounts) => {
 			answer = await SportPositionalMarketManager.numActiveMarkets();
 			assert.equal(answer.toString(), '5');
 			let totalSUSDToPay = toUnit('10');
-			parlayPositions = ['1', '1', '1', '1'];
+			parlayPositions = ['1', '0', '1', '1'];
 			let parlayMarketsAddress = [];
 			for (let i = 0; i < parlayMarkets.length; i++) {
 				parlayMarketsAddress[i] = parlayMarkets[i].address;
@@ -1382,7 +1426,7 @@ contract('ParlayAMM', (accounts) => {
 				answer = await SportPositionalMarketManager.numActiveMarkets();
 				assert.equal(answer.toString(), '5');
 				let totalSUSDToPay = toUnit('10');
-				parlayPositions = ['1', '1', '1', '1'];
+				parlayPositions = ['1', '0', '1', '1'];
 				let parlayMarketsAddress = [];
 				for (let i = 0; i < parlayMarkets.length; i++) {
 					parlayMarketsAddress[i] = parlayMarkets[i].address;
@@ -1440,7 +1484,7 @@ contract('ParlayAMM', (accounts) => {
 
 			it('All games resolved', async () => {
 				await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-				let resolveMatrix = ['2', '2', '2', '2'];
+				let resolveMatrix = ['2', '1', '2', '2'];
 				// parlayPositions = ['0', '0', '0', '0'];
 				let gameId;
 				let homeResult = '0';
@@ -1527,7 +1571,7 @@ contract('ParlayAMM', (accounts) => {
 			describe('Exercise whole parlay', () => {
 				beforeEach(async () => {
 					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-					let resolveMatrix = ['2', '2', '2', '2'];
+					let resolveMatrix = ['2', '1', '2', '2'];
 					console.log('Games resolved: ', resolveMatrix, '\n');
 					// parlayPositions = ['0', '0', '0', '0'];
 					let gameId;
@@ -1563,7 +1607,11 @@ contract('ParlayAMM', (accounts) => {
 						sum = sum.add(balances[i]);
 					}
 					console.log('total balance: ', fromUnit(sum));
-					assert.bnEqual(sum, await parlaySingleMarket.amount());
+					let result = await parlaySingleMarket.amount();
+
+					console.log('Result balance: ', fromUnit(result));
+					assert.approximately(parseFloat(fromUnit(result)), parseFloat(fromUnit(sum)), 0.000001);
+					// assert.bnEqual(sum, await parlaySingleMarket.amount());
 				});
 				it('Parlay exercised', async () => {
 					await ParlayAMM.exerciseParlay(parlaySingleMarket.address);
@@ -1632,7 +1680,7 @@ contract('ParlayAMM', (accounts) => {
 			describe('Exercise whole parlay with single cancellation', () => {
 				beforeEach(async () => {
 					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-					let resolveMatrix = ['2', '2', '0', '2'];
+					let resolveMatrix = ['2', '1', '0', '2'];
 					console.log('Games resolved: ', resolveMatrix, '\n');
 					// parlayPositions = ['0', '0', '0', '0'];
 					let gameId;
@@ -1689,7 +1737,7 @@ contract('ParlayAMM', (accounts) => {
 			describe('Exercise whole parlay with double cancellation', () => {
 				beforeEach(async () => {
 					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-					let resolveMatrix = ['0', '2', '0', '2'];
+					let resolveMatrix = ['0', '1', '0', '2'];
 					console.log('Games resolved: ', resolveMatrix, '\n');
 					// parlayPositions = ['0', '0', '0', '0'];
 					let gameId;
@@ -1803,7 +1851,7 @@ contract('ParlayAMM', (accounts) => {
 			describe('Exercise whole parlay with 1 wrong result', () => {
 				beforeEach(async () => {
 					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-					let resolveMatrix = ['2', '1', '2', '2'];
+					let resolveMatrix = ['2', '1', '1', '2'];
 					console.log('Games resolved: ', resolveMatrix, '\n');
 					// parlayPositions = ['0', '0', '0', '0'];
 					let gameId;
@@ -1860,7 +1908,7 @@ contract('ParlayAMM', (accounts) => {
 			describe('Exercise whole parlay with 2 wrong result', () => {
 				beforeEach(async () => {
 					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-					let resolveMatrix = ['2', '1', '1', '2'];
+					let resolveMatrix = ['2', '2', '1', '2'];
 					console.log('Games resolved: ', resolveMatrix, '\n');
 					// parlayPositions = ['0', '0', '0', '0'];
 					let gameId;
@@ -1917,7 +1965,7 @@ contract('ParlayAMM', (accounts) => {
 			describe('Exercise whole parlay with 3 wrong result', () => {
 				beforeEach(async () => {
 					await fastForward(fightTime - (await currentTime()) + 3 * HOUR);
-					let resolveMatrix = ['1', '1', '1', '2'];
+					let resolveMatrix = ['1', '2', '1', '2'];
 					console.log('Games resolved: ', resolveMatrix, '\n');
 					// parlayPositions = ['0', '0', '0', '0'];
 					let gameId;
@@ -2018,8 +2066,8 @@ contract('ParlayAMM', (accounts) => {
 					let gameId = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[0].address);
 					const tx_resolve_1 = await TherundownConsumerDeployed.resolveMarketManually(
 						parlayMarkets[0].address,
-						'2',
 						'1',
+						'3',
 						'2',
 						{ from: owner }
 					);
@@ -2071,8 +2119,8 @@ contract('ParlayAMM', (accounts) => {
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
 					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
 						parlayMarkets[1].address,
-						'2',
 						'1',
+						'3',
 						'2',
 						{ from: owner }
 					);
@@ -2130,8 +2178,8 @@ contract('ParlayAMM', (accounts) => {
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
 					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
 						parlayMarkets[1].address,
-						'2',
 						'1',
+						'3',
 						'2',
 						{ from: owner }
 					);
@@ -2219,8 +2267,8 @@ contract('ParlayAMM', (accounts) => {
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
 					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
 						parlayMarkets[1].address,
-						'2',
 						'1',
+						'3',
 						'2',
 						{ from: owner }
 					);
@@ -2316,8 +2364,8 @@ contract('ParlayAMM', (accounts) => {
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
 					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
 						parlayMarkets[1].address,
-						'2',
 						'1',
+						'3',
 						'2',
 						{ from: owner }
 					);
@@ -2413,8 +2461,8 @@ contract('ParlayAMM', (accounts) => {
 					let gameId2 = await TherundownConsumerDeployed.gameIdPerMarket(parlayMarkets[1].address);
 					const tx_resolve_2 = await TherundownConsumerDeployed.resolveMarketManually(
 						parlayMarkets[1].address,
-						'2',
 						'1',
+						'3',
 						'2',
 						{ from: owner }
 					);

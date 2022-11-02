@@ -12,7 +12,7 @@ import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
@@ -38,7 +38,7 @@ contract ParlayVerifier {
         eligible = true;
         uint motoCounter = 0;
         for (uint i = 0; i < _sportMarkets.length; i++) {
-            if (!_verifyMarket(_sportMarkets, i)) {
+            if (!_verifyMarket(_sportMarkets, i, _sportsAMM)) {
                 eligible = false;
                 break;
             }
@@ -232,10 +232,39 @@ contract ParlayVerifier {
         return riskFree;
     }
 
-    function _verifyMarket(address[] memory _sportMarkets, uint _index) internal pure returns (bool) {
+    function _verifyMarket(
+        address[] memory _sportMarkets,
+        uint _index,
+        ISportsAMM _sportsAMM
+    ) internal view returns (bool) {
+        ITherundownConsumer consumer = ITherundownConsumer(_sportsAMM.theRundownConsumer());
+        bytes32 game1IdHome;
+        bytes32 game1IdAway;
+        bytes32 game2IdHome;
+        bytes32 game2IdAway;
         for (uint j = 0; j < _index; j++) {
             if (_sportMarkets[_index] == _sportMarkets[j]) {
                 return false;
+            }
+            game1IdHome = keccak256(
+                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[_index])).homeTeam)
+            );
+            game1IdAway = keccak256(
+                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[_index])).awayTeam)
+            );
+            game2IdHome = keccak256(
+                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[j])).homeTeam)
+            );
+            game2IdAway = keccak256(
+                abi.encodePacked(consumer.getGameCreatedById(consumer.gameIdPerMarket(_sportMarkets[j])).awayTeam)
+            );
+            if (
+                game1IdHome == game2IdHome ||
+                game1IdHome == game2IdAway ||
+                game1IdAway == game2IdHome ||
+                game1IdAway == game2IdAway
+            ) {
+                revert("SameTeamOnParlay");
             }
         }
         return true;

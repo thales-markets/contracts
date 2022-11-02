@@ -81,12 +81,87 @@
         "type": "address"
       }
     ],
+    "name": "gameIdPerMarket",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
     "name": "getGameCreatedById",
     "outputs": [
       {
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getGameCreatedById",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "startTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "string",
+            "name": "homeTeam",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "awayTeam",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct ITherundownConsumer.GameCreate",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",

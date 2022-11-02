@@ -34,6 +34,25 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         parlayMarketsAMM = _parlayMarketsAMM;
     }
 
+    function getParlayOutcomeDetails(address _parlayMarket)
+        external
+        view
+        returns (
+            bool resolved,
+            bool parlayPaused,
+            bool alreadyLost,
+            bool fundsIssued
+        )
+    {
+        ParlayMarket parlay = ParlayMarket(_parlayMarket);
+        if (parlay.initialized()) {
+            resolved = parlay.resolved();
+            parlayPaused = parlay.paused();
+            alreadyLost = parlay.parlayAlreadyLost();
+            fundsIssued = parlay.fundsIssued();
+        }
+    }
+
     function getParlayDetails(address _parlayMarket)
         external
         view

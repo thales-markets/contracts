@@ -458,6 +458,17 @@ contract('SportsAMM', (accounts) => {
 			_minTradeAmount: toUnit(10).toString(),
 		});
 
+		await vault.setAllocationLimits(toUnit(10), { from: owner });
+		await vault.setMaxAllowedUsers(100, { from: owner });
+		await vault.setMinAllowedDeposit(toUnit(100), { from: owner });
+		await vault.setMaxAllowedDeposit(toUnit(1000), { from: owner });
+		await vault.setUtilizationRate(toUnit(0.5), { from: owner });
+		await vault.setRoundLength(day, { from: owner });
+		await vault.setSportAmm(SportsAMM.address, { from: owner });
+		await vault.setSkewImpactLimit(toUnit(-0.03), { from: owner });
+		await vault.setMinTradeAmount(toUnit(10), { from: owner });
+		await vault.setPriceLimits(toUnit(0.1), toUnit(1), { from: owner });
+
 		await Thales.approve(vault.address, toUnit('100000'), { from: first });
 		await Thales.approve(vault.address, toUnit('100000'), { from: second });
 		await Thales.approve(vault.address, toUnit('100000'), { from: third });

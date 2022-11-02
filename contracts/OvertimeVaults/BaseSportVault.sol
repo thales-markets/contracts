@@ -242,12 +242,10 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         ISportPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
             market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            if (!market.paused()) {
-                if (market.resolved()) {
-                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(msg.sender);
-                    if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
-                        market.exerciseOptions();
-                    }
+            if (!market.paused() && market.resolved()) {
+                (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(msg.sender);
+                if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+                    market.exerciseOptions();
                 }
             }
         }
@@ -261,6 +259,8 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
 
     /* ========== VIEWS ========== */
 
+    /// @notice Checks if all conditions are met to close the round
+    /// @return bool
     function canCloseCurrentRound() public view returns (bool) {
         if (!vaultStarted || block.timestamp < (roundStartTime[round] + roundLength)) {
             return false;
@@ -274,22 +274,6 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         return true;
     }
 
-    //    function hasMarketsReadyToExercise() external view returns (bool) {
-    //        ISportPositionalMarket market;
-    //        for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-    //            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-    //            if (!market.paused()) {
-    //                if (market.resolved()) {
-    //                    (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(msg.sender);
-    //                    if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
-    //                        return true;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //        return false;
-    //    }
-
     /// @notice Return user balance in a round
     /// @param _round Round number
     /// @param user Address of the user
@@ -298,10 +282,14 @@ contract BaseSportVault is Initializable, ProxyOwned, PausableUpgradeable, Proxy
         return balancesPerRound[_round][user];
     }
 
+    /// @notice Return available to deposit
+    /// @return uint
     function getAvailableToDeposit() external view returns (uint) {
         return maxAllowedDeposit - capPerRound[round + 1];
     }
 
+    /// @notice end of current round
+    /// @return uint
     function getCurrentRoundEnd() external view returns (uint) {
         return roundStartTime[round] + roundLength;
     }

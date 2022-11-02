@@ -67,11 +67,11 @@ async function main() {
 			_priceUpperLimit: w3utils.toWei('0.95'),
 			_skewImpactLimit: w3utils.toWei('-0.03'), // -3% skew impact
 			_allocationLimitsPerMarketPerRound: w3utils.toWei('10'), // 10% limit per market
-			_maxAllowedDeposit: w3utils.toWei('1000'), // 10k% max deposit per round
+			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
 			_utilizationRate: w3utils.toWei('0.50'), // 50% utilization rate
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
-			_maxAllowedUsers: 3, // maximum 100 users allowed at a time in the vault
-			_minTradeAmount: w3utils.toWei('10'), // minimum trade amount
+			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
+			_minTradeAmount: w3utils.toWei('20'), // minimum trade amount
 		},
 	]);
 

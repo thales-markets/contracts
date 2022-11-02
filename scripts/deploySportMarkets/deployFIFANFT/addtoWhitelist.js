@@ -59,13 +59,13 @@ async function main() {
 		'0xe966C59c15566A994391F6226fee5bc0eF70F87A',
 	];
 
-	/* ========== MINT ROYALE PASSES ========== */
+	/* ========== MINT ZEBRO NFT ========== */
 
 	OvertimeWorldCupZebro = await ethers.getContractFactory('OvertimeWorldCupZebro');
 	zebroAddress = getTargetAddress('OvertimeWorldCupZebro', network);
 	console.log('Found OvertimeWorldCupZebro at:', zebroAddress);
 
-	const fifa = await OvertimeWorldCupZebro.attach(zebroAddress);
+	const zebro = await OvertimeWorldCupZebro.attach(zebroAddress);
 
 	console.log('No. users: ' + users.length);
 
@@ -79,7 +79,7 @@ async function main() {
 			try {
 				console.log('Populate...');
 
-				let tx = await fifa.setWhitelistedAddresses(usersBatch, true, {
+				let tx = await zebro.setWhitelistedAddresses(usersBatch, true, {
 					from: owner.address,
 				});
 				await tx.wait().then((e) => {

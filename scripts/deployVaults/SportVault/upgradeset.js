@@ -51,9 +51,9 @@ async function main() {
 	console.log('Found Vault at:', vaultAddress);
 
 	const Vault = await ethers.getContractFactory('SportVault');
-	const Vaultdeployed = await Vault.attach('0xE9bd38dB165F83B138d7F3F5cf033ea743FCA264');
+	const Vaultdeployed = await Vault.attach(vaultAddress);
 
-	await Vaultdeployed.setSkewImpactLimit(w3utils.toWei('-0.03'), { from: owner.address });
+	await Vaultdeployed.setSkewImpactLimit(w3utils.toWei('-0.0000001'), { from: owner.address });
 }
 main()
 	.then(() => process.exit(0))

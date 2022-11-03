@@ -91,8 +91,8 @@
 		"TherundownConsumerVerifier": "0x56d0A5098AD74F5e635797753644521173be89dB",
 		"TherundownConsumerVerifierImplementation": "0xEa71aACad9C7105859581AA7048126d6f98B391F",
 		"SportsAMMUtils": "0x80Ae4Cf36564AC107744946265A331b7b3321828",
-		"SportVault": "0x0b8F398d8Dbb74Bf2dC475D02E802334777be900",
-		"SportVaultImplementation": "0xF089F0182D994686c865CFF4Fa99a0FE55465D30"
+		"SportVault": "0xc922f4CDe42dD658A7D3EA852caF7Eae47F6cEcd",
+		"SportVaultImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -440,8 +440,8 @@
 		"TherundownConsumerVerifier": "0x86991efb34B0Cf55af38E9dACE3f82CD8B70188F",
 		"TherundownConsumerVerifierImplementation": "0x4a2Cdf88AeE68df88c90F6377bb556d686e3099C",
 		"SportsAMMUtils": "0x7ef54B7aF71D9F491D9735d8Cb093fFc4A51d01d",
-		"SportVault": "0x4013c5eeb3F48A50531315e07037fbEA6D16DE8F",
-		"SportVaultImplementation": "0xFC77C50cC0b03e92f8015Cf53d995Ad973FA2739",
+		"SportVault": "0x3051d3a7e619C161B64dCe0B287688012655bA56",
+		"SportVaultImplementation": "0x582FB96EE4ea5b5Eb6f8BFb3ba3fDeAe15d08744",
 		"VaultImplementation": "0x4D3C3D40A6d9f1A0896db3F24DE539858e74543f"
 	},
 	"localhost": {

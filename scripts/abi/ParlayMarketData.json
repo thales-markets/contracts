@@ -319,6 +319,11 @@
     "outputs": [
       {
         "internalType": "bool",
+        "name": "initialized",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
         "name": "resolved",
         "type": "bool"
       },

@@ -38,6 +38,7 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
         external
         view
         returns (
+            bool initialized,
             bool resolved,
             bool parlayPaused,
             bool alreadyLost,
@@ -46,6 +47,7 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     {
         ParlayMarket parlay = ParlayMarket(_parlayMarket);
         if (parlay.initialized()) {
+            initialized = parlay.initialized();
             resolved = parlay.resolved();
             parlayPaused = parlay.paused();
             alreadyLost = parlay.parlayAlreadyLost();

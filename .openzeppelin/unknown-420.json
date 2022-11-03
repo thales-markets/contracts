@@ -16892,13 +16892,13 @@
           {
             "contract": "ParlayMarketData",
             "label": "_knownMarkets",
-            "type": "t_struct(AddressSet)80089_storage",
+            "type": "t_struct(AddressSet)80088_storage",
             "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:15"
           },
           {
             "contract": "ParlayMarketData",
             "label": "_parlaysInGamePosition",
-            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(AddressSet)80089_storage))",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(AddressSet)80088_storage))",
             "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:21"
           },
           {
@@ -16945,7 +16945,7 @@
           }
         ],
         "types": {
-          "t_struct(AddressSet)80089_storage": {
+          "t_struct(AddressSet)80088_storage": {
             "label": "struct AddressSetLib.AddressSet",
             "members": [
               {
@@ -16970,10 +16970,10 @@
           "t_uint256": {
             "label": "uint256"
           },
-          "t_mapping(t_address,t_mapping(t_uint256,t_struct(AddressSet)80089_storage))": {
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(AddressSet)80088_storage))": {
             "label": "mapping(address => mapping(uint256 => struct AddressSetLib.AddressSet))"
           },
-          "t_mapping(t_uint256,t_struct(AddressSet)80089_storage)": {
+          "t_mapping(t_uint256,t_struct(AddressSet)80088_storage)": {
             "label": "mapping(uint256 => struct AddressSetLib.AddressSet)"
           },
           "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_address)))": {
@@ -17320,6 +17320,189 @@
           },
           "t_mapping(t_uint256,t_uint256)": {
             "label": "mapping(uint256 => uint256)"
+          }
+        }
+      }
+    },
+    "cedb4de1d8ff529ef8b2eb65b0cca10af2cd777488cb2b91c954c76daea63821": {
+      "address": "0xfaDAa3E704acB3f82DC769C34518d4f306C55FAf",
+      "txHash": "0xb6779690cf627ec7d4ccf71da9943e4454634ab8636f1bfa28bfe2b707939d51",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ParlayMarketData",
+            "label": "_knownMarkets",
+            "type": "t_struct(AddressSet)80096_storage",
+            "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:15"
+          },
+          {
+            "contract": "ParlayMarketData",
+            "label": "_parlaysInGamePosition",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(AddressSet)80096_storage))",
+            "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:21"
+          },
+          {
+            "contract": "ParlayMarketData",
+            "label": "gameAddressPositionParlay",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_address)))",
+            "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:23"
+          },
+          {
+            "contract": "ParlayMarketData",
+            "label": "numOfParlaysInGamePosition",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:24"
+          },
+          {
+            "contract": "ParlayMarketData",
+            "label": "parlayDetails",
+            "type": "t_mapping(t_address,t_struct(ParlayDetails)46446_storage)",
+            "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:26"
+          },
+          {
+            "contract": "ParlayMarketData",
+            "label": "userParlays",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_address))",
+            "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:27"
+          },
+          {
+            "contract": "ParlayMarketData",
+            "label": "parlayOwner",
+            "type": "t_mapping(t_address,t_address)",
+            "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:28"
+          },
+          {
+            "contract": "ParlayMarketData",
+            "label": "userNumOfParlays",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:29"
+          },
+          {
+            "contract": "ParlayMarketData",
+            "label": "parlayMarketsAMM",
+            "type": "t_address",
+            "src": "contracts/SportMarkets/Parlay/ParlayMarketData.sol:30"
+          }
+        ],
+        "types": {
+          "t_struct(AddressSet)80096_storage": {
+            "label": "struct AddressSetLib.AddressSet",
+            "members": [
+              {
+                "label": "elements",
+                "type": "t_array(t_address)dyn_storage"
+              },
+              {
+                "label": "indices",
+                "type": "t_mapping(t_address,t_uint256)"
+              }
+            ]
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(AddressSet)80096_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct AddressSetLib.AddressSet))"
+          },
+          "t_mapping(t_uint256,t_struct(AddressSet)80096_storage)": {
+            "label": "mapping(uint256 => struct AddressSetLib.AddressSet)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_address)))": {
+            "label": "mapping(address => mapping(uint256 => mapping(uint256 => address)))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_address))": {
+            "label": "mapping(uint256 => mapping(uint256 => address))"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_address,t_struct(ParlayDetails)46446_storage)": {
+            "label": "mapping(address => struct ParlayMarketData.ParlayDetails)"
+          },
+          "t_struct(ParlayDetails)46446_storage": {
+            "label": "struct ParlayMarketData.ParlayDetails",
+            "members": [
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "sUSDPaid",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_address))": {
+            "label": "mapping(address => mapping(uint256 => address))"
+          },
+          "t_mapping(t_address,t_address)": {
+            "label": "mapping(address => address)"
+          },
+          "t_bool": {
+            "label": "bool"
           }
         }
       }

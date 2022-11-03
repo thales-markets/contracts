@@ -86,7 +86,7 @@
 		"OvertimeVoucher": "0xC9183E3306A06E64c2A83E655756F70A83152536",
 		"ApexConsumer": "0x0a6851C7D112A27019d84DCCb9cE0c0cd8b75325",
 		"ApexConsumerImplementation": "0x2DB7789c691E4d086ba167F34923BBBC9d844703",
-		"ThalesAMMUtils": "0xe1095DCeb4e4184BfB6adE590998fae94B815f2C",
+		"ThalesAMMUtils": "0x279c0D239d0C036E74AAdF872d604af37E341373",
 		"ApexConsumerWrapper": "0x8f98690B1dDb25e43A50fF878fBD13E439cA52B2",
 		"TherundownConsumerVerifier": "0x56d0A5098AD74F5e635797753644521173be89dB",
 		"TherundownConsumerVerifierImplementation": "0xEa71aACad9C7105859581AA7048126d6f98B391F",
@@ -442,7 +442,8 @@
 		"SportsAMMUtils": "0x7ef54B7aF71D9F491D9735d8Cb093fFc4A51d01d",
 		"SportVault": "0x3051d3a7e619C161B64dCe0B287688012655bA56",
 		"SportVaultImplementation": "0x582FB96EE4ea5b5Eb6f8BFb3ba3fDeAe15d08744",
-		"VaultImplementation": "0x4D3C3D40A6d9f1A0896db3F24DE539858e74543f"
+		"VaultImplementation": "0x4D3C3D40A6d9f1A0896db3F24DE539858e74543f",
+		"ThalesAMMUtils": "0x5aA87dbA0F1486DB34Cd806eDa32f4d66ca4Ae30"
 	},
 	"localhost": {
 		"Airdrop": "",

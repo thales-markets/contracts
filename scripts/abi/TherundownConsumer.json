@@ -437,6 +437,25 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_marketAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      }
+    ],
+    "name": "OddsCircuitBreaker",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },

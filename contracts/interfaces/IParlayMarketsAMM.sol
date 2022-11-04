@@ -16,6 +16,8 @@ interface IParlayMarketsAMM {
 
     function maxAllowedRiskPerCombination() external view returns (uint);
 
+    function maxSupportedOdds() external view returns (uint);
+
     function riskPerCombination(
         address _sportMarkets1,
         uint _position1,

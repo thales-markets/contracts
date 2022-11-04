@@ -502,7 +502,7 @@ contract('ParlayAMM', (accounts) => {
 			parlayAMMfee,
 			safeBoxImpact,
 			toUnit(0.05),
-			toUnit(10),
+			toUnit(1860),
 			{
 				from: owner,
 			}
@@ -1274,7 +1274,7 @@ contract('ParlayAMM', (accounts) => {
 				parlayAMMfee,
 				safeBoxImpact,
 				toUnit(0.05),
-				toUnit(1000),
+				toUnit(40000),
 				{
 					from: owner,
 				}

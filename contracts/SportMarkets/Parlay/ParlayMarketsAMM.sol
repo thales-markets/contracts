@@ -405,7 +405,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _differentRecepient
         );
         (_sportMarkets, _positions) = parlayVerifier.sort(_sportMarkets, _positions);
-        _storeRisk(_sportMarkets, _positions, _sUSDPaid);
+        _storeRisk(_sportMarkets, _positions, totalAmount);
 
         emit ParlayMarketCreated(
             address(parlayMarket),
@@ -442,42 +442,44 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint inverseSum;
         if (parlayVerifier.verifyMarkets(_sportMarkets, _positions, _sUSDPaid, sportsAmm, address(this))) {
             sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee))) * _sUSDPaid) / ONE;
-            (initialQuote, sumQuotes, inverseSum, marketQuotes, inverseQuotes, ) = parlayVerifier
+            (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = parlayVerifier
                 .calculateInitialQuotesForParlay(_sportMarkets, _positions, sUSDAfterFees, parlaySize, sportsAmm);
-            if (initialQuote > 0) {
-                (totalBuyAmount, amountsToBuy) = parlayVerifier.calculateBuyQuoteAmounts(
-                    initialQuote,
-                    sumQuotes,
-                    inverseSum,
-                    sUSDAfterFees,
-                    inverseQuotes
-                );
-                (totalQuote, totalBuyAmount, finalQuotes, ) = parlayVerifier.calculateFinalQuotes(
-                    _sportMarkets,
-                    _positions,
-                    amountsToBuy,
-                    sportsAmm
-                );
-                if (totalQuote > 0) {
-                    if (totalQuote < maxSupportedOdds) {
-                        totalQuote = maxSupportedOdds;
-                    }
-                    uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
-                    skewImpact = expectedPayout > totalBuyAmount
-                        ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
-                        : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
-                    amountsToBuy = parlayVerifier.applySkewImpactBatch(
-                        amountsToBuy,
-                        skewImpact,
-                        (expectedPayout > totalBuyAmount)
-                    );
-                    totalBuyAmount = parlayVerifier.applySkewImpact(
-                        totalBuyAmount,
-                        skewImpact,
-                        (expectedPayout > totalBuyAmount)
-                    );
-                }
-            }
+            // if (initialQuote > 0) {
+            //     (totalBuyAmount, amountsToBuy) = parlayVerifier.calculateBuyQuoteAmounts(
+            //         initialQuote,
+            //         sumQuotes,
+            //         inverseSum,
+            //         sUSDAfterFees,
+            //         inverseQuotes
+            //     );
+            //     (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = parlayVerifier.calculateFinalQuotes(
+            //         _sportMarkets,
+            //         _positions,
+            //         amountsToBuy,
+            //         // sportsAmm,
+            //         sUSDAfterFees
+            //     );
+            // if (totalQuote > 0) {
+            //     if (totalQuote < maxSupportedOdds) {
+            //         totalQuote = maxSupportedOdds;
+            //     }
+            //     uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
+            //     skewImpact = expectedPayout > totalBuyAmount
+            //         ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
+            //         : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
+            //     amountsToBuy = parlayVerifier.applySkewImpactBatch(
+            //         amountsToBuy,
+            //         skewImpact,
+            //         (expectedPayout > totalBuyAmount)
+            //     );
+            //     totalBuyAmount = parlayVerifier.applySkewImpact(
+            //         totalBuyAmount,
+            //         skewImpact,
+            //         (expectedPayout > totalBuyAmount)
+            //     );
+            //     parlayVerifier.calculateRisk(_sportMarkets, _positions, (totalBuyAmount-_sUSDPaid), address(this));
+            // }
+            // }
         }
     }
 

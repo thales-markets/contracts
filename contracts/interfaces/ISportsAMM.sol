@@ -18,6 +18,8 @@ interface ISportsAMM {
 
     function availableToBuyFromAMM(address market, Position position) external view returns (uint _available);
 
+    function parlayAMM() external view returns (address);
+
     function buyFromAMM(
         address market,
         Position position,

@@ -31,128 +31,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256[]",
-        "name": "_values",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_skewImpact",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "_addition",
-        "type": "bool"
-      }
-    ],
-    "name": "applySkewImpactBatch",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "newValues",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_totalQuote",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_sumOfQuotes",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_inverseSum",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_sUSDPaid",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_marketQuotes",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "calculateBuyQuoteAmounts",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "totalAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "buyQuoteAmounts",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "_sportMarkets",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_positions",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "_buyQuoteAmounts",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "contract ISportsAMM",
-        "name": "sportsAmm",
-        "type": "address"
-      }
-    ],
-    "name": "calculateFinalQuotes",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "totalQuote",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalBuyAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "finalQuotes",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "buyAmountPerMarket",
-        "type": "uint256[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address[]",
         "name": "_sportMarkets",
         "type": "address[]"
@@ -182,33 +60,28 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "totalResultQuote",
+        "name": "totalQuote",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "sumQuotes",
+        "name": "totalBuyAmount",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "inverseSum",
+        "name": "skewImpact",
         "type": "uint256"
       },
       {
         "internalType": "uint256[]",
-        "name": "marketQuotes",
+        "name": "finalQuotes",
         "type": "uint256[]"
       },
       {
         "internalType": "uint256[]",
-        "name": "inverseQuotes",
+        "name": "amountsToBuy",
         "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "totalAmount",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",

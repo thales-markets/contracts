@@ -12,13 +12,15 @@ import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
     uint private constant DEFAULT_PARLAY_SIZE = 4;
     uint private constant MAX_APPROVAL = type(uint256).max;
+
+    // ISportsAMM sportsAmm;
 
     function verifyMarkets(
         address[] memory _sportMarkets,
@@ -27,14 +29,10 @@ contract ParlayVerifier {
         ISportsAMM _sportsAMM,
         address _parlayAMM
     ) external view returns (bool eligible) {
-        // console.log("unsorted: ");
-        // console.log("0:", _sportMarkets[0]," pos: ", _positions[0]);
-        // console.log("1:", _sportMarkets[1]," pos: ", _positions[1]);
-        // console.log("2:", _sportMarkets[2]," pos: ", _positions[2]);
-        address[] memory sortedAddresses = new address[](_sportMarkets.length);
-        uint[] memory positions = new uint[](_sportMarkets.length);
-        (sortedAddresses, positions) = _sort(_sportMarkets, _positions);
-        require(_checkRisk(sortedAddresses, positions, _totalSUSDToPay, _parlayAMM), "RiskPerComb exceeded");
+        // address[] memory sortedAddresses = new address[](_sportMarkets.length);
+        // uint[] memory positions = new uint[](_sportMarkets.length);
+        // (sortedAddresses, positions) = _sort(_sportMarkets, _positions);
+        // require(_checkRisk(sortedAddresses, positions, _totalSUSDToPay, _parlayAMM), "RiskPerComb exceeded");
         eligible = true;
         uint motoCounter = 0;
         for (uint i = 0; i < _sportMarkets.length; i++) {
@@ -53,6 +51,19 @@ contract ParlayVerifier {
         }
     }
 
+    function _calculateRisk(
+        address[] memory _sportMarkets,
+        uint[] memory _positions,
+        uint _sUSDInRisky,
+        address _parlayAMM
+    ) internal view returns (bool riskFree) {
+        address[] memory sortedAddresses = new address[](_sportMarkets.length);
+        uint[] memory positions = new uint[](_sportMarkets.length);
+        (sortedAddresses, positions) = _sort(_sportMarkets, _positions);
+        require(_checkRisk(sortedAddresses, positions, _sUSDInRisky, _parlayAMM), "RiskPerComb exceeded");
+        riskFree = true;
+    }
+
     function calculateInitialQuotesForParlay(
         address[] memory _sportMarkets,
         uint[] memory _positions,
@@ -63,43 +74,72 @@ contract ParlayVerifier {
         external
         view
         returns (
-            uint totalResultQuote,
-            uint sumQuotes,
-            uint inverseSum,
-            uint[] memory marketQuotes,
-            uint[] memory inverseQuotes,
-            uint totalAmount
+            uint totalQuote,
+            uint totalBuyAmount,
+            uint skewImpact,
+            uint[] memory finalQuotes,
+            uint[] memory amountsToBuy
         )
+    // uint totalResultQuote,
+    // uint sumQuotes,
+    // uint inverseSum,
+    // uint[] memory marketQuotes,
+    // uint[] memory inverseQuotes,
+    // uint totalAmount
     {
         uint numOfMarkets = _sportMarkets.length;
+        uint inverseSum;
         if (_totalSUSDToPay < ONE) {
             _totalSUSDToPay = ONE;
         }
         if (numOfMarkets == _positions.length && numOfMarkets > 0 && numOfMarkets <= _parlaySize) {
-            marketQuotes = new uint[](numOfMarkets);
-            inverseQuotes = new uint[](numOfMarkets);
+            finalQuotes = new uint[](numOfMarkets);
+            amountsToBuy = new uint[](numOfMarkets);
             uint[] memory marketOdds;
             for (uint i = 0; i < numOfMarkets; i++) {
                 if (_positions[i] > 2) {
-                    totalResultQuote = 0;
+                    totalQuote = 0;
                     break;
                 }
                 marketOdds = _sportsAMM.getMarketDefaultOdds(_sportMarkets[i], false);
                 if (marketOdds.length == 0) {
-                    totalResultQuote = 0;
+                    totalQuote = 0;
                     break;
                 }
-                marketQuotes[i] = marketOdds[_positions[i]];
-                totalResultQuote = totalResultQuote == 0 ? marketQuotes[i] : (totalResultQuote * marketQuotes[i]) / ONE;
-                inverseQuotes[i] = ONE - marketQuotes[i];
-                inverseSum = inverseSum + inverseQuotes[i];
-                sumQuotes = sumQuotes + marketQuotes[i];
-                if (totalResultQuote == 0) {
-                    totalResultQuote = 0;
+                finalQuotes[i] = marketOdds[_positions[i]];
+                totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
+                amountsToBuy[i] = ONE - finalQuotes[i];
+                inverseSum = inverseSum + amountsToBuy[i];
+                skewImpact = skewImpact + finalQuotes[i];
+                if (totalQuote == 0) {
+                    totalQuote = 0;
                     break;
                 }
             }
-            totalAmount = totalResultQuote > 0 ? ((_totalSUSDToPay * ONE * ONE) / totalResultQuote) / ONE : 0;
+            totalBuyAmount = totalQuote > 0 ? ((_totalSUSDToPay * ONE * ONE) / totalQuote) / ONE : 0;
+            if (totalQuote > 0) {
+                // (totalBuyAmount, amountsToBuy) = calculateBuyQuoteAmounts(
+                //     totalQuote,
+                //     skewImpact,
+                //     inverseSum,
+                //     _totalSUSDToPay,
+                //     amountsToBuy
+                // );
+                for (uint i = 0; i < finalQuotes.length; i++) {
+                    amountsToBuy[i] =
+                        ((ONE * finalQuotes[i] * _totalSUSDToPay * skewImpact)) /
+                        (totalQuote * inverseSum * skewImpact);
+                    totalBuyAmount += amountsToBuy[i];
+                }
+
+                (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = calculateFinalQuotes(
+                    _sportMarkets,
+                    _positions,
+                    amountsToBuy,
+                    _sportsAMM,
+                    _totalSUSDToPay
+                );
+            }
         }
     }
 
@@ -109,7 +149,7 @@ contract ParlayVerifier {
         uint _inverseSum,
         uint _sUSDPaid,
         uint[] memory _marketQuotes
-    ) external pure returns (uint totalAmount, uint[] memory buyQuoteAmounts) {
+    ) internal pure returns (uint totalAmount, uint[] memory buyQuoteAmounts) {
         buyQuoteAmounts = new uint[](_marketQuotes.length);
         for (uint i = 0; i < _marketQuotes.length; i++) {
             buyQuoteAmounts[i] =
@@ -123,36 +163,51 @@ contract ParlayVerifier {
         address[] memory _sportMarkets,
         uint[] memory _positions,
         uint[] memory _buyQuoteAmounts,
-        ISportsAMM sportsAmm
+        ISportsAMM sportsAmm,
+        uint sUSDAfterFees
     )
-        external
+        internal
         view
         returns (
             uint totalQuote,
             uint totalBuyAmount,
+            uint skewImpact,
             uint[] memory finalQuotes,
             uint[] memory buyAmountPerMarket
         )
     {
-        buyAmountPerMarket = new uint[](_sportMarkets.length);
+        uint[] memory buyQuoteAmountPerMarket = new uint[](_sportMarkets.length);
+        buyAmountPerMarket = _buyQuoteAmounts;
         finalQuotes = new uint[](_sportMarkets.length);
         for (uint i = 0; i < _sportMarkets.length; i++) {
             totalBuyAmount += _buyQuoteAmounts[i];
             // buyQuote always calculated with added SportsAMM fees
-            buyAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
+            buyQuoteAmountPerMarket[i] = sportsAmm.buyFromAmmQuote(
                 _sportMarkets[i],
                 obtainSportsAMMPosition(_positions[i]),
                 _buyQuoteAmounts[i]
             );
-            if (buyAmountPerMarket[i] == 0) {
+            if (buyQuoteAmountPerMarket[i] == 0) {
                 totalQuote = 0;
                 totalBuyAmount = 0;
                 break;
             }
         }
         for (uint i = 0; i < _sportMarkets.length; i++) {
-            finalQuotes[i] = ((buyAmountPerMarket[i] * ONE * ONE) / _buyQuoteAmounts[i]) / ONE;
+            finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / _buyQuoteAmounts[i]) / ONE;
             totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
+        }
+        if (totalQuote > 0) {
+            if (totalQuote < IParlayMarketsAMM(sportsAmm.parlayAMM()).maxSupportedOdds()) {
+                totalQuote = IParlayMarketsAMM(sportsAmm.parlayAMM()).maxSupportedOdds();
+            }
+            uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
+            skewImpact = expectedPayout > totalBuyAmount
+                ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
+                : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
+            buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
+            totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
+            _calculateRisk(_sportMarkets, _positions, (totalBuyAmount - sUSDAfterFees), sportsAmm.parlayAMM());
         }
     }
 
@@ -164,11 +219,11 @@ contract ParlayVerifier {
         newValue = _addition ? (((ONE + _skewImpact) * _value) / ONE) : (((ONE - _skewImpact) * _value) / ONE);
     }
 
-    function applySkewImpactBatch(
+    function _applySkewImpactBatch(
         uint[] memory _values,
         uint _skewImpact,
         bool _addition
-    ) external pure returns (uint[] memory newValues) {
+    ) internal pure returns (uint[] memory newValues) {
         uint totalAmount;
         newValues = new uint[](_values.length);
         for (uint i = 0; i < _values.length; i++) {
@@ -188,7 +243,7 @@ contract ParlayVerifier {
     function _checkRisk(
         address[] memory _sportMarkets,
         uint[] memory _positions,
-        uint _totalSUSDToPay,
+        uint _sUSDInRisk,
         address _parlayAMM
     ) internal view returns (bool riskFree) {
         uint riskCombination;
@@ -228,7 +283,7 @@ contract ParlayVerifier {
         } else {
             return false;
         }
-        riskFree = (riskCombination + _totalSUSDToPay) <= IParlayMarketsAMM(_parlayAMM).maxAllowedRiskPerCombination();
+        riskFree = (riskCombination + _sUSDInRisk) <= IParlayMarketsAMM(_parlayAMM).maxAllowedRiskPerCombination();
         return riskFree;
     }
 

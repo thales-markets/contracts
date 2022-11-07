@@ -92,7 +92,8 @@
 		"TherundownConsumerVerifierImplementation": "0xEa71aACad9C7105859581AA7048126d6f98B391F",
 		"SportsAMMUtils": "0xf10424c47f3105757D3155879d5060B50F82a8E8",
 		"SportVault": "0xc922f4CDe42dD658A7D3EA852caF7Eae47F6cEcd",
-		"SportVaultImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A"
+		"SportVaultImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A",
+		"OvertimeWorldCupZebro": "0x0a47d5F27149270d45D74abD45FA30E567aB9b7D"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

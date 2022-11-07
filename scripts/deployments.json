@@ -443,7 +443,8 @@
 		"SportVault": "0x3051d3a7e619C161B64dCe0B287688012655bA56",
 		"SportVaultImplementation": "0x582FB96EE4ea5b5Eb6f8BFb3ba3fDeAe15d08744",
 		"VaultImplementation": "0x4D3C3D40A6d9f1A0896db3F24DE539858e74543f",
-		"ThalesAMMUtils": "0x5aA87dbA0F1486DB34Cd806eDa32f4d66ca4Ae30"
+		"ThalesAMMUtils": "0x5aA87dbA0F1486DB34Cd806eDa32f4d66ca4Ae30",
+		"OvertimeWorldCupZebro": "0xD66eE2D0F8810304402F6bE0E57E7C0a261b54A3"
 	},
 	"localhost": {
 		"Airdrop": "",

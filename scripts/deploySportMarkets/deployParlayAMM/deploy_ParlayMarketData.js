@@ -12,6 +12,7 @@ async function main() {
 	let mainnetNetwork = 'mainnet';
 	let PaymentToken;
 	const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+	let SafeBox;
 
 	if (network == 'homestead') {
 		console.log(
@@ -34,6 +35,7 @@ async function main() {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
 		PaymentToken = getTargetAddress('ProxysUSD', network);
+		SafeBox = getTargetAddress('SafeBox', network);
 	}
 	if (networkObj.chainId == 5) {
 		networkObj.name = 'goerli';
@@ -44,6 +46,7 @@ async function main() {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
+		SafeBox = owner.address;
 	}
 
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
@@ -81,8 +84,7 @@ async function main() {
 
 	await ParlayAMMDeployed.setAddresses(
 		SportsAMMContract,
-		ZERO_ADDRESS,
-		owner.address,
+		SafeBox,
 		Referrals,
 		ParlayMarketDataDeployed.address,
 		ParlayVerifier,

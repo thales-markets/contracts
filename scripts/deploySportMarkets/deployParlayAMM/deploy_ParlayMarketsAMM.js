@@ -14,6 +14,7 @@ async function main() {
 	let PaymentToken;
 	let SportsAMMContract;
 	let SportManagerContract;
+	let SafeBox;
 
 	if (network == 'homestead') {
 		console.log(
@@ -38,6 +39,7 @@ async function main() {
 		PaymentToken = getTargetAddress('ProxysUSD', network);
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
 		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
+		SafeBox = getTargetAddress('SafeBox', network);
 	}
 	if (networkObj.chainId == 5) {
 		networkObj.name = 'goerli';
@@ -52,12 +54,13 @@ async function main() {
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 		SportsAMMContract = getTargetAddress('SportsAMM', network);
 		SportManagerContract = getTargetAddress('SportPositionalMarketManager', network);
+		SafeBox = owner.address;
 	}
 
-	const parlayAMMfee = '5';
-	const maxSupportedAmount = w3utils.toWei('20000');
+	const parlayAMMfee = w3utils.toWei('0.03');
+	const safeBoxImpact = w3utils.toWei('0.03');
+	const maxSupportedAmount = w3utils.toWei('5000');
 	const maxSupportedOdds = w3utils.toWei('0.05');
-	const safeBoxImpact = '5';
 
 	const ParlayAMM = await ethers.getContractFactory('ParlayMarketsAMM');
 
@@ -69,7 +72,7 @@ async function main() {
 		maxSupportedAmount,
 		maxSupportedOdds,
 		PaymentToken,
-		owner.address,
+		SafeBox,
 		safeBoxImpact,
 	]);
 	await ParlayAMMDeployed.deployed;

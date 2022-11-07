@@ -14,7 +14,7 @@ interface ITherundownConsumer {
 
     function getGameCreatedById(address _market) external view returns (bytes32);
 
-    function getResult(bytes32 _gameId) external view returns (uint);
+    function getGamePropsForOdds(address _market) external view returns (uint, uint);
 
     // write functions
     function fulfillGamesCreated(

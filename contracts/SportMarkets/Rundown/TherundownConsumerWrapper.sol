@@ -24,6 +24,8 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     uint public paymentResolve;
     uint public paymentOdds;
     IERC20 public linkToken;
+    bytes32 public oddsSpecId;
+    address public sportsAMM;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -148,6 +150,20 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         datePerRequest[requestId] = _date;
     }
 
+    /// @notice request for odds in games on a specific date with specific sport with filters
+    /// @param _marketAddress market address which triggered
+    function callUpdateOddsForSpecificGame(address _marketAddress) public whenNotPaused {
+        require(msg.sender == sportsAMM, "Only Sports AMM can call this function");
+
+        // don't fail if no link in it
+        if (linkToken.balanceOf(address(this)) >= paymentOdds) {
+            string[] memory _gameIds; // all games on that date/sport
+            (uint _sportId, uint _date) = consumer.getGamePropsForOdds(_marketAddress);
+            requestOddsWithFilters(oddsSpecId, _sportId, _date, _gameIds);
+            emit UpdateOddsFromAMMForAGame(_sportId, _date, _marketAddress);
+        }
+    }
+
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
 
     /// @notice proxy all retrieved data for created games from CL to consumer
@@ -261,4 +277,5 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     event NewPaymentAmountOdds(uint _paymentOdds);
     event NewConsumer(address _consumer);
     event NewLinkAddress(address _link);
+    event UpdateOddsFromAMMForAGame(uint256 _sportId, uint256 _date, address _marketAddress);
 }

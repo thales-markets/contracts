@@ -118,6 +118,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return the cap per market. based on the marketId
     mapping(address => uint) public capPerMarket;
 
+    /// @return the cap per market. based on the marketId
+    mapping(uint => bool) public callUpdateOddsForSport;
+
+    /// @return The address of wrapper contract
+    address public wrapper;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -656,13 +662,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _apexConsumer Address of Apex consumer
     /// @param _stakingThales Address of Staking contract
     /// @param _referrals contract for referrals storage
+    /// @param _wrapper contract for calling wrapper contract
     function setAddresses(
         address _safeBox,
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
         address _apexConsumer,
         IStakingThales _stakingThales,
-        address _referrals
+        address _referrals,
+        address _wrapper
     ) external onlyOwner {
         safeBox = _safeBox;
         sUSD = _sUSD;
@@ -670,8 +678,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         apexConsumer = _apexConsumer;
         stakingThales = _stakingThales;
         referrals = _referrals;
+        wrapper = _wrapper;
 
-        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _apexConsumer, _stakingThales, _referrals);
+        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _apexConsumer, _stakingThales, _referrals, _wrapper);
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -727,6 +736,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function setCapPerSport(uint _sportID, uint _capPerSport) external onlyOwner {
         capPerSport[_sportID] = _capPerSport;
         emit SetCapPerSport(_sportID, _capPerSport);
+    }
+
+    /// @notice Setting the if the amm calls update odds for sport
+    /// @param _sportID The tagID used for each market
+    /// @param _isCallingUpdate flag which indicate if wrapper is called
+    function setUpdateOddsForSport(uint _sportID, bool _isCallingUpdate) external onlyOwner {
+        callUpdateOddsForSport[_sportID] = _isCallingUpdate;
+        emit SetUpdateOddsForSport(_sportID, _isCallingUpdate);
     }
 
     /// @notice Setting the Cap per spec. market
@@ -993,11 +1010,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _theRundownConsumer,
         address _apexConsumer,
         IStakingThales _stakingThales,
-        address _referrals
+        address _referrals,
+        address _wrapper
     );
 
     event SetSportsPositionalMarketManager(address _manager);
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SetCapPerSport(uint _sport, uint _cap);
     event SetCapPerMarket(address _market, uint _cap);
+    event SetUpdateOddsForSport(uint _spotrId, bool _isCallingUpdate);
 }

@@ -37,6 +37,12 @@
         "internalType": "address",
         "name": "_referrals",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_wrapper",
+        "type": "address"
       }
     ],
     "name": "AddressesUpdated",
@@ -271,6 +277,25 @@
       }
     ],
     "name": "SetSportsPositionalMarketManager",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_spotrId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_isCallingUpdate",
+        "type": "bool"
+      }
+    ],
+    "name": "SetUpdateOddsForSport",
     "type": "event"
   },
   {
@@ -647,6 +672,25 @@
         "internalType": "int256",
         "name": "impact",
         "type": "int256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "callUpdateOddsForSport",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -1247,6 +1291,11 @@
         "internalType": "address",
         "name": "_referrals",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_wrapper",
+        "type": "address"
       }
     ],
     "name": "setAddresses",
@@ -1431,6 +1480,24 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_sportID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isCallingUpdate",
+        "type": "bool"
+      }
+    ],
+    "name": "setUpdateOddsForSport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -1502,6 +1569,19 @@
   {
     "inputs": [],
     "name": "usdt",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wrapper",
     "outputs": [
       {
         "internalType": "address",

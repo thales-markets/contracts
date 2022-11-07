@@ -25,4 +25,10 @@ interface ISportsAMM {
         Position position,
         uint amount
     ) external view returns (uint);
+
+    function buyPriceImpact(
+        address market,
+        ISportsAMM.Position position,
+        uint amount
+    ) external view returns (int impact);
 }

@@ -105,7 +105,6 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             IPositionalMarket(tradingMarketsPerRound[round][i]).exerciseOptions();
         }
 
-        // TODO: exclude sUSD that was sent directly to contract
         // balance in next round does not affect PnL in a current round
         uint currentVaultBalance = sUSD.balanceOf(address(this)) - allocationPerRound[round + 1];
         // calculate PnL
@@ -219,6 +218,7 @@ contract BaseVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _thalesAMM ThalesAMM address
     function setThalesAMM(IThalesAMM _thalesAMM) external onlyOwner {
         thalesAMM = _thalesAMM;
+        sUSD.approve(address(thalesAMM), type(uint256).max);
         emit ThalesAMMChanged(address(_thalesAMM));
     }
 

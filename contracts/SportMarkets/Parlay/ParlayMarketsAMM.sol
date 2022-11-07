@@ -367,7 +367,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         // apply all checks
         require(_sUSDPaid >= minUSDAmount, "Low sUSD buy");
         require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");
-        require(totalAmount <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
+        require((totalAmount - _sUSDPaid) <= maxSupportedAmount, "Amount exceeds MaxSupportedAmount");
         require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
 
         if (_sendSUSD) {
@@ -405,7 +405,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _differentRecepient
         );
         (_sportMarkets, _positions) = parlayVerifier.sort(_sportMarkets, _positions);
-        _storeRisk(_sportMarkets, _positions, totalAmount);
+        _storeRisk(_sportMarkets, _positions, (totalAmount - sUSDAfterFees));
 
         emit ParlayMarketCreated(
             address(parlayMarket),
@@ -436,50 +436,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             uint[] memory amountsToBuy
         )
     {
-        uint sumQuotes;
-        uint[] memory marketQuotes;
-        uint[] memory inverseQuotes;
-        uint inverseSum;
         if (parlayVerifier.verifyMarkets(_sportMarkets, _positions, _sUSDPaid, sportsAmm, address(this))) {
             sUSDAfterFees = ((ONE - ((safeBoxImpact + parlayAmmFee))) * _sUSDPaid) / ONE;
             (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = parlayVerifier
                 .calculateInitialQuotesForParlay(_sportMarkets, _positions, sUSDAfterFees, parlaySize, sportsAmm);
-            // if (initialQuote > 0) {
-            //     (totalBuyAmount, amountsToBuy) = parlayVerifier.calculateBuyQuoteAmounts(
-            //         initialQuote,
-            //         sumQuotes,
-            //         inverseSum,
-            //         sUSDAfterFees,
-            //         inverseQuotes
-            //     );
-            //     (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = parlayVerifier.calculateFinalQuotes(
-            //         _sportMarkets,
-            //         _positions,
-            //         amountsToBuy,
-            //         // sportsAmm,
-            //         sUSDAfterFees
-            //     );
-            // if (totalQuote > 0) {
-            //     if (totalQuote < maxSupportedOdds) {
-            //         totalQuote = maxSupportedOdds;
-            //     }
-            //     uint expectedPayout = ((sUSDAfterFees * ONE * ONE) / totalQuote) / ONE;
-            //     skewImpact = expectedPayout > totalBuyAmount
-            //         ? (((ONE * expectedPayout) - (ONE * totalBuyAmount)) / (totalBuyAmount))
-            //         : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
-            //     amountsToBuy = parlayVerifier.applySkewImpactBatch(
-            //         amountsToBuy,
-            //         skewImpact,
-            //         (expectedPayout > totalBuyAmount)
-            //     );
-            //     totalBuyAmount = parlayVerifier.applySkewImpact(
-            //         totalBuyAmount,
-            //         skewImpact,
-            //         (expectedPayout > totalBuyAmount)
-            //     );
-            //     parlayVerifier.calculateRisk(_sportMarkets, _positions, (totalBuyAmount-_sUSDPaid), address(this));
-            // }
-            // }
         }
     }
 

@@ -723,6 +723,10 @@ contract('TheRundownConsumer', (accounts) => {
 
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
 
+			let game_prop = await TherundownConsumerDeployed.getGamePropsForOdds(marketAdd);
+			assert.equal(4, game_prop[0]);
+			assert.equal(game1NBATime, game_prop[1]);
+
 			// check if event is emited
 			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {
 				_marketAddress: marketAdd,

@@ -30,6 +30,16 @@
         "internalType": "uint256",
         "name": "_paymentOdds",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_oddsSpecId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportsAMM",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -105,6 +115,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bytes32",
+        "name": "_specId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "NewOddsSpecId",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_oracle",
         "type": "address"
@@ -150,6 +173,19 @@
       }
     ],
     "name": "NewPaymentAmountResolve",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_sportsAmm",
+        "type": "address"
+      }
+    ],
+    "name": "NewSportsAmmAddress",
     "type": "event"
   },
   {
@@ -568,6 +604,19 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_specId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setOddsSpecId",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_oracle",
         "type": "address"
@@ -613,6 +662,19 @@
       }
     ],
     "name": "setPaymentResolve",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportsAmm",
+        "type": "address"
+      }
+    ],
+    "name": "setSportsAmmAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -420,6 +420,7 @@ contract('SportsAMM', (accounts) => {
 			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
+			wrapper,
 			{ from: owner }
 		);
 

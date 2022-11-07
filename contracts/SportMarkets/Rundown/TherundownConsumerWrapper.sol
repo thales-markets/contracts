@@ -35,7 +35,9 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         address _consumer,
         uint _paymentCreate,
         uint _paymentResolve,
-        uint _paymentOdds
+        uint _paymentOdds,
+        bytes32 _oddsSpecId,
+        address _sportsAMM
     ) {
         setChainlinkToken(_link);
         setChainlinkOracle(_oracle);
@@ -44,6 +46,8 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         paymentResolve = _paymentResolve;
         paymentOdds = _paymentOdds;
         linkToken = IERC20(_link);
+        oddsSpecId = _oddsSpecId;
+        sportsAMM = _sportsAMM;
     }
 
     /* ========== CONSUMER REQUEST FUNCTIONS ========== */
@@ -261,6 +265,21 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewLinkAddress(_link);
     }
 
+    /// @notice setting odds spec id
+    /// @param _specId spec id
+    function setOddsSpecId(bytes32 _specId) external onlyOwner {
+        oddsSpecId = _specId;
+        emit NewOddsSpecId(_specId);
+    }
+
+    /// @notice setting amm address
+    /// @param _sportsAmm amm address
+    function setSportsAmmAddress(address _sportsAmm) external onlyOwner {
+        require(_sportsAmm != address(0), "Invalid address");
+        sportsAMM = _sportsAmm;
+        emit NewSportsAmmAddress(_sportsAmm);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier isValidRequest(string memory _market, uint256 _sportId) {
@@ -277,5 +296,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     event NewPaymentAmountOdds(uint _paymentOdds);
     event NewConsumer(address _consumer);
     event NewLinkAddress(address _link);
+    event NewOddsSpecId(bytes32 _specId);
+    event NewSportsAmmAddress(address _sportsAmm);
     event UpdateOddsFromAMMForAGame(uint256 _sportId, uint256 _date, address _marketAddress);
 }

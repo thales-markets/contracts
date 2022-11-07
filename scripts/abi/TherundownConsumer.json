@@ -1214,12 +1214,12 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_sportId",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "_gameDate",
         "type": "uint256"
       }
     ],

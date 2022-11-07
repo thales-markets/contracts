@@ -21,6 +21,7 @@ import "../interfaces/IApexConsumer.sol";
 import "../interfaces/ICurveSUSD.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ISportsAMM.sol";
+import "../interfaces/ITherundownConsumerWrapper.sol";
 import "./SportsAMMUtils.sol";
 
 /// @title Sports AMM contract
@@ -118,11 +119,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return the cap per market. based on the marketId
     mapping(address => uint) public capPerMarket;
 
-    /// @return the cap per market. based on the marketId
-    mapping(uint => bool) public callUpdateOddsForSport;
+    /// @notice default odds threshold which will trigger odds update
+    /// @return The default threshold.
+    uint public defaultThresholdForOddsUpdate;
+
+    /// @return the tresholdd for calling wrapper contract for update odds
+    mapping(uint => uint) public thresholdForCallingUpdateOddsBySport;
 
     /// @return The address of wrapper contract
-    address public wrapper;
+    ITherundownConsumerWrapper public wrapper;
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
@@ -680,7 +685,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         apexConsumer = _apexConsumer;
         stakingThales = _stakingThales;
         referrals = _referrals;
-        wrapper = _wrapper;
+        wrapper = ITherundownConsumerWrapper(_wrapper);
 
         emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _apexConsumer, _stakingThales, _referrals, _wrapper);
     }
@@ -740,12 +745,19 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetCapPerSport(_sportID, _capPerSport);
     }
 
+    /// @notice Setting default odds updater treshold amount for payment
+    /// @param _threshold amount
+    function setDefaultThreshold(uint _threshold) external onlyOwner {
+        defaultThresholdForOddsUpdate = _threshold;
+        emit SetDefaultThreshold(_threshold);
+    }
+
     /// @notice Setting the if the amm calls update odds for sport
     /// @param _sportID The tagID used for each market
-    /// @param _isCallingUpdate flag which indicate if wrapper is called
-    function setUpdateOddsForSport(uint _sportID, bool _isCallingUpdate) external onlyOwner {
-        callUpdateOddsForSport[_sportID] = _isCallingUpdate;
-        emit SetUpdateOddsForSport(_sportID, _isCallingUpdate);
+    /// @param _threshold amount
+    function setUpdateOddsThresholdForSport(uint _sportID, uint _threshold) external onlyOwner {
+        thresholdForCallingUpdateOddsBySport[_sportID] = _threshold;
+        emit SetThresholdForSport(_sportID, _threshold);
     }
 
     /// @notice Setting the Cap per spec. market
@@ -832,6 +844,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (referrerFee > 0 && referrals != address(0)) {
             uint referrerShare = sUSDPaid - ((sUSDPaid * ONE) / (ONE + (referrerFee)));
             _handleReferrer(buyer, referrerShare, sUSDPaid);
+        }
+
+        uint thresholdForUpdating = thresholdForCallingUpdateOddsBySport[ISportPositionalMarket(market).tags(0)] > 0
+            ? thresholdForCallingUpdateOddsBySport[ISportPositionalMarket(market).tags(0)]
+            : defaultThresholdForOddsUpdate;
+
+        if (thresholdForUpdating > 0 && sUSDPaid >= thresholdForUpdating) {
+            wrapper.callUpdateOddsForSpecificGame(market);
         }
     }
 
@@ -1020,5 +1040,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event ReferrerPaid(address refferer, address trader, uint amount, uint volume);
     event SetCapPerSport(uint _sport, uint _cap);
     event SetCapPerMarket(address _market, uint _cap);
-    event SetUpdateOddsForSport(uint _spotrId, bool _isCallingUpdate);
+    event SetDefaultThreshold(uint _threshold);
+    event SetThresholdForSport(uint _spotrId, uint _threshold);
 }

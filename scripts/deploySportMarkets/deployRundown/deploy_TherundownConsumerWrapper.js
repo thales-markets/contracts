@@ -51,14 +51,22 @@ async function main() {
 		network = 'polygon';
 	}
 
-	const paymentCreate = w3utils.toWei('0.1');
-	const paymentResolve = w3utils.toWei('0.1');
-	const paymentOdds = w3utils.toWei('0.1');
+	const paymentCreate = w3utils.toWei('0.08');
+	const paymentResolve = w3utils.toWei('0.08');
+	const paymentOdds = w3utils.toWei('0.12');
 
 	const consumer = await ethers.getContractFactory('TherundownConsumer');
 	let consumerAddress = getTargetAddress('TherundownConsumer', network);
 
 	console.log('TherundownConsumer address: ', consumerAddress);
+
+	const sportsAMM = await ethers.getContractFactory('SportsAMM');
+	let sportsAMMAddress = getTargetAddress('SportsAMM', network);
+
+	console.log('SportsAMM address: ', sportsAMMAddress);
+
+	let oddsSpecId = '0x6434663563656266383432643430363361393734336164333265363934633466';
+	console.log('oddsSpecId: ', oddsSpecId);
 
 	const chainlink = require(`./chainlink/${network}.json`);
 
@@ -73,7 +81,9 @@ async function main() {
 		consumerAddress,
 		paymentCreate,
 		paymentResolve,
-		paymentOdds
+		paymentOdds,
+		oddsSpecId,
+		sportsAMMAddress
 	);
 	await TherundownConsumerWrapperDeployed.deployed();
 
@@ -91,6 +101,8 @@ async function main() {
 				paymentCreate,
 				paymentResolve,
 				paymentOdds,
+				oddsSpecId,
+				sportsAMMAddress,
 			],
 		});
 	} catch (e) {

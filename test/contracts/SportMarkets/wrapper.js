@@ -24,8 +24,11 @@ contract('TherundownConsumerWrapper', (accounts) => {
 	let paymentResolve;
 	let paymentOdds;
 	let verifier;
+	let dummyAddress;
 
 	beforeEach(async () => {
+		dummyAddress = '0xb69e74324bc030f1b8889236efa461496d439226';
+
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
 		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
 
@@ -60,6 +63,8 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			paymentCreate,
 			paymentResolve,
 			paymentOdds,
+			'0x3465326264623338336437393962343662653663656562336463366465306363',
+			third,
 			{ from: owner }
 		);
 
@@ -179,6 +184,38 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			assert.eventEqual(tx_link.logs[0], 'NewLinkAddress', {
 				_link: first,
 			});
+
+			const tx_amm = await wrapper.setSportsAmmAddress(first, {
+				from: owner,
+			});
+
+			await expect(wrapper.setSportsAmmAddress(first, { from: first })).to.be.revertedWith(
+				'Ownable: caller is not the owner'
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_amm.logs[0], 'NewSportsAmmAddress', {
+				_sportsAmm: first,
+			});
+
+			const tx_odds_spec = await wrapper.setOddsSpecId(
+				`0x3465326264623338336437393962343662653663656562336463366465306364`,
+				{
+					from: owner,
+				}
+			);
+
+			await expect(
+				wrapper.setOddsSpecId(
+					`0x3465326264623338336437393962343662653663656562336463366465306364`,
+					{ from: first }
+				)
+			).to.be.revertedWith('Ownable: caller is not the owner');
+
+			// check if event is emited
+			assert.eventEqual(tx_odds_spec.logs[0], 'NewOddsSpecId', {
+				_specId: `0x3465326264623338336437393962343662653663656562336463366465306364`,
+			});
 		});
 
 		it('Test requests', async () => {
@@ -234,6 +271,12 @@ contract('TherundownConsumerWrapper', (accounts) => {
 					}
 				)
 			).to.be.revertedWith('SportId is not supported');
+
+			await expect(
+				wrapper.callUpdateOddsForSpecificGame(dummyAddress, {
+					from: second,
+				})
+			).to.be.revertedWith('Only Sports AMM can call this function');
 		});
 	});
 });

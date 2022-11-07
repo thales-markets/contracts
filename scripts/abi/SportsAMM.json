@@ -271,6 +271,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetDefaultThreshold",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_manager",
         "type": "address"
@@ -290,12 +303,12 @@
       },
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "_isCallingUpdate",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
       }
     ],
-    "name": "SetUpdateOddsForSport",
+    "name": "SetThresholdForSport",
     "type": "event"
   },
   {
@@ -680,25 +693,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "callUpdateOddsForSport",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "market",
         "type": "address"
@@ -795,6 +789,19 @@
   {
     "inputs": [],
     "name": "defaultCapPerGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "defaultThresholdForOddsUpdate",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1393,6 +1400,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDefaultThreshold",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -1485,12 +1505,12 @@
         "type": "uint256"
       },
       {
-        "internalType": "bool",
-        "name": "_isCallingUpdate",
-        "type": "bool"
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
       }
     ],
-    "name": "setUpdateOddsForSport",
+    "name": "setUpdateOddsThresholdForSport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1543,6 +1563,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "thresholdForCallingUpdateOddsBySport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "proxyAddress",
         "type": "address"
@@ -1584,7 +1623,7 @@
     "name": "wrapper",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract ITherundownConsumerWrapper",
         "name": "",
         "type": "address"
       }

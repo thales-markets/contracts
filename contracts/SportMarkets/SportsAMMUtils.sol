@@ -96,7 +96,7 @@ contract SportsAMMUtils {
             params.max_spread
         );
 
-        uint startDiscount = currentBuyImpactOtherSide / 2;
+        uint startDiscount = currentBuyImpactOtherSide;
         uint tempMultiplier = params.balancePosition - params.amount;
         uint finalDiscount = ((startDiscount / 2) * ((tempMultiplier * ONE) / params.balancePosition + ONE)) / ONE;
 
@@ -162,7 +162,7 @@ contract SportsAMMUtils {
         uint max_spread,
         uint balance
     ) public view returns (uint availableAmount) {
-        uint discountedPrice = (baseOdds * (ONE - max_spread / 4)) / ONE;
+        uint discountedPrice = (baseOdds * (ONE - max_spread / 2)) / ONE;
         uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
         if ((capUsed + additionalBufferFromSelling) > spentOnThisGame) {
             uint availableUntilCapSUSD = capUsed + additionalBufferFromSelling - spentOnThisGame;

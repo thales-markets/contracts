@@ -29,10 +29,6 @@ contract ParlayVerifier {
         ISportsAMM _sportsAMM,
         address _parlayAMM
     ) external view returns (bool eligible) {
-        // address[] memory sortedAddresses = new address[](_sportMarkets.length);
-        // uint[] memory positions = new uint[](_sportMarkets.length);
-        // (sortedAddresses, positions) = _sort(_sportMarkets, _positions);
-        // require(_checkRisk(sortedAddresses, positions, _totalSUSDToPay, _parlayAMM), "RiskPerComb exceeded");
         eligible = true;
         uint motoCounter = 0;
         for (uint i = 0; i < _sportMarkets.length; i++) {
@@ -80,12 +76,6 @@ contract ParlayVerifier {
             uint[] memory finalQuotes,
             uint[] memory amountsToBuy
         )
-    // uint totalResultQuote,
-    // uint sumQuotes,
-    // uint inverseSum,
-    // uint[] memory marketQuotes,
-    // uint[] memory inverseQuotes,
-    // uint totalAmount
     {
         uint numOfMarkets = _sportMarkets.length;
         uint inverseSum;
@@ -108,30 +98,25 @@ contract ParlayVerifier {
                 }
                 finalQuotes[i] = marketOdds[_positions[i]];
                 totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
-                amountsToBuy[i] = ONE - finalQuotes[i];
-                inverseSum = inverseSum + amountsToBuy[i];
                 skewImpact = skewImpact + finalQuotes[i];
+                // use as inverseQuotes
+                finalQuotes[i] = ONE - finalQuotes[i];
+                inverseSum = inverseSum + finalQuotes[i];
                 if (totalQuote == 0) {
                     totalQuote = 0;
                     break;
                 }
             }
-            totalBuyAmount = totalQuote > 0 ? ((_totalSUSDToPay * ONE * ONE) / totalQuote) / ONE : 0;
+
             if (totalQuote > 0) {
-                // (totalBuyAmount, amountsToBuy) = calculateBuyQuoteAmounts(
-                //     totalQuote,
-                //     skewImpact,
-                //     inverseSum,
-                //     _totalSUSDToPay,
-                //     amountsToBuy
-                // );
                 for (uint i = 0; i < finalQuotes.length; i++) {
+                    // use finalQuotes as inverseQuotes in equation
+                    // skewImpact is sumOfQuotes
+                    // inverseSum is sum of InverseQuotes
                     amountsToBuy[i] =
                         ((ONE * finalQuotes[i] * _totalSUSDToPay * skewImpact)) /
                         (totalQuote * inverseSum * skewImpact);
-                    totalBuyAmount += amountsToBuy[i];
                 }
-
                 (totalQuote, totalBuyAmount, skewImpact, finalQuotes, amountsToBuy) = calculateFinalQuotes(
                     _sportMarkets,
                     _positions,
@@ -140,22 +125,6 @@ contract ParlayVerifier {
                     _totalSUSDToPay
                 );
             }
-        }
-    }
-
-    function calculateBuyQuoteAmounts(
-        uint _totalQuote,
-        uint _sumOfQuotes,
-        uint _inverseSum,
-        uint _sUSDPaid,
-        uint[] memory _marketQuotes
-    ) internal pure returns (uint totalAmount, uint[] memory buyQuoteAmounts) {
-        buyQuoteAmounts = new uint[](_marketQuotes.length);
-        for (uint i = 0; i < _marketQuotes.length; i++) {
-            buyQuoteAmounts[i] =
-                ((ONE * _marketQuotes[i] * _sUSDPaid * _sumOfQuotes)) /
-                (_totalQuote * _inverseSum * _sumOfQuotes);
-            totalAmount += buyQuoteAmounts[i];
         }
     }
 

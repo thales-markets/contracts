@@ -18700,13 +18700,13 @@
           {
             "contract": "ParlayMarketsAMM",
             "label": "sportsAmm",
-            "type": "t_contract(ISportsAMM)75876",
+            "type": "t_contract(ISportsAMM)75954",
             "src": "contracts/SportMarkets/Parlay/ParlayMarketsAMM.sol:40"
           },
           {
             "contract": "ParlayMarketsAMM",
             "label": "sportManager",
-            "type": "t_contract(ISportPositionalMarketManager)75787",
+            "type": "t_contract(ISportPositionalMarketManager)75865",
             "src": "contracts/SportMarkets/Parlay/ParlayMarketsAMM.sol:41"
           },
           {
@@ -18718,13 +18718,13 @@
           {
             "contract": "ParlayMarketsAMM",
             "label": "stakingThales",
-            "type": "t_contract(IStakingThales)75946",
+            "type": "t_contract(IStakingThales)76024",
             "src": "contracts/SportMarkets/Parlay/ParlayMarketsAMM.sol:44"
           },
           {
             "contract": "ParlayMarketsAMM",
             "label": "curveSUSD",
-            "type": "t_contract(ICurveSUSD)74189",
+            "type": "t_contract(ICurveSUSD)74267",
             "src": "contracts/SportMarkets/Parlay/ParlayMarketsAMM.sol:45"
           },
           {
@@ -18820,7 +18820,7 @@
           {
             "contract": "ParlayMarketsAMM",
             "label": "_knownMarkets",
-            "type": "t_struct(AddressSet)80994_storage",
+            "type": "t_struct(AddressSet)81072_storage",
             "src": "contracts/SportMarkets/Parlay/ParlayMarketsAMM.sol:66"
           },
           {
@@ -18838,7 +18838,7 @@
           {
             "contract": "ParlayMarketsAMM",
             "label": "parlayVerifier",
-            "type": "t_contract(ParlayVerifier)50825",
+            "type": "t_contract(ParlayVerifier)50903",
             "src": "contracts/SportMarkets/Parlay/ParlayMarketsAMM.sol:69"
           },
           {
@@ -18861,19 +18861,19 @@
           }
         ],
         "types": {
-          "t_contract(ISportsAMM)75876": {
+          "t_contract(ISportsAMM)75954": {
             "label": "contract ISportsAMM"
           },
-          "t_contract(ISportPositionalMarketManager)75787": {
+          "t_contract(ISportPositionalMarketManager)75865": {
             "label": "contract ISportPositionalMarketManager"
           },
           "t_contract(IERC20Upgradeable)6720": {
             "label": "contract IERC20Upgradeable"
           },
-          "t_contract(IStakingThales)75946": {
+          "t_contract(IStakingThales)76024": {
             "label": "contract IStakingThales"
           },
-          "t_contract(ICurveSUSD)74189": {
+          "t_contract(ICurveSUSD)74267": {
             "label": "contract ICurveSUSD"
           },
           "t_address": {
@@ -18885,7 +18885,7 @@
           "t_bool": {
             "label": "bool"
           },
-          "t_struct(AddressSet)80994_storage": {
+          "t_struct(AddressSet)81072_storage": {
             "label": "struct AddressSetLib.AddressSet",
             "members": [
               {
@@ -18907,7 +18907,7 @@
           "t_mapping(t_address,t_bool)": {
             "label": "mapping(address => bool)"
           },
-          "t_contract(ParlayVerifier)50825": {
+          "t_contract(ParlayVerifier)50903": {
             "label": "contract ParlayVerifier"
           },
           "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_uint256))))))))": {

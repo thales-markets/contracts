@@ -141,7 +141,7 @@ contract Vault is BaseVault {
 
         uint balanceBeforeTrade = sUSD.balanceOf(address(this));
 
-        thalesAMM.buyFromAMM(market, position, amount, quote, 500000000000000000);
+        thalesAMM.buyFromAMM(market, position, amount, quote, 0);
 
         uint balanceAfterTrade = sUSD.balanceOf(address(this));
 

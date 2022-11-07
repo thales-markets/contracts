@@ -181,8 +181,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount
     ) public view returns (uint _quote) {
-        uint baseOdds = obtainOdds(market, position);
-        _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, safeBoxImpact);
+        if (isMarketInAMMTrading(market)) {
+            uint baseOdds = obtainOdds(market, position);
+            _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, safeBoxImpact);
+        }
     }
 
     function _buyFromAmmQuoteWithBaseOdds(

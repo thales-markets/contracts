@@ -41,4 +41,10 @@ interface ISportsAMM {
     ) external view returns (uint);
 
     function updateParlayVolume(address _account, uint _amount) external;
+
+    function buyPriceImpact(
+        address market,
+        ISportsAMM.Position position,
+        uint amount
+    ) external view returns (int impact);
 }

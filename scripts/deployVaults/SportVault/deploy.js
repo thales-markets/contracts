@@ -63,12 +63,12 @@ async function main() {
 			_sportsAmm: sportsAMM,
 			_sUSD: proxySUSD,
 			_roundLength: week,
-			_priceLowerLimit: w3utils.toWei('0.05'),
+			_priceLowerLimit: w3utils.toWei('0.8'),
 			_priceUpperLimit: w3utils.toWei('0.95'),
-			_skewImpactLimit: w3utils.toWei('-0.05'), // -3% skew impact
+			_skewImpactLimit: w3utils.toWei('0'), // -3% skew impact
 			_allocationLimitsPerMarketPerRound: w3utils.toWei('10'), // 10% limit per market
 			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
-			_utilizationRate: w3utils.toWei('0.20'), // 50% utilization rate
+			_utilizationRate: w3utils.toWei('0.50'), // 50% utilization rate
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
 			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
 			_minTradeAmount: w3utils.toWei('10'), // minimum trade amount
@@ -78,11 +78,11 @@ async function main() {
 	await vault.deployed();
 
 	console.log('Vault deployed to:', vault.address);
-	setTargetAddress('SportVaultDegen', network, vault.address);
+	setTargetAddress('SportVaultSafu', network, vault.address);
 
 	const implementation = await getImplementationAddress(ethers.provider, vault.address);
 	console.log('VaultImplementation: ', implementation);
-	setTargetAddress('SportVaultDegenImplementation', network, implementation);
+	setTargetAddress('SportVaultSafuImplementation', network, implementation);
 
 	try {
 		await hre.run('verify:verify', {

@@ -25,8 +25,6 @@ import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 
-// import "hardhat/console.sol";
-
 contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyGuard {
     using SafeMathUpgradeable for uint;
     using AddressSetLib for AddressSetLib.AddressSet;
@@ -357,13 +355,12 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         uint[] memory amountsToBuy = new uint[](_sportMarkets.length);
         uint[] memory marketQuotes = new uint[](_sportMarkets.length);
         uint sUSDAfterFees;
-        uint skewImpact;
-        (sUSDAfterFees, totalAmount, totalQuote, , skewImpact, marketQuotes, amountsToBuy) = _buyQuoteFromParlay(
+        (sUSDAfterFees, totalAmount, totalQuote, , , marketQuotes, amountsToBuy) = _buyQuoteFromParlay(
             _sportMarkets,
             _positions,
             _sUSDPaid
         );
-
+        uint safeBoxAmount = ((_sUSDPaid - sUSDAfterFees) * safeBoxImpact) / (safeBoxImpact + parlayAmmFee);
         // apply all checks
         require(_sUSDPaid >= minUSDAmount, "Low sUSD buy");
         require(totalQuote >= maxSupportedOdds, "Can not create parlay market!");
@@ -372,9 +369,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
         if (_sendSUSD) {
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDAfterFees);
-            sUSD.safeTransferFrom(msg.sender, safeBox, _sUSDPaid.sub(sUSDAfterFees));
+            sUSD.safeTransferFrom(msg.sender, safeBox, safeBoxAmount);
         } else {
-            sUSD.safeTransfer(safeBox, _sUSDPaid.sub(sUSDAfterFees));
+            sUSD.safeTransfer(safeBox, safeBoxAmount);
         }
 
         // mint the stateful token  (ERC-20)
@@ -414,7 +411,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _sUSDPaid,
             sUSDAfterFees,
             totalQuote,
-            skewImpact,
+            safeBoxAmount,
             marketQuotes
         );
     }

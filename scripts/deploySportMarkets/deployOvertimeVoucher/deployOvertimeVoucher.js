@@ -24,6 +24,7 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
+		PaymentToken = getTargetAddress('ProxysUSD', network);
 	}
 
 	if (networkObj.chainId == 80001) {

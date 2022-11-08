@@ -69,8 +69,6 @@
 		"TherundownConsumerVerifier": "0x56d0A5098AD74F5e635797753644521173be89dB",
 		"TherundownConsumerVerifierImplementation": "0xEa71aACad9C7105859581AA7048126d6f98B391F",
 		"SportsAMMUtils": "0xf10424c47f3105757D3155879d5060B50F82a8E8",
-		"SportVault": "0xc922f4CDe42dD658A7D3EA852caF7Eae47F6cEcd",
-		"SportVaultImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A",
 		"OvertimeWorldCupZebro": "0x0a47d5F27149270d45D74abD45FA30E567aB9b7D",
 		"ParlayAMMImplementation": "0xF3510f0a565fc33f956aFa84dfBA745434CD6641",
 		"ParlayMarketMastercopy": "0x99bF9D0d03689Ac2a8C20C17FD757c5763ABc5d9",
@@ -98,8 +96,12 @@
 		"VestingEscrowCCImplementation": "0x2d385352674cBb8468723Bc01efC00998c10fc96",
 		"ThalesRoyale": "0x3198ab211CdF3E4d13a698E1Fb819507BcA2e579",
 		"ThalesRoyaleImplementation": "0xc7428e4DA6a6FF3571C3a9F88818622Ac4950Aa7",
+		"SportVault": "0xc922f4CDe42dD658A7D3EA852caF7Eae47F6cEcd",
+		"SportVaultImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A",
 		"SportVaultDegen": "0xBaaC5464BF6E767C9af0E8d4677C01Be2065fd5F",
-		"SportVaultDegenImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A"
+		"SportVaultDegenImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A",
+		"SportVaultSafu": "0x43D19841D818B2ccC63a8B44Ce8C7DEF8616D98E",
+		"SportVaultSafuImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

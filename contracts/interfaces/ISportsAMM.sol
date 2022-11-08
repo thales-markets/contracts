@@ -10,7 +10,15 @@ interface ISportsAMM {
         Draw
     }
 
+    function theRundownConsumer() external view returns (address);
+
     function getMarketDefaultOdds(address _market, bool isSell) external view returns (uint[] memory);
+
+    function isMarketInAMMTrading(address _market) external view returns (bool);
+
+    function availableToBuyFromAMM(address market, Position position) external view returns (uint _available);
+
+    function parlayAMM() external view returns (address);
 
     function buyFromAMM(
         address market,
@@ -25,6 +33,14 @@ interface ISportsAMM {
         Position position,
         uint amount
     ) external view returns (uint);
+
+    function buyFromAmmQuoteForParlayAMM(
+        address market,
+        Position position,
+        uint amount
+    ) external view returns (uint);
+
+    function updateParlayVolume(address _account, uint _amount) external;
 
     function buyPriceImpact(
         address market,

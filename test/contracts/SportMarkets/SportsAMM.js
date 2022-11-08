@@ -420,6 +420,7 @@ contract('SportsAMM', (accounts) => {
 			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
+			ZERO_ADDRESS,
 			{ from: owner }
 		);
 
@@ -2256,7 +2257,7 @@ contract('SportsAMM', (accounts) => {
 				toUnit(value)
 			);
 			let balanceOfReferrer = await Thales.balanceOf(second);
-			await Referrals.setSportsAMM(SportsAMM.address, { from: owner });
+			await Referrals.setSportsAMM(SportsAMM.address, ZERO_ADDRESS, { from: owner });
 			answer = await SportsAMM.buyFromAMMWithReferrer(
 				deployedMarket.address,
 				position,
@@ -2335,7 +2336,7 @@ contract('SportsAMM', (accounts) => {
 			console.log('Balance of sUSD for sportsAMM: ', fromUnit(sportsAMMBalance));
 
 			let balanceOfReferrer = await Thales.balanceOf(second);
-			await Referrals.setSportsAMM(SportsAMM.address, { from: owner });
+			await Referrals.setSportsAMM(SportsAMM.address, ZERO_ADDRESS, { from: owner });
 
 			await SportsAMM.buyFromAMMWithDifferentCollateralAndReferrer(
 				deployedMarket.address,

@@ -374,6 +374,7 @@ contract('SportsVauchers', (accounts) => {
 			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
+			ZERO_ADDRESS,
 			{ from: owner }
 		);
 
@@ -413,6 +414,7 @@ contract('SportsVauchers', (accounts) => {
 				'',
 				'',
 				'',
+				SportsAMM.address,
 				SportsAMM.address
 			);
 

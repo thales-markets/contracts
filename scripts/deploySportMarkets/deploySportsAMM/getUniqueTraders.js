@@ -18,7 +18,7 @@ async function getUniqueTraders() {
 			network: networkObj.chainId,
 		});
 		if (marketTransactions.length > 0) {
-			marketTransactions.forEach(element => {
+			marketTransactions.forEach((element) => {
 				if (!uniqueTraders.has(element.account)) {
 					uniqueTraders.add(element.account);
 				}
@@ -31,7 +31,7 @@ async function getUniqueTraders() {
 	fs.writeFileSync(
 		'scripts/deploySportMarkets/deploySportsAMM/uniqueTraders.json',
 		JSON.stringify(Array.from(uniqueTraders)),
-		function(err) {
+		function (err) {
 			if (err) return console.log(err);
 		}
 	);

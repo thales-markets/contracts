@@ -90,7 +90,7 @@ async function main() {
 	await delay(5000);
 
 	let tx = await ThalesAMM_deployed.setPositionalMarketManager(managerAddress);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('ThalesAMM: setPositionalMarketManager');
 	});
 
@@ -102,21 +102,21 @@ async function main() {
 	let USDT = getTargetAddress('USDT', network);
 
 	tx = await ThalesAMM_deployed.setCurveSUSD(curveSusdAddresss, DAI, USDC, USDT);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('ThalesAMM: setCurveSUSD');
 	});
 
 	await delay(5000);
 
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(toBytes32('ETH'), w3utils.toWei('95'));
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(ETH, 95)');
 	});
 
 	await delay(5000);
 
 	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(toBytes32('BTC'), w3utils.toWei('85'));
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BTC, 85)');
 	});
 
@@ -124,7 +124,7 @@ async function main() {
 	const safeBox = getTargetAddress('SafeBox', network);
 	const safeBoxImpact = w3utils.toWei('0.01');
 	tx = await ThalesAMM_deployed.setSafeBoxData(safeBox, safeBoxImpact);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('ThalesAMM: safeBoxImpact()');
 	});
 
@@ -133,7 +133,7 @@ async function main() {
 	const minPrice = w3utils.toWei('0.10');
 	const maxPrice = w3utils.toWei('0.90');
 	tx = await ThalesAMM_deployed.setMinMaxSupportedPrice(minPrice, maxPrice);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('ThalesAMM: setMinMaxSupportedPrice()');
 	});
 
@@ -158,13 +158,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

@@ -13,6 +13,10 @@ async function main() {
 	if (network == 'homestead') {
 		network = 'mainnet';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
@@ -22,18 +26,19 @@ async function main() {
 	const ThalesDeployed = await Thales.deploy();
 	await ThalesDeployed.deployed();
 	// update deployments.json file
-	setTargetAddress('Thales', network, ThalesDeployed.address);
+	setTargetAddress('OpThales_L2', network, ThalesDeployed.address);
 
 	console.log('Thales deployed to:', ThalesDeployed.address);
 
 	await hre.run('verify:verify', {
 		address: ThalesDeployed.address,
+		contract: 'contracts/Token/Thales.sol:Thales',
 	});
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});

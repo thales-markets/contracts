@@ -600,6 +600,35 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      }
+    ],
+    "name": "buyFromAmmQuoteForParlayAMM",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_quote",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -1247,6 +1276,11 @@
         "internalType": "address",
         "name": "_referrals",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayAMM",
+        "type": "address"
       }
     ],
     "name": "setAddresses",
@@ -1482,6 +1516,24 @@
       }
     ],
     "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateParlayVolume",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

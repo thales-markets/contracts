@@ -28,7 +28,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     /* ========== STATE VARIABLES ========== */
 
-    uint public expiryDuration;
+    uint public override expiryDuration;
 
     bool public override marketCreationEnabled;
     bool public customMarketCreationEnabled;

@@ -30,6 +30,8 @@ interface ISportPositionalMarketManager {
 
     function isMarketPaused(address _market) external view returns (bool);
 
+    function expiryDuration() external view returns (uint);
+
     function isWhitelistedAddress(address _address) external view returns (bool);
 
     /* ========== MUTATIVE FUNCTIONS ========== */

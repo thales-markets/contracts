@@ -3,6 +3,16 @@
 pragma solidity ^0.8.0;
 
 interface ITherundownConsumer {
+    struct GameCreate {
+        bytes32 gameId;
+        uint256 startTime;
+        int24 homeOdds;
+        int24 awayOdds;
+        int24 drawOdds;
+        string homeTeam;
+        string awayTeam;
+    }
+
     // view functions
     function isSupportedSport(uint _sportId) external view returns (bool);
 
@@ -15,6 +25,10 @@ interface ITherundownConsumer {
     function getGameCreatedById(address _market) external view returns (bytes32);
 
     function getResult(bytes32 _gameId) external view returns (uint);
+
+    function gameIdPerMarket(address _market) external view returns (bytes32);
+
+    function getGameCreatedById(bytes32 _gameId) external view returns (GameCreate memory);
 
     // write functions
     function fulfillGamesCreated(

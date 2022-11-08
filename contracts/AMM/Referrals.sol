@@ -23,11 +23,12 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
     mapping(address => uint) public referralStarted;
 
     mapping(address => bool) public tradedBefore;
-    
+
     mapping(address => address) public sportReferrals;
     mapping(address => uint) public sportReferralStarted;
     mapping(address => bool) public sportTradedBefore;
     address public sportsAMM;
+    address public parlayAMM;
 
     function initialize(
         address _owner,
@@ -47,14 +48,13 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             whitelistedAddresses[msg.sender] || owner == msg.sender,
             "Only whitelisted addresses or owner set referrers"
         );
-        if(msg.sender == sportsAMM) {
+        if (msg.sender == sportsAMM || msg.sender == parlayAMM) {
             if (!sportTradedBefore[referred] && sportReferrals[referred] == address(0)) {
                 sportReferrals[referred] = referrer;
                 sportReferralStarted[referred] = block.timestamp;
                 emit SportReferralAdded(referrer, referred, block.timestamp);
             }
-        }
-        else {
+        } else {
             if (!tradedBefore[referred] && referrals[referred] == address(0)) {
                 referrals[referred] = referrer;
                 referralStarted[referred] = block.timestamp;
@@ -75,6 +75,7 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
             emit TradedBefore(_addresses[index]);
         }
     }
+
     function setSportTradedBefore(address[] calldata _addresses) external onlyOwner {
         for (uint256 index = 0; index < _addresses.length; index++) {
             sportTradedBefore[_addresses[index]] = true;
@@ -82,12 +83,19 @@ contract Referrals is Initializable, ProxyOwned, ProxyPausable, ProxyReentrancyG
         }
     }
 
-    function setSportsAMM(address _sportsAMM) external onlyOwner {
-        require(!whitelistedAddresses[_sportsAMM], "Address already enabled");
-        whitelistedAddresses[sportsAMM] = false;
-        whitelistedAddresses[_sportsAMM] = true;
-        sportsAMM = _sportsAMM;
-        emit SetWhitelistedAddress(_sportsAMM, true);
+    function setSportsAMM(address _sportsAMM, address _parlayAMM) external onlyOwner {
+        if (!whitelistedAddresses[_sportsAMM]) {
+            whitelistedAddresses[sportsAMM] = false;
+            whitelistedAddresses[_sportsAMM] = true;
+            sportsAMM = _sportsAMM;
+            emit SetWhitelistedAddress(_sportsAMM, true);
+        }
+        if (!whitelistedAddresses[_parlayAMM]) {
+            whitelistedAddresses[parlayAMM] = false;
+            whitelistedAddresses[_parlayAMM] = true;
+            parlayAMM = _parlayAMM;
+            emit SetWhitelistedAddress(_parlayAMM, true);
+        }
     }
 
     event SportReferralAdded(address referrer, address referred, uint timeStarted);

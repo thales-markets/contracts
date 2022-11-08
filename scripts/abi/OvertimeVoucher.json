@@ -40,6 +40,11 @@
         "internalType": "address",
         "name": "_sportsamm",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_parlayAMM",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -150,7 +155,63 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_thalesRoyaleAddress",
+        "name": "buyer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sUSDPaid",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "susd",
+        "type": "address"
+      }
+    ],
+    "name": "BoughtFromParlayWithVoucher",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_parlayAMM",
+        "type": "address"
+      }
+    ],
+    "name": "NewParlayAMM",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_sportsAMM",
         "type": "address"
       }
     ],
@@ -340,6 +401,44 @@
   {
     "inputs": [
       {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sUSDPaid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_additionalSlippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "buyFromParlayAMMWithVoucher",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
@@ -442,6 +541,19 @@
     "outputs": [
       {
         "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parlayAMM",
+    "outputs": [
+      {
+        "internalType": "contract IParlayMarketsAMM",
         "name": "",
         "type": "address"
       }
@@ -565,6 +677,19 @@
       }
     ],
     "name": "setApprovalForAll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setParlayAMM",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

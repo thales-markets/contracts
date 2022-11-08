@@ -63,42 +63,26 @@ async function main() {
 			_sportsAmm: sportsAMM,
 			_sUSD: proxySUSD,
 			_roundLength: week,
-			_priceLowerLimit: w3utils.toWei('0.50'),
+			_priceLowerLimit: w3utils.toWei('0.05'),
 			_priceUpperLimit: w3utils.toWei('0.95'),
-			_skewImpactLimit: w3utils.toWei('-0.03'), // -3% skew impact
+			_skewImpactLimit: w3utils.toWei('-0.05'), // -3% skew impact
 			_allocationLimitsPerMarketPerRound: w3utils.toWei('10'), // 10% limit per market
 			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
-			_utilizationRate: w3utils.toWei('0.50'), // 50% utilization rate
+			_utilizationRate: w3utils.toWei('0.20'), // 50% utilization rate
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
 			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
-			_minTradeAmount: w3utils.toWei('20'), // minimum trade amount
+			_minTradeAmount: w3utils.toWei('10'), // minimum trade amount
 		},
 	]);
-
-	//	await vault.initialize({
-	// 			_owner: owner,
-	// 			_sportsAmm: SportsAMM.address,
-	// 			_sUSD: Thales.address,
-	// 			_roundLength: week,
-	// 			_priceLowerLimit: toUnit(0.2).toString(),
-	// 			_priceUpperLimit: toUnit(1).toString(),
-	// 			_skewImpactLimit: toUnit(-0.03).toString(), // 40%
-	// 			_allocationLimitsPerMarketPerRound: toUnit(10).toString(), // 40%
-	// 			_maxAllowedDeposit: toUnit(1000).toString(), // 20%
-	// 			_utilizationRate: toUnit(0.5).toString(),
-	// 			_minDepositAmount: toUnit(100).toString(),
-	// 			_maxAllowedUsers: 100,
-	// 			_minTradeAmount: toUnit(10).toString(),
-	// 		});
 
 	await vault.deployed();
 
 	console.log('Vault deployed to:', vault.address);
-	setTargetAddress('SportVault', network, vault.address);
+	setTargetAddress('SportVaultDegen', network, vault.address);
 
 	const implementation = await getImplementationAddress(ethers.provider, vault.address);
 	console.log('VaultImplementation: ', implementation);
-	setTargetAddress('SportVaultImplementation', network, implementation);
+	setTargetAddress('SportVaultDegenImplementation', network, implementation);
 
 	try {
 		await hre.run('verify:verify', {

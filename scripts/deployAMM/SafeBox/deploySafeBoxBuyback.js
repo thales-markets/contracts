@@ -59,7 +59,10 @@ async function main() {
 	console.log('Network id:' + networkObj.chainId);
 
 	const SafeBoxBuyback = await ethers.getContractFactory('SafeBoxBuyback');
-	let SafeBoxDeployed = await upgrades.deployProxy(SafeBoxBuyback, [owner.address, ProxyERC20sUSDaddress]);
+	let SafeBoxDeployed = await upgrades.deployProxy(SafeBoxBuyback, [
+		owner.address,
+		ProxyERC20sUSDaddress,
+	]);
 	await SafeBoxDeployed.deployed();
 
 	console.log('SafeBoxBuyback proxy:', SafeBoxDeployed.address);
@@ -78,7 +81,7 @@ async function main() {
 
 	// contract settings
 	let tx = await SafeBoxDeployed.setTickRate(rate);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('SafeBoxBuyback: setTickRate');
 	});
 
@@ -86,40 +89,40 @@ async function main() {
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setTickLength(5 * MINUTE);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('SafeBoxBuyback: setTickLength');
 	});
 
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setThalesToken(thalesAddress);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('SafeBoxBuyback: setThalesToken');
 	});
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setWETHAddress('0x4200000000000000000000000000000000000006');
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('SafeBoxBuyback: setWETHAddress');
 	});
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setSwapRouter(getTargetAddress('SwapRouter', network));
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('SafeBoxBuyback: setSwapRouter');
 	});
 
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setBuybacksEnabled(true);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('SafeBoxBuyback: setBuybacksEnabled');
 	});
 
 	delay(5000);
 
 	tx = await SafeBoxDeployed.setUniswapV3Factory(getTargetAddress('UniswapV3Factory', network));
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('SafeBoxBuyback: setUniswapV3Factory');
 	});
 
@@ -142,13 +145,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

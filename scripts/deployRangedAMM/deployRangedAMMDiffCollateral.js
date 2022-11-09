@@ -93,7 +93,7 @@ async function main() {
 	let USDT = getTargetAddress('USDT', network);
 
 	let tx = await RangedAMM_deployed.setCurveSUSD(curveSusdAddresss, DAI, USDC, USDT, true);
-	await tx.wait().then(e => {
+	await tx.wait().then((e) => {
 		console.log('RangedAMM_deployed: setCurveSUSD');
 	});
 
@@ -119,13 +119,13 @@ async function main() {
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

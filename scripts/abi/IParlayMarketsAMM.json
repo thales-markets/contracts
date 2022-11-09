@@ -1,0 +1,247 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_sportMarkets",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_positions",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sUSDPaid",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_additionalSlippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_expectedPayout",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_differentRecepient",
+        "type": "address"
+      }
+    ],
+    "name": "buyFromParlay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "exerciseParlay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarket",
+        "type": "address"
+      }
+    ],
+    "name": "exerciseSportMarketInParlay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parlayMarket",
+        "type": "address"
+      }
+    ],
+    "name": "isActiveParlay",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "isActiveParlayMarket",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxAllowedRiskPerCombination",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxSupportedOdds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parlayAmmFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parlaySize",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "resolveParlay",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportMarkets1",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position1",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarkets2",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position2",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarkets3",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position3",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarkets4",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_position4",
+        "type": "uint256"
+      }
+    ],
+    "name": "riskPerCombination",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sUSD",
+    "outputs": [
+      {
+        "internalType": "contract IERC20Upgradeable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sportsAmm",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_userWon",
+        "type": "bool"
+      }
+    ],
+    "name": "triggerResolvedEvent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

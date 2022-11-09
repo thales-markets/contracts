@@ -37,12 +37,6 @@
         "internalType": "address",
         "name": "_referrals",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_wrapper",
-        "type": "address"
       }
     ],
     "name": "AddressesUpdated",
@@ -271,44 +265,12 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint256",
-        "name": "_threshold",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetDefaultThreshold",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
         "internalType": "address",
         "name": "_manager",
         "type": "address"
       }
     ],
     "name": "SetSportsPositionalMarketManager",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_spotrId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_threshold",
-        "type": "uint256"
-      }
-    ],
-    "name": "SetThresholdForSport",
     "type": "event"
   },
   {
@@ -638,6 +600,35 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      }
+    ],
+    "name": "buyFromAmmQuoteForParlayAMM",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_quote",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -789,19 +780,6 @@
   {
     "inputs": [],
     "name": "defaultCapPerGame",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "defaultThresholdForOddsUpdate",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1301,7 +1279,7 @@
       },
       {
         "internalType": "address",
-        "name": "_wrapper",
+        "name": "_parlayAMM",
         "type": "address"
       }
     ],
@@ -1400,19 +1378,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_threshold",
-        "type": "uint256"
-      }
-    ],
-    "name": "setDefaultThreshold",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "_owner",
         "type": "address"
@@ -1500,24 +1465,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_sportID",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_threshold",
-        "type": "uint256"
-      }
-    ],
-    "name": "setUpdateOddsThresholdForSport",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -1563,31 +1510,30 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "thresholdForCallingUpdateOddsBySport",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address",
         "name": "proxyAddress",
         "type": "address"
       }
     ],
     "name": "transferOwnershipAtInit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateParlayVolume",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1611,19 +1557,6 @@
     "outputs": [
       {
         "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "wrapper",
-    "outputs": [
-      {
-        "internalType": "contract ITherundownConsumerWrapper",
         "name": "",
         "type": "address"
       }

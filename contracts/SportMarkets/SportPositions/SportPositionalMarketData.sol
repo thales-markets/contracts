@@ -23,11 +23,10 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function getOddsForAllActiveMarkets() external view returns (ActiveMarketsOdds[] memory) {
-        address[] memory activeMarkets =
-            ISportPositionalMarketManager(manager).activeMarkets(
-                0,
-                ISportPositionalMarketManager(manager).numActiveMarkets()
-            );
+        address[] memory activeMarkets = ISportPositionalMarketManager(manager).activeMarkets(
+            0,
+            ISportPositionalMarketManager(manager).numActiveMarkets()
+        );
         ActiveMarketsOdds[] memory marketOdds = new ActiveMarketsOdds[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
             marketOdds[i].market = ISportPositionalMarket(activeMarkets[i]).getGameId();

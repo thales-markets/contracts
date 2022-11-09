@@ -5,6 +5,7 @@ const MINUTE = 60;
 const WEEK = 604800;
 
 const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { ZERO_ADDRESS } = require('@openzeppelin/test-helpers/src/constants');
 
 const user_key1 = process.env.PRIVATE_KEY;
 
@@ -20,6 +21,10 @@ async function main() {
 	}
 	if (networkObj.chainId == 42) {
 		network = 'kovan';
+	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
 	}
 	let durationPeriod, unstakeDurationPeriod;
 	if (network == 'homestead') {
@@ -50,8 +55,8 @@ async function main() {
 		thalesAddress = getTargetAddress('OpThales_L2', network);
 		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
 	} else {
-		thalesAddress = getTargetAddress('Thales', network);
-		ProxyERC20sUSD_address = getTargetAddress('ProxysUSD', network);
+		thalesAddress = getTargetAddress('OpThales_L2', network);
+		ProxyERC20sUSD_address = getTargetAddress('ExoticUSD', network);
 	}
 	console.log('Thales address: ', thalesAddress);
 	console.log('ProxyERC20sUSD address: ', ProxyERC20sUSD_address);
@@ -64,6 +69,7 @@ async function main() {
 		thalesAddress,
 	]);
 	await ProxyEscrow_deployed.deployed();
+	await delay(5000);
 
 	let ProxyStaking_deployed = await upgrades.deployProxy(ProxyStaking, [
 		owner.address,
@@ -78,6 +84,8 @@ async function main() {
 
 	console.log('Escrow proxy:', ProxyEscrow_deployed.address);
 	console.log('Staking proxy:', ProxyStaking_deployed.address);
+
+	await delay(15000);
 
 	const EscrowImplementation = await getImplementationAddress(
 		ethers.provider,
@@ -96,17 +104,39 @@ async function main() {
 	setTargetAddress('StakingThalesImplementation', network, StakingImplementation);
 	setTargetAddress('EscrowThalesImplementation', network, EscrowImplementation);
 
+	await delay(15000);
+
 	let ThalesAMMAddress = getTargetAddress('ThalesAMM', network);
 	let PriceFeedAddress = getTargetAddress('PriceFeed', network);
+	let SportsAMMAddress = getTargetAddress('SportsAMM', network);
+	let ThalesBondsAddress = getTargetAddress('ThalesBonds', network);
+	let AddressResolverAddress = getTargetAddress('AddressResolver', network);
+	let ThalesStakingRewardsPoolAddress = getTargetAddress('ThalesStakingRewardsPool', network);
+	let EscrowContractAddress = getTargetAddress('EscrowThales', network);
 
-	tx = await ProxyStaking_deployed.setThalesAMM(ThalesAMMAddress, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
-	});
+	// let ProxyStaking_deployed = ProxyStaking.attach(StakingContractAddress);
+	// await delay(5000);
 
-	tx = await ProxyStaking_deployed.setPriceFeed(PriceFeedAddress, { from: owner.address });
-	await tx.wait().then(e => {
-		console.log('Staking Thales: setPriceFeed ', PriceFeedAddress);
+	// tx = await ProxyStaking_deployed.setThalesAMM(ThalesAMMAddress, { from: owner.address });
+	// await tx.wait().then(e => {
+	// 	console.log('Staking Thales: setThalesAMM ', ThalesAMMAddress);
+	// });
+
+	tx = await ProxyStaking_deployed.setAddresses(
+		SNXIssuerAddress,
+		owner.address,
+		owner.address,
+		owner.address,
+		ThalesBondsAddress,
+		SportsAMMAddress,
+		PriceFeedAddress,
+		ThalesStakingRewardsPoolAddress,
+		AddressResolverAddress,
+		{ from: owner.address, gasLimit: 5000000 }
+	);
+
+	await tx.wait().then((e) => {
+		console.log('Staking Thales: setAddresses ');
 	});
 
 	try {
@@ -124,31 +154,31 @@ async function main() {
 		console.log(e);
 	}
 
-	try {
-		await hre.run('verify:verify', {
-			address: ProxyEscrow_deployed.address,
-		});
-	} catch (e) {
-		console.log(e);
-	}
-	try {
-		await hre.run('verify:verify', {
-			address: ProxyStaking_deployed.address,
-		});
-	} catch (e) {
-		console.log(e);
-	}
+	// try {
+	// 	await hre.run('verify:verify', {
+	// 		address: ProxyEscrow_deployed.address,
+	// 	});
+	// } catch (e) {
+	// 	console.log(e);
+	// }
+	// try {
+	// 	await hre.run('verify:verify', {
+	// 		address: ProxyStaking_deployed.address,
+	// 	});
+	// } catch (e) {
+	// 	console.log(e);
+	// }
 }
 
 main()
 	.then(() => process.exit(0))
-	.catch(error => {
+	.catch((error) => {
 		console.error(error);
 		process.exit(1);
 	});
 
 function delay(time) {
-	return new Promise(function(resolve) {
+	return new Promise(function (resolve) {
 		setTimeout(resolve, time);
 	});
 }

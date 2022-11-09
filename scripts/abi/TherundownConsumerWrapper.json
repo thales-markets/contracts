@@ -40,6 +40,11 @@
         "internalType": "address",
         "name": "_sportsAMM",
         "type": "address"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_defaultBookmakerIds",
+        "type": "uint256[]"
       }
     ],
     "stateMutability": "nonpayable",
@@ -89,12 +94,44 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_ids",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "NewBookmakerIdsBySportId",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_consumer",
         "type": "address"
       }
     ],
     "name": "NewConsumer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_ids",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "NewDefaultBookmakerIds",
     "type": "event"
   },
   {
@@ -306,6 +343,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "defaultBookmakerIds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "_requestId",
         "type": "bytes32"
@@ -355,6 +411,25 @@
     "name": "fulfillGamesResolved",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getBookmakerIdsBySportId",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -578,12 +653,43 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_bookmakerIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "setBookmakerIdsBySportId",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_consumer",
         "type": "address"
       }
     ],
     "name": "setConsumer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "_defaultBookmakerIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "setDefaultBookmakerIds",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -688,6 +794,30 @@
       }
     ],
     "name": "sportIdPerRequestId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "sportIdToBookmakerIds",
     "outputs": [
       {
         "internalType": "uint256",

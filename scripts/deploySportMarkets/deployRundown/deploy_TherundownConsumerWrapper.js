@@ -66,6 +66,7 @@ async function main() {
 	console.log('SportsAMM address: ', sportsAMMAddress);
 
 	let oddsSpecId = '0x6434663563656266383432643430363361393734336164333265363934633466';
+	let defaultBookmakerIds = [3, 11];
 	console.log('oddsSpecId: ', oddsSpecId);
 
 	const chainlink = require(`./chainlink/${network}.json`);
@@ -83,7 +84,8 @@ async function main() {
 		paymentResolve,
 		paymentOdds,
 		oddsSpecId,
-		sportsAMMAddress
+		sportsAMMAddress,
+		defaultBookmakerIds
 	);
 	await TherundownConsumerWrapperDeployed.deployed();
 
@@ -103,6 +105,7 @@ async function main() {
 				paymentOdds,
 				oddsSpecId,
 				sportsAMMAddress,
+				defaultBookmakerIds,
 			],
 		});
 	} catch (e) {

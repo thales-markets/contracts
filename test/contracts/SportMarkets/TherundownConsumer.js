@@ -707,6 +707,13 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal('Atlanta Hawks', game.homeTeam);
 			assert.equal('Charlotte Hornets', game.awayTeam);
 
+			let arrayOfOdds = await verifier.getOddsForGames([gameid1, gameid2]);
+			assert.equal(6, arrayOfOdds.length);
+			assert.bnEqual(-20700, arrayOfOdds[0]);
+			assert.bnEqual(17700, arrayOfOdds[1]);
+			assert.bnEqual(-20700, arrayOfOdds[3]);
+			assert.bnEqual(17700, arrayOfOdds[4]);
+
 			// check if event is emited
 			assert.eventEqual(tx.logs[0], 'GameCreated', {
 				_requestId: reqIdCreate,

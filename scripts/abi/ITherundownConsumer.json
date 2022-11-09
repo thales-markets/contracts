@@ -213,12 +213,22 @@
         "type": "bytes32"
       }
     ],
-    "name": "getResult",
+    "name": "getOddsForGame",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "int24",
         "name": "",
-        "type": "uint256"
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "",
+        "type": "int24"
       }
     ],
     "stateMutability": "view",

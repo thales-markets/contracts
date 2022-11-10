@@ -375,6 +375,7 @@ contract('SportsVauchers', (accounts) => {
 			StakingThales.address,
 			Referrals.address,
 			ZERO_ADDRESS,
+			wrapper,
 			{ from: owner }
 		);
 

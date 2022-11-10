@@ -347,6 +347,22 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return verifier.isSupportedMarketType(_market);
     }
 
+    /// @notice view function which returns props (sportid and game date)
+    /// @param _market market address
+    /// @return _sportId sport ids
+    /// @return _gameDate game date on which game is playing
+    function getGamePropsForOdds(address _market)
+        external
+        view
+        returns (
+            uint _sportId,
+            uint _gameDate,
+            bytes32 _id
+        )
+    {
+        return (sportsIdPerGame[gameIdPerMarket[_market]], gameOnADate[gameIdPerMarket[_market]], gameIdPerMarket[_market]);
+    }
+
     /// @notice view function which returns if game is resolved or canceled and ready for market to be resolved or canceled
     /// @param _gameId game id for which game is looking
     /// @return bool is it ready for resolve or cancel true/false

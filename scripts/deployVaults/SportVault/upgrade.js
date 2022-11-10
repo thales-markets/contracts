@@ -46,7 +46,7 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vaultAddress = getTargetAddress('SportVault', network);
+	const vaultAddress = getTargetAddress('SportVaultSafu', network);
 	console.log('Found Vault at:', vaultAddress);
 
 	const Vault = await ethers.getContractFactory('SportVault');
@@ -57,8 +57,8 @@ async function main() {
 		console.log('Vault upgraded');
 	}
 
-	console.log('VaultImplementation: ', implementation);
-	setTargetAddress('VaultImplementation', network, implementation);
+	console.log('SportVaultSafuImplementation: ', implementation);
+	setTargetAddress('SportVaultSafuImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
 		address: implementation,

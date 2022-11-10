@@ -46,10 +46,10 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vaultAddress = getTargetAddress('SportVault', network);
+	const vaultAddress = getTargetAddress('AmmVault', network);
 	console.log('Found Vault at:', vaultAddress);
 
-	const Vault = await ethers.getContractFactory('SportVault');
+	const Vault = await ethers.getContractFactory('AmmVault');
 	const implementation = await upgrades.prepareUpgrade(vaultAddress, Vault);
 
 	if (networkObj.chainId == 420) {
@@ -57,8 +57,8 @@ async function main() {
 		console.log('Vault upgraded');
 	}
 
-	console.log('VaultImplementation: ', implementation);
-	setTargetAddress('VaultImplementation', network, implementation);
+	console.log('AmmVaultImplementation: ', implementation);
+	setTargetAddress('AmmVaultImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
 		address: implementation,

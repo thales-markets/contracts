@@ -230,19 +230,6 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "thalesAmm",
-        "type": "address"
-      }
-    ],
-    "name": "SportAMMChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
         "name": "stakingThales",
         "type": "address"
       }
@@ -256,12 +243,25 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "thalesAmm",
+        "type": "address"
+      }
+    ],
+    "name": "ThalesAMMChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "market",
         "type": "address"
       },
       {
         "indexed": false,
-        "internalType": "enum ISportsAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       },
@@ -355,25 +355,6 @@
       }
     ],
     "name": "allocationPerRound",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "allocationSpentInARound",
     "outputs": [
       {
         "internalType": "uint256",
@@ -637,8 +618,8 @@
             "type": "address"
           },
           {
-            "internalType": "contract ISportsAMM",
-            "name": "_sportsAmm",
+            "internalType": "contract IThalesAMM",
+            "name": "_thalesAmm",
             "type": "address"
           },
           {
@@ -697,7 +678,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct SportVault.InitParams",
+        "internalType": "struct AmmVault.InitParams",
         "name": "params",
         "type": "tuple"
       }
@@ -1063,12 +1044,12 @@
   {
     "inputs": [
       {
-        "internalType": "contract ISportsAMM",
-        "name": "_sportAMM",
+        "internalType": "contract IStakingThales",
+        "name": "_stakingThales",
         "type": "address"
       }
     ],
-    "name": "setSportAmm",
+    "name": "setStakingThales",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1076,12 +1057,12 @@
   {
     "inputs": [
       {
-        "internalType": "contract IStakingThales",
-        "name": "_stakingThales",
+        "internalType": "contract IThalesAMM",
+        "name": "_thalesAMM",
         "type": "address"
       }
     ],
-    "name": "setStakingThales",
+    "name": "setThalesAmm",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1114,19 +1095,6 @@
   },
   {
     "inputs": [],
-    "name": "sportsAMM",
-    "outputs": [
-      {
-        "internalType": "contract ISportsAMM",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "stakingThales",
     "outputs": [
       {
@@ -1146,6 +1114,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "thalesAMM",
+    "outputs": [
+      {
+        "internalType": "contract IThalesAMM",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1158,7 +1139,7 @@
         "type": "uint256"
       },
       {
-        "internalType": "enum ISportsAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "position",
         "type": "uint8"
       }
@@ -1197,7 +1178,7 @@
     "name": "tradingMarketPositionPerRound",
     "outputs": [
       {
-        "internalType": "enum ISportsAMM.Position",
+        "internalType": "enum IThalesAMM.Position",
         "name": "",
         "type": "uint8"
       }

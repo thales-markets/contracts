@@ -314,6 +314,16 @@
       "address": "0x43D19841D818B2ccC63a8B44Ce8C7DEF8616D98E",
       "txHash": "0x3f788f0ec3634fecb7250fc37110cbbad98a3f2c331afd17f049591c5ee3be3e",
       "kind": "transparent"
+    },
+    {
+      "address": "0x643e4388fb918a7905441AFe4b2906c059A1C83C",
+      "txHash": "0x1803cafabf09e4e1252b2f34e6438a2e6d3b7340914d1d7a11f710217b22e085",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xb484027CB0c538538Bad2bE492714154f9196F93",
+      "txHash": "0x003cc5b02785de57c4c4fa868dbb841cefd2aa9428818eaab64bf4fc600620bc",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -42886,6 +42896,339 @@
           },
           "t_mapping(t_uint256,t_uint256)": {
             "label": "mapping(uint256 => uint256)"
+          }
+        }
+      }
+    },
+    "39719c85b2a3c30b8b2c1feda1735ffe9a96146204f76893273e752375202768": {
+      "address": "0x6A763C3D2F317d67727110c08A6cd61386ab16aC",
+      "txHash": "0x90f95dba5ac0a2ce6bf9cc67d2eb41ea82ae11b89c1b51a94753ebcd57d0930d",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts\\utils\\proxy\\solidity-0.8.0\\ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "thalesAMM",
+            "type": "t_contract(IThalesAMM)79989",
+            "src": "contracts\\Vaults\\AmmVault.sol:47"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "sUSD",
+            "type": "t_contract(IERC20Upgradeable)6720",
+            "src": "contracts\\Vaults\\AmmVault.sol:48"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "vaultStarted",
+            "type": "t_bool",
+            "src": "contracts\\Vaults\\AmmVault.sol:50"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "round",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:52"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "roundLength",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:53"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "roundStartTime",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\Vaults\\AmmVault.sol:54"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "usersPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts\\Vaults\\AmmVault.sol:56"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "userInRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts\\Vaults\\AmmVault.sol:57"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "balancesPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts\\Vaults\\AmmVault.sol:59"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "withdrawalRequested",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\Vaults\\AmmVault.sol:60"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "depositReceipts",
+            "type": "t_mapping(t_address,t_struct(DepositReceipt)73858_storage)",
+            "src": "contracts\\Vaults\\AmmVault.sol:61"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "allocationPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\Vaults\\AmmVault.sol:63"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "tradingMarketsPerRound",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "src": "contracts\\Vaults\\AmmVault.sol:65"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "tradingMarketPositionPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_enum(Position)79865))",
+            "src": "contracts\\Vaults\\AmmVault.sol:66"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "isTradingMarketInARound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "src": "contracts\\Vaults\\AmmVault.sol:67"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "profitAndLossPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\Vaults\\AmmVault.sol:69"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "cumulativeProfitAndLoss",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\Vaults\\AmmVault.sol:70"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "maxAllowedDeposit",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:72"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "utilizationRate",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:73"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "capPerRound",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "src": "contracts\\Vaults\\AmmVault.sol:75"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "minDepositAmount",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:77"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "maxAllowedUsers",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:79"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "usersCurrentlyInVault",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:80"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "allocationLimitsPerMarketPerRound",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:82"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "allocationSpentPerRound",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "src": "contracts\\Vaults\\AmmVault.sol:84"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "priceLowerLimit",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:86"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "priceUpperLimit",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:87"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "skewImpactLimit",
+            "type": "t_int256",
+            "src": "contracts\\Vaults\\AmmVault.sol:88"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "minTradeAmount",
+            "type": "t_uint256",
+            "src": "contracts\\Vaults\\AmmVault.sol:90"
+          },
+          {
+            "contract": "AmmVault",
+            "label": "stakingThales",
+            "type": "t_contract(IStakingThales)79859",
+            "src": "contracts\\Vaults\\AmmVault.sol:93"
+          }
+        ],
+        "types": {
+          "t_contract(IThalesAMM)79989": {
+            "label": "contract IThalesAMM"
+          },
+          "t_contract(IERC20Upgradeable)6720": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_mapping(t_address,t_struct(DepositReceipt)73858_storage)": {
+            "label": "mapping(address => struct AmmVault.DepositReceipt)"
+          },
+          "t_struct(DepositReceipt)73858_storage": {
+            "label": "struct AmmVault.DepositReceipt",
+            "members": [
+              {
+                "label": "round",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_enum(Position)79865))": {
+            "label": "mapping(uint256 => mapping(address => enum IThalesAMM.Position))"
+          },
+          "t_mapping(t_address,t_enum(Position)79865)": {
+            "label": "mapping(address => enum IThalesAMM.Position)"
+          },
+          "t_enum(Position)79865": {
+            "label": "enum IThalesAMM.Position",
+            "members": [
+              "Up",
+              "Down"
+            ]
+          },
+          "t_int256": {
+            "label": "int256"
+          },
+          "t_contract(IStakingThales)79859": {
+            "label": "contract IStakingThales"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
           }
         }
       }

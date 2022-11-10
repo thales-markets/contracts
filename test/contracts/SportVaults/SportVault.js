@@ -677,7 +677,16 @@ contract('SportsAMM', (accounts) => {
 			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(1));
 			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
 
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(20));
+			console.log('buyQuote 20: ', fromUnit(buyFromAmmQuote));
+
+			let allocationSpentInARound = await vault.allocationSpentInARound(round);
+			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
+
 			await vault.trade(deployedMarket.address, toUnit(20), 0);
+
+			allocationSpentInARound = await vault.allocationSpentInARound(round);
+			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
 
 			await assert.revert(
 				vault.trade(deployedMarket.address, toUnit(20), 1),

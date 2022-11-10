@@ -1,6 +1,5 @@
 const { ethers, upgrades } = require('hardhat');
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
-const w3utils = require('web3-utils');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -47,15 +46,25 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vaultAddress = getTargetAddress('SportVaultDegen', network);
+	const vaultAddress = getTargetAddress('SportVault', network);
 	console.log('Found Vault at:', vaultAddress);
 
 	const Vault = await ethers.getContractFactory('SportVault');
-	const Vaultdeployed = await Vault.attach(vaultAddress);
+	const implementation = await upgrades.prepareUpgrade(vaultAddress, Vault);
 
-	const week = 7 * 24 * 60 * 60;
-	await Vaultdeployed.setRoundLength(week, { from: owner.address });
+	if (networkObj.chainId == 420) {
+		await upgrades.upgradeProxy(vaultAddress, Vault);
+		console.log('Vault upgraded');
+	}
+
+	console.log('VaultImplementation: ', implementation);
+	setTargetAddress('VaultImplementation', network, implementation);
+
+	await hre.run('verify:verify', {
+		address: implementation,
+	});
 }
+
 main()
 	.then(() => process.exit(0))
 	.catch((error) => {

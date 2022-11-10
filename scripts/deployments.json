@@ -101,7 +101,9 @@
 		"SportVaultDegen": "0xBaaC5464BF6E767C9af0E8d4677C01Be2065fd5F",
 		"SportVaultDegenImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A",
 		"SportVaultSafu": "0x43D19841D818B2ccC63a8B44Ce8C7DEF8616D98E",
-		"SportVaultSafuImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A"
+		"SportVaultSafuImplementation": "0xfd99fcb3e53338C6E6f9F0855C24B39Df4B1536A",
+		"AmmVault": "0xb484027CB0c538538Bad2bE492714154f9196F93",
+		"AmmVaultImplementation": "0x6A763C3D2F317d67727110c08A6cd61386ab16aC"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

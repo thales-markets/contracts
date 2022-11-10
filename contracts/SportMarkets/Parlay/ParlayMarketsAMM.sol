@@ -226,6 +226,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             true,
             _differentRecepient
         );
+        if (referrerFee > 0 && referrals != address(0)) {
+            _handleReferrer(_differentRecepient, _sUSDPaid);
+        }
     }
 
     function buyFromParlayWithReferrer(
@@ -253,7 +256,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _differentRecepient
         );
         if (referrerFee > 0 && referrals != address(0)) {
-            _handleReferrer(msg.sender, _sUSDPaid);
+            _handleReferrer(_differentRecepient, _sUSDPaid);
         }
     }
 

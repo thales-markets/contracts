@@ -399,7 +399,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         odds[0] = gameOdds[_gameId].homeOdds;
         odds[1] = gameOdds[_gameId].awayOdds;
         odds[2] = gameOdds[_gameId].drawOdds;
-        return verifier.calculateAndNormalizeOdds(odds);
+        return _calculateAndNormalizeOdds(odds);
     }
 
     /* ========== INTERNALS ========== */
@@ -627,7 +627,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _setMarketCancelOrResolved(address _market, uint _outcome) internal {
         sportsManager.resolveMarket(_market, _outcome);
-        marketCanceled[_market] = _outcome == CANCELLED;
+        if (_outcome == CANCELLED) {
+            marketCanceled[_market] = true;
+        } else {
+            marketResolved[_market] = true;
+        }
     }
 
     function _cleanStorageQueue(uint index) internal {
@@ -665,6 +669,22 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 _game.awayOdds,
                 _game.drawOdds
             );
+    }
+
+    function _isValidOutcomeForGame(bytes32 _gameId, uint _outcome) internal view returns (bool) {
+        return verifier.isValidOutcomeForGame(isSportTwoPositionsSport(sportsIdPerGame[_gameId]), _outcome);
+    }
+
+    function _isValidOutcomeWithResult(
+        uint _outcome,
+        uint _homeScore,
+        uint _awayScore
+    ) internal view returns (bool) {
+        return verifier.isValidOutcomeWithResult(_outcome, _homeScore, _awayScore);
+    }
+
+    function _calculateAndNormalizeOdds(int[] memory _americanOdds) internal view returns (uint[] memory) {
+        return verifier.calculateAndNormalizeOdds(_americanOdds);
     }
 
     function _updateGameOnADate(
@@ -777,8 +797,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(!isGameResolvedOrCanceled(_gameId), "ID13");
         require(marketPerGameId[_gameId] != address(0), "ID14");
         require(
-            verifier.isValidOutcomeForGame(isSportTwoPositionsSport(sportsIdPerGame[_gameId]), _outcome) &&
-                verifier.isValidOutcomeWithResult(_outcome, _homeScore, _awayScore),
+            _isValidOutcomeForGame(_gameId, _outcome) && _isValidOutcomeWithResult(_outcome, _homeScore, _awayScore),
             "ID15"
         );
         _;

@@ -165,8 +165,9 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
         // don't fail if no link in it
         if (linkToken.balanceOf(address(this)) >= paymentOdds) {
-            string[] memory _gameIds; // all games on that date/sport
-            (uint _sportId, uint _date) = consumer.getGamePropsForOdds(_marketAddress);
+            string[] memory _gameIds = new string[](1);
+            (uint _sportId, uint _date, bytes32 _id) = consumer.getGamePropsForOdds(_marketAddress);
+            _gameIds[0] = string(abi.encodePacked(_id));
             requestOddsWithFilters(oddsSpecId, _sportId, _date, _gameIds);
             emit UpdateOddsFromAMMForAGame(_sportId, _date, _marketAddress);
         }

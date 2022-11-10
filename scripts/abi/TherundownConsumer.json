@@ -1221,6 +1221,11 @@
         "internalType": "uint256",
         "name": "_gameDate",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",

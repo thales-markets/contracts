@@ -539,6 +539,7 @@ contract('ParlayAMM', (accounts) => {
 			StakingThales.address,
 			Referrals.address,
 			ParlayAMM.address,
+			wrapper,
 			{ from: owner }
 		);
 

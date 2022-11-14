@@ -24,6 +24,10 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     uint public paymentResolve;
     uint public paymentOdds;
     IERC20 public linkToken;
+    uint256[] public defaultBookmakerIds;
+    mapping(uint256 => uint256[]) public sportIdToBookmakerIds;
+    bytes32 public oddsSpecId;
+    address public sportsAMM;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -33,7 +37,10 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         address _consumer,
         uint _paymentCreate,
         uint _paymentResolve,
-        uint _paymentOdds
+        uint _paymentOdds,
+        bytes32 _oddsSpecId,
+        address _sportsAMM,
+        uint256[] memory _defaultBookmakerIds
     ) {
         setChainlinkToken(_link);
         setChainlinkOracle(_oracle);
@@ -42,6 +49,9 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         paymentResolve = _paymentResolve;
         paymentOdds = _paymentOdds;
         linkToken = IERC20(_link);
+        oddsSpecId = _oddsSpecId;
+        sportsAMM = _sportsAMM;
+        defaultBookmakerIds = _defaultBookmakerIds;
     }
 
     /* ========== CONSUMER REQUEST FUNCTIONS ========== */
@@ -148,6 +158,27 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         datePerRequest[requestId] = _date;
     }
 
+    /// @notice request for odds in games on a specific date with specific sport with filters
+    /// @param _marketAddress market address which triggered
+    function callUpdateOddsForSpecificGame(address _marketAddress) external whenNotPaused {
+        require(msg.sender == sportsAMM, "Only Sports AMM can call this function");
+
+        // don't fail if no link in it
+        if (linkToken.balanceOf(address(this)) >= paymentOdds) {
+            string[] memory _gameIds = new string[](1);
+            (uint _sportId, uint _date, bytes32 _id) = consumer.getGamePropsForOdds(_marketAddress);
+            _gameIds[0] = string(abi.encodePacked(_id));
+            requestOddsWithFilters(oddsSpecId, _sportId, _date, _gameIds);
+            emit UpdateOddsFromAMMForAGame(_sportId, _date, _marketAddress);
+        }
+    }
+
+    /// @notice getting bookmaker by sports id
+    /// @param _sportId id of a sport for fetching
+    function getBookmakerIdsBySportId(uint256 _sportId) external view returns (uint256[] memory) {
+        return sportIdToBookmakerIds[_sportId].length > 0 ? sportIdToBookmakerIds[_sportId] : defaultBookmakerIds;
+    }
+
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
 
     /// @notice proxy all retrieved data for created games from CL to consumer
@@ -245,6 +276,37 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewLinkAddress(_link);
     }
 
+    /// @notice setting odds spec id
+    /// @param _specId spec id
+    function setOddsSpecId(bytes32 _specId) external onlyOwner {
+        oddsSpecId = _specId;
+        emit NewOddsSpecId(_specId);
+    }
+
+    /// @notice setting amm address
+    /// @param _sportsAmm amm address
+    function setSportsAmmAddress(address _sportsAmm) external onlyOwner {
+        require(_sportsAmm != address(0), "Invalid address");
+        sportsAMM = _sportsAmm;
+        emit NewSportsAmmAddress(_sportsAmm);
+    }
+
+    /// @notice setting default bookmakers
+    /// @param _defaultBookmakerIds array of bookmaker ids
+    function setDefaultBookmakerIds(uint256[] memory _defaultBookmakerIds) external onlyOwner {
+        defaultBookmakerIds = _defaultBookmakerIds;
+        emit NewDefaultBookmakerIds(_defaultBookmakerIds);
+    }
+
+    /// @notice setting bookmaker by sports id
+    /// @param _sportId id of a sport
+    /// @param _bookmakerIds array of bookmakers
+    function setBookmakerIdsBySportId(uint256 _sportId, uint256[] memory _bookmakerIds) external onlyOwner {
+        require(consumer.isSupportedSport(_sportId), "SportId is not supported");
+        sportIdToBookmakerIds[_sportId] = _bookmakerIds;
+        emit NewBookmakerIdsBySportId(_sportId, _bookmakerIds);
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier isValidRequest(string memory _market, uint256 _sportId) {
@@ -261,4 +323,9 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     event NewPaymentAmountOdds(uint _paymentOdds);
     event NewConsumer(address _consumer);
     event NewLinkAddress(address _link);
+    event NewOddsSpecId(bytes32 _specId);
+    event NewSportsAmmAddress(address _sportsAmm);
+    event NewBookmakerIdsBySportId(uint256 _sportId, uint256[] _ids);
+    event NewDefaultBookmakerIds(uint256[] _ids);
+    event UpdateOddsFromAMMForAGame(uint256 _sportId, uint256 _date, address _marketAddress);
 }

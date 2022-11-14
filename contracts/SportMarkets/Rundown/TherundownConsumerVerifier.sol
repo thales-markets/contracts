@@ -240,6 +240,19 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         }
     }
 
+    /// @notice view function which returns odds in a batch of games
+    /// @param _gameIds game ids for which games is looking
+    /// @return odds odds array
+    function getOddsForGames(bytes32[] memory _gameIds) external view returns (int24[] memory odds) {
+        odds = new int24[](3 * _gameIds.length);
+        for (uint i = 0; i < _gameIds.length; i++) {
+            (int24 home, int24 away, int24 draw) = consumer.getOddsForGame(_gameIds[i]);
+            odds[i * 3 + 0] = home; // 0 3 6 ...
+            odds[i * 3 + 1] = away; // 1 4 7 ...
+            odds[i * 3 + 2] = draw; // 2 5 8 ...
+        }
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     /// @notice sets consumer address

@@ -7,6 +7,7 @@ import "../../interfaces/ISportPositionalMarket.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "../../utils/libraries/AddressSetLib.sol";
 import "./ParlayMarket.sol";
 
@@ -135,11 +136,14 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
 
     // todo
     function exerciseParlays(address[] memory _parlayMarket) external {
+        uint profit = IERC20Upgradeable(IParlayMarketsAMM(parlayMarketsAMM).sUSD()).balanceOf(parlayMarketsAMM);
         for (uint i = 0; i < _parlayMarket.length; i++) {
             if (IParlayMarketsAMM(parlayMarketsAMM).isActiveParlay(_parlayMarket[i])) {
                 IParlayMarketsAMM(parlayMarketsAMM).exerciseParlay(_parlayMarket[i]);
             }
         }
+        profit = IERC20Upgradeable(IParlayMarketsAMM(parlayMarketsAMM).sUSD()).balanceOf(parlayMarketsAMM) - profit;
+        emit ParlaysExercised(profit, _parlayMarket);
     }
 
     // todo
@@ -225,4 +229,5 @@ contract ParlayMarketData is Initializable, ProxyOwned, ProxyPausable {
     }
 
     event SetParlayMarketsAMM(address _parlayMarketsAMM);
+    event ParlaysExercised(uint profit, address[] parlays);
 }

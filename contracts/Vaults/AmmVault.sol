@@ -178,6 +178,9 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
                     balancesPerRound[round + 1][user] = balancesPerRound[round + 1][user] + balanceAfterCurRound;
                     userInRound[round + 1][user] = true;
                     usersPerRound[round + 1].push(user);
+                    if (address(stakingThales) != address(0)) {
+                        stakingThales.updateVolume(user, balancesPerRound[round + 1][user]);
+                    }
                 } else {
                     balancesPerRound[round + 1][user] = 0;
                     sUSD.safeTransfer(user, balanceAfterCurRound);

@@ -27,6 +27,9 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     uint public defaultOddsThreshold;
     mapping(uint => uint) public oddsThresholdForSport;
 
+    uint256[] public defaultBookmakerIds;
+    mapping(uint256 => uint256[]) public sportIdToBookmakerIds;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -253,6 +256,12 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         }
     }
 
+    /// @notice getting bookmaker by sports id
+    /// @param _sportId id of a sport for fetching
+    function getBookmakerIdsBySportId(uint256 _sportId) external view returns (uint256[] memory) {
+        return sportIdToBookmakerIds[_sportId].length > 0 ? sportIdToBookmakerIds[_sportId] : defaultBookmakerIds;
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     /// @notice sets consumer address
@@ -299,10 +308,28 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         emit NewCustomOddsThresholdForSport(_sportId, _oddsThresholdForSport);
     }
 
+    /// @notice setting default bookmakers
+    /// @param _defaultBookmakerIds array of bookmaker ids
+    function setDefaultBookmakerIds(uint256[] memory _defaultBookmakerIds) external onlyOwner {
+        defaultBookmakerIds = _defaultBookmakerIds;
+        emit NewDefaultBookmakerIds(_defaultBookmakerIds);
+    }
+
+    /// @notice setting bookmaker by sports id
+    /// @param _sportId id of a sport
+    /// @param _bookmakerIds array of bookmakers
+    function setBookmakerIdsBySportId(uint256 _sportId, uint256[] memory _bookmakerIds) external onlyOwner {
+        require(consumer.isSupportedSport(_sportId), "SportId is not supported");
+        sportIdToBookmakerIds[_sportId] = _bookmakerIds;
+        emit NewBookmakerIdsBySportId(_sportId, _bookmakerIds);
+    }
+
     /* ========== EVENTS ========== */
     event NewConsumerAddress(address _consumer);
     event SetInvalidName(bytes32 _invalidName, bool _isInvalid);
     event SetSupportedMarketType(bytes32 _supportedMarketType, bool _isSupported);
     event NewDefaultOddsThreshold(uint _defaultOddsThreshold);
     event NewCustomOddsThresholdForSport(uint _sportId, uint _oddsThresholdForSport);
+    event NewBookmakerIdsBySportId(uint256 _sportId, uint256[] _ids);
+    event NewDefaultBookmakerIds(uint256[] _ids);
 }

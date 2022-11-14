@@ -33,4 +33,6 @@ interface ITherundownConsumerVerifier {
     ) external view returns (bool);
 
     function calculateAndNormalizeOdds(int[] memory _americanOdds) external view returns (uint[] memory);
+
+    function getBookmakerIdsBySportId(uint256 _sportId) external view returns (uint256[] memory);
 }

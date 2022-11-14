@@ -10,6 +10,7 @@ import "@openzeppelin/contracts-4.4.1/token/ERC20/utils/SafeERC20.sol";
 
 // internal
 import "../../interfaces/ITherundownConsumer.sol";
+import "../../interfaces/ITherundownConsumerVerifier.sol";
 
 /// @title Wrapper contract which calls CL sports data (Link to docs: https://market.link/nodes/TheRundown/integrations)
 /// @author gruja
@@ -18,14 +19,13 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     using SafeERC20 for IERC20;
 
     ITherundownConsumer public consumer;
+    ITherundownConsumerVerifier public verifier;
     mapping(bytes32 => uint) public sportIdPerRequestId;
     mapping(bytes32 => uint) public datePerRequest;
     uint public paymentCreate;
     uint public paymentResolve;
     uint public paymentOdds;
     IERC20 public linkToken;
-    uint256[] public defaultBookmakerIds;
-    mapping(uint256 => uint256[]) public sportIdToBookmakerIds;
     bytes32 public oddsSpecId;
     address public sportsAMM;
 
@@ -40,7 +40,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint _paymentOdds,
         bytes32 _oddsSpecId,
         address _sportsAMM,
-        uint256[] memory _defaultBookmakerIds
+        address _verifier
     ) {
         setChainlinkToken(_link);
         setChainlinkOracle(_oracle);
@@ -51,7 +51,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         linkToken = IERC20(_link);
         oddsSpecId = _oddsSpecId;
         sportsAMM = _sportsAMM;
-        defaultBookmakerIds = _defaultBookmakerIds;
+        verifier = ITherundownConsumerVerifier(_verifier);
     }
 
     /* ========== CONSUMER REQUEST FUNCTIONS ========== */
@@ -165,10 +165,8 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
 
         // don't fail if no link in it
         if (linkToken.balanceOf(address(this)) >= paymentOdds) {
-            string[] memory _gameIds = new string[](1);
-            (uint _sportId, uint _date, bytes32 _id) = consumer.getGamePropsForOdds(_marketAddress);
-            _gameIds[0] = string(abi.encodePacked(_id));
-            requestOddsWithFilters(oddsSpecId, _sportId, _date, _gameIds);
+            (uint _sportId, uint _date, ) = consumer.getGamePropsForOdds(_marketAddress);
+            _requestOddsWithFiltersFromAmm(oddsSpecId, _sportId, _date);
             emit UpdateOddsFromAMMForAGame(_sportId, _date, _marketAddress);
         }
     }
@@ -176,7 +174,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /// @notice getting bookmaker by sports id
     /// @param _sportId id of a sport for fetching
     function getBookmakerIdsBySportId(uint256 _sportId) external view returns (uint256[] memory) {
-        return sportIdToBookmakerIds[_sportId].length > 0 ? sportIdToBookmakerIds[_sportId] : defaultBookmakerIds;
+        return verifier.getBookmakerIdsBySportId(_sportId);
     }
 
     /* ========== CONSUMER FULFILL FUNCTIONS ========== */
@@ -225,6 +223,21 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         linkToken.safeTransferFrom(_sender, address(this), _payment);
     }
 
+    function _requestOddsWithFiltersFromAmm(
+        bytes32 _specId,
+        uint256 _sportId,
+        uint256 _date
+    ) internal {
+        Chainlink.Request memory req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesOdds.selector);
+
+        req.addUint("date", _date);
+        req.addUint("sportId", _sportId);
+
+        bytes32 requestId = sendChainlinkRequest(req, paymentOdds);
+        sportIdPerRequestId[requestId] = _sportId;
+        datePerRequest[requestId] = _date;
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     /// @notice setting payment for game creation request
@@ -267,6 +280,14 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewConsumer(_consumer);
     }
 
+    /// @notice setting consumer verifier address
+    /// @param _verifier address of a consumer verifier
+    function setVerifier(address _verifier) external onlyOwner {
+        require(_verifier != address(0), "Invalid address");
+        verifier = ITherundownConsumerVerifier(_verifier);
+        emit NewVerifier(_verifier);
+    }
+
     /// @notice setting link address
     /// @param _link address of a LINK which request will be paid
     function setLink(address _link) external onlyOwner {
@@ -291,20 +312,11 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         emit NewSportsAmmAddress(_sportsAmm);
     }
 
-    /// @notice setting default bookmakers
-    /// @param _defaultBookmakerIds array of bookmaker ids
-    function setDefaultBookmakerIds(uint256[] memory _defaultBookmakerIds) external onlyOwner {
-        defaultBookmakerIds = _defaultBookmakerIds;
-        emit NewDefaultBookmakerIds(_defaultBookmakerIds);
-    }
-
-    /// @notice setting bookmaker by sports id
-    /// @param _sportId id of a sport
-    /// @param _bookmakerIds array of bookmakers
-    function setBookmakerIdsBySportId(uint256 _sportId, uint256[] memory _bookmakerIds) external onlyOwner {
-        require(consumer.isSupportedSport(_sportId), "SportId is not supported");
-        sportIdToBookmakerIds[_sportId] = _bookmakerIds;
-        emit NewBookmakerIdsBySportId(_sportId, _bookmakerIds);
+    /// @notice Retrieve LINK from the contract
+    /// @param account whom to send the LINK
+    /// @param amount how much LINK to retrieve
+    function retrieveLINKAmount(address payable account, uint amount) external onlyOwner {
+        linkToken.safeTransfer(account, amount);
     }
 
     /* ========== MODIFIERS ========== */
@@ -322,10 +334,9 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     event NewPaymentAmountResolve(uint _paymentResolve);
     event NewPaymentAmountOdds(uint _paymentOdds);
     event NewConsumer(address _consumer);
+    event NewVerifier(address _verifier);
     event NewLinkAddress(address _link);
     event NewOddsSpecId(bytes32 _specId);
     event NewSportsAmmAddress(address _sportsAmm);
-    event NewBookmakerIdsBySportId(uint256 _sportId, uint256[] _ids);
-    event NewDefaultBookmakerIds(uint256[] _ids);
     event UpdateOddsFromAMMForAGame(uint256 _sportId, uint256 _date, address _marketAddress);
 }

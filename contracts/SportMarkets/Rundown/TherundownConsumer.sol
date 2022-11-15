@@ -324,7 +324,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _sportId date
     /// @param _date date
     /// @return bytes32[] list of games
-    function getGamesPerDatePerSport(uint _sportId, uint _date) public view returns (bytes32[] memory) {
+    function getGamesPerDatePerSport(uint _sportId, uint _date) external view returns (bytes32[] memory) {
         return gamesPerDatePerSport[_sportId][_date];
     }
 

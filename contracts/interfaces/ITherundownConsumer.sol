@@ -22,7 +22,7 @@ interface ITherundownConsumer {
 
     function getNormalizedOddsForTwoPosition(bytes32 _gameId) external view returns (uint[] memory);
 
-    function gamesPerDatePerSport(uint _sportId, uint _date) external view returns (bytes32[] memory);
+    function getGamesPerDatePerSport(uint _sportId, uint _date) external view returns (bytes32[] memory);
 
     function getGamePropsForOdds(address _market)
         external

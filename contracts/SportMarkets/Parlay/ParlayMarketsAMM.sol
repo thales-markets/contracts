@@ -226,6 +226,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             true,
             _differentRecepient
         );
+        if (referrerFee > 0 && referrals != address(0)) {
+            _handleReferrer(_differentRecepient, _sUSDPaid);
+        }
     }
 
     function buyFromParlayWithReferrer(
@@ -253,7 +256,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             _differentRecepient
         );
         if (referrerFee > 0 && referrals != address(0)) {
-            _handleReferrer(msg.sender, _sUSDPaid);
+            _handleReferrer(_differentRecepient, _sUSDPaid);
         }
     }
 
@@ -368,11 +371,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         require(((ONE * _expectedPayout) / totalAmount) <= (ONE + _additionalSlippage), "Slippage too high");
 
         if (_sendSUSD) {
-            sUSD.safeTransferFrom(msg.sender, address(this), sUSDAfterFees);
-            sUSD.safeTransferFrom(msg.sender, safeBox, safeBoxAmount);
-        } else {
-            sUSD.safeTransfer(safeBox, safeBoxAmount);
+            sUSD.safeTransferFrom(msg.sender, address(this), _sUSDPaid);
         }
+        sUSD.safeTransfer(safeBox, safeBoxAmount);
 
         // mint the stateful token  (ERC-20)
         // clone a parlay market

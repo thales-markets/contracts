@@ -24,7 +24,14 @@ interface ITherundownConsumer {
 
     function getGameCreatedById(address _market) external view returns (bytes32);
 
-    function getResult(bytes32 _gameId) external view returns (uint);
+    function getGamePropsForOdds(address _market)
+        external
+        view
+        returns (
+            uint,
+            uint,
+            bytes32
+        );
 
     function gameIdPerMarket(address _market) external view returns (bytes32);
 
@@ -56,4 +63,13 @@ interface ITherundownConsumer {
         uint8 _homeScore,
         uint8 _awayScore
     ) external;
+
+    function getOddsForGame(bytes32 _gameId)
+        external
+        view
+        returns (
+            int24,
+            int24,
+            int24
+        );
 }

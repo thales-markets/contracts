@@ -37,6 +37,18 @@
         "internalType": "address",
         "name": "_referrals",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_parlayAMM",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_wrapper",
+        "type": "address"
       }
     ],
     "name": "AddressesUpdated",
@@ -271,6 +283,19 @@
       }
     ],
     "name": "SetSportsPositionalMarketManager",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetThresholdForOddsUpdate",
     "type": "event"
   },
   {
@@ -1281,6 +1306,11 @@
         "internalType": "address",
         "name": "_parlayAMM",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_wrapper",
+        "type": "address"
       }
     ],
     "name": "setAddresses",
@@ -1465,6 +1495,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "setThresholdForOddsUpdate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "",
         "type": "address"
@@ -1502,6 +1545,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "thresholdForOddsUpdate",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1557,6 +1613,19 @@
     "outputs": [
       {
         "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wrapper",
+    "outputs": [
+      {
+        "internalType": "contract ITherundownConsumerWrapper",
         "name": "",
         "type": "address"
       }

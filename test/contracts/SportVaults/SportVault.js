@@ -425,6 +425,7 @@ contract('SportsAMM', (accounts) => {
 			StakingThales.address,
 			Referrals.address,
 			Referrals.address,
+			wrapper,
 			{ from: owner }
 		);
 

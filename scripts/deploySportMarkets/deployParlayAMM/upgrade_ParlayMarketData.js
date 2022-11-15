@@ -48,26 +48,43 @@ async function main() {
 	const ParlayMarketDataAddress = getTargetAddress('ParlayMarketData', network);
 	const ParlayMarketData = await ethers.getContractFactory('ParlayMarketData');
 
-	await upgrades.upgradeProxy(ParlayMarketDataAddress, ParlayMarketData);
+	if (networkObj.chainId == 10 || networkObj.chainId == 5) {
+		const implementation = await upgrades.prepareUpgrade(ParlayMarketDataAddress, ParlayMarketData);
+		await delay(5000);
 
-	await delay(60000);
+		console.log('ParlayMarketData upgraded');
 
-	const ParlayMarketDataImplementation = await getImplementationAddress(
-		ethers.provider,
-		ParlayMarketDataAddress
-	);
+		console.log('Implementation ParlayMarketData: ', implementation);
+		setTargetAddress('ParlayMarketData', network, implementation);
+		try {
+			await hre.run('verify:verify', {
+				address: implementation,
+			});
+		} catch (e) {
+			console.log(e);
+		}
+	} else {
+		await upgrades.upgradeProxy(ParlayMarketDataAddress, ParlayMarketData);
 
-	console.log('Implementation ParlayMarketData: ', ParlayMarketDataImplementation);
-	setTargetAddress('ParlayMarketDataImplementation', network, ParlayMarketDataImplementation);
+		await delay(60000);
 
-	await delay(2000);
+		const ParlayMarketDataImplementation = await getImplementationAddress(
+			ethers.provider,
+			ParlayMarketDataAddress
+		);
 
-	try {
-		await hre.run('verify:verify', {
-			address: ParlayMarketDataImplementation,
-		});
-	} catch (e) {
-		console.log(e);
+		console.log('Implementation ParlayMarketData: ', ParlayMarketDataImplementation);
+		setTargetAddress('ParlayMarketDataImplementation', network, ParlayMarketDataImplementation);
+
+		await delay(2000);
+
+		try {
+			await hre.run('verify:verify', {
+				address: ParlayMarketDataImplementation,
+			});
+		} catch (e) {
+			console.log(e);
+		}
 	}
 }
 

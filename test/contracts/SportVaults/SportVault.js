@@ -474,6 +474,10 @@ contract('SportsAMM', (accounts) => {
 		await Thales.approve(vault.address, toUnit('100000'), { from: first });
 		await Thales.approve(vault.address, toUnit('100000'), { from: second });
 		await Thales.approve(vault.address, toUnit('100000'), { from: third });
+
+		await StakingThales.setSupportedSportVault(vault.address, true, { from: owner });
+		await StakingThales.startStakingPeriod({ from: owner });
+		await vault.setStakingThales(StakingThales.address, { from: owner });
 	});
 
 	describe('Test sport vault', () => {
@@ -516,6 +520,12 @@ contract('SportsAMM', (accounts) => {
 
 			await vault.deposit(toUnit(100), { from: first });
 
+			let volume = await StakingThales.getAMMVolume(first);
+			console.log('volume first is:' + volume / 1e18);
+
+			volume = await StakingThales.getAMMVolume(second);
+			console.log('volume second is:' + volume / 1e18);
+
 			round = 1;
 			assert.bnEqual(await vault.getBalancesPerRound(round, first), toUnit(100));
 
@@ -553,6 +563,15 @@ contract('SportsAMM', (accounts) => {
 			await fastForward(day);
 			// CLOSE ROUND #1 - START ROUND #2
 			await vault.closeRound();
+
+			volume = await StakingThales.getAMMVolume(first);
+			console.log('volume first round 2 is:' + volume / 1e18);
+
+			volume = await StakingThales.getAMMVolume(second);
+			console.log('volume second round 2 is:' + volume / 1e18);
+
+			await StakingThales.delegateVolume(second, { from: first });
+
 			round = 2;
 			assert.bnEqual(await vault.getBalancesPerRound(round, first), toUnit(100));
 			assert.bnEqual(await vault.getBalancesPerRound(round, second), toUnit(200));
@@ -566,6 +585,12 @@ contract('SportsAMM', (accounts) => {
 			await fastForward(day);
 			// CLOSE ROUND #1 - START ROUND #3
 			await vault.closeRound();
+
+			volume = await StakingThales.getAMMVolume(first);
+			console.log('volume first round 3 is:' + volume / 1e18);
+
+			volume = await StakingThales.getAMMVolume(second);
+			console.log('volume second round 3 is:' + volume / 1e18);
 			round = 3;
 			assert.bnEqual(await vault.getBalancesPerRound(round, first), toUnit(100));
 			assert.bnEqual(await vault.getBalancesPerRound(round, second), 0);
@@ -678,7 +703,16 @@ contract('SportsAMM', (accounts) => {
 			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(1));
 			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
 
+			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 0, toUnit(20));
+			console.log('buyQuote 20: ', fromUnit(buyFromAmmQuote));
+
+			let allocationSpentInARound = await vault.allocationSpentInARound(round);
+			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
+
 			await vault.trade(deployedMarket.address, toUnit(20), 0);
+
+			allocationSpentInARound = await vault.allocationSpentInARound(round);
+			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
 
 			await assert.revert(
 				vault.trade(deployedMarket.address, toUnit(20), 1),
@@ -772,6 +806,12 @@ contract('SportsAMM', (accounts) => {
 
 			profitAndLossPerRound = await vault.profitAndLossPerRound(round - 1);
 			console.log('profitAndLossPerRound is:' + profitAndLossPerRound / 1e18);
+
+			volume = await StakingThales.getAMMVolume(first);
+			console.log('volume first is:' + volume / 1e18);
+
+			volume = await StakingThales.getAMMVolume(second);
+			console.log('volume second is:' + volume / 1e18);
 		});
 	});
 });

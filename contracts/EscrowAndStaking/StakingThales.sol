@@ -112,6 +112,10 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     bool public mergeAccountEnabled;
 
+    mapping(address => address) public delegatedVolume;
+    mapping(address => bool) public supportedSportVault;
+    mapping(address => bool) public supportedAMMVault;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(
@@ -279,7 +283,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         address _priceFeed,
         address _thalesStakingRewardsPool,
         address _addressResolver
-    ) public onlyOwner {
+    ) external onlyOwner {
         require(
             _snxRewards != address(0) &&
                 _royale != address(0) &&
@@ -318,13 +322,29 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
 
     /// @notice Set address of Escrow Thales contract
     /// @param _escrowThalesContract address of Escrow Thales contract
-    function setEscrow(address _escrowThalesContract) public onlyOwner {
+    function setEscrow(address _escrowThalesContract) external onlyOwner {
         if (address(iEscrowThales) != address(0)) {
             stakingToken.approve(address(iEscrowThales), 0);
         }
         iEscrowThales = IEscrowThales(_escrowThalesContract);
         stakingToken.approve(_escrowThalesContract, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
         emit EscrowChanged(_escrowThalesContract);
+    }
+
+    /// @notice add a sport vault address to count towards gamified staking volume
+    /// @param _sportVault address to set
+    /// @param value to set
+    function setSupportedSportVault(address _sportVault, bool value) external onlyOwner {
+        supportedSportVault[_sportVault] = value;
+        emit SupportedSportVaultSet(_sportVault, value);
+    }
+
+    /// @notice add a amm vault address to count towards gamified staking volume
+    /// @param _ammVault address to set
+    /// @param value to set
+    function setSupportedAMMVault(address _ammVault, bool value) external onlyOwner {
+        supportedAMMVault[_ammVault] = value;
+        emit SupportedAMMVaultSet(_ammVault, value);
     }
 
     /// @notice Get the address of the SNX rewards contract
@@ -646,10 +666,21 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     /// @param amount to add to the existing protocol volume
     function updateVolume(address account, uint amount) external {
         require(account != address(0) && amount > 0, "Invalid params");
+
+        if (delegatedVolume[account] != address(0)) {
+            account = delegatedVolume[account];
+        }
+
         require(
-            msg.sender == thalesAMM || msg.sender == exoticBonds || msg.sender == thalesRangedAMM || msg.sender == sportsAMM,
+            msg.sender == thalesAMM ||
+                msg.sender == exoticBonds ||
+                msg.sender == thalesRangedAMM ||
+                msg.sender == sportsAMM ||
+                supportedSportVault[msg.sender] ||
+                supportedAMMVault[msg.sender],
             "Invalid address"
         );
+
         if (lastAMMUpdatePeriod[account] < periodsOfStaking) {
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
             stakerAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
@@ -659,7 +690,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)
         ].amount.add(amount);
 
-        if (msg.sender == thalesAMM) {
+        if (msg.sender == thalesAMM || supportedAMMVault[msg.sender]) {
             if (lastThalesAMMUpdatePeriod[account] < periodsOfStaking) {
                 thalesAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
                 thalesAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
@@ -681,18 +712,7 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
             ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
         }
 
-        if (msg.sender == exoticBonds) {
-            if (lastExoticMarketsUpdatePeriod[account] < periodsOfStaking) {
-                exoticMarketsVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
-                exoticMarketsVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
-                lastExoticMarketsUpdatePeriod[account] = periodsOfStaking;
-            }
-            exoticMarketsVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = exoticMarketsVolume[
-                account
-            ][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount.add(amount);
-        }
-
-        if (msg.sender == sportsAMM) {
+        if (msg.sender == sportsAMM || supportedSportVault[msg.sender]) {
             if (lastSportsAMMUpdatePeriod[account] < periodsOfStaking) {
                 sportsAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].amount = 0;
                 sportsAMMVolume[account][periodsOfStaking.mod(AMM_EXTRA_REWARD_PERIODS)].period = periodsOfStaking;
@@ -771,6 +791,13 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
         require(account != address(0) && account != msg.sender, "Invalid address");
         canClaimOnBehalf[msg.sender][account] = _canClaimOnBehalf;
         emit CanClaimOnBehalfChanged(msg.sender, account, _canClaimOnBehalf);
+    }
+
+    /// @notice delegate your volume to another address
+    /// @param account address to delegate to
+    function delegateVolume(address account) external notPaused {
+        delegatedVolume[msg.sender] = account;
+        emit DelegatedVolume(account);
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
@@ -932,5 +959,8 @@ contract StakingThales is IStakingThales, Initializable, ProxyOwned, ProxyReentr
     event StakingPeriodStarted();
     event AMMVolumeUpdated(address account, uint amount, address source);
     event AccountMerged(address srcAccount, address destAccount);
+    event DelegatedVolume(address destAccount);
     event CanClaimOnBehalfChanged(address sender, address account, bool canClaimOnBehalf);
+    event SupportedAMMVaultSet(address vault, bool value);
+    event SupportedSportVaultSet(address vault, bool value);
 }

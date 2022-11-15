@@ -9,11 +9,11 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
-import "../interfaces/ISportsAMM.sol";
-import "../interfaces/ISportPositionalMarket.sol";
+import "../interfaces/IThalesAMM.sol";
+import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IStakingThales.sol";
 
-contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
+contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
     /* ========== LIBRARIES ========== */
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
@@ -24,7 +24,7 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
 
     struct InitParams {
         address _owner;
-        ISportsAMM _sportsAmm;
+        IThalesAMM _thalesAmm;
         IERC20Upgradeable _sUSD;
         uint _roundLength;
         uint _priceLowerLimit;
@@ -44,7 +44,7 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
 
     /* ========== STATE VARIABLES ========== */
 
-    ISportsAMM public sportsAMM;
+    IThalesAMM public thalesAMM;
     IERC20Upgradeable public sUSD;
 
     bool public vaultStarted;
@@ -63,7 +63,7 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
     mapping(uint => uint) public allocationPerRound;
 
     mapping(uint => address[]) public tradingMarketsPerRound;
-    mapping(uint => mapping(address => ISportsAMM.Position)) public tradingMarketPositionPerRound;
+    mapping(uint => mapping(address => IThalesAMM.Position)) public tradingMarketPositionPerRound;
     mapping(uint => mapping(address => bool)) public isTradingMarketInARound;
 
     mapping(uint => uint) public profitAndLossPerRound;
@@ -96,9 +96,9 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
 
     /* ========== CONSTRUCTOR ========== */
 
-    function __BaseSportVault_init(
+    function __BaseVault_init(
         address _owner,
-        ISportsAMM _sportAmm,
+        IThalesAMM _thalesAmm,
         IERC20Upgradeable _sUSD,
         uint _roundLength,
         uint _maxAllowedDeposit,
@@ -108,7 +108,7 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
     ) internal onlyInitializing {
         setOwner(_owner);
         initNonReentrant();
-        sportsAMM = ISportsAMM(_sportAmm);
+        thalesAMM = IThalesAMM(_thalesAmm);
 
         sUSD = _sUSD;
         roundLength = _roundLength;
@@ -117,13 +117,13 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
         minDepositAmount = _minDepositAmount;
         maxAllowedUsers = _maxAllowedUsers;
 
-        sUSD.approve(address(sportsAMM), type(uint256).max);
+        sUSD.approve(address(thalesAMM), type(uint256).max);
     }
 
     function initialize(InitParams calldata params) external initializer {
-        __BaseSportVault_init(
+        __BaseVault_init(
             params._owner,
-            params._sportsAmm,
+            params._thalesAmm,
             params._sUSD,
             params._roundLength,
             params._maxAllowedDeposit,
@@ -262,19 +262,19 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
     function trade(
         address market,
         uint amount,
-        ISportsAMM.Position position
+        IThalesAMM.Position position
     ) external nonReentrant whenNotPaused {
         require(vaultStarted, "Vault has not started");
         require(amount >= minTradeAmount, "Amount less than minimum");
 
-        ISportPositionalMarket marketContract = ISportPositionalMarket(market);
+        IPositionalMarket marketContract = IPositionalMarket(market);
         (uint maturity, ) = marketContract.times();
         require(maturity < (roundStartTime[round] + roundLength), "Market time not valid");
 
-        uint pricePosition = sportsAMM.buyFromAmmQuote(address(market), position, ONE);
+        uint pricePosition = thalesAMM.buyFromAmmQuote(address(market), position, ONE);
         require(pricePosition > 0, "Price not more than 0");
 
-        int pricePositionImpact = sportsAMM.buyPriceImpact(address(market), position, amount);
+        int pricePositionImpact = thalesAMM.buyPriceImpact(address(market), position, amount);
 
         require(pricePosition >= priceLowerLimit && pricePosition <= priceUpperLimit, "Market price not valid");
         require(pricePositionImpact < skewImpactLimit, "Skew impact too high");
@@ -294,11 +294,11 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
     }
 
     /// @notice Set ThalesAMM contract
-    /// @param _sportAMM ThalesAMM address
-    function setSportAmm(ISportsAMM _sportAMM) external onlyOwner {
-        sportsAMM = _sportAMM;
-        sUSD.approve(address(sportsAMM), type(uint256).max);
-        emit SportAMMChanged(address(_sportAMM));
+    /// @param _thalesAMM ThalesAMM address
+    function setThalesAmm(IThalesAMM _thalesAMM) external onlyOwner {
+        thalesAMM = _thalesAMM;
+        sUSD.approve(address(thalesAMM), type(uint256).max);
+        emit ThalesAMMChanged(address(_thalesAMM));
     }
 
     /// @notice Set IStakingThales contract
@@ -371,12 +371,12 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _exerciseMarketsReadyToExercised() internal {
-        ISportPositionalMarket market;
+        IPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            if (!market.paused() && market.resolved()) {
-                (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(this));
-                if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+            market = IPositionalMarket(tradingMarketsPerRound[round][i]);
+            if (market.resolved()) {
+                (uint upBalance, uint downBalance) = market.balancesOf(address(this));
+                if (upBalance > 0 || downBalance > 0) {
                     market.exerciseOptions();
                 }
             }
@@ -389,7 +389,7 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
     /// @param amount amount of positions to be bought
     function _buyFromAmm(
         address market,
-        ISportsAMM.Position position,
+        IThalesAMM.Position position,
         uint amount
     ) internal {
         if (isTradingMarketInARound[round][market]) {
@@ -398,7 +398,7 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
                 "Cannot trade different options on the same market"
             );
         }
-        uint quote = sportsAMM.buyFromAmmQuote(market, position, amount);
+        uint quote = thalesAMM.buyFromAmmQuote(market, position, amount);
         require(quote < (tradingAllocation() - allocationSpentInARound[round]), "Amount exceeds available allocation");
 
         uint allocationAsset = (tradingAllocation() * allocationLimitsPerMarketPerRound) / HUNDRED;
@@ -409,7 +409,7 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
 
         uint balanceBeforeTrade = sUSD.balanceOf(address(this));
 
-        sportsAMM.buyFromAMM(market, position, amount, quote, 0);
+        thalesAMM.buyFromAMM(market, position, amount, quote, 0);
 
         uint balanceAfterTrade = sUSD.balanceOf(address(this));
 
@@ -435,8 +435,8 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
             return false;
         }
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            ISportPositionalMarket market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            if ((!market.resolved()) || market.paused()) {
+            IPositionalMarket market = IPositionalMarket(tradingMarketsPerRound[round][i]);
+            if ((!market.resolved())) {
                 return false;
             }
         }
@@ -498,7 +498,7 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
     event VaultStarted();
     event RoundClosed(uint round, uint roundPnL);
     event RoundLengthChanged(uint roundLength);
-    event SportAMMChanged(address thalesAmm);
+    event ThalesAMMChanged(address thalesAmm);
     event StakingThalesChanged(address stakingThales);
     event SetSUSD(address sUSD);
     event Deposited(address user, uint amount);
@@ -512,5 +512,5 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
     event SetPriceLimits(uint priceLowerLimit, uint priceUpperLimit);
     event SetSkewImpactLimit(int skewImpact);
     event SetMinTradeAmount(uint SetMinTradeAmount);
-    event TradeExecuted(address market, ISportsAMM.Position position, uint amount, uint quote);
+    event TradeExecuted(address market, IThalesAMM.Position position, uint amount, uint quote);
 }

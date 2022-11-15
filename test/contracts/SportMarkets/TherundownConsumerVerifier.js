@@ -602,6 +602,28 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		});
 	});
 
+	describe('Verifier methods', () => {
+		it('Getting ids', async () => {
+			let empty = [];
+			let s_gameid1 = '4e8312cc6e67eb5b346319ad2ff06b5f';
+			let s_gameid2 = 'a988f618889d8c1d56cee0f66d4d23f4';
+
+			let b_gameid1 = '0x3465383331326363366536376562356233343633313961643266663036623566';
+			let b_gameid2 = '0x6139383866363138383839643863316435366365653066363664346432336634';
+
+			let gameIDs = await verifier.getStringIDsFromBytesArrayIDs(empty);
+			assert.equal(0, gameIDs.length);
+
+			gameIDs = await verifier.getStringIDsFromBytesArrayIDs([b_gameid1]);
+			assert.equal(1, gameIDs.length);
+			assert.equal(s_gameid1, gameIDs[0]);
+
+			gameIDs = await verifier.getStringIDsFromBytesArrayIDs([b_gameid1, b_gameid2]);
+			assert.equal(2, gameIDs.length);
+			assert.equal(s_gameid1, gameIDs[0]);
+			assert.equal(s_gameid2, gameIDs[1]);
+		});
+	});
 	describe('Consumer Verifier Management', () => {
 		it('Test owner functions', async () => {
 			let bookee = [5];

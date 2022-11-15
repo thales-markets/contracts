@@ -221,12 +221,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice fulfill all data necessary to populate odds of a game
     /// @param _requestId unique request id form CL
     /// @param _games array of a games that needed to update the odds
-    /// @param _date date on which game/games are played
-    function fulfillGamesOdds(
-        bytes32 _requestId,
-        bytes[] memory _games,
-        uint _date
-    ) external onlyWrapper {
+    function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external onlyWrapper {
         requestIdGamesOdds[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
             GameOdds memory game = abi.decode(_games[i], (GameOdds));
@@ -333,13 +328,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return gamesPerDatePerSport[_sportId][_date];
     }
 
-    /// @notice view function which returns game resolved object based on id of a game
-    /// @param _gameId game id
-    /// @return GameResolve game resolve object
-    function getGameResolvedById(bytes32 _gameId) public view returns (GameResolve memory) {
-        return gameResolved[_gameId];
-    }
-
     /// @notice view function which returns if market type is supported, checks are done in a wrapper contract
     /// @param _market type of market (create or resolve)
     /// @return bool supported or not
@@ -388,7 +376,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _gameId game id for which game is looking
     /// @return bool is game resolved true/false
     function isGameInResolvedStatus(bytes32 _gameId) public view returns (bool) {
-        return _isGameStatusResolved(getGameResolvedById(_gameId));
+        return _isGameStatusResolved(gameResolved[_gameId]);
     }
 
     /// @notice view function which returns normalized odds up to 100 (Example: 50-40-10)
@@ -399,7 +387,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         odds[0] = gameOdds[_gameId].homeOdds;
         odds[1] = gameOdds[_gameId].awayOdds;
         odds[2] = gameOdds[_gameId].drawOdds;
-        return _calculateAndNormalizeOdds(odds);
+        return verifier.calculateAndNormalizeOdds(odds);
     }
 
     /* ========== INTERNALS ========== */
@@ -515,7 +503,7 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     }
 
     function _resolveMarket(bytes32 _gameId) internal {
-        GameResolve memory game = getGameResolvedById(_gameId);
+        GameResolve memory game = gameResolved[_gameId];
         GameCreate memory singleGameCreated = getGameCreatedById(_gameId);
         uint index = queues.unproccessedGamesIndex(_gameId);
 
@@ -627,11 +615,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
     function _setMarketCancelOrResolved(address _market, uint _outcome) internal {
         sportsManager.resolveMarket(_market, _outcome);
-        if (_outcome == CANCELLED) {
-            marketCanceled[_market] = true;
-        } else {
-            marketResolved[_market] = true;
-        }
+        marketCanceled[_market] = _outcome == CANCELLED;
+        marketResolved[_market] = _outcome != CANCELLED;
     }
 
     function _cleanStorageQueue(uint index) internal {
@@ -669,22 +654,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 _game.awayOdds,
                 _game.drawOdds
             );
-    }
-
-    function _isValidOutcomeForGame(bytes32 _gameId, uint _outcome) internal view returns (bool) {
-        return verifier.isValidOutcomeForGame(isSportTwoPositionsSport(sportsIdPerGame[_gameId]), _outcome);
-    }
-
-    function _isValidOutcomeWithResult(
-        uint _outcome,
-        uint _homeScore,
-        uint _awayScore
-    ) internal view returns (bool) {
-        return verifier.isValidOutcomeWithResult(_outcome, _homeScore, _awayScore);
-    }
-
-    function _calculateAndNormalizeOdds(int[] memory _americanOdds) internal view returns (uint[] memory) {
-        return verifier.calculateAndNormalizeOdds(_americanOdds);
     }
 
     function _updateGameOnADate(
@@ -797,7 +766,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         require(!isGameResolvedOrCanceled(_gameId), "ID13");
         require(marketPerGameId[_gameId] != address(0), "ID14");
         require(
-            _isValidOutcomeForGame(_gameId, _outcome) && _isValidOutcomeWithResult(_outcome, _homeScore, _awayScore),
+            verifier.isValidOutcomeForGame(isSportTwoPositionsSport(sportsIdPerGame[_gameId]), _outcome) &&
+                verifier.isValidOutcomeWithResult(_outcome, _homeScore, _awayScore),
             "ID15"
         );
         _;

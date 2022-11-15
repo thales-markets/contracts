@@ -860,11 +860,6 @@
         "internalType": "bytes[]",
         "name": "_games",
         "type": "bytes[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_date",
-        "type": "uint256"
       }
     ],
     "name": "fulfillGamesOdds",
@@ -1226,52 +1221,6 @@
         "internalType": "bytes32",
         "name": "_id",
         "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "_gameId",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getGameResolvedById",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes32",
-            "name": "gameId",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "uint8",
-            "name": "homeScore",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint8",
-            "name": "awayScore",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint8",
-            "name": "statusId",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint40",
-            "name": "lastUpdated",
-            "type": "uint40"
-          }
-        ],
-        "internalType": "struct TherundownConsumer.GameResolve",
-        "name": "",
-        "type": "tuple"
       }
     ],
     "stateMutability": "view",

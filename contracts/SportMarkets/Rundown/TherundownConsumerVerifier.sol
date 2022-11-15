@@ -262,6 +262,17 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         return sportIdToBookmakerIds[_sportId].length > 0 ? sportIdToBookmakerIds[_sportId] : defaultBookmakerIds;
     }
 
+    /// @notice return string array from bytes32 array
+    /// @param _ids bytes32 array of game ids
+    function getStringIDsFromBytesArrayIDs(bytes32[] memory _ids) external view returns (string[] memory _gameIds) {
+        if (_ids.length > 0) {
+            _gameIds = new string[](_ids.length);
+        }
+        for (uint i = 0; i < _ids.length; i++) {
+            _gameIds[i] = string(abi.encodePacked(_ids[i]));
+        }
+    }
+
     /* ========== CONTRACT MANAGEMENT ========== */
 
     /// @notice sets consumer address

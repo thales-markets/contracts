@@ -1920,14 +1920,9 @@ contract('TheRundownConsumer', (accounts) => {
 	describe('Odds for game', () => {
 		it('Get odds per game, check results, geme not created, no odds created', async () => {
 			// req. games
-			const tx = await TherundownConsumerDeployed.fulfillGamesOdds(
-				reqIdOdds,
-				oddsResultArray,
-				game1NBATime,
-				{
-					from: wrapper,
-				}
-			);
+			const tx = await TherundownConsumerDeployed.fulfillGamesOdds(reqIdOdds, oddsResultArray, {
+				from: wrapper,
+			});
 
 			// game not created so zero odds
 			let result = await TherundownConsumerDeployed.getOddsForGame(oddsid);
@@ -1999,7 +1994,6 @@ contract('TheRundownConsumer', (accounts) => {
 			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
 				reqIdOdds_1,
 				oddsResultArray_1,
-				game1NBATime,
 				{
 					from: wrapper,
 				}
@@ -2088,7 +2082,6 @@ contract('TheRundownConsumer', (accounts) => {
 			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
 				reqIdOdds_2,
 				oddsResultArray_2,
-				game1NBATime,
 				{
 					from: wrapper,
 				}
@@ -2179,7 +2172,6 @@ contract('TheRundownConsumer', (accounts) => {
 			const tx_odds = await TherundownConsumerDeployed.fulfillGamesOdds(
 				reqIdOdds_2,
 				oddsResultArray_2,
-				game1NBATime,
 				{
 					from: wrapper,
 				}

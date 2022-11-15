@@ -179,7 +179,7 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
                     userInRound[round + 1][user] = true;
                     usersPerRound[round + 1].push(user);
                     if (address(stakingThales) != address(0)) {
-                        stakingThales.updateVolume(user, balancesPerRound[round + 1][user]);
+                        stakingThales.updateVolume(user, balanceAfterCurRound);
                     }
                 } else {
                     balancesPerRound[round + 1][user] = 0;
@@ -224,12 +224,6 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
             usersCurrentlyInVault = usersCurrentlyInVault + 1;
         }
 
-        if (balancesPerRound[round][msg.sender] == 0) {
-            if (address(stakingThales) != address(0)) {
-                stakingThales.updateVolume(msg.sender, amount);
-            }
-        }
-
         balancesPerRound[nextRound][msg.sender] += amount;
 
         // update deposit state of a user
@@ -237,6 +231,10 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
 
         allocationPerRound[nextRound] += amount;
         capPerRound[nextRound] += amount;
+
+        if (address(stakingThales) != address(0)) {
+            stakingThales.updateVolume(msg.sender, amount);
+        }
 
         emit Deposited(msg.sender, amount);
     }

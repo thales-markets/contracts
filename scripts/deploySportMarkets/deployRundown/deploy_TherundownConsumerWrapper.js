@@ -70,7 +70,7 @@ async function main() {
 
 	console.log('TherundownConsumerVerifier address: ', verifierAddress);
 
-	let oddsSpecId = '0x6434663563656266383432643430363361393734336164333265363934633466';
+	let oddsSpecId = '0x3032393562356366643662643435346262653738363532643732636139363961';
 	console.log('oddsSpecId: ', oddsSpecId);
 
 	const chainlink = require(`./chainlink/${network}.json`);

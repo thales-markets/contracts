@@ -10,7 +10,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
 
 import "../interfaces/IThalesAMM.sol";
-import "../interfaces/ISportPositionalMarket.sol";
+import "../interfaces/IPositionalMarket.sol";
 import "../interfaces/IStakingThales.sol";
 
 contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentrancyGuard {
@@ -371,12 +371,12 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
     /* ========== INTERNAL FUNCTIONS ========== */
 
     function _exerciseMarketsReadyToExercised() internal {
-        ISportPositionalMarket market;
+        IPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            if (!market.paused() && market.resolved()) {
-                (uint homeBalance, uint awayBalance, uint drawBalance) = market.balancesOf(address(this));
-                if (homeBalance > 0 || awayBalance > 0 || drawBalance > 0) {
+            market = IPositionalMarket(tradingMarketsPerRound[round][i]);
+            if (market.resolved()) {
+                (uint upBalance, uint downBalance) = market.balancesOf(address(this));
+                if (upBalance > 0 || downBalance > 0) {
                     market.exerciseOptions();
                 }
             }
@@ -435,8 +435,8 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
             return false;
         }
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            ISportPositionalMarket market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
-            if ((!market.resolved()) || market.paused()) {
+            IPositionalMarket market = IPositionalMarket(tradingMarketsPerRound[round][i]);
+            if ((!market.resolved())) {
                 return false;
             }
         }

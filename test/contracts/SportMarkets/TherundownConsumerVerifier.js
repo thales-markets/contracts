@@ -361,6 +361,14 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		await verifier.setCustomOddsThresholdForSport(sportId_16, 10, {
 			from: owner,
 		});
+
+		await verifier.setDefaultBookmakerIds([11], {
+			from: owner,
+		});
+
+		await verifier.setBookmakerIdsBySportId(4, [3, 11], {
+			from: owner,
+		});
 	});
 
 	describe('Init', () => {
@@ -380,6 +388,14 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			assert.equal(true, await verifier.isSupportedMarketType('resolve'));
 			assert.equal(false, await verifier.isSupportedMarketType('aaa'));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
+
+			let bookmakerIdsBySportId = await verifier.getBookmakerIdsBySportId(4);
+			assert.bnEqual(2, bookmakerIdsBySportId.length);
+			let defaultBooke = await verifier.defaultBookmakerIds(0);
+			assert.bnEqual(11, defaultBooke);
+			//failover to default
+			let failoverBookmaker = await verifier.getBookmakerIdsBySportId(17);
+			assert.bnEqual(1, failoverBookmaker.length);
 		});
 	});
 
@@ -586,8 +602,58 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		});
 	});
 
+	describe('Verifier methods', () => {
+		it('Getting ids', async () => {
+			let empty = [];
+			let s_gameid1 = '4e8312cc6e67eb5b346319ad2ff06b5f';
+			let s_gameid2 = 'a988f618889d8c1d56cee0f66d4d23f4';
+
+			let b_gameid1 = '0x3465383331326363366536376562356233343633313961643266663036623566';
+			let b_gameid2 = '0x6139383866363138383839643863316435366365653066363664346432336634';
+
+			let gameIDs = await verifier.getStringIDsFromBytesArrayIDs(empty);
+			assert.equal(0, gameIDs.length);
+
+			gameIDs = await verifier.getStringIDsFromBytesArrayIDs([b_gameid1]);
+			assert.equal(1, gameIDs.length);
+			assert.equal(s_gameid1, gameIDs[0]);
+
+			gameIDs = await verifier.getStringIDsFromBytesArrayIDs([b_gameid1, b_gameid2]);
+			assert.equal(2, gameIDs.length);
+			assert.equal(s_gameid1, gameIDs[0]);
+			assert.equal(s_gameid2, gameIDs[1]);
+		});
+	});
 	describe('Consumer Verifier Management', () => {
 		it('Test owner functions', async () => {
+			let bookee = [5];
+			const tx_setBookmakerIdsBySportId = await verifier.setBookmakerIdsBySportId(4, bookee, {
+				from: owner,
+			});
+
+			await expect(
+				verifier.setBookmakerIdsBySportId(4, bookee, { from: first })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_setBookmakerIdsBySportId.logs[0], 'NewBookmakerIdsBySportId', {
+				_sportId: 4,
+				_ids: bookee,
+			});
+
+			const tx_setdefault = await verifier.setDefaultBookmakerIds(bookee, {
+				from: owner,
+			});
+
+			await expect(verifier.setDefaultBookmakerIds(bookee, { from: first })).to.be.revertedWith(
+				'Only the contract owner may perform this action'
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_setdefault.logs[0], 'NewDefaultBookmakerIds', {
+				_ids: bookee,
+			});
+
 			const tx_setConsumerAddress = await verifier.setConsumerAddress(wrapper, {
 				from: owner,
 			});

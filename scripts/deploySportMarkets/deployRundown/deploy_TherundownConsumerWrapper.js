@@ -65,8 +65,12 @@ async function main() {
 
 	console.log('SportsAMM address: ', sportsAMMAddress);
 
+	const verifier = await ethers.getContractFactory('TherundownConsumerVerifier');
+	let verifierAddress = getTargetAddress('TherundownConsumerVerifier', network);
+
+	console.log('TherundownConsumerVerifier address: ', verifierAddress);
+
 	let oddsSpecId = '0x6434663563656266383432643430363361393734336164333265363934633466';
-	let defaultBookmakerIds = [3, 11];
 	console.log('oddsSpecId: ', oddsSpecId);
 
 	const chainlink = require(`./chainlink/${network}.json`);
@@ -85,7 +89,7 @@ async function main() {
 		paymentOdds,
 		oddsSpecId,
 		sportsAMMAddress,
-		defaultBookmakerIds
+		verifierAddress
 	);
 	await TherundownConsumerWrapperDeployed.deployed();
 
@@ -105,7 +109,7 @@ async function main() {
 				paymentOdds,
 				oddsSpecId,
 				sportsAMMAddress,
-				defaultBookmakerIds,
+				verifierAddress,
 			],
 		});
 	} catch (e) {

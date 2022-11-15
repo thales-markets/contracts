@@ -22,7 +22,7 @@ interface ITherundownConsumer {
 
     function getNormalizedOddsForTwoPosition(bytes32 _gameId) external view returns (uint[] memory);
 
-    function getGameCreatedById(address _market) external view returns (bytes32);
+    function getGamesPerDatePerSport(uint _sportId, uint _date) external view returns (bytes32[] memory);
 
     function getGamePropsForOdds(address _market)
         external
@@ -51,11 +51,7 @@ interface ITherundownConsumer {
         uint _sportsId
     ) external;
 
-    function fulfillGamesOdds(
-        bytes32 _requestId,
-        bytes[] memory _games,
-        uint _date
-    ) external;
+    function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external;
 
     function resolveMarketManually(
         address _market,

@@ -65,7 +65,7 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			paymentOdds,
 			'0x3465326264623338336437393962343662653663656562336463366465306363',
 			third,
-			[3],
+			third,
 			{ from: owner }
 		);
 
@@ -94,9 +94,6 @@ contract('TherundownConsumerWrapper', (accounts) => {
 				from: owner,
 			}
 		);
-		await wrapper.setBookmakerIdsBySportId(4, [3, 11], {
-			from: owner,
-		});
 	});
 
 	describe('Wrapper tests', () => {
@@ -106,44 +103,9 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			assert.bnEqual(paymentCreate, await wrapper.paymentCreate());
 			assert.bnEqual(paymentResolve, await wrapper.paymentResolve());
 			assert.bnEqual(paymentOdds, await wrapper.paymentOdds());
-			let bookmakerIdsBySportId = await wrapper.getBookmakerIdsBySportId(4);
-			assert.bnEqual(2, bookmakerIdsBySportId.length);
-			let defaultBooke = await wrapper.defaultBookmakerIds(0);
-			assert.bnEqual(3, defaultBooke);
-			//failover to default
-			let failoverBookmaker = await wrapper.getBookmakerIdsBySportId(17);
-			assert.bnEqual(1, failoverBookmaker.length);
 		});
 
 		it('Contract management', async () => {
-			let bookee = [5];
-			const tx_setBookmakerIdsBySportId = await wrapper.setBookmakerIdsBySportId(4, bookee, {
-				from: owner,
-			});
-
-			await expect(wrapper.setBookmakerIdsBySportId(4, bookee, { from: first })).to.be.revertedWith(
-				'Ownable: caller is not the owner'
-			);
-
-			// check if event is emited
-			assert.eventEqual(tx_setBookmakerIdsBySportId.logs[0], 'NewBookmakerIdsBySportId', {
-				_sportId: 4,
-				_ids: bookee,
-			});
-
-			const tx_setdefault = await wrapper.setDefaultBookmakerIds(bookee, {
-				from: owner,
-			});
-
-			await expect(wrapper.setDefaultBookmakerIds(bookee, { from: first })).to.be.revertedWith(
-				'Ownable: caller is not the owner'
-			);
-
-			// check if event is emited
-			assert.eventEqual(tx_setdefault.logs[0], 'NewDefaultBookmakerIds', {
-				_ids: bookee,
-			});
-
 			const tx_Oracle = await wrapper.setOracle(first, {
 				from: owner,
 			});
@@ -168,6 +130,19 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			// check if event is emited
 			assert.eventEqual(tx_Consumer.logs[0], 'NewConsumer', {
 				_consumer: first,
+			});
+
+			const tx_verifier = await wrapper.setVerifier(first, {
+				from: owner,
+			});
+
+			await expect(wrapper.setVerifier(first, { from: first })).to.be.revertedWith(
+				'Ownable: caller is not the owner'
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_verifier.logs[0], 'NewVerifier', {
+				_verifier: first,
 			});
 
 			const payment = w3utils.toWei('0.3');

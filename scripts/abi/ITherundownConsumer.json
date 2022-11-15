@@ -38,11 +38,6 @@
         "internalType": "bytes[]",
         "name": "_games",
         "type": "bytes[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_date",
-        "type": "uint256"
       }
     ],
     "name": "fulfillGamesOdds",
@@ -82,25 +77,6 @@
       }
     ],
     "name": "gameIdPerMarket",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_market",
-        "type": "address"
-      }
-    ],
-    "name": "getGameCreatedById",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -191,6 +167,30 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_date",
+        "type": "uint256"
+      }
+    ],
+    "name": "getGamesPerDatePerSport",
+    "outputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "",
+        "type": "bytes32[]"
       }
     ],
     "stateMutability": "view",

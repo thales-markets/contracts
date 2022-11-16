@@ -256,6 +256,56 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         }
     }
 
+    /// @notice view function which returns all props needed for game
+    /// @param _sportId sportid
+    /// @param _date date for sport
+    /// @return _isSportOnADate have sport on date true/false
+    /// @return _twoPositional is two positional sport true/false
+    /// @return _gameIds game Ids for that date/sport
+    function getSportProperties(uint _sportId, uint _date)
+        external
+        view
+        returns (
+            bool _isSportOnADate,
+            bool _twoPositional,
+            bytes32[] memory _gameIds
+        )
+    {
+        return (
+            consumer.isSportOnADate(_date, _sportId),
+            consumer.isSportTwoPositionsSport(_sportId),
+            consumer.getGamesPerDatePerSport(_sportId, _date)
+        );
+    }
+
+    /// @notice view function which returns all props needed for game
+    /// @param _gameIds game id on contract
+    /// @return _market address
+    /// @return _marketResolved resolved true/false
+    /// @return _marketCanceled canceled true/false
+    /// @return _invalidOdds invalid odds true/false
+    /// @return _isPausedByCanceledStatus is game paused by cancel status true/false
+    function getGameProperties(bytes32 _gameIds)
+        external
+        view
+        returns (
+            address _market,
+            bool _marketResolved,
+            bool _marketCanceled,
+            bool _invalidOdds,
+            bool _isPausedByCanceledStatus
+        )
+    {
+        address marketAddress = consumer.marketPerGameId(_gameIds);
+        return (
+            marketAddress,
+            consumer.marketResolved(marketAddress),
+            consumer.marketCanceled(marketAddress),
+            consumer.invalidOdds(marketAddress),
+            consumer.isPausedByCanceledStatus(marketAddress)
+        );
+    }
+
     /// @notice getting bookmaker by sports id
     /// @param _sportId id of a sport for fetching
     function getBookmakerIdsBySportId(uint256 _sportId) external view returns (uint256[] memory) {

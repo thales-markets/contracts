@@ -858,6 +858,14 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(false, await TherundownConsumerDeployed.isGameInResolvedStatus(gameFootballid1));
 
+			let verifier_output_game = await verifier.getGameProperties(gameFootballid1);
+
+			assert.equal(marketAdd, verifier_output_game[0]);
+			assert.equal(false, verifier_output_game[1]);
+			assert.equal(false, verifier_output_game[2]);
+			assert.equal(false, verifier_output_game[3]);
+			assert.equal(false, verifier_output_game[4]);
+
 			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
 				reqIdResolveFoodball,
 				gamesResolvedFootball,
@@ -893,6 +901,14 @@ contract('TheRundownConsumer', (accounts) => {
 				_id: gameFootballid1,
 				_outcome: 2,
 			});
+
+			verifier_output_game = await verifier.getGameProperties(gameFootballid1);
+
+			assert.equal(marketAdd, verifier_output_game[0]);
+			assert.equal(true, verifier_output_game[1]);
+			assert.equal(false, verifier_output_game[2]);
+			assert.equal(false, verifier_output_game[3]);
+			assert.equal(false, verifier_output_game[4]);
 		});
 
 		it('Fulfill Games Resolved - Champions League Game 2, resolve market, check results', async () => {
@@ -1309,6 +1325,12 @@ contract('TheRundownConsumer', (accounts) => {
 		it('Fulfill Games Resolved - game time has passed, cancel market, automaticly', async () => {
 			await fastForward(fightTime - (await currentTime()) - SECOND);
 
+			let verifier_output_sport = await verifier.getSportProperties(sportId_7, fightTime);
+
+			assert.equal(false, verifier_output_sport[0]);
+			assert.equal(true, verifier_output_sport[1]);
+			assert.equal(0, verifier_output_sport[2].length);
+
 			// req games
 			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
 				reqIdFightCreate,
@@ -1320,6 +1342,12 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
 			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
+
+			verifier_output_sport = await verifier.getSportProperties(sportId_7, fightTime);
+
+			assert.equal(true, verifier_output_sport[0]);
+			assert.equal(true, verifier_output_sport[1]);
+			assert.equal(1, verifier_output_sport[2].length);
 
 			assert.equal(
 				fight_create,
@@ -1341,6 +1369,14 @@ contract('TheRundownConsumer', (accounts) => {
 			const tx_create = await TherundownConsumerDeployed.createMarketForGame(fightId);
 
 			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(fightId);
+
+			let verifier_output_game = await verifier.getGameProperties(fightId);
+
+			assert.equal(marketAdd, verifier_output_game[0]);
+			assert.equal(false, verifier_output_game[1]);
+			assert.equal(false, verifier_output_game[2]);
+			assert.equal(false, verifier_output_game[3]);
+			assert.equal(false, verifier_output_game[4]);
 
 			// check if event is emited
 			assert.eventEqual(tx_create.logs[1], 'CreateSportsMarket', {

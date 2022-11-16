@@ -68,4 +68,18 @@ interface ITherundownConsumer {
             int24,
             int24
         );
+
+    function marketPerGameId(bytes32 _gameId) external view returns (address);
+
+    function marketResolved(address _market) external view returns (bool);
+
+    function marketCanceled(address _market) external view returns (bool);
+
+    function invalidOdds(address _market) external view returns (bool);
+
+    function isPausedByCanceledStatus(address _market) external view returns (bool);
+
+    function isSportOnADate(uint _date, uint _sportId) external view returns (bool);
+
+    function isSportTwoPositionsSport(uint _sportsId) external view returns (bool);
 }

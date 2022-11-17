@@ -125,6 +125,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     function availableToBuyFromAMM(address market, Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position);
+            basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
             _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
         }
     }
@@ -140,6 +141,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint amount
     ) public view returns (uint _quote) {
         uint basePrice = price(market, position);
+        basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
         _quote = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
     }
 
@@ -190,6 +192,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     function availableToSellToAMM(address market, Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position);
+            basePrice = basePrice > maxSupportedPrice ? maxSupportedPrice : basePrice;
             _available = _availableToSellToAMM(market, position, basePrice);
         }
     }
@@ -205,6 +208,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint amount
     ) public view returns (uint _quote) {
         uint basePrice = price(market, position);
+        basePrice = basePrice > maxSupportedPrice ? maxSupportedPrice : basePrice;
         uint _available = _availableToSellToAMM(market, position, basePrice);
         _quote = _sellToAmmQuote(market, position, amount, basePrice, _available);
     }
@@ -393,6 +397,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         require(isMarketInAMMTrading(market), "Market is not in Trading phase");
 
         uint basePrice = price(market, position);
+        basePrice = basePrice > maxSupportedPrice ? maxSupportedPrice : basePrice;
         uint availableToSellToAMMATM = _availableToSellToAMM(market, position, basePrice);
         require(availableToSellToAMMATM > 0 && amount <= availableToSellToAMMATM, "Not enough liquidity.");
 
@@ -550,6 +555,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         sUSDPaid = sUSDPaidCarried;
 
         uint basePrice = price(market, position);
+        basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
 
         uint availableToBuyFromAMMatm = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
         require(amount <= availableToBuyFromAMMatm, "Not enough liquidity.");

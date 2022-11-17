@@ -488,7 +488,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         Position position,
         uint basePrice
     ) internal view returns (uint availableAmount) {
-        if (basePrice > minSupportedPrice && basePrice < maxSupportedPrice) {
+        if (basePrice < maxSupportedPrice) {
             basePrice = basePrice + min_spread;
             uint discountedPrice = (basePrice * (ONE - max_spread / 4)) / ONE;
             uint balance = _balanceOfPositionOnMarket(market, position);

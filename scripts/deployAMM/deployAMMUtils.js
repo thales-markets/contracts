@@ -52,6 +52,11 @@ async function main() {
 		network = 'arbitrumOne';
 	}
 
+	if (networkObj.chainId == 56) {
+		networkObj.name = 'bsc';
+		network = 'bsc';
+	}
+
 	const ammUtils = await ethers.getContractFactory('ThalesAMMUtils');
 	const ThalesAMMUtilsDeployed = await ammUtils.deploy();
 	await ThalesAMMUtilsDeployed.deployed();

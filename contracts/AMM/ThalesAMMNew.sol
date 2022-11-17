@@ -535,8 +535,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     }
 
     function _getSellMaxPrice(uint basePrice) internal view returns (uint sell_max_price) {
-        // ignore extremes
-        if (!(basePrice <= minSupportedPrice || basePrice >= maxSupportedPrice)) {
+        if (basePrice > minSupportedPrice) {
             sell_max_price = ((basePrice - min_spread) * (ONE - (max_spread / (2)))) / ONE;
         }
     }

@@ -166,7 +166,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint baseOdds
     ) internal view returns (uint availableAmount) {
-        if (baseOdds < maxSupportedOdds) {
+        if (baseOdds > 0 && baseOdds < maxSupportedOdds) {
             baseOdds = baseOdds + min_spread;
             uint balance = sportAmmUtils.balanceOfPositionOnMarket(market, position, address(this));
 

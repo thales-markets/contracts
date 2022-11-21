@@ -156,7 +156,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function availableToBuyFromAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint baseOdds = obtainOdds(market, position);
-            baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+            baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
             _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
         }
     }
@@ -192,7 +192,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) public view returns (uint _quote) {
         if (isMarketInAMMTrading(market)) {
             uint baseOdds = obtainOdds(market, position);
-            baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+            baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
             _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, safeBoxImpact);
         }
     }
@@ -247,7 +247,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount
     ) public view returns (uint _quote) {
         uint baseOdds = obtainOdds(market, position);
-        baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+        baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
         _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, 0);
     }
 

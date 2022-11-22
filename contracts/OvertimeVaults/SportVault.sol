@@ -392,12 +392,6 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
         ISportsAMM.Position position,
         uint amount
     ) internal {
-        if (isTradingMarketInARound[round][market]) {
-            require(
-                tradingMarketPositionPerRound[round][market] == position,
-                "Cannot trade different options on the same market"
-            );
-        }
         uint quote = sportsAMM.buyFromAmmQuote(market, position, amount);
         require(quote < (tradingAllocation() - allocationSpentInARound[round]), "Amount exceeds available allocation");
 

@@ -96,6 +96,8 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     int private constant ONE_INT = 1e18;
     int private constant ONE_PERCENT_INT = 1e16;
 
+    mapping(address => uint) public safeBoxFeePerAddress;
+
     function initialize(
         address _owner,
         IPriceFeed _priceFeed,
@@ -142,7 +144,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     ) public view returns (uint _quote) {
         uint basePrice = price(market, position);
         basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
-        _quote = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
+        _quote = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice, safeBoxImpact);
     }
 
     /// @notice get a quote in the collateral of choice (USDC, USDT or DAI) on how much the trader would need to pay to buy the amount of UP or DOWN positions
@@ -512,7 +514,8 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         address market,
         Position position,
         uint amount,
-        uint basePrice
+        uint basePrice,
+        uint safeBoxImpactForCaller
     ) internal view returns (uint returnQuote) {
         Position positionOtherSide = position == Position.Up ? Position.Down : Position.Up;
         uint _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
@@ -529,7 +532,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
             } else {
                 tempQuote = ((int(amount)) * ((int(basePrice) * (ONE_INT + skewImpact)) / ONE_INT)) / ONE_INT;
             }
-            tempQuote = (tempQuote * (ONE_INT + (int(safeBoxImpact)))) / ONE_INT;
+            tempQuote = (tempQuote * (ONE_INT + (int(safeBoxImpactForCaller)))) / ONE_INT;
             returnQuote = IPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
         }
     }
@@ -560,7 +563,13 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         require(amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
         //
         if (sendSUSD) {
-            sUSDPaid = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
+            sUSDPaid = _buyFromAmmQuoteWithBasePrice(
+                market,
+                position,
+                amount,
+                basePrice,
+                safeBoxFeePerAddress[msg.sender] > 0 ? safeBoxFeePerAddress[msg.sender] : safeBoxImpact
+            );
             require((sUSDPaid * ONE) / (expectedPayout) <= (ONE + additionalSlippage), "Slippage too high");
 
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
@@ -878,6 +887,13 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     /// @param enabled update if the address can set implied volatility
     function setWhitelistedAddress(address _address, bool enabled) external onlyOwner {
         whitelistedAddresses[_address] = enabled;
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific safe box fee
+    /// @param newFee the fee
+    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
+        safeBoxFeePerAddress[_address] = newFee;
     }
 
     /// @notice Updates contract parametars

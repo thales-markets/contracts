@@ -734,10 +734,6 @@ contract('SportsAMM', (accounts) => {
 			console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
 			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(1));
 			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-			await assert.revert(
-				vault.trade(deployedMarket.address, toUnit(20), 1),
-				'Cannot trade different options on the same market'
-			);
 
 			let canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);

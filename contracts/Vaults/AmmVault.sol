@@ -392,12 +392,6 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
         IThalesAMM.Position position,
         uint amount
     ) internal {
-        if (isTradingMarketInARound[round][market]) {
-            require(
-                tradingMarketPositionPerRound[round][market] == position,
-                "Cannot trade different options on the same market"
-            );
-        }
         uint quote = thalesAMM.buyFromAmmQuote(market, position, amount);
         require(quote < (tradingAllocation() - allocationSpentInARound[round]), "Amount exceeds available allocation");
 

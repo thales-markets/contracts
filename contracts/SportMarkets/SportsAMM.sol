@@ -126,6 +126,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The address of wrapper contract
     ITherundownConsumerWrapper public wrapper;
 
+    // @return specific SafeBoxFee per address
+    mapping(address => uint) public safeBoxFeePerAddress;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -156,8 +159,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     function availableToBuyFromAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint baseOdds = obtainOdds(market, position);
-            baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
-            _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
+            if (baseOdds > 0) {
+                baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+                _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
+            }
         }
     }
 
@@ -192,8 +197,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) public view returns (uint _quote) {
         if (isMarketInAMMTrading(market)) {
             uint baseOdds = obtainOdds(market, position);
-            baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
-            _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, safeBoxImpact);
+            if (baseOdds > 0) {
+                baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+                _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, safeBoxImpact);
+            }
         }
     }
 
@@ -545,14 +552,27 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal {
         require(isMarketInAMMTrading(market), "Not in Trading");
         require(ISportPositionalMarket(market).optionsCount() > uint(position), "Invalid position");
+
+        uint baseOdds = obtainOdds(market, position);
+
+        require(baseOdds > 0, "No base odds");
+
+        baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+
         uint availableToBuyFromAMMatm = availableToBuyFromAMM(market, position);
         require(amount > ZERO_POINT_ONE && amount <= availableToBuyFromAMMatm, "Low liquidity || 0 amount");
 
         if (sendSUSD) {
             if (msg.sender == parlayAMM) {
-                sUSDPaid = buyFromAmmQuoteForParlayAMM(market, position, amount);
+                sUSDPaid = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, 0);
             } else {
-                sUSDPaid = buyFromAmmQuote(market, position, amount);
+                sUSDPaid = _buyFromAmmQuoteWithBaseOdds(
+                    market,
+                    position,
+                    amount,
+                    baseOdds,
+                    safeBoxFeePerAddress[msg.sender] > 0 ? safeBoxFeePerAddress[msg.sender] : safeBoxImpact
+                );
             }
             require((sUSDPaid * ONE) / (expectedPayout) <= (ONE + additionalSlippage), "Slippage too high");
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
@@ -732,6 +752,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         manager = _manager;
         sUSD.approve(manager, MAX_APPROVAL);
         emit SetSportsPositionalMarketManager(_manager);
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific safe box fee
+    /// @param newFee the fee
+    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
+        safeBoxFeePerAddress[_address] = newFee;
     }
 
     /// @notice Setting the Curve collateral addresses for all collaterals

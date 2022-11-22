@@ -136,8 +136,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     function availableToBuyFromAMM(address market, Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position);
-            basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
-            _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
+            if (basePrice > 0) {
+                basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
+                _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
+            }
         }
     }
 
@@ -152,8 +154,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint amount
     ) public view returns (uint _quote) {
         uint basePrice = price(market, position);
-        basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
-        _quote = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice, safeBoxImpact);
+        if (basePrice > 0) {
+            basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
+            _quote = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice, safeBoxImpact);
+        }
     }
 
     /// @notice get a quote in the collateral of choice (USDC, USDT or DAI) on how much the trader would need to pay to buy the amount of UP or DOWN positions
@@ -586,7 +590,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
 
         uint availableToBuyFromAMMatm = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
-        require(amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
+        require(amount > 0 && amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
 
         if (sendSUSD) {
             sUSDPaid = _buyFromAmmQuoteWithBasePrice(

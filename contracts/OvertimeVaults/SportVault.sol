@@ -271,12 +271,12 @@ contract SportVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReen
         (uint maturity, ) = marketContract.times();
         require(maturity < (roundStartTime[round] + roundLength), "Market time not valid");
 
-        uint pricePosition = sportsAMM.buyFromAmmQuote(address(market), position, ONE);
-        require(pricePosition > 0, "Price not more than 0");
+        uint basePricePosition = sportsAMM.obtainOdds(address(market), position);
+        require(basePricePosition > 0, "Price not more than 0");
 
         int pricePositionImpact = sportsAMM.buyPriceImpact(address(market), position, amount);
 
-        require(pricePosition >= priceLowerLimit && pricePosition <= priceUpperLimit, "Market price not valid");
+        require(basePricePosition >= priceLowerLimit && basePricePosition <= priceUpperLimit, "Market price not valid");
         require(pricePositionImpact < skewImpactLimit, "Skew impact too high");
         _buyFromAmm(market, position, amount);
 

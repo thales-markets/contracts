@@ -131,6 +131,29 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         return _areOddsValid(_isTwoPositionalSport, _homeOdds, _awayOdds, _drawOdds);
     }
 
+    function areSpreadOddsValid(
+        int16 spreadHome,
+        int24 spreadHomeOdds,
+        int16 spreadAway,
+        int24 spreadAwayOdds
+    ) external view returns (bool) {
+        return
+            spreadHome == spreadAway * -1 &&
+            spreadHome != 0 &&
+            spreadAway != 0 &&
+            spreadHomeOdds != 0 &&
+            spreadAwayOdds != 0;
+    }
+
+    function areTotalOddsValid(
+        uint24 totalOver,
+        int24 totalOverOdds,
+        uint24 totalUnder,
+        int24 totalUnderOdds
+    ) external view returns (bool) {
+        return totalOver == totalUnder && totalOver > 0 && totalUnder > 0 && totalOverOdds != 0 && totalUnderOdds != 0;
+    }
+
     /// @notice view function which returns if outcome of a game is valid
     /// @param _isTwoPositionalSport if two positional sport  draw now vallid
     /// @param _outcome home - 1, away - 2, draw - 3 (if not two positional), and cancel - 0 are valid outomes
@@ -243,19 +266,6 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         }
     }
 
-    /// @notice view function which returns odds in a batch of games
-    /// @param _gameIds game ids for which games is looking
-    /// @return odds odds array
-    function getOddsForGames(bytes32[] memory _gameIds) external view returns (int24[] memory odds) {
-        odds = new int24[](3 * _gameIds.length);
-        for (uint i = 0; i < _gameIds.length; i++) {
-            (int24 home, int24 away, int24 draw) = consumer.getOddsForGame(_gameIds[i]);
-            odds[i * 3 + 0] = home; // 0 3 6 ...
-            odds[i * 3 + 1] = away; // 1 4 7 ...
-            odds[i * 3 + 2] = draw; // 2 5 8 ...
-        }
-    }
-
     /// @notice view function which returns all props needed for game
     /// @param _sportId sportid
     /// @param _date date for sport
@@ -363,7 +373,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     function setCustomOddsThresholdForSport(uint _sportId, uint _oddsThresholdForSport) external onlyOwner {
         require(defaultOddsThreshold != _oddsThresholdForSport, "Same value as default value");
         require(_oddsThresholdForSport > 0, "Must be more then ZERO");
-        require(consumer.isSupportedSport(_sportId), "SportId is not supported");
+        require(consumer.supportedSport(_sportId), "SportId is not supported");
         require(oddsThresholdForSport[_sportId] != _oddsThresholdForSport, "Same value as before");
         oddsThresholdForSport[_sportId] = _oddsThresholdForSport;
         emit NewCustomOddsThresholdForSport(_sportId, _oddsThresholdForSport);
@@ -380,7 +390,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @param _sportId id of a sport
     /// @param _bookmakerIds array of bookmakers
     function setBookmakerIdsBySportId(uint256 _sportId, uint256[] memory _bookmakerIds) external onlyOwner {
-        require(consumer.isSupportedSport(_sportId), "SportId is not supported");
+        require(consumer.supportedSport(_sportId), "SportId is not supported");
         sportIdToBookmakerIds[_sportId] = _bookmakerIds;
         emit NewBookmakerIdsBySportId(_sportId, _bookmakerIds);
     }

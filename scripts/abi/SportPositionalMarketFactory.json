@@ -49,6 +49,12 @@
         "internalType": "uint256[]",
         "name": "tags",
         "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isChild",
+        "type": "bool"
       }
     ],
     "name": "MarketCreated",
@@ -206,6 +212,11 @@
             "internalType": "uint256[]",
             "name": "tags",
             "type": "uint256[]"
+          },
+          {
+            "internalType": "bool",
+            "name": "isChild",
+            "type": "bool"
           }
         ],
         "internalType": "struct SportPositionalMarketFactory.SportPositionCreationMarketParameters",

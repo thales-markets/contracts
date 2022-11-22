@@ -139,7 +139,7 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
         uint256 _date,
         string[] memory _gameIds
     ) public whenNotPaused {
-        require(consumer.isSupportedSport(_sportId), "SportId is not supported");
+        require(consumer.supportedSport(_sportId), "SportId is not supported");
 
         Chainlink.Request memory req = buildChainlinkRequest(_specId, address(this), this.fulfillGamesOdds.selector);
 
@@ -329,8 +329,8 @@ contract TherundownConsumerWrapper is ChainlinkClient, Ownable, Pausable {
     /* ========== MODIFIERS ========== */
 
     modifier isValidRequest(string memory _market, uint256 _sportId) {
-        require(consumer.isSupportedMarketType(_market), "Market is not supported");
-        require(consumer.isSupportedSport(_sportId), "SportId is not supported");
+        require(verifier.isSupportedMarketType(_market), "Market is not supported");
+        require(consumer.supportedSport(_sportId), "SportId is not supported");
         _;
     }
 

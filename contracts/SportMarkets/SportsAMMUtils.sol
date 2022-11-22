@@ -238,7 +238,7 @@ contract SportsAMMUtils {
             bool isApexGame = apexConsumer != address(0) && IApexConsumer(apexConsumer).isApexGame(gameId);
             odds = isApexGame
                 ? IApexConsumer(apexConsumer).getNormalizedOdds(gameId)
-                : ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameId);
+                : ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
             oddsToReturn = odds[uint(_position)];
         }
     }

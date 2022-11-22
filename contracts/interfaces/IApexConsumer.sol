@@ -8,6 +8,8 @@ interface IApexConsumer {
 
     function getNormalizedOdds(bytes32 _gameId) external view returns (uint[] memory);
 
+    function getNormalizedOddsForMarket(address _market) external view returns (uint[] memory);
+
     function isApexGame(bytes32 _gameId) external view returns (bool);
 
     // write functions

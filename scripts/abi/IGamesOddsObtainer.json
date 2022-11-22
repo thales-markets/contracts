@@ -1,0 +1,417 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bool",
+        "name": "_useBackup",
+        "type": "bool"
+      }
+    ],
+    "name": "areOddsValid",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      }
+    ],
+    "name": "currentActiveSpreadChildMarket",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      }
+    ],
+    "name": "currentActiveTotalChildMarket",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "getNormalizedChildOdds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getNormalizedOdds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "_gameIds",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "getOddsForGames",
+    "outputs": [
+      {
+        "internalType": "int24[]",
+        "name": "odds",
+        "type": "int24[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "invalidOdds",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_child",
+        "type": "address"
+      }
+    ],
+    "name": "isSpreadChildMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
+    ],
+    "name": "mainMarketChildMarketIndex",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "int16",
+        "name": "_spread",
+        "type": "int16"
+      }
+    ],
+    "name": "mainMarketSpreadChildMarket",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "uint24",
+        "name": "_total",
+        "type": "uint24"
+      }
+    ],
+    "name": "mainMarketTotalChildMarket",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      }
+    ],
+    "name": "numberOfChildMarkets",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "requestId",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int16",
+            "name": "spreadHome",
+            "type": "int16"
+          },
+          {
+            "internalType": "int24",
+            "name": "spreadHomeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int16",
+            "name": "spreadAway",
+            "type": "int16"
+          },
+          {
+            "internalType": "int24",
+            "name": "spreadAwayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "uint24",
+            "name": "totalOver",
+            "type": "uint24"
+          },
+          {
+            "internalType": "int24",
+            "name": "totalOverOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "uint24",
+            "name": "totalUnder",
+            "type": "uint24"
+          },
+          {
+            "internalType": "int24",
+            "name": "totalUnderOdds",
+            "type": "int24"
+          }
+        ],
+        "internalType": "struct IGamesOddsObtainer.GameOdds",
+        "name": "_game",
+        "type": "tuple"
+      }
+    ],
+    "name": "obtainOdds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_main",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
+      }
+    ],
+    "name": "pauseUnpauseChildMarkets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_homeScore",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_awayScore",
+        "type": "uint8"
+      }
+    ],
+    "name": "resolveChildMarkets",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "setBackupOddsAsMainOddsForGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_gameId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "int24",
+        "name": "_homeOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "_awayOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "_drawOdds",
+        "type": "int24"
+      }
+    ],
+    "name": "setFirstOdds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

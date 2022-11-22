@@ -141,6 +141,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 	let game_fight_canceled;
 	let gamesFightCanceled;
 	let reqIdFightCanceled;
+	let GamesOddsObtainerDeployed;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -346,11 +347,24 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			}
 		);
 
+		let GamesOddsObtainer = artifacts.require('GamesOddsObtainer');
+		GamesOddsObtainerDeployed = await GamesOddsObtainer.new({ from: owner });
+
+		await GamesOddsObtainerDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			[4, 16],
+			{ from: owner }
+		);
+
 		await consumer.setSportContracts(
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
 			verifier.address,
+			GamesOddsObtainerDeployed.address,
 			{ from: manager }
 		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: manager });
@@ -387,7 +401,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			assert.equal(true, await verifier.isSupportedMarketType('create'));
 			assert.equal(true, await verifier.isSupportedMarketType('resolve'));
 			assert.equal(false, await verifier.isSupportedMarketType('aaa'));
-			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
 
 			let bookmakerIdsBySportId = await verifier.getBookmakerIdsBySportId(4);
 			assert.bnEqual(2, bookmakerIdsBySportId.length);

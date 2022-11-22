@@ -19,6 +19,7 @@ import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/IApexConsumer.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../../interfaces/IGamesOddsObtainer.sol";
 
 contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausable, ISportPositionalMarketManager {
     /* ========== LIBRARIES ========== */
@@ -49,6 +50,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     address public apexConsumer;
     uint public cancelTimeout;
     mapping(address => bool) public whitelistedCancelAddresses;
+    address public oddsObtainer;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -72,6 +74,11 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setTherundownConsumer(address _theRundownConsumer) external onlyOwner {
         theRundownConsumer = _theRundownConsumer;
         emit SetTherundownConsumer(_theRundownConsumer);
+    }
+
+    function setOddsObtainer(address _oddsObtainer) external onlyOwner {
+        oddsObtainer = _oddsObtainer;
+        emit SetObtainerAddress(_oddsObtainer);
     }
 
     function setApexConsumer(address _apexConsumer) external onlyOwner {
@@ -158,9 +165,16 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
         uint expiry = _newStartTime.add(expiryDuration);
 
-        ISportPositionalMarket(_market).updateDates(_newStartTime, expiry);
+        // update main market
+        _updateDatesForMarket(_market, _newStartTime, expiry);
 
-        emit DatesUpdatedForMarket(_market, _newStartTime, expiry);
+        // number of child
+        uint numberOfChildMarkets = IGamesOddsObtainer(oddsObtainer).numberOfChildMarkets(_market);
+
+        for (uint i = 0; i < numberOfChildMarkets; i++) {
+            address child = IGamesOddsObtainer(oddsObtainer).mainMarketChildMarketIndex(_market, i);
+            _updateDatesForMarket(child, _newStartTime, expiry);
+        }
     }
 
     function isMarketPaused(address _market) external view override returns (bool) {
@@ -202,7 +216,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         uint maturity,
         uint initialMint, // initial sUSD to mint options for,
         uint positionCount,
-        uint[] memory tags
+        uint[] memory tags,
+        bool isChild
     )
         external
         override
@@ -212,7 +227,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-        require(msg.sender == theRundownConsumer || msg.sender == apexConsumer, "Invalid creator");
+        require(
+            msg.sender == theRundownConsumer || msg.sender == apexConsumer || msg.sender == oddsObtainer,
+            "Invalid creator"
+        );
 
         uint expiry = maturity.add(expiryDuration);
 
@@ -230,7 +248,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
                 initialMint,
                 positionCount,
                 msg.sender,
-                tags
+                tags,
+                isChild
             )
         );
 
@@ -275,6 +294,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
             msg.sender == theRundownConsumer ||
                 msg.sender == apexConsumer ||
                 msg.sender == owner ||
+                msg.sender == oddsObtainer ||
                 whitelistedCancelAddresses[msg.sender],
             "Invalid resolver"
         );
@@ -356,6 +376,16 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         }
     }
 
+    function _updateDatesForMarket(
+        address _market,
+        uint256 _newStartTime,
+        uint256 _expiry
+    ) internal {
+        ISportPositionalMarket(_market).updateDates(_newStartTime, _expiry);
+
+        emit DatesUpdatedForMarket(_market, _newStartTime, _expiry);
+    }
+
     function reverseTransformCollateral(uint value) external view override returns (uint) {
         if (needsTransformingCollateral) {
             return value * 1e12;
@@ -404,6 +434,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event SetSportPositionalMarketFactory(address _sportPositionalMarketFactory);
     event SetsUSD(address _address);
     event SetTherundownConsumer(address theRundownConsumer);
+    event SetObtainerAddress(address _obratiner);
     event SetApexConsumer(address apexConsumer);
     event OddsForMarketRestored(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);

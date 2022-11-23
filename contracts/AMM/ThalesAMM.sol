@@ -676,7 +676,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) internal {
         uint safeBoxShare;
         if (safeBoxImpact > 0) {
-            safeBoxShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(safeBoxImpact)));
+            safeBoxShare = sUSDPaid.sub(
+                sUSDPaid.mul(ONE).div(
+                    ONE.add(safeBoxFeePerAddress[msg.sender] > 0 ? safeBoxFeePerAddress[msg.sender] : safeBoxImpact)
+                )
+            );
             sUSD.safeTransfer(safeBox, safeBoxShare);
         }
 

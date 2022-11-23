@@ -565,7 +565,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
 
         uint availableToBuyFromAMMatm = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
         require(amount > 0 && amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
-        //
+
         if (sendSUSD) {
             sUSDPaid = _buyFromAmmQuoteWithBasePrice(
                 market,
@@ -651,11 +651,12 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         uint sUSDPaid,
         address buyer
     ) internal {
-        uint safeBoxShare = (sUSDPaid - (sUSDPaid * ONE) / (ONE + (safeBoxImpact)));
+        uint safeBoxShare;
         if (safeBoxImpact > 0) {
+            safeBoxShare = (sUSDPaid -
+                (sUSDPaid * ONE) /
+                (ONE + (safeBoxFeePerAddress[msg.sender] > 0 ? safeBoxFeePerAddress[msg.sender] : safeBoxImpact)));
             sUSD.safeTransfer(safeBox, safeBoxShare);
-        } else {
-            safeBoxShare = 0;
         }
 
         if (

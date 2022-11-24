@@ -187,6 +187,30 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "_position",
+        "type": "uint8"
+      }
+    ],
+    "name": "obtainOdds",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "oddsToReturn",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "parlayAMM",
     "outputs": [

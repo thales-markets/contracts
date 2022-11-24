@@ -221,7 +221,7 @@ contract('Vault', (accounts) => {
 			_thalesAmm: thalesAMM.address,
 			_sUSD: sUSDSynth.address,
 			_roundLength: week,
-			_priceLowerLimit: toUnit(0.1).toString(),
+			_priceLowerLimit: toUnit(0.05).toString(),
 			_priceUpperLimit: toUnit(1).toString(),
 			_skewImpactLimit: toUnit(0.1).toString(), // 40%
 			_allocationLimitsPerMarketPerRound: toUnit(10).toString(), // 40%
@@ -466,10 +466,6 @@ contract('Vault', (accounts) => {
 			console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
 			buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(market1.address, 1, toUnit(1));
 			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-			await assert.revert(
-				vault.trade(market1.address, toUnit(20), 1),
-				'Cannot trade different options on the same market'
-			);
 
 			let canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);

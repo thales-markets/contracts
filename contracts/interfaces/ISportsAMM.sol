@@ -47,4 +47,6 @@ interface ISportsAMM {
         ISportsAMM.Position position,
         uint amount
     ) external view returns (int impact);
+
+    function obtainOdds(address _market, ISportsAMM.Position _position) external view returns (uint oddsToReturn);
 }

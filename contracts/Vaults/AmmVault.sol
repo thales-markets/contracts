@@ -271,7 +271,7 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
         (uint maturity, ) = marketContract.times();
         require(maturity < (roundStartTime[round] + roundLength), "Market time not valid");
 
-        uint pricePosition = thalesAMM.buyFromAmmQuote(address(market), position, ONE);
+        uint pricePosition = thalesAMM.price(address(market), position);
         require(pricePosition > 0, "Price not more than 0");
 
         int pricePositionImpact = thalesAMM.buyPriceImpact(address(market), position, amount);
@@ -392,12 +392,6 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
         IThalesAMM.Position position,
         uint amount
     ) internal {
-        if (isTradingMarketInARound[round][market]) {
-            require(
-                tradingMarketPositionPerRound[round][market] == position,
-                "Cannot trade different options on the same market"
-            );
-        }
         uint quote = thalesAMM.buyFromAmmQuote(market, position, amount);
         require(quote < (tradingAllocation() - allocationSpentInARound[round]), "Amount exceeds available allocation");
 

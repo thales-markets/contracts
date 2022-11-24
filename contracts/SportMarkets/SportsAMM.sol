@@ -793,7 +793,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             msg.sender == owner || ISportPositionalMarketManager(manager).isWhitelistedAddress(msg.sender),
             "Invalid sender"
         );
-        require(_capPerMarket < defaultCapPerGame, "Must be less then default");
+        require(_capPerMarket < defaultCapPerGame * 2, "Must be less then double default");
         for (uint i; i < _markets.length; i++) {
             capPerMarket[_markets[i]] = _capPerMarket;
             emit SetCapPerMarket(_markets[i], _capPerMarket);

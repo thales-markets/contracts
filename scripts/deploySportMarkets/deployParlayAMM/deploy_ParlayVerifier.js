@@ -75,15 +75,17 @@ async function main() {
 	const ParlayAMMAddress = getTargetAddress('ParlayAMM', network);
 	const ParlayAMMDeployed = ParlayAMM.attach(ParlayAMMAddress);
 
-	await ParlayAMMDeployed.setAddresses(
-		SportsAMMContract,
-		SafeBox,
-		ReferralsContract,
-		ZERO_ADDRESS,
-		ParlayVerifierDeployed.address,
-		{ from: owner.address }
-	);
-	console.log('Addresses set in ParlayAMM');
+	if (networkObj.chainId != 10) {
+		await ParlayAMMDeployed.setAddresses(
+			SportsAMMContract,
+			SafeBox,
+			ReferralsContract,
+			ZERO_ADDRESS,
+			ParlayVerifierDeployed.address,
+			{ from: owner.address }
+		);
+		console.log('Addresses set in ParlayAMM');
+	}
 	await delay(2000);
 
 	try {

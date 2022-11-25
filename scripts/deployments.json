@@ -106,7 +106,7 @@
 		"AmmVaultImplementation": "0x63D6DD43F6854A06548Bc88e890c9AFFf5D29f4b",
 		"AmmVaultSafu": "0x6c7Fd4321183b542E81Bcc7dE4DfB88F9DBca29F",
 		"AmmVaultSafuImplementation": "0x63D6DD43F6854A06548Bc88e890c9AFFf5D29f4b",
-		"AmmVaultDegen": "0x9d3ABEAf22ddF68E72b865CA3b23ED880A3be41F",
+		"AmmVaultDegen": "0x43318DE9E8f65b591598F17aDD87ae7247649C83",
 		"AmmVaultDegenImplementation": "0x63D6DD43F6854A06548Bc88e890c9AFFf5D29f4b"
 	},
 	"polygon": {

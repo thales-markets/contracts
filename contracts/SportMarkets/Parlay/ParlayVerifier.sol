@@ -12,8 +12,6 @@ import "../../interfaces/IStakingThales.sol";
 import "../../interfaces/IReferrals.sol";
 import "../../interfaces/ICurveSUSD.sol";
 
-import "hardhat/console.sol";
-
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
     uint private constant ONE_PERCENT = 1e16;
@@ -159,12 +157,11 @@ contract ParlayVerifier {
             if (buyQuoteAmountPerMarket[i] == 0) {
                 totalQuote = 0;
                 totalBuyAmount = 0;
-                break;
             }
         }
         for (uint i = 0; i < _sportMarkets.length; i++) {
             finalQuotes[i] = ((buyQuoteAmountPerMarket[i] * ONE * ONE) / _buyQuoteAmounts[i]) / ONE;
-            totalQuote = totalQuote == 0 ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
+            totalQuote = (i == 0) ? finalQuotes[i] : (totalQuote * finalQuotes[i]) / ONE;
         }
         if (totalQuote > 0) {
             if (totalQuote < IParlayMarketsAMM(sportsAmm.parlayAMM()).maxSupportedOdds()) {
@@ -177,6 +174,8 @@ contract ParlayVerifier {
             buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
             totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
             _calculateRisk(_sportMarkets, _positions, (totalBuyAmount - sUSDAfterFees), sportsAmm.parlayAMM());
+        } else {
+            totalBuyAmount = 0;
         }
     }
 

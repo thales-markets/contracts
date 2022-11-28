@@ -238,6 +238,14 @@ contract('Vault', (accounts) => {
 		await sUSDSynth.approve(thalesAMM.address, toUnit('100000'), { from: second });
 		sUSDSynth.issue(first, sUSDQtyAmm);
 		sUSDSynth.issue(second, sUSDQtyAmm);
+
+		await thalesAMM.setSafeBoxFeePerAddress(vault.address, toUnit('0.005'), {
+			from: owner,
+		});
+
+		await thalesAMM.setMinSpreadPerAddress(vault.address, toUnit('0.005'), {
+			from: owner,
+		});
 	});
 
 	const Position = {
@@ -251,7 +259,7 @@ contract('Vault', (accounts) => {
 		Other: toBN(2),
 	};
 
-	describe('Test sport vault', () => {
+	describe('Test vault', () => {
 		it('Vault creation', async () => {
 			let round = await vault.round();
 			console.log('round is:' + round.toString());

@@ -667,7 +667,7 @@
     "outputs": [
       {
         "internalType": "int256",
-        "name": "_available",
+        "name": "_priceImpact",
         "type": "int256"
       }
     ],

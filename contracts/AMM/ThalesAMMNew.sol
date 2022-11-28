@@ -97,6 +97,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     int private constant ONE_PERCENT_INT = 1e16;
 
     mapping(address => uint) public safeBoxFeePerAddress;
+    mapping(address => uint) public min_spreadPerAddress;
 
     function initialize(
         address _owner,
@@ -549,7 +550,7 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
         if (amount <= _available) {
             int tempQuote;
             int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
-            basePrice = basePrice + min_spread;
+            basePrice = basePrice + (min_spreadPerAddress[msg.sender] > 0 ? min_spreadPerAddress[msg.sender] : min_spread);
             if (skewImpact >= 0) {
                 int impactPrice = ((ONE_INT - int(basePrice)) * skewImpact) / ONE_INT;
                 // add 2% to the price increase to avoid edge cases on the extremes
@@ -932,6 +933,13 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     /// @param newFee the fee
     function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
         safeBoxFeePerAddress[_address] = newFee;
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific min_spread fee
+    /// @param newFee the fee
+    function setMinSpreadPerAddress(address _address, uint newFee) external onlyOwner {
+        min_spreadPerAddress[_address] = newFee;
     }
 
     /// @notice Updates contract parametars

@@ -482,6 +482,10 @@ contract('SportsAMM', (accounts) => {
 		await SportsAMM.setSafeBoxFeePerAddress(vault.address, toUnit('0.005'), {
 			from: owner,
 		});
+
+		await SportsAMM.setMinSpreadPerAddress(vault.address, toUnit('0.005'), {
+			from: owner,
+		});
 	});
 
 	describe('Test sport vault', () => {

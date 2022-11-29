@@ -1,152 +1,80 @@
-// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./framework/MessageApp.sol";
 
-contract CrossChainTest {
-    using SafeERC20Upgradeable for IERC20;
-    uint64 nonce;
+contract CrossChainTest is MessageApp {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    event MessageReceivedWithTransfer(
-        address token,
-        uint256 amount,
-        address sender,
-        uint64 srcChainId,
-        address receiver,
-        bytes message
-    );
-    event Refunded(address receiver, address token, uint256 amount, bytes message);
-    event MessageReceived(address sender, uint64 srcChainId, uint64 nonce, bytes message);
-    event Message2Received(bytes sender, uint64 srcChainId, uint64 nonce, bytes message);
+    event MessageWithTransferReceived(address sender, address token, uint256 amount, uint64 srcChainId, bytes note);
+    event MessageWithTransferRefunded(address sender, address token, uint256 amount, bytes note);
 
-    function sendMessageWithTransfer(
-        address _receiver,
+    // acccount, token -> balance
+    mapping(address => mapping(address => uint256)) public balances;
+
+    constructor(address _messageBus) MessageApp(_messageBus) {}
+
+    // called by user on source chain to send token with note to destination chain
+    function sendTokenWithNote(
+        address _dstContract,
         address _token,
         uint256 _amount,
         uint64 _dstChainId,
+        uint64 _nonce,
         uint32 _maxSlippage,
-        bytes calldata _message,
+        bytes calldata _note,
         MsgDataTypes.BridgeSendType _bridgeSendType
     ) external payable {
-        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        bytes memory message = abi.encode(msg.sender, _message);
+        IERC20Upgradeable(_token).safeTransferFrom(msg.sender, address(this), _amount);
+        bytes memory message = abi.encode(msg.sender, _note);
         sendMessageWithTransfer(
-            _receiver,
+            _dstContract,
             _token,
             _amount,
             _dstChainId,
-            nonce,
+            _nonce,
             _maxSlippage,
             message,
             _bridgeSendType,
             msg.value
         );
-        nonce++;
     }
 
+    // called by MessageBus on destination chain to receive message, record and emit info.
+    // the associated token transfer is guaranteed to have already been received
     function executeMessageWithTransfer(
-        address _sender,
+        address, // srcContract
         address _token,
         uint256 _amount,
         uint64 _srcChainId,
         bytes memory _message,
         address // executor
     ) external payable override onlyMessageBus returns (ExecutionStatus) {
-        (address receiver, bytes memory message) = abi.decode((_message), (address, bytes));
-        IERC20(_token).safeTransfer(receiver, _amount);
-        emit MessageReceivedWithTransfer(_token, _amount, _sender, _srcChainId, receiver, message);
+        (address sender, bytes memory note) = abi.decode((_message), (address, bytes));
+        balances[sender][_token] += _amount;
+        emit MessageWithTransferReceived(sender, _token, _amount, _srcChainId, note);
         return ExecutionStatus.Success;
     }
 
+    // called by MessageBus on source chain to handle message with failed token transfer
+    // the associated token transfer is guaranteed to have already been refunded
     function executeMessageWithTransferRefund(
         address _token,
         uint256 _amount,
         bytes calldata _message,
         address // executor
     ) external payable override onlyMessageBus returns (ExecutionStatus) {
-        (address receiver, bytes memory message) = abi.decode((_message), (address, bytes));
-        IERC20(_token).safeTransfer(receiver, _amount);
-        emit Refunded(receiver, _token, _amount, message);
+        (address sender, bytes memory note) = abi.decode((_message), (address, bytes));
+        IERC20Upgradeable(_token).safeTransfer(sender, _amount);
+        emit MessageWithTransferRefunded(sender, _token, _amount, note);
         return ExecutionStatus.Success;
     }
 
-    function sendMessage(
-        address _receiver,
-        uint64 _dstChainId,
-        bytes calldata _message
-    ) external payable {
-        bytes memory message = abi.encode(nonce, _message);
-        nonce++;
-        sendMessage(_receiver, _dstChainId, message, msg.value);
-    }
-
-    function sendMessage(
-        bytes calldata _receiver,
-        uint64 _dstChainId,
-        bytes calldata _message
-    ) external payable {
-        bytes memory message = abi.encode(nonce, _message);
-        nonce++;
-        sendMessage(_receiver, _dstChainId, message, msg.value);
-    }
-
-    function sendMessages(
-        address _receiver,
-        uint64 _dstChainId,
-        bytes[] calldata _messages,
-        uint256[] calldata _fees
-    ) external payable {
-        for (uint256 i = 0; i < _messages.length; i++) {
-            bytes memory message = abi.encode(nonce, _messages[i]);
-            nonce++;
-            sendMessage(_receiver, _dstChainId, message, _fees[i]);
-        }
-    }
-
-    function sendMessageWithNonce(
-        address _receiver,
-        uint64 _dstChainId,
-        bytes calldata _message,
-        uint64 _nonce
-    ) external payable {
-        bytes memory message = abi.encode(_nonce, _message);
-        sendMessage(_receiver, _dstChainId, message, msg.value);
-    }
-
-    function executeMessage(
-        address _sender,
-        uint64 _srcChainId,
-        bytes calldata _message,
-        address // executor
-    ) external payable override onlyMessageBus returns (ExecutionStatus) {
-        (uint64 n, bytes memory message) = abi.decode((_message), (uint64, bytes));
-        require(n != 100000000000001, "invalid nonce"); // test revert with reason
-        if (n == 100000000000002) {
-            // test revert without reason
-            revert();
-        } else if (n == 100000000000003) {
-            return ExecutionStatus.Retry;
-        }
-        // test execution revert
-        require(n != 100000000000004, string.concat(MsgDataTypes.ABORT_PREFIX, "invalid nonce"));
-        emit MessageReceived(_sender, _srcChainId, n, message);
-        return ExecutionStatus.Success;
-    }
-
-    function executeMessage(
-        bytes calldata _sender,
-        uint64 _srcChainId,
-        bytes calldata _message,
-        address // executor
-    ) external payable override onlyMessageBus returns (ExecutionStatus) {
-        (uint64 n, bytes memory message) = abi.decode((_message), (uint64, bytes));
-        emit Message2Received(_sender, _srcChainId, n, message);
-        return ExecutionStatus.Success;
-    }
-
-    function drainToken(address _token, uint256 _amount) external onlyOwner {
-        IERC20(_token).safeTransfer(msg.sender, _amount);
+    // called by user on destination chain to withdraw tokens
+    function withdraw(address _token, uint256 _amount) external {
+        balances[msg.sender][_token] -= _amount;
+        IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
     }
 }

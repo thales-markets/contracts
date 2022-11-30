@@ -8,6 +8,7 @@ import "./framework/MessageApp.sol";
 contract CrossChainTest is MessageApp {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
+    event MessageReceived(address sender, uint64 srcChainId, bytes note);
     event MessageWithTransferReceived(address sender, address token, uint256 amount, uint64 srcChainId, bytes note);
     event MessageWithTransferRefunded(address sender, address token, uint256 amount, bytes note);
 
@@ -17,6 +18,26 @@ contract CrossChainTest is MessageApp {
     constructor(address _messageBus) MessageApp(_messageBus) {}
 
     // called by user on source chain to send token with note to destination chain
+    function sendNote(
+        address _dstContract,
+        uint64 _dstChainId,
+        bytes memory _note
+    ) external payable {
+        bytes memory message = abi.encode(msg.sender, _note);
+        sendMessage(_dstContract, _dstChainId, message, msg.value);
+    }
+
+    function executeMessage(
+        bytes calldata _sender,
+        uint64 _srcChainId,
+        bytes calldata _message,
+        address _executor
+    ) external payable virtual override onlyMessageBus returns (ExecutionStatus) {
+        (address sender, bytes memory note) = abi.decode((_message), (address, bytes));
+        emit MessageReceived(sender, _srcChainId, note);
+        return ExecutionStatus.Success;
+    }
+
     function sendTokenWithNote(
         address _dstContract,
         address _token,

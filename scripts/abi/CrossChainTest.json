@@ -34,6 +34,31 @@
       },
       {
         "indexed": false,
+        "internalType": "uint64",
+        "name": "srcChainId",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "note",
+        "type": "bytes"
+      }
+    ],
+    "name": "MessageReceived",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "token",
         "type": "address"
@@ -348,6 +373,29 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_dstContract",
+        "type": "address"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_dstChainId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_note",
+        "type": "bytes"
+      }
+    ],
+    "name": "sendNote",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {

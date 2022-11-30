@@ -126,6 +126,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return The address of wrapper contract
     ITherundownConsumerWrapper public wrapper;
 
+    // @return specific SafeBoxFee per address
+    mapping(address => uint) public safeBoxFeePerAddress;
+
+    // @return specific min_spread per address
+    mapping(address => uint) public min_spreadPerAddress;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -155,9 +161,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return _available The amount of position options (tokens) available to buy from AMM.
     function availableToBuyFromAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
-            uint baseOdds = obtainOdds(market, position);
-            baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
-            _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
+            uint baseOdds = _obtainOdds(market, position);
+            if (baseOdds > 0) {
+                baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+                _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
+            }
         }
     }
 
@@ -191,9 +199,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint amount
     ) public view returns (uint _quote) {
         if (isMarketInAMMTrading(market)) {
-            uint baseOdds = obtainOdds(market, position);
-            baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
-            _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, safeBoxImpact);
+            uint baseOdds = _obtainOdds(market, position);
+            if (baseOdds > 0) {
+                baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+                _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, safeBoxImpact);
+            }
         }
     }
 
@@ -208,7 +218,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint _availableOtherSide = _getAvailableOtherSide(market, position, amount);
         if (amount <= _available) {
             int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
-            baseOdds = baseOdds + min_spread;
+            baseOdds = baseOdds + (min_spreadPerAddress[msg.sender] > 0 ? min_spreadPerAddress[msg.sender] : min_spread);
             int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
             returnQuote = ISportPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
         }
@@ -246,7 +256,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount
     ) public view returns (uint _quote) {
-        uint baseOdds = obtainOdds(market, position);
+        uint baseOdds = _obtainOdds(market, position);
         baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
         _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, 0);
     }
@@ -317,7 +327,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     function _getSellMaxPrice(address market, ISportsAMM.Position position) internal view returns (uint sell_max_price) {
-        uint baseOdds = obtainOdds(market, position);
+        uint baseOdds = _obtainOdds(market, position);
         if (!(baseOdds <= minSupportedOdds || baseOdds >= maxSupportedOdds)) {
             sell_max_price = ((baseOdds - min_spread) * (ONE - (max_spread / (2)))) / ONE;
         }
@@ -333,7 +343,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount
     ) public view returns (uint _quote) {
-        uint baseOdds = obtainOdds(market, position);
+        uint baseOdds = _obtainOdds(market, position);
         uint _available = availableToSellToAMM(market, position);
         _quote = _sellToAmmQuote(market, position, amount, baseOdds, _available);
     }
@@ -376,8 +386,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _market The address of the SportPositional market of a game
     /// @param _position The position (home/away/draw) to get the odds
     /// @return oddsToReturn The oracle odds for `_position` of a `_market`
-    function obtainOdds(address _market, ISportsAMM.Position _position) public view returns (uint oddsToReturn) {
-        oddsToReturn = sportAmmUtils.obtainOdds(_market, _position, apexConsumer, theRundownConsumer);
+    function obtainOdds(address _market, ISportsAMM.Position _position) external view returns (uint oddsToReturn) {
+        oddsToReturn = _obtainOdds(_market, _position);
     }
 
     /// @notice Checks if a `market` is active for AMM trading
@@ -545,14 +555,27 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal {
         require(isMarketInAMMTrading(market), "Not in Trading");
         require(ISportPositionalMarket(market).optionsCount() > uint(position), "Invalid position");
+
+        uint baseOdds = _obtainOdds(market, position);
+
+        require(baseOdds > 0, "No base odds");
+
+        baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+
         uint availableToBuyFromAMMatm = availableToBuyFromAMM(market, position);
         require(amount > ZERO_POINT_ONE && amount <= availableToBuyFromAMMatm, "Low liquidity || 0 amount");
 
         if (sendSUSD) {
             if (msg.sender == parlayAMM) {
-                sUSDPaid = buyFromAmmQuoteForParlayAMM(market, position, amount);
+                sUSDPaid = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, 0);
             } else {
-                sUSDPaid = buyFromAmmQuote(market, position, amount);
+                sUSDPaid = _buyFromAmmQuoteWithBaseOdds(
+                    market,
+                    position,
+                    amount,
+                    baseOdds,
+                    safeBoxFeePerAddress[msg.sender] > 0 ? safeBoxFeePerAddress[msg.sender] : safeBoxImpact
+                );
             }
             require((sUSDPaid * ONE) / (expectedPayout) <= (ONE + additionalSlippage), "Slippage too high");
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
@@ -734,6 +757,20 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetSportsPositionalMarketManager(_manager);
     }
 
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific safe box fee
+    /// @param newFee the fee
+    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
+        safeBoxFeePerAddress[_address] = newFee;
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific min_spread fee
+    /// @param newFee the fee
+    function setMinSpreadPerAddress(address _address, uint newFee) external onlyOwner {
+        min_spreadPerAddress[_address] = newFee;
+    }
+
     /// @notice Setting the Curve collateral addresses for all collaterals
     /// @param _curveSUSD Address of the Curve contract
     /// @param _dai Address of the DAI contract
@@ -793,7 +830,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             msg.sender == owner || ISportPositionalMarketManager(manager).isWhitelistedAddress(msg.sender),
             "Invalid sender"
         );
-        require(_capPerMarket < defaultCapPerGame, "Must be less then default");
+        require(_capPerMarket < defaultCapPerGame * 2, "Must be less then double default");
         for (uint i; i < _markets.length; i++) {
             capPerMarket[_markets[i]] = _capPerMarket;
             emit SetCapPerMarket(_markets[i], _capPerMarket);
@@ -801,6 +838,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     }
 
     // Internal
+
+    function _obtainOdds(address _market, ISportsAMM.Position _position) internal view returns (uint) {
+        return sportAmmUtils.obtainOdds(_market, _position, apexConsumer, theRundownConsumer);
+    }
 
     function _calculateCapToBeUsed(address market) internal view returns (uint) {
         if (capPerMarket[market] == 0) {
@@ -848,11 +889,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint sUSDPaid,
         address buyer
     ) internal {
-        uint safeBoxShare = (sUSDPaid - (sUSDPaid * ONE) / (ONE + (safeBoxImpact)));
+        uint safeBoxShare;
         if (safeBoxImpact > 0 && buyer != parlayAMM) {
+            safeBoxShare =
+                sUSDPaid -
+                (sUSDPaid * ONE) /
+                (ONE + (safeBoxFeePerAddress[msg.sender] > 0 ? safeBoxFeePerAddress[msg.sender] : safeBoxImpact));
             sUSD.safeTransfer(safeBox, safeBoxShare);
-        } else {
-            safeBoxShare = 0;
         }
 
         if (
@@ -901,9 +944,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             );
         } else {
             if (balancePosition > 0) {
-                uint pricePosition = obtainOdds(market, position);
+                uint pricePosition = _obtainOdds(market, position);
                 uint priceOtherPosition = isTwoPositional
-                    ? obtainOdds(
+                    ? _obtainOdds(
                         market,
                         position == ISportsAMM.Position.Home ? ISportsAMM.Position.Away : ISportsAMM.Position.Home
                     )

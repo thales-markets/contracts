@@ -47,14 +47,14 @@ async function main() {
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vaultAddress = getTargetAddress('SportVaultDegen', network);
+	const vaultAddress = getTargetAddress('AmmVaultSafu', network);
 	console.log('Found Vault at:', vaultAddress);
 
-	const Vault = await ethers.getContractFactory('SportVault');
+	const Vault = await ethers.getContractFactory('AmmVault');
 	const Vaultdeployed = await Vault.attach(vaultAddress);
 
 	const week = 7 * 24 * 60 * 60;
-	await Vaultdeployed.setRoundLength(week, { from: owner.address });
+	await Vaultdeployed.setSkewImpactLimit(w3utils.toWei('-0.01'), { from: owner.address });
 }
 main()
 	.then(() => process.exit(0))

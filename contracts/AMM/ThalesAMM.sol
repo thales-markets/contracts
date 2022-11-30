@@ -85,7 +85,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     address public referrals;
     uint public referrerFee;
 
-    address public previousManager;
+    address private previousManager;
 
     ICurveSUSD public curveSUSD;
 
@@ -103,6 +103,9 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
 
     int private constant ONE_INT = 1e18;
     int private constant ONE_PERCENT_INT = 1e16;
+
+    mapping(address => uint) public safeBoxFeePerAddress;
+    mapping(address => uint) public min_spreadPerAddress;
 
     function initialize(
         address _owner,
@@ -134,8 +137,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     function availableToBuyFromAMM(address market, Position position) public view returns (uint _available) {
         if (isMarketInAMMTrading(market)) {
             uint basePrice = price(market, position);
-            basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
-            _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
+            if (basePrice > 0) {
+                basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
+                _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice, false);
+            }
         }
     }
 
@@ -150,8 +155,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         uint amount
     ) public view returns (uint _quote) {
         uint basePrice = price(market, position);
-        basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
-        _quote = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
+        uint basePriceOtherSide = ONE - basePrice;
+        if (basePrice > 0) {
+            basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
+            _quote = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice, basePriceOtherSide, safeBoxImpact);
+        }
     }
 
     /// @notice get a quote in the collateral of choice (USDC, USDT or DAI) on how much the trader would need to pay to buy the amount of UP or DOWN positions
@@ -182,17 +190,31 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @param market a Positional Market known to Market Manager
     /// @param position UP or DOWN
     /// @param amount number of positions to buy with 18 decimals
-    /// @return _available the skew impact applied to that side of the market
+    /// @return _priceImpact the skew impact applied to that side of the market
     function buyPriceImpact(
         address market,
         Position position,
         uint amount
-    ) public view returns (int _available) {
+    ) public view returns (int _priceImpact) {
         Position positionOtherSide = position == Position.Up ? Position.Down : Position.Up;
-        uint _availableToBuyFromAMM = availableToBuyFromAMM(market, position);
-        uint _availableToBuyFromAMMOtherSide = availableToBuyFromAMM(market, positionOtherSide);
+        uint basePrice = price(market, position);
+        uint basePriceOtherSide = ONE - basePrice;
+        basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
+        uint _availableToBuyFromAMM = _availableToBuyFromAMMWithBasePrice(market, position, basePrice, true);
+        uint _availableToBuyFromAMMOtherSide = _availableToBuyFromAMMWithBasePrice(
+            market,
+            positionOtherSide,
+            basePriceOtherSide,
+            true
+        );
         if (amount > 0 && amount <= _availableToBuyFromAMM) {
-            _available = _buyPriceImpact(market, position, amount, _availableToBuyFromAMM, _availableToBuyFromAMMOtherSide);
+            _priceImpact = _buyPriceImpact(
+                market,
+                position,
+                amount,
+                _availableToBuyFromAMM,
+                _availableToBuyFromAMMOtherSide
+            );
         }
     }
 
@@ -506,9 +528,10 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     function _availableToBuyFromAMMWithBasePrice(
         address market,
         Position position,
-        uint basePrice
+        uint basePrice,
+        bool skipCheck
     ) internal view returns (uint availableAmount) {
-        if (basePrice < maxSupportedPrice) {
+        if (skipCheck || basePrice < maxSupportedPrice) {
             basePrice = basePrice.add(min_spread);
             uint discountedPrice = basePrice.mul(ONE.sub(max_spread.div(4))).div(ONE);
             uint balance = _balanceOfPositionOnMarket(market, position);
@@ -534,19 +557,24 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         address market,
         Position position,
         uint amount,
-        uint basePrice
+        uint basePrice,
+        uint basePriceOtherSide,
+        uint safeBoxImpactForCaller
     ) internal view returns (uint returnQuote) {
-        Position positionOtherSide = position == Position.Up ? Position.Down : Position.Up;
-        uint _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
-        uint _availableOtherSide = _availableToBuyFromAMMWithBasePrice(market, positionOtherSide, basePrice);
+        uint _available = _availableToBuyFromAMMWithBasePrice(market, position, basePrice, false);
+        uint _availableOtherSide = _availableToBuyFromAMMWithBasePrice(
+            market,
+            position == Position.Up ? Position.Down : Position.Up,
+            basePriceOtherSide,
+            true
+        );
+
         if (amount <= _available) {
             int tempQuote;
             int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
-            basePrice = basePrice.add(min_spread);
+            basePrice = basePrice.add(min_spreadPerAddress[msg.sender] > 0 ? min_spreadPerAddress[msg.sender] : min_spread);
             if (skewImpact >= 0) {
                 int impactPrice = ONE_INT.sub(basePrice.toInt256()).mul(skewImpact).div(ONE_INT);
-
-                //return impactPrice;
                 // add 2% to the price increase to avoid edge cases on the extremes
                 impactPrice = impactPrice.mul(ONE_INT.add(ONE_PERCENT_INT * 2)).div(ONE_INT);
                 tempQuote = (amount.toInt256()).mul((basePrice.toInt256()).add(impactPrice)).div(ONE_INT);
@@ -555,7 +583,7 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
                     ONE_INT
                 );
             }
-            tempQuote = tempQuote.mul(ONE_INT.add((safeBoxImpact.toInt256()))).div(ONE_INT);
+            tempQuote = tempQuote.mul(ONE_INT.add((safeBoxImpactForCaller.toInt256()))).div(ONE_INT);
             returnQuote = IPositionalMarketManager(manager).transformCollateral(tempQuote.toUint256());
         }
     }
@@ -580,13 +608,22 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
         sUSDPaid = sUSDPaidCarried;
 
         uint basePrice = price(market, position);
+        uint basePriceOtherSide = ONE - basePrice;
+
         basePrice = basePrice < minSupportedPrice ? minSupportedPrice : basePrice;
 
-        uint availableToBuyFromAMMatm = _availableToBuyFromAMMWithBasePrice(market, position, basePrice);
-        require(amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
+        uint availableToBuyFromAMMatm = _availableToBuyFromAMMWithBasePrice(market, position, basePrice, false);
+        require(amount > 0 && amount <= availableToBuyFromAMMatm, "Not enough liquidity.");
 
         if (sendSUSD) {
-            sUSDPaid = _buyFromAmmQuoteWithBasePrice(market, position, amount, basePrice);
+            sUSDPaid = _buyFromAmmQuoteWithBasePrice(
+                market,
+                position,
+                amount,
+                basePrice,
+                basePriceOtherSide,
+                safeBoxFeePerAddress[msg.sender] > 0 ? safeBoxFeePerAddress[msg.sender] : safeBoxImpact
+            );
             require(sUSDPaid.mul(ONE).div(expectedPayout) <= ONE.add(additionalSlippage), "Slippage too high");
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
         }
@@ -614,7 +651,15 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
             emit BoughtWithDiscount(msg.sender, discountedAmount, paidForDiscountedAmount);
         }
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), target);
+        _handleInTheMoneyEvent(market, position, sUSDPaid, msg.sender);
+    }
 
+    function _handleInTheMoneyEvent(
+        address market,
+        Position position,
+        uint sUSDPaid,
+        address sender
+    ) internal {
         (bytes32 key, uint strikePrice, ) = IPositionalMarket(market).getOracleDetails();
         uint currentAssetPrice = priceFeed.rateForCurrency(key);
         bool inTheMoney = position == Position.Up ? currentAssetPrice >= strikePrice : currentAssetPrice < strikePrice;
@@ -663,7 +708,11 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) internal {
         uint safeBoxShare;
         if (safeBoxImpact > 0) {
-            safeBoxShare = sUSDPaid.sub(sUSDPaid.mul(ONE).div(ONE.add(safeBoxImpact)));
+            safeBoxShare = sUSDPaid.sub(
+                sUSDPaid.mul(ONE).div(
+                    ONE.add(safeBoxFeePerAddress[msg.sender] > 0 ? safeBoxFeePerAddress[msg.sender] : safeBoxImpact)
+                )
+            );
             sUSD.safeTransfer(safeBox, safeBoxShare);
         }
 
@@ -902,6 +951,20 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     /// @param enabled update if the address can set implied volatility
     function setWhitelistedAddress(address _address, bool enabled) external onlyOwner {
         whitelistedAddresses[_address] = enabled;
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific safe box fee
+    /// @param newFee the fee
+    function setSafeBoxFeePerAddress(address _address, uint newFee) external onlyOwner {
+        safeBoxFeePerAddress[_address] = newFee;
+    }
+
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific min_spread fee
+    /// @param newFee the fee
+    function setMinSpreadPerAddress(address _address, uint newFee) external onlyOwner {
+        min_spreadPerAddress[_address] = newFee;
     }
 
     /// @notice Updates contract parametars

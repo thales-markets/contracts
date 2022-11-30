@@ -492,6 +492,14 @@ contract('SportsAMM', (accounts) => {
 		await StakingThales.setSupportedSportVault(vault.address, true, { from: owner });
 		await StakingThales.startStakingPeriod({ from: owner });
 		await vault.setStakingThales(StakingThales.address, { from: owner });
+
+		await SportsAMM.setSafeBoxFeePerAddress(vault.address, toUnit('0.005'), {
+			from: owner,
+		});
+
+		await SportsAMM.setMinSpreadPerAddress(vault.address, toUnit('0.005'), {
+			from: owner,
+		});
 	});
 
 	describe('Test sport vault', () => {
@@ -723,7 +731,13 @@ contract('SportsAMM', (accounts) => {
 			let allocationSpentInARound = await vault.allocationSpentInARound(round);
 			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
 
+			let balanceVault = await Thales.balanceOf(vault.address);
+			console.log('balanceVault before trade is:' + balanceVault / 1e18);
+
 			await vault.trade(deployedMarket.address, toUnit(20), 0);
+
+			balanceVault = await Thales.balanceOf(vault.address);
+			console.log('balanceVault after trade is:' + balanceVault / 1e18);
 
 			allocationSpentInARound = await vault.allocationSpentInARound(round);
 			console.log('allocationSpentInARound is:' + allocationSpentInARound / 1e18);
@@ -748,10 +762,6 @@ contract('SportsAMM', (accounts) => {
 			console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
 			buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(1));
 			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-			await assert.revert(
-				vault.trade(deployedMarket.address, toUnit(20), 1),
-				'Cannot trade different options on the same market'
-			);
 
 			let canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);
@@ -797,7 +807,7 @@ contract('SportsAMM', (accounts) => {
 			let balanceSecond = await vault.getBalancesPerRound(round, second);
 			console.log('balanceSecond is:' + balanceSecond / 1e18);
 
-			let balanceVault = await Thales.balanceOf(vault.address);
+			balanceVault = await Thales.balanceOf(vault.address);
 			console.log('balanceVault is:' + balanceVault / 1e18);
 
 			let profitAndLossPerRound = await vault.profitAndLossPerRound(round - 1);

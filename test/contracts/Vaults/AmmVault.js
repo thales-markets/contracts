@@ -221,7 +221,7 @@ contract('Vault', (accounts) => {
 			_thalesAmm: thalesAMM.address,
 			_sUSD: sUSDSynth.address,
 			_roundLength: week,
-			_priceLowerLimit: toUnit(0.1).toString(),
+			_priceLowerLimit: toUnit(0.05).toString(),
 			_priceUpperLimit: toUnit(1).toString(),
 			_skewImpactLimit: toUnit(0.1).toString(), // 40%
 			_allocationLimitsPerMarketPerRound: toUnit(10).toString(), // 40%
@@ -238,6 +238,14 @@ contract('Vault', (accounts) => {
 		await sUSDSynth.approve(thalesAMM.address, toUnit('100000'), { from: second });
 		sUSDSynth.issue(first, sUSDQtyAmm);
 		sUSDSynth.issue(second, sUSDQtyAmm);
+
+		await thalesAMM.setSafeBoxFeePerAddress(vault.address, toUnit('0.005'), {
+			from: owner,
+		});
+
+		await thalesAMM.setMinSpreadPerAddress(vault.address, toUnit('0.005'), {
+			from: owner,
+		});
 	});
 
 	const Position = {
@@ -251,7 +259,7 @@ contract('Vault', (accounts) => {
 		Other: toBN(2),
 	};
 
-	describe('Test sport vault', () => {
+	describe('Test vault', () => {
 		it('Vault creation', async () => {
 			let round = await vault.round();
 			console.log('round is:' + round.toString());
@@ -466,10 +474,6 @@ contract('Vault', (accounts) => {
 			console.log('buyPriceImpactFirst: ', fromUnit(buyPriceImpactFirst));
 			buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(market1.address, 1, toUnit(1));
 			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
-			await assert.revert(
-				vault.trade(market1.address, toUnit(20), 1),
-				'Cannot trade different options on the same market'
-			);
 
 			let canCloseCurrentRound = await vault.canCloseCurrentRound();
 			console.log('canCloseCurrentRound is:' + canCloseCurrentRound);

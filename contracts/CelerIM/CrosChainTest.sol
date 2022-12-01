@@ -3,9 +3,12 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
+import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "./framework/MessageApp.sol";
 
-contract CrossChainTest is MessageApp {
+contract CrossChainTest is MessageApp, Initializable, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     event MessageReceived(address sender, uint64 srcChainId, bytes note);
@@ -15,7 +18,12 @@ contract CrossChainTest is MessageApp {
     // acccount, token -> balance
     mapping(address => mapping(address => uint256)) public balances;
 
-    constructor(address _messageBus) MessageApp(_messageBus) {}
+    // constructor(address _messageBus) MessageApp(_messageBus) {}
+    function initialize(address _owner, address _messageBus) public initializer {
+        setOwner(_owner);
+        initNonReentrant();
+        messageBus = _messageBus;
+    }
 
     // called by user on source chain to send token with note to destination chain
     function sendNote(

@@ -189,6 +189,16 @@
       "address": "0xe95C975ae8e37ab0bA6b9F78262977A59FcAABEB",
       "txHash": "0xc7bfc65593b9935e84d34f2333d3a566cd2ed4685645bf7e0bd53f197fb3bd04",
       "kind": "transparent"
+    },
+    {
+      "address": "0x2819a57DbBac6565aaC59e3A3922EcCc7d9aA1c1",
+      "txHash": "0x89287867bfa08d81a16fb5a2d537ea9f4af56897e0ed88db136ce5987acd8aa7",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xD43B994a54B925352FaDd5C3ea0Fc21F490d56cb",
+      "txHash": "0x39b70bec046eb392610fac9c9ca00ea0f1a74b6eabf9d1aab521688144c8a012",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -1192,6 +1202,103 @@
         "types": {
           "t_address": {
             "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "fec65a17884a00d87b02b7f5bccc0b58a9859e16b8560e61d720379e39399e6c": {
+      "address": "0xC392133eEa695603B51a5d5de73655d571c2CE51",
+      "txHash": "0x82d008aafdf4cc4787b63647fcf6b41b252840f21e4290e544a273b937299936",
+      "layout": {
+        "storage": [
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "MessageBusAddress",
+            "label": "messageBus",
+            "type": "t_address",
+            "src": "contracts/CelerIM/framework/MessageBusAddress.sol:10"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "balances",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/CelerIM/CrosChainTest.sol:19"
+          }
+        ],
+        "types": {
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
           },
           "t_bool": {
             "label": "bool"

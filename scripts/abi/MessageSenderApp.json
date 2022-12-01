@@ -16,24 +16,70 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
-        "name": "previousOwner",
+        "name": "oldOwner",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": false,
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
       }
     ],
-    "name": "OwnershipTransferred",
+    "name": "OwnerChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnerNominated",
     "type": "event"
   },
   {
     "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "messageBus",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "nominateNewOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nominatedOwner",
     "outputs": [
       {
         "internalType": "address",
@@ -74,11 +120,24 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "newOwner",
+        "name": "_owner",
         "type": "address"
       }
     ],
-    "name": "transferOwnership",
+    "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "proxyAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnershipAtInit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

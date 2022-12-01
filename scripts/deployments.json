@@ -286,8 +286,11 @@
 		"PositionalMarketFactoryImplementation": "0x812c4837Ba990071Eecde8B87b150487BC179456",
 		"PositionalMarketData": "0xd6BEd7D753DCbbbb8937Dd009788d6c815aE3094",
 		"ThalesRoyalePass": "0x27aAdff477FB85855A7a753d02C44cEF3ec25BF9",
+		"MessageBus": "0x7d43AABC515C356145049227CeE54B608342c0ad",
 		"Vault": "",
-		"VaultImplementation": ""
+		"VaultImplementation": "",
+		"CelerIM": "0xD43B994a54B925352FaDd5C3ea0Fc21F490d56cb",
+		"CelerIMImplementation": "0xC392133eEa695603B51a5d5de73655d571c2CE51"
 	},
 	"ropsten": {
 		"Airdrop": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",
@@ -405,7 +408,10 @@
 		"ParlayMarketData": "0xa2459382d3953BD9ae2B4045Bb870DB4b4000846",
 		"ParlayMarketDataImplementation": "0x30453cC239562b7FEA4d7B29Ea7D8D827Be72Ba2",
 		"ParlayVerifier": "0x0db550f1F2b538D763393760FedC33be7945c577",
-		"SportsAMMUtils": "0xba3c17Cb0C0ec025A766015DB3F3Ba6316E36E38"
+		"SportsAMMUtils": "0xba3c17Cb0C0ec025A766015DB3F3Ba6316E36E38",
+		"CelerIM": "0x789e3cc274b35E0eE5d62AE1f35B0d7D49b240F8",
+		"CelerIMImplementation": "0xC5D1fD8E8e9D45Bc6dE6D3e9AfD51d76ae3C1203",
+		"MessageBus": "0xF25170F86E4291a99a9A560032Fe9948b8BcFBB2"
 	},
 	"optimisticGoerli": {
 		"ExoticUSD": "0xE1ceaa829525a08C1d39A5CEBe4b42aF58d77198",

@@ -43,23 +43,46 @@ async function main() {
 		network = 'optimisticGoerli';
 		PaymentToken = getTargetAddress('ExoticUSD', network);
 	}
+	if (networkObj.chainId == 80001) {
+		networkObj.name = 'polygonMumbai';
+		network = 'polygonMumbai';
+	}
 
 	const CelerIM = await ethers.getContractFactory('CrossChainTest');
 
 	const MessageBusAddress = getTargetAddress('MessageBus', network);
 
-	const CelerIMDeployed = await CelerIM.deploy(MessageBusAddress);
-	await CelerIMDeployed.deployed();
+	const CelerIMDeployed = await upgrades.deployProxy(CelerIM, [owner.address, MessageBusAddress]);
+	await CelerIMDeployed.deployed;
 
+	await delay(10000);
 	console.log('CrossChainTest Deployed on', CelerIMDeployed.address);
-	setTargetAddress('CrossChainTest', network, CelerIMDeployed.address);
+	setTargetAddress('CelerIM', network, CelerIMDeployed.address);
+
+	await delay(10000);
+
+	const CelerIMImplementation = await getImplementationAddress(
+		ethers.provider,
+		CelerIMDeployed.address
+	);
+
+	console.log('Implementation CelerIM: ', CelerIMImplementation);
+	setTargetAddress('CelerIMImplementation', network, CelerIMImplementation);
+
+	await delay(2000);
 
 	await delay(65000);
 	try {
 		await hre.run('verify:verify', {
 			address: CelerIMDeployed.address,
-			constructorArguments: [MessageBusAddress],
 			// contract: 'contracts/SportMarkets/Parlay/ParlayMarketMastercopy.sol:ParlayMarketMastercopy',
+		});
+	} catch (e) {
+		console.log(e);
+	}
+	try {
+		await hre.run('verify:verify', {
+			address: CelerIMImplementation,
 		});
 	} catch (e) {
 		console.log(e);

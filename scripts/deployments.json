@@ -97,17 +97,17 @@
 		"ThalesRoyale": "0x3198ab211CdF3E4d13a698E1Fb819507BcA2e579",
 		"ThalesRoyaleImplementation": "0xc7428e4DA6a6FF3571C3a9F88818622Ac4950Aa7",
 		"SportVault": "0xc922f4CDe42dD658A7D3EA852caF7Eae47F6cEcd",
-		"SportVaultImplementation": "0x1757CF4c1Edcfbb42DfdfF91644B8D8D5e90f904",
+		"SportVaultImplementation": "0xf270BBA56b1a8cA722AcBD6E6fB255A51Dc065A7",
 		"SportVaultDegen": "0xBaaC5464BF6E767C9af0E8d4677C01Be2065fd5F",
-		"SportVaultDegenImplementation": "0x1757CF4c1Edcfbb42DfdfF91644B8D8D5e90f904",
+		"SportVaultDegenImplementation": "0xf270BBA56b1a8cA722AcBD6E6fB255A51Dc065A7",
 		"SportVaultSafu": "0x43D19841D818B2ccC63a8B44Ce8C7DEF8616D98E",
-		"SportVaultSafuImplementation": "0x1757CF4c1Edcfbb42DfdfF91644B8D8D5e90f904",
+		"SportVaultSafuImplementation": "0xf270BBA56b1a8cA722AcBD6E6fB255A51Dc065A7",
 		"AmmVault": "0xb484027CB0c538538Bad2bE492714154f9196F93",
-		"AmmVaultImplementation": "0x63D6DD43F6854A06548Bc88e890c9AFFf5D29f4b",
+		"AmmVaultImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"AmmVaultSafu": "0x6c7Fd4321183b542E81Bcc7dE4DfB88F9DBca29F",
-		"AmmVaultSafuImplementation": "0x63D6DD43F6854A06548Bc88e890c9AFFf5D29f4b",
+		"AmmVaultSafuImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"AmmVaultDegen": "0x43318DE9E8f65b591598F17aDD87ae7247649C83",
-		"AmmVaultDegenImplementation": "0x63D6DD43F6854A06548Bc88e890c9AFFf5D29f4b"
+		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

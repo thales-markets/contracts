@@ -459,9 +459,11 @@ contract AmmVault is Initializable, ProxyOwned, PausableUpgradeable, ProxyReentr
     }
 
     /// @notice Return available to deposit
-    /// @return uint
-    function getAvailableToDeposit() external view returns (uint) {
-        return maxAllowedDeposit - capPerRound[round + 1];
+    /// @return returned how much more users can deposit
+    function getAvailableToDeposit() external view returns (uint returned) {
+        if (capPerRound[round + 1] < maxAllowedDeposit) {
+            returned = maxAllowedDeposit - capPerRound[round + 1];
+        }
     }
 
     /// @notice end of current round

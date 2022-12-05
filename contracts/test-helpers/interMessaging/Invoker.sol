@@ -11,6 +11,16 @@ contract Invoker {
     }
 
     event AddedValuesByCall(uint256 a, uint256 b, bool success);
+    event MessageSent(address _from, address _to, bytes message);
+    event MessageRaw(bytes result, string invokeStr);
+    event MessageDecoded(
+        bytes4 _invokeMsg,
+        address _market,
+        uint _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage
+    );
 
     function addValuesWithCall(
         address calculator,
@@ -18,6 +28,59 @@ contract Invoker {
         uint256 b
     ) public returns (uint256) {
         (bool success, bytes memory result) = calculator.call(abi.encodeWithSignature("add(uint256,uint256)", a, b));
+        emit AddedValuesByCall(a, b, success);
+        return abi.decode(result, (uint256));
+    }
+
+    function simulateBuyFromAMM(
+        address _market,
+        uint _position,
+        uint _amount,
+        uint _expectedPayout,
+        uint _additionalSlippage
+    ) external {
+        bytes memory message = abi.encodePacked(
+            "buyFromAMM(address,uint,uint,uint,uint)",
+            _market,
+            _position,
+            _amount,
+            _expectedPayout,
+            _additionalSlippage
+        );
+        bytes memory message2 = abi.encodeWithSignature(
+            "buyFromAMM(address,uint,uint,uint,uint)",
+            _market,
+            _position,
+            _amount,
+            _expectedPayout,
+            _additionalSlippage
+        );
+        emit MessageSent(msg.sender, address(this), message);
+        emit MessageSent(msg.sender, address(this), message2);
+        string memory invokeFunc = "buyFromAMM(address,uint,uint,uint,uint,address,address,address)";
+        bytes4 invokeFunc4 = bytes4(keccak256(bytes(invokeFunc)));
+        // bytes32 invokeFunc32;
+        // assembly {
+        //     invokeFunc32 := mload(add(invokeFunc, 32))
+        // }
+
+        // bytes memory message3 = abi.encode(invokeFunc32, _market, _position, _amount, _expectedPayout, _additionalSlippage);
+        bytes memory message4 = abi.encode(invokeFunc4, _market, _position, _amount, _expectedPayout, _additionalSlippage);
+        emit MessageSent(msg.sender, address(this), message4);
+        (bytes4 funcInvoke, address market, uint position, uint amount, uint expectedPayout, uint additionalSlippage) = abi
+            .decode(message4, (bytes4, address, uint, uint, uint, uint));
+        require(market == _market, "Market not equal");
+        emit MessageDecoded(funcInvoke, market, position, amount, expectedPayout, additionalSlippage);
+        emit MessageRaw(message4, invokeFunc);
+    }
+
+    function simulateAddValueWithSelector(
+        address calculator,
+        uint256 a,
+        uint256 b
+    ) public returns (uint256) {
+        bytes4 addSelector = bytes4(keccak256(bytes("add(uint256,uint256)")));
+        (bool success, bytes memory result) = calculator.call(abi.encodeWithSelector(addSelector, a, b));
         emit AddedValuesByCall(a, b, success);
         return abi.decode(result, (uint256));
     }

@@ -58,7 +58,32 @@ contract('InterMessaging', (accounts) => {
 	describe('Test InterMessaging', () => {
 		beforeEach(async () => {});
 
-		it('Do a call', async () => {});
+		it('Do a call', async () => {
+			let tx = await Invoker.addValuesWithCall(ContractTest.address, 10, 5);
+			console.log(tx.logs[0].args);
+			let readValue = await ContractTest.storedValue();
+			console.log('value:', readValue);
+			let sum = parseFloat(fromUnit(tx.logs[0].args.a)) + parseFloat(fromUnit(tx.logs[0].args.b));
+			assert.equal(parseFloat(fromUnit(readValue)), sum);
+		});
+		it('Do a call with selector', async () => {
+			let tx = await Invoker.addValuesWithCall(ContractTest.address, 10, 5);
+			console.log(tx.logs[0].args);
+			let readValue = await ContractTest.storedValue();
+			console.log('value:', readValue);
+			let sum = parseFloat(fromUnit(tx.logs[0].args.a)) + parseFloat(fromUnit(tx.logs[0].args.b));
+			assert.equal(parseFloat(fromUnit(readValue)), sum);
+		});
+
+		it('Send Message', async () => {
+			let tx = await Invoker.simulateBuyFromAMM(first, 0, 1, 2, 3, { from: owner });
+			console.log(tx);
+			// console.log(tx.logs[0].args);
+			// console.log(tx.logs[1].args);
+			// console.log(tx.logs[2].args);
+			console.log(tx.logs[3].args);
+			console.log(tx.logs[4].args);
+		});
 
 		// it('Buy from SportsAMM, position 1, value: 100', async () => {
 		// 	let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);

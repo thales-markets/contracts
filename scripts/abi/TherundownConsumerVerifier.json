@@ -82,6 +82,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_obtainer",
+        "type": "address"
+      }
+    ],
+    "name": "NewObtainerAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -532,6 +545,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32[]",
+        "name": "_gameIds",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "getOddsForGames",
+    "outputs": [
+      {
+        "internalType": "int24[]",
+        "name": "odds",
+        "type": "int24[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"
@@ -567,6 +599,44 @@
     "inputs": [
       {
         "internalType": "bytes32[]",
+        "name": "_gameIds",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "getSpreadLinesForGames",
+    "outputs": [
+      {
+        "internalType": "int16[]",
+        "name": "lines",
+        "type": "int16[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "_gameIds",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "getSpreadTotalsOddsForGames",
+    "outputs": [
+      {
+        "internalType": "int24[]",
+        "name": "odds",
+        "type": "int24[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
         "name": "_ids",
         "type": "bytes32[]"
       }
@@ -577,6 +647,25 @@
         "internalType": "string[]",
         "name": "_gameIds",
         "type": "string[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "_gameIds",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "getTotalLinesForGames",
+    "outputs": [
+      {
+        "internalType": "uint24[]",
+        "name": "lines",
+        "type": "uint24[]"
       }
     ],
     "stateMutability": "view",
@@ -770,6 +859,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "obtainer",
+    "outputs": [
+      {
+        "internalType": "contract IGamesOddsObtainer",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -903,6 +1005,19 @@
       }
     ],
     "name": "setInvalidNames",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_obtainer",
+        "type": "address"
+      }
+    ],
+    "name": "setObtainer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -46,6 +46,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => uint) public numberOfChildMarkets;
     mapping(address => mapping(int16 => address)) public mainMarketSpreadChildMarket;
     mapping(address => mapping(uint24 => address)) public mainMarketTotalChildMarket;
+    mapping(address => address) public childMarketMainMarket;
     mapping(address => int16) public childMarketSread;
     mapping(address => uint24) public childMarketTotal;
     mapping(address => address) public currentActiveTotalChildMarket;
@@ -211,17 +212,28 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         return _useBackup ? _areOddsValid(backupOdds[_gameId]) : _areOddsValid(gameOdds[_gameId]);
     }
 
-    /// @notice view function which returns odds in a batch of games
-    /// @param _gameIds game ids for which games is looking
-    /// @return odds odds array
-    function getOddsForGames(bytes32[] memory _gameIds) external view returns (int24[] memory odds) {
-        odds = new int24[](3 * _gameIds.length);
-        for (uint i = 0; i < _gameIds.length; i++) {
-            (int24 home, int24 away, int24 draw) = getOddsForGame(_gameIds[i]);
-            odds[i * 3 + 0] = home; // 0 3 6 ...
-            odds[i * 3 + 1] = away; // 1 4 7 ...
-            odds[i * 3 + 2] = draw; // 2 5 8 ...
-        }
+    /// @notice view function which returns odds
+    /// @param _gameId game id
+    /// @return spreadHome points difference between home and away
+    /// @return spreadAway  points difference between home and away
+    /// @return totalOver  points total in a game over limit
+    /// @return totalUnder  points total in game under limit
+    function getLinesForGame(bytes32 _gameId)
+        public
+        view
+        returns (
+            int16,
+            int16,
+            uint24,
+            uint24
+        )
+    {
+        return (
+            gameOdds[_gameId].spreadHome,
+            gameOdds[_gameId].spreadAway,
+            gameOdds[_gameId].totalOver,
+            gameOdds[_gameId].totalUnder
+        );
     }
 
     /// @notice view function which returns odds
@@ -229,16 +241,32 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /// @return homeOdds moneyline odd in a two decimal places
     /// @return awayOdds moneyline odd in a two decimal places
     /// @return drawOdds moneyline odd in a two decimal places
+    /// @return spreadHomeOdds moneyline odd in a two decimal places
+    /// @return spreadAwayOdds moneyline odd in a two decimal places
+    /// @return totalOverOdds moneyline odd in a two decimal places
+    /// @return totalUnderOdds moneyline odd in a two decimal places
     function getOddsForGame(bytes32 _gameId)
         public
         view
         returns (
             int24,
             int24,
+            int24,
+            int24,
+            int24,
+            int24,
             int24
         )
     {
-        return (gameOdds[_gameId].homeOdds, gameOdds[_gameId].awayOdds, gameOdds[_gameId].drawOdds);
+        return (
+            gameOdds[_gameId].homeOdds,
+            gameOdds[_gameId].awayOdds,
+            gameOdds[_gameId].drawOdds,
+            gameOdds[_gameId].spreadHomeOdds,
+            gameOdds[_gameId].spreadAwayOdds,
+            gameOdds[_gameId].totalOverOdds,
+            gameOdds[_gameId].totalUnderOdds
+        );
     }
 
     /* ========== INTERNALS ========== */
@@ -342,7 +370,6 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         return result;
     }
 
-    // todo game lable
     // "+4.5 - homeTeam vs awayTeam" UP DOWN
     // "+200 - homeTeam vs awayTeam" UP DOWN
     function _append(
@@ -385,7 +412,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         address _main,
         bool _flag,
         bool _unpauseMain
-    ) internal returns (bool) {
+    ) internal {
         if (_unpauseMain) {
             consumer.pauseOrUnpauseMarket(_main, _flag);
         }
@@ -455,10 +482,11 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         int16 _spreadHome,
         uint24 _totalOver
     ) internal {
-        // todo add marketPerGameId -> child -> game id
+        consumer.setGameIdPerChildMarket(_gameId, _child);
         gameIdPerChildMarket[_child] = _gameId;
         childMarketCreated[_child] = true;
         // adding child markets
+        childMarketMainMarket[_child] = _main;
         mainMarketChildMarketIndex[_main][numberOfChildMarkets[_main]] = _child;
         numberOfChildMarkets[_main] = numberOfChildMarkets[_main] + 1;
         if (_isSpread) {
@@ -483,14 +511,14 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         uint24 totalLine = childMarketTotal[_child];
         if ((_homeScore + _awayScore) * 100 > totalLine) {
             sportsManager.resolveMarket(_child, HOME_WIN);
-            emit ResolveChildMarket(_child, HOME_WIN);
+            emit ResolveChildMarket(_child, HOME_WIN, childMarketMainMarket[_child]);
         } else if ((_homeScore + _awayScore) * 100 < totalLine) {
             sportsManager.resolveMarket(_child, AWAY_WIN);
-            emit ResolveChildMarket(_child, AWAY_WIN);
+            emit ResolveChildMarket(_child, AWAY_WIN, childMarketMainMarket[_child]);
         } else {
             // total equal
             sportsManager.resolveMarket(_child, CANCELLED);
-            emit ResolveChildMarket(_child, CANCELLED);
+            emit ResolveChildMarket(_child, CANCELLED, childMarketMainMarket[_child]);
         }
     }
 
@@ -508,14 +536,14 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         if (spreadLine > 0) {
             if ((!homeWin) || (homeWin && spreadLine > int16(diff) * 100)) {
                 sportsManager.resolveMarket(_child, AWAY_WIN);
-                emit ResolveChildMarket(_child, AWAY_WIN);
+                emit ResolveChildMarket(_child, AWAY_WIN, childMarketMainMarket[_child]);
             } else if (homeWin && spreadLine < int16(diff) * 100) {
                 sportsManager.resolveMarket(_child, HOME_WIN);
-                emit ResolveChildMarket(_child, HOME_WIN);
+                emit ResolveChildMarket(_child, HOME_WIN, childMarketMainMarket[_child]);
             } else {
                 // spread equal
                 sportsManager.resolveMarket(_child, CANCELLED);
-                emit ResolveChildMarket(_child, CANCELLED);
+                emit ResolveChildMarket(_child, CANCELLED, childMarketMainMarket[_child]);
             }
             //if spread is negative sub from home and calculate
         } else {
@@ -526,11 +554,11 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 sportsManager.resolveMarket(_child, HOME_WIN);
             } else if (!homeWin && spreadLine > int16(diff) * (-100)) {
                 sportsManager.resolveMarket(_child, AWAY_WIN);
-                emit ResolveChildMarket(_child, AWAY_WIN);
+                emit ResolveChildMarket(_child, AWAY_WIN, childMarketMainMarket[_child]);
             } else {
                 // spread equal
                 sportsManager.resolveMarket(_child, CANCELLED);
-                emit ResolveChildMarket(_child, CANCELLED);
+                emit ResolveChildMarket(_child, CANCELLED, childMarketMainMarket[_child]);
             }
         }
     }
@@ -546,8 +574,6 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         address _verifier,
         address _sportsManager
     ) external onlyOwner {
-        require(_consumer != address(0) || _sportsManager != address(0) || _verifier != address(0));
-
         consumer = ITherundownConsumer(_consumer);
         verifier = ITherundownConsumerVerifier(_verifier);
         sportsManager = ISportPositionalMarketManager(_sportsManager);
@@ -559,7 +585,6 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _sportId sport id which needs to be supported or not
     /// @param _isSupported true/false (supported or not)
     function setSupportedSportForTotalAndSpread(uint _sportId, bool _isSupported) external onlyOwner {
-        require(doesSportSupportSpreadAndTotal[_sportId] != _isSupported);
         doesSportSupportSpreadAndTotal[_sportId] = _isSupported;
         emit SupportedSportForTotalAndSpreadAdded(_sportId, _isSupported);
     }
@@ -580,5 +605,5 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     event CreateChildSpreadSportsMarket(address _main, address _child, bytes32 _id, int16 _spread, uint[] _normalizedOdds);
     event CreateChildTotalSportsMarket(address _main, address _child, bytes32 _id, uint24 _total, uint[] _normalizedOdds);
     event SupportedSportForTotalAndSpreadAdded(uint _sportId, bool _isSupported);
-    event ResolveChildMarket(address _child, uint _outcome);
+    event ResolveChildMarket(address _child, uint _outcome, address _main);
 }

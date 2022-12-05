@@ -57,6 +57,8 @@ interface ITherundownConsumer {
 
     function setPausedByCanceledStatus(address _market, bool _flag) external;
 
+    function setGameIdPerChildMarket(bytes32 _gameId, address _child) external;
+
     function pauseOrUnpauseMarket(address _market, bool _pause) external;
 
     function setChildMarkets(

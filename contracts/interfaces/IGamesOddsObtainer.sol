@@ -44,6 +44,29 @@ interface IGamesOddsObtainer {
 
     function isSpreadChildMarket(address _child) external view returns (bool);
 
+    function getOddsForGame(bytes32 _gameId)
+        external
+        view
+        returns (
+            int24,
+            int24,
+            int24,
+            int24,
+            int24,
+            int24,
+            int24
+        );
+
+    function getLinesForGame(bytes32 _gameId)
+        external
+        view
+        returns (
+            int16,
+            int16,
+            uint24,
+            uint24
+        );
+
     // executable
 
     function obtainOdds(bytes32 requestId, GameOdds memory _game) external;

@@ -311,6 +311,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         _pauseOrUnpauseMarket(_market, _pause);
     }
 
+    /// @notice setting gameid per market
+    /// @param _gameId game id
+    /// @param _child child market address
+    function setGameIdPerChildMarket(bytes32 _gameId, address _child) external onlyObtainer {
+        gameIdPerMarket[_child] = _gameId;
+    }
+
     /* ========== VIEW FUNCTIONS ========== */
 
     /// @notice view function which returns game created object based on id of a game

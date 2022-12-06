@@ -85,6 +85,21 @@ contract('InterMessaging', (accounts) => {
 			console.log(tx.logs[4].args);
 		});
 
+		it('Compile-> Send -> Read -> Exercise', async () => {
+			let tx = await Invoker.compileAndSendMessage(ContractTest.address, 10, 5, { from: owner });
+			console.log(tx);
+			console.log(tx.logs[0].args);
+			let message = tx.logs[0].args.message;
+			let readValue = await ContractTest.storedValue();
+			assert.equal(parseFloat(fromUnit(readValue)), parseFloat(0));
+			let tx2 = await Invoker.executeMessage(message, { from: owner });
+			console.log(tx2);
+			console.log('>>>>> TX LOG LENGTH: ', tx2.logs.length);
+			console.log(tx2.logs[0].args);
+			readValue = await ContractTest.storedValue();
+			assert.equal(parseFloat(readValue), parseFloat(15));
+		});
+
 		// it('Buy from SportsAMM, position 1, value: 100', async () => {
 		// 	let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
 		// 	let additionalSlippage = toUnit(0.01);

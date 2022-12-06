@@ -22,6 +22,41 @@ contract Invoker {
         uint _additionalSlippage
     );
 
+    function compileAndSendMessage(
+        address calculator,
+        uint256 a,
+        uint256 b
+    ) external {
+        bytes memory message = abi.encode(
+            bytes4(keccak256(bytes("addValuesWithCall(address,uint256,uint256)"))),
+            calculator,
+            a,
+            b
+        );
+        sendMessage(message, address(this));
+    }
+
+    function sendMessage(bytes memory _message, address _contractAddress) public returns (bool) {
+        emit MessageSent(msg.sender, _contractAddress, _message);
+        return true;
+    }
+
+    function executeMessage(bytes calldata _message) public returns (bool) {
+        bytes4 selector = extractSelector(_message);
+        if (selector == bytes4(keccak256(bytes("addValuesWithCall(address,uint256,uint256)")))) {
+            (, address calculator, uint a, uint b) = abi.decode(_message, (bytes4, address, uint, uint));
+            (bool success, bytes memory result) = calculator.call(abi.encodeWithSignature("add(uint256,uint256)", a, b));
+            emit AddedValuesByCall(a, b, success);
+            return true;
+        }
+    }
+
+    function extractSelector(bytes calldata data) internal pure returns (bytes4 selector) {
+        assembly {
+            selector := calldataload(data.offset)
+        }
+    }
+
     function addValuesWithCall(
         address calculator,
         uint256 a,

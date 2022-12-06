@@ -496,7 +496,8 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
             0, //initialMint
             NUMBER_OF_POSITIONS,
             tags, //tags
-            false
+            false,
+            address(0)
         );
 
         address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);

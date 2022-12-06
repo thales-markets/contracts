@@ -354,7 +354,8 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             0, //initialMint
             2, // always two positions for spread/total
             _calculateTags(consumer.sportsIdPerGame(_gameId), _isSpread), //tags
-            true // is child
+            true, // is child
+            _mainMarket
         );
 
         address _childMarket = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);

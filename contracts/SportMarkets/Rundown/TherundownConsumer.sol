@@ -464,7 +464,8 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
                 0, //initialMint
                 isSportTwoPositionsSport(sportsIdPerGame[_gameId]) ? 2 : 3,
                 tags, //tags
-                false
+                false,
+                address(0)
             );
 
             address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);

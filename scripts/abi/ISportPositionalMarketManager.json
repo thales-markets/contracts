@@ -59,6 +59,11 @@
         "internalType": "bool",
         "name": "isChild",
         "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "parentMarket",
+        "type": "address"
       }
     ],
     "name": "createMarket",

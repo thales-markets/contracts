@@ -638,6 +638,11 @@
             "internalType": "bool",
             "name": "isChild",
             "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "parentMarket",
+            "type": "address"
           }
         ],
         "internalType": "struct SportPositionalMarket.SportPositionalMarketParameters",
@@ -666,6 +671,19 @@
   {
     "inputs": [],
     "name": "invalidOdds",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isChild",
     "outputs": [
       {
         "internalType": "bool",
@@ -754,6 +772,19 @@
   {
     "inputs": [],
     "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "parentMarket",
     "outputs": [
       {
         "internalType": "address",

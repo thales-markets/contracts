@@ -55,6 +55,12 @@
         "internalType": "bool",
         "name": "isChild",
         "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "parent",
+        "type": "address"
       }
     ],
     "name": "MarketCreated",
@@ -217,6 +223,11 @@
             "internalType": "bool",
             "name": "isChild",
             "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "parentMarket",
+            "type": "address"
           }
         ],
         "internalType": "struct SportPositionalMarketFactory.SportPositionCreationMarketParameters",

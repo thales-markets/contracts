@@ -217,7 +217,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         uint initialMint, // initial sUSD to mint options for,
         uint positionCount,
         uint[] memory tags,
-        bool isChild
+        bool isChild,
+        address parentMarket
     )
         external
         override
@@ -249,7 +250,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
                 positionCount,
                 msg.sender,
                 tags,
-                isChild
+                isChild,
+                parentMarket
             )
         );
 
@@ -262,17 +264,8 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
         (IPosition up, IPosition down, IPosition draw) = market.getOptions();
 
-        emit MarketCreated(
-            address(market),
-            msg.sender,
-            gameId,
-            gameLabel,
-            maturity,
-            expiry,
-            address(up),
-            address(down),
-            address(draw)
-        );
+        emit MarketCreated(address(market), msg.sender, gameId, maturity, expiry, address(up), address(down), address(draw));
+        emit MarketLabel(address(market), gameLabel);
         return market;
     }
 
@@ -416,13 +409,13 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         address market,
         address indexed creator,
         bytes32 indexed gameId,
-        string gameLabel,
         uint maturityDate,
         uint expiryDate,
         address up,
         address down,
         address draw
     );
+    event MarketLabel(address market, string gameLabel);
     event MarketExpired(address market);
     event MarketCreationEnabledUpdated(bool enabled);
     event MarketsMigrated(SportPositionalMarketManager receivingManager, SportPositionalMarket[] markets);

@@ -52,6 +52,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         address[] positions;
         uint[] tags;
         bool isChild;
+        address parentMarket;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -81,6 +82,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     bool public invalidOdds;
     bool public initialized = false;
     bool public override paused;
+    bool public isChild;
+    address public parentMarket;
 
     /* ========== CONSTRUCTOR ========== */
     function initialize(SportPositionalMarketParameters calldata _parameters) external {
@@ -107,6 +110,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         // abi.encodePacked("sUP: ", _oracleKey)
         // consider naming the option: sUpBTC>50@2021.12.31
         if (_parameters.isChild) {
+            isChild = true;
+            parentMarket = _parameters.parentMarket;
             require(tags.length > 1, "Child markets must have two tags");
             if (tags[1] == 10001) {
                 options.home.initialize(gameDetails.gameLabel, "HOME", _parameters.sportsAMM);

@@ -92,12 +92,6 @@
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "gameLabel",
-        "type": "string"
-      },
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "maturityDate",
         "type": "uint256"
@@ -154,6 +148,25 @@
       }
     ],
     "name": "MarketExpired",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "gameLabel",
+        "type": "string"
+      }
+    ],
+    "name": "MarketLabel",
     "type": "event"
   },
   {
@@ -454,6 +467,11 @@
         "internalType": "bool",
         "name": "isChild",
         "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "parentMarket",
+        "type": "address"
       }
     ],
     "name": "createMarket",

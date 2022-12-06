@@ -297,6 +297,14 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         _cancelMarketManually(_market, _useBackupOdds);
     }
 
+    /// @notice pause/unpause market for a given market address
+    /// @param _market market address
+    /// @param _pause pause = true, unpause = false
+    function pauseOrUnpauseMarketManually(address _market, bool _pause) external isAddressWhitelisted {
+        require(gameIdPerMarket[_market] != 0 && gameFulfilledCreated[gameIdPerMarket[_market]], "ID20");
+        _pauseOrUnpauseMarketManually(_market, _pause);
+    }
+
     /// @notice setting isPausedByCanceledStatus from obtainer see @GamesOddsObtainer
     /// @param _market market address
     /// @param _flag flag true/false
@@ -559,6 +567,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         queues.removeItemUnproccessedGames(index);
 
         emit CancelSportsMarket(_market, gameIdPerMarket[_market]);
+    }
+
+    function _pauseOrUnpauseMarketManually(address _market, bool _pause) internal {
+        _pauseOrUnpauseMarket(_market, _pause);
+        oddsObtainer.pauseUnpauseChildMarkets(_market, _pause);
     }
 
     function _pauseOrUnpauseMarket(address _market, bool _pause) internal {

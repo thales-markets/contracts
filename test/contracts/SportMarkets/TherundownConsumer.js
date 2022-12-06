@@ -2323,6 +2323,69 @@ contract('TheRundownConsumer', (accounts) => {
 	});
 
 	describe('Game resolve/clancel Manually', () => {
+		it('Pause-unpause market manually, check results', async () => {
+			await fastForward(game1NBATime - (await currentTime()) - SECOND);
+
+			await expect(
+				TherundownConsumerDeployed.pauseOrUnpauseMarketManually(dummyAddress, true, { from: third })
+			).to.be.revertedWith('ID20');
+			await expect(
+				TherundownConsumerDeployed.pauseOrUnpauseMarketManually(ZERO_ADDRESS, true, { from: third })
+			).to.be.revertedWith('ID20');
+
+			// req. games
+			const tx = await TherundownConsumerDeployed.fulfillGamesCreated(
+				reqIdCreate,
+				gamesCreated,
+				sportId_4,
+				game1NBATime,
+				{ from: wrapper }
+			);
+
+			await expect(
+				TherundownConsumerDeployed.pauseOrUnpauseMarketManually(dummyAddress, true, { from: third })
+			).to.be.revertedWith('ID20');
+			await expect(
+				TherundownConsumerDeployed.pauseOrUnpauseMarketManually(ZERO_ADDRESS, true, { from: third })
+			).to.be.revertedWith('ID20');
+
+			// create markets
+			const tx_create = await TherundownConsumerDeployed.createMarketForGame(gameid1);
+
+			let marketAdd = await TherundownConsumerDeployed.marketPerGameId(gameid1);
+
+			const tx_pause = await TherundownConsumerDeployed.pauseOrUnpauseMarketManually(
+				marketAdd,
+				true,
+				{
+					from: third,
+				}
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_pause.logs[0], 'PauseSportsMarket', {
+				_marketAddress: marketAdd,
+				_pause: true,
+			});
+
+			const tx_unpause = await TherundownConsumerDeployed.pauseOrUnpauseMarketManually(
+				marketAdd,
+				false,
+				{ from: third }
+			);
+
+			// check if event is emited
+			assert.eventEqual(tx_unpause.logs[0], 'PauseSportsMarket', {
+				_marketAddress: marketAdd,
+				_pause: false,
+			});
+
+			await fastForward(await currentTime());
+
+			const tx_2 = await TherundownConsumerDeployed.cancelMarketManually(marketAdd, false, {
+				from: third,
+			});
+		});
 		it('Resolve game 1 Manually, check results', async () => {
 			await fastForward(gameFootballTime - (await currentTime()) - SECOND);
 

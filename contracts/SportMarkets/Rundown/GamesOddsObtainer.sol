@@ -382,20 +382,21 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             _isSpread
                 ? string(
                     abi.encodePacked(
-                        _parseSpread(_spreadHome),
-                        " - ",
                         consumer.getGameCreatedById(_gameId).homeTeam,
+                        "(",
+                        _parseSpread(_spreadHome),
+                        ")",
                         " vs ",
                         consumer.getGameCreatedById(_gameId).awayTeam
                     )
                 )
                 : string(
                     abi.encodePacked(
-                        Strings.toString(_totalOver),
-                        " - ",
                         consumer.getGameCreatedById(_gameId).homeTeam,
                         " vs ",
-                        consumer.getGameCreatedById(_gameId).awayTeam
+                        consumer.getGameCreatedById(_gameId).awayTeam,
+                        " - ",
+                        Strings.toString(_totalOver)
                     )
                 );
     }

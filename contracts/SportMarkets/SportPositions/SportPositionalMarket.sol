@@ -82,7 +82,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     bool public invalidOdds;
     bool public initialized = false;
     bool public override paused;
-    bool public isChild;
+    bool public override isChild;
     address public parentMarket;
 
     /* ========== CONSTRUCTOR ========== */

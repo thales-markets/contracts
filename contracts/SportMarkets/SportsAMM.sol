@@ -845,6 +845,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _calculateCapToBeUsed(address market) internal view returns (uint) {
         if (capPerMarket[market] == 0) {
+            if (ISportPositionalMarket(market).isChild()) {
+                return
+                    capPerSport[ISportPositionalMarket(market).tags(1)] > 0
+                        ? capPerSport[ISportPositionalMarket(market).tags(1)]
+                        : defaultCapPerGame;
+            }
             return
                 capPerSport[ISportPositionalMarket(market).tags(0)] > 0
                     ? capPerSport[ISportPositionalMarket(market).tags(0)]

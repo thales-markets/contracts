@@ -53,8 +53,6 @@ contract('ParlayAMM', (accounts) => {
 	const StakingThalesContract = artifacts.require('StakingThales');
 	const SportsAMMContract = artifacts.require('SportsAMM');
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
-	const ThalesBondsContract = artifacts.require('ThalesBonds');
-	const ExoticPositionalTagsContract = artifacts.require('ExoticPositionalTags');
 	const SNXRewardsContract = artifacts.require('SNXRewards');
 	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	const TestOddsContract = artifacts.require('TestOdds');
@@ -69,13 +67,7 @@ contract('ParlayAMM', (accounts) => {
 	let ParlayMarket;
 	let ParlayMarketData;
 
-	let ExoticPositionalMarket;
-	let ExoticPositionalOpenBidMarket;
-	let ExoticPositionalMarketManager;
-	let ExoticPositionalTags;
-	let ThalesOracleCouncil;
 	let Thales;
-	let ThalesBonds;
 	let answer;
 	let minimumPositioningDuration = 0;
 	let minimumMarketMaturityDuration = 0;
@@ -92,7 +84,6 @@ contract('ParlayAMM', (accounts) => {
 		paymentToken,
 		phrases = [],
 		deployedMarket,
-		fixedBondAmount,
 		outcomePosition,
 		outcomePosition2;
 
@@ -100,7 +91,6 @@ contract('ParlayAMM', (accounts) => {
 	let TherundownConsumer;
 	let TherundownConsumerImplementation;
 	let TherundownConsumerDeployed;
-	let MockExoticMarket;
 	let MockTherundownConsumerWrapper;
 	let initializeConsumerData;
 	let gamesQueue;
@@ -217,8 +207,6 @@ contract('ParlayAMM', (accounts) => {
 		await AddressResolver.setSNXRewardsAddress(SNXRewards.address);
 
 		Thales = await ThalesContract.new({ from: owner });
-		ExoticPositionalTags = await ExoticPositionalTagsContract.new();
-		await ExoticPositionalTags.initialize(manager, { from: manager });
 		let GamesQueue = artifacts.require('GamesQueue');
 		gamesQueue = await GamesQueue.new({ from: owner });
 		await gamesQueue.initialize(owner, { from: owner });
@@ -312,10 +300,6 @@ contract('ParlayAMM', (accounts) => {
 		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: first });
 		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: second });
 		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: third });
-
-		await ExoticPositionalTags.addTag('Sport', '1');
-		await ExoticPositionalTags.addTag('Football', '101');
-		await ExoticPositionalTags.addTag('Basketball', '102');
 
 		// ids
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';
@@ -426,9 +410,6 @@ contract('ParlayAMM', (accounts) => {
 		);
 
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
-		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
-		// 	TherundownConsumerDeployed.address
-		// );
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
 			gamesQueue.address,

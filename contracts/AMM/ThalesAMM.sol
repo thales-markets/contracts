@@ -533,22 +533,24 @@ contract ThalesAMM is ProxyOwned, ProxyPausable, ProxyReentrancyGuard, Initializ
     ) internal view returns (uint availableAmount) {
         if (skipCheck || basePrice < maxSupportedPrice) {
             basePrice = basePrice.add(min_spread);
-            uint discountedPrice = basePrice.mul(ONE.sub(max_spread.div(4))).div(ONE);
-            uint balance = _balanceOfPositionOnMarket(market, position);
-            uint additionalBufferFromSelling = balance.mul(discountedPrice).div(ONE);
+            if (basePrice < ONE) {
+                uint discountedPrice = basePrice.mul(ONE.sub(max_spread.div(4))).div(ONE);
+                uint balance = _balanceOfPositionOnMarket(market, position);
+                uint additionalBufferFromSelling = balance.mul(discountedPrice).div(ONE);
 
-            if (_capOnMarket(market).add(additionalBufferFromSelling) > spentOnMarket[market]) {
-                uint availableUntilCapSUSD = _capOnMarket(market).add(additionalBufferFromSelling).sub(
-                    spentOnMarket[market]
-                );
-                if (availableUntilCapSUSD > _capOnMarket(market)) {
-                    availableUntilCapSUSD = _capOnMarket(market);
+                if (_capOnMarket(market).add(additionalBufferFromSelling) > spentOnMarket[market]) {
+                    uint availableUntilCapSUSD = _capOnMarket(market).add(additionalBufferFromSelling).sub(
+                        spentOnMarket[market]
+                    );
+                    if (availableUntilCapSUSD > _capOnMarket(market)) {
+                        availableUntilCapSUSD = _capOnMarket(market);
+                    }
+
+                    uint midImpactPriceIncrease = ONE.sub(basePrice).mul(max_spread.div(2)).div(ONE);
+                    uint divider_price = ONE.sub(basePrice.add(midImpactPriceIncrease));
+
+                    availableAmount = balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
                 }
-
-                uint midImpactPriceIncrease = ONE.sub(basePrice).mul(max_spread.div(2)).div(ONE);
-                uint divider_price = ONE.sub(basePrice.add(midImpactPriceIncrease));
-
-                availableAmount = balance.add(availableUntilCapSUSD.mul(ONE).div(divider_price));
             }
         }
     }

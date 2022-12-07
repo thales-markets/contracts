@@ -513,20 +513,24 @@ contract ThalesAMMNew is Initializable, ProxyOwned, ProxyPausable, ProxyReentran
     ) internal view returns (uint availableAmount) {
         if (skipCheck || basePrice < maxSupportedPrice) {
             basePrice = basePrice + min_spread;
-            uint discountedPrice = (basePrice * (ONE - max_spread / 4)) / ONE;
-            uint balance = _balanceOfPositionOnMarket(market, position);
-            uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
+            if (basePrice < ONE) {
+                uint discountedPrice = (basePrice * (ONE - max_spread / 4)) / ONE;
+                uint balance = _balanceOfPositionOnMarket(market, position);
+                uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
 
-            if ((_capOnMarket(market) + additionalBufferFromSelling) > spentOnMarket[market]) {
-                uint availableUntilCapSUSD = _capOnMarket(market) + additionalBufferFromSelling - spentOnMarket[market];
-                if (availableUntilCapSUSD > _capOnMarket(market)) {
-                    availableUntilCapSUSD = _capOnMarket(market);
+                if ((_capOnMarket(market) + additionalBufferFromSelling) > spentOnMarket[market]) {
+                    uint availableUntilCapSUSD = _capOnMarket(market) + additionalBufferFromSelling - spentOnMarket[market];
+                    if (availableUntilCapSUSD > _capOnMarket(market)) {
+                        availableUntilCapSUSD = _capOnMarket(market);
+                    }
+
+                    uint midImpactPriceIncrease = ((ONE - basePrice) * (max_spread / 2)) / ONE;
+                    if ((basePrice + midImpactPriceIncrease) < ONE) {
+                        uint divider_price = ONE - (basePrice + midImpactPriceIncrease);
+
+                        availableAmount = balance + ((availableUntilCapSUSD * ONE) / divider_price);
+                    }
                 }
-
-                uint midImpactPriceIncrease = ((ONE - basePrice) * (max_spread / 2)) / ONE;
-                uint divider_price = ONE - (basePrice + midImpactPriceIncrease);
-
-                availableAmount = balance + ((availableUntilCapSUSD * ONE) / divider_price);
             }
         }
     }

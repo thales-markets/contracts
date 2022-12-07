@@ -46,15 +46,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 	const SportPositionalMarketFactoryContract = artifacts.require('SportPositionalMarketFactory');
 	const SportsAMMContract = artifacts.require('SportsAMM');
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
-	const ThalesBondsContract = artifacts.require('ThalesBonds');
-	const ExoticPositionalTagsContract = artifacts.require('ExoticPositionalTags');
-	let ExoticPositionalMarket;
-	let ExoticPositionalOpenBidMarket;
-	let ExoticPositionalMarketManager;
-	let ExoticPositionalTags;
-	let ThalesOracleCouncil;
 	let Thales;
-	let ThalesBonds;
 	let answer;
 	let minimumPositioningDuration = 0;
 	let minimumMarketMaturityDuration = 0;
@@ -71,7 +63,6 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		paymentToken,
 		phrases = [],
 		deployedMarket,
-		fixedBondAmount,
 		outcomePosition,
 		outcomePosition2;
 
@@ -82,7 +73,6 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 	let TherundownConsumer;
 	let TherundownConsumerImplementation;
 	let TherundownConsumerDeployed;
-	let MockExoticMarket;
 	let MockTherundownConsumerWrapper;
 	let initializeConsumerData;
 	let gamesQueue;
@@ -172,8 +162,6 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		SportsAMM = await SportsAMMContract.new({ from: manager });
 
 		Thales = await ThalesContract.new({ from: owner });
-		ExoticPositionalTags = await ExoticPositionalTagsContract.new();
-		await ExoticPositionalTags.initialize(manager, { from: manager });
 		let GamesQueue = artifacts.require('GamesQueue');
 		gamesQueue = await GamesQueue.new({ from: owner });
 		await gamesQueue.initialize(owner, { from: owner });
@@ -206,10 +194,6 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });
-
-		await ExoticPositionalTags.addTag('Sport', '1');
-		await ExoticPositionalTags.addTag('Football', '101');
-		await ExoticPositionalTags.addTag('Basketball', '102');
 
 		// ids
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';

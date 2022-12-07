@@ -290,7 +290,7 @@
 		"Vault": "",
 		"VaultImplementation": "",
 		"CelerIM": "0xD43B994a54B925352FaDd5C3ea0Fc21F490d56cb",
-		"CelerIMImplementation": "0xC392133eEa695603B51a5d5de73655d571c2CE51"
+		"CelerIMImplementation": "0xb59E9915d505e43f1231cE8F8258B8C6168Ab891"
 	},
 	"ropsten": {
 		"Airdrop": "0xfa4dc7179f27a545C954aC40f2Ea610D11C9C88D",

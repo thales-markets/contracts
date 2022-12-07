@@ -11,12 +11,10 @@ import "./framework/MessageApp.sol";
 contract CrossChainTest is MessageApp, Initializable, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    event MessageReceived(address sender, uint64 srcChainId, bytes note);
-    event MessageWithTransferReceived(address sender, address token, uint256 amount, uint64 srcChainId, bytes note);
-    event MessageWithTransferRefunded(address sender, address token, uint256 amount, bytes note);
-
     // acccount, token -> balance
     mapping(address => mapping(address => uint256)) public balances;
+
+    mapping(bytes4 => address) public selectorAddress;
 
     // constructor(address _messageBus) MessageApp(_messageBus) {}
     function initialize(address _owner, address _messageBus) public initializer {
@@ -106,4 +104,8 @@ contract CrossChainTest is MessageApp, Initializable, ProxyPausable, ProxyReentr
         balances[msg.sender][_token] -= _amount;
         IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
     }
+
+    event MessageReceived(address sender, uint64 srcChainId, bytes note);
+    event MessageWithTransferReceived(address sender, address token, uint256 amount, uint64 srcChainId, bytes note);
+    event MessageWithTransferRefunded(address sender, address token, uint256 amount, bytes note);
 }

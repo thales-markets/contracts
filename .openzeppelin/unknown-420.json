@@ -224,6 +224,11 @@
       "address": "0x3051d3a7e619C161B64dCe0B287688012655bA56",
       "txHash": "0x79bf4e13d49cdb7f35f738ebbb3587c9fead60b2bd7cc56b4a5101717fe6e78b",
       "kind": "transparent"
+    },
+    {
+      "address": "0xab33973d7e248075b808DBfD8b6314b1B07CC144",
+      "txHash": "0x146c6b7497c8ebf2758a1cd72553170261f80450481b5ec5676e92ee1639921c",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -23279,6 +23284,278 @@
           },
           "t_address": {
             "label": "address"
+          }
+        }
+      }
+    },
+    "f0b417f6c0233c14b8469ce0bb365a0bab9f2c6827aeecd5995ad2ba7c0adb6f": {
+      "address": "0xa326A36278369DF835005273fc375747cb802F20",
+      "txHash": "0x70376045e4cfe01a23d5fed94320b1475ada8819135c0e13675b34684d77b121",
+      "layout": {
+        "storage": [
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "MessageBusAddress",
+            "label": "messageBus",
+            "type": "t_address",
+            "src": "contracts/CelerIM/framework/MessageBusAddress.sol:10"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "balances",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/CelerIM/CrosChainTest.sol:15"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "selectorAddress",
+            "type": "t_mapping(t_bytes4,t_address)",
+            "src": "contracts/CelerIM/CrosChainTest.sol:17"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "whitelistedAddress",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/CelerIM/CrosChainTest.sol:18"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "thalesOPExecutor",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrosChainTest.sol:20"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "sportsAMM",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrosChainTest.sol:23"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "sUSD",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrosChainTest.sol:24"
+          }
+        ],
+        "types": {
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes4,t_address)": {
+            "label": "mapping(bytes4 => address)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "a3cb4ed4138643106a412e0c1ab5e8468e1bea07e4a2257436beef09d265c89f": {
+      "address": "0x9bb5430261Cfb68cf0b65bF891C30d73Fc779Fe5",
+      "txHash": "0xd0334c0e000900b9b54119274b64c5c65e46f9e33388bdf70d1bcea2c3c2d318",
+      "layout": {
+        "storage": [
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "MessageBusAddress",
+            "label": "messageBus",
+            "type": "t_address",
+            "src": "contracts/CelerIM/framework/MessageBusAddress.sol:10"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_guardCounter",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:19"
+          },
+          {
+            "contract": "ProxyReentrancyGuard",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol:20"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "balances",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "contracts/CelerIM/CrosChainTest.sol:15"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "selectorAddress",
+            "type": "t_mapping(t_bytes4,t_address)",
+            "src": "contracts/CelerIM/CrosChainTest.sol:17"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "whitelistedAddress",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts/CelerIM/CrosChainTest.sol:18"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "thalesOPExecutor",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrosChainTest.sol:20"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "sportsAMM",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrosChainTest.sol:23"
+          },
+          {
+            "contract": "CrossChainTest",
+            "label": "sUSD",
+            "type": "t_address",
+            "src": "contracts/CelerIM/CrosChainTest.sol:24"
+          }
+        ],
+        "types": {
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes4,t_address)": {
+            "label": "mapping(bytes4 => address)"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
           }
         }
       }

@@ -15,6 +15,13 @@ contract CrossChainTest is MessageApp, Initializable, ProxyPausable, ProxyReentr
     mapping(address => mapping(address => uint256)) public balances;
 
     mapping(bytes4 => address) public selectorAddress;
+    mapping(address => bool) public whitelistedAddress;
+
+    address public thalesOPExecutor;
+    uint64 private constant OPTIMISM = 10;
+
+    address public sportsAMM;
+    address public sUSD;
 
     // constructor(address _messageBus) MessageApp(_messageBus) {}
     function initialize(address _owner, address _messageBus) public initializer {
@@ -28,9 +35,9 @@ contract CrossChainTest is MessageApp, Initializable, ProxyPausable, ProxyReentr
         address _dstContract,
         uint64 _dstChainId,
         bytes memory _note
-    ) external payable {
+    ) public payable {
         bytes memory message = abi.encode(msg.sender, _note);
-        sendMessage(_dstContract, _dstChainId, message, msg.value);
+        sendMessage(_dstContract, _dstChainId, _note, msg.value);
     }
 
     function executeMessage(
@@ -105,6 +112,74 @@ contract CrossChainTest is MessageApp, Initializable, ProxyPausable, ProxyReentr
         IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
     }
 
+    function buyFromAMM(
+        address market,
+        uint position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage
+    ) external nonReentrant notPaused {
+        bytes memory message = abi.encode(
+            msg.sender,
+            bytes4(keccak256(bytes("buyFromAMM(address,uint256,uint256,uint256,uint256)"))),
+            market,
+            position,
+            amount,
+            expectedPayout,
+            additionalSlippage
+        );
+        sendNote(thalesOPExecutor, OPTIMISM, message);
+    }
+
+    function sendExoticUSD(
+        address _from,
+        address _to,
+        uint _amount
+    ) external nonReentrant notPaused {
+        bytes memory message = abi.encode(
+            msg.sender,
+            bytes4(keccak256(bytes("transferFrom(address,address,uint256)"))),
+            _from,
+            _to,
+            _amount
+        );
+        emit Message(msg.sender, _to, OPTIMISM, message, 0);
+
+        sendNote(thalesOPExecutor, OPTIMISM, message);
+    }
+
+    function executeThalesMessage(bytes calldata _message) external nonReentrant notPaused {
+        require(_message.length > 0, "No msg");
+        // require(whitelistedAddress[msg.sender], "Invalid sender");
+        (address sender, bytes4 selector, ) = abi.decode(_message, (address, bytes4, address));
+        if (selectorAddress[selector] != address(0)) {
+            if (bytes4(keccak256(bytes("buyFromAMM(address,uint256,uint256,uint256,uint256)"))) == selector) {
+                (, , address market, uint position, uint amount, uint expectedPayout, uint additionalSlippge) = abi.decode(
+                    _message,
+                    (address, bytes4, address, uint, uint, uint, uint)
+                );
+                (bool success, bytes memory result) = sportsAMM.call(
+                    abi.encodeWithSelector(selector, market, position, amount, expectedPayout, additionalSlippge)
+                );
+            }
+            if (bytes4(keccak256(bytes("transferFrom(address,address,uint256)"))) == selector && sUSD != address(0)) {
+                (, , address from, address to, uint256 amount) = abi.decode(
+                    _message,
+                    (address, bytes4, address, address, uint256)
+                );
+                (bool success, bytes memory result) = sUSD.call(abi.encodeWithSelector(selector, from, to, amount));
+                emit MessageExercised(msg.sender, sUSD, success, result);
+            }
+        }
+    }
+
+    function setUSD(address _susd) external {
+        sUSD = _susd;
+        selectorAddress[bytes4(keccak256(bytes("transferFrom(address,address,uint256)")))] = _susd;
+    }
+
+    event Message(address indexed sender, address receiver, uint256 dstChainId, bytes message, uint256 fee);
+    event MessageExercised(address sender, address contractAddress, bool success, bytes result);
     event MessageReceived(address sender, uint64 srcChainId, bytes note);
     event MessageWithTransferReceived(address sender, address token, uint256 amount, uint64 srcChainId, bytes note);
     event MessageWithTransferRefunded(address sender, address token, uint256 amount, bytes note);

@@ -42,9 +42,15 @@ contract('InterMessaging', (accounts) => {
 
 	const ContractTestContract = artifacts.require('ContractTest');
 	const InvokerContract = artifacts.require('Invoker');
+	const CrossChainTestContract = artifacts.require('CrossChainTest');
+	const MessageBusContract = artifacts.require('MessageBus');
+	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
 
 	let ContractTest;
 	let Invoker;
+	let CrossChainTest;
+	let MessageBus;
+	let Thales;
 
 	beforeEach(async () => {
 		ContractTest = await ContractTestContract.new({
@@ -53,6 +59,19 @@ contract('InterMessaging', (accounts) => {
 		Invoker = await InvokerContract.new(ContractTest.address, {
 			from: manager,
 		});
+		MessageBus = await MessageBusContract.new(second, second, second, second, second, second, {
+			from: manager,
+		});
+		CrossChainTest = await CrossChainTestContract.new({
+			from: manager,
+		});
+
+		await CrossChainTest.initialize(owner, MessageBus.address, { from: owner });
+		Thales = await ThalesContract.new({ from: owner });
+		await Thales.transfer(first, toUnit('1000'), { from: owner });
+		await Thales.transfer(second, toUnit('1000'), { from: owner });
+		await Thales.transfer(third, toUnit('1000'), { from: owner });
+		await CrossChainTest.setUSD(Thales.address, { from: owner });
 	});
 
 	describe('Test InterMessaging', () => {
@@ -98,6 +117,34 @@ contract('InterMessaging', (accounts) => {
 			console.log(tx2.logs[0].args);
 			readValue = await ContractTest.storedValue();
 			assert.equal(parseFloat(readValue), parseFloat(15));
+		});
+
+		it('Using CrossChainTest to send message', async () => {
+			let balance1 = await Thales.balanceOf(first);
+			let balance2 = await Thales.balanceOf(second);
+			console.log('Balance 1: ', balance1.toString());
+			console.log('Balance 2: ', balance2.toString());
+			let allowance = await Thales.allowance(first, CrossChainTest.address);
+			console.log('Allowance 1 to contract: ', allowance.toString());
+			let tx = await CrossChainTest.sendExoticUSD(first, second, 100, { from: owner });
+			console.log(tx.logs[0].args);
+			let tx2 = await CrossChainTest.executeThalesMessage(tx.logs[0].args.message, { from: owner });
+			console.log('\n\nTX2');
+			console.log(tx2.logs[0].args);
+
+			await Thales.approve(CrossChainTest.address, toUnit(101), { from: first });
+			allowance = await Thales.allowance(first, CrossChainTest.address);
+			console.log('Allowance 1 to contract: ', allowance.toString());
+
+			tx2 = await CrossChainTest.executeThalesMessage(tx.logs[0].args.message, { from: owner });
+			console.log('\n\nTX2 SECOND TIME');
+			console.log(tx2.logs[0].args);
+
+			balance1 = await Thales.balanceOf(first);
+			balance2 = await Thales.balanceOf(second);
+			console.log('Owner: ', owner);
+			console.log('Balance 1: ', balance1.toString());
+			console.log('Balance 2: ', balance2.toString());
 		});
 
 		// it('Buy from SportsAMM, position 1, value: 100', async () => {

@@ -42,6 +42,7 @@ contract Invoker {
     }
 
     function executeMessage(bytes calldata _message) public returns (bool) {
+        // (address sender, bytes memory messageNoSender) = abi.decode(_message, (address, bytes));
         bytes4 selector = extractSelector(_message);
         if (selector == bytes4(keccak256(bytes("addValuesWithCall(address,uint256,uint256)")))) {
             (, address calculator, uint a, uint b) = abi.decode(_message, (bytes4, address, uint, uint));
@@ -51,10 +52,11 @@ contract Invoker {
         }
     }
 
-    function extractSelector(bytes calldata data) internal pure returns (bytes4 selector) {
-        assembly {
-            selector := calldataload(data.offset)
-        }
+    function extractSelector(bytes memory data) internal pure returns (bytes4 selector) {
+        selector = abi.decode(data, (bytes4));
+        // assembly {
+        //     selector := calldataload(data.offset)
+        // }
     }
 
     function addValuesWithCall(

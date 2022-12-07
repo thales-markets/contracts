@@ -11,14 +11,13 @@ const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 
 const { toUnit } = require('../../utils')();
 
-contract('StakingThales', accounts => {
+contract('StakingThales', (accounts) => {
 	const [first, second, third] = accounts;
 	const [initialCreator, managerOwner, minter, dummy, exersicer, secondCreator] = accounts;
 
 	let owner, firstSigner;
 	let ThalesDeployed,
 		ThalesFeeDeployed,
-		OngoingAirdropDeployed,
 		StakingThalesDeployed,
 		EscrowThalesDeployed,
 		SNXRewardsDeployed,
@@ -74,7 +73,6 @@ contract('StakingThales', accounts => {
 		let Thales = artifacts.require('Thales');
 		let EscrowThales = await ethers.getContractFactory('EscrowThales');
 		let StakingThales = await ethers.getContractFactory('StakingThales');
-		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
 		let SNXRewards = artifacts.require('SNXRewards');
 		ThalesDeployed = await Thales.new({ from: owner.address });
 		ThalesFeeDeployed = await Thales.new({ from: owner.address });
@@ -82,12 +80,6 @@ contract('StakingThales', accounts => {
 		let AddressResolver = artifacts.require('AddressResolverHelper');
 		AddressResolverDeployed = await AddressResolver.new();
 		await AddressResolverDeployed.setSNXRewardsAddress(SNXRewardsDeployed.address);
-		OngoingAirdropDeployed = await OngoingAirdrop.new(
-			owner.address,
-			ThalesDeployed.address,
-			toBytes32('random'),
-			{ from: owner.address }
-		);
 
 		EscrowThalesDeployed = await upgrades.deployProxy(EscrowThales, [
 			owner.address,
@@ -191,7 +183,7 @@ contract('StakingThales', accounts => {
 			// 		EscrowThalesDeployed.connect(firstSigner).setStakingThalesContract(owner.address)
 			// 	).to.be.reverted;
 			// });
-			it('Owner not changed, function not reverted using old Owner', async function() {
+			it('Owner not changed, function not reverted using old Owner', async function () {
 				// console.log("Proxy Admin is: ",firstSigner.address);
 
 				let answer = await EscrowThalesDeployed.connect(owner).owner();
@@ -202,7 +194,7 @@ contract('StakingThales', accounts => {
 				let getStakingAddress = await EscrowThalesDeployed.iStakingThales();
 				assert.equal(firstSigner.address, getStakingAddress);
 			});
-			it('Owner changed, function not reverted', async function() {
+			it('Owner changed, function not reverted', async function () {
 				// console.log("Proxy Admin is: ",firstSigner.address);
 				let answer = await EscrowThalesDeployed.connect(owner).owner();
 				// console.log("Owner is: ",answer);

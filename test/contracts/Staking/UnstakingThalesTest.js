@@ -23,7 +23,6 @@ contract('StakingThales', (accounts) => {
 		AddressResolverDeployed,
 		ProxyEscrowDeployed,
 		ProxyStakingDeployed,
-		OngoingAirdropDeployed,
 		ThalesStakingRewardsPoolDeployed;
 	let ThalesStakingRewardsPool;
 
@@ -91,7 +90,6 @@ contract('StakingThales', (accounts) => {
 		let Thales = artifacts.require('Thales');
 		let EscrowThales = artifacts.require('EscrowThales');
 		let StakingThales = artifacts.require('StakingThales');
-		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
 		let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 		let SNXRewards = artifacts.require('SNXRewards');
 		SNXRewardsDeployed = await SNXRewards.new();
@@ -100,12 +98,6 @@ contract('StakingThales', (accounts) => {
 		await AddressResolverDeployed.setSNXRewardsAddress(SNXRewardsDeployed.address);
 		ThalesDeployed = await Thales.new({ from: owner });
 		ThalesFeeDeployed = await Thales.new({ from: owner });
-		OngoingAirdropDeployed = await OngoingAirdrop.new(
-			owner,
-			ThalesDeployed.address,
-			toBytes32('random'),
-			{ from: owner }
-		);
 		//Price feed setup
 		await PriceFeedInstance.connect(ownerSigner).addAggregator(SNX, aggregatorSNX.address);
 		timestamp = await currentTime();

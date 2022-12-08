@@ -360,6 +360,10 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
         return normalizedOdds;
     }
 
+    function getNormalizedOddsForMarket(address _market) public view returns (uint[] memory) {
+        return getNormalizedOdds(gameIdPerMarket[_market]);
+    }
+
     /// @notice Vew function which returns if game is resolved
     /// @param _gameId unique game identifier for which game is looking
     /// @return bool is game resolved true/false
@@ -491,7 +495,9 @@ contract ApexConsumer is Initializable, ProxyOwned, ProxyPausable {
             game.startTime, //maturity
             0, //initialMint
             NUMBER_OF_POSITIONS,
-            tags //tags
+            tags, //tags
+            false,
+            address(0)
         );
 
         address marketAddress = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);

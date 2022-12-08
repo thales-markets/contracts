@@ -1,4 +1,5 @@
 const { ethers, upgrades } = require('hardhat');
+const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 const { getTargetAddress, setTargetAddress } = require('../../helpers');
 
 async function main() {
@@ -6,8 +7,6 @@ async function main() {
 	let owner = accounts[0];
 	let networkObj = await ethers.provider.getNetwork();
 	let network = networkObj.name;
-
-	let proxySUSD;
 
 	if (network === 'unknown') {
 		network = 'localhost';
@@ -24,41 +23,40 @@ async function main() {
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
-		proxySUSD = getTargetAddress('ProxysUSD', network);
 	}
-
-	if (networkObj.chainId == 80001) {
-		networkObj.name = 'polygonMumbai';
-		network = 'polygonMumbai';
-	}
-
-	if (networkObj.chainId == 137) {
-		networkObj.name = 'polygon';
-		network = 'polygon';
-	}
-
 	if (networkObj.chainId == 420) {
 		networkObj.name = 'optimisticGoerli';
 		network = 'optimisticGoerli';
-		proxySUSD = getTargetAddress('ExoticUSD', network);
 	}
 
 	console.log('Account is: ' + owner.address);
 	console.log('Network:' + network);
 
-	const vaultAddress = getTargetAddress('SportVault', network);
-	console.log('Found Vault at:', vaultAddress);
+	const oddsObtainerAddress = getTargetAddress('GamesOddsObtainer', network);
+	console.log('Found GamesOddsObtainer at:', oddsObtainerAddress);
 
-	const Vault = await ethers.getContractFactory('SportVault');
-	const implementation = await upgrades.prepareUpgrade(vaultAddress, Vault);
-
-	if (networkObj.chainId == 420) {
-		await upgrades.upgradeProxy(vaultAddress, Vault);
-		console.log('Vault upgraded');
+	const GamesOddsObtainer = await ethers.getContractFactory('GamesOddsObtainer');
+	let implementation;
+	if (networkObj.chainId == 10) {
+		implementation = await upgrades.prepareUpgrade(oddsObtainerAddress, GamesOddsObtainer);
 	}
 
-	console.log('SportVaultDegenImplementation: ', implementation);
-	setTargetAddress('SportVaultImplementation', network, implementation);
+	// upgrade if test networks
+	if (
+		networkObj.chainId == 69 ||
+		networkObj.chainId == 42 ||
+		networkObj.chainId == 420 ||
+		networkObj.chainId == 5
+	) {
+		await upgrades.upgradeProxy(oddsObtainerAddress, GamesOddsObtainer);
+
+		implementation = await getImplementationAddress(ethers.provider, oddsObtainerAddress);
+	}
+
+	console.log('GamesOddsObtainer upgraded');
+
+	console.log('GamesOddsObtainerImplementation: ', implementation);
+	setTargetAddress('GamesOddsObtainerImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
 		address: implementation,

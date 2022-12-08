@@ -13,18 +13,16 @@ const { fastForward, toUnit, currentTime } = require('../../utils')();
 const { convertToDecimals } = require('../../utils/helpers');
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-contract('StakingThales', accounts => {
+contract('StakingThales', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy] = accounts;
 
 	let owner, firstSigner, secondSigner;
 	let ThalesDeployed,
 		ThalesFeeDeployed,
 		StakingThalesDeployed,
-		OngoingAirdropDeployed,
 		EscrowThalesDeployed,
 		SNXRewardsDeployed,
-		AddressResolverDeployed,
-		ThalesRoyaleDeployed;
+		AddressResolverDeployed;
 
 	const sUSDQty = toUnit(5555);
 	const SECOND = 1000;
@@ -92,23 +90,14 @@ contract('StakingThales', accounts => {
 		let Thales = artifacts.require('Thales');
 		let EscrowThales = await ethers.getContractFactory('EscrowThales');
 		let StakingThales = await ethers.getContractFactory('StakingThales');
-		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
 		let SNXRewards = artifacts.require('SNXRewards');
 		let AddressResolver = artifacts.require('AddressResolverHelper');
-		let ThalesRoyale = artifacts.require('TestThalesRoyale');
 
 		ThalesDeployed = await Thales.new({ from: owner.address });
 		ThalesFeeDeployed = await Thales.new({ from: owner.address });
 		SNXRewardsDeployed = await SNXRewards.new();
 		AddressResolverDeployed = await AddressResolver.new();
 		await AddressResolverDeployed.setSNXRewardsAddress(SNXRewardsDeployed.address);
-		ThalesRoyaleDeployed = await ThalesRoyale.new();
-		OngoingAirdropDeployed = await OngoingAirdrop.new(
-			owner.address,
-			ThalesDeployed.address,
-			toBytes32('random'),
-			{ from: owner.address }
-		);
 		//Price feed setup
 		await PriceFeedInstance.connect(firstSigner).addAggregator(SNX, aggregatorSNX.address);
 		timestamp = await currentTime();
@@ -142,7 +131,7 @@ contract('StakingThales', accounts => {
 		);
 		await StakingThalesDeployed.connect(owner).setAddresses(
 			SNXRewardsDeployed.address,
-			ThalesRoyaleDeployed.address,
+			dummy,
 			dummy,
 			dummy,
 			dummy,

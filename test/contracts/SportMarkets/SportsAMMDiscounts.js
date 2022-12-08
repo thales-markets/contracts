@@ -52,21 +52,13 @@ contract('SportsAMM', (accounts) => {
 	const StakingThalesContract = artifacts.require('StakingThales');
 	const SportsAMMContract = artifacts.require('SportsAMM');
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
-	const ThalesBondsContract = artifacts.require('ThalesBonds');
-	const ExoticPositionalTagsContract = artifacts.require('ExoticPositionalTags');
 	const SNXRewardsContract = artifacts.require('SNXRewards');
 	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
-	let ExoticPositionalMarket;
-	let ExoticPositionalOpenBidMarket;
-	let ExoticPositionalMarketManager;
-	let ExoticPositionalTags;
-	let ThalesOracleCouncil;
 	let Thales;
-	let ThalesBonds;
 	let answer;
 	let verifier;
 	let sportsAMMUtils;
@@ -85,7 +77,6 @@ contract('SportsAMM', (accounts) => {
 		paymentToken,
 		phrases = [],
 		deployedMarket,
-		fixedBondAmount,
 		outcomePosition,
 		outcomePosition2;
 
@@ -93,7 +84,6 @@ contract('SportsAMM', (accounts) => {
 	let TherundownConsumer;
 	let TherundownConsumerImplementation;
 	let TherundownConsumerDeployed;
-	let MockExoticMarket;
 	let MockTherundownConsumerWrapper;
 	let initializeConsumerData;
 	let gamesQueue;
@@ -125,6 +115,7 @@ contract('SportsAMM', (accounts) => {
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
+	let GamesOddsObtainerDeployed;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -174,8 +165,6 @@ contract('SportsAMM', (accounts) => {
 		await AddressResolver.setSNXRewardsAddress(SNXRewards.address);
 
 		Thales = await ThalesContract.new({ from: owner });
-		ExoticPositionalTags = await ExoticPositionalTagsContract.new();
-		await ExoticPositionalTags.initialize(manager, { from: manager });
 		let GamesQueue = artifacts.require('GamesQueue');
 		gamesQueue = await GamesQueue.new({ from: owner });
 		await gamesQueue.initialize(owner, { from: owner });
@@ -277,10 +266,6 @@ contract('SportsAMM', (accounts) => {
 		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: second });
 		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: third });
 
-		await ExoticPositionalTags.addTag('Sport', '1');
-		await ExoticPositionalTags.addTag('Football', '101');
-		await ExoticPositionalTags.addTag('Basketball', '102');
-
 		// ids
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';
 		gameid2 = '0x3937346533663036386233333764313239656435633133646632376133326662';
@@ -359,15 +344,25 @@ contract('SportsAMM', (accounts) => {
 			}
 		);
 
+		let GamesOddsObtainer = artifacts.require('GamesOddsObtainer');
+		GamesOddsObtainerDeployed = await GamesOddsObtainer.new({ from: owner });
+
+		await GamesOddsObtainerDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			[4, 16],
+			{ from: owner }
+		);
+
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
-		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
-		// 	TherundownConsumerDeployed.address
-		// );
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
 			verifier.address,
+			GamesOddsObtainerDeployed.address,
 			{
 				from: owner,
 			}
@@ -469,7 +464,7 @@ contract('SportsAMM', (accounts) => {
 		});
 
 		it('Get american odds', async () => {
-			answer = await TherundownConsumerDeployed.getOddsForGame(gameid1);
+			answer = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			let sumOfOdds = answer[0];
 			sumOfOdds = sumOfOdds.add(answer[1]);
 			sumOfOdds = sumOfOdds.add(answer[2]);

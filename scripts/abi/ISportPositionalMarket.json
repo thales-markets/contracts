@@ -205,6 +205,19 @@
   },
   {
     "inputs": [],
+    "name": "isChild",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "isDoubleChance",
     "outputs": [
       {

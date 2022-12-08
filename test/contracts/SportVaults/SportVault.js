@@ -56,21 +56,13 @@ contract('SportsAMM', (accounts) => {
 	const StakingThalesContract = artifacts.require('StakingThales');
 	const SportsAMMContract = artifacts.require('SportsAMM');
 	const ThalesContract = artifacts.require('contracts/Token/OpThales_L1.sol:OpThales');
-	const ThalesBondsContract = artifacts.require('ThalesBonds');
-	const ExoticPositionalTagsContract = artifacts.require('ExoticPositionalTags');
 	const SNXRewardsContract = artifacts.require('SNXRewards');
 	const AddressResolverContract = artifacts.require('AddressResolverHelper');
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
 
-	let ExoticPositionalMarket;
-	let ExoticPositionalOpenBidMarket;
-	let ExoticPositionalMarketManager;
-	let ExoticPositionalTags;
-	let ThalesOracleCouncil;
 	let Thales;
-	let ThalesBonds;
 	let answer;
 	let verifier;
 	let sportsAMMUtils;
@@ -89,7 +81,6 @@ contract('SportsAMM', (accounts) => {
 		paymentToken,
 		phrases = [],
 		deployedMarket,
-		fixedBondAmount,
 		outcomePosition,
 		outcomePosition2;
 
@@ -97,7 +88,6 @@ contract('SportsAMM', (accounts) => {
 	let TherundownConsumer;
 	let TherundownConsumerImplementation;
 	let TherundownConsumerDeployed;
-	let MockExoticMarket;
 	let MockTherundownConsumerWrapper;
 	let initializeConsumerData;
 	let gamesQueue;
@@ -145,6 +135,7 @@ contract('SportsAMM', (accounts) => {
 		testUSDT,
 		testDAI,
 		Referrals,
+		GamesOddsObtainerDeployed,
 		SportsAMM;
 
 	const game1NBATime = 1646958600;
@@ -178,8 +169,6 @@ contract('SportsAMM', (accounts) => {
 		await AddressResolver.setSNXRewardsAddress(SNXRewards.address);
 
 		Thales = await ThalesContract.new({ from: owner });
-		ExoticPositionalTags = await ExoticPositionalTagsContract.new();
-		await ExoticPositionalTags.initialize(manager, { from: manager });
 		let GamesQueue = artifacts.require('GamesQueue');
 		gamesQueue = await GamesQueue.new({ from: owner });
 		await gamesQueue.initialize(owner, { from: owner });
@@ -281,10 +270,6 @@ contract('SportsAMM', (accounts) => {
 		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: second });
 		await Thales.approve(SportsAMM.address, toUnit('100000'), { from: third });
 
-		await ExoticPositionalTags.addTag('Sport', '1');
-		await ExoticPositionalTags.addTag('Football', '101');
-		await ExoticPositionalTags.addTag('Basketball', '102');
-
 		// ids
 		gameid1 = '0x6536306366613738303834366166363839373862343935373965356366333936';
 		gameid2 = '0x3937346533663036386233333764313239656435633133646632376133326662';
@@ -363,15 +348,25 @@ contract('SportsAMM', (accounts) => {
 			}
 		);
 
+		let GamesOddsObtainer = artifacts.require('GamesOddsObtainer');
+		GamesOddsObtainerDeployed = await GamesOddsObtainer.new({ from: owner });
+
+		await GamesOddsObtainerDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			[4, 16],
+			{ from: owner }
+		);
+
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
-		// await ExoticPositionalMarketManager.setTheRundownConsumerAddress(
-		// 	TherundownConsumerDeployed.address
-		// );
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
 			verifier.address,
+			GamesOddsObtainerDeployed.address,
 			{
 				from: owner,
 			}
@@ -480,6 +475,10 @@ contract('SportsAMM', (accounts) => {
 		await vault.setStakingThales(StakingThales.address, { from: owner });
 
 		await SportsAMM.setSafeBoxFeePerAddress(vault.address, toUnit('0.005'), {
+			from: owner,
+		});
+
+		await SportsAMM.setMinSpreadPerAddress(vault.address, toUnit('0.005'), {
 			from: owner,
 		});
 	});
@@ -762,15 +761,6 @@ contract('SportsAMM', (accounts) => {
 				gamesResolved,
 				sportId_4,
 				{ from: wrapper }
-			);
-
-			assert.equal(
-				game_1_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 0)
-			);
-			assert.equal(
-				game_2_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 1)
 			);
 
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);

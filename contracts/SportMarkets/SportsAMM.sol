@@ -129,6 +129,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     // @return specific SafeBoxFee per address
     mapping(address => uint) public safeBoxFeePerAddress;
 
+    // @return specific min_spread per address
+    mapping(address => uint) public min_spreadPerAddress;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -222,7 +225,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint _availableOtherSide = _getAvailableOtherSide(market, position, amount);
         if (amount <= _available) {
             int skewImpact = _buyPriceImpact(market, position, amount, _available, _availableOtherSide);
-            baseOdds = baseOdds + min_spread;
+            baseOdds = baseOdds + (min_spreadPerAddress[msg.sender] > 0 ? min_spreadPerAddress[msg.sender] : min_spread);
             int tempQuote = sportAmmUtils.calculateTempQuote(skewImpact, baseOdds, useSafeBoxSkewImpact, amount);
             returnQuote = ISportPositionalMarketManager(manager).transformCollateral(uint(tempQuote));
         }
@@ -806,6 +809,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         safeBoxFeePerAddress[_address] = newFee;
     }
 
+    /// @notice Updates contract parametars
+    /// @param _address which has a specific min_spread fee
+    /// @param newFee the fee
+    function setMinSpreadPerAddress(address _address, uint newFee) external onlyOwner {
+        min_spreadPerAddress[_address] = newFee;
+    }
+
     /// @notice Setting the Curve collateral addresses for all collaterals
     /// @param _curveSUSD Address of the Curve contract
     /// @param _dai Address of the DAI contract
@@ -883,6 +893,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     function _calculateCapToBeUsed(address market) internal view returns (uint) {
         if (capPerMarket[market] == 0) {
+            if (ISportPositionalMarket(market).isChild()) {
+                return
+                    capPerSport[ISportPositionalMarket(market).tags(1)] > 0
+                        ? capPerSport[ISportPositionalMarket(market).tags(1)]
+                        : defaultCapPerGame;
+            }
             return
                 capPerSport[ISportPositionalMarket(market).tags(0)] > 0
                     ? capPerSport[ISportPositionalMarket(market).tags(0)]

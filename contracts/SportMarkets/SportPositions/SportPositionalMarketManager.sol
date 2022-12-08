@@ -220,7 +220,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         // We also require maturity < expiry. But there is no need to check this.
         // The market itself validates the capital and skew requirements.
 
-        SportPositionalMarket market = SportPositionalMarketFactory(sportPositionalMarketFactory).createMarket(
+        ISportPositionalMarket market = _createMarket(
             SportPositionalMarketFactory.SportPositionCreationMarketParameters(
                 msg.sender,
                 sUSD,
@@ -230,31 +230,60 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
                 initialMint,
                 positionCount,
                 msg.sender,
-                tags
+                tags,
+                false,
+                address(0)
             )
         );
-
-        _activeMarkets.add(address(market));
 
         // The debt can't be incremented in the new market's constructor because until construction is complete,
         // the manager doesn't know its address in order to grant it permission.
         totalDeposited = totalDeposited.add(initialMint);
         sUSD.transferFrom(msg.sender, address(market), initialMint);
 
+        if (positionCount > 2) {
+            // create double chance market
+            ISportPositionalMarket doubleChanceMarket = _createMarket(
+                SportPositionalMarketFactory.SportPositionCreationMarketParameters(
+                    msg.sender,
+                    sUSD,
+                    gameId,
+                    gameLabel,
+                    [maturity, expiry],
+                    initialMint,
+                    positionCount,
+                    msg.sender,
+                    tags,
+                    true,
+                    address(market)
+                )
+            );
+        }
+
+        return market;
+    }
+
+    function _createMarket(SportPositionalMarketFactory.SportPositionCreationMarketParameters memory parameters)
+        internal
+        returns (ISportPositionalMarket)
+    {
+        SportPositionalMarket market = SportPositionalMarketFactory(sportPositionalMarketFactory).createMarket(parameters);
+
+        _activeMarkets.add(address(market));
+
         (IPosition up, IPosition down, IPosition draw) = market.getOptions();
 
         emit MarketCreated(
             address(market),
-            msg.sender,
-            gameId,
-            gameLabel,
-            maturity,
-            expiry,
+            parameters.creator,
+            parameters.gameId,
+            parameters.gameLabel,
+            parameters.times[0],
+            parameters.times[1],
             address(up),
             address(down),
             address(draw)
         );
-        return market;
     }
 
     function transferSusdTo(

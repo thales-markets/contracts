@@ -17,6 +17,12 @@ contract SportsAMMUtils {
     int private constant ONE_INT = 1e18;
     int private constant ONE_PERCENT_INT = 1e16;
 
+    ISportsAMM public sportsAMM;
+
+    constructor(address _sportsAmm) {
+        sportsAMM = ISportsAMM(_sportsAmm);
+    }
+
     struct DiscountParams {
         uint balancePosition;
         uint balanceOtherSide;
@@ -44,7 +50,7 @@ contract SportsAMMUtils {
         uint balancePositionAfter,
         uint available,
         uint max_spread
-    ) external view returns (uint _sellImpactReturned) {
+    ) external pure returns (uint _sellImpactReturned) {
         uint maxPossibleSkew = _balancePosition + (available) - (balanceOtherSide);
         uint skew = balancePositionAfter - (balanceOtherSideAfter);
         uint newImpact = (max_spread * ((skew * ONE) / (maxPossibleSkew))) / ONE;
@@ -143,7 +149,7 @@ contract SportsAMMUtils {
         uint baseOdds,
         uint safeBoxImpact,
         uint amount
-    ) public view returns (int tempQuote) {
+    ) public pure returns (int tempQuote) {
         if (skewImpact >= 0) {
             int impactPrice = ((ONE_INT - int(baseOdds)) * skewImpact) / ONE_INT;
             // add 2% to the price increase to avoid edge cases on the extremes
@@ -161,7 +167,7 @@ contract SportsAMMUtils {
         uint baseOdds,
         uint max_spread,
         uint balance
-    ) public view returns (uint availableAmount) {
+    ) public pure returns (uint availableAmount) {
         uint discountedPrice = (baseOdds * (ONE - max_spread / 2)) / ONE;
         uint additionalBufferFromSelling = (balance * discountedPrice) / ONE;
         if ((capUsed + additionalBufferFromSelling) > spentOnThisGame) {
@@ -182,7 +188,7 @@ contract SportsAMMUtils {
         uint sell_max_price,
         uint capPlusBalance,
         uint spentOnThisGame
-    ) public view returns (uint _available) {
+    ) public pure returns (uint _available) {
         uint willPay = (balanceOfTheOtherSide * (sell_max_price)) / ONE;
         uint capWithBalance = capPlusBalance + (balanceOfTheOtherSide);
         if (capWithBalance >= (spentOnThisGame + willPay)) {
@@ -357,5 +363,136 @@ contract SportsAMMUtils {
                 : draw.getBalanceOf(addressToCheck);
         }
         return balance;
+    }
+
+    function getAvailableFromAMMDoubleChance(address market, ISportsAMM.Position position)
+        external
+        view
+        returns (uint _available)
+    {
+        ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
+        uint availableFirst = 0;
+        uint availableSecond = 0;
+        if (position == ISportsAMM.Position.Home) {
+            // 1X
+            availableFirst = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Home);
+            availableSecond = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Draw);
+        } else if (position == ISportsAMM.Position.Away) {
+            // X2
+            availableFirst = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Draw);
+            availableSecond = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Away);
+        } else {
+            // 12
+            availableFirst = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Home);
+            availableSecond = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Away);
+        }
+
+        _available = availableFirst > availableSecond ? availableSecond : availableFirst;
+    }
+
+    function getBuyFromAMMQuoteDoubleCance(
+        address market,
+        ISportsAMM.Position position,
+        uint amount
+    ) external view returns (uint _quote) {
+        ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
+        uint firstQuote = 0;
+        uint secondQuote = 0;
+        if (position == ISportsAMM.Position.Home) {
+            // 1X
+            firstQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Home, amount);
+            secondQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Draw, amount);
+        } else if (position == ISportsAMM.Position.Away) {
+            // X2
+            firstQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Draw, amount);
+            secondQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Away, amount);
+        } else {
+            // 12
+            firstQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Home, amount);
+            secondQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Away, amount);
+        }
+
+        if (firstQuote == 0 || secondQuote == 0) {
+            return 0;
+        }
+        return firstQuote + secondQuote;
+    }
+
+    function buyFromAMMQuoteParlayDoubleChance(
+        address market,
+        ISportsAMM.Position position,
+        uint amount
+    ) external view returns (uint _quote) {
+        ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
+        uint firstQuote = 0;
+        uint secondQuote = 0;
+        if (position == ISportsAMM.Position.Home) {
+            // 1X
+            firstQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Home, amount);
+            secondQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Draw, amount);
+        } else if (position == ISportsAMM.Position.Away) {
+            // X2
+            firstQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Draw, amount);
+            secondQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Away, amount);
+        } else {
+            // 12
+            firstQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Home, amount);
+            secondQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Away, amount);
+        }
+        if (firstQuote == 0 || secondQuote == 0) {
+            _quote = 0;
+        } else {
+            _quote = firstQuote + secondQuote;
+        }
+    }
+
+    function buyPriceImpactDoubleChance(
+        address market,
+        ISportsAMM.Position position,
+        uint amount
+    ) public view returns (int impact) {
+        ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
+        int firstPriceImpact = 0;
+        int secondPriceImpact = 0;
+        if (position == ISportsAMM.Position.Home) {
+            // 1X
+            firstPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Home, amount);
+            secondPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Draw, amount);
+        } else if (position == ISportsAMM.Position.Away) {
+            // X2
+            firstPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Draw, amount);
+            secondPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Away, amount);
+        } else {
+            // 12
+            firstPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Home, amount);
+            secondPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Away, amount);
+        }
+        impact = (firstPriceImpact + secondPriceImpact) / 2;
+    }
+
+    function obtainOddsDoubleChance(
+        address market,
+        ISportsAMM.Position position,
+        address apexConsumer,
+        address theRundownConsumer
+    ) external view returns (uint) {
+        ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
+        uint firstOptionOdds;
+        uint secondOptionOdds;
+        if (position == ISportsAMM.Position.Home) {
+            // 1X
+            firstOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Home, apexConsumer, theRundownConsumer);
+            secondOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Draw, apexConsumer, theRundownConsumer);
+        } else if (position == ISportsAMM.Position.Away) {
+            // X2
+            firstOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Draw, apexConsumer, theRundownConsumer);
+            secondOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Away, apexConsumer, theRundownConsumer);
+        } else {
+            // 12
+            firstOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Home, apexConsumer, theRundownConsumer);
+            secondOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Away, apexConsumer, theRundownConsumer);
+        }
+
+        return firstOptionOdds + secondOptionOdds;
     }
 }

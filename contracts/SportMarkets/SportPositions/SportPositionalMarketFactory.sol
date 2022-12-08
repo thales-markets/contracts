@@ -30,6 +30,8 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
         uint positionCount;
         address theRundownConsumer;
         uint[] tags;
+        bool isDoubleChance;
+        address parentMarket;
     }
 
     /* ========== INITIALIZER ========== */
@@ -65,7 +67,9 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
                 sportsAMM,
                 _parameters.positionCount,
                 positions,
-                _parameters.tags
+                _parameters.tags,
+                _parameters.isDoubleChance,
+                _parameters.parentMarket
             )
         );
         emit MarketCreated(

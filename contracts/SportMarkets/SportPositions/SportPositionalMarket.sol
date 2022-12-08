@@ -51,6 +51,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         uint positionCount;
         address[] positions;
         uint[] tags;
+        bool isDoubleChance;
+        address parentMarket;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -70,7 +72,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     uint public override deposited;
     uint public initialMint;
     address public override creator;
-    bool public override resolved;
+    bool public override isResolved;
     bool public override cancelled;
     uint public cancelTimestamp;
     uint public homeOddsOnCancellation;
@@ -80,6 +82,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     bool public invalidOdds;
     bool public initialized = false;
     bool public override paused;
+
+    bool public override isDoubleChance;
+    ISportPositionalMarket public override parentMarket;
 
     /* ========== CONSTRUCTOR ========== */
     function initialize(SportPositionalMarketParameters calldata _parameters) external {
@@ -99,6 +104,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         initialMint = _parameters.deposit;
         optionsCount = _parameters.positionCount;
         sportsAMM = _parameters.sportsAMM;
+        isDoubleChance = _parameters.isDoubleChance;
+        parentMarket = ISportPositionalMarket(_parameters.parentMarket);
         require(optionsCount == _parameters.positions.length, "Position count mismatch");
         // Instantiate the options themselves
         options.home = SportPosition(_parameters.positions[0]);
@@ -133,7 +140,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _expired() internal view returns (bool) {
-        return resolved && (times.expiry < block.timestamp || deposited == 0);
+        return isResolved && (times.expiry < block.timestamp || deposited == 0);
     }
 
     function phase() external view override returns (Phase) {
@@ -161,7 +168,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Market Resolution ---------- */
 
     function canResolve() public view override returns (bool) {
-        return !resolved && _matured() && !paused;
+        return !isResolved && _matured() && !paused;
     }
 
     function getGameDetails() external view override returns (bytes32 gameId, string memory gameLabel) {
@@ -169,7 +176,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _result() internal view returns (Side) {
-        if (!resolved || cancelled) {
+        if (!isResolved || cancelled) {
             return Side.Cancelled;
         } else if (finalResult == 3 && optionsCount > 2) {
             return Side.Draw;
@@ -179,7 +186,18 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function result() external view override returns (Side) {
+        if (isDoubleChance) {
+            return parentMarket.result();
+        }
         return _result();
+    }
+
+    function resolved() public view override returns (bool) {
+        if (isDoubleChance) {
+            return parentMarket.isResolved();
+        }
+
+        return isResolved;
     }
 
     /* ---------- Option Balances and Mints ---------- */
@@ -314,6 +332,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Minting ---------- */
 
     function mint(uint value) external override {
+        // ako je double chance da ne trazi pare
         require(!_matured() && !paused, "Minting inactive");
         require(msg.sender == sportsAMM, "Invalid minter");
         if (value == 0) {
@@ -322,10 +341,14 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
         _mint(msg.sender, value);
 
-        _incrementDeposited(value);
-        _manager().transferSusdTo(msg.sender, address(this), value);
+        if (!isDoubleChance) {
+            // ???
+            _incrementDeposited(value);
+            _manager().transferSusdTo(msg.sender, address(this), value);
+        }
     }
 
+    /// ovde sve
     function _mint(address minter, uint amount) internal {
         options.home.mint(minter, amount);
         options.away.mint(minter, amount);
@@ -383,6 +406,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Market Resolution ---------- */
 
     function resolve(uint _outcome) external onlyOwner managerNotPaused {
+        require(!isDoubleChance, "Invalid market");
+
         require(_outcome <= optionsCount, "Invalid outcome");
         if (_outcome == 0) {
             cancelled = true;
@@ -392,7 +417,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
             require(canResolve(), "Can not resolve market");
         }
         finalResult = _outcome;
-        resolved = true;
+        isResolved = true;
         emit MarketResolved(_result(), deposited, 0, 0);
     }
 
@@ -412,7 +437,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     function exerciseOptions() external override {
         // The market must be resolved if it has not been.
-        require(resolved, "Unresolved");
+        require(resolved(), "Unresolved");
         require(!paused, "Paused");
         // If the account holds no options, revert.
         (uint homeBalance, uint awayBalance, uint drawBalance) = _balancesOf(msg.sender);

@@ -157,11 +157,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param position The position (home/away/draw) to check availability
     /// @return _available The amount of position options (tokens) available to buy from AMM.
     function availableToBuyFromAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
-        if (isMarketInAMMTrading(market)) {
-            uint baseOdds = _obtainOdds(market, position);
-            if (baseOdds > 0) {
-                baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
-                _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
+        if (ISportPositionalMarket(market).isDoubleChance()) {
+            _available = sportAmmUtils.getAvailableFromAMMDoubleChance(market, position);
+        } else {
+            if (isMarketInAMMTrading(market)) {
+                uint baseOdds = _obtainOdds(market, position);
+                if (baseOdds > 0) {
+                    baseOdds = baseOdds < minSupportedOdds ? minSupportedOdds : baseOdds;
+                    _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);
+                }
             }
         }
     }
@@ -195,6 +199,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount
     ) public view returns (uint _quote) {
+        if (ISportPositionalMarket(market).isDoubleChance()) {
+            _quote = sportAmmUtils.getBuyFromAMMQuoteDoubleCance(market, position, amount);
+        }
         if (isMarketInAMMTrading(market)) {
             uint baseOdds = _obtainOdds(market, position);
             if (baseOdds > 0) {
@@ -253,9 +260,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount
     ) public view returns (uint _quote) {
-        uint baseOdds = _obtainOdds(market, position);
-        baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
-        _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, 0);
+        if (ISportPositionalMarket(market).isDoubleChance()) {
+            _quote = sportAmmUtils.buyFromAMMQuoteParlayDoubleChance(market, position, amount);
+        } else {
+            uint baseOdds = _obtainOdds(market, position);
+            baseOdds = (baseOdds > 0 && baseOdds < minSupportedOdds) ? minSupportedOdds : baseOdds;
+            _quote = _buyFromAmmQuoteWithBaseOdds(market, position, amount, baseOdds, 0);
+        }
     }
 
     /// @notice Calculate the sUSD cost to buy an amount of available position options from AMM for specific market/game
@@ -290,10 +301,14 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount
     ) public view returns (int impact) {
-        uint _availableToBuyFromAMM = availableToBuyFromAMM(market, position);
-        uint _availableOtherSide = _getAvailableOtherSide(market, position, amount);
-        if (amount > 0 && amount <= _availableToBuyFromAMM) {
-            impact = _buyPriceImpact(market, position, amount, _availableToBuyFromAMM, _availableOtherSide);
+        if (ISportPositionalMarket(market).isDoubleChance()) {
+            impact = sportAmmUtils.buyPriceImpactDoubleChance(market, position, amount);
+        } else {
+            uint _availableToBuyFromAMM = availableToBuyFromAMM(market, position);
+            uint _availableOtherSide = _getAvailableOtherSide(market, position, amount);
+            if (amount > 0 && amount <= _availableToBuyFromAMM) {
+                impact = _buyPriceImpact(market, position, amount, _availableToBuyFromAMM, _availableOtherSide);
+            }
         }
     }
 
@@ -340,6 +355,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount
     ) public view returns (uint _quote) {
+        require(!ISportPositionalMarket(market).isDoubleChance(), "Sell not supported for DoubleChance market");
         uint baseOdds = _obtainOdds(market, position);
         uint _available = availableToSellToAMM(market, position);
         _quote = _sellToAmmQuote(market, position, amount, baseOdds, _available);
@@ -584,9 +600,33 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 sUSD.balanceOf(address(this)) >= ISportPositionalMarketManager(manager).transformCollateral(toMint),
                 "Low contract sUSD"
             );
-            ISportPositionalMarket(market).mint(toMint);
+            if (ISportPositionalMarket(market).isDoubleChance()) {
+                ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
+                (IPosition homeParentMarket, IPosition awayParentMarket, IPosition drawParentMarket) = parentMarket
+                    .getOptions();
+
+                ISportPositionalMarket(market).mint(toMint);
+                parentMarket.mint(toMint);
+
+                if (position == ISportsAMM.Position.Home) {
+                    // 1X
+                    IERC20Upgradeable(address(homeParentMarket)).safeTransfer(market, amount);
+                    IERC20Upgradeable(address(drawParentMarket)).safeTransfer(market, amount);
+                } else if (position == ISportsAMM.Position.Away) {
+                    // X2
+                    IERC20Upgradeable(address(drawParentMarket)).safeTransfer(market, amount);
+                    IERC20Upgradeable(address(awayParentMarket)).safeTransfer(market, amount);
+                } else {
+                    // 12
+                    IERC20Upgradeable(address(homeParentMarket)).safeTransfer(market, amount);
+                    IERC20Upgradeable(address(awayParentMarket)).safeTransfer(market, amount);
+                }
+            } else {
+                ISportPositionalMarket(market).mint(toMint);
+            }
             spentOnGame[market] = spentOnGame[market] + toMint;
         }
+
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         IPosition target = position == ISportsAMM.Position.Home ? home : away;
         if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
@@ -598,7 +638,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, sUSDPaid);
         }
-        if (thresholdForOddsUpdate > 0 && (amount - sUSDPaid) >= thresholdForOddsUpdate) {
+        if (
+            !ISportPositionalMarket(market).isDoubleChance() &&
+            thresholdForOddsUpdate > 0 &&
+            (amount - sUSDPaid) >= thresholdForOddsUpdate
+        ) {
             wrapper.callUpdateOddsForSpecificGame(market);
         }
         _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
@@ -619,6 +663,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint expectedPayout,
         uint additionalSlippage
     ) public nonReentrant whenNotPaused {
+        require(!ISportPositionalMarket(market).isDoubleChance(), "Sell not supported for DoubleChance market");
         require(isMarketInAMMTrading(market), "Not in Trading");
         require(ISportPositionalMarket(market).optionsCount() > uint(position), "Invalid position");
         uint availableToSellToAMMATM = availableToSellToAMM(market, position);
@@ -830,6 +875,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     // Internal
 
     function _obtainOdds(address _market, ISportsAMM.Position _position) internal view returns (uint) {
+        if (ISportPositionalMarket(_market).isDoubleChance()) {
+            sportAmmUtils.obtainOddsDoubleChance(_market, _position, apexConsumer, theRundownConsumer);
+        }
         return sportAmmUtils.obtainOdds(_market, _position, apexConsumer, theRundownConsumer);
     }
 

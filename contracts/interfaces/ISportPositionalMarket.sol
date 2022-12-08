@@ -45,6 +45,8 @@ interface ISportPositionalMarket {
 
     function resolved() external view returns (bool);
 
+    function isResolved() external view returns (bool);
+
     function cancelled() external view returns (bool);
 
     function paused() external view returns (bool);
@@ -85,6 +87,10 @@ interface ISportPositionalMarket {
         );
 
     function getMaximumBurnable(address account) external view returns (uint amount);
+
+    function isDoubleChance() external view returns (bool);
+
+    function parentMarket() external view returns (ISportPositionalMarket);
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 

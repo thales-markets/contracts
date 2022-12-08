@@ -763,15 +763,6 @@ contract('SportsAMM', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(
-				game_1_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 0)
-			);
-			assert.equal(
-				game_2_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 1)
-			);
-
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
 			assert.equal(100, gameR.homeScore);
 			assert.equal(129, gameR.awayScore);

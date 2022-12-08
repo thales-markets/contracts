@@ -530,15 +530,6 @@ contract('SportsAMM', (accounts) => {
 			assert.bnEqual(-20700, result[0]);
 			assert.bnEqual(17700, result[1]);
 
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
 			assert.equal('Atlanta Hawks', game.homeTeam);
@@ -581,15 +572,6 @@ contract('SportsAMM', (accounts) => {
 				gamesResolved,
 				sportId_4,
 				{ from: wrapper }
-			);
-
-			assert.equal(
-				game_1_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 0)
-			);
-			assert.equal(
-				game_2_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 1)
 			);
 
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);

@@ -665,11 +665,6 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
 
-			assert.equal(
-				fight_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-			);
-
 			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
 			assert.equal('Clayton Carpenter', fight.homeTeam);
 			assert.equal('Edgar Chairez', fight.awayTeam);
@@ -713,15 +708,6 @@ contract('ParlayAMM', (accounts) => {
 
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
-
-			assert.equal(
-				game_1_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-			);
-			assert.equal(
-				game_2_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-			);
 
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameFootballid1);
 			assert.bnEqual(40000, result[0]);

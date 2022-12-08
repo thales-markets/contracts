@@ -69,7 +69,11 @@ interface IGamesOddsObtainer {
 
     // executable
 
-    function obtainOdds(bytes32 requestId, GameOdds memory _game) external;
+    function obtainOdds(
+        bytes32 requestId,
+        GameOdds memory _game,
+        uint _sportId
+    ) external;
 
     function setFirstOdds(
         bytes32 _gameId,

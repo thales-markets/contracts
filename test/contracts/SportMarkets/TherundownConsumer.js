@@ -550,14 +550,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -619,11 +611,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(1, await gamesQueue.lastCreated());
 
-			assert.equal(
-				fight_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-			);
-
 			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
 			assert.equal('Clayton Carpenter', fight.homeTeam);
 			assert.equal('Edgar Chairez', fight.awayTeam);
@@ -665,15 +652,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
-
-			assert.equal(
-				game_1_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-			);
-			assert.equal(
-				game_2_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-			);
 
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameFootballid1);
 			assert.bnEqual(40000, result[0]);
@@ -725,15 +703,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
-
-			assert.equal(
-				game_1_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-			);
-			assert.equal(
-				game_2_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
 			assert.equal('Liverpool Liverpool', game.homeTeam);
@@ -797,15 +766,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(2, await gamesQueue.lastCreated());
 
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
 			assert.equal('Atlanta Hawks', game.homeTeam);
@@ -862,15 +822,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(
-				game_1_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 0)
-			);
-			assert.equal(
-				game_2_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 1)
-			);
-
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
 			assert.equal(100, gameR.homeScore);
 			assert.equal(129, gameR.awayScore);
@@ -912,15 +863,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
-
-			assert.equal(
-				game_1_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-			);
-			assert.equal(
-				game_2_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
 			assert.equal('Atletico Madrid Atletico Madrid', game.homeTeam);
@@ -977,11 +919,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(
-				game_2_football_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 1)
-			);
-
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameFootballid1);
 			assert.bnEqual(0, gameR.homeScore);
 			assert.bnEqual(1, gameR.awayScore);
@@ -1029,15 +966,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
-
-			assert.equal(
-				game_1_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-			);
-			assert.equal(
-				game_2_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
 			assert.equal('Liverpool Liverpool', game.homeTeam);
@@ -1090,21 +1018,6 @@ contract('TheRundownConsumer', (accounts) => {
 				sportId_16,
 				{ from: wrapper }
 			);
-
-			assert.equal(
-				game_1_football_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 0)
-			);
-
-			assert.equal(
-				game_1_football_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 0)
-			);
-			assert.equal(
-				game_2_football_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolveFoodball, 1)
-			);
-
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameFootballid2);
 			assert.equal(0, gameR.homeScore);
 			assert.equal(1, gameR.awayScore);
@@ -1151,11 +1064,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
 
-			assert.equal(
-				fight_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-			);
-
 			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
 			assert.equal('Clayton Carpenter', fight.homeTeam);
 			assert.equal('Edgar Chairez', fight.awayTeam);
@@ -1198,11 +1106,6 @@ contract('TheRundownConsumer', (accounts) => {
 				gamesFightResolved,
 				sportId_7,
 				{ from: wrapper }
-			);
-
-			assert.equal(
-				game_fight_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightResolve, 0)
 			);
 
 			let fightR = await TherundownConsumerDeployed.gameResolved(fightId);
@@ -1247,11 +1150,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
 
-			assert.equal(
-				fight_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-			);
-
 			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
 			assert.equal('Clayton Carpenter', fight.homeTeam);
 			assert.equal('Edgar Chairez', fight.awayTeam);
@@ -1294,11 +1192,6 @@ contract('TheRundownConsumer', (accounts) => {
 				gamesFightResolved,
 				sportId_7,
 				{ from: wrapper }
-			);
-
-			assert.equal(
-				game_fight_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightResolve, 0)
 			);
 
 			let fightR = await TherundownConsumerDeployed.gameResolved(fightId);
@@ -1346,11 +1239,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
 
-			assert.equal(
-				fight_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-			);
-
 			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
 			assert.equal('Clayton Carpenter', fight.homeTeam);
 			assert.equal('Edgar Chairez', fight.awayTeam);
@@ -1393,11 +1281,6 @@ contract('TheRundownConsumer', (accounts) => {
 				gamesFightResolvedDraw,
 				sportId_7,
 				{ from: wrapper }
-			);
-
-			assert.equal(
-				game_fight_resolve_draw,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightResolveDraw, 0)
 			);
 
 			let fightR = await TherundownConsumerDeployed.gameResolved(fightId);
@@ -1453,11 +1336,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(true, verifier_output_sport[1]);
 			assert.equal(1, verifier_output_sport[2].length);
 
-			assert.equal(
-				fight_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-			);
-
 			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
 			assert.equal('Clayton Carpenter', fight.homeTeam);
 			assert.equal('Edgar Chairez', fight.awayTeam);
@@ -1510,10 +1388,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(
-				game_fight_canceled,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightCanceled, 0)
-			);
 			assert.equal(true, await TherundownConsumerDeployed.gameFulfilledResolved(fightId));
 
 			let fightC = await TherundownConsumerDeployed.gameResolved(fightId);
@@ -1556,11 +1430,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
-
-			assert.equal(
-				fight_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-			);
 
 			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
 			assert.equal('Clayton Carpenter', fight.homeTeam);
@@ -1637,10 +1506,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(
-				game_fight_canceled,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdFightCanceled, 0)
-			);
 			assert.equal(true, await TherundownConsumerDeployed.gameFulfilledResolved(fightId));
 
 			fightC = await TherundownConsumerDeployed.gameResolved(fightId);
@@ -1695,11 +1560,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(1, await gamesQueue.lastCreated());
-
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -1795,15 +1655,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(
-				game_1_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 0)
-			);
-			assert.equal(
-				game_2_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 1)
-			);
-
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
 			assert.equal(100, gameR.homeScore);
 			assert.equal(129, gameR.awayScore);
@@ -1864,11 +1715,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(1, await gamesQueue.lastCreated());
-
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -1952,15 +1798,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(
-				game_1_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 0)
-			);
-			assert.equal(
-				game_2_resolve,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 1)
-			);
-
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
 			assert.equal(100, gameR.homeScore);
 			assert.equal(129, gameR.awayScore);
@@ -2021,11 +1858,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(1, await gamesQueue.lastCreated());
-
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -2109,11 +1941,6 @@ contract('TheRundownConsumer', (accounts) => {
 				{ from: wrapper }
 			);
 
-			assert.equal(
-				game_1_resolve_spread_total_1,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 0)
-			);
-
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
 			assert.equal(100, gameR.homeScore);
 			assert.equal(96, gameR.awayScore);
@@ -2174,11 +2001,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(1, await gamesQueue.lastCreated());
-
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -2260,11 +2082,6 @@ contract('TheRundownConsumer', (accounts) => {
 				gamesResolved_single_2,
 				sportId_4,
 				{ from: wrapper }
-			);
-
-			assert.equal(
-				game_1_resolve_spread_total_2,
-				await TherundownConsumerDeployed.requestIdGamesResolved(reqIdResolve, 0)
 			);
 
 			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
@@ -2385,15 +2202,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
 
-			assert.equal(
-				game_1_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-			);
-			assert.equal(
-				game_2_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-			);
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid1);
 			assert.equal('Atletico Madrid Atletico Madrid', game.homeTeam);
 			assert.equal('Manchester City Manchester City', game.awayTeam);
@@ -2488,15 +2296,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
-
-			assert.equal(
-				game_1_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-			);
-			assert.equal(
-				game_2_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
 			assert.equal('Liverpool Liverpool', game.homeTeam);
@@ -2598,15 +2397,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(2, await gamesQueue.lastCreated());
 
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
 			assert.equal('Atlanta Hawks', game.homeTeam);
@@ -2707,15 +2497,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
 
-			assert.equal(
-				game_1_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-			);
-			assert.equal(
-				game_2_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-			);
-
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameFootballid1);
 			assert.bnEqual(40000, result[0]);
 			assert.bnEqual(-12500, result[1]);
@@ -2799,15 +2580,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
-
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
 			assert.equal('Atlanta Hawks', game.homeTeam);
@@ -2888,14 +2660,6 @@ contract('TheRundownConsumer', (accounts) => {
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
 			assert.bnEqual(17700, result[1]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -3009,14 +2773,6 @@ contract('TheRundownConsumer', (accounts) => {
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
 			assert.bnEqual(17700, result[1]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -3125,14 +2881,6 @@ contract('TheRundownConsumer', (accounts) => {
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
 			assert.bnEqual(17700, result[1]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -3241,14 +2989,6 @@ contract('TheRundownConsumer', (accounts) => {
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
 			assert.bnEqual(17700, result[1]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -3364,14 +3104,6 @@ contract('TheRundownConsumer', (accounts) => {
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
 			assert.bnEqual(17700, result[1]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -3493,14 +3225,6 @@ contract('TheRundownConsumer', (accounts) => {
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
 			assert.bnEqual(17700, result[1]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -3655,14 +3379,6 @@ contract('TheRundownConsumer', (accounts) => {
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
 			assert.bnEqual(17700, result[1]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -3813,14 +3529,6 @@ contract('TheRundownConsumer', (accounts) => {
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
 			assert.bnEqual(17700, result[1]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -4014,14 +3722,6 @@ contract('TheRundownConsumer', (accounts) => {
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
 			assert.bnEqual(17700, result[1]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -4340,11 +4040,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
 
-			assert.equal(
-				fight_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-			);
-
 			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
 			assert.equal('Clayton Carpenter', fight.homeTeam);
 			assert.equal('Edgar Chairez', fight.awayTeam);
@@ -4387,11 +4082,6 @@ contract('TheRundownConsumer', (accounts) => {
 				sportId_7,
 				fightTime,
 				{ from: wrapper }
-			);
-
-			assert.equal(
-				fight_update,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightUpdate, 0)
 			);
 
 			let fight_updated = await TherundownConsumerDeployed.gameCreated(fightId);
@@ -4471,14 +4161,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -4565,14 +4247,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameid1);
 			assert.bnEqual(-20700, result[0]);
-			assert.equal(
-				game_1_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 0)
-			);
-			assert.equal(
-				game_2_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameid1);
 			let gameTime = game.startTime;
@@ -4674,11 +4348,6 @@ contract('TheRundownConsumer', (accounts) => {
 			assert.equal(1, await gamesQueue.firstCreated());
 			assert.equal(1, await gamesQueue.lastCreated());
 
-			assert.equal(
-				fight_create_time,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreateTime, 0)
-			);
-
 			let fight = await TherundownConsumerDeployed.gameCreated(fightIdTime);
 			assert.equal('Arnold Allen', fight.homeTeam);
 			assert.equal('Calvin Kattar', fight.awayTeam);
@@ -4706,11 +4375,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
-
-			assert.equal(
-				fight_create_time_update,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreateTimeUpdate, 0)
-			);
 
 			let fight_updated = await TherundownConsumerDeployed.gameCreated(fightIdTime);
 			assert.equal('Arnold Allen', fight_updated.homeTeam);
@@ -4812,15 +4476,6 @@ contract('TheRundownConsumer', (accounts) => {
 
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
 			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
-
-			assert.equal(
-				game_1_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-			);
-			assert.equal(
-				game_2_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-			);
 
 			let game = await TherundownConsumerDeployed.gameCreated(gameFootballid2);
 			assert.equal('Liverpool Liverpool', game.homeTeam);

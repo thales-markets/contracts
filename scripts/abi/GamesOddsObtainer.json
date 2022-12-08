@@ -172,6 +172,99 @@
       {
         "indexed": false,
         "internalType": "bytes32",
+        "name": "_id",
+        "type": "bytes32"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bytes32",
+            "name": "gameId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "int24",
+            "name": "homeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "awayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "drawOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int16",
+            "name": "spreadHome",
+            "type": "int16"
+          },
+          {
+            "internalType": "int24",
+            "name": "spreadHomeOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "int16",
+            "name": "spreadAway",
+            "type": "int16"
+          },
+          {
+            "internalType": "int24",
+            "name": "spreadAwayOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "uint24",
+            "name": "totalOver",
+            "type": "uint24"
+          },
+          {
+            "internalType": "int24",
+            "name": "totalOverOdds",
+            "type": "int24"
+          },
+          {
+            "internalType": "uint24",
+            "name": "totalUnder",
+            "type": "uint24"
+          },
+          {
+            "internalType": "int24",
+            "name": "totalUnderOdds",
+            "type": "int24"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct IGamesOddsObtainer.GameOdds",
+        "name": "_game",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_normalizedChildOdds",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_type",
+        "type": "uint256"
+      }
+    ],
+    "name": "GamedOddsAddedChild",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
         "name": "_requestId",
         "type": "bytes32"
       },
@@ -1209,6 +1302,11 @@
         "internalType": "struct IGamesOddsObtainer.GameOdds",
         "name": "_game",
         "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
       }
     ],
     "name": "obtainOdds",

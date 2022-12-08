@@ -403,6 +403,11 @@
         "internalType": "struct IGamesOddsObtainer.GameOdds",
         "name": "_game",
         "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
       }
     ],
     "name": "obtainOdds",

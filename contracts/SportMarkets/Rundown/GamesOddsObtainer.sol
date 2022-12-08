@@ -78,17 +78,22 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /// @notice main function for odds obtaining
     /// @param requestId chainlnink request ID
     /// @param _game game odds struct see @ IGamesOddsObtainer.GameOdds
-    function obtainOdds(bytes32 requestId, IGamesOddsObtainer.GameOdds memory _game) external onlyConsumer {
+    function obtainOdds(
+        bytes32 requestId,
+        IGamesOddsObtainer.GameOdds memory _game,
+        uint _sportId
+    ) external onlyConsumer {
         if (_areOddsValid(_game)) {
             uint[] memory currentNormalizedOdd = getNormalizedOdds(_game.gameId);
             IGamesOddsObtainer.GameOdds memory currentOddsBeforeSave = gameOdds[_game.gameId];
             gameOdds[_game.gameId] = _game;
             oddsLastPulledForGame[_game.gameId] = block.timestamp;
-            if (doesSportSupportSpreadAndTotal[consumer.sportsIdPerGame(_game.gameId)]) {
-                _obtainTotalAndSpreadOdds(_game);
-            }
 
             address _main = consumer.marketPerGameId(_game.gameId);
+
+            if (doesSportSupportSpreadAndTotal[_sportId]) {
+                _obtainTotalAndSpreadOdds(_game, _main);
+            }
 
             // if was paused and paused by invalid odds unpause
             if (sportsManager.isMarketPaused(_main)) {
@@ -101,10 +106,10 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 //if market is not paused but odd are not in threshold, pause parket
                 !sportsManager.isMarketPaused(_main) &&
                 !verifier.areOddsArrayInThreshold(
-                    consumer.sportsIdPerGame(_game.gameId),
+                    _sportId,
                     currentNormalizedOdd,
                     getNormalizedOdds(_game.gameId),
-                    consumer.isSportTwoPositionsSport(consumer.sportsIdPerGame(_game.gameId))
+                    consumer.isSportTwoPositionsSport(_sportId)
                 )
             ) {
                 _pauseAllMarkets(_game, _main, true, true);
@@ -150,6 +155,9 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         );
     }
 
+    /// @notice pause/unpause all child markets
+    /// @param _main parent market for which we are pause/unpause child markets
+    /// @param _flag pause -> true, unpause -> false
     function pauseUnpauseChildMarkets(address _main, bool _flag) external onlyConsumer {
         // number of childs more then 0
         for (uint i = 0; i < numberOfChildMarkets[_main]; i++) {
@@ -157,6 +165,11 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
+    /// @notice resolve all child markets
+    /// @param _main parent market for which we are resolving
+    /// @param _outcome poitions thet is winning (homw, away, cancel)
+    /// @param _homeScore points that home team score
+    /// @param _awayScore points that away team score
     function resolveChildMarkets(
         address _main,
         uint _outcome,
@@ -281,14 +294,26 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             );
     }
 
-    function _obtainTotalAndSpreadOdds(IGamesOddsObtainer.GameOdds memory _game) internal {
+    function _obtainTotalAndSpreadOdds(IGamesOddsObtainer.GameOdds memory _game, address _main) internal {
         if (_areTotalOddsValid(_game)) {
-            _obtainSpreadTotal(_game, false);
+            _obtainSpreadTotal(_game, _main, false);
+            emit GamedOddsAddedChild(
+                _game.gameId,
+                _game,
+                getNormalizedChildOdds(currentActiveTotalChildMarket[_main]),
+                TAG_NUMBER_TOTAL
+            );
         } else {
             _pauseTotalSpreadMarkets(_game, false);
         }
         if (_areSpreadOddsValid(_game)) {
-            _obtainSpreadTotal(_game, true);
+            _obtainSpreadTotal(_game, _main, true);
+            emit GamedOddsAddedChild(
+                _game.gameId,
+                _game,
+                getNormalizedChildOdds(currentActiveSpreadChildMarket[_main]),
+                TAG_NUMBER_SPREAD
+            );
         } else {
             _pauseTotalSpreadMarkets(_game, true);
         }
@@ -302,8 +327,11 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         return verifier.areSpreadOddsValid(_game.spreadHome, _game.spreadHomeOdds, _game.spreadAway, _game.spreadAwayOdds);
     }
 
-    function _obtainSpreadTotal(IGamesOddsObtainer.GameOdds memory _game, bool _isSpread) internal {
-        address _main = consumer.marketPerGameId(_game.gameId);
+    function _obtainSpreadTotal(
+        IGamesOddsObtainer.GameOdds memory _game,
+        address _main,
+        bool _isSpread
+    ) internal {
         if (_isSpread) {
             // no child market
             if (numberOfChildMarkets[_main] == 0) {
@@ -371,8 +399,8 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         return result;
     }
 
-    // "+4.5 - homeTeam vs awayTeam" UP DOWN
-    // "+200 - homeTeam vs awayTeam" UP DOWN
+    // "homeTeam(450) vs awayTeam HOME/AWAY"
+    // "homeTeam vs awayTeam - 20050 OVER/UNDER"
     function _append(
         bytes32 _gameId,
         bool _isSpread,
@@ -601,6 +629,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== EVENTS ========== */
 
     event GameOddsAdded(bytes32 _requestId, bytes32 _id, IGamesOddsObtainer.GameOdds _game, uint[] _normalizedOdds);
+    event GamedOddsAddedChild(bytes32 _id, IGamesOddsObtainer.GameOdds _game, uint[] _normalizedChildOdds, uint _type);
     event InvalidOddsForMarket(bytes32 _requestId, address _marketAddress, bytes32 _id, IGamesOddsObtainer.GameOdds _game);
     event OddsCircuitBreaker(address _marketAddress, bytes32 _id);
     event NewContractAddresses(address _consumer, address _verifier, address _sportsManager);

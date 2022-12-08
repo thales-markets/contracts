@@ -59,9 +59,9 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     mapping(address => bool) public whitelistedAddresses;
 
     // Maps <RequestId, Result>
-    mapping(bytes32 => bytes[]) public requestIdGamesCreated;
-    mapping(bytes32 => bytes[]) public requestIdGamesResolved;
-    mapping(bytes32 => bytes[]) public requestIdGamesOdds;
+    mapping(bytes32 => bytes[]) public requestIdGamesCreated; // deprecated see Wrapper
+    mapping(bytes32 => bytes[]) public requestIdGamesResolved; // deprecated see Wrapper
+    mapping(bytes32 => bytes[]) public requestIdGamesOdds; // deprecated see Wrapper
 
     // Maps <GameId, Game>
     mapping(bytes32 => GameCreate) public gameCreated;
@@ -144,8 +144,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         uint _sportId,
         uint _date
     ) external onlyWrapper {
-        requestIdGamesCreated[_requestId] = _games;
-
         if (_games.length > 0) {
             isSportOnADate[_date][_sportId] = true;
         }
@@ -211,7 +209,6 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         bytes[] memory _games,
         uint _sportId
     ) external onlyWrapper {
-        requestIdGamesResolved[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
             GameResolve memory game = abi.decode(_games[i], (GameResolve));
             // if game is not resolved already and there is market for that game
@@ -225,12 +222,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
     /// @param _requestId unique request id form CL
     /// @param _games array of a games that needed to update the odds
     function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external onlyWrapper {
-        requestIdGamesOdds[_requestId] = _games;
         for (uint i = 0; i < _games.length; i++) {
             IGamesOddsObtainer.GameOdds memory game = abi.decode(_games[i], (IGamesOddsObtainer.GameOdds));
             // game needs to be fulfilled and market needed to be created
             if (gameFulfilledCreated[game.gameId] && marketPerGameId[game.gameId] != address(0)) {
-                oddsObtainer.obtainOdds(_requestId, game);
+                oddsObtainer.obtainOdds(_requestId, game, sportsIdPerGame[game.gameId]);
             }
         }
     }

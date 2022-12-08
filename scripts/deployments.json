@@ -134,7 +134,9 @@
 		"RangedMarketMastercopy": "0x75c7671d046268c11b5f55bA75DF2B6d14774B1C",
 		"Vault": "",
 		"VaultImplementation": "",
-		"ThalesAMMUtils": "0xE853207c30F3c32Eda9aEfFDdc67357d5332978C"
+		"ThalesAMMUtils": "0xE853207c30F3c32Eda9aEfFDdc67357d5332978C",
+		"ThalesAMMNew": "0xd52B865584c25FEBfcB676B9A87F32683356A063",
+		"ThalesAMMNewImplementation": "0xA9e72815327a17A7FBc951566ded8B162FF58607"
 	},
 	"bsc": {
 		"BUSD": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
@@ -150,7 +152,7 @@
 		"PositionalMarketFactoryImplementation": "0x8Eb4eB483f0DfB0910d24351d11b4D098d82080D",
 		"PositionalMarketData": "0x308C5B6E489B693e1e582157aaBaF2d6df187aa1",
 		"ThalesAMM": "0x465B66A3e33088F0666dB1836652fBcF037c7319",
-		"ThalesAMMImplementation": "0x172C210ab04a04f903E8F87eFC9c6afc9c2182EE",
+		"ThalesAMMImplementation": "0x67B26Fa8da6Cac07Ec2Ab137Ef74C083c71ACde9",
 		"RangedAMM": "0xda5Bd4aBAFbE249bdC5684eAD594B0ac379687fd",
 		"RangedAMMImplementation": "0x705D97a0Eb98a1a611BebDe00FD3dCF380ec04f5",
 		"Referrals": "0x8ba51d5b8C2693ecC4c355dC778b6a0Ae775A776",
@@ -175,7 +177,7 @@
 		"PositionalMarketFactoryImplementation": "0xE0B31640B07E4BCFAFc190d7DDE951BA3286Dd63",
 		"PositionalMarketData": "0x3124A11216273018C8F37181b4505d36573D9701",
 		"ThalesAMM": "0x2b89275efB9509c33d9AD92A4586bdf8c4d21505",
-		"ThalesAMMImplementation": "0x5b7B5Bb93622A6589A3E693FA7c23690d8F7d298",
+		"ThalesAMMImplementation": "0x68d0A97cC7718a93c4403C07f6CB3C7ABc239792",
 		"RangedAMM": "0x5cf3b1882357BB66Cf3cd2c85b81AbBc85553962",
 		"RangedAMMImplementation": "0xC0EeFDCF5A815ed7ac1ef1b8Ae8302AC502f3005",
 		"RangedPositionMastercopy": "0xE931777640149fE67aE0771FF250aC93A5c38E85",

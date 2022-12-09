@@ -3,11 +3,11 @@ const w3utils = require('web3-utils');
 const snx = require('synthetix-2.50.4-ovm');
 const { artifacts, contract, web3 } = require('hardhat');
 
-const { getTargetAddress, setTargetAddress } = require('../helpers');
+const { setTargetAddress, getTargetAddress } = require('../../helpers');
 
 const { toBN } = web3.utils;
 
-const { toBytes32 } = require('../../index');
+const { toBytes32 } = require('../../../index');
 
 async function main() {
 	let accounts = await ethers.getSigners();
@@ -47,9 +47,17 @@ async function main() {
 		networkObj.name = 'polygon';
 		network = 'polygon';
 	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
+	}
 
 	const consumer = await ethers.getContractFactory('TherundownConsumer');
 	let consumerAddress = getTargetAddress('TherundownConsumer', network);
+	const sportsAMM = await ethers.getContractFactory('SportsAMM');
+	let sportsAMMAddress = getTargetAddress('SportsAMM', network);
+	const verifier = await ethers.getContractFactory('TherundownConsumerVerifier');
+	let verifierAddress = getTargetAddress('TherundownConsumerVerifier', network);
 
 	console.log('TherundownConsumer address: ', consumerAddress);
 
@@ -57,6 +65,10 @@ async function main() {
 
 	console.log('LINK address: ', chainlink['LINK']);
 	console.log('ORACLE address: ', chainlink['ORACLE']);
+	const paymentCreate = w3utils.toWei('0.1');
+	const paymentResolve = w3utils.toWei('0.1');
+	const paymentOdds = w3utils.toWei('0.1');
+	let oddsSpecId = '0x3032393562356366643662643435346262653738363532643732636139363961';
 
 	const TherundownConsumerWrapper = getTargetAddress('TherundownConsumerWrapper', network);
 	console.log('TherundownConsumerWrapper: ', TherundownConsumerWrapper);
@@ -64,7 +76,17 @@ async function main() {
 	try {
 		await hre.run('verify:verify', {
 			address: TherundownConsumerWrapper,
-			constructorArguments: [chainlink['LINK'], chainlink['ORACLE'], consumerAddress],
+			constructorArguments: [
+				chainlink['LINK'],
+				chainlink['ORACLE'],
+				consumerAddress,
+				paymentCreate,
+				paymentResolve,
+				paymentOdds,
+				oddsSpecId,
+				sportsAMMAddress,
+				verifierAddress,
+			],
 		});
 	} catch (e) {
 		console.log(e);

@@ -16,9 +16,17 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
+	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
 	}
 
 	console.log('Account is: ' + owner.address);
@@ -31,13 +39,16 @@ async function main() {
 	let implementation;
 	if (networkObj.chainId == 10) {
 		implementation = await upgrades.prepareUpgrade(apexConsumerAddress, ApexConsumer);
-		await delay(5000);
 	}
 
 	// upgrade if test networks
-	if (networkObj.chainId == 5 || networkObj.chainId == 42) {
+	if (
+		networkObj.chainId == 69 ||
+		networkObj.chainId == 42 ||
+		networkObj.chainId == 420 ||
+		networkObj.chainId == 5
+	) {
 		await upgrades.upgradeProxy(apexConsumerAddress, ApexConsumer);
-		await delay(30000);
 
 		implementation = await getImplementationAddress(ethers.provider, apexConsumerAddress);
 	}
@@ -58,9 +69,3 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
-
-function delay(time) {
-	return new Promise(function (resolve) {
-		setTimeout(resolve, time);
-	});
-}

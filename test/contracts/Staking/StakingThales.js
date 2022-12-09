@@ -23,7 +23,6 @@ contract('StakingThales', (accounts) => {
 		ThalesFeeDeployed,
 		StakingThalesDeployed,
 		EscrowThalesDeployed,
-		OngoingAirdropDeployed,
 		SNXRewardsDeployed,
 		AddressResolverDeployed,
 		ProxyEscrowDeployed,
@@ -53,18 +52,11 @@ contract('StakingThales', (accounts) => {
 			let Thales = artifacts.require('Thales');
 			let EscrowThales = artifacts.require('EscrowThales');
 			let StakingThales = artifacts.require('StakingThales');
-			let OngoingAirdrop = artifacts.require('OngoingAirdrop');
 			let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 			let SNXRewards = artifacts.require('SNXRewards');
 			SNXRewardsDeployed = await SNXRewards.new();
 			ThalesDeployed = await Thales.new({ from: owner });
 			ThalesFeeDeployed = await Thales.new({ from: owner });
-			OngoingAirdropDeployed = await OngoingAirdrop.new(
-				owner,
-				ThalesDeployed.address,
-				toBytes32('random'),
-				{ from: owner }
-			);
 
 			ProxyEscrowDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
 			ProxyStakingDeployed = await OwnedUpgradeabilityProxy.new({ from: initialCreator });
@@ -168,7 +160,6 @@ contract('StakingThales', (accounts) => {
 		let Thales = artifacts.require('Thales');
 		let EscrowThales = artifacts.require('EscrowThales');
 		let StakingThales = artifacts.require('StakingThales');
-		let OngoingAirdrop = artifacts.require('OngoingAirdrop');
 		let SNXRewards = artifacts.require('SNXRewards');
 		SNXRewardsDeployed = await SNXRewards.new();
 		let AddressResolver = artifacts.require('AddressResolverHelper');
@@ -177,12 +168,6 @@ contract('StakingThales', (accounts) => {
 		let OwnedUpgradeabilityProxy = artifacts.require('OwnedUpgradeabilityProxy');
 		ThalesDeployed = await Thales.new({ from: owner });
 		ThalesFeeDeployed = await Thales.new({ from: owner });
-		OngoingAirdropDeployed = await OngoingAirdrop.new(
-			owner,
-			ThalesDeployed.address,
-			toBytes32('random'),
-			{ from: owner }
-		);
 		//Price feed setup
 		await PriceFeedInstance.connect(ownerSigner).addAggregator(SNX, aggregatorSNX.address);
 		timestamp = await currentTime();

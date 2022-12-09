@@ -63,15 +63,15 @@ async function main() {
 			_thalesAmm: thalesAMM,
 			_sUSD: proxySUSD,
 			_roundLength: week,
-			_priceLowerLimit: w3utils.toWei('0.05'),
-			_priceUpperLimit: w3utils.toWei('0.95'),
+			_priceLowerLimit: w3utils.toWei('0.10'),
+			_priceUpperLimit: w3utils.toWei('0.90'),
 			_skewImpactLimit: w3utils.toWei('-0.05'), // -3% skew impact
-			_allocationLimitsPerMarketPerRound: w3utils.toWei('10'), // 10% limit per market
+			_allocationLimitsPerMarketPerRound: w3utils.toWei('5'), // 10% limit per market
 			_maxAllowedDeposit: w3utils.toWei('20000'), // 10k% max deposit per round
-			_utilizationRate: w3utils.toWei('0.20'), // 50% utilization rate
+			_utilizationRate: w3utils.toWei('0.10'), // 50% utilization rate
 			_minDepositAmount: w3utils.toWei('20'), // min deposit
 			_maxAllowedUsers: 100, // maximum 100 users allowed at a time in the vault
-			_minTradeAmount: w3utils.toWei('5'), // minimum trade amount
+			_minTradeAmount: w3utils.toWei('3'), // minimum trade amount
 		},
 	]);
 

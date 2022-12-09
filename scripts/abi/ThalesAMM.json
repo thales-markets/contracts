@@ -699,7 +699,7 @@
     "outputs": [
       {
         "internalType": "int256",
-        "name": "_available",
+        "name": "_priceImpact",
         "type": "int256"
       }
     ],
@@ -1034,6 +1034,27 @@
     "constant": true,
     "inputs": [],
     "name": "min_spread",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "min_spreadPerAddress",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1515,6 +1536,26 @@
       }
     ],
     "name": "setMinMaxSupportedPriceAndCap",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "newFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinSpreadPerAddress",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

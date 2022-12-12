@@ -329,6 +329,11 @@
         "type": "bytes32"
       },
       {
+        "internalType": "uint256",
+        "name": "_remainder",
+        "type": "uint256"
+      },
+      {
         "internalType": "bytes[]",
         "name": "_games",
         "type": "bytes[]"
@@ -347,6 +352,11 @@
         "type": "bytes32"
       },
       {
+        "internalType": "uint256",
+        "name": "_remainder",
+        "type": "uint256"
+      },
+      {
         "internalType": "bytes[]",
         "name": "_games",
         "type": "bytes[]"
@@ -363,6 +373,11 @@
         "internalType": "bytes32",
         "name": "_requestId",
         "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_remainder",
+        "type": "uint256"
       },
       {
         "internalType": "bytes[]",

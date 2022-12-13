@@ -39,6 +39,8 @@ interface ITherundownConsumer {
 
     function getGameCreatedById(bytes32 _gameId) external view returns (GameCreate memory);
 
+    function isChildMarket(address _market) external view returns (bool);
+
     // write functions
     function fulfillGamesCreated(
         bytes32 _requestId,

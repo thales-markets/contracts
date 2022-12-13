@@ -11,7 +11,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
     struct ActiveMarketsOdds {
-        bytes32 market;
+        address market;
         uint[] odds;
     }
 
@@ -29,7 +29,7 @@ contract SportPositionalMarketData is Initializable, ProxyOwned, ProxyPausable {
         );
         ActiveMarketsOdds[] memory marketOdds = new ActiveMarketsOdds[](activeMarkets.length);
         for (uint i = 0; i < activeMarkets.length; i++) {
-            marketOdds[i].market = ISportPositionalMarket(activeMarkets[i]).getGameId();
+            marketOdds[i].market = activeMarkets[i];
             marketOdds[i].odds = ISportsAMM(sportsAMM).getMarketDefaultOdds(activeMarkets[i], false);
         }
         return marketOdds;

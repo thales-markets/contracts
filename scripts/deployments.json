@@ -417,7 +417,7 @@
 		"GamesQueueImplementation": "0x096382EDb686e37dD02483b5144e3bE3a19ce44B",
 		"TherundownConsumer": "0xdB6EB989127D0c33bC630d7b5B53f87ceCED3ce1",
 		"TherundownConsumerImplementation": "0x6E29d90E681C558D7226D8C0EA1Ad3D8fe5a6dDb",
-		"TherundownConsumerWrapper": "0xdB96BD3e0A08281DAcE52426597520B6973e3904",
+		"TherundownConsumerWrapper": "0x29c24C43378513EdBDBcD8671CE2352d326905a4",
 		"SportPositionalMarketManager": "0xae56177e405929c95E5d4b04C0C87E428cB6432B",
 		"SportPositionalMarketManagerImplementation": "0xb8c8eAc00eE544E54B560a9C37Bb94450d5cf6BD",
 		"SportPositionalMarketFactory": "0xB72f87AA15E8FE50Ed364eB4A94486A578fc1556",
@@ -485,7 +485,7 @@
 		"ThalesAMMUtils": "0x5aA87dbA0F1486DB34Cd806eDa32f4d66ca4Ae30",
 		"OvertimeWorldCupZebro": "0xD66eE2D0F8810304402F6bE0E57E7C0a261b54A3",
 		"GamesOddsObtainer": "0x00d23CE013094F7100b681426C046023d1C02858",
-		"GamesOddsObtainerImplementation": "0xe2Dbb15f0bE7FD73C23883BEdf06124814DC070c"
+		"GamesOddsObtainerImplementation": "0xec3e380b11c122D3FDc6424f0194CC2af907F6Ba"
 	},
 	"localhost": {
 		"Airdrop": "",

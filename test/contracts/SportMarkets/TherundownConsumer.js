@@ -1930,6 +1930,9 @@ contract('TheRundownConsumer', (accounts) => {
 				await GamesOddsObtainerDeployed.currentActiveTotalChildMarket(marketAdd)
 			);
 
+			let childs = await GamesOddsObtainerDeployed.getAllChildMarketsFromParent(marketAdd);
+			assert.bnEqual(2, childs.length);
+
 			await fastForward(await currentTime());
 
 			assert.equal(true, await deployedMarket.canResolve());

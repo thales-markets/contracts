@@ -317,7 +317,7 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "payout",
         "type": "uint256"
       }
     ],
@@ -641,11 +641,6 @@
           },
           {
             "internalType": "bool",
-            "name": "isDoubleChance",
-            "type": "bool"
-          },
-          {
-            "internalType": "bool",
             "name": "isChild",
             "type": "bool"
           },
@@ -653,6 +648,11 @@
             "internalType": "address",
             "name": "parentMarket",
             "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDoubleChance",
+            "type": "bool"
           }
         ],
         "internalType": "struct SportPositionalMarket.SportPositionalMarketParameters",

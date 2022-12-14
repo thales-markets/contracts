@@ -51,9 +51,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         uint positionCount;
         address[] positions;
         uint[] tags;
-        bool isDoubleChance;
         bool isChild;
         address parentMarket;
+        bool isDoubleChance;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -191,6 +191,9 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function _result() internal view returns (Side) {
+        if (isDoubleChance) {
+            return parentMarket.result();
+        }
         if (!isResolved || cancelled) {
             return Side.Cancelled;
         } else if (finalResult == 3 && optionsCount > 2) {
@@ -201,9 +204,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     }
 
     function result() external view override returns (Side) {
-        if (isDoubleChance) {
-            return parentMarket.result();
-        }
         return _result();
     }
 
@@ -231,6 +231,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         )
     {
         if (cancelled) {
+            if (isDoubleChance) {
+                (uint homeOddsParent, uint awayOddsParent, uint drawOddsParent) = parentMarket.getStampedOdds();
+
+                return (homeOddsParent + drawOddsParent, awayOddsParent + drawOddsParent, homeOddsParent + awayOddsParent);
+            }
             return (homeOddsOnCancellation, awayOddsOnCancellation, drawOddsOnCancellation);
         } else {
             return (0, 0, 0);
@@ -347,7 +352,6 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Minting ---------- */
 
     function mint(uint value) external override {
-        // ako je double chance da ne trazi pare
         require(!_matured() && !paused, "Minting inactive");
         require(msg.sender == sportsAMM, "Invalid minter");
         if (value == 0) {
@@ -357,13 +361,11 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         _mint(msg.sender, value);
 
         if (!isDoubleChance) {
-            // ???
             _incrementDeposited(value);
             _manager().transferSusdTo(msg.sender, address(this), value);
         }
     }
 
-    /// ovde sve
     function _mint(address minter, uint amount) internal {
         options.home.mint(minter, amount);
         options.away.mint(minter, amount);
@@ -421,7 +423,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     /* ---------- Market Resolution ---------- */
 
     function resolve(uint _outcome) external onlyOwner managerNotPaused {
-        require(!isDoubleChance, "Invalid market");
+        require(!isDoubleChance, "Resolve for double chance market not supported");
 
         require(_outcome <= optionsCount, "Invalid outcome");
         if (_outcome == 0) {
@@ -461,20 +463,30 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         // Each option only needs to be exercised if the account holds any of it.
         if (homeBalance != 0) {
             options.home.exercise(msg.sender);
+            if (isDoubleChance) {
+                (IPosition home, , IPosition draw) = parentMarket.getOptions();
+                home.exerciseWithAmount(address(this), homeBalance);
+                draw.exerciseWithAmount(address(this), homeBalance);
+            }
         }
         if (awayBalance != 0) {
             options.away.exercise(msg.sender);
+            if (isDoubleChance) {
+                (, IPosition away, IPosition draw) = parentMarket.getOptions();
+                away.exerciseWithAmount(address(this), awayBalance);
+                draw.exerciseWithAmount(address(this), awayBalance);
+            }
         }
         if (optionsCount > 2 && drawBalance != 0) {
             options.draw.exercise(msg.sender);
+            if (isDoubleChance) {
+                (IPosition home, IPosition away, ) = parentMarket.getOptions();
+                home.exerciseWithAmount(address(this), drawBalance);
+                away.exerciseWithAmount(address(this), drawBalance);
+            }
         }
-        uint result = uint(_result());
-        // Only pay out the side that won.
-        uint payout = (_result() == Side.Home) ? homeBalance : awayBalance;
+        uint payout = _getPayout(homeBalance, awayBalance, drawBalance);
 
-        if (optionsCount > 2 && _result() != Side.Home) {
-            payout = _result() == Side.Away ? awayBalance : drawBalance;
-        }
         if (cancelled) {
             require(
                 block.timestamp > cancelTimestamp.add(_manager().cancelTimeout()) && !invalidOdds,
@@ -485,7 +497,33 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         emit OptionsExercised(msg.sender, payout);
         if (payout != 0) {
             _decrementDeposited(payout);
-            sUSD.transfer(msg.sender, payout);
+            if (isDoubleChance) {
+                sUSD.transferFrom(address(parentMarket), msg.sender, payout);
+            } else {
+                sUSD.transfer(msg.sender, payout);
+            }
+        }
+    }
+
+    function _getPayout(
+        uint homeBalance,
+        uint awayBalance,
+        uint drawBalance
+    ) internal view returns (uint payout) {
+        if (isDoubleChance) {
+            if (_result() == Side.Home) {
+                payout = homeBalance + drawBalance;
+            } else if (_result() == Side.Away) {
+                payout = awayBalance + drawBalance;
+            } else {
+                payout = homeBalance + awayBalance;
+            }
+        } else {
+            payout = (_result() == Side.Home) ? homeBalance : awayBalance;
+
+            if (optionsCount > 2 && _result() != Side.Home) {
+                payout = _result() == Side.Away ? awayBalance : drawBalance;
+            }
         }
     }
 
@@ -506,14 +544,22 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         uint _homeBalance,
         uint _awayBalance,
         uint _drawBalance
-    ) public view returns (uint) {
+    ) public view returns (uint payout) {
         if (!cancelled) {
             return 0;
         } else {
-            uint payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
-            payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
-            payout = payout.add(_drawBalance.mul(drawOddsOnCancellation).div(1e18));
-            return payout;
+            if (isDoubleChance) {
+                (uint homeOdds, uint awayOdds, uint drawOdds) = parentMarket.getStampedOdds();
+                payout = _homeBalance.mul(homeOdds).mul(drawOdds).div(1e18);
+                payout = payout.add(_awayBalance.mul(awayOdds).mul(drawOdds).div(1e18));
+                payout = payout.add(_drawBalance.mul(homeOdds).mul(awayOdds).div(1e18));
+
+                payout = payout.div(1e18);
+            } else {
+                payout = _homeBalance.mul(homeOddsOnCancellation).div(1e18);
+                payout = payout.add(_awayBalance.mul(awayOddsOnCancellation).div(1e18));
+                payout = payout.add(_drawBalance.mul(drawOddsOnCancellation).div(1e18));
+            }
         }
     }
 

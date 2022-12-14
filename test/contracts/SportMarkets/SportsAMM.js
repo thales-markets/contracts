@@ -57,6 +57,7 @@ contract('SportsAMM', (accounts) => {
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
+	const SportsAMMSellerContract = artifacts.require('SportsAMMSeller');
 
 	let ThalesOracleCouncil;
 	let Thales;
@@ -132,7 +133,8 @@ contract('SportsAMM', (accounts) => {
 		testUSDT,
 		testDAI,
 		Referrals,
-		SportsAMM;
+		SportsAMM,
+		SportsAMMSeller;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -159,6 +161,7 @@ contract('SportsAMM', (accounts) => {
 		SportPositionalMarketData = await SportPositionalMarketDataContract.new({ from: manager });
 		StakingThales = await StakingThalesContract.new({ from: manager });
 		SportsAMM = await SportsAMMContract.new({ from: manager });
+		SportsAMMSeller = await SportsAMMSellerContract.new({ from: manager });
 		SNXRewards = await SNXRewardsContract.new({ from: manager });
 		AddressResolver = await AddressResolverContract.new();
 		// TestOdds = await TestOddsContract.new();
@@ -228,8 +231,22 @@ contract('SportsAMM', (accounts) => {
 			from: owner,
 		});
 
+		await SportsAMMSeller.initialize(owner, Thales.address, SportsAMM.address, { from: owner });
+
+		await SportsAMMSeller.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
+			from: owner,
+		});
+
 		sportsAMMUtils = await SportsAMMUtils.new();
 		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
+			from: owner,
+		});
+
+		await SportsAMM.setAmmSeller(SportsAMMSeller.address, {
+			from: owner,
+		});
+
+		await SportsAMMSeller.setAmmUtils(sportsAMMUtils.address, {
 			from: owner,
 		});
 
@@ -1572,7 +1589,7 @@ contract('SportsAMM', (accounts) => {
 	});
 
 	describe('Test 3 options game', () => {
-		let deployedMarket;
+		let deployedMarket, doubleChanceDeployedMarket;
 		let answer;
 		beforeEach(async () => {
 			let _currentTime = await currentTime();
@@ -1602,8 +1619,13 @@ contract('SportsAMM', (accounts) => {
 
 			// check if event is emited
 			let answer = await SportPositionalMarketManager.getActiveMarketAddress('0');
+			let doubleChanceAnswer = await SportPositionalMarketManager.getActiveMarketAddress('1');
 			// console.log("Active market: ", answer.toString());
+			// console.log("Double chance market: ", doubleChanceAnswer.toString());
 			deployedMarket = await SportPositionalMarketContract.at(answer);
+			//doubleChanceDeployedMarket = await SportPositionalMarketContract.at(doubleChanceAnswer)
+			// console.log(answer.toString(), await deployedMarket.isDoubleChance());
+			// console.log(doubleChanceAnswer.toString(), await doubleChanceDeployedMarket.isDoubleChance());
 		});
 
 		let position = 0;

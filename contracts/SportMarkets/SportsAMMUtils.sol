@@ -17,12 +17,6 @@ contract SportsAMMUtils {
     int private constant ONE_INT = 1e18;
     int private constant ONE_PERCENT_INT = 1e16;
 
-    ISportsAMM public sportsAMM;
-
-    constructor(address _sportsAmm) {
-        sportsAMM = ISportsAMM(_sportsAmm);
-    }
-
     struct DiscountParams {
         uint balancePosition;
         uint balanceOtherSide;
@@ -74,7 +68,7 @@ contract SportsAMMUtils {
         uint balancePositionAfter,
         uint availableToBuyFromAMM,
         uint max_spread
-    ) public view returns (uint) {
+    ) public pure returns (uint) {
         uint maxPossibleSkew = balanceOtherSide + availableToBuyFromAMM - balancePosition;
         uint skew = balanceOtherSideAfter - (balancePositionAfter);
         uint newImpact = (max_spread * ((skew * ONE) / (maxPossibleSkew))) / ONE;
@@ -89,7 +83,7 @@ contract SportsAMMUtils {
         }
     }
 
-    function calculateDiscount(DiscountParams memory params) public view returns (int) {
+    function calculateDiscount(DiscountParams memory params) public pure returns (int) {
         uint currentBuyImpactOtherSide = buyPriceImpactImbalancedSkew(
             params.amount,
             params.balancePosition,
@@ -111,7 +105,7 @@ contract SportsAMMUtils {
 
     function calculateDiscountFromNegativeToPositive(NegativeDiscountsParams memory params)
         public
-        view
+        pure
         returns (int priceImpact)
     {
         uint amountToBeMinted = params.amount - params.balancePosition;
@@ -245,6 +239,7 @@ contract SportsAMMUtils {
             odds = isApexGame
                 ? IApexConsumer(apexConsumer).getNormalizedOdds(gameId)
                 : ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
+
             oddsToReturn = odds[uint(_position)];
         }
     }
@@ -254,11 +249,7 @@ contract SportsAMMUtils {
         address addressToCheck,
         address market
     ) public view returns (uint balanceOfTheOtherSide) {
-        (uint homeBalance, uint awayBalance, uint drawBalance) = getBalanceOfPositionsOnMarket(
-            market,
-            position,
-            addressToCheck
-        );
+        (uint homeBalance, uint awayBalance, uint drawBalance) = getBalanceOfPositionsOnMarket(market, addressToCheck);
         if (position == ISportsAMM.Position.Home) {
             balanceOfTheOtherSide = awayBalance < drawBalance ? awayBalance : drawBalance;
         } else if (position == ISportsAMM.Position.Away) {
@@ -268,11 +259,7 @@ contract SportsAMMUtils {
         }
     }
 
-    function getBalanceOfPositionsOnMarket(
-        address market,
-        ISportsAMM.Position position,
-        address addressToCheck
-    )
+    function getBalanceOfPositionsOnMarket(address market, address addressToCheck)
         public
         view
         returns (
@@ -302,7 +289,7 @@ contract SportsAMMUtils {
             uint
         )
     {
-        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+        (IPosition home, IPosition away, ) = ISportPositionalMarket(market).getOptions();
         uint balance = position == ISportsAMM.Position.Home
             ? home.getBalanceOf(addressToCheck)
             : away.getBalanceOf(addressToCheck);
@@ -311,11 +298,7 @@ contract SportsAMMUtils {
             : home.getBalanceOf(addressToCheck);
         uint balanceOtherSideMin = balanceOtherSideMax;
         if (ISportPositionalMarket(market).optionsCount() == 3) {
-            (uint homeBalance, uint awayBalance, uint drawBalance) = getBalanceOfPositionsOnMarket(
-                market,
-                position,
-                addressToCheck
-            );
+            (uint homeBalance, uint awayBalance, uint drawBalance) = getBalanceOfPositionsOnMarket(market, addressToCheck);
             if (position == ISportsAMM.Position.Home) {
                 balance = homeBalance;
                 if (awayBalance < drawBalance) {
@@ -365,134 +348,61 @@ contract SportsAMMUtils {
         return balance;
     }
 
-    function getAvailableFromAMMDoubleChance(address market, ISportsAMM.Position position)
-        external
+    function getParentMarketPositions(address market, ISportsAMM.Position position)
+        public
         view
-        returns (uint _available)
+        returns (
+            ISportsAMM.Position position1,
+            ISportsAMM.Position position2,
+            address parentMarket
+        )
     {
-        ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
-        uint availableFirst = 0;
-        uint availableSecond = 0;
+        parentMarket = address(ISportPositionalMarket(market).parentMarket());
         if (position == ISportsAMM.Position.Home) {
-            // 1X
-            availableFirst = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Home);
-            availableSecond = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Draw);
+            position1 = ISportsAMM.Position.Home;
+            position2 = ISportsAMM.Position.Draw;
         } else if (position == ISportsAMM.Position.Away) {
-            // X2
-            availableFirst = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Draw);
-            availableSecond = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Away);
+            position1 = ISportsAMM.Position.Draw;
+            position2 = ISportsAMM.Position.Away;
         } else {
-            // 12
-            availableFirst = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Home);
-            availableSecond = sportsAMM.availableToBuyFromAMM(address(parentMarket), ISportsAMM.Position.Away);
-        }
-
-        _available = availableFirst > availableSecond ? availableSecond : availableFirst;
-    }
-
-    function getBuyFromAMMQuoteDoubleCance(
-        address market,
-        ISportsAMM.Position position,
-        uint amount
-    ) external view returns (uint _quote) {
-        ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
-        uint firstQuote = 0;
-        uint secondQuote = 0;
-        if (position == ISportsAMM.Position.Home) {
-            // 1X
-            firstQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Home, amount);
-            secondQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Draw, amount);
-        } else if (position == ISportsAMM.Position.Away) {
-            // X2
-            firstQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Draw, amount);
-            secondQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Away, amount);
-        } else {
-            // 12
-            firstQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Home, amount);
-            secondQuote = sportsAMM.buyFromAmmQuote(address(parentMarket), ISportsAMM.Position.Away, amount);
-        }
-
-        if (firstQuote == 0 || secondQuote == 0) {
-            return 0;
-        }
-        return firstQuote + secondQuote;
-    }
-
-    function buyFromAMMQuoteParlayDoubleChance(
-        address market,
-        ISportsAMM.Position position,
-        uint amount
-    ) external view returns (uint _quote) {
-        ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
-        uint firstQuote = 0;
-        uint secondQuote = 0;
-        if (position == ISportsAMM.Position.Home) {
-            // 1X
-            firstQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Home, amount);
-            secondQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Draw, amount);
-        } else if (position == ISportsAMM.Position.Away) {
-            // X2
-            firstQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Draw, amount);
-            secondQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Away, amount);
-        } else {
-            // 12
-            firstQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Home, amount);
-            secondQuote = sportsAMM.buyFromAmmQuoteForParlayAMM(address(parentMarket), ISportsAMM.Position.Away, amount);
-        }
-        if (firstQuote == 0 || secondQuote == 0) {
-            _quote = 0;
-        } else {
-            _quote = firstQuote + secondQuote;
+            position1 = ISportsAMM.Position.Home;
+            position2 = ISportsAMM.Position.Away;
         }
     }
 
-    function buyPriceImpactDoubleChance(
-        address market,
-        ISportsAMM.Position position,
-        uint amount
-    ) public view returns (int impact) {
-        ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
-        int firstPriceImpact = 0;
-        int secondPriceImpact = 0;
+    function getParentMarketPositionAddresses(ISportPositionalMarket parentMarket, ISportsAMM.Position position)
+        public
+        view
+        returns (address parentMarketPosition1, address parentMarketPosition2)
+    {
+        (IPosition homeParentMarket, IPosition awayParentMarket, IPosition drawParentMarket) = parentMarket.getOptions();
+
         if (position == ISportsAMM.Position.Home) {
             // 1X
-            firstPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Home, amount);
-            secondPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Draw, amount);
+            parentMarketPosition1 = address(homeParentMarket);
+            parentMarketPosition2 = address(drawParentMarket);
         } else if (position == ISportsAMM.Position.Away) {
             // X2
-            firstPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Draw, amount);
-            secondPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Away, amount);
+            parentMarketPosition1 = address(awayParentMarket);
+            parentMarketPosition2 = address(drawParentMarket);
         } else {
             // 12
-            firstPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Home, amount);
-            secondPriceImpact = sportsAMM.buyPriceImpact(address(parentMarket), ISportsAMM.Position.Away, amount);
+            parentMarketPosition1 = address(homeParentMarket);
+            parentMarketPosition2 = address(awayParentMarket);
         }
-        impact = (firstPriceImpact + secondPriceImpact) / 2;
     }
 
-    function obtainOddsDoubleChance(
+    function getBaseOddsForDoubleChance(
         address market,
         ISportsAMM.Position position,
         address apexConsumer,
         address theRundownConsumer
-    ) external view returns (uint) {
-        ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
-        uint firstOptionOdds;
-        uint secondOptionOdds;
-        if (position == ISportsAMM.Position.Home) {
-            // 1X
-            firstOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Home, apexConsumer, theRundownConsumer);
-            secondOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Draw, apexConsumer, theRundownConsumer);
-        } else if (position == ISportsAMM.Position.Away) {
-            // X2
-            firstOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Draw, apexConsumer, theRundownConsumer);
-            secondOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Away, apexConsumer, theRundownConsumer);
-        } else {
-            // 12
-            firstOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Home, apexConsumer, theRundownConsumer);
-            secondOptionOdds = obtainOdds(address(parentMarket), ISportsAMM.Position.Away, apexConsumer, theRundownConsumer);
-        }
-
-        return firstOptionOdds + secondOptionOdds;
+    ) public view returns (uint oddsPosition1, uint oddsPosition2) {
+        (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = getParentMarketPositions(
+            market,
+            position
+        );
+        oddsPosition1 = obtainOdds(parentMarket, position1, apexConsumer, theRundownConsumer);
+        oddsPosition2 = obtainOdds(parentMarket, position2, apexConsumer, theRundownConsumer);
     }
 }

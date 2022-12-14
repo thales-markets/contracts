@@ -62,6 +62,7 @@ contract('ParlayAMM', (accounts) => {
 	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
 	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
+	const SportsAMMSellerContract = artifacts.require('SportsAMMSeller');
 
 	let ParlayAMM;
 	let ParlayMarket;
@@ -161,7 +162,8 @@ contract('ParlayAMM', (accounts) => {
 		testDAI,
 		Referrals,
 		ParlayVerifier,
-		SportsAMM;
+		SportsAMM,
+		SportsAMMSeller;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -202,8 +204,10 @@ contract('ParlayAMM', (accounts) => {
 		SportPositionalMarketData = await SportPositionalMarketDataContract.new({ from: manager });
 		StakingThales = await StakingThalesContract.new({ from: manager });
 		SportsAMM = await SportsAMMContract.new({ from: manager });
+		SportsAMMSeller = await SportsAMMSellerContract.new({ from: manager });
 		SNXRewards = await SNXRewardsContract.new({ from: manager });
 		AddressResolver = await AddressResolverContract.new();
+
 		// TestOdds = await TestOddsContract.new();
 		await AddressResolver.setSNXRewardsAddress(SNXRewards.address);
 
@@ -264,6 +268,19 @@ contract('ParlayAMM', (accounts) => {
 			from: owner,
 		});
 
+		await SportsAMMSeller.initialize(owner, Thales.address, SportsAMM.address, { from: owner });
+
+		await SportsAMMSeller.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
+			from: owner,
+		});
+
+		await SportsAMM.setAmmSeller(SportsAMMSeller.address, {
+			from: owner,
+		});
+
+		await SportsAMMSeller.setAmmUtils(sportsAMMUtils.address, {
+			from: owner,
+		});
 		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
 			from: owner,
 		});
@@ -744,11 +761,11 @@ contract('ParlayAMM', (accounts) => {
 
 			answer = await SportPositionalMarketManager.getActiveMarketAddress('3');
 			let deployedMarket_4 = await SportPositionalMarketContract.at(answer);
-			answer = await SportPositionalMarketManager.getActiveMarketAddress('4');
+			answer = await SportPositionalMarketManager.getActiveMarketAddress('5');
 			let deployedMarket_5 = await SportPositionalMarketContract.at(answer);
 
 			// check if event is emited
-			assert.eventEqual(tx_create_4.logs[1], 'CreateSportsMarket', {
+			assert.eventEqual(tx_create_4.logs[2], 'CreateSportsMarket', {
 				_marketAddress: marketAdd_4,
 				_id: gameFootballid1,
 				_game: game_4,
@@ -758,7 +775,7 @@ contract('ParlayAMM', (accounts) => {
 			assert.equal(deployedMarket_5.address, marketAdd_5);
 
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			await fastForward(await currentTime());
 
 			assert.equal(true, await deployedMarket_1.canResolve());
@@ -780,7 +797,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -799,7 +816,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -815,7 +832,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -838,7 +855,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '2'];
 			let parlayMarketsAddress = [];
@@ -866,7 +883,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -886,7 +903,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -921,7 +938,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -968,7 +985,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1004,7 +1021,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1042,7 +1059,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1077,7 +1094,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1110,7 +1127,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1147,7 +1164,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1189,7 +1206,7 @@ contract('ParlayAMM', (accounts) => {
 			await fastForward(game1NBATime - (await currentTime()) - SECOND);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '0', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1263,7 +1280,7 @@ contract('ParlayAMM', (accounts) => {
 			);
 			// await fastForward((await currentTime()) - SECOND);
 			answer = await SportPositionalMarketManager.numActiveMarkets();
-			assert.equal(answer.toString(), '5');
+			assert.equal(answer.toString(), '7');
 			let totalSUSDToPay = toUnit('10');
 			parlayPositions = ['1', '1', '1', '1'];
 			let parlayMarketsAddress = [];
@@ -1406,7 +1423,7 @@ contract('ParlayAMM', (accounts) => {
 				await fastForward(game1NBATime - (await currentTime()) - SECOND);
 				// await fastForward((await currentTime()) - SECOND);
 				answer = await SportPositionalMarketManager.numActiveMarkets();
-				assert.equal(answer.toString(), '5');
+				assert.equal(answer.toString(), '7');
 				let totalSUSDToPay = toUnit('10');
 				parlayPositions = ['1', '0', '1', '1'];
 				let parlayMarketsAddress = [];

@@ -69,9 +69,9 @@ contract SportPositionalMarketFactory is Initializable, ProxyOwned {
                 _parameters.positionCount,
                 positions,
                 _parameters.tags,
-                _parameters.isDoubleChance,
                 _parameters.isChild,
-                _parameters.parentMarket
+                _parameters.parentMarket,
+                _parameters.isDoubleChance
             )
         );
         emit MarketCreated(

@@ -8,12 +8,13 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "./framework/MessageApp.sol";
 
+import "hardhat/console.sol";
+
 contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     // acccount, token -> balance
     mapping(address => mapping(address => uint256)) public balances;
-
     mapping(bytes4 => address) public selectorAddress;
     mapping(address => bool) public whitelistedAddress;
 
@@ -21,7 +22,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     uint64 private constant OPTIMISM = 10;
 
     address public sportsAMM;
-    address public sUSD;
+    IERC20Upgradeable public sUSD;
 
     // constructor(address _messageBus) MessageApp(_messageBus) {}
     function initialize(address _owner, address _messageBus) public initializer {
@@ -102,6 +103,55 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             payload
         );
         emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+    }
+
+    function executeBuyMessage(bytes calldata _message) external notPaused nonReentrant {
+        (address sender, uint chainId, bytes4 selector, bytes memory payload) = abi.decode(
+            _message,
+            (address, uint, bytes4, bytes)
+        );
+        require(selectorAddress[selector] != address(0), "Invalid selector");
+        console.log("selector: ");
+        console.logBytes4(selector);
+        bool success = checkAndSendMessage(sender, selector, payload);
+        if (success) {
+            emit MessageExercised(sender, selectorAddress[selector], success, payload);
+        } else {
+            emit MessageExercised(sender, selectorAddress[selector], success, payload);
+        }
+    }
+
+    function checkAndSendMessage(
+        address _sender,
+        bytes4 _selector,
+        bytes memory _message
+    ) internal returns (bool) {
+        if (_selector == bytes4(keccak256(bytes("buyFromAMM(address,uint8,uint256,uint256,uint256)")))) {
+            (address market, uint8 position, uint amount, uint expectedPayout, uint additionalSlippage) = abi.decode(
+                _message,
+                (address, uint8, uint, uint, uint)
+            );
+            console.log("market: ", market);
+            console.log("amount: ", position);
+            console.log("expectedPayout: ", expectedPayout);
+            (bool success, bytes memory result) = selectorAddress[_selector].call(
+                abi.encodeWithSelector(_selector, market, position, amount, expectedPayout, additionalSlippage)
+            );
+            return success;
+        } else {
+            console.log("---> failed check");
+            return false;
+        }
+    }
+
+    function setSelectorAddress(string memory _selectorString, address _selectorAddress) external {
+        bytes4 selector = bytes4(keccak256(bytes(_selectorString)));
+        selectorAddress[selector] = _selectorAddress;
+        sUSD.approve(_selectorAddress, type(uint256).max);
+    }
+
+    function setPaymentToken(address _paymentToken) external {
+        sUSD = IERC20Upgradeable(_paymentToken);
     }
 
     function sendTokenWithNote(

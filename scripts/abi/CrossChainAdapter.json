@@ -407,6 +407,19 @@
     "inputs": [
       {
         "internalType": "bytes",
+        "name": "_message",
+        "type": "bytes"
+      }
+    ],
+    "name": "executeBuyMessage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
         "name": "_sender",
         "type": "bytes"
       },
@@ -701,7 +714,7 @@
     "name": "sUSD",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IERC20Upgradeable",
         "name": "",
         "type": "address"
       }
@@ -834,6 +847,37 @@
       }
     ],
     "name": "setPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_paymentToken",
+        "type": "address"
+      }
+    ],
+    "name": "setPaymentToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_selectorString",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_selectorAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setSelectorAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

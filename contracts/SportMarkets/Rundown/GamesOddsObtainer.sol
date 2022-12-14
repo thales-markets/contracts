@@ -596,6 +596,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             // 96 : 100 spread -4.5 (-450) diff -5 (-400)
             if ((homeWin) || (!homeWin && spreadLine < int16(diff) * (-100))) {
                 sportsManager.resolveMarket(_child, HOME_WIN);
+                emit ResolveChildMarket(_child, HOME_WIN, childMarketMainMarket[_child]);
             } else if (!homeWin && spreadLine > int16(diff) * (-100)) {
                 sportsManager.resolveMarket(_child, AWAY_WIN);
                 emit ResolveChildMarket(_child, AWAY_WIN, childMarketMainMarket[_child]);

@@ -310,6 +310,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             _obtainSpreadTotal(_game, _main, false);
             emit GamedOddsAddedChild(
                 _game.gameId,
+                currentActiveTotalChildMarket[_main],
                 _game,
                 getNormalizedChildOdds(currentActiveTotalChildMarket[_main]),
                 TAG_NUMBER_TOTAL
@@ -321,6 +322,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             _obtainSpreadTotal(_game, _main, true);
             emit GamedOddsAddedChild(
                 _game.gameId,
+                currentActiveSpreadChildMarket[_main],
                 _game,
                 getNormalizedChildOdds(currentActiveSpreadChildMarket[_main]),
                 TAG_NUMBER_SPREAD
@@ -641,7 +643,13 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== EVENTS ========== */
 
     event GameOddsAdded(bytes32 _requestId, bytes32 _id, IGamesOddsObtainer.GameOdds _game, uint[] _normalizedOdds);
-    event GamedOddsAddedChild(bytes32 _id, IGamesOddsObtainer.GameOdds _game, uint[] _normalizedChildOdds, uint _type);
+    event GamedOddsAddedChild(
+        bytes32 _id,
+        address _market,
+        IGamesOddsObtainer.GameOdds _game,
+        uint[] _normalizedChildOdds,
+        uint _type
+    );
     event InvalidOddsForMarket(bytes32 _requestId, address _marketAddress, bytes32 _id, IGamesOddsObtainer.GameOdds _game);
     event OddsCircuitBreaker(address _marketAddress, bytes32 _id);
     event NewContractAddresses(address _consumer, address _verifier, address _sportsManager);

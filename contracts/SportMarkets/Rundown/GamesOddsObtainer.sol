@@ -401,7 +401,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         address _childMarket = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
 
         // adding child markets
-        _setChildMarkets(_gameId, _mainMarket, _childMarket, _isSpread, _spreadHome, _totalOver, tags);
+        _setChildMarkets(_gameId, _mainMarket, _childMarket, _isSpread, _spreadHome, _totalOver, tags[1]);
     }
 
     function _calculateTags(uint _sportsId, bool _isSpread) internal view returns (uint[] memory) {
@@ -523,7 +523,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         bool _isSpread,
         int16 _spreadHome,
         uint24 _totalOver,
-        uint[] memory tags
+        uint _type
     ) internal {
         consumer.setGameIdPerChildMarket(_gameId, _child);
         gameIdPerChildMarket[_child] = _gameId;
@@ -537,12 +537,12 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             childMarketSread[_child] = _spreadHome;
             currentActiveSpreadChildMarket[_main] = _child;
             isSpreadChildMarket[_child] = true;
-            emit CreateChildSpreadSportsMarket(_main, _child, _gameId, _spreadHome, getNormalizedChildOdds(_child), tags);
+            emit CreateChildSpreadSportsMarket(_main, _child, _gameId, _spreadHome, getNormalizedChildOdds(_child), _type);
         } else {
             mainMarketTotalChildMarket[_main][_totalOver] = _child;
             childMarketTotal[_child] = _totalOver;
             currentActiveTotalChildMarket[_main] = _child;
-            emit CreateChildTotalSportsMarket(_main, _child, _gameId, _totalOver, getNormalizedChildOdds(_child), tags);
+            emit CreateChildTotalSportsMarket(_main, _child, _gameId, _totalOver, getNormalizedChildOdds(_child), _type);
         }
     }
 
@@ -593,7 +593,6 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             // 95 : 100 spread -4.5 (-450) diff -5 (-500)
             // 96 : 100 spread -4.5 (-450) diff -5 (-400)
             if ((homeWin) || (!homeWin && spreadLine < int16(diff) * (-100))) {
-                sportsManager.resolveMarket(_child, HOME_WIN);
                 sportsManager.resolveMarket(_child, HOME_WIN);
             } else if (!homeWin && spreadLine > int16(diff) * (-100)) {
                 sportsManager.resolveMarket(_child, AWAY_WIN);
@@ -652,7 +651,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         bytes32 _id,
         int16 _spread,
         uint[] _normalizedOdds,
-        uint[] _tags
+        uint _type
     );
     event CreateChildTotalSportsMarket(
         address _main,
@@ -660,7 +659,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         bytes32 _id,
         uint24 _total,
         uint[] _normalizedOdds,
-        uint[] _tags
+        uint _type
     );
     event SupportedSportForTotalAndSpreadAdded(uint _sportId, bool _isSupported);
     event ResolveChildMarket(address _child, uint _outcome, address _main);

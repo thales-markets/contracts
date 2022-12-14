@@ -34,9 +34,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256[]",
-        "name": "_tags",
-        "type": "uint256[]"
+        "internalType": "uint256",
+        "name": "_type",
+        "type": "uint256"
       }
     ],
     "name": "CreateChildSpreadSportsMarket",
@@ -77,9 +77,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint256[]",
-        "name": "_tags",
-        "type": "uint256[]"
+        "internalType": "uint256",
+        "name": "_type",
+        "type": "uint256"
       }
     ],
     "name": "CreateChildTotalSportsMarket",

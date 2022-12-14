@@ -185,7 +185,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             for (uint i = 0; i < numberOfChildMarkets[_main]; i++) {
                 address child = mainMarketChildMarketIndex[_main][i];
                 if (isSpreadChildMarket[child]) {
-                    _resolveMarketSpread(child, _homeScore, _awayScore);
+                    _resolveMarketSpread(child, uint16(_homeScore), uint16(_awayScore));
                 } else {
                     _resolveMarketTotal(child, uint24(_homeScore), uint24(_awayScore));
                 }
@@ -556,54 +556,45 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         uint24 totalLine = childMarketTotal[_child];
         if ((_homeScore + _awayScore) * 100 > totalLine) {
             sportsManager.resolveMarket(_child, HOME_WIN);
-            emit ResolveChildMarket(_child, HOME_WIN, childMarketMainMarket[_child]);
+            emit ResolveChildMarket(_child, HOME_WIN, childMarketMainMarket[_child], _homeScore, _awayScore);
         } else if ((_homeScore + _awayScore) * 100 < totalLine) {
             sportsManager.resolveMarket(_child, AWAY_WIN);
-            emit ResolveChildMarket(_child, AWAY_WIN, childMarketMainMarket[_child]);
+            emit ResolveChildMarket(_child, AWAY_WIN, childMarketMainMarket[_child], _homeScore, _awayScore);
         } else {
             // total equal
             sportsManager.resolveMarket(_child, CANCELLED);
-            emit ResolveChildMarket(_child, CANCELLED, childMarketMainMarket[_child]);
+            emit ResolveChildMarket(_child, CANCELLED, childMarketMainMarket[_child], 0, 0);
         }
     }
 
     function _resolveMarketSpread(
         address _child,
-        uint8 _homeScore,
-        uint8 _awayScore
+        uint16 _homeScore,
+        uint16 _awayScore
     ) internal {
-        int16 spreadLine = childMarketSread[_child];
-        // if spreat is positive add on away and calculate
-        uint16 diff = _homeScore > _awayScore ? _homeScore - _awayScore : _awayScore - _homeScore;
-        bool homeWin = _homeScore > _awayScore ? true : false;
-        // 100 : 95 spread 4.5 (450) diff 5 (500)
-        // 100 : 96 spread 4.5 (450) diff 5 (400)
+        int16 spreadLine = childMarketSread[_child]; // can be negative
+
+        uint16 homeScoreWithSpread = 0;
         if (spreadLine > 0) {
-            if ((!homeWin) || (homeWin && spreadLine > int16(diff) * 100)) {
-                sportsManager.resolveMarket(_child, AWAY_WIN);
-                emit ResolveChildMarket(_child, AWAY_WIN, childMarketMainMarket[_child]);
-            } else if (homeWin && spreadLine < int16(diff) * 100) {
-                sportsManager.resolveMarket(_child, HOME_WIN);
-                emit ResolveChildMarket(_child, HOME_WIN, childMarketMainMarket[_child]);
-            } else {
-                // spread equal
-                sportsManager.resolveMarket(_child, CANCELLED);
-                emit ResolveChildMarket(_child, CANCELLED, childMarketMainMarket[_child]);
-            }
-            //if spread is negative sub from home and calculate
+            // add on hometeam score
+            homeScoreWithSpread = (_homeScore * 100) + uint16(spreadLine);
         } else {
-            // 95 : 100 spread -4.5 (-450) diff -5 (-500)
-            // 96 : 100 spread -4.5 (-450) diff -5 (-400)
-            if ((homeWin) || (!homeWin && spreadLine < int16(diff) * (-100))) {
-                sportsManager.resolveMarket(_child, HOME_WIN);
-            } else if (!homeWin && spreadLine > int16(diff) * (-100)) {
-                sportsManager.resolveMarket(_child, AWAY_WIN);
-                emit ResolveChildMarket(_child, AWAY_WIN, childMarketMainMarket[_child]);
-            } else {
-                // spread equal
-                sportsManager.resolveMarket(_child, CANCELLED);
-                emit ResolveChildMarket(_child, CANCELLED, childMarketMainMarket[_child]);
-            }
+            // sub on hometeam score
+            homeScoreWithSpread = (_homeScore * 100) - uint16(spreadLine * (-1));
+        }
+
+        uint16 newAwayScore = _awayScore * 100;
+
+        if (homeScoreWithSpread > newAwayScore) {
+            sportsManager.resolveMarket(_child, HOME_WIN);
+            emit ResolveChildMarket(_child, HOME_WIN, childMarketMainMarket[_child], uint24(_homeScore), uint24(_awayScore));
+        } else if (homeScoreWithSpread < newAwayScore) {
+            sportsManager.resolveMarket(_child, AWAY_WIN);
+            emit ResolveChildMarket(_child, AWAY_WIN, childMarketMainMarket[_child], uint24(_homeScore), uint24(_awayScore));
+        } else {
+            // spread equal
+            sportsManager.resolveMarket(_child, CANCELLED);
+            emit ResolveChildMarket(_child, CANCELLED, childMarketMainMarket[_child], 0, 0);
         }
     }
 
@@ -670,5 +661,5 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         uint _type
     );
     event SupportedSportForTotalAndSpreadAdded(uint _sportId, bool _isSupported);
-    event ResolveChildMarket(address _child, uint _outcome, address _main);
+    event ResolveChildMarket(address _child, uint _outcome, address _main, uint24 _homeScore, uint24 _awayScore);
 }

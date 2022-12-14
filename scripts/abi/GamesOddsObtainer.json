@@ -479,6 +479,18 @@
         "internalType": "address",
         "name": "_main",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint24",
+        "name": "_homeScore",
+        "type": "uint24"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint24",
+        "name": "_awayScore",
+        "type": "uint24"
       }
     ],
     "name": "ResolveChildMarket",

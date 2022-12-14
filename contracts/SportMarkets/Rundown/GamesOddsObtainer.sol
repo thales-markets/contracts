@@ -217,6 +217,17 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         return verifier.calculateAndNormalizeOdds(odds);
     }
 
+    /// @notice function which retrievers all markert addresses for given parent market
+    /// @param _parent parent market
+    /// @return address[] child addresses
+    function getAllChildMarketsFromParent(address _parent) public view returns (address[] memory) {
+        address[] memory allMarkets = new address[](numberOfChildMarkets[_parent]);
+        for (uint i = 0; i < numberOfChildMarkets[_parent]; i++) {
+            allMarkets[i] = mainMarketChildMarketIndex[_parent][i];
+        }
+        return allMarkets;
+    }
+
     /// @notice are odds valid or not
     /// @param _gameId game id for which game is looking
     /// @param _useBackup see if looking at backupOdds
@@ -299,6 +310,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             _obtainSpreadTotal(_game, _main, false);
             emit GamedOddsAddedChild(
                 _game.gameId,
+                currentActiveTotalChildMarket[_main],
                 _game,
                 getNormalizedChildOdds(currentActiveTotalChildMarket[_main]),
                 TAG_NUMBER_TOTAL
@@ -310,6 +322,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             _obtainSpreadTotal(_game, _main, true);
             emit GamedOddsAddedChild(
                 _game.gameId,
+                currentActiveSpreadChildMarket[_main],
                 _game,
                 getNormalizedChildOdds(currentActiveSpreadChildMarket[_main]),
                 TAG_NUMBER_SPREAD
@@ -375,13 +388,14 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         uint24 _totalOver
     ) internal {
         // create
+        uint[] memory tags = _calculateTags(consumer.sportsIdPerGame(_gameId), _isSpread);
         sportsManager.createMarket(
             _gameId,
             _append(_gameId, _isSpread, _spreadHome, _totalOver), // gameLabel
             consumer.getGameCreatedById(_gameId).startTime, //maturity
             0, //initialMint
             2, // always two positions for spread/total
-            _calculateTags(consumer.sportsIdPerGame(_gameId), _isSpread), //tags
+            tags, //tags
             true, // is child
             _mainMarket
         );
@@ -389,7 +403,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         address _childMarket = sportsManager.getActiveMarketAddress(sportsManager.numActiveMarkets() - 1);
 
         // adding child markets
-        _setChildMarkets(_gameId, _mainMarket, _childMarket, _isSpread, _spreadHome, _totalOver);
+        _setChildMarkets(_gameId, _mainMarket, _childMarket, _isSpread, _spreadHome, _totalOver, tags[1]);
     }
 
     function _calculateTags(uint _sportsId, bool _isSpread) internal pure returns (uint[] memory) {
@@ -510,7 +524,8 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         address _child,
         bool _isSpread,
         int16 _spreadHome,
-        uint24 _totalOver
+        uint24 _totalOver,
+        uint _type
     ) internal {
         consumer.setGameIdPerChildMarket(_gameId, _child);
         gameIdPerChildMarket[_child] = _gameId;
@@ -524,12 +539,12 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             childMarketSread[_child] = _spreadHome;
             currentActiveSpreadChildMarket[_main] = _child;
             isSpreadChildMarket[_child] = true;
-            emit CreateChildSpreadSportsMarket(_main, _child, _gameId, _spreadHome, getNormalizedChildOdds(_child));
+            emit CreateChildSpreadSportsMarket(_main, _child, _gameId, _spreadHome, getNormalizedChildOdds(_child), _type);
         } else {
             mainMarketTotalChildMarket[_main][_totalOver] = _child;
             childMarketTotal[_child] = _totalOver;
             currentActiveTotalChildMarket[_main] = _child;
-            emit CreateChildTotalSportsMarket(_main, _child, _gameId, _totalOver, getNormalizedChildOdds(_child));
+            emit CreateChildTotalSportsMarket(_main, _child, _gameId, _totalOver, getNormalizedChildOdds(_child), _type);
         }
     }
 
@@ -581,7 +596,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
             // 96 : 100 spread -4.5 (-450) diff -5 (-400)
             if ((homeWin) || (!homeWin && spreadLine < int16(diff) * (-100))) {
                 sportsManager.resolveMarket(_child, HOME_WIN);
-                sportsManager.resolveMarket(_child, HOME_WIN);
+                emit ResolveChildMarket(_child, HOME_WIN, childMarketMainMarket[_child]);
             } else if (!homeWin && spreadLine > int16(diff) * (-100)) {
                 sportsManager.resolveMarket(_child, AWAY_WIN);
                 emit ResolveChildMarket(_child, AWAY_WIN, childMarketMainMarket[_child]);
@@ -629,12 +644,32 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
     /* ========== EVENTS ========== */
 
     event GameOddsAdded(bytes32 _requestId, bytes32 _id, IGamesOddsObtainer.GameOdds _game, uint[] _normalizedOdds);
-    event GamedOddsAddedChild(bytes32 _id, IGamesOddsObtainer.GameOdds _game, uint[] _normalizedChildOdds, uint _type);
+    event GamedOddsAddedChild(
+        bytes32 _id,
+        address _market,
+        IGamesOddsObtainer.GameOdds _game,
+        uint[] _normalizedChildOdds,
+        uint _type
+    );
     event InvalidOddsForMarket(bytes32 _requestId, address _marketAddress, bytes32 _id, IGamesOddsObtainer.GameOdds _game);
     event OddsCircuitBreaker(address _marketAddress, bytes32 _id);
     event NewContractAddresses(address _consumer, address _verifier, address _sportsManager);
-    event CreateChildSpreadSportsMarket(address _main, address _child, bytes32 _id, int16 _spread, uint[] _normalizedOdds);
-    event CreateChildTotalSportsMarket(address _main, address _child, bytes32 _id, uint24 _total, uint[] _normalizedOdds);
+    event CreateChildSpreadSportsMarket(
+        address _main,
+        address _child,
+        bytes32 _id,
+        int16 _spread,
+        uint[] _normalizedOdds,
+        uint _type
+    );
+    event CreateChildTotalSportsMarket(
+        address _main,
+        address _child,
+        bytes32 _id,
+        uint24 _total,
+        uint[] _normalizedOdds,
+        uint _type
+    );
     event SupportedSportForTotalAndSpreadAdded(uint _sportId, bool _isSupported);
     event ResolveChildMarket(address _child, uint _outcome, address _main);
 }

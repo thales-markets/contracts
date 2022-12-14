@@ -31,6 +31,12 @@
         "internalType": "uint256[]",
         "name": "_normalizedOdds",
         "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_type",
+        "type": "uint256"
       }
     ],
     "name": "CreateChildSpreadSportsMarket",
@@ -68,6 +74,12 @@
         "internalType": "uint256[]",
         "name": "_normalizedOdds",
         "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_type",
+        "type": "uint256"
       }
     ],
     "name": "CreateChildTotalSportsMarket",
@@ -174,6 +186,12 @@
         "internalType": "bytes32",
         "name": "_id",
         "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
       },
       {
         "components": [
@@ -902,6 +920,25 @@
         "internalType": "int24",
         "name": "totalUnderOdds",
         "type": "int24"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_parent",
+        "type": "address"
+      }
+    ],
+    "name": "getAllChildMarketsFromParent",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",

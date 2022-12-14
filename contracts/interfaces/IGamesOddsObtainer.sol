@@ -38,6 +38,8 @@ interface IGamesOddsObtainer {
 
     function mainMarketTotalChildMarket(address _main, uint24 _total) external view returns (address);
 
+    function childMarketMainMarket(address _market) external view returns (address);
+
     function currentActiveTotalChildMarket(address _main) external view returns (address);
 
     function currentActiveSpreadChildMarket(address _main) external view returns (address);

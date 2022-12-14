@@ -369,6 +369,13 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
         return twoPositionSport[_sportsId];
     }
 
+    /// @notice view function which returns if market is child or not
+    /// @param _market address of the checked market
+    /// @return bool if the _market is child or not (true/false)
+    function isChildMarket(address _market) public view returns (bool) {
+        return oddsObtainer.childMarketMainMarket(_market) != address(0);
+    }
+
     /// @notice view function which returns if game is resolved
     /// @param _gameId game id for which game is looking
     /// @return bool is game resolved true/false

@@ -107,7 +107,10 @@
 		"AmmVaultSafu": "0x6c7Fd4321183b542E81Bcc7dE4DfB88F9DBca29F",
 		"AmmVaultSafuImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"AmmVaultDegen": "0x43318DE9E8f65b591598F17aDD87ae7247649C83",
-		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc"
+		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
+		"MessageBus": "0x0D71D18126E03646eb09FEc929e2ae87b7CAE69d",
+		"CrossChainAdapter": "0xd927170E3669cd14Fa07937B778B1649257F8ee6",
+		"CrossChainAdapterImplementation": "0x18e37a53cac94fFb4a3aA8544Fb4B6C2Bf055019"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
@@ -195,7 +198,10 @@
 		"InvestorsAirdropUnclaimedRetro": "0x4f896abE9E28C2Db248a8DdAC205ca1cf84A2771",
 		"VestingEscrowInvestors": "0x088c6Ad16ba124F1d40fD2A3EDe63ef2E8dAe39f",
 		"VestingEscrowInvestorsImplementation": "0xcA52bcA5Bd68B75b38a0ef2bAC683fC245e0F912",
-		"ThalesCouncilNFT": "0xA71F5fACaF3e021897931BE44b10d68F89EC6a3B"
+		"ThalesCouncilNFT": "0xA71F5fACaF3e021897931BE44b10d68F89EC6a3B",
+		"MessageBus": "0x4066D196A423b2b3B8B054f4F40efB47a74E200C",
+		"CrossChainAdapter": "0x4dB7AfB6b777fB47101C86Bdeb56669ffA8cD656",
+		"CrossChainAdapterImplementation": "0xae56177e405929c95E5d4b04C0C87E428cB6432B"
 	},
 	"optimisticKovan": {
 		"AddressResolver": "0xb08b62e1cdfd37eCCd69A9ACe67322CCF801b3A6",

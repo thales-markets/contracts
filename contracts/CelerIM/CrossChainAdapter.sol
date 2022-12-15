@@ -13,16 +13,15 @@ import "hardhat/console.sol";
 contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    // acccount, token -> balance
-    mapping(address => mapping(address => uint256)) public balances;
     mapping(bytes4 => address) public selectorAddress;
-    mapping(address => bool) public whitelistedAddress;
-
     address public adapterOnDestination;
     uint64 private constant OPTIMISM = 10;
 
     address public sportsAMM;
     IERC20Upgradeable public sUSD;
+
+    // acccount, token -> balance
+    mapping(address => mapping(address => uint256)) public balances;
 
     // constructor(address _messageBus) MessageApp(_messageBus) {}
     function initialize(address _owner, address _messageBus) public initializer {
@@ -144,13 +143,13 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         }
     }
 
-    function setSelectorAddress(string memory _selectorString, address _selectorAddress) external {
+    function setSelectorAddress(string memory _selectorString, address _selectorAddress) external onlyOwner {
         bytes4 selector = bytes4(keccak256(bytes(_selectorString)));
         selectorAddress[selector] = _selectorAddress;
         sUSD.approve(_selectorAddress, type(uint256).max);
     }
 
-    function setPaymentToken(address _paymentToken) external {
+    function setPaymentToken(address _paymentToken) external onlyOwner {
         sUSD = IERC20Upgradeable(_paymentToken);
     }
 

@@ -13,10 +13,12 @@ async function main() {
 	let PaymentToken;
 
 	if (network == 'homestead') {
-		console.log(
-			"Error L1 network used! Deploy only on L2 Optimism. \nTry using '--network optimistic'"
-		);
-		return 0;
+		// console.log(
+		// 	"Error L1 network used! Deploy only on L2 Optimism. \nTry using '--network optimistic'"
+		// );
+		// return 0;
+		networkObj.name = 'mainnet';
+		network = 'mainnet';
 	}
 	if (networkObj.chainId == 42) {
 		networkObj.name = 'kovan';
@@ -48,7 +50,7 @@ async function main() {
 		network = 'polygonMumbai';
 	}
 
-	const CelerIM = await ethers.getContractFactory('CrossChainTest');
+	const CelerIM = await ethers.getContractFactory('CrossChainAdapter');
 
 	const MessageBusAddress = getTargetAddress('MessageBus', network);
 
@@ -56,8 +58,8 @@ async function main() {
 	await CelerIMDeployed.deployed;
 
 	await delay(10000);
-	console.log('CrossChainTest Deployed on', CelerIMDeployed.address);
-	setTargetAddress('CelerIM', network, CelerIMDeployed.address);
+	console.log('CrossChainAdapter Deployed on', CelerIMDeployed.address);
+	setTargetAddress('CrossChainAdapter', network, CelerIMDeployed.address);
 
 	await delay(10000);
 
@@ -66,8 +68,8 @@ async function main() {
 		CelerIMDeployed.address
 	);
 
-	console.log('Implementation CelerIM: ', CelerIMImplementation);
-	setTargetAddress('CelerIMImplementation', network, CelerIMImplementation);
+	console.log('Implementation CrossChainAdapter: ', CelerIMImplementation);
+	setTargetAddress('CrossChainAdapterImplementation', network, CelerIMImplementation);
 
 	await delay(2000);
 

@@ -48,9 +48,9 @@ async function main() {
 		network = 'polygonMumbai';
 	}
 
-	const CelerIM = await ethers.getContractFactory('CrossChainTest');
+	const CelerIM = await ethers.getContractFactory('CrossChainAdapter');
 
-	const CelerIMAddress = await getTargetAddress('CelerIM', network);
+	const CelerIMAddress = await getTargetAddress('CrossChainAdapter', network);
 
 	await upgrades.upgradeProxy(CelerIMAddress, CelerIM);
 
@@ -58,8 +58,8 @@ async function main() {
 
 	const CelerIMImplementation = await getImplementationAddress(ethers.provider, CelerIMAddress);
 
-	console.log('Implementation ParlayAMM: ', CelerIMImplementation);
-	setTargetAddress('CelerIMImplementation', network, CelerIMImplementation);
+	console.log('Implementation CrossChainAdapter: ', CelerIMImplementation);
+	setTargetAddress('CrossChainAdapterImplementation', network, CelerIMImplementation);
 
 	await delay(2000);
 	try {

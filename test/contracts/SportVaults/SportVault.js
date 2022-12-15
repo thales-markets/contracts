@@ -240,6 +240,8 @@ contract('SportsAMM', (accounts) => {
 			from: owner,
 		});
 
+		await SportsAMMSeller.initialize(owner, Thales.address, SportsAMM.address, { from: owner });
+
 		await SportsAMMSeller.setAmmUtils(sportsAMMUtils.address, {
 			from: owner,
 		});

@@ -163,7 +163,7 @@ contract('SportsAMM', (accounts) => {
 		SportsAMM = await SportsAMMContract.new({ from: manager });
 		SNXRewards = await SNXRewardsContract.new({ from: manager });
 		AddressResolver = await AddressResolverContract.new();
-		CrossChainAdapter = await CrossChainAdapterContract.new();
+		CrossChainAdapter = await CrossChainAdapterContract.new({ from: manager });
 		// TestOdds = await TestOddsContract.new();
 		await AddressResolver.setSNXRewardsAddress(SNXRewards.address);
 
@@ -266,7 +266,7 @@ contract('SportsAMM', (accounts) => {
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });
 
-		await CrossChainAdapter.setPaymentToken(Thales.address);
+		await CrossChainAdapter.setPaymentToken(Thales.address, { from: owner });
 		await Thales.transfer(CrossChainAdapter.address, toUnit('1000'), { from: owner });
 		await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
 
@@ -421,8 +421,9 @@ contract('SportsAMM', (accounts) => {
 		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 
 		await CrossChainAdapter.setSelectorAddress(
-			'buyFromAMM(address,uint8,uint256,uint256,uint256)',
-			SportsAMM.address
+			'buyFromSportAMM(address,uint8,uint256,uint256,uint256)',
+			SportsAMM.address,
+			{ from: owner }
 		);
 	});
 

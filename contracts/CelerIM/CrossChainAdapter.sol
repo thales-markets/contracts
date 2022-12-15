@@ -8,7 +8,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "./framework/MessageApp.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyReentrancyGuard {
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -52,7 +52,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bytes memory message = abi.encode(
             msg.sender,
             block.chainid,
-            bytes4(keccak256(bytes("buyFromAMM(address,uint8,uint256,uint256,uint256)"))),
+            bytes4(keccak256(bytes("buyFromSportAMM(address,uint8,uint256,uint256,uint256)"))),
             payload
         );
         emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
@@ -71,7 +71,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bytes memory message = abi.encode(
             msg.sender,
             block.chainid,
-            bytes4(keccak256(bytes("buyFromAMM(address,uint8,uint256,uint256,uint256)"))),
+            bytes4(keccak256(bytes("buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)"))),
             payload
         );
         emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
@@ -110,8 +110,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             (address, uint, bytes4, bytes)
         );
         require(selectorAddress[selector] != address(0), "Invalid selector");
-        console.log("selector: ");
-        console.logBytes4(selector);
         bool success = checkAndSendMessage(sender, selector, payload);
         if (success) {
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
@@ -125,20 +123,36 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bytes4 _selector,
         bytes memory _message
     ) internal returns (bool) {
-        if (_selector == bytes4(keccak256(bytes("buyFromAMM(address,uint8,uint256,uint256,uint256)")))) {
+        if (_selector == bytes4(keccak256(bytes("buyFromSportAMM(address,uint8,uint256,uint256,uint256)")))) {
+            bytes4 realSelector = bytes4(keccak256(bytes("buyFromAMM(address,uint8,uint256,uint256,uint256)")));
             (address market, uint8 position, uint amount, uint expectedPayout, uint additionalSlippage) = abi.decode(
                 _message,
                 (address, uint8, uint, uint, uint)
             );
-            console.log("market: ", market);
-            console.log("amount: ", position);
-            console.log("expectedPayout: ", expectedPayout);
+            (bool success, bytes memory result) = selectorAddress[_selector].call(
+                abi.encodeWithSelector(realSelector, market, position, amount, expectedPayout, additionalSlippage)
+            );
+            return success;
+        } else if (_selector == bytes4(keccak256(bytes("buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)")))) {
+            bytes4 realSelector = bytes4(keccak256(bytes("buyFromAMM(address,uint8,uint256,uint256,uint256)")));
+            (address market, uint8 position, uint amount, uint expectedPayout, uint additionalSlippage) = abi.decode(
+                _message,
+                (address, uint8, uint, uint, uint)
+            );
+            (bool success, bytes memory result) = selectorAddress[_selector].call(
+                abi.encodeWithSelector(realSelector, market, position, amount, expectedPayout, additionalSlippage)
+            );
+            return success;
+        } else if (_selector == bytes4(keccak256(bytes("buyFromParlay(address,uint8,uint256,uint256,uint256)")))) {
+            (address market, uint8 position, uint amount, uint expectedPayout, uint additionalSlippage) = abi.decode(
+                _message,
+                (address, uint8, uint, uint, uint)
+            );
             (bool success, bytes memory result) = selectorAddress[_selector].call(
                 abi.encodeWithSelector(_selector, market, position, amount, expectedPayout, additionalSlippage)
             );
             return success;
         } else {
-            console.log("---> failed check");
             return false;
         }
     }

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "../interfaces/ISportPositionalMarket.sol";
 import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
@@ -12,8 +12,6 @@ import "../interfaces/ISportsAMM.sol";
 
 /// @title Sports AMM utils
 contract SportsAMMUtils {
-    using SafeERC20Upgradeable for IERC20Upgradeable;
-
     uint private constant ONE = 1e18;
     uint private constant ZERO_POINT_ONE = 1e17;
     uint private constant ONE_PERCENT = 1e16;
@@ -473,7 +471,7 @@ contract SportsAMMUtils {
 
         require(target.getBalanceOf(requirements.user) >= requirements.amount, "Low user options");
         require(
-            IERC20Upgradeable(address(target)).allowance(requirements.user, address(sportsAMM)) >= requirements.amount,
+            IERC20(address(target)).allowance(requirements.user, address(sportsAMM)) >= requirements.amount,
             "No allowance."
         );
 

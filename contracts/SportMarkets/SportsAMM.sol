@@ -248,9 +248,10 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 );
 
                 if (firstQuote == 0 || secondQuote == 0) {
-                    return 0;
+                    returnQuote = 0;
+                } else {
+                    returnQuote = firstQuote + secondQuote;
                 }
-                returnQuote = firstQuote + secondQuote;
             }
         } else {
             uint _available = _availableToBuyFromAMMWithbaseOdds(market, position, baseOdds);

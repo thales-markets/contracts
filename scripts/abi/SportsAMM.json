@@ -1397,19 +1397,6 @@
   {
     "inputs": [
       {
-        "internalType": "contract ISportsAMMSeller",
-        "name": "_ammSeller",
-        "type": "address"
-      }
-    ],
-    "name": "setAmmSeller",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "contract SportsAMMUtils",
         "name": "_ammUtils",
         "type": "address"
@@ -1644,19 +1631,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "sportAmmSeller",
-    "outputs": [
-      {
-        "internalType": "contract ISportsAMMSeller",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",

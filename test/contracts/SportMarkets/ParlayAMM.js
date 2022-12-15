@@ -62,7 +62,6 @@ contract('ParlayAMM', (accounts) => {
 	const ParlayMarketDataContract = artifacts.require('ParlayMarketData');
 	const ParlayVerifierContract = artifacts.require('ParlayVerifier');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
-	const SportsAMMSellerContract = artifacts.require('SportsAMMSeller');
 
 	let ParlayAMM;
 	let ParlayMarket;
@@ -162,8 +161,7 @@ contract('ParlayAMM', (accounts) => {
 		testDAI,
 		Referrals,
 		ParlayVerifier,
-		SportsAMM,
-		SportsAMMSeller;
+		SportsAMM;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -204,7 +202,6 @@ contract('ParlayAMM', (accounts) => {
 		SportPositionalMarketData = await SportPositionalMarketDataContract.new({ from: manager });
 		StakingThales = await StakingThalesContract.new({ from: manager });
 		SportsAMM = await SportsAMMContract.new({ from: manager });
-		SportsAMMSeller = await SportsAMMSellerContract.new({ from: manager });
 		SNXRewards = await SNXRewardsContract.new({ from: manager });
 		AddressResolver = await AddressResolverContract.new();
 
@@ -263,22 +260,8 @@ contract('ParlayAMM', (accounts) => {
 			{ from: owner }
 		);
 
-		sportsAMMUtils = await SportsAMMUtils.new();
+		sportsAMMUtils = await SportsAMMUtils.new(SportsAMM.address);
 		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
-			from: owner,
-		});
-
-		await SportsAMMSeller.initialize(owner, Thales.address, SportsAMM.address, { from: owner });
-
-		await SportsAMMSeller.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {
-			from: owner,
-		});
-
-		await SportsAMM.setAmmSeller(SportsAMMSeller.address, {
-			from: owner,
-		});
-
-		await SportsAMMSeller.setAmmUtils(sportsAMMUtils.address, {
 			from: owner,
 		});
 		await SportsAMM.setSportsPositionalMarketManager(SportPositionalMarketManager.address, {

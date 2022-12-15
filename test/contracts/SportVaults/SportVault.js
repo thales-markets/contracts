@@ -61,7 +61,6 @@ contract('SportsAMM', (accounts) => {
 	const TestOddsContract = artifacts.require('TestOdds');
 	const ReferralsContract = artifacts.require('Referrals');
 	const SportsAMMUtils = artifacts.require('SportsAMMUtils');
-	const SportsAMMSellerContract = artifacts.require('SportsAMMSeller');
 
 	let Thales;
 	let answer;
@@ -137,8 +136,7 @@ contract('SportsAMM', (accounts) => {
 		testDAI,
 		Referrals,
 		GamesOddsObtainerDeployed,
-		SportsAMM,
-		SportsAMMSeller;
+		SportsAMM;
 
 	const game1NBATime = 1646958600;
 	const gameFootballTime = 1649876400;
@@ -165,7 +163,6 @@ contract('SportsAMM', (accounts) => {
 		SportPositionalMarketData = await SportPositionalMarketDataContract.new({ from: manager });
 		StakingThales = await StakingThalesContract.new({ from: manager });
 		SportsAMM = await SportsAMMContract.new({ from: manager });
-		SportsAMMSeller = await SportsAMMSellerContract.new({ from: manager });
 		SNXRewards = await SNXRewardsContract.new({ from: manager });
 		AddressResolver = await AddressResolverContract.new();
 		// TestOdds = await TestOddsContract.new();
@@ -235,14 +232,8 @@ contract('SportsAMM', (accounts) => {
 			from: owner,
 		});
 
-		sportsAMMUtils = await SportsAMMUtils.new();
+		sportsAMMUtils = await SportsAMMUtils.new(SportsAMM.address);
 		await SportsAMM.setAmmUtils(sportsAMMUtils.address, {
-			from: owner,
-		});
-
-		await SportsAMMSeller.initialize(owner, Thales.address, SportsAMM.address, { from: owner });
-
-		await SportsAMMSeller.setAmmUtils(sportsAMMUtils.address, {
 			from: owner,
 		});
 

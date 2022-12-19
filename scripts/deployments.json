@@ -110,7 +110,7 @@
 		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"MessageBus": "0x0D71D18126E03646eb09FEc929e2ae87b7CAE69d",
 		"CrossChainAdapter": "0xd927170E3669cd14Fa07937B778B1649257F8ee6",
-		"CrossChainAdapterImplementation": "0x18e37a53cac94fFb4a3aA8544Fb4B6C2Bf055019"
+		"CrossChainAdapterImplementation": "0xff8a28ABC89F6788A1786C8455A0beED6E08a1FD"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

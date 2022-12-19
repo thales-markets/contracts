@@ -193,6 +193,17 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     }
 
     function executeMessage(
+        address _sender,
+        uint64 _srcChainId,
+        bytes calldata _message,
+        address _executor
+    ) external payable virtual override onlyMessageBus returns (ExecutionStatus) {
+        (address sender, bytes memory note) = abi.decode((_message), (address, bytes));
+        emit MessageReceived(sender, _srcChainId, note);
+        return ExecutionStatus.Success;
+    }
+
+    function executeMessage(
         bytes calldata _sender,
         uint64 _srcChainId,
         bytes calldata _message,

@@ -52,22 +52,40 @@ async function main() {
 
 	const CelerIMAddress = await getTargetAddress('CrossChainAdapter', network);
 
-	await upgrades.upgradeProxy(CelerIMAddress, CelerIM);
+	if (networkObj.chainId == 10 || networkObj.chainId == 5) {
+		console.log('HERE');
+		const implementation = await upgrades.prepareUpgrade(CelerIMAddress, CelerIM);
+		await delay(5000);
 
-	await delay(10000);
+		console.log('CrossChainAdapter upgraded');
 
-	const CelerIMImplementation = await getImplementationAddress(ethers.provider, CelerIMAddress);
+		console.log('Implementation CrossChainAdapter: ', implementation);
+		setTargetAddress('CrossChainAdapterImplementation', network, implementation);
+		try {
+			await hre.run('verify:verify', {
+				address: implementation,
+			});
+		} catch (e) {
+			console.log(e);
+		}
+	} else {
+		await upgrades.upgradeProxy(CelerIMAddress, CelerIM);
 
-	console.log('Implementation CrossChainAdapter: ', CelerIMImplementation);
-	setTargetAddress('CrossChainAdapterImplementation', network, CelerIMImplementation);
+		await delay(10000);
 
-	await delay(2000);
-	try {
-		await hre.run('verify:verify', {
-			address: CelerIMImplementation,
-		});
-	} catch (e) {
-		console.log(e);
+		const CelerIMImplementation = await getImplementationAddress(ethers.provider, CelerIMAddress);
+
+		console.log('Implementation CrossChainAdapter: ', CelerIMImplementation);
+		setTargetAddress('CrossChainAdapterImplementation', network, CelerIMImplementation);
+
+		await delay(2000);
+		try {
+			await hre.run('verify:verify', {
+				address: CelerIMImplementation,
+			});
+		} catch (e) {
+			console.log(e);
+		}
 	}
 }
 

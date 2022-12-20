@@ -217,6 +217,13 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         return verifier.calculateAndNormalizeOdds(odds);
     }
 
+    /// @notice view function which returns normalized odds up to 100 (Example: 50-50)
+    /// @param _market market
+    /// @return uint[] odds array normalized
+    function getNormalizedOddsForMarket(address _market) public view returns (uint[] memory) {
+        return getNormalizedChildOdds(_market);
+    }
+
     /// @notice function which retrievers all markert addresses for given parent market
     /// @param _parent parent market
     /// @return address[] child addresses

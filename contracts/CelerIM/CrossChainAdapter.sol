@@ -14,14 +14,18 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     mapping(bytes4 => address) public selectorAddress;
+    mapping(address => bool) public whitelistedToReceiveFrom;
     address public adapterOnDestination;
     uint64 private constant OPTIMISM = 10;
 
     address public sportsAMM;
     IERC20Upgradeable public sUSD;
 
-    // acccount, token -> balance
-    mapping(address => mapping(address => uint256)) public balances;
+    // userAccount, token -> balance
+    mapping(address => mapping(address => uint256)) public sUSDBalances;
+
+    // userAccount, game, poistion => balance
+    mapping(address => mapping(address => mapping(uint8 => uint256))) public gameBalances;
 
     // constructor(address _messageBus) MessageApp(_messageBus) {}
     function initialize(address _owner, address _messageBus) public initializer {
@@ -58,12 +62,53 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
     }
 
+    function buyFromSportAMM(
+        address market,
+        uint8 position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage,
+        uint64 _dstChainId
+    ) external payable nonReentrant notPaused {
+        // todo specify
+        // packing: | msg.sender | chain id | function selector | payload |
+        bytes memory payload = abi.encode(market, position, amount, expectedPayout, additionalSlippage);
+        bytes memory message = abi.encode(
+            msg.sender,
+            block.chainid,
+            bytes4(keccak256(bytes("buyFromSportAMM(address,uint8,uint256,uint256,uint256)"))),
+            payload
+        );
+        sendMessage(adapterOnDestination, _dstChainId, message, msg.value);
+        // emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+    }
+
     function buyFromCryptoAMM(
         address market,
         uint8 position,
         uint amount,
         uint expectedPayout,
         uint additionalSlippage
+    ) external nonReentrant notPaused returns (uint) {
+        //todo specify
+        // packing: | msg.sender | chain id | function selector | payload |
+        bytes memory payload = abi.encode(market, position, amount, expectedPayout, additionalSlippage);
+        bytes memory message = abi.encode(
+            msg.sender,
+            block.chainid,
+            bytes4(keccak256(bytes("buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)"))),
+            payload
+        );
+        emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+    }
+
+    function buyFromCryptoAMM(
+        address market,
+        uint8 position,
+        uint amount,
+        uint expectedPayout,
+        uint additionalSlippage,
+        uint64 _dstChainId
     ) external nonReentrant notPaused returns (uint) {
         //todo specify
         // packing: | msg.sender | chain id | function selector | payload |
@@ -104,7 +149,39 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
     }
 
-    function executeBuyMessage(bytes calldata _message) external notPaused nonReentrant {
+    function buyFromParlay(
+        address[] calldata _sportMarkets,
+        uint[] calldata _positions,
+        uint _sUSDPaid,
+        uint _additionalSlippage,
+        uint _expectedPayout,
+        address _differentRecepient,
+        uint64 _dstChainId
+    ) external nonReentrant notPaused {
+        //todo specify
+        // packing: | msg.sender | chain id | function selector | payload |
+        bytes memory payload = abi.encode(
+            _sportMarkets,
+            _positions,
+            _sUSDPaid,
+            _additionalSlippage,
+            _expectedPayout,
+            _differentRecepient
+        );
+        bytes memory message = abi.encode(
+            msg.sender,
+            block.chainid,
+            bytes4(keccak256(bytes("buyFromParlay(address[],uint256[],uint256,uint256,uint256,address)"))),
+            payload
+        );
+        emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+    }
+
+    function executeBuyMessage(bytes calldata _message) external notPaused nonReentrant returns (bool success) {
+        success = _executeBuy(_message);
+    }
+
+    function _executeBuy(bytes calldata _message) internal returns (bool) {
         (address sender, uint chainId, bytes4 selector, bytes memory payload) = abi.decode(
             _message,
             (address, uint, bytes4, bytes)
@@ -113,8 +190,10 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bool success = checkAndSendMessage(sender, selector, payload);
         if (success) {
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
+            return true;
         } else {
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
+            return false;
         }
     }
 
@@ -132,6 +211,10 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             (bool success, bytes memory result) = selectorAddress[_selector].call(
                 abi.encodeWithSelector(realSelector, market, position, amount, expectedPayout, additionalSlippage)
             );
+            if (success) {
+                gameBalances[_sender][market][position] += expectedPayout;
+                sUSDBalances[_sender][address(sUSD)] += amount;
+            }
             return success;
         } else if (_selector == bytes4(keccak256(bytes("buyFromCryptoAMM(address,uint8,uint256,uint256,uint256)")))) {
             bytes4 realSelector = bytes4(keccak256(bytes("buyFromAMM(address,uint8,uint256,uint256,uint256)")));
@@ -161,6 +244,10 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bytes4 selector = bytes4(keccak256(bytes(_selectorString)));
         selectorAddress[selector] = _selectorAddress;
         sUSD.approve(_selectorAddress, type(uint256).max);
+    }
+
+    function setWhitelistedAddress(address _account, bool _enable) external onlyOwner {
+        whitelistedToReceiveFrom[_account] = _account != address(0) ? _enable : false;
     }
 
     function setPaymentToken(address _paymentToken) external onlyOwner {
@@ -201,6 +288,18 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         (address sender, bytes memory note) = abi.decode((_message), (address, bytes));
         emit MessageReceived(sender, _srcChainId, note);
         return ExecutionStatus.Success;
+
+        // require(whitelistedToReceiveFrom[_sender], "Sender not whitelisted");
+        // _executeBuy(_message);
+
+        // emit MessageReceived(_sender, _srcChainId, _message);
+        // bool result = _executeBuy(_message);
+        // if(result) {
+        //     return ExecutionStatus.Success;
+        // }
+        // else {
+        //     return ExecutionStatus.Fail;
+        // }
     }
 
     function executeMessage(
@@ -217,17 +316,29 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     // called by MessageBus on destination chain to receive message, record and emit info.
     // the associated token transfer is guaranteed to have already been received
     function executeMessageWithTransfer(
-        address, // srcContract
+        address _sender, // srcContract
         address _token,
         uint256 _amount,
         uint64 _srcChainId,
-        bytes memory _message,
+        bytes calldata _message,
         address // executor
     ) external payable override onlyMessageBus returns (ExecutionStatus) {
         (address sender, bytes memory note) = abi.decode((_message), (address, bytes));
-        balances[sender][_token] += _amount;
+        sUSDBalances[sender][_token] += _amount;
         emit MessageWithTransferReceived(sender, _token, _amount, _srcChainId, note);
         return ExecutionStatus.Success;
+
+        // require(whitelistedToReceiveFrom[_sender], "Sender not whitelisted");
+        // _executeBuy(_message);
+
+        // emit MessageReceived(_sender, _srcChainId, _message);
+        // bool result = _executeBuy(_message);
+        // if(result) {
+        //     return ExecutionStatus.Success;
+        // }
+        // else {
+        //     return ExecutionStatus.Fail;
+        // }
     }
 
     // called by MessageBus on source chain to handle message with failed token transfer
@@ -246,7 +357,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
 
     // called by user on destination chain to withdraw tokens
     function withdraw(address _token, uint256 _amount) external {
-        balances[msg.sender][_token] -= _amount;
+        sUSDBalances[msg.sender][_token] -= _amount;
         IERC20Upgradeable(_token).safeTransfer(msg.sender, _amount);
     }
 

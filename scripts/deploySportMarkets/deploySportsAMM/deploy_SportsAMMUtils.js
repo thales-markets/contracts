@@ -52,7 +52,7 @@ async function main() {
 	const SportsAMMDeployed = SportsAMM.attach(SportsAMMAddress);
 
 	const SportsAMMUtils = await ethers.getContractFactory('SportsAMMUtils');
-	const SportsAMMUtilsDeployed = await SportsAMMUtils.deploy();
+	const SportsAMMUtilsDeployed = await SportsAMMUtils.deploy(SportsAMMAddress);
 	await SportsAMMUtilsDeployed.deployed();
 
 	console.log('Implementation SportsAMMUtils: ', SportsAMMUtilsDeployed.address);

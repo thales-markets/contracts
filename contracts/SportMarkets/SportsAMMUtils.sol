@@ -42,29 +42,6 @@ contract SportsAMMUtils {
         uint priceOtherPosition;
     }
 
-    function sellPriceImpactImbalancedSkew(
-        uint amount,
-        uint balanceOtherSide,
-        uint _balancePosition,
-        uint balanceOtherSideAfter,
-        uint balancePositionAfter,
-        uint available
-    ) public view returns (uint _sellImpactReturned) {
-        uint maxPossibleSkew = _balancePosition + (available) - (balanceOtherSide);
-        uint skew = balancePositionAfter - (balanceOtherSideAfter);
-        uint newImpact = (sportsAMM.max_spread() * ((skew * ONE) / (maxPossibleSkew))) / ONE;
-
-        if (balanceOtherSide > 0) {
-            uint newPriceForMintedOnes = newImpact / (2);
-            uint tempMultiplier = (amount - _balancePosition) * (newPriceForMintedOnes);
-            _sellImpactReturned = tempMultiplier / (amount);
-        } else {
-            uint previousSkew = _balancePosition;
-            uint previousImpact = (sportsAMM.max_spread() * ((previousSkew * ONE) / (maxPossibleSkew))) / ONE;
-            _sellImpactReturned = (newImpact + previousImpact) / (2);
-        }
-    }
-
     function buyPriceImpactImbalancedSkew(
         uint amount,
         uint balanceOtherSide,
@@ -175,20 +152,6 @@ contract SportsAMMUtils {
             uint divider_price = ONE - (baseOdds + midImpactPriceIncrease);
 
             availableAmount = balance + ((availableUntilCapSUSD * ONE) / divider_price);
-        }
-    }
-
-    function _calculateAvailableToSell(
-        uint balanceOfTheOtherSide,
-        uint sell_max_price,
-        uint capPlusBalance,
-        uint spentOnThisGame
-    ) public pure returns (uint _available) {
-        uint willPay = (balanceOfTheOtherSide * (sell_max_price)) / ONE;
-        uint capWithBalance = capPlusBalance + (balanceOfTheOtherSide);
-        if (capWithBalance >= (spentOnThisGame + willPay)) {
-            uint usdAvailable = capWithBalance - (spentOnThisGame) - (willPay);
-            _available = (usdAvailable / (sell_max_price)) * ONE + (balanceOfTheOtherSide);
         }
     }
 
@@ -393,143 +356,5 @@ contract SportsAMMUtils {
         );
         oddsPosition1 = obtainOdds(parentMarket, position1);
         oddsPosition2 = obtainOdds(parentMarket, position2);
-    }
-
-    function availableToSellToAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
-        uint sell_max_price = _getSellMaxPrice(market, position);
-        if (sell_max_price > 0) {
-            (IPosition home, IPosition away, ) = ISportPositionalMarket(market).getOptions();
-            uint balanceOfTheOtherSide = position == ISportsAMM.Position.Home
-                ? away.getBalanceOf(address(sportsAMM))
-                : home.getBalanceOf(address(sportsAMM));
-
-            // Balancing with three positions needs to be elaborated
-            if (ISportPositionalMarket(market).optionsCount() == 3) {
-                balanceOfTheOtherSide = getBalanceOtherSideOnThreePositions(position, address(sportsAMM), market);
-            }
-
-            _available = _calculateAvailableToSell(
-                balanceOfTheOtherSide,
-                sell_max_price,
-                sportsAMM.calculateCapToBeUsed(market),
-                sportsAMM.getSpentOnGame(market)
-            );
-        }
-    }
-
-    function sellToAmmQuote(
-        address market,
-        ISportsAMM.Position position,
-        uint amount
-    ) public view returns (uint _quote) {
-        require(!ISportPositionalMarket(market).isDoubleChance(), "Sell not supported for DoubleChance market");
-        uint baseOdds = sportsAMM.obtainOdds(market, position);
-        uint _available = availableToSellToAMM(market, position);
-        _quote = _sellToAmmQuote(market, position, amount, baseOdds, _available);
-    }
-
-    function sellPriceImpact(
-        address market,
-        ISportsAMM.Position position,
-        uint amount
-    ) public view returns (uint _impact) {
-        uint _available = availableToSellToAMM(market, position);
-        if (amount <= _available) {
-            _impact = _sellPriceImpact(market, position, amount, _available);
-        }
-    }
-
-    function sellToAMMRequirements(ISportsAMM.SellRequirements memory requirements) public view returns (uint, IPosition) {
-        require(!ISportPositionalMarket(requirements.market).isDoubleChance(), "Sell not supported for DoubleChance market");
-        require(isMarketInAMMTrading(requirements.market), "Not in Trading");
-        require(
-            ISportPositionalMarket(requirements.market).optionsCount() > uint(requirements.position),
-            "Invalid position"
-        );
-        uint availableToSellToAMMATM = availableToSellToAMM(requirements.market, requirements.position);
-        require(
-            availableToSellToAMMATM > 0 &&
-                requirements.amount > ZERO_POINT_ONE &&
-                requirements.amount <= availableToSellToAMMATM,
-            "Low liquidity || 0 amount"
-        );
-
-        uint pricePaid = sellToAmmQuote(requirements.market, requirements.position, requirements.amount);
-        require(
-            (requirements.expectedPayout * ONE) / (pricePaid) <= (ONE + (requirements.additionalSlippage)),
-            "Slippage too high"
-        );
-
-        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(requirements.market).getOptions();
-        IPosition target = requirements.position == ISportsAMM.Position.Home ? home : away;
-        if (
-            ISportPositionalMarket(requirements.market).optionsCount() > 2 &&
-            requirements.position != ISportsAMM.Position.Home
-        ) {
-            target = requirements.position == ISportsAMM.Position.Away ? away : draw;
-        }
-
-        require(target.getBalanceOf(requirements.user) >= requirements.amount, "Low user options");
-        require(
-            IERC20(address(target)).allowance(requirements.user, address(sportsAMM)) >= requirements.amount,
-            "No allowance."
-        );
-
-        return (pricePaid, target);
-    }
-
-    /// INTERNALS
-
-    function _getSellMaxPrice(address market, ISportsAMM.Position position) internal view returns (uint sell_max_price) {
-        uint baseOdds = sportsAMM.obtainOdds(market, position);
-        uint minSupportedOdds = sportsAMM.minSupportedOdds();
-        uint maxSupportedOdds = sportsAMM.maxSupportedOdds();
-        uint min_spread = sportsAMM.min_spread();
-        uint max_spread = sportsAMM.max_spread();
-
-        if (!(baseOdds <= minSupportedOdds || baseOdds >= maxSupportedOdds)) {
-            sell_max_price = ((baseOdds - min_spread) * (ONE - (max_spread / (2)))) / ONE;
-        }
-    }
-
-    function _sellToAmmQuote(
-        address market,
-        ISportsAMM.Position position,
-        uint amount,
-        uint basePrice,
-        uint _available
-    ) internal view returns (uint _quote) {
-        if (amount <= _available) {
-            basePrice = basePrice - sportsAMM.min_spread();
-
-            uint tempAmount = (amount *
-                ((basePrice * (ONE - (_sellPriceImpact(market, position, amount, _available)))) / ONE)) / ONE;
-
-            uint returnQuote = (tempAmount * (ONE - (sportsAMM.safeBoxImpact()))) / ONE;
-            _quote = ISportPositionalMarketManager(sportsAMM.manager()).transformCollateral(returnQuote);
-        }
-    }
-
-    function _sellPriceImpact(
-        address market,
-        ISportsAMM.Position position,
-        uint amount,
-        uint available
-    ) internal view returns (uint _sellImpact) {
-        (uint _balancePosition, , uint balanceOtherSide) = balanceOfPositionsOnMarket(market, position, address(sportsAMM));
-        uint balancePositionAfter = _balancePosition > 0 ? _balancePosition + (amount) : balanceOtherSide > amount
-            ? 0
-            : amount - (balanceOtherSide);
-        uint balanceOtherSideAfter = balanceOtherSide > amount ? balanceOtherSide - (amount) : 0;
-        if (!(balancePositionAfter < balanceOtherSideAfter)) {
-            _sellImpact = sellPriceImpactImbalancedSkew(
-                amount,
-                balanceOtherSide,
-                _balancePosition,
-                balanceOtherSideAfter,
-                balancePositionAfter,
-                available
-            );
-        }
     }
 }

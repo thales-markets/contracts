@@ -263,6 +263,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
         if (positionCount > 2) {
             // create double chance market
+            uint[] memory tagsDoubleChance = new uint[](2);
+            tagsDoubleChance[0] = tags[0];
+            tagsDoubleChance[1] = 10003;
+
             ISportPositionalMarket doubleChanceMarket = _createMarket(
                 SportPositionalMarketFactory.SportPositionCreationMarketParameters(
                     msg.sender,
@@ -273,7 +277,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
                     initialMint,
                     positionCount,
                     msg.sender,
-                    tags,
+                    tagsDoubleChance,
                     false,
                     address(market),
                     true

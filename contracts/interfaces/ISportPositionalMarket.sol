@@ -47,6 +47,8 @@ interface ISportPositionalMarket {
 
     function isResolved() external view returns (bool);
 
+    function isCancelled() external view returns (bool);
+
     function cancelled() external view returns (bool);
 
     function paused() external view returns (bool);

@@ -71,6 +71,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     mapping(address => mapping(uint => mapping(address => mapping(uint => mapping(address => mapping(uint => mapping(address => mapping(uint => uint))))))))
         public riskPerCombination;
 
+    mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => uint))))))))
+        public riskPerGameCombination;
+
     function initialize(
         address _owner,
         ISportsAMM _sportsAmm,
@@ -402,8 +405,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             address(parlayMarket),
             _differentRecepient
         );
-        (_sportMarkets, _positions) = parlayVerifier.sort(_sportMarkets, _positions);
-        _storeRisk(_sportMarkets, _positions, (totalAmount - sUSDAfterFees));
+        _sportMarkets = parlayVerifier.sort(_sportMarkets);
+        _storeRisk(_sportMarkets, (totalAmount - sUSDAfterFees));
 
         emit ParlayMarketCreated(
             address(parlayMarket),
@@ -498,24 +501,36 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function _storeRisk(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _sUSDPaid
-    ) internal {
+    function _storeRisk(address[] memory _sportMarkets, uint _sUSDPaid) internal {
         if (_sportMarkets.length == 2) {
-            riskPerCombination[_sportMarkets[0]][_positions[0]][_sportMarkets[1]][_positions[1]][address(0)][0][address(0)][
-                0
-            ] += _sUSDPaid;
+            riskPerGameCombination[_sportMarkets[0]][_sportMarkets[1]][address(0)][address(0)][address(0)][address(0)][
+                address(0)
+            ][address(0)] += _sUSDPaid;
         } else if (_sportMarkets.length == 3) {
-            riskPerCombination[_sportMarkets[0]][_positions[0]][_sportMarkets[1]][_positions[1]][_sportMarkets[2]][
-                _positions[2]
-            ][address(0)][0] += _sUSDPaid;
+            riskPerGameCombination[_sportMarkets[0]][_sportMarkets[1]][_sportMarkets[2]][address(0)][address(0)][address(0)][
+                address(0)
+            ][address(0)] += _sUSDPaid;
         } else if (_sportMarkets.length == 4) {
-            riskPerCombination[_sportMarkets[0]][_positions[0]][_sportMarkets[1]][_positions[1]][_sportMarkets[2]][
-                _positions[2]
-            ][_sportMarkets[3]][_positions[3]] += _sUSDPaid;
-        }
+            riskPerGameCombination[_sportMarkets[0]][_sportMarkets[1]][_sportMarkets[2]][_sportMarkets[3]][address(0)][
+                address(0)
+            ][address(0)][address(0)] += _sUSDPaid;
+        } else if (_sportMarkets.length == 5) {
+            riskPerGameCombination[_sportMarkets[0]][_sportMarkets[1]][_sportMarkets[2]][_sportMarkets[3]][_sportMarkets[4]][
+                address(0)
+            ][address(0)][address(0)] += _sUSDPaid;
+        } else if (_sportMarkets.length == 6) {
+            riskPerGameCombination[_sportMarkets[0]][_sportMarkets[1]][_sportMarkets[2]][_sportMarkets[3]][_sportMarkets[4]][
+                _sportMarkets[5]
+            ][address(0)][address(0)] += _sUSDPaid;
+        } else if (_sportMarkets.length == 7) {
+            riskPerGameCombination[_sportMarkets[0]][_sportMarkets[1]][_sportMarkets[2]][_sportMarkets[3]][_sportMarkets[4]][
+                _sportMarkets[5]
+            ][_sportMarkets[6]][address(0)] += _sUSDPaid;
+        } else if (_sportMarkets.length == 8) {
+            riskPerGameCombination[_sportMarkets[0]][_sportMarkets[1]][_sportMarkets[2]][_sportMarkets[3]][_sportMarkets[4]][
+                _sportMarkets[5]
+            ][_sportMarkets[6]][_sportMarkets[7]] += _sUSDPaid;
+        } else {}
     }
 
     function _resolveParlay(address _parlayMarket) internal {

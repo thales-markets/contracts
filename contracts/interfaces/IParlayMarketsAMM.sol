@@ -29,6 +29,17 @@ interface IParlayMarketsAMM {
         uint _position4
     ) external view returns (uint);
 
+    function riskPerGameCombination(
+        address _sportMarkets1,
+        address _sportMarkets2,
+        address _sportMarkets3,
+        address _sportMarkets4,
+        address _sportMarkets5,
+        address _sportMarkets6,
+        address _sportMarkets7,
+        address _sportMarkets8
+    ) external view returns (uint);
+
     function isActiveParlay(address _parlayMarket) external view returns (bool isActiveParlayMarket);
 
     function exerciseParlay(address _parlayMarket) external;

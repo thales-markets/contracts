@@ -99,14 +99,12 @@ async function main() {
 
 	console.log('Implementation ThalesAMM: ', ThalesAMMImplementation);
 
-	setTargetAddress('ThalesAMM', network, ThalesAMM_deployed.address);
-	setTargetAddress('ThalesAMMImplementation', network, ThalesAMMImplementation);
+	setTargetAddress('ThalesAMMNew', network, ThalesAMM_deployed.address);
+	setTargetAddress('ThalesAMMNewImplementation', network, ThalesAMMImplementation);
 
 	let managerAddress = getTargetAddress('PositionalMarketManager', network);
 
-	const PositionalMarketFactory = await ethers.getContractFactory('PositionalMarketFactory');
 	let factoryAddress = getTargetAddress('PositionalMarketFactory', network);
-	const PositionalMarketFactoryInstance = await PositionalMarketFactory.attach(factoryAddress);
 
 	await delay(5000);
 
@@ -115,69 +113,12 @@ async function main() {
 		console.log('ThalesAMM: setPositionalMarketManager');
 	});
 
-	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(
-		toBytes32('ETH'),
-		w3utils.toWei('130')
-	);
-	await tx.wait().then((e) => {
-		console.log('ThalesAMM: setImpliedVolatilityPerAsset(ETH, 130)');
-	});
-
 	await delay(5000);
 
-	tx = await ThalesAMM_deployed.setImpliedVolatilityPerAsset(toBytes32('BTC'), w3utils.toWei('96'));
-	await tx.wait().then((e) => {
-		console.log('ThalesAMM: setImpliedVolatilityPerAsset(BTC, 96)');
-	});
-
-	await delay(5000);
-
-	tx = await PositionalMarketFactoryInstance.setThalesAMM(ThalesAMM_deployed.address);
-	await tx.wait().then((e) => {
-		console.log('PositionalMarketFactoryInstance: setThalesAMM');
-	});
-
-	await delay(5000);
-	const safeBoxImpact = w3utils.toWei('0.01');
-	const safeBox = getTargetAddress('SafeBox', network);
-	tx = await ThalesAMM_deployed.setSafeBoxData(safeBox, safeBoxImpact);
-	await tx.wait().then((e) => {
-		console.log('ThalesAMM: setSafeBox()');
-	});
-
-	await delay(5000);
-
-	tx = await ThalesAMM_deployed.setMinMaxSupportedPriceAndCap(
-		w3utils.toWei('0.1'),
-		w3utils.toWei('0.9'),
-		w3utils.toWei('5000')
-	);
-	await tx.wait().then((e) => {
-		console.log('ThalesAMM: setMinMaxSupportedPriceAndCap()');
-	});
-
-	const referralImpact = w3utils.toWei('0.01');
-	const referrals = getTargetAddress('Referrals', network);
-	tx = await ThalesAMM_deployed.setStakingThalesAndReferrals(
-		ZERO_ADDRESS,
-		referrals,
-		referralImpact
-	);
-	await tx.wait().then((e) => {
-		console.log('ThalesAMM: setStakingThalesAndReferrals()');
-	});
 	await delay(5000);
 	try {
 		await hre.run('verify:verify', {
 			address: ThalesAMMImplementation,
-		});
-	} catch (e) {
-		console.log(e);
-	}
-
-	try {
-		await hre.run('verify:verify', {
-			address: ThalesAMM_deployed.address,
 		});
 	} catch (e) {
 		console.log(e);

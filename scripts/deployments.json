@@ -59,8 +59,6 @@
 		"TherundownConsumer": "0x2B91c14Ce9aa828eD124D12541452a017d8a2148",
 		"TherundownConsumerImplementation": "0xB019CB0C09165a96f221427ad027b8946199d976",
 		"TherundownConsumerWrapper": "0x3877CE466be1618Dc4060eb53b9989831539b2B1",
-		"Vault": "0xF4507b4E2ff47c8008072B232Ce332e89a167f4D",
-		"VaultImplementation": "0x5ebC0a9278a87caFFc090f8E1e53f2fE60f76F9E",
 		"OvertimeVoucher": "0xF29Ba1A2F947D3c416382Dd853a1831e0d31DE9A",
 		"ApexConsumer": "0x0a6851C7D112A27019d84DCCb9cE0c0cd8b75325",
 		"ApexConsumerImplementation": "0x2DB7789c691E4d086ba167F34923BBBC9d844703",
@@ -107,7 +105,9 @@
 		"AmmVaultSafu": "0x6c7Fd4321183b542E81Bcc7dE4DfB88F9DBca29F",
 		"AmmVaultSafuImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"AmmVaultDegen": "0x43318DE9E8f65b591598F17aDD87ae7247649C83",
-		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc"
+		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
+		"ThalesAMMNew": "0x278B5A44397c9D8E52743fEdec263c4760dc1A1A",
+		"ThalesAMMNewImplementation": "0x653c6AdFB4A0865B78FEc02fedeb5D02D8fD83eb"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

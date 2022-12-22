@@ -568,8 +568,9 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         parlayMarketMastercopy = _parlayMarketMastercopy;
     }
 
-    function setParameters(bool _reducedFeesEnabled) external onlyOwner {
+    function setParameters(bool _reducedFeesEnabled, uint _parlaySize) external onlyOwner {
         reducedFeesEnabled = _reducedFeesEnabled;
+        parlaySize = _parlaySize;
     }
 
     function setAmounts(

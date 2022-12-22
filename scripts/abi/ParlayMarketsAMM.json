@@ -1394,6 +1394,11 @@
         "internalType": "bool",
         "name": "_reducedFeesEnabled",
         "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_parlaySize",
+        "type": "uint256"
       }
     ],
     "name": "setParameters",

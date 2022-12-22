@@ -479,6 +479,18 @@
         "internalType": "address",
         "name": "_main",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint24",
+        "name": "_homeScore",
+        "type": "uint24"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint24",
+        "name": "_awayScore",
+        "type": "uint24"
       }
     ],
     "name": "ResolveChildMarket",
@@ -1006,6 +1018,25 @@
       }
     ],
     "name": "getNormalizedOdds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_market",
+        "type": "address"
+      }
+    ],
+    "name": "getNormalizedOddsForMarket",
     "outputs": [
       {
         "internalType": "uint256[]",

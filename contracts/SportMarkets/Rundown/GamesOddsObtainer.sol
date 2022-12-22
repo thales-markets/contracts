@@ -339,11 +339,11 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _areTotalOddsValid(IGamesOddsObtainer.GameOdds memory _game) internal returns (bool) {
+    function _areTotalOddsValid(IGamesOddsObtainer.GameOdds memory _game) internal view returns (bool) {
         return verifier.areTotalOddsValid(_game.totalOver, _game.totalOverOdds, _game.totalUnder, _game.totalUnderOdds);
     }
 
-    function _areSpreadOddsValid(IGamesOddsObtainer.GameOdds memory _game) internal returns (bool) {
+    function _areSpreadOddsValid(IGamesOddsObtainer.GameOdds memory _game) internal view returns (bool) {
         return verifier.areSpreadOddsValid(_game.spreadHome, _game.spreadHomeOdds, _game.spreadAway, _game.spreadAwayOdds);
     }
 
@@ -413,7 +413,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         _setChildMarkets(_gameId, _mainMarket, _childMarket, _isSpread, _spreadHome, _totalOver, tags[1]);
     }
 
-    function _calculateTags(uint _sportsId, bool _isSpread) internal view returns (uint[] memory) {
+    function _calculateTags(uint _sportsId, bool _isSpread) internal pure returns (uint[] memory) {
         uint[] memory result = new uint[](2);
         result[0] = MIN_TAG_NUMBER + _sportsId;
         result[1] = _isSpread ? TAG_NUMBER_SPREAD : TAG_NUMBER_TOTAL;
@@ -451,7 +451,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
                 );
     }
 
-    function _parseSpread(int16 _spreadHome) internal view returns (string memory) {
+    function _parseSpread(int16 _spreadHome) internal pure returns (string memory) {
         return
             _spreadHome > 0
                 ? Strings.toString(uint16(_spreadHome))

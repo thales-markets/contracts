@@ -557,13 +557,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 "Low contract sUSD"
             );
             if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
-                ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
-
                 ISportPositionalMarket(market).mint(toMint);
-                parentMarket.mint(toMint);
+
+                address parentMarket = _mintParentPositions(market, position, amount);
 
                 (address parentMarketPosition1, address parentMarketPosition2) = sportAmmUtils
-                    .getParentMarketPositionAddresses(parentMarket, position);
+                    .getParentMarketPositionAddresses(ISportPositionalMarket(parentMarket), position);
 
                 IERC20Upgradeable(parentMarketPosition1).safeTransfer(market, amount);
                 IERC20Upgradeable(parentMarketPosition2).safeTransfer(market, amount);
@@ -911,6 +910,28 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 mintable = amount - availableInContract;
             }
         }
+    }
+
+    function _mintParentPositions(
+        address market,
+        ISportsAMM.Position position,
+        uint amount
+    ) internal returns (address) {
+        (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
+            .getParentMarketPositions(market, position);
+
+        uint toMintPosition1 = _getMintableAmount(parentMarket, position1, amount);
+        uint toMintPosition2 = _getMintableAmount(parentMarket, position2, amount);
+
+        if (toMintPosition1 > 0) {
+            ISportPositionalMarket(parentMarket).mint(toMintPosition1);
+        }
+
+        if (toMintPosition2 > 0) {
+            ISportPositionalMarket(parentMarket).mint(toMintPosition2);
+        }
+
+        return parentMarket;
     }
 
     function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {

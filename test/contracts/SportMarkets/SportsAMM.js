@@ -2455,6 +2455,8 @@ contract('SportsAMM', (accounts) => {
 			options = await doubleChanceDeployedMarket.balancesOf(first);
 			console.log('options balance after exercise: ', fromUnit(options[positionInAMM]));
 			console.log('difference: ', fromUnit(cost));
+
+			console.log('aaaaaa', await SportPositionalMarketData.getOddsForAllActiveMarkets());
 		});
 
 		it('Detailed test from creation to resolution - double chance', async () => {
@@ -2475,6 +2477,8 @@ contract('SportsAMM', (accounts) => {
 			let user1_USDamount = 100;
 			let user2_position = 1; // 2X
 			let user2_USDamount = 100;
+			let user3_position = 2; // 12
+			let user3_USDamount = 100;
 
 			let availableToBuy = await SportsAMM.availableToBuyFromAMM(
 				doubleChanceDeployedMarket.address,
@@ -2537,6 +2541,21 @@ contract('SportsAMM', (accounts) => {
 				{ from: second }
 			);
 
+			let buyFromAmmQuote_3 = await SportsAMM.buyFromAmmQuote(
+				doubleChanceDeployedMarket.address,
+				user3_position,
+				toUnit(user3_USDamount)
+			);
+
+			answer = await SportsAMM.buyFromAMM(
+				doubleChanceDeployedMarket.address,
+				user3_position,
+				toUnit(user3_USDamount),
+				buyFromAmmQuote_3,
+				additionalSlippage,
+				{ from: third }
+			);
+
 			let options = await doubleChanceDeployedMarket.balancesOf(first);
 			console.log(
 				'User 1 options bought: ',
@@ -2558,6 +2577,9 @@ contract('SportsAMM', (accounts) => {
 			console.log('USD balance of user 2: ', fromUnit(balance));
 			balance = await Thales.balanceOf(SportsAMM.address);
 			console.log('USD balance of AMM: ', fromUnit(balance));
+
+			console.log('aaaaaa', await SportPositionalMarketData.getOddsForAllActiveMarkets());
+
 			console.log('-------------------------------------------');
 			console.log('-------------- RESOLVE GAME ---------------');
 			console.log('-------------------------------------------');

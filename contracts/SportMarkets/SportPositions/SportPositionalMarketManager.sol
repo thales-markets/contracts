@@ -354,6 +354,11 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         SportPositionalMarket(market).resolve(_outcome);
         _activeMarkets.remove(market);
         _maturedMarkets.add(market);
+
+        if (doubleChanceMarkets[market] != address(0)) {
+            _activeMarkets.remove(doubleChanceMarkets[market]);
+            _maturedMarkets.add(doubleChanceMarkets[market]);
+        }
     }
 
     function resolveMarketWithResult(

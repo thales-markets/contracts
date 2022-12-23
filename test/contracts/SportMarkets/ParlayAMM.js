@@ -510,7 +510,7 @@ contract('ParlayAMM', (accounts) => {
 		await ParlayAMM.setParlayMarketMastercopies(ParlayMarketMastercopy.address, { from: owner });
 		await Thales.transfer(ParlayAMM.address, toUnit('20000'), { from: owner });
 
-		await ParlayAMM.setParameters(true, 5, { from: owner });
+		await ParlayAMM.setParameters(5, { from: owner });
 
 		await SportsAMM.setAddresses(
 			owner,
@@ -557,7 +557,7 @@ contract('ParlayAMM', (accounts) => {
 			);
 		});
 		it('SetAmounts', async () => {
-			await ParlayAMM.setParameters(true, 8, { from: owner });
+			await ParlayAMM.setParameters(8, { from: owner });
 		});
 		it('set Addresses', async () => {
 			await ParlayAMM.setAddresses(SportsAMM.address, owner, owner, owner, owner, {

@@ -228,7 +228,6 @@ contract ParlayVerifier {
                 eight
             );
             riskFree = (riskCombination + _sUSDInRisk) <= IParlayMarketsAMM(_parlayAMM).maxAllowedRiskPerCombination();
-            return riskFree;
         }
     }
 

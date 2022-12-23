@@ -59,7 +59,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     uint public referrerFee;
 
     bool public curveOnrampEnabled;
-    bool public reducedFeesEnabled;
+    bool public reducedFeesEnabled; // deprecated not removed due to storage collision
 
     AddressSetLib.AddressSet internal _knownMarkets;
     mapping(address => bool) public resolvedParlay;
@@ -69,7 +69,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     uint public maxAllowedRiskPerCombination;
     mapping(address => mapping(uint => mapping(address => mapping(uint => mapping(address => mapping(uint => mapping(address => mapping(uint => uint))))))))
-        public riskPerCombination;
+        public riskPerCombination; // deprecated not removed due to storage collision
 
     mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => uint))))))))
         public riskPerGameCombination;
@@ -550,8 +550,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         parlayMarketMastercopy = _parlayMarketMastercopy;
     }
 
-    function setParameters(bool _reducedFeesEnabled, uint _parlaySize) external onlyOwner {
-        reducedFeesEnabled = _reducedFeesEnabled;
+    function setParameters(uint _parlaySize) external onlyOwner {
         parlaySize = _parlaySize;
     }
 

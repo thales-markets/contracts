@@ -14,9 +14,6 @@ import "../../interfaces/ICurveSUSD.sol";
 
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
-    uint private constant ONE_PERCENT = 1e16;
-    uint private constant DEFAULT_PARLAY_SIZE = 4;
-    uint private constant MAX_APPROVAL = type(uint256).max;
 
     // ISportsAMM sportsAmm;
 
@@ -211,89 +208,28 @@ contract ParlayVerifier {
         uint _sUSDInRisk,
         address _parlayAMM
     ) internal view returns (bool riskFree) {
-        uint riskCombination;
-        if (_sportMarkets.length == 2) {
-            riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerGameCombination(
-                _sportMarkets[0],
-                _sportMarkets[1],
-                address(0),
-                address(0),
-                address(0),
-                address(0),
-                address(0),
-                address(0)
+        if (_sportMarkets.length > 1 && _sportMarkets.length < 9) {
+            address first = _sportMarkets[0];
+            address second = _sportMarkets[1];
+            address third = _sportMarkets.length > 2 ? _sportMarkets[2] : address(0);
+            address fourth = _sportMarkets.length > 3 ? _sportMarkets[3] : address(0);
+            address fifth = _sportMarkets.length > 4 ? _sportMarkets[4] : address(0);
+            address sixth = _sportMarkets.length > 5 ? _sportMarkets[5] : address(0);
+            address seventh = _sportMarkets.length > 6 ? _sportMarkets[6] : address(0);
+            address eight = _sportMarkets.length > 7 ? _sportMarkets[7] : address(0);
+            uint riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerGameCombination(
+                first,
+                second,
+                third,
+                fourth,
+                fifth,
+                sixth,
+                seventh,
+                eight
             );
-        } else if (_sportMarkets.length == 3) {
-            riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerGameCombination(
-                _sportMarkets[0],
-                _sportMarkets[1],
-                _sportMarkets[2],
-                address(0),
-                address(0),
-                address(0),
-                address(0),
-                address(0)
-            );
-        } else if (_sportMarkets.length == 4) {
-            riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerGameCombination(
-                _sportMarkets[0],
-                _sportMarkets[1],
-                _sportMarkets[2],
-                _sportMarkets[3],
-                address(0),
-                address(0),
-                address(0),
-                address(0)
-            );
-        } else if (_sportMarkets.length == 5) {
-            riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerGameCombination(
-                _sportMarkets[0],
-                _sportMarkets[1],
-                _sportMarkets[2],
-                _sportMarkets[3],
-                _sportMarkets[4],
-                address(0),
-                address(0),
-                address(0)
-            );
-        } else if (_sportMarkets.length == 6) {
-            riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerGameCombination(
-                _sportMarkets[0],
-                _sportMarkets[1],
-                _sportMarkets[2],
-                _sportMarkets[3],
-                _sportMarkets[4],
-                _sportMarkets[5],
-                address(0),
-                address(0)
-            );
-        } else if (_sportMarkets.length == 7) {
-            riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerGameCombination(
-                _sportMarkets[0],
-                _sportMarkets[1],
-                _sportMarkets[2],
-                _sportMarkets[3],
-                _sportMarkets[4],
-                _sportMarkets[5],
-                _sportMarkets[6],
-                address(0)
-            );
-        } else if (_sportMarkets.length == 8) {
-            riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerGameCombination(
-                _sportMarkets[0],
-                _sportMarkets[1],
-                _sportMarkets[2],
-                _sportMarkets[3],
-                _sportMarkets[4],
-                _sportMarkets[5],
-                _sportMarkets[6],
-                _sportMarkets[7]
-            );
-        } else {
-            return false;
+            riskFree = (riskCombination + _sUSDInRisk) <= IParlayMarketsAMM(_parlayAMM).maxAllowedRiskPerCombination();
+            return riskFree;
         }
-        riskFree = (riskCombination + _sUSDInRisk) <= IParlayMarketsAMM(_parlayAMM).maxAllowedRiskPerCombination();
-        return riskFree;
     }
 
     function _verifyMarket(

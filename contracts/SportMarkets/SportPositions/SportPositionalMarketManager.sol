@@ -52,6 +52,9 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     mapping(address => bool) public whitelistedCancelAddresses;
     address public oddsObtainer;
 
+    mapping(address => address) public doubleChanceMarkets;
+    mapping(address => bool) public isDoubleChance;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(address _owner, IERC20 _sUSD) external initializer {
@@ -122,6 +125,10 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     function isActiveMarket(address candidate) public view override returns (bool) {
         return _activeMarkets.contains(candidate) && !ISportPositionalMarket(candidate).paused();
+    }
+
+    function isDoubleChanceMarket(address candidate) public view override returns (bool) {
+        return isDoubleChance[candidate];
     }
 
     function numActiveMarkets() external view override returns (uint) {
@@ -283,6 +290,11 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
                     true
                 )
             );
+
+            doubleChanceMarkets[address(market)] = address(doubleChanceMarket);
+            isDoubleChance[address(doubleChanceMarket)] = true;
+
+            emit DoubleChanceMarketCreated(address(market), address(doubleChanceMarket), tagsDoubleChance[1]);
         }
 
         return market;
@@ -475,4 +487,5 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event OddsForMarketRestored(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event DatesUpdatedForMarket(address _market, uint256 _newStartTime, uint256 _expiry);
+    event DoubleChanceMarketCreated(address _parentMarket, address _doubleChanceMarket, uint tag);
 }

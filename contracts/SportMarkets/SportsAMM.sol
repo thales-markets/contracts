@@ -160,7 +160,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param position The position (home/away/draw) to check availability
     /// @return _available The amount of position options (tokens) available to buy from AMM.
     function availableToBuyFromAMM(address market, ISportsAMM.Position position) public view returns (uint _available) {
-        if (ISportPositionalMarket(market).isDoubleChance()) {
+        if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
             (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
                 .getParentMarketPositions(market, position);
 
@@ -223,7 +223,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         uint baseOdds,
         uint useSafeBoxSkewImpact
     ) internal view returns (uint returnQuote) {
-        if (ISportPositionalMarket(market).isDoubleChance()) {
+        if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
             (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
                 .getParentMarketPositions(market, position);
 
@@ -332,7 +332,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount
     ) public view returns (int impact) {
-        if (ISportPositionalMarket(market).isDoubleChance()) {
+        if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
             (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
                 .getParentMarketPositions(market, position);
 
@@ -556,7 +556,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 sUSD.balanceOf(address(this)) >= ISportPositionalMarketManager(manager).transformCollateral(toMint),
                 "Low contract sUSD"
             );
-            if (ISportPositionalMarket(market).isDoubleChance()) {
+            if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
                 ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
 
                 ISportPositionalMarket(market).mint(toMint);
@@ -585,7 +585,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             stakingThales.updateVolume(msg.sender, sUSDPaid);
         }
         if (
-            !ISportPositionalMarket(market).isDoubleChance() &&
+            !(ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) &&
             thresholdForOddsUpdate > 0 &&
             (amount - sUSDPaid) >= thresholdForOddsUpdate
         ) {
@@ -775,7 +775,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     // Internal
 
     function _obtainOdds(address _market, ISportsAMM.Position _position) internal view returns (uint) {
-        if (ISportPositionalMarket(_market).isDoubleChance()) {
+        if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(_market)) {
             (uint oddsPosition1, uint oddsPosition2) = sportAmmUtils.getBaseOddsForDoubleChance(_market, _position);
 
             return oddsPosition1 + oddsPosition2;
@@ -903,7 +903,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         ISportsAMM.Position position,
         uint amount
     ) internal view returns (uint mintable) {
-        if (ISportPositionalMarket(market).isDoubleChance()) {
+        if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
             mintable = amount;
         } else {
             uint availableInContract = sportAmmUtils.balanceOfPositionOnMarket(market, position, address(this));

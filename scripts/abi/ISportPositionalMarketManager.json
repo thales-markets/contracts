@@ -149,6 +149,25 @@
         "type": "address"
       }
     ],
+    "name": "isDoubleChanceMarket",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "candidate",
+        "type": "address"
+      }
+    ],
     "name": "isKnownMarket",
     "outputs": [
       {

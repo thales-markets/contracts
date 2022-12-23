@@ -31,6 +31,7 @@ const {
 	convertToDecimals,
 	encodeCall,
 	assertRevert,
+	getEventByName,
 } = require('../../utils/helpers');
 
 contract('SportsAMM', (accounts) => {
@@ -1533,6 +1534,11 @@ contract('SportsAMM', (accounts) => {
 			// console.log("Double chance market: ", doubleChanceAnswer.toString());
 			deployedMarket = await SportPositionalMarketContract.at(answer);
 			doubleChanceDeployedMarket = await SportPositionalMarketContract.at(doubleChanceAnswer);
+
+			assert.equal(
+				await SportPositionalMarketManager.doubleChanceMarkets(answer),
+				doubleChanceAnswer
+			);
 		});
 
 		let position = 0;
@@ -1554,6 +1560,11 @@ contract('SportsAMM', (accounts) => {
 		it('Is double chance market in AMM trading', async () => {
 			answer = await SportsAMM.isMarketInAMMTrading(doubleChanceDeployedMarket.address);
 			assert.equal(answer, true);
+		});
+
+		it('Market data test', async () => {
+			let activeMarkets = await SportPositionalMarketData.getOddsForAllActiveMarkets();
+			assert.bnEqual(activeMarkets.length, 2);
 		});
 
 		it('Pause market', async () => {
@@ -1612,6 +1623,11 @@ contract('SportsAMM', (accounts) => {
 		});
 
 		it('Get odds double chance', async () => {
+			let marketOdds = await SportsAMM.getMarketDefaultOdds(
+				doubleChanceDeployedMarket.address,
+				false
+			);
+
 			answer = await SportsAMM.obtainOdds(doubleChanceDeployedMarket.address, 0);
 			let sumOfOdds = answer;
 			console.log('Odds for pos 0: ', fromUnit(answer));
@@ -1667,7 +1683,6 @@ contract('SportsAMM', (accounts) => {
 
 		it('Get Available to buy from SportsAMM - double chance, position 1', async () => {
 			answer = await SportsAMM.availableToBuyFromAMM(doubleChanceDeployedMarket.address, 1);
-			console.log('Available to buy double chance pos 1: ', answer / 1e18);
 		});
 
 		it('Get BuyQuote from SportsAMM, position 1, value: 100', async () => {

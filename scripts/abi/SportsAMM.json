@@ -22,12 +22,6 @@
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_apexConsumer",
-        "type": "address"
-      },
-      {
-        "indexed": false,
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -1372,11 +1366,6 @@
       {
         "internalType": "address",
         "name": "_theRundownConsumer",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_apexConsumer",
         "type": "address"
       },
       {

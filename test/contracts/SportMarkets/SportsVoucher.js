@@ -379,7 +379,6 @@ contract('SportsVauchers', (accounts) => {
 			owner,
 			Thales.address,
 			TherundownConsumerDeployed.address,
-			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
 			ZERO_ADDRESS,

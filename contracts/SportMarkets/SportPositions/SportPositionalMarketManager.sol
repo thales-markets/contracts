@@ -16,7 +16,6 @@ import "./SportPosition.sol";
 import "../../interfaces/ISportPositionalMarketManager.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
 import "../../interfaces/ITherundownConsumer.sol";
-import "../../interfaces/IApexConsumer.sol";
 import "@openzeppelin/contracts-4.4.1/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
@@ -47,7 +46,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     address public sportPositionalMarketFactory;
     bool public needsTransformingCollateral;
     mapping(address => bool) public whitelistedAddresses;
-    address public apexConsumer;
+    address public apexConsumer; // deprecated
     uint public cancelTimeout;
     mapping(address => bool) public whitelistedCancelAddresses;
     address public oddsObtainer;
@@ -79,11 +78,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function setOddsObtainer(address _oddsObtainer) external onlyOwner {
         oddsObtainer = _oddsObtainer;
         emit SetObtainerAddress(_oddsObtainer);
-    }
-
-    function setApexConsumer(address _apexConsumer) external onlyOwner {
-        apexConsumer = _apexConsumer;
-        emit SetApexConsumer(_apexConsumer);
     }
 
     /// @notice setWhitelistedAddresses enables whitelist addresses of given array
@@ -152,7 +146,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         require(
             msg.sender == owner ||
                 msg.sender == theRundownConsumer ||
-                msg.sender == apexConsumer ||
+                msg.sender == oddsObtainer ||
                 whitelistedAddresses[msg.sender],
             "Invalid caller"
         );
@@ -161,7 +155,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     }
 
     function updateDatesForMarket(address _market, uint256 _newStartTime) external override {
-        require(msg.sender == owner || msg.sender == theRundownConsumer || msg.sender == apexConsumer, "Invalid caller");
+        require(msg.sender == owner || msg.sender == theRundownConsumer || msg.sender == oddsObtainer, "Invalid caller");
 
         uint expiry = _newStartTime.add(expiryDuration);
 
@@ -228,10 +222,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         )
     {
         require(marketCreationEnabled, "Market creation is disabled");
-        require(
-            msg.sender == theRundownConsumer || msg.sender == apexConsumer || msg.sender == oddsObtainer,
-            "Invalid creator"
-        );
+        require(msg.sender == theRundownConsumer || msg.sender == oddsObtainer, "Invalid creator");
 
         uint expiry = maturity.add(expiryDuration);
 
@@ -285,7 +276,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     function resolveMarket(address market, uint _outcome) external override {
         require(
             msg.sender == theRundownConsumer ||
-                msg.sender == apexConsumer ||
                 msg.sender == owner ||
                 msg.sender == oddsObtainer ||
                 whitelistedCancelAddresses[msg.sender],
@@ -311,8 +301,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         require(msg.sender == owner || whitelistedCancelAddresses[msg.sender], "Invalid resolver");
         if (_consumer == theRundownConsumer) {
             ITherundownConsumer(theRundownConsumer).resolveMarketManually(_market, _outcome, _homeScore, _awayScore);
-        } else if (_consumer == apexConsumer) {
-            IApexConsumer(apexConsumer).resolveMarketManually(_market, _outcome, _homeScore, _awayScore);
         }
     }
 
@@ -428,7 +416,6 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event SetsUSD(address _address);
     event SetTherundownConsumer(address theRundownConsumer);
     event SetObtainerAddress(address _obratiner);
-    event SetApexConsumer(address apexConsumer);
     event OddsForMarketRestored(address _market, uint _homeOdds, uint _awayOdds, uint _drawOdds);
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event DatesUpdatedForMarket(address _market, uint256 _newStartTime, uint256 _expiry);

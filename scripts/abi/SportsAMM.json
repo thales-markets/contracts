@@ -277,6 +277,31 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "_sport",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_child",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_cap",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetCapPerSportAndChild",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "_manager",
         "type": "address"
@@ -753,6 +778,30 @@
       }
     ],
     "name": "capPerSport",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "capPerSportAndChild",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1401,6 +1450,29 @@
       }
     ],
     "name": "setCapPerSport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_childID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_capPerChild",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCapPerSportAndChild",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

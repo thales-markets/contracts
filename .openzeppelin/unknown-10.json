@@ -344,6 +344,11 @@
       "address": "0x3ff20410003767edE94c06c5Df56968d90ABAe6c",
       "txHash": "0xa7d233162817b00e5bac3e04919f5a54a8c3f3be9f71ff749f4759f4aacf27b3",
       "kind": "transparent"
+    },
+    {
+      "address": "0xd8Bc9D6840C701bFAd5E7cf98CAdC2ee637c0701",
+      "txHash": "0x11ca05f8f8e37616ce9493c23d515849473486e0d9693b1b0b54e459b3b7f9bc",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -53876,6 +53881,85 @@
           },
           "t_mapping(t_address,t_uint24)": {
             "label": "mapping(address => uint24)"
+          }
+        }
+      }
+    },
+    "fcd10ae27cdc4df8eaa26100bc21cab3c9de40af27d0c8a382a6061ea5d4e1cc": {
+      "address": "0x1853bcf689FdCdb4Fd2a74e89205598855BEe8d3",
+      "txHash": "0xc570d73312dea23b370be73097751b201e711ea6ab92845b643bc30297635d7d",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "owner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:7"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "nominatedOwner",
+            "type": "t_address",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:8"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:9"
+          },
+          {
+            "contract": "ProxyOwned",
+            "label": "_transferredAtInit",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyOwned.sol:10"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "lastPauseTime",
+            "type": "t_uint256",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:11"
+          },
+          {
+            "contract": "ProxyPausable",
+            "label": "paused",
+            "type": "t_bool",
+            "src": "contracts/utils/proxy/solidity-0.8.0/ProxyPausable.sol:12"
+          },
+          {
+            "contract": "SportPositionalMarketData",
+            "label": "manager",
+            "type": "t_address",
+            "src": "contracts/SportMarkets/SportPositions/SportPositionalMarketData.sol:18"
+          },
+          {
+            "contract": "SportPositionalMarketData",
+            "label": "sportsAMM",
+            "type": "t_address",
+            "src": "contracts/SportMarkets/SportPositions/SportPositionalMarketData.sol:19"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bool": {
+            "label": "bool"
           }
         }
       }

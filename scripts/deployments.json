@@ -109,7 +109,7 @@
 		"AmmVaultDegen": "0x43318DE9E8f65b591598F17aDD87ae7247649C83",
 		"AmmVaultDegenImplementation": "0x1DC1a62F7F333347B3885fFeef71Cb4D00829fAc",
 		"GamesOddsObtainer": "0x3ff20410003767edE94c06c5Df56968d90ABAe6c",
-		"GamesOddsObtainerImplementation": "0x67C5ca02B4570ABd1E0632B2EEcE2FC0d9581072"
+		"GamesOddsObtainerImplementation": "0x7FE0E7F9b8Ad85C0F2dFE8073Ebe5F41D67a7B9e"
 	},
 	"polygon": {
 		"ProxyUSDC": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",

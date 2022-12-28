@@ -28,7 +28,7 @@ const DAY = 24 * 60 * 60;
 
 const MockAggregator = artifacts.require('MockAggregatorV2V3');
 
-contract('Position', accounts => {
+contract('Position', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy, exersizer] = accounts;
 	let creator, owner;
 	const sUSDQty = toUnit(10000);
@@ -40,7 +40,7 @@ contract('Position', accounts => {
 			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
-			event => event['event'] && event['event'] === 'MarketCreated'
+			(event) => event['event'] && event['event'] === 'MarketCreated'
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
@@ -89,9 +89,6 @@ contract('Position', accounts => {
 		await manager.connect(creator).setTimeframeBuffer(1);
 		await manager.connect(creator).setPriceBuffer(toUnit(0.05).toString());
 
-		let DeciMath = artifacts.require('DeciMath');
-		let deciMath = await DeciMath.new();
-
 		const hour = 60 * 60;
 		let ThalesAMM = artifacts.require('ThalesAMM');
 		thalesAMM = await ThalesAMM.new();
@@ -100,7 +97,7 @@ contract('Position', accounts => {
 			priceFeed.address,
 			sUSDSynth.address,
 			toUnit(1000),
-			deciMath.address,
+			owner.address,
 			toUnit(0.01),
 			toUnit(0.05),
 			hour * 2

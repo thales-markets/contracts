@@ -65,10 +65,10 @@ async function main() {
 
 	console.log('LINK address: ', chainlink['LINK']);
 	console.log('ORACLE address: ', chainlink['ORACLE']);
-	const paymentCreate = w3utils.toWei('0.1');
-	const paymentResolve = w3utils.toWei('0.1');
-	const paymentOdds = w3utils.toWei('0.1');
-	let oddsSpecId = '0x3032393562356366643662643435346262653738363532643732636139363961';
+	const paymentCreate = w3utils.toWei('0.01');
+	const paymentResolve = w3utils.toWei('0.01');
+	const paymentOdds = w3utils.toWei('0.01');
+	let oddsSpecId = '0x3230646438613738373265343436303862386438323239636566333666623638';
 
 	const TherundownConsumerWrapper = getTargetAddress('TherundownConsumerWrapper', network);
 	console.log('TherundownConsumerWrapper: ', TherundownConsumerWrapper);

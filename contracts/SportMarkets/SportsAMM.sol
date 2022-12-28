@@ -17,7 +17,6 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
-import "../interfaces/IApexConsumer.sol";
 import "../interfaces/ICurveSUSD.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ISportsAMM.sol";
@@ -106,7 +105,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     address public parlayAMM;
 
     /// @return The address of Apex Consumer
-    address public apexConsumer;
+    address public apexConsumer; // deprecated
 
     /// @return maximum supported discount in percentage on sUSD purchases with different collaterals
     uint public maxAllowedPegSlippagePercentage;
@@ -131,6 +130,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
     // @return specific min_spread per address
     mapping(address => uint) public min_spreadPerAddress;
+
+    /// @return the cap per sportID and childID. based on the tagID[0] and tagID[1]
+    mapping(uint => mapping(uint => uint)) public capPerSportAndChild;
 
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
@@ -298,6 +300,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (amount > 0 && amount <= _availableToBuyFromAMM) {
             impact = _buyPriceImpact(market, position, amount, _availableToBuyFromAMM, _availableOtherSide);
         }
+    }
+
+    /// @notice Read amm utils address
+    /// @return address return address
+    function getAmmUtils() external view returns (SportsAMMUtils) {
+        return sportAmmUtils;
     }
 
     /// @notice Calculate the maximum position amount available to sell to AMM for specific market/game
@@ -711,7 +719,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _safeBox Address of the Safe Box
     /// @param _sUSD Address of the sUSD
     /// @param _theRundownConsumer Address of Therundown consumer
-    /// @param _apexConsumer Address of Apex consumer
     /// @param _stakingThales Address of Staking contract
     /// @param _referrals contract for referrals storage
     /// @param _wrapper contract for calling wrapper contract
@@ -719,7 +726,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _safeBox,
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
-        address _apexConsumer,
         IStakingThales _stakingThales,
         address _referrals,
         address _parlayAMM,
@@ -728,22 +734,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         safeBox = _safeBox;
         sUSD = _sUSD;
         theRundownConsumer = _theRundownConsumer;
-        apexConsumer = _apexConsumer;
         stakingThales = _stakingThales;
         referrals = _referrals;
         parlayAMM = _parlayAMM;
         wrapper = ITherundownConsumerWrapper(_wrapper);
 
-        emit AddressesUpdated(
-            _safeBox,
-            _sUSD,
-            _theRundownConsumer,
-            _apexConsumer,
-            _stakingThales,
-            _referrals,
-            _parlayAMM,
-            _wrapper
-        );
+        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper);
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -815,6 +811,15 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetCapPerSport(_sportID, _capPerSport);
     }
 
+    function setCapPerSportAndChild(
+        uint _sportID,
+        uint _childID,
+        uint _capPerChild
+    ) external onlyOwner {
+        capPerSportAndChild[_sportID][_childID] = _capPerChild;
+        emit SetCapPerSportAndChild(_sportID, _childID, _capPerChild);
+    }
+
     /// @notice Setting default odds updater treshold amount for payment
     /// @param _threshold amount
     function setThresholdForOddsUpdate(uint _threshold) external onlyOwner {
@@ -840,16 +845,18 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     // Internal
 
     function _obtainOdds(address _market, ISportsAMM.Position _position) internal view returns (uint) {
-        return sportAmmUtils.obtainOdds(_market, _position, apexConsumer, theRundownConsumer);
+        return sportAmmUtils.obtainOdds(_market, _position, theRundownConsumer);
     }
 
     function _calculateCapToBeUsed(address market) internal view returns (uint) {
         if (capPerMarket[market] == 0) {
             if (ITherundownConsumer(theRundownConsumer).isChildMarket(market)) {
                 return
-                    capPerSport[ISportPositionalMarket(market).tags(1)] > 0
-                        ? capPerSport[ISportPositionalMarket(market).tags(1)]
-                        : defaultCapPerGame;
+                    capPerSportAndChild[ISportPositionalMarket(market).tags(0)][ISportPositionalMarket(market).tags(1)] > 0
+                        ? capPerSportAndChild[ISportPositionalMarket(market).tags(0)][ISportPositionalMarket(market).tags(1)]
+                        : capPerSport[ISportPositionalMarket(market).tags(0)] > 0
+                        ? capPerSport[ISportPositionalMarket(market).tags(0)] / 2
+                        : defaultCapPerGame / 2;
             }
             return
                 capPerSport[ISportPositionalMarket(market).tags(0)] > 0
@@ -1103,7 +1110,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _safeBox,
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
-        address _apexConsumer,
         IStakingThales _stakingThales,
         address _referrals,
         address _parlayAMM,
@@ -1115,4 +1121,5 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetCapPerSport(uint _sport, uint _cap);
     event SetCapPerMarket(address _market, uint _cap);
     event SetThresholdForOddsUpdate(uint _threshold);
+    event SetCapPerSportAndChild(uint _sport, uint _child, uint _cap);
 }

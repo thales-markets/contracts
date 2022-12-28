@@ -72,7 +72,7 @@ async function main() {
 	console.log('TherundownConsumer address: ', consumerAddress);
 
 	// NBA, NFL
-	const supportedSportIds = [2, 4];
+	const supportedSportIds = [2];
 
 	/* ========== DEPLOY CONTRACT ========== */
 

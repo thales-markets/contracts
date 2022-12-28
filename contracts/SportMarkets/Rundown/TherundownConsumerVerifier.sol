@@ -365,9 +365,13 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             marketAddress,
             consumer.marketResolved(marketAddress),
             consumer.marketCanceled(marketAddress),
-            consumer.invalidOdds(marketAddress),
+            obtainer.invalidOdds(marketAddress),
             consumer.isPausedByCanceledStatus(marketAddress)
         );
+    }
+
+    function areInvalidOdds(bytes32 _gameIds) external view returns (bool _invalidOdds) {
+        return obtainer.invalidOdds(consumer.marketPerGameId(_gameIds));
     }
 
     /// @notice getting bookmaker by sports id

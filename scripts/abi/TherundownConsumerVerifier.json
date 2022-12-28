@@ -234,6 +234,25 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "_gameIds",
+        "type": "bytes32"
+      }
+    ],
+    "name": "areInvalidOdds",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "_invalidOdds",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_sportId",
         "type": "uint256"

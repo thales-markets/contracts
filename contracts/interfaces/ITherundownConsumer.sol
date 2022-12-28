@@ -14,11 +14,13 @@ interface ITherundownConsumer {
     }
 
     // view functions
-    function isSupportedSport(uint _sportId) external view returns (bool);
-
-    function isSupportedMarketType(string memory _market) external pure returns (bool);
+    function supportedSport(uint _sportId) external view returns (bool);
 
     function getNormalizedOdds(bytes32 _gameId) external view returns (uint[] memory);
+
+    function getNormalizedOddsForMarket(address _market) external view returns (uint[] memory);
+
+    function getNormalizedChildOdds(address _market) external view returns (uint[] memory);
 
     function getNormalizedOddsForTwoPosition(bytes32 _gameId) external view returns (uint[] memory);
 
@@ -37,6 +39,8 @@ interface ITherundownConsumer {
 
     function getGameCreatedById(bytes32 _gameId) external view returns (GameCreate memory);
 
+    function isChildMarket(address _market) external view returns (bool);
+
     // write functions
     function fulfillGamesCreated(
         bytes32 _requestId,
@@ -53,6 +57,21 @@ interface ITherundownConsumer {
 
     function fulfillGamesOdds(bytes32 _requestId, bytes[] memory _games) external;
 
+    function setPausedByCanceledStatus(address _market, bool _flag) external;
+
+    function setGameIdPerChildMarket(bytes32 _gameId, address _child) external;
+
+    function pauseOrUnpauseMarket(address _market, bool _pause) external;
+
+    function setChildMarkets(
+        bytes32 _gameId,
+        address _main,
+        address _child,
+        bool _isSpread,
+        int16 _spreadHome,
+        uint24 _totalOver
+    ) external;
+
     function resolveMarketManually(
         address _market,
         uint _outcome,
@@ -68,6 +87,8 @@ interface ITherundownConsumer {
             int24,
             int24
         );
+
+    function sportsIdPerGame(bytes32 _gameId) external view returns (uint);
 
     function marketPerGameId(bytes32 _gameId) external view returns (address);
 

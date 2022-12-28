@@ -51,6 +51,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         uint positionCount;
         address[] positions;
         uint[] tags;
+        bool isChild;
+        address parentMarket;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -80,6 +82,8 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
     bool public invalidOdds;
     bool public initialized = false;
     bool public override paused;
+    bool public override isChild;
+    address public parentMarket;
 
     /* ========== CONSTRUCTOR ========== */
     function initialize(SportPositionalMarketParameters calldata _parameters) external {
@@ -105,8 +109,21 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
         options.away = SportPosition(_parameters.positions[1]);
         // abi.encodePacked("sUP: ", _oracleKey)
         // consider naming the option: sUpBTC>50@2021.12.31
-        options.home.initialize(gameDetails.gameLabel, "HOME", _parameters.sportsAMM);
-        options.away.initialize(gameDetails.gameLabel, "AWAY", _parameters.sportsAMM);
+        if (_parameters.isChild) {
+            isChild = true;
+            parentMarket = _parameters.parentMarket;
+            require(tags.length > 1, "Child markets must have two tags");
+            if (tags[1] == 10001) {
+                options.home.initialize(gameDetails.gameLabel, "HOME", _parameters.sportsAMM);
+                options.away.initialize(gameDetails.gameLabel, "AWAY", _parameters.sportsAMM);
+            } else if (tags[1] == 10002) {
+                options.home.initialize(gameDetails.gameLabel, "OVER", _parameters.sportsAMM);
+                options.away.initialize(gameDetails.gameLabel, "UNDER", _parameters.sportsAMM);
+            }
+        } else {
+            options.home.initialize(gameDetails.gameLabel, "HOME", _parameters.sportsAMM);
+            options.away.initialize(gameDetails.gameLabel, "AWAY", _parameters.sportsAMM);
+        }
 
         if (optionsCount > 2) {
             options.draw = SportPosition(_parameters.positions[2]);
@@ -398,7 +415,7 @@ contract SportPositionalMarket is OwnedWithInit, ISportPositionalMarket {
 
     function stampOdds() internal {
         uint[] memory odds = new uint[](optionsCount);
-        odds = ITherundownConsumer(theRundownConsumer).getNormalizedOdds(gameDetails.gameId);
+        odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(address(this));
         if (odds[0] == 0 || odds[1] == 0) {
             invalidOdds = true;
         }

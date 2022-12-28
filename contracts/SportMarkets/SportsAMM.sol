@@ -302,6 +302,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
+    /// @notice Read amm utils address
+    /// @return address return address
+    function getAmmUtils() external view returns (SportsAMMUtils) {
+        return sportAmmUtils;
+    }
+
     /// @notice Calculate the maximum position amount available to sell to AMM for specific market/game
     /// @param market The address of the SportPositional market of a game
     /// @param position The position (home/away/draw) to sell to AMM
@@ -848,7 +854,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 return
                     capPerSportAndChild[ISportPositionalMarket(market).tags(0)][ISportPositionalMarket(market).tags(1)] > 0
                         ? capPerSportAndChild[ISportPositionalMarket(market).tags(0)][ISportPositionalMarket(market).tags(1)]
-                        : (capPerSport[ISportPositionalMarket(market).tags(0)] / 2);
+                        : capPerSport[ISportPositionalMarket(market).tags(0)] > 0
+                        ? capPerSport[ISportPositionalMarket(market).tags(0)] / 2
+                        : defaultCapPerGame / 2;
             }
             return
                 capPerSport[ISportPositionalMarket(market).tags(0)] > 0

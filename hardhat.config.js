@@ -29,7 +29,6 @@ const OP_ETHERSCAN_KEY = process.env.OP_ETHERSCAN_KEY;
 const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY;
 const BSC_API_KEY = process.env.BSC_API_KEY;
 const ARBITRUM_API_KEY = process.env.ARBITRUM_API_KEY;
-const PRIVATE_KEY_OPTIMISTIC_KOVAN = process.env.PRIVATE_KEY_OPTIMISTIC_KOVAN;
 const LOCAL_OPT_IP = process.env.LOCAL_OPT_IP ? process.env.LOCAL_OPT_IP : 'http://127.0.0.1:8545';
 
 module.exports = {
@@ -55,14 +54,12 @@ module.exports = {
 			kovan: ETHERSCAN_KEY,
 			// optimism
 			optimisticEthereum: OP_ETHERSCAN_KEY,
-			optimisticKovan: OP_ETHERSCAN_KEY,
 			optimisticGoerli: OP_ETHERSCAN_KEY,
 			// polygon
 			polygon: POLYGONSCAN_API_KEY,
 			polygonMumbai: POLYGONSCAN_API_KEY,
 			bsc: BSC_API_KEY,
 			arbitrumOne: ARBITRUM_API_KEY,
-			optimisticGoerli: OP_ETHERSCAN_KEY,
 		},
 		// apiURL: "https://api-kovan-optimistic.etherscan.io",
 	},
@@ -184,11 +181,6 @@ module.exports = {
 		},
 		optimisticEthereum: {
 			url: 'https://mainnet.optimism.io',
-			accounts: [PRIVATE_KEY],
-		},
-		optimisticKovan: {
-			gasPrice: 10000,
-			url: 'https://optimism-kovan.infura.io/v3/' + INFURA,
 			accounts: [PRIVATE_KEY],
 		},
 		optimisticGoerli: {

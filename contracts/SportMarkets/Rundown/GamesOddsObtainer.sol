@@ -339,7 +339,7 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         }
     }
 
-    function _areTotalOddsValid(IGamesOddsObtainer.GameOdds memory _game) internal returns (bool) {
+    function _areTotalOddsValid(IGamesOddsObtainer.GameOdds memory _game) internal view returns (bool) {
         return verifier.areTotalOddsValid(_game.totalOver, _game.totalOverOdds, _game.totalUnder, _game.totalUnderOdds);
     }
 
@@ -579,18 +579,8 @@ contract GamesOddsObtainer is Initializable, ProxyOwned, ProxyPausable {
         uint16 _homeScore,
         uint16 _awayScore
     ) internal {
-        int16 spreadLine = childMarketSread[_child]; // can be negative
-
-        uint16 homeScoreWithSpread = 0;
-        if (spreadLine > 0) {
-            // add on hometeam score
-            homeScoreWithSpread = (_homeScore * 100) + uint16(spreadLine);
-        } else {
-            // sub on hometeam score
-            homeScoreWithSpread = (_homeScore * 100) - uint16(spreadLine * (-1));
-        }
-
-        uint16 newAwayScore = _awayScore * 100;
+        int16 homeScoreWithSpread = int16(_homeScore) * 100 + childMarketSread[_child];
+        int16 newAwayScore = int16(_awayScore) * 100;
 
         if (homeScoreWithSpread > newAwayScore) {
             sportsManager.resolveMarket(_child, HOME_WIN);

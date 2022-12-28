@@ -22,12 +22,6 @@
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_apexConsumer",
-        "type": "address"
-      },
-      {
-        "indexed": false,
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -292,6 +286,19 @@
         "internalType": "uint256",
         "name": "_cap",
         "type": "uint256"
+      }
+    ],
+    "name": "SetCapPerSportAndChild",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
       }
     ],
     "name": "SetCapPerSportAndChild",
@@ -824,6 +831,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getAmmUtils",
+    "outputs": [
+      {
+        "internalType": "contract SportsAMMUtils",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1246,11 +1266,6 @@
       {
         "internalType": "address",
         "name": "_theRundownConsumer",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_apexConsumer",
         "type": "address"
       },
       {

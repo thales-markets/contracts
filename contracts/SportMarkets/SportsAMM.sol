@@ -17,7 +17,6 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
-import "../interfaces/IApexConsumer.sol";
 import "../interfaces/ICurveSUSD.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ISportsAMM.sol";
@@ -106,7 +105,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint public referrerFee;
 
     /// @return The address of Apex Consumer
-    address public apexConsumer;
+    address public apexConsumer; // deprecated
 
     /// @return The address of Parlay AMM
     address public parlayAMM;
@@ -350,6 +349,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 impact = _buyPriceImpact(market, position, amount, _availableToBuyFromAMM, _availableOtherSide);
             }
         }
+    }
+
+    /// @notice Read amm utils address
+    /// @return address return address
+    function getAmmUtils() external view returns (SportsAMMUtils) {
+        return sportAmmUtils;
     }
 
     /// @notice Obtains the oracle odds for `_position` of a given `_market` game. Odds do not contain price impact
@@ -648,7 +653,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _safeBox Address of the Safe Box
     /// @param _sUSD Address of the sUSD
     /// @param _theRundownConsumer Address of Therundown consumer
-    /// @param _apexConsumer Address of Apex consumer
     /// @param _stakingThales Address of Staking contract
     /// @param _referrals contract for referrals storage
     /// @param _wrapper contract for calling wrapper contract
@@ -656,7 +660,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _safeBox,
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
-        address _apexConsumer,
         IStakingThales _stakingThales,
         address _referrals,
         address _parlayAMM,
@@ -665,22 +668,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         safeBox = _safeBox;
         sUSD = _sUSD;
         theRundownConsumer = _theRundownConsumer;
-        apexConsumer = _apexConsumer;
         stakingThales = _stakingThales;
         referrals = _referrals;
         parlayAMM = _parlayAMM;
         wrapper = ITherundownConsumerWrapper(_wrapper);
 
-        emit AddressesUpdated(
-            _safeBox,
-            _sUSD,
-            _theRundownConsumer,
-            _apexConsumer,
-            _stakingThales,
-            _referrals,
-            _parlayAMM,
-            _wrapper
-        );
+        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper);
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -804,7 +797,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 return
                     capPerSportAndChild[ISportPositionalMarket(market).tags(0)][ISportPositionalMarket(market).tags(1)] > 0
                         ? capPerSportAndChild[ISportPositionalMarket(market).tags(0)][ISportPositionalMarket(market).tags(1)]
-                        : (capPerSport[ISportPositionalMarket(market).tags(0)] / 2);
+                        : capPerSport[ISportPositionalMarket(market).tags(0)] > 0
+                        ? capPerSport[ISportPositionalMarket(market).tags(0)] / 2
+                        : defaultCapPerGame / 2;
             }
             return
                 capPerSport[ISportPositionalMarket(market).tags(0)] > 0
@@ -1008,7 +1003,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _safeBox,
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
-        address _apexConsumer,
         IStakingThales _stakingThales,
         address _referrals,
         address _parlayAMM,

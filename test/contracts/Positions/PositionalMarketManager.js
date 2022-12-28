@@ -27,7 +27,7 @@ let aggregator_sAUD;
 const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 const DAY = 24 * 60 * 60;
 
-contract('PositionalMarketManager', accounts => {
+contract('PositionalMarketManager', (accounts) => {
 	const [initialCreator, managerOwner, minter, dummy, exerciser, secondCreator] = accounts;
 	let creator, owner, minterSigner, exerciserSigner, dummySigner;
 
@@ -45,7 +45,7 @@ contract('PositionalMarketManager', accounts => {
 			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
 		let receipt = await tx.wait();
 		const marketEvent = receipt.events.find(
-			event => event['event'] && event['event'] === 'MarketCreated'
+			(event) => event['event'] && event['event'] === 'MarketCreated'
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
@@ -93,9 +93,6 @@ contract('PositionalMarketManager', accounts => {
 
 		await manager.connect(creator).setMaxTimeToMaturity(30 * DAY);
 
-		let DeciMath = artifacts.require('DeciMath');
-		let deciMath = await DeciMath.new();
-
 		const hour = 60 * 60;
 		let ThalesAMM = artifacts.require('ThalesAMM');
 		thalesAMM = await ThalesAMM.new();
@@ -104,7 +101,7 @@ contract('PositionalMarketManager', accounts => {
 			priceFeed.address,
 			sUSDSynth.address,
 			toUnit(1000),
-			deciMath.address,
+			owner.address, //placeholder
 			toUnit(0.01),
 			toUnit(0.05),
 			hour * 2
@@ -138,7 +135,7 @@ contract('PositionalMarketManager', accounts => {
 		it('Multiple markets can exist simultaneously, and debt is tracked properly across them. ', async () => {
 			const now = await currentTime();
 			const markets = await Promise.all(
-				[toUnit(1), toUnit(2), toUnit(3)].map(price =>
+				[toUnit(1), toUnit(2), toUnit(3)].map((price) =>
 					createMarket(manager, sAUDKey, price, now + 200, toUnit(1), creator)
 				)
 			);
@@ -154,7 +151,7 @@ contract('PositionalMarketManager', accounts => {
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), await currentTime());
 
 			await Promise.all(
-				markets.map(m => {
+				markets.map((m) => {
 					manager.resolveMarket(m.address);
 				})
 			);
@@ -189,14 +186,14 @@ contract('PositionalMarketManager', accounts => {
 
 			const evenMarkets = markets
 				.filter((e, i) => i % 2 === 0)
-				.map(m => m.address)
+				.map((m) => m.address)
 				.sort();
 			const oddMarkets = markets
 				.filter((e, i) => i % 2 !== 0)
-				.map(m => m.address)
+				.map((m) => m.address)
 				.sort();
 
-			const createdMarkets = markets.map(m => m.address).sort();
+			const createdMarkets = markets.map((m) => m.address).sort();
 
 			let recordedMarkets = await manager.activeMarkets(0, 100);
 			let recordedMarketsSorted = [...recordedMarkets].sort();
@@ -208,7 +205,7 @@ contract('PositionalMarketManager', accounts => {
 			await fastForward(expiryDuration + 1000);
 			await aggregator_sAUD.setLatestAnswer(convertToDecimals(2, 8), await currentTime());
 
-			await Promise.all(evenMarkets.map(m => manager.resolveMarket(m)));
+			await Promise.all(evenMarkets.map((m) => manager.resolveMarket(m)));
 
 			assert.bnEqual(await manager.numActiveMarkets(), toBN(4));
 			recordedMarkets = await manager.activeMarkets(0, 100);
@@ -226,7 +223,7 @@ contract('PositionalMarketManager', accounts => {
 			await manager.connect(creator).expireMarkets(evenMarkets);
 
 			// Mature the rest of the markets
-			await Promise.all(oddMarkets.map(m => manager.resolveMarket(m)));
+			await Promise.all(oddMarkets.map((m) => manager.resolveMarket(m)));
 			let remainingMarkets = await manager.maturedMarkets(0, 100);
 			let remainingMarketsSorted = [...remainingMarkets].sort();
 			assert.bnEqual(await manager.numMaturedMarkets(), toBN(numMarkets / 2));

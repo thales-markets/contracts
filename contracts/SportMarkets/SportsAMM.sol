@@ -132,6 +132,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     // @return specific min_spread per address
     mapping(address => uint) public min_spreadPerAddress;
 
+    /// @return the cap per sportID and childID. based on the tagID[0] and tagID[1]
+    mapping(uint => mapping(uint => uint)) public capPerSportAndChild;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -749,6 +752,19 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         emit SetCapPerSport(_sportID, _capPerSport);
     }
 
+    /// @notice Setting the Cap per Sport ID
+    /// @param _sportID The tagID used for sport (9004)
+    /// @param _childID The tagID used for childid (10002)
+    /// @param _capPerChild The cap amount used for the sportID
+    function setCapPerSportAndChild(
+        uint _sportID,
+        uint _childID,
+        uint _capPerChild
+    ) external onlyOwner {
+        capPerSportAndChild[_sportID][_childID] = _capPerChild;
+        emit SetCapPerSportAndChild(_sportID, _childID, _capPerChild);
+    }
+
     /// @notice Setting default odds updater treshold amount for payment
     /// @param _threshold amount
     function setThresholdForOddsUpdate(uint _threshold) external onlyOwner {
@@ -786,9 +802,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (capPerMarket[market] == 0) {
             if (ITherundownConsumer(theRundownConsumer).isChildMarket(market)) {
                 return
-                    capPerSport[ISportPositionalMarket(market).tags(1)] > 0
-                        ? capPerSport[ISportPositionalMarket(market).tags(1)]
-                        : defaultCapPerGame;
+                    capPerSportAndChild[ISportPositionalMarket(market).tags(0)][ISportPositionalMarket(market).tags(1)] > 0
+                        ? capPerSportAndChild[ISportPositionalMarket(market).tags(0)][ISportPositionalMarket(market).tags(1)]
+                        : (capPerSport[ISportPositionalMarket(market).tags(0)] / 2);
             }
             return
                 capPerSport[ISportPositionalMarket(market).tags(0)] > 0
@@ -1004,4 +1020,5 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     event SetCapPerSport(uint _sport, uint _cap);
     event SetCapPerMarket(address _market, uint _cap);
     event SetThresholdForOddsUpdate(uint _threshold);
+    event SetCapPerSportAndChild(uint _sport, uint _child, uint _cap);
 }

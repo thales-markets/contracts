@@ -70,6 +70,40 @@
   {
     "inputs": [
       {
+        "internalType": "int16",
+        "name": "spreadHome",
+        "type": "int16"
+      },
+      {
+        "internalType": "int24",
+        "name": "spreadHomeOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int16",
+        "name": "spreadAway",
+        "type": "int16"
+      },
+      {
+        "internalType": "int24",
+        "name": "spreadAwayOdds",
+        "type": "int24"
+      }
+    ],
+    "name": "areSpreadOddsValid",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_teamA",
         "type": "string"
@@ -81,6 +115,40 @@
       }
     ],
     "name": "areTeamsEqual",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint24",
+        "name": "totalOver",
+        "type": "uint24"
+      },
+      {
+        "internalType": "int24",
+        "name": "totalOverOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "uint24",
+        "name": "totalUnder",
+        "type": "uint24"
+      },
+      {
+        "internalType": "int24",
+        "name": "totalUnderOdds",
+        "type": "int24"
+      }
+    ],
+    "name": "areTotalOddsValid",
     "outputs": [
       {
         "internalType": "bool",

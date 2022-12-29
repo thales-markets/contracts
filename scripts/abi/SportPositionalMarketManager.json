@@ -92,12 +92,6 @@
       },
       {
         "indexed": false,
-        "internalType": "string",
-        "name": "gameLabel",
-        "type": "string"
-      },
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "maturityDate",
         "type": "uint256"
@@ -154,6 +148,25 @@
       }
     ],
     "name": "MarketExpired",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "gameLabel",
+        "type": "string"
+      }
+    ],
+    "name": "MarketLabel",
     "type": "event"
   },
   {
@@ -289,11 +302,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "apexConsumer",
+        "name": "migratingManager",
         "type": "address"
       }
     ],
-    "name": "SetApexConsumer",
+    "name": "SetMigratingManager",
     "type": "event"
   },
   {
@@ -302,11 +315,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "migratingManager",
+        "name": "_obratiner",
         "type": "address"
       }
     ],
-    "name": "SetMigratingManager",
+    "name": "SetObtainerAddress",
     "type": "event"
   },
   {
@@ -436,6 +449,16 @@
         "internalType": "uint256[]",
         "name": "tags",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "isChild",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "parentMarket",
+        "type": "address"
       }
     ],
     "name": "createMarket",
@@ -744,6 +767,19 @@
   },
   {
     "inputs": [],
+    "name": "oddsObtainer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -882,19 +918,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_apexConsumer",
-        "type": "address"
-      }
-    ],
-    "name": "setApexConsumer",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "_cancelTimeout",
         "type": "uint256"
@@ -945,6 +968,19 @@
       }
     ],
     "name": "setMarketPaused",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_oddsObtainer",
+        "type": "address"
+      }
+    ],
+    "name": "setOddsObtainer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

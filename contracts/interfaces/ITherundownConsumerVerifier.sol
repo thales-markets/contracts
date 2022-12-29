@@ -24,6 +24,20 @@ interface ITherundownConsumerVerifier {
         int24 _drawOdds
     ) external view returns (bool);
 
+    function areSpreadOddsValid(
+        int16 spreadHome,
+        int24 spreadHomeOdds,
+        int16 spreadAway,
+        int24 spreadAwayOdds
+    ) external view returns (bool);
+
+    function areTotalOddsValid(
+        uint24 totalOver,
+        int24 totalOverOdds,
+        uint24 totalUnder,
+        int24 totalUnderOdds
+    ) external view returns (bool);
+
     function isValidOutcomeForGame(bool _isTwoPositionalSport, uint _outcome) external view returns (bool);
 
     function isValidOutcomeWithResult(

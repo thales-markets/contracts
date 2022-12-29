@@ -132,6 +132,7 @@ contract('ParlayAMM', (accounts) => {
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
+	let GamesOddsObtainerDeployed;
 
 	let oddsid_1;
 	let oddsResult_1;
@@ -409,12 +410,25 @@ contract('ParlayAMM', (accounts) => {
 			}
 		);
 
+		let GamesOddsObtainer = artifacts.require('GamesOddsObtainer');
+		GamesOddsObtainerDeployed = await GamesOddsObtainer.new({ from: owner });
+
+		await GamesOddsObtainerDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			[4, 16],
+			{ from: owner }
+		);
+
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
 			verifier.address,
+			GamesOddsObtainerDeployed.address,
 			{
 				from: owner,
 			}
@@ -516,7 +530,6 @@ contract('ParlayAMM', (accounts) => {
 			owner,
 			Thales.address,
 			TherundownConsumerDeployed.address,
-			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
 			ParlayAMM.address,
@@ -652,12 +665,7 @@ contract('ParlayAMM', (accounts) => {
 			);
 
 			assert.equal(true, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_7));
-			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_7));
-
-			assert.equal(
-				fight_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFightCreate, 0)
-			);
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_7));
 
 			let fight = await TherundownConsumerDeployed.gameCreated(fightId);
 			assert.equal('Clayton Carpenter', fight.homeTeam);
@@ -701,18 +709,9 @@ contract('ParlayAMM', (accounts) => {
 			);
 
 			assert.equal(false, await TherundownConsumerDeployed.isSportTwoPositionsSport(sportId_16));
-			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_16));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_16));
 
-			assert.equal(
-				game_1_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 0)
-			);
-			assert.equal(
-				game_2_football_create,
-				await TherundownConsumerDeployed.requestIdGamesCreated(reqIdFootballCreate, 1)
-			);
-
-			let result = await TherundownConsumerDeployed.getOddsForGame(gameFootballid1);
+			let result = await GamesOddsObtainerDeployed.getOddsForGame(gameFootballid1);
 			assert.bnEqual(40000, result[0]);
 			assert.bnEqual(-12500, result[1]);
 			assert.bnEqual(27200, result[2]);

@@ -22,12 +22,6 @@
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_apexConsumer",
-        "type": "address"
-      },
-      {
-        "indexed": false,
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -270,6 +264,31 @@
       }
     ],
     "name": "SetCapPerSport",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_sport",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_child",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_cap",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetCapPerSportAndChild",
     "type": "event"
   },
   {
@@ -764,6 +783,30 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "capPerSportAndChild",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "curveOnrampEnabled",
     "outputs": [
@@ -826,6 +869,19 @@
     "name": "exerciseMaturedMarket",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAmmUtils",
+    "outputs": [
+      {
+        "internalType": "contract SportsAMMUtils",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1326,11 +1382,6 @@
         "type": "address"
       },
       {
-        "internalType": "address",
-        "name": "_apexConsumer",
-        "type": "address"
-      },
-      {
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -1401,6 +1452,29 @@
       }
     ],
     "name": "setCapPerSport",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_childID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_capPerChild",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCapPerSportAndChild",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

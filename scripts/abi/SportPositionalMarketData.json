@@ -84,9 +84,9 @@
       {
         "components": [
           {
-            "internalType": "bytes32",
+            "internalType": "address",
             "name": "market",
-            "type": "bytes32"
+            "type": "address"
           },
           {
             "internalType": "uint256[]",

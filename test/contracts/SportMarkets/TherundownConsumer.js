@@ -480,6 +480,7 @@ contract('TheRundownConsumer', (accounts) => {
 		});
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 		await verifier.setObtainer(GamesOddsObtainerDeployed.address, { from: owner });
+		await verifier.setSportsManager(SportPositionalMarketManager.address, { from: owner });
 	});
 
 	describe('Init', () => {

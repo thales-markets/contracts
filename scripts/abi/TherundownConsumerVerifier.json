@@ -95,6 +95,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "NewSportsManagerAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "oldOwner",
         "type": "address"
       },
@@ -555,6 +568,11 @@
       {
         "internalType": "bool",
         "name": "_isPausedByCanceledStatus",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isMarketPaused",
         "type": "bool"
       }
     ],
@@ -1070,6 +1088,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_manager",
+        "type": "address"
+      }
+    ],
+    "name": "setSportsManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string[]",
         "name": "_supportedMarketTypes",
         "type": "string[]"
@@ -1104,6 +1135,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "sportsManager",
+    "outputs": [
+      {
+        "internalType": "contract ISportPositionalMarketManager",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",

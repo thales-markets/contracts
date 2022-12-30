@@ -624,6 +624,20 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 	});
 	describe('Consumer Verifier Management', () => {
 		it('Test owner functions', async () => {
+			const tx_setWhitelistedAddresses = await verifier.setWhitelistedAddresses([fourth], true, {
+				from: owner,
+			});
+
+			await expect(
+				verifier.setWhitelistedAddresses([fourth], true, { from: first })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_setWhitelistedAddresses.logs[0], 'AddedIntoWhitelist', {
+				_whitelistAddress: fourth,
+				_flag: true,
+			});
+
 			let bookee = [5];
 			const tx_setBookmakerIdsBySportId = await verifier.setBookmakerIdsBySportId(4, bookee, {
 				from: owner,
@@ -631,7 +645,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 
 			await expect(
 				verifier.setBookmakerIdsBySportId(4, bookee, { from: first })
-			).to.be.revertedWith('Only the contract owner may perform this action');
+			).to.be.revertedWith('Only owner or whitelisted address may perform this action');
 
 			// check if event is emited
 			assert.eventEqual(tx_setBookmakerIdsBySportId.logs[0], 'NewBookmakerIdsBySportId', {

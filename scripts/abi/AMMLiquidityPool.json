@@ -32,6 +32,12 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
       }
     ],
     "name": "Deposited",
@@ -99,6 +105,25 @@
       }
     ],
     "name": "RoundClosed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_round",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "roundPool",
+        "type": "address"
+      }
+    ],
+    "name": "RoundPoolCreated",
     "type": "event"
   },
   {
@@ -219,6 +244,35 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "sUSDAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      }
+    ],
+    "name": "commitTrade",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "liquidityPoolRound",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "roundA",
         "type": "uint256"
@@ -260,6 +314,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "defaultLiquidityProvider",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -270,6 +337,57 @@
     "name": "deposit",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "firstRoundStartTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "getRoundEndTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "round",
+        "type": "uint256"
+      }
+    ],
+    "name": "getRoundStartTime",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -503,25 +621,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "roundStartTime",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       }
     ],
     "stateMutability": "view",

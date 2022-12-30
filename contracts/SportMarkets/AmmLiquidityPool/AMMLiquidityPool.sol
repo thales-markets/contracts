@@ -136,7 +136,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         emit Deposited(defaultLiquidityProvider, amount, _round);
     }
 
-    function recordTrade(
+    function commitTrade(
         address market,
         uint sUSDAmount,
         ISportsAMM.Position position
@@ -151,15 +151,15 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         liquidityPoolRound = getOrCreateRoundPool(marketRound);
 
         if (marketRound == round) {
-            sUSD.safeTransferFrom(liquidityPoolRound, sportsAMM, sUSDAmount);
+            sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), sUSDAmount);
         } else {
             uint poolBalance = sUSD.balanceOf(liquidityPoolRound);
-            if (poolBalance > amount) {
-                sUSD.safeTransferFrom(liquidityPoolRound, sportsAMM, sUSDAmount);
+            if (poolBalance > sUSDAmount) {
+                sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), sUSDAmount);
             } else {
-                uint differenceToLPAsDefault = amount - poolBalance;
+                uint differenceToLPAsDefault = sUSDAmount - poolBalance;
                 _depositAsDefault(differenceToLPAsDefault, marketRound);
-                sUSD.safeTransferFrom(liquidityPoolRound, sportsAMM, sUSDAmount);
+                sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), sUSDAmount);
             }
         }
 

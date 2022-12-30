@@ -201,6 +201,60 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sportMarkets1",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarkets2",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarkets3",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarkets4",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarkets5",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarkets6",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarkets7",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_sportMarkets8",
+        "type": "address"
+      }
+    ],
+    "name": "riskPerGameCombination",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "sUSD",
     "outputs": [

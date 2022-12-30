@@ -14,9 +14,6 @@ import "../../interfaces/ICurveSUSD.sol";
 
 contract ParlayVerifier {
     uint private constant ONE = 1e18;
-    uint private constant ONE_PERCENT = 1e16;
-    uint private constant DEFAULT_PARLAY_SIZE = 4;
-    uint private constant MAX_APPROVAL = type(uint256).max;
 
     // ISportsAMM sportsAmm;
 
@@ -47,14 +44,12 @@ contract ParlayVerifier {
 
     function _calculateRisk(
         address[] memory _sportMarkets,
-        uint[] memory _positions,
         uint _sUSDInRisky,
         address _parlayAMM
     ) internal view returns (bool riskFree) {
         address[] memory sortedAddresses = new address[](_sportMarkets.length);
-        uint[] memory positions = new uint[](_sportMarkets.length);
-        (sortedAddresses, positions) = _sort(_sportMarkets, _positions);
-        require(_checkRisk(sortedAddresses, positions, _sUSDInRisky, _parlayAMM), "RiskPerComb exceeded");
+        sortedAddresses = _sort(_sportMarkets);
+        require(_checkRisk(sortedAddresses, _sUSDInRisky, _parlayAMM), "RiskPerComb exceeded");
         riskFree = true;
     }
 
@@ -173,7 +168,7 @@ contract ParlayVerifier {
                 : (((ONE * totalBuyAmount) - (ONE * expectedPayout)) / (totalBuyAmount));
             buyAmountPerMarket = _applySkewImpactBatch(buyAmountPerMarket, skewImpact, (expectedPayout > totalBuyAmount));
             totalBuyAmount = applySkewImpact(totalBuyAmount, skewImpact, (expectedPayout > totalBuyAmount));
-            _calculateRisk(_sportMarkets, _positions, (totalBuyAmount - sUSDAfterFees), sportsAmm.parlayAMM());
+            _calculateRisk(_sportMarkets, (totalBuyAmount - sUSDAfterFees), sportsAmm.parlayAMM());
         } else {
             totalBuyAmount = 0;
         }
@@ -210,49 +205,30 @@ contract ParlayVerifier {
 
     function _checkRisk(
         address[] memory _sportMarkets,
-        uint[] memory _positions,
         uint _sUSDInRisk,
         address _parlayAMM
     ) internal view returns (bool riskFree) {
-        uint riskCombination;
-        if (_sportMarkets.length == 2) {
-            riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerCombination(
-                _sportMarkets[0],
-                _positions[0],
-                _sportMarkets[1],
-                _positions[1],
-                address(0),
-                0,
-                address(0),
-                0
+        if (_sportMarkets.length > 1 && _sportMarkets.length < 9) {
+            address first = _sportMarkets[0];
+            address second = _sportMarkets[1];
+            address third = _sportMarkets.length > 2 ? _sportMarkets[2] : address(0);
+            address fourth = _sportMarkets.length > 3 ? _sportMarkets[3] : address(0);
+            address fifth = _sportMarkets.length > 4 ? _sportMarkets[4] : address(0);
+            address sixth = _sportMarkets.length > 5 ? _sportMarkets[5] : address(0);
+            address seventh = _sportMarkets.length > 6 ? _sportMarkets[6] : address(0);
+            address eight = _sportMarkets.length > 7 ? _sportMarkets[7] : address(0);
+            uint riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerGameCombination(
+                first,
+                second,
+                third,
+                fourth,
+                fifth,
+                sixth,
+                seventh,
+                eight
             );
-        } else if (_sportMarkets.length == 3) {
-            riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerCombination(
-                _sportMarkets[0],
-                _positions[0],
-                _sportMarkets[1],
-                _positions[1],
-                _sportMarkets[2],
-                _positions[2],
-                address(0),
-                0
-            );
-        } else if (_sportMarkets.length == 4) {
-            riskCombination = IParlayMarketsAMM(_parlayAMM).riskPerCombination(
-                _sportMarkets[0],
-                _positions[0],
-                _sportMarkets[1],
-                _positions[1],
-                _sportMarkets[2],
-                _positions[2],
-                _sportMarkets[3],
-                _positions[3]
-            );
-        } else {
-            return false;
+            riskFree = (riskCombination + _sUSDInRisk) <= IParlayMarketsAMM(_parlayAMM).maxAllowedRiskPerCombination();
         }
-        riskFree = (riskCombination + _sUSDInRisk) <= IParlayMarketsAMM(_parlayAMM).maxAllowedRiskPerCombination();
-        return riskFree;
     }
 
     function _verifyMarket(
@@ -293,19 +269,18 @@ contract ParlayVerifier {
         return true;
     }
 
-    function sort(address[] memory data, uint[] memory _positions) external pure returns (address[] memory, uint[] memory) {
-        _quickSort(data, _positions, int(0), int(data.length - 1));
-        return (data, _positions);
+    function sort(address[] memory data) external pure returns (address[] memory) {
+        _quickSort(data, int(0), int(data.length - 1));
+        return data;
     }
 
-    function _sort(address[] memory data, uint[] memory _positions) internal pure returns (address[] memory, uint[] memory) {
-        _quickSort(data, _positions, int(0), int(data.length - 1));
-        return (data, _positions);
+    function _sort(address[] memory data) internal pure returns (address[] memory) {
+        _quickSort(data, int(0), int(data.length - 1));
+        return data;
     }
 
     function _quickSort(
         address[] memory arr,
-        uint[] memory pos,
         int left,
         int right
     ) internal pure {
@@ -318,12 +293,11 @@ contract ParlayVerifier {
             while (pivot < arr[uint(j)]) j--;
             if (i <= j) {
                 (arr[uint(i)], arr[uint(j)]) = (arr[uint(j)], arr[uint(i)]);
-                (pos[uint(i)], pos[uint(j)]) = (pos[uint(j)], pos[uint(i)]);
                 i++;
                 j--;
             }
         }
-        if (left < j) _quickSort(arr, pos, left, j);
-        if (i < right) _quickSort(arr, pos, i, right);
+        if (left < j) _quickSort(arr, left, j);
+        if (i < right) _quickSort(arr, i, right);
     }
 }

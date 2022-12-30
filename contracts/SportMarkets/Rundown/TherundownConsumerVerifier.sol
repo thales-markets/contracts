@@ -11,6 +11,7 @@ import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 // interface
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
+import "../../interfaces/ISportPositionalMarketManager.sol";
 
 /// @title Verifier of data which are coming from CL and stored into TherundownConsumer.sol
 /// @author gruja
@@ -31,6 +32,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     uint256[] public defaultBookmakerIds;
     mapping(uint256 => uint256[]) public sportIdToBookmakerIds;
     IGamesOddsObtainer public obtainer;
+    ISportPositionalMarketManager public sportsManager;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -349,6 +351,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @return _marketCanceled canceled true/false
     /// @return _invalidOdds invalid odds true/false
     /// @return _isPausedByCanceledStatus is game paused by cancel status true/false
+    /// @return _isMarketPaused is market paused
     function getGameProperties(bytes32 _gameIds)
         external
         view
@@ -357,7 +360,8 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             bool _marketResolved,
             bool _marketCanceled,
             bool _invalidOdds,
-            bool _isPausedByCanceledStatus
+            bool _isPausedByCanceledStatus,
+            bool _isMarketPaused
         )
     {
         address marketAddress = consumer.marketPerGameId(_gameIds);
@@ -366,7 +370,8 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             consumer.marketResolved(marketAddress),
             consumer.marketCanceled(marketAddress),
             obtainer.invalidOdds(marketAddress),
-            consumer.isPausedByCanceledStatus(marketAddress)
+            consumer.isPausedByCanceledStatus(marketAddress),
+            sportsManager.isMarketPaused(marketAddress)
         );
     }
 
@@ -399,6 +404,14 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         require(_consumer != address(0), "Invalid address");
         consumer = ITherundownConsumer(_consumer);
         emit NewConsumerAddress(_consumer);
+    }
+
+    /// @notice sets manager address
+    /// @param _manager address
+    function setSportsManager(address _manager) external onlyOwner {
+        require(_manager != address(0), "Invalid address");
+        sportsManager = ISportPositionalMarketManager(_manager);
+        emit NewSportsManagerAddress(_manager);
     }
 
     /// @notice sets invalid names
@@ -469,4 +482,5 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     event NewBookmakerIdsBySportId(uint256 _sportId, uint256[] _ids);
     event NewDefaultBookmakerIds(uint256[] _ids);
     event NewObtainerAddress(address _obtainer);
+    event NewSportsManagerAddress(address _manager);
 }

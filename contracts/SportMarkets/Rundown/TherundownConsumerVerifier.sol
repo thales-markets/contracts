@@ -33,6 +33,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     mapping(uint256 => uint256[]) public sportIdToBookmakerIds;
     IGamesOddsObtainer public obtainer;
     ISportPositionalMarketManager public sportsManager;
+    mapping(address => bool) public whitelistedAddresses;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -460,7 +461,11 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @notice setting bookmaker by sports id
     /// @param _sportId id of a sport
     /// @param _bookmakerIds array of bookmakers
-    function setBookmakerIdsBySportId(uint256 _sportId, uint256[] memory _bookmakerIds) external onlyOwner {
+    function setBookmakerIdsBySportId(uint256 _sportId, uint256[] memory _bookmakerIds) external {
+        require(
+            msg.sender == owner || whitelistedAddresses[msg.sender],
+            "Only owner or whitelisted address may perform this action"
+        );
         require(consumer.supportedSport(_sportId), "SportId is not supported");
         sportIdToBookmakerIds[_sportId] = _bookmakerIds;
         emit NewBookmakerIdsBySportId(_sportId, _bookmakerIds);
@@ -473,6 +478,20 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         emit NewObtainerAddress(_obtainer);
     }
 
+    /// @notice setWhitelistedAddresses enables whitelist addresses of given array
+    /// @param _whitelistedAddresses array of whitelisted addresses
+    /// @param _flag adding or removing from whitelist (true: add, false: remove)
+    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
+        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
+        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
+            // only if current flag is different, if same skip it
+            if (whitelistedAddresses[_whitelistedAddresses[index]] != _flag) {
+                whitelistedAddresses[_whitelistedAddresses[index]] = _flag;
+                emit AddedIntoWhitelist(_whitelistedAddresses[index], _flag);
+            }
+        }
+    }
+
     /* ========== EVENTS ========== */
     event NewConsumerAddress(address _consumer);
     event SetInvalidName(bytes32 _invalidName, bool _isInvalid);
@@ -483,4 +502,5 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     event NewDefaultBookmakerIds(uint256[] _ids);
     event NewObtainerAddress(address _obtainer);
     event NewSportsManagerAddress(address _manager);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 }

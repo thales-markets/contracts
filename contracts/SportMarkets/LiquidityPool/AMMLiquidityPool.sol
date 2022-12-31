@@ -100,7 +100,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     function deposit(uint amount) external canDeposit(amount) {
         //TODO: deposit should be called by default treasury depositor whenever a trade is tried for an unstarted round
 
-        address roundPool = getOrCreateRoundPool(round);
+        address roundPool = _getOrCreateRoundPool(round);
         sUSD.safeTransferFrom(msg.sender, roundPool, amount);
 
         uint nextRound = round + 1;
@@ -127,7 +127,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     function _depositAsDefault(uint amount, uint _round) internal {
         require(defaultLiquidityProvider != address(0), "default liquidity provider not set");
 
-        address roundPool = getOrCreateRoundPool(_round);
+        address roundPool = _getOrCreateRoundPool(_round);
         sUSD.safeTransferFrom(defaultLiquidityProvider, roundPool, amount);
 
         balancesPerRound[_round][msg.sender] += amount;
@@ -143,12 +143,8 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     ) external nonReentrant whenNotPaused onlyAMM returns (address liquidityPoolRound) {
         require(started, "Pool has not started");
 
-        ISportPositionalMarket marketContract = ISportPositionalMarket(market);
-        (uint maturity, ) = marketContract.times();
-
-        uint marketRound = (maturity - firstRoundStartTime) / roundLength;
-
-        liquidityPoolRound = getOrCreateRoundPool(marketRound);
+        uint marketRound = _getMarketRound(market);
+        liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
         if (marketRound == round) {
             sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), sUSDAmount);
@@ -169,16 +165,13 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         }
     }
 
-    function getOrCreateRoundPool(uint _round) internal returns (address roundPool) {
-        roundPool = roundPools[_round];
-        if (roundPool == address(0)) {
-            AMMLiquidityPoolRound newRoundPool = new AMMLiquidityPoolRound();
-            newRoundPool.initialize(this, sUSD, round + 1, getRoundEndTime(round), getRoundEndTime(round + 1));
-            roundPool = address(newRoundPool);
-            roundPools[_round] = roundPool;
+    function getMarketPool(address market) external view returns (address roundPool) {
+        roundPool = roundPools[_getMarketRound(market)];
+    }
 
-            emit RoundPoolCreated(_round, roundPool);
-        }
+    function getOrCreateMarketPool(address market) external returns (address roundPool) {
+        uint marketRound = _getMarketRound(market);
+        roundPool = _getOrCreateRoundPool(marketRound);
     }
 
     function withdrawalRequest() external {
@@ -244,7 +237,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         //add all carried over sUSD
         allocationPerRound[round] += sUSD.balanceOf(roundPool);
 
-        address roundPoolNewRound = getOrCreateRoundPool(round);
+        address roundPoolNewRound = _getOrCreateRoundPool(round);
         sUSD.safeTransferFrom(roundPool, roundPoolNewRound, sUSD.balanceOf(roundPool));
 
         emit RoundClosed(round - 1, profitAndLossPerRound[round - 1]);
@@ -291,6 +284,24 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
             market = IPositionalMarket(tradingMarketsPerRound[round][i]);
             poolRound.exerciseMarketReadyToExercised(market);
+        }
+    }
+
+    function _getMarketRound(address market) internal view returns (uint _round) {
+        ISportPositionalMarket marketContract = ISportPositionalMarket(market);
+        (uint maturity, ) = marketContract.times();
+        _round = (maturity - firstRoundStartTime) / roundLength;
+    }
+
+    function _getOrCreateRoundPool(uint _round) internal returns (address roundPool) {
+        roundPool = roundPools[_round];
+        if (roundPool == address(0)) {
+            AMMLiquidityPoolRound newRoundPool = new AMMLiquidityPoolRound();
+            newRoundPool.initialize(this, sUSD, round + 1, getRoundEndTime(round), getRoundEndTime(round + 1));
+            roundPool = address(newRoundPool);
+            roundPools[_round] = roundPool;
+
+            emit RoundPoolCreated(_round, roundPool);
         }
     }
 

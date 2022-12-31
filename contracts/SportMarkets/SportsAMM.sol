@@ -22,7 +22,9 @@ import "../interfaces/ICurveSUSD.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ISportsAMM.sol";
 import "../interfaces/ITherundownConsumerWrapper.sol";
+
 import "./SportsAMMUtils.sol";
+import "./LiquidityPool/AMMLiquidityPool.sol";
 
 /// @title Sports AMM contract
 /// @author kirilaa
@@ -135,6 +137,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @return the cap per sportID and childID. based on the tagID[0] and tagID[1]
     mapping(uint => mapping(uint => uint)) public capPerSportAndChild;
 
+    AMMLiquidityPool public liquidityPool;
+
     /// @notice Initialize the storage in the proxy contract with the parameters.
     /// @param _owner Owner for using the ownerOnly functions
     /// @param _sUSD The payment token (sUSD)
@@ -189,7 +193,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     ) internal view returns (uint availableAmount) {
         if (baseOdds > 0 && baseOdds < maxSupportedOdds) {
             baseOdds = baseOdds + min_spread;
-            uint balance = sportAmmUtils.balanceOfPositionOnMarket(market, position, address(this));
+            uint balance = sportAmmUtils.balanceOfPositionOnMarket(market, position, liquidityPool.getMarketPool(market));
 
             availableAmount = sportAmmUtils.calculateAvailableToBuy(
                 calculateCapToBeUsed(market),
@@ -555,10 +559,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
         uint toMint = _getMintableAmount(market, position, amount);
         if (toMint > 0) {
+            liquidityPool.commitTrade(market, toMint, position);
             require(
                 sUSD.balanceOf(address(this)) >= ISportPositionalMarketManager(manager).transformCollateral(toMint),
                 "Low contract sUSD"
             );
+
             if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
                 ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
 
@@ -570,6 +576,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
 
                 IERC20Upgradeable(parentMarketPosition1).safeTransfer(market, amount);
                 IERC20Upgradeable(parentMarketPosition2).safeTransfer(market, amount);
+
+                _sendToLiquidityPool(address(parentMarket));
             } else {
                 ISportPositionalMarket(market).mint(toMint);
             }
@@ -595,6 +603,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             wrapper.callUpdateOddsForSpecificGame(market);
         }
         _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
+        _sendToLiquidityPool(market);
 
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
     }
@@ -653,6 +662,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _stakingThales Address of Staking contract
     /// @param _referrals contract for referrals storage
     /// @param _wrapper contract for calling wrapper contract
+    /// @param _lp contract for managing liquidity pools
     function setAddresses(
         address _safeBox,
         IERC20Upgradeable _sUSD,
@@ -661,7 +671,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         IStakingThales _stakingThales,
         address _referrals,
         address _parlayAMM,
-        address _wrapper
+        address _wrapper,
+        address _lp
     ) external onlyOwner {
         safeBox = _safeBox;
         sUSD = _sUSD;
@@ -671,6 +682,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         referrals = _referrals;
         parlayAMM = _parlayAMM;
         wrapper = ITherundownConsumerWrapper(_wrapper);
+
+        liquidityPool = AMMLiquidityPool(_lp);
 
         emit AddressesUpdated(
             _safeBox,
@@ -815,6 +828,25 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return capPerMarket[market];
     }
 
+    function _sendToLiquidityPool(address market) internal {
+        address _liquidityPool = liquidityPool.getMarketPool(market);
+        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+        IERC20Upgradeable(address(home)).safeTransfer(
+            _liquidityPool,
+            IERC20Upgradeable(address(home)).balanceOf(address(this))
+        );
+        IERC20Upgradeable(address(away)).safeTransfer(
+            _liquidityPool,
+            IERC20Upgradeable(address(away)).balanceOf(address(this))
+        );
+        if (ISportPositionalMarket(market).optionsCount() > 2) {
+            IERC20Upgradeable(address(draw)).safeTransfer(
+                _liquidityPool,
+                IERC20Upgradeable(address(draw)).balanceOf(address(this))
+            );
+        }
+    }
+
     function _updateSpentOnMarketOnBuy(
         address market,
         uint sUSDPaid,
@@ -856,7 +888,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         (uint balancePosition, , uint balanceOtherSide) = sportAmmUtils.balanceOfPositionsOnMarket(
             market,
             position,
-            address(this)
+            liquidityPool.getMarketPool(market)
         );
         bool isTwoPositional = ISportPositionalMarket(market).optionsCount() == 2;
         uint balancePositionAfter = balancePosition > amount ? balancePosition - amount : 0;
@@ -922,7 +954,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
             mintable = amount;
         } else {
-            uint availableInContract = sportAmmUtils.balanceOfPositionOnMarket(market, position, address(this));
+            uint availableInContract = sportAmmUtils.balanceOfPositionOnMarket(
+                market,
+                position,
+                liquidityPool.getMarketPool(market)
+            );
             if (availableInContract < amount) {
                 mintable = amount - availableInContract;
             }

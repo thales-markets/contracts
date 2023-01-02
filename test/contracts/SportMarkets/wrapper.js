@@ -11,7 +11,13 @@ const { toUnit } = require('../../utils')();
 const { toBytes32 } = require('../../../index');
 
 contract('TherundownConsumerWrapper', (accounts) => {
-	const [first, owner, second, third] = accounts;
+	const [first, owner, second, third, manager] = accounts;
+	const SportPositionContract = artifacts.require('SportPosition');
+	const SportPositionalMarketContract = artifacts.require('SportPositionalMarket');
+	const SportPositionalMarketDataContract = artifacts.require('SportPositionalMarketData');
+	const SportPositionalMarketManagerContract = artifacts.require('SportPositionalMarketManager');
+	const SportPositionalMarketFactoryContract = artifacts.require('SportPositionalMarketFactory');
+	const SportsAMMContract = artifacts.require('SportsAMM');
 	let TherundownConsumerWrapper;
 	let TherundownConsumerWrapperDeployed;
 	let TherundownConsumer;
@@ -25,9 +31,28 @@ contract('TherundownConsumerWrapper', (accounts) => {
 	let paymentOdds;
 	let verifier;
 	let dummyAddress;
+	let GamesOddsObtainerDeployed;
+	let SportPositionalMarketManager,
+		SportPositionalMarketFactory,
+		SportPositionalMarketData,
+		SportPositionalMarket,
+		SportPositionalMarketMastercopy,
+		SportPositionMastercopy,
+		SportsAMM;
 
 	beforeEach(async () => {
 		dummyAddress = '0xb69e74324bc030f1b8889236efa461496d439226';
+
+		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({
+			from: manager,
+		});
+		SportPositionalMarketFactory = await SportPositionalMarketFactoryContract.new({
+			from: manager,
+		});
+		SportPositionalMarketMastercopy = await SportPositionalMarketContract.new({ from: manager });
+		SportPositionMastercopy = await SportPositionContract.new({ from: manager });
+		SportPositionalMarketData = await SportPositionalMarketDataContract.new({ from: manager });
+		SportsAMM = await SportsAMMContract.new({ from: manager });
 
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
 		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
@@ -55,22 +80,6 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			{ from: owner }
 		);
 
-		TherundownConsumerWrapper = artifacts.require('TherundownConsumerWrapper');
-		TherundownConsumerWrapperDeployed = await TherundownConsumerWrapper.new(
-			ThalesDeployed.address,
-			ThalesDeployed.address,
-			TherundownConsumerDeployed.address,
-			paymentCreate,
-			paymentResolve,
-			paymentOdds,
-			'0x3465326264623338336437393962343662653663656562336463366465306363',
-			third,
-			third,
-			{ from: owner }
-		);
-
-		wrapper = await TherundownConsumerWrapper.at(TherundownConsumerWrapperDeployed.address);
-
 		let ConsumerVerifier = artifacts.require('TherundownConsumerVerifier');
 		verifier = await ConsumerVerifier.new({ from: owner });
 
@@ -85,11 +94,40 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			}
 		);
 
+		TherundownConsumerWrapper = artifacts.require('TherundownConsumerWrapper');
+		TherundownConsumerWrapperDeployed = await TherundownConsumerWrapper.new(
+			ThalesDeployed.address,
+			ThalesDeployed.address,
+			TherundownConsumerDeployed.address,
+			paymentCreate,
+			paymentResolve,
+			paymentOdds,
+			'0x3465326264623338336437393962343662653663656562336463366465306363',
+			third,
+			verifier.address,
+			{ from: owner }
+		);
+
+		wrapper = await TherundownConsumerWrapper.at(TherundownConsumerWrapperDeployed.address);
+
+		let GamesOddsObtainer = artifacts.require('GamesOddsObtainer');
+		GamesOddsObtainerDeployed = await GamesOddsObtainer.new({ from: owner });
+
+		await GamesOddsObtainerDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			[4, 16],
+			{ from: owner }
+		);
+
 		await consumer.setSportContracts(
 			TherundownConsumerWrapperDeployed.address,
 			MockPriceFeedDeployed.address,
 			MockPriceFeedDeployed.address,
 			verifier.address,
+			GamesOddsObtainerDeployed.address,
 			{
 				from: owner,
 			}
@@ -103,6 +141,13 @@ contract('TherundownConsumerWrapper', (accounts) => {
 			assert.bnEqual(paymentCreate, await wrapper.paymentCreate());
 			assert.bnEqual(paymentResolve, await wrapper.paymentResolve());
 			assert.bnEqual(paymentOdds, await wrapper.paymentOdds());
+
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(4));
+			assert.equal(false, await TherundownConsumerDeployed.supportedSport(5));
+
+			assert.equal(true, await verifier.isSupportedMarketType('create'));
+			assert.equal(true, await verifier.isSupportedMarketType('resolve'));
+			assert.equal(false, await verifier.isSupportedMarketType('aaa'));
 		});
 
 		it('Contract management', async () => {

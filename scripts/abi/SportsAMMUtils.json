@@ -470,11 +470,6 @@
       },
       {
         "internalType": "address",
-        "name": "apexConsumer",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
         "name": "theRundownConsumer",
         "type": "address"
       }

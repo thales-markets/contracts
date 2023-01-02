@@ -131,6 +131,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 	let game_fight_canceled;
 	let gamesFightCanceled;
 	let reqIdFightCanceled;
+	let GamesOddsObtainerDeployed;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -330,11 +331,24 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			}
 		);
 
+		let GamesOddsObtainer = artifacts.require('GamesOddsObtainer');
+		GamesOddsObtainerDeployed = await GamesOddsObtainer.new({ from: owner });
+
+		await GamesOddsObtainerDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			[4, 16],
+			{ from: owner }
+		);
+
 		await consumer.setSportContracts(
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
 			verifier.address,
+			GamesOddsObtainerDeployed.address,
 			{ from: manager }
 		);
 		await TherundownConsumerDeployed.addToWhitelist(third, true, { from: manager });
@@ -371,7 +385,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 			assert.equal(true, await verifier.isSupportedMarketType('create'));
 			assert.equal(true, await verifier.isSupportedMarketType('resolve'));
 			assert.equal(false, await verifier.isSupportedMarketType('aaa'));
-			assert.equal(true, await TherundownConsumerDeployed.isSupportedSport(sportId_4));
+			assert.equal(true, await TherundownConsumerDeployed.supportedSport(sportId_4));
 
 			let bookmakerIdsBySportId = await verifier.getBookmakerIdsBySportId(4);
 			assert.bnEqual(2, bookmakerIdsBySportId.length);
@@ -610,6 +624,20 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 	});
 	describe('Consumer Verifier Management', () => {
 		it('Test owner functions', async () => {
+			const tx_setWhitelistedAddresses = await verifier.setWhitelistedAddresses([fourth], true, {
+				from: owner,
+			});
+
+			await expect(
+				verifier.setWhitelistedAddresses([fourth], true, { from: first })
+			).to.be.revertedWith('Only the contract owner may perform this action');
+
+			// check if event is emited
+			assert.eventEqual(tx_setWhitelistedAddresses.logs[0], 'AddedIntoWhitelist', {
+				_whitelistAddress: fourth,
+				_flag: true,
+			});
+
 			let bookee = [5];
 			const tx_setBookmakerIdsBySportId = await verifier.setBookmakerIdsBySportId(4, bookee, {
 				from: owner,
@@ -617,7 +645,7 @@ contract('TheRundownConsumerVerifier', (accounts) => {
 
 			await expect(
 				verifier.setBookmakerIdsBySportId(4, bookee, { from: first })
-			).to.be.revertedWith('Only the contract owner may perform this action');
+			).to.be.revertedWith('Only owner or whitelisted address may perform this action');
 
 			// check if event is emited
 			assert.eventEqual(tx_setBookmakerIdsBySportId.logs[0], 'NewBookmakerIdsBySportId', {

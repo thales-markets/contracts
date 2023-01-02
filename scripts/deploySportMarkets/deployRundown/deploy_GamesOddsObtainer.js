@@ -30,9 +30,17 @@ async function main() {
 		network = 'mainnet';
 	}
 
+	if (networkObj.chainId == 69) {
+		networkObj.name = 'optimisticKovan';
+		network = 'optimisticKovan';
+	}
 	if (networkObj.chainId == 10) {
 		networkObj.name = 'optimisticEthereum';
 		network = 'optimisticEthereum';
+	}
+	if (networkObj.chainId == 420) {
+		networkObj.name = 'optimisticGoerli';
+		network = 'optimisticGoerli';
 	}
 
 	if (networkObj.chainId == 80001) {
@@ -48,43 +56,45 @@ async function main() {
 	/* ========== PROPERTIES FOR INITIALIZE ========== */
 
 	// if there is sport menager deployed:
-	/*
 	const sportsManager = await ethers.getContractFactory('SportPositionalMarketManager');
 	let sportsManagerAddress = getTargetAddress('SportPositionalMarketManager', network);
 
 	console.log('SportPositionalMarketManager address: ', sportsManagerAddress);
-	*/
 
-	const chainlink = require(`./chainlink/${network}.json`);
+	const verifier = await ethers.getContractFactory('TherundownConsumerVerifier');
+	let verifierAddress = getTargetAddress('TherundownConsumerVerifier', network);
 
-	console.log('LINK address:', chainlink['LINK']);
-	console.log('ORACLE address:', chainlink['ORACLE']);
+	console.log('TherundownConsumerVerifier address: ', verifierAddress);
 
-	const allowedSports = ['formula1', 'motogp'];
+	const consumer = await ethers.getContractFactory('TherundownConsumer');
+	let consumerAddress = getTargetAddress('TherundownConsumer', network);
+
+	console.log('TherundownConsumer address: ', consumerAddress);
+
+	// NBA, NFL
+	const supportedSportIds = [2];
 
 	/* ========== DEPLOY CONTRACT ========== */
 
 	// consumer
 
-	let ApexConsumer = await ethers.getContractFactory('ApexConsumer');
-	let sportPositionalMarketManagerAddress = getTargetAddress(
-		'SportPositionalMarketManager',
-		network
-	);
-	const apex = await upgrades.deployProxy(ApexConsumer, [
+	let GamesOddsObtainer = await ethers.getContractFactory('GamesOddsObtainer');
+	const oddsobtainer = await upgrades.deployProxy(GamesOddsObtainer, [
 		owner.address,
-		allowedSports,
-		sportPositionalMarketManagerAddress,
+		consumerAddress,
+		verifierAddress,
+		sportsManagerAddress,
+		supportedSportIds,
 	]);
 
-	await apex.deployed();
+	await oddsobtainer.deployed();
 
-	console.log('ApexConsumer deployed to:', apex.address);
-	setTargetAddress('ApexConsumer', network, apex.address);
+	console.log('GamesOddsObtainer deployed to:', oddsobtainer.address);
+	setTargetAddress('GamesOddsObtainer', network, oddsobtainer.address);
 
-	const implementation = await getImplementationAddress(ethers.provider, apex.address);
-	console.log('ApexConsumerImplementation: ', implementation);
-	setTargetAddress('ApexConsumerImplementation', network, implementation);
+	const implementation = await getImplementationAddress(ethers.provider, oddsobtainer.address);
+	console.log('GamesOddsObtainerImplementation: ', implementation);
+	setTargetAddress('GamesOddsObtainerImplementation', network, implementation);
 
 	await hre.run('verify:verify', {
 		address: implementation,

@@ -59,7 +59,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
     uint public referrerFee;
 
     bool public curveOnrampEnabled;
-    bool public reducedFeesEnabled;
+    bool public reducedFeesEnabled; // deprecated
 
     AddressSetLib.AddressSet internal _knownMarkets;
     mapping(address => bool) public resolvedParlay;
@@ -69,7 +69,10 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
 
     uint public maxAllowedRiskPerCombination;
     mapping(address => mapping(uint => mapping(address => mapping(uint => mapping(address => mapping(uint => mapping(address => mapping(uint => uint))))))))
-        public riskPerCombination;
+        public riskPerCombination; // deprecated due to TIP-117
+
+    mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => mapping(address => uint))))))))
+        public riskPerGameCombination;
 
     function initialize(
         address _owner,
@@ -402,8 +405,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
             address(parlayMarket),
             _differentRecepient
         );
-        (_sportMarkets, _positions) = parlayVerifier.sort(_sportMarkets, _positions);
-        _storeRisk(_sportMarkets, _positions, (totalAmount - sUSDAfterFees));
+        _sportMarkets = parlayVerifier.sort(_sportMarkets);
+        _storeRisk(_sportMarkets, (totalAmount - sUSDAfterFees));
 
         emit ParlayMarketCreated(
             address(parlayMarket),
@@ -454,17 +457,7 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         ISportsAMM.Position sportPosition;
         for (uint i = 0; i < numOfMarkets; i++) {
             sportPosition = parlayVerifier.obtainSportsAMMPosition(_positions[i]);
-            // pending to be default behavior
-            if (reducedFeesEnabled) {
-                buyAMMQuote = sportsAmm.buyFromAmmQuoteForParlayAMM(
-                    _sportMarkets[i],
-                    sportPosition,
-                    _proportionalAmounts[i]
-                );
-            } else {
-                buyAMMQuote = sportsAmm.buyFromAmmQuote(_sportMarkets[i], sportPosition, _proportionalAmounts[i]);
-            }
-
+            buyAMMQuote = sportsAmm.buyFromAmmQuoteForParlayAMM(_sportMarkets[i], sportPosition, _proportionalAmounts[i]);
             sportsAmm.buyFromAMM(_sportMarkets[i], sportPosition, _proportionalAmounts[i], buyAMMQuote, _additionalSlippage);
             _sendPositionsToMarket(_sportMarkets[i], _positions[i], _parlayMarket, _proportionalAmounts[i]);
             _updateMarketData(_sportMarkets[i], _positions[i], _parlayMarket, _parlayOwner);
@@ -498,23 +491,17 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         }
     }
 
-    function _storeRisk(
-        address[] memory _sportMarkets,
-        uint[] memory _positions,
-        uint _sUSDPaid
-    ) internal {
-        if (_sportMarkets.length == 2) {
-            riskPerCombination[_sportMarkets[0]][_positions[0]][_sportMarkets[1]][_positions[1]][address(0)][0][address(0)][
-                0
-            ] += _sUSDPaid;
-        } else if (_sportMarkets.length == 3) {
-            riskPerCombination[_sportMarkets[0]][_positions[0]][_sportMarkets[1]][_positions[1]][_sportMarkets[2]][
-                _positions[2]
-            ][address(0)][0] += _sUSDPaid;
-        } else if (_sportMarkets.length == 4) {
-            riskPerCombination[_sportMarkets[0]][_positions[0]][_sportMarkets[1]][_positions[1]][_sportMarkets[2]][
-                _positions[2]
-            ][_sportMarkets[3]][_positions[3]] += _sUSDPaid;
+    function _storeRisk(address[] memory _sportMarkets, uint _sUSDPaid) internal {
+        if (_sportMarkets.length > 1 && _sportMarkets.length < 9) {
+            address first = _sportMarkets[0];
+            address second = _sportMarkets[1];
+            address third = _sportMarkets.length > 2 ? _sportMarkets[2] : address(0);
+            address fourth = _sportMarkets.length > 3 ? _sportMarkets[3] : address(0);
+            address fifth = _sportMarkets.length > 4 ? _sportMarkets[4] : address(0);
+            address sixth = _sportMarkets.length > 5 ? _sportMarkets[5] : address(0);
+            address seventh = _sportMarkets.length > 6 ? _sportMarkets[6] : address(0);
+            address eight = _sportMarkets.length > 7 ? _sportMarkets[7] : address(0);
+            riskPerGameCombination[first][second][third][fourth][fifth][sixth][seventh][eight] += _sUSDPaid;
         }
     }
 
@@ -553,8 +540,8 @@ contract ParlayMarketsAMM is Initializable, ProxyOwned, ProxyPausable, ProxyReen
         parlayMarketMastercopy = _parlayMarketMastercopy;
     }
 
-    function setParameters(bool _reducedFeesEnabled) external onlyOwner {
-        reducedFeesEnabled = _reducedFeesEnabled;
+    function setParameters(uint _parlaySize) external onlyOwner {
+        parlaySize = _parlaySize;
     }
 
     function setAmounts(

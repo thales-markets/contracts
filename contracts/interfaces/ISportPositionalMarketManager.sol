@@ -42,7 +42,9 @@ interface ISportPositionalMarketManager {
         uint maturity,
         uint initialMint, // initial sUSD to mint options for,
         uint positionCount,
-        uint[] memory tags
+        uint[] memory tags,
+        bool isChild,
+        address parentMarket
     ) external returns (ISportPositionalMarket);
 
     function setMarketPaused(address _market, bool _paused) external;

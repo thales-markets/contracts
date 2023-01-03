@@ -118,6 +118,7 @@ contract('SportsAMM', (accounts) => {
 	let game_2_football_resolve;
 	let reqIdResolveFoodball;
 	let gamesResolvedFootball;
+	let GamesOddsObtainerDeployed;
 
 	let SportPositionalMarketManager,
 		SportPositionalMarketFactory,
@@ -164,11 +165,8 @@ contract('SportsAMM', (accounts) => {
 		SNXRewards = await SNXRewardsContract.new({ from: manager });
 		AddressResolver = await AddressResolverContract.new();
 		CrossChainAdapter = await CrossChainAdapterContract.new({ from: manager });
-		// TestOdds = await TestOddsContract.new();
-		await AddressResolver.setSNXRewardsAddress(SNXRewards.address);
-
 		await CrossChainAdapter.initialize(owner, owner, { from: owner });
-
+		// TestOdds = await TestOddsContract.new();
 		Thales = await ThalesContract.new({ from: owner });
 		let GamesQueue = artifacts.require('GamesQueue');
 		gamesQueue = await GamesQueue.new({ from: owner });
@@ -265,9 +263,6 @@ contract('SportsAMM', (accounts) => {
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });
-
-		await CrossChainAdapter.setPaymentToken(Thales.address, { from: owner });
-		await Thales.transfer(CrossChainAdapter.address, toUnit('1000'), { from: owner });
 		await Thales.transfer(SportsAMM.address, toUnit('100000'), { from: owner });
 
 		await Thales.approve(SportsAMM.address, toUnit('1000'), { from: first });
@@ -352,12 +347,25 @@ contract('SportsAMM', (accounts) => {
 			}
 		);
 
+		let GamesOddsObtainer = artifacts.require('GamesOddsObtainer');
+		GamesOddsObtainerDeployed = await GamesOddsObtainer.new({ from: owner });
+
+		await GamesOddsObtainerDeployed.initialize(
+			owner,
+			TherundownConsumerDeployed.address,
+			verifier.address,
+			SportPositionalMarketManager.address,
+			[4, 16],
+			{ from: owner }
+		);
+
 		await Thales.transfer(TherundownConsumerDeployed.address, toUnit('1000'), { from: owner });
 		await TherundownConsumerDeployed.setSportContracts(
 			wrapper,
 			gamesQueue.address,
 			SportPositionalMarketManager.address,
 			verifier.address,
+			GamesOddsObtainerDeployed.address,
 			{
 				from: owner,
 			}
@@ -407,7 +415,6 @@ contract('SportsAMM', (accounts) => {
 			owner,
 			Thales.address,
 			TherundownConsumerDeployed.address,
-			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
 			ZERO_ADDRESS,
@@ -420,6 +427,8 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
 		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 
+		await CrossChainAdapter.setPaymentToken(Thales.address, { from: owner });
+		await Thales.transfer(CrossChainAdapter.address, toUnit('1000'), { from: owner });
 		await CrossChainAdapter.setSelectorAddress(
 			'buyFromSportAMM(address,uint8,uint256,uint256,uint256)',
 			SportsAMM.address,

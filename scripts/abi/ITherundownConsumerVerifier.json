@@ -1,0 +1,315 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_currentOddsArray",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_newOddsArray",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isTwoPositionalSport",
+        "type": "bool"
+      }
+    ],
+    "name": "areOddsArrayInThreshold",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_isTwoPositionalSport",
+        "type": "bool"
+      },
+      {
+        "internalType": "int24",
+        "name": "_homeOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "_awayOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int24",
+        "name": "_drawOdds",
+        "type": "int24"
+      }
+    ],
+    "name": "areOddsValid",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "int16",
+        "name": "spreadHome",
+        "type": "int16"
+      },
+      {
+        "internalType": "int24",
+        "name": "spreadHomeOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "int16",
+        "name": "spreadAway",
+        "type": "int16"
+      },
+      {
+        "internalType": "int24",
+        "name": "spreadAwayOdds",
+        "type": "int24"
+      }
+    ],
+    "name": "areSpreadOddsValid",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_teamA",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_teamB",
+        "type": "string"
+      }
+    ],
+    "name": "areTeamsEqual",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint24",
+        "name": "totalOver",
+        "type": "uint24"
+      },
+      {
+        "internalType": "int24",
+        "name": "totalOverOdds",
+        "type": "int24"
+      },
+      {
+        "internalType": "uint24",
+        "name": "totalUnder",
+        "type": "uint24"
+      },
+      {
+        "internalType": "int24",
+        "name": "totalUnderOdds",
+        "type": "int24"
+      }
+    ],
+    "name": "areTotalOddsValid",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "int256[]",
+        "name": "_americanOdds",
+        "type": "int256[]"
+      }
+    ],
+    "name": "calculateAndNormalizeOdds",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_sportId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getBookmakerIdsBySportId",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32[]",
+        "name": "_ids",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "getStringIDsFromBytesArrayIDs",
+    "outputs": [
+      {
+        "internalType": "string[]",
+        "name": "",
+        "type": "string[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_teamA",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_teamB",
+        "type": "string"
+      }
+    ],
+    "name": "isInvalidNames",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_market",
+        "type": "string"
+      }
+    ],
+    "name": "isSupportedMarketType",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_isTwoPositionalSport",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      }
+    ],
+    "name": "isValidOutcomeForGame",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_homeScore",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_awayScore",
+        "type": "uint256"
+      }
+    ],
+    "name": "isValidOutcomeWithResult",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

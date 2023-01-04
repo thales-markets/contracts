@@ -1,5 +1,17 @@
 [
   {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "_proxy",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -36,35 +48,55 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bool",
-        "name": "isPaused",
-        "type": "bool"
+        "internalType": "address",
+        "name": "proxyAddress",
+        "type": "address"
       }
     ],
-    "name": "PauseChanged",
+    "name": "ProxyUpdated",
     "type": "event"
   },
   {
+    "constant": false,
     "inputs": [],
     "name": "acceptOwnership",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [],
-    "name": "lastPauseTime",
+    "name": "integrationProxy",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "contract Proxy",
         "name": "",
-        "type": "uint256"
+        "type": "address"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "messageSender",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
     "inputs": [
       {
         "internalType": "address",
@@ -74,10 +106,12 @@
     ],
     "name": "nominateNewOwner",
     "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [],
     "name": "nominatedOwner",
     "outputs": [
@@ -87,10 +121,12 @@
         "type": "address"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -100,32 +136,67 @@
         "type": "address"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": true,
     "inputs": [],
-    "name": "paused",
+    "name": "proxy",
     "outputs": [
       {
-        "internalType": "bool",
+        "internalType": "contract Proxy",
         "name": "",
-        "type": "bool"
+        "type": "address"
       }
     ],
+    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
+    "constant": false,
     "inputs": [
       {
-        "internalType": "bool",
-        "name": "_paused",
-        "type": "bool"
+        "internalType": "address payable",
+        "name": "_integrationProxy",
+        "type": "address"
       }
     ],
-    "name": "setPaused",
+    "name": "setIntegrationProxy",
     "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "setMessageSender",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "_proxy",
+        "type": "address"
+      }
+    ],
+    "name": "setProxy",
+    "outputs": [],
+    "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   }

@@ -1,0 +1,65 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "int128",
+        "name": "i",
+        "type": "int128"
+      },
+      {
+        "internalType": "int128",
+        "name": "j",
+        "type": "int128"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_dx",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_min_dy",
+        "type": "uint256"
+      }
+    ],
+    "name": "exchange_underlying",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "int128",
+        "name": "i",
+        "type": "int128"
+      },
+      {
+        "internalType": "int128",
+        "name": "j",
+        "type": "int128"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_dx",
+        "type": "uint256"
+      }
+    ],
+    "name": "get_dy_underlying",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

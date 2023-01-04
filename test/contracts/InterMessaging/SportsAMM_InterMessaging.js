@@ -427,7 +427,9 @@ contract('SportsAMM', (accounts) => {
 		await testUSDC.approve(SportsAMM.address, toUnit(1000), { from: first });
 		await SportsAMM.setCapPerSport(tagID_4, toUnit('50000'), { from: owner });
 
+		await CrossChainAdapter.setWhitelistedAddress(second, true, { from: owner });
 		await CrossChainAdapter.setPaymentToken(Thales.address, { from: owner });
+		await CrossChainAdapter.setParameters(CrossChainAdapter.address, 111, { from: owner });
 		await Thales.transfer(CrossChainAdapter.address, toUnit('1000'), { from: owner });
 		await CrossChainAdapter.setSelectorAddress(
 			'buyFromSportAMM(address,uint8,uint256,uint256,uint256)',
@@ -483,6 +485,71 @@ contract('SportsAMM', (accounts) => {
 			console.log(tx.logs[0].args);
 
 			let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, { from: owner });
+			console.log('\n\nTX2');
+			console.log(tx2.logs[0].args);
+
+			// await Thales.approve(CrossChainTest.address, toUnit(101), { from: first });
+			// allowance = await Thales.allowance(first, CrossChainTest.address);
+			// console.log('Allowance 1 to contract: ', allowance.toString());
+
+			// tx2 = await CrossChainTest.executeThalesMessage(tx.logs[0].args.message, { from: owner });
+			// console.log('\n\nTX2 SECOND TIME');
+			// console.log(tx2.logs[0].args);
+
+			// balance1 = await Thales.balanceOf(first);
+			// balance2 = await Thales.balanceOf(second);
+			// console.log('Owner: ', owner);
+			// console.log('Balance 1: ', balance1.toString());
+			// console.log('Balance 2: ', balance2.toString());
+
+			// answer = await SportsAMM.buyFromAMM(
+			// 	deployedMarket.address,
+			// 	1,
+			// 	toUnit(100),
+			// 	buyFromAmmQuote,
+			// 	additionalSlippage,
+			// 	{ from: first }
+			// );
+			// answer = await Thales.balanceOf(first);
+			// console.log('acc after buy balance: ', fromUnit(answer));
+			// console.log('cost: ', fromUnit(before_balance.sub(answer)));
+			// let options = await deployedMarket.balancesOf(first);
+			// console.log('Balances', options[0].toString(), fromUnit(options[1]), options[2].toString());
+		});
+		it('Buy from SportsAMM, position 1, value: 100', async () => {
+			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+			let additionalSlippage = toUnit(0.01);
+			let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(deployedMarket.address, 1, toUnit(100));
+			answer = await Thales.balanceOf(first);
+			await Thales.approve(CrossChainAdapter.address, toUnit(101), { from: first });
+			let before_balance = answer;
+			console.log('acc balance: ', fromUnit(answer));
+			console.log('buyQuote: ', fromUnit(buyFromAmmQuote));
+
+			console.log('SPORTS AMM addres: ', SportsAMM.address);
+			console.log('Market addres: ', deployedMarket.address);
+
+			let tx = await CrossChainAdapter.buyFromSportAMM2(
+				Thales.address,
+				deployedMarket.address,
+				1,
+				toUnit(100),
+				buyFromAmmQuote,
+				additionalSlippage,
+				111,
+				{ from: first }
+			);
+			console.log(tx.logs[0].args);
+
+			let tx2 = await CrossChainAdapter.executeSportBuyMessage(
+				second,
+				Thales.address,
+				toUnit(100),
+				111,
+				tx.logs[0].args.message,
+				third,
+				{ from: owner }
+			);
 			console.log('\n\nTX2');
 			console.log(tx2.logs[0].args);
 

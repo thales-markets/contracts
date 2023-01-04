@@ -82,6 +82,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         bytes4 selector = bytes4(keccak256(bytes("buyFromSportAMM(address,uint8,uint256,uint256,uint256)")));
         bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
         noncePerSelector[bytes4(keccak256(bytes("buyFromSportAMM(address,uint8,uint256,uint256,uint256)")))]++;
+        // Needs to be removed before deployment on mainchain
         if (_dstChainId == testChain) {
             IERC20Upgradeable(_token).transferFrom(msg.sender, adapterOnDestination, amount);
             emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);

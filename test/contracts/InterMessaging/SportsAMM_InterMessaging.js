@@ -553,33 +553,11 @@ contract('SportsAMM', (accounts) => {
 			console.log('\n\nTX2');
 			console.log(tx2.logs[0].args);
 
-			// await Thales.approve(CrossChainTest.address, toUnit(101), { from: first });
-			// allowance = await Thales.allowance(first, CrossChainTest.address);
-			// console.log('Allowance 1 to contract: ', allowance.toString());
-
-			// tx2 = await CrossChainTest.executeThalesMessage(tx.logs[0].args.message, { from: owner });
-			// console.log('\n\nTX2 SECOND TIME');
-			// console.log(tx2.logs[0].args);
-
-			// balance1 = await Thales.balanceOf(first);
-			// balance2 = await Thales.balanceOf(second);
-			// console.log('Owner: ', owner);
-			// console.log('Balance 1: ', balance1.toString());
-			// console.log('Balance 2: ', balance2.toString());
-
-			// answer = await SportsAMM.buyFromAMM(
-			// 	deployedMarket.address,
-			// 	1,
-			// 	toUnit(100),
-			// 	buyFromAmmQuote,
-			// 	additionalSlippage,
-			// 	{ from: first }
-			// );
-			// answer = await Thales.balanceOf(first);
-			// console.log('acc after buy balance: ', fromUnit(answer));
-			// console.log('cost: ', fromUnit(before_balance.sub(answer)));
-			// let options = await deployedMarket.balancesOf(first);
-			// console.log('Balances', options[0].toString(), fromUnit(options[1]), options[2].toString());
+			let tokenAmount = await CrossChainAdapter.userOwningToken(first, deployedMarket.address);
+			let gameAmount = await CrossChainAdapter.gameBalances(first, deployedMarket.address, 1);
+			console.log('USER OWNING tokens: ', fromUnit(tokenAmount));
+			assert.equal(fromUnit(tokenAmount), fromUnit(buyFromAmmQuote));
+			assert.equal(fromUnit(gameAmount), fromUnit(buyFromAmmQuote));
 		});
 		it('Buy from SportsAMM, position ' + position + ', value: ' + value, async () => {
 			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, position);

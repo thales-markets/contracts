@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "./framework/MessageApp.sol";
+import "../interfaces/ISportPositionalMarket.sol";
 
 // import "hardhat/console.sol";
 
@@ -101,6 +102,24 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         }
         // sendMessage(adapterOnDestination, _dstChainId, message, msg.value);
         // emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+    }
+
+    function exerciseSportPosition(
+        address market,
+        uint8 position,
+        uint64 _dstChainId
+    ) external payable nonReentrant notPaused {
+        // todo specify
+        // packing: | msg.sender | chain id | function selector | payload |
+        bytes memory payload = abi.encode(market, position);
+        bytes4 selector = bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")));
+        bytes memory message = abi.encode(msg.sender, block.chainid, selector, payload);
+        // Needs to be removed before deployment on mainchain
+        if (_dstChainId == testChain) {
+            emit MessageSent(msg.sender, adapterOnDestination, block.chainid, message);
+        } else {
+            sendMessage(adapterOnDestination, _dstChainId, message, msg.value);
+        }
     }
 
     function buyFromCryptoAMM(
@@ -208,7 +227,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         uint64 _srcChainId,
         bytes calldata _message,
         address // executor
-    ) external notPaused nonReentrant returns (ExecutionStatus) {
+    ) external payable notPaused nonReentrant returns (ExecutionStatus) {
         require(whitelistedToReceiveFrom[_sender], "Invalid sender");
         (address sender, uint chainId, bytes4 selector, bytes memory payload) = abi.decode(
             _message,
@@ -216,7 +235,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         );
         // sUSDBalances[sender][_token] += _amount;
         require(selectorAddress[selector] != address(0), "Invalid selector");
-        bool success = checkAndSendMessage(sender, selector, payload);
+        bool success = checkAndSendMessage(sender, selector, chainId, payload);
         if (success) {
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
             emit MessageWithTransferReceived(sender, _token, _amount, _srcChainId, _message);
@@ -233,7 +252,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             (address, uint, bytes4, bytes)
         );
         require(selectorAddress[selector] != address(0), "Invalid selector");
-        bool success = checkAndSendMessage(sender, selector, payload);
+        bool success = checkAndSendMessage(sender, selector, chainId, payload);
         if (success) {
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
             return true;
@@ -246,6 +265,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     function checkAndSendMessage(
         address _sender,
         bytes4 _selector,
+        uint _sourceChain,
         bytes memory _message
     ) internal returns (bool) {
         if (_selector == bytes4(keccak256(bytes("buyFromSportAMM(address,uint8,uint256,uint256,uint256)")))) {
@@ -272,6 +292,31 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 abi.encodeWithSelector(realSelector, market, position, amount, expectedPayout, additionalSlippage)
             );
             return success;
+        } else if (_selector == bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")))) {
+            noncePerSelector[_selector]++;
+            (address market, uint8 position) = abi.decode(_message, (address, uint8));
+            uint[] memory allBalancesPerMarket = new uint[](3);
+            (allBalancesPerMarket[0], allBalancesPerMarket[1], allBalancesPerMarket[2]) = ISportPositionalMarket(market)
+                .balancesOf(address(this));
+            require(allBalancesPerMarket[position] >= gameBalances[_sender][market][position], "Invalid amount");
+            ISportPositionalMarket(market).exerciseOptions();
+            if (_sourceChain == 31337) {
+                sUSD.transfer(_sender, gameBalances[_sender][market][position]);
+                return true;
+            } else {
+                sendMessageWithTransfer(
+                    _sender,
+                    address(sUSD),
+                    gameBalances[_sender][market][position],
+                    uint64(_sourceChain),
+                    noncePerSelector[_selector],
+                    1000000,
+                    "",
+                    MsgDataTypes.BridgeSendType.Liquidity,
+                    msg.value
+                );
+                return true;
+            }
         } else if (_selector == bytes4(keccak256(bytes("buyFromParlay(address,uint8,uint256,uint256,uint256)")))) {
             (address market, uint8 position, uint amount, uint expectedPayout, uint additionalSlippage) = abi.decode(
                 _message,
@@ -334,18 +379,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         (address sender, bytes memory note) = abi.decode((_message), (address, bytes));
         emit MessageReceived(sender, _srcChainId, note);
         return ExecutionStatus.Success;
-
-        // require(whitelistedToReceiveFrom[_sender], "Sender not whitelisted");
-        // _executeBuy(_message);
-
-        // emit MessageReceived(_sender, _srcChainId, _message);
-        // bool result = _executeBuy(_message);
-        // if(result) {
-        //     return ExecutionStatus.Success;
-        // }
-        // else {
-        //     return ExecutionStatus.Fail;
-        // }
     }
 
     function executeMessage(
@@ -377,7 +410,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
         );
         sUSDBalances[sender][_token] += _amount;
         require(selectorAddress[selector] != address(0), "Invalid selector");
-        bool success = checkAndSendMessage(sender, selector, payload);
+        bool success = checkAndSendMessage(sender, selector, chainId, payload);
         if (success) {
             sUSDBalances[sender][_token] -= _amount;
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
@@ -387,18 +420,6 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             emit MessageExercised(sender, selectorAddress[selector], success, payload);
             return ExecutionStatus.Fail;
         }
-
-        // require(whitelistedToReceiveFrom[_sender], "Sender not whitelisted");
-        // _executeBuy(_message);
-
-        // emit MessageReceived(_sender, _srcChainId, _message);
-        // bool result = _executeBuy(_message);
-        // if(result) {
-        //     return ExecutionStatus.Success;
-        // }
-        // else {
-        //     return ExecutionStatus.Fail;
-        // }
     }
 
     // called by MessageBus on source chain to handle message with failed token transfer

@@ -436,6 +436,11 @@ contract('SportsAMM', (accounts) => {
 			SportsAMM.address,
 			{ from: owner }
 		);
+		await CrossChainAdapter.setSelectorAddress(
+			'exerciseSportPosition(address,uint8)',
+			CrossChainAdapter.address,
+			{ from: owner }
+		);
 	});
 
 	describe('Test SportsAMM', () => {
@@ -487,34 +492,6 @@ contract('SportsAMM', (accounts) => {
 			let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, { from: owner });
 			console.log('\n\nTX2');
 			console.log(tx2.logs[0].args);
-
-			// await Thales.approve(CrossChainTest.address, toUnit(101), { from: first });
-			// allowance = await Thales.allowance(first, CrossChainTest.address);
-			// console.log('Allowance 1 to contract: ', allowance.toString());
-
-			// tx2 = await CrossChainTest.executeThalesMessage(tx.logs[0].args.message, { from: owner });
-			// console.log('\n\nTX2 SECOND TIME');
-			// console.log(tx2.logs[0].args);
-
-			// balance1 = await Thales.balanceOf(first);
-			// balance2 = await Thales.balanceOf(second);
-			// console.log('Owner: ', owner);
-			// console.log('Balance 1: ', balance1.toString());
-			// console.log('Balance 2: ', balance2.toString());
-
-			// answer = await SportsAMM.buyFromAMM(
-			// 	deployedMarket.address,
-			// 	1,
-			// 	toUnit(100),
-			// 	buyFromAmmQuote,
-			// 	additionalSlippage,
-			// 	{ from: first }
-			// );
-			// answer = await Thales.balanceOf(first);
-			// console.log('acc after buy balance: ', fromUnit(answer));
-			// console.log('cost: ', fromUnit(before_balance.sub(answer)));
-			// let options = await deployedMarket.balancesOf(first);
-			// console.log('Balances', options[0].toString(), fromUnit(options[1]), options[2].toString());
 		});
 		it('Buy from SportsAMM, position 1, value: 100', async () => {
 			let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
@@ -584,6 +561,42 @@ contract('SportsAMM', (accounts) => {
 			console.log('cost: ', fromUnit(before_balance.sub(answer)));
 			let options = await deployedMarket.balancesOf(first);
 			console.log('Balances', fromUnit(options[position]));
+		});
+		describe('Exercise market', () => {
+			beforeEach(async () => {
+				await fastForward(await currentTime());
+				let position = 0;
+				let resolveResult = '1';
+				let gameId = await TherundownConsumerDeployed.gameIdPerMarket(deployedMarket.address);
+				let homeResult = '0';
+				let awayResult = '0';
+				if (resolveResult == '1') {
+					homeResult = '1';
+				} else if (resolveResult == '2') {
+					awayResult = '1';
+				} else if (resolveResult == '3') {
+					homeResult = '1';
+					awayResult = '1';
+				}
+				const tx_resolve_4 = await TherundownConsumerDeployed.resolveMarketManually(
+					deployedMarket.address,
+					resolveResult,
+					homeResult,
+					awayResult,
+					{ from: owner }
+				);
+			});
+			it('Exercise position', async () => {
+				let position = 0;
+
+				let tx = await CrossChainAdapter.exerciseSportPosition(
+					deployedMarket.address,
+					position,
+					111,
+					{ from: first }
+				);
+				console.log(tx.logs[0].args);
+			});
 		});
 	});
 });

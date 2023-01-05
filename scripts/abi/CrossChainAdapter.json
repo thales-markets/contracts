@@ -759,7 +759,30 @@
         "type": "uint8"
       }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      },
+      {
+        "internalType": "uint8",
+        "name": "position",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint64",
+        "name": "_dstChainId",
+        "type": "uint64"
+      }
+    ],
+    "name": "exerciseSportPosition",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {

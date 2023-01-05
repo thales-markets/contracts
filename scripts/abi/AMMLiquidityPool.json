@@ -24,6 +24,19 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "newProvider",
+        "type": "address"
+      }
+    ],
+    "name": "DefaultLiquidityProviderChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "user",
         "type": "address"
       },
@@ -41,6 +54,45 @@
       }
     ],
     "name": "Deposited",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "maxAllowedDeposit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MaxAllowedDepositChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "MaxAllowedUsersChanged",
+        "type": "uint256"
+      }
+    ],
+    "name": "MaxAllowedUsersChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "minAllowedDeposit",
+        "type": "uint256"
+      }
+    ],
+    "name": "MinAllowedDepositChanged",
     "type": "event"
   },
   {
@@ -93,6 +145,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "newMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "PoolRoundMastercopyChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "round",
         "type": "uint256"
@@ -124,6 +189,45 @@
       }
     ],
     "name": "RoundPoolCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sportAMM",
+        "type": "address"
+      }
+    ],
+    "name": "SportAMMChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_stakedThalesMultiplier",
+        "type": "uint256"
+      }
+    ],
+    "name": "StakedThalesMultiplierChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "StakingThalesChanged",
     "type": "event"
   },
   {
@@ -379,6 +483,25 @@
         "type": "address"
       }
     ],
+    "name": "getMarketRound",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "_round",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
+      }
+    ],
     "name": "getOrCreateMarketPool",
     "outputs": [
       {
@@ -601,6 +724,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "poolRoundMastercopy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -681,11 +817,115 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_defaultLiquidityProvider",
+        "type": "address"
+      }
+    ],
+    "name": "setDefaultLiquidityProvider",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxAllowedDeposit",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxAllowedDeposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxAllowedUsers",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxAllowedUsers",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_minDepositAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMinAllowedDeposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_owner",
         "type": "address"
       }
     ],
     "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_poolRoundMastercopy",
+        "type": "address"
+      }
+    ],
+    "name": "setPoolRoundMastercopy",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract ISportsAMM",
+        "name": "_sportAMM",
+        "type": "address"
+      }
+    ],
+    "name": "setSportAmm",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_stakedThalesMultiplier",
+        "type": "uint256"
+      }
+    ],
+    "name": "setStakedThalesMultiplier",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IStakingThales",
+        "name": "_stakingThales",
+        "type": "address"
+      }
+    ],
+    "name": "setStakingThales",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -698,6 +938,19 @@
         "internalType": "contract ISportsAMM",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "stakedThalesMultiplier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

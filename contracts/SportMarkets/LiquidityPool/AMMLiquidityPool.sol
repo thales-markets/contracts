@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import "../../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../../utils/proxy/solidity-0.8.0/ProxyOwned.sol";
+import "@openzeppelin/contracts-4.4.1/proxy/Clones.sol";
 
 import "../../interfaces/ISportsAMM.sol";
 import "../../interfaces/ISportPositionalMarket.sol";
@@ -71,6 +72,10 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     /// @return The address of the Staking contract
     IStakingThales public stakingThales;
 
+    uint public stakedThalesMultiplier;
+
+    address public poolRoundMastercopy;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
@@ -97,13 +102,19 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
 
     /// @notice Deposit funds from user into vault for the next round
     /// @param amount Value to be deposited
-    function deposit(uint amount) external canDeposit(amount) {
-        //TODO: deposit should be called by default treasury depositor whenever a trade is tried for an unstarted round
-
+    function deposit(uint amount) external canDeposit(amount) nonReentrant whenNotPaused {
         address roundPool = _getOrCreateRoundPool(round);
         sUSD.safeTransferFrom(msg.sender, roundPool, amount);
 
         uint nextRound = round + 1;
+
+        require(
+            (balancesPerRound[round][msg.sender] + amount) <
+                ((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
+            "Not enough staked THALES"
+        );
+
+        require(msg.sender != defaultLiquidityProvider, "Can't deposit directly as default liquidity provider");
 
         // new user enters the vault
         if (balancesPerRound[round][msg.sender] == 0 && balancesPerRound[nextRound][msg.sender] == 0) {
@@ -124,10 +135,13 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         emit Deposited(msg.sender, amount, round);
     }
 
-    function _depositAsDefault(uint amount, uint _round) internal {
+    function _depositAsDefault(
+        uint amount,
+        address roundPool,
+        uint _round
+    ) internal {
         require(defaultLiquidityProvider != address(0), "default liquidity provider not set");
 
-        address roundPool = _getOrCreateRoundPool(_round);
         sUSD.safeTransferFrom(defaultLiquidityProvider, roundPool, amount);
 
         balancesPerRound[_round][msg.sender] += amount;
@@ -143,7 +157,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     ) external nonReentrant whenNotPaused onlyAMM returns (address liquidityPoolRound) {
         require(started, "Pool has not started");
 
-        uint marketRound = _getMarketRound(market);
+        uint marketRound = getMarketRound(market);
         liquidityPoolRound = _getOrCreateRoundPool(marketRound);
 
         if (marketRound == round) {
@@ -154,7 +168,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
                 sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), sUSDAmount);
             } else {
                 uint differenceToLPAsDefault = sUSDAmount - poolBalance;
-                _depositAsDefault(differenceToLPAsDefault, marketRound);
+                _depositAsDefault(differenceToLPAsDefault, liquidityPoolRound, marketRound);
                 sUSD.safeTransferFrom(liquidityPoolRound, address(sportsAMM), sUSDAmount);
             }
         }
@@ -166,19 +180,25 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     }
 
     function getMarketPool(address market) external view returns (address roundPool) {
-        roundPool = roundPools[_getMarketRound(market)];
+        roundPool = roundPools[getMarketRound(market)];
     }
 
     function getOrCreateMarketPool(address market) external returns (address roundPool) {
-        uint marketRound = _getMarketRound(market);
+        uint marketRound = getMarketRound(market);
         roundPool = _getOrCreateRoundPool(marketRound);
     }
 
-    function withdrawalRequest() external {
+    function withdrawalRequest() external nonReentrant whenNotPaused {
         require(started, "Pool has not started");
         require(!withdrawalRequested[msg.sender], "Withdrawal already requested");
         require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
         require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round");
+
+        require(
+            balancesPerRound[round][msg.sender] <
+                ((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
+            "Not enough staked THALES"
+        );
 
         usersCurrentlyInPool = usersCurrentlyInPool - 1;
         withdrawalRequested[msg.sender] = true;
@@ -223,6 +243,14 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
                     emit Claimed(user, balanceAfterCurRound);
                 }
             }
+        }
+
+        //always claim for defaultLiquidityProvider
+        if (balancesPerRound[round][defaultLiquidityProvider] > 0) {
+            uint balanceAfterCurRound = (balancesPerRound[round][defaultLiquidityProvider] * profitAndLossPerRound[round]) /
+                ONE;
+            sUSD.safeTransferFrom(roundPool, defaultLiquidityProvider, balanceAfterCurRound);
+            emit Claimed(defaultLiquidityProvider, balanceAfterCurRound);
         }
 
         if (round == 1) {
@@ -280,29 +308,83 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
 
     function _exerciseMarketsReadyToExercised() internal {
         AMMLiquidityPoolRound poolRound = AMMLiquidityPoolRound(roundPools[round]);
-        IPositionalMarket market;
+        ISportPositionalMarket market;
         for (uint i = 0; i < tradingMarketsPerRound[round].length; i++) {
-            market = IPositionalMarket(tradingMarketsPerRound[round][i]);
+            market = ISportPositionalMarket(tradingMarketsPerRound[round][i]);
             poolRound.exerciseMarketReadyToExercised(market);
         }
     }
 
-    function _getMarketRound(address market) internal view returns (uint _round) {
+    function getMarketRound(address market) public view returns (uint _round) {
         ISportPositionalMarket marketContract = ISportPositionalMarket(market);
         (uint maturity, ) = marketContract.times();
-        _round = (maturity - firstRoundStartTime) / roundLength;
+        _round = (maturity - firstRoundStartTime) / roundLength + 1;
     }
 
     function _getOrCreateRoundPool(uint _round) internal returns (address roundPool) {
         roundPool = roundPools[_round];
         if (roundPool == address(0)) {
-            AMMLiquidityPoolRound newRoundPool = new AMMLiquidityPoolRound();
-            newRoundPool.initialize(this, sUSD, round + 1, getRoundEndTime(round), getRoundEndTime(round + 1));
+            require(poolRoundMastercopy != address(0), "Round pool mastercopy not set");
+            AMMLiquidityPoolRound newRoundPool = AMMLiquidityPoolRound(Clones.clone(poolRoundMastercopy));
+            newRoundPool.initialize(address(this), sUSD, round, getRoundEndTime(round), getRoundEndTime(round + 1));
             roundPool = address(newRoundPool);
             roundPools[_round] = roundPool;
-
             emit RoundPoolCreated(_round, roundPool);
         }
+    }
+
+    /* ========== SETTERS ========== */
+    function setPoolRoundMastercopy(address _poolRoundMastercopy) external onlyOwner {
+        poolRoundMastercopy = _poolRoundMastercopy;
+        emit PoolRoundMastercopyChanged(poolRoundMastercopy);
+    }
+
+    function setStakedThalesMultiplier(uint _stakedThalesMultiplier) external onlyOwner {
+        stakedThalesMultiplier = _stakedThalesMultiplier;
+        emit StakedThalesMultiplierChanged(_stakedThalesMultiplier);
+    }
+
+    /// @notice Set IStakingThales contract
+    /// @param _stakingThales IStakingThales address
+    function setStakingThales(IStakingThales _stakingThales) external onlyOwner {
+        stakingThales = _stakingThales;
+        emit StakingThalesChanged(address(_stakingThales));
+    }
+
+    /// @notice Set max allowed deposit
+    /// @param _maxAllowedDeposit Deposit value
+    function setMaxAllowedDeposit(uint _maxAllowedDeposit) external onlyOwner {
+        maxAllowedDeposit = _maxAllowedDeposit;
+        emit MaxAllowedDepositChanged(_maxAllowedDeposit);
+    }
+
+    /// @notice Set min allowed deposit
+    /// @param _minDepositAmount Deposit value
+    function setMinAllowedDeposit(uint _minDepositAmount) external onlyOwner {
+        minDepositAmount = _minDepositAmount;
+        emit MinAllowedDepositChanged(_minDepositAmount);
+    }
+
+    /// @notice Set _maxAllowedUsers
+    /// @param _maxAllowedUsers Deposit value
+    function setMaxAllowedUsers(uint _maxAllowedUsers) external onlyOwner {
+        maxAllowedUsers = _maxAllowedUsers;
+        emit MaxAllowedUsersChanged(_maxAllowedUsers);
+    }
+
+    /// @notice Set ThalesAMM contract
+    /// @param _sportAMM ThalesAMM address
+    function setSportAmm(ISportsAMM _sportAMM) external onlyOwner {
+        sportsAMM = _sportAMM;
+        sUSD.approve(address(sportsAMM), type(uint256).max);
+        emit SportAMMChanged(address(_sportAMM));
+    }
+
+    /// @notice Set defaultLiquidityProvider wallet
+    /// @param _defaultLiquidityProvider default liquidity provider
+    function setDefaultLiquidityProvider(address _defaultLiquidityProvider) external onlyOwner {
+        defaultLiquidityProvider = _defaultLiquidityProvider;
+        emit DefaultLiquidityProviderChanged(_defaultLiquidityProvider);
     }
 
     /* ========== MODIFIERS ========== */
@@ -325,4 +407,12 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     event RoundClosed(uint round, uint roundPnL);
     event Claimed(address user, uint amount);
     event RoundPoolCreated(uint _round, address roundPool);
+    event PoolRoundMastercopyChanged(address newMastercopy);
+    event StakedThalesMultiplierChanged(uint _stakedThalesMultiplier);
+    event StakingThalesChanged(address stakingThales);
+    event MaxAllowedDepositChanged(uint maxAllowedDeposit);
+    event MinAllowedDepositChanged(uint minAllowedDeposit);
+    event MaxAllowedUsersChanged(uint MaxAllowedUsersChanged);
+    event SportAMMChanged(address sportAMM);
+    event DefaultLiquidityProviderChanged(address newProvider);
 }

@@ -564,9 +564,39 @@ contract('SportsAMM', (accounts) => {
 		});
 		describe('Exercise market', () => {
 			beforeEach(async () => {
+				let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
+				let additionalSlippage = toUnit(0.01);
+				let buyFromAmmQuote = await SportsAMM.buyFromAmmQuote(
+					deployedMarket.address,
+					1,
+					toUnit(100)
+				);
+				answer = await Thales.balanceOf(first);
+				await Thales.approve(CrossChainAdapter.address, toUnit(101), { from: first });
+				let before_balance = answer;
+				let tx = await CrossChainAdapter.buyFromSportAMM2(
+					Thales.address,
+					deployedMarket.address,
+					1,
+					toUnit(100),
+					buyFromAmmQuote,
+					additionalSlippage,
+					111,
+					{ from: first }
+				);
+
+				let tx2 = await CrossChainAdapter.executeSportBuyMessage(
+					second,
+					Thales.address,
+					toUnit(100),
+					111,
+					tx.logs[0].args.message,
+					third,
+					{ from: owner }
+				);
 				await fastForward(await currentTime());
 				let position = 0;
-				let resolveResult = '1';
+				let resolveResult = '2';
 				let gameId = await TherundownConsumerDeployed.gameIdPerMarket(deployedMarket.address);
 				let homeResult = '0';
 				let awayResult = '0';
@@ -587,8 +617,9 @@ contract('SportsAMM', (accounts) => {
 				);
 			});
 			it('Exercise position', async () => {
-				let position = 0;
-
+				let position = 1;
+				answer = await Thales.balanceOf(first);
+				let initialBalance = fromUnit(answer);
 				let tx = await CrossChainAdapter.exerciseSportPosition(
 					deployedMarket.address,
 					position,
@@ -596,6 +627,14 @@ contract('SportsAMM', (accounts) => {
 					{ from: first }
 				);
 				console.log(tx.logs[0].args);
+				let tx2 = await CrossChainAdapter.executeBuyMessage(tx.logs[0].args.message, {
+					from: owner,
+				});
+				console.log('\n\nTX2');
+				console.log(tx2.logs[0].args);
+				answer = await Thales.balanceOf(first);
+				console.log('\n\nInitial balance: ', initialBalance);
+				console.log('Final balance: ', fromUnit(answer));
 			});
 		});
 	});

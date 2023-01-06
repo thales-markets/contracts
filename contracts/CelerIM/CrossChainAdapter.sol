@@ -300,7 +300,7 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 .balancesOf(address(this));
             require(allBalancesPerMarket[position] >= gameBalances[_sender][market][position], "Invalid amount");
             ISportPositionalMarket(market).exerciseOptions();
-            if (_sourceChain == 31337) {
+            if (_sourceChain == block.chainid) {
                 sUSD.transfer(_sender, gameBalances[_sender][market][position]);
                 return true;
             } else {

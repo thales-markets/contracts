@@ -144,7 +144,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
 
         sUSD.safeTransferFrom(defaultLiquidityProvider, roundPool, amount);
 
-        balancesPerRound[_round][msg.sender] += amount;
+        balancesPerRound[_round][defaultLiquidityProvider] += amount;
         allocationPerRound[_round] += amount;
 
         emit Deposited(defaultLiquidityProvider, amount, _round);

@@ -19,6 +19,7 @@ const YEAR = 31556926;
 const hour = 60 * 60;
 const day = 24 * 60 * 60;
 const week = 7 * day;
+const month = 30 * day;
 
 const {
 	fastForward,
@@ -423,7 +424,7 @@ contract('SportsAMM', (accounts) => {
 				_owner: owner,
 				_sportsAmm: SportsAMM.address,
 				_sUSD: Thales.address,
-				_roundLength: week,
+				_roundLength: month,
 				_maxAllowedDeposit: toUnit(1000).toString(),
 				_minDepositAmount: toUnit(100).toString(),
 				_maxAllowedUsers: 100,
@@ -534,9 +535,13 @@ contract('SportsAMM', (accounts) => {
 					additionalSlippage,
 					{ from: first }
 				)
-			).to.be.revertedWith('Pool has not started');
+			).to.be.revertedWith('Round pool mastercopy not set');
 
-			await AMMLiquidityPool.start({ from: owner });
+			let aMMLiquidityPoolRoundMastercopy = await AMMLiquidityPoolRoundMastercopy.new();
+
+			await AMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
+				from: owner,
+			});
 
 			await expect(
 				SportsAMM.buyFromAMM(
@@ -547,13 +552,9 @@ contract('SportsAMM', (accounts) => {
 					additionalSlippage,
 					{ from: first }
 				)
-			).to.be.revertedWith('Round pool mastercopy not set');
+			).to.be.revertedWith('Pool has not started');
 
-			let aMMLiquidityPoolRoundMastercopy = await AMMLiquidityPoolRoundMastercopy.new();
-
-			await AMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
-				from: owner,
-			});
+			await AMMLiquidityPool.start({ from: owner });
 
 			await expect(
 				SportsAMM.buyFromAMM(
@@ -586,16 +587,21 @@ contract('SportsAMM', (accounts) => {
 			console.log('Market round is ' + marketRound);
 			console.log('round ' + round);
 
-			let roundPool = await AMMLiquidityPool.roundPools(5);
+			let roundPool = await AMMLiquidityPool.roundPools(2);
 			console.log('round pool is ' + roundPool);
 
 			await AMMLiquidityPool.getOrCreateMarketPool(deployedMarket.address);
 
-			roundPool = await AMMLiquidityPool.roundPools(5);
+			roundPool = await AMMLiquidityPool.roundPools(2);
 			console.log('round pool after is ' + roundPool);
 
-			let allowanceForAMMLP = await Thales.allowance(roundPool, AMMLiquidityPool.address);
-			console.log('allowanceForAMMLP: ' + allowanceForAMMLP);
+			let balanceDefaultLiquidityProviderBefore = await Thales.balanceOf(defaultLiquidityProvider);
+			console.log(
+				'balanceDefaultLiquidityProviderBefore: ' + balanceDefaultLiquidityProviderBefore / 1e18
+			);
+
+			let roundPoolBalanceBefore = await Thales.balanceOf(roundPool);
+			console.log('roundPoolBalanceBefore: ' + roundPoolBalanceBefore / 1e18);
 
 			answer = await SportsAMM.buyFromAMM(
 				deployedMarket.address,
@@ -605,6 +611,37 @@ contract('SportsAMM', (accounts) => {
 				additionalSlippage,
 				{ from: first }
 			);
+
+			let balanceDefaultLiquidityProviderAfter = await Thales.balanceOf(defaultLiquidityProvider);
+			console.log(
+				'balanceDefaultLiquidityProviderAfter: ' + balanceDefaultLiquidityProviderAfter / 1e18
+			);
+
+			let balancesPerRoundLP = await AMMLiquidityPool.balancesPerRound(1, defaultLiquidityProvider);
+			console.log('balancesPerRoundLP 1 ' + balancesPerRoundLP / 1e18);
+
+			balancesPerRoundLP = await AMMLiquidityPool.balancesPerRound(2, defaultLiquidityProvider);
+			console.log('balancesPerRoundLP 2 ' + balancesPerRoundLP / 1e18);
+
+			let roundPoolBalanceAfter = await Thales.balanceOf(roundPool);
+			console.log('roundPoolBalanceAfter: ' + roundPoolBalanceAfter / 1e18);
+
+			let options = await deployedMarket.options();
+			position = artifacts.require('SportPosition');
+			let home = await position.at(options.home);
+			let away = await position.at(options.away);
+
+			let balanceHome = await home.balanceOf(first);
+			console.log('Balance Home first= ' + balanceHome / 1e18);
+
+			let balanceAway = await away.balanceOf(first);
+			console.log('Balance Away first= ' + balanceAway / 1e18);
+
+			let balanceHomePool = await home.balanceOf(roundPool);
+			console.log('Balance Home roundPool= ' + balanceHomePool / 1e18);
+
+			let balanceAwayPool = await away.balanceOf(roundPool);
+			console.log('Balance Away roundPool= ' + balanceAwayPool / 1e18);
 
 			let buyPriceImpactFirst = await SportsAMM.buyPriceImpact(
 				deployedMarket.address,

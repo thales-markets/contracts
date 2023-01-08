@@ -555,6 +555,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             }
             require((sUSDPaid * ONE) / (expectedPayout) <= (ONE + additionalSlippage), "Slippage too high");
             sUSD.safeTransferFrom(msg.sender, address(this), sUSDPaid);
+            _sendSUSDPaidToLiquidityPool(address(market), sUSDPaid);
         }
 
         uint toMint = _getMintableAmount(market, position, amount);
@@ -577,7 +578,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 IERC20Upgradeable(parentMarketPosition1).safeTransfer(market, amount);
                 IERC20Upgradeable(parentMarketPosition2).safeTransfer(market, amount);
 
-                _sendToLiquidityPool(address(parentMarket));
+                _sendMintedPositionsToLiquidityPool(address(parentMarket));
             } else {
                 ISportPositionalMarket(market).mint(toMint);
             }
@@ -603,7 +604,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             wrapper.callUpdateOddsForSpecificGame(market);
         }
         _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
-        _sendToLiquidityPool(market);
+        _sendMintedPositionsToLiquidityPool(market);
 
         emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
     }
@@ -828,8 +829,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         return capPerMarket[market];
     }
 
-    function _sendToLiquidityPool(address market) internal {
-        address _liquidityPool = liquidityPool.getMarketPool(market);
+    function _sendMintedPositionsToLiquidityPool(address market) internal {
+        address _liquidityPool = liquidityPool.getOrCreateMarketPool(market);
         (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
         IERC20Upgradeable(address(home)).safeTransfer(
             _liquidityPool,
@@ -845,6 +846,11 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 IERC20Upgradeable(address(draw)).balanceOf(address(this))
             );
         }
+    }
+
+    function _sendSUSDPaidToLiquidityPool(address market, uint sUSDAmount) internal {
+        address _liquidityPool = liquidityPool.getOrCreateMarketPool(market);
+        sUSD.safeTransfer(_liquidityPool, sUSDAmount);
     }
 
     function _updateSpentOnMarketOnBuy(

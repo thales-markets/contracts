@@ -694,7 +694,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         wrapper = ITherundownConsumerWrapper(_wrapper);
 
         liquidityPool = AMMLiquidityPool(_lp);
-        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper);
+        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper, _lp);
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -1055,7 +1055,8 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         IStakingThales _stakingThales,
         address _referrals,
         address _parlayAMM,
-        address _wrapper
+        address _wrapper,
+        address _lp
     );
 
     event SetSportsPositionalMarketManager(address _manager);

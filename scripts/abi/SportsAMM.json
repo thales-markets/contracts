@@ -43,6 +43,12 @@
         "internalType": "address",
         "name": "_wrapper",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_lp",
+        "type": "address"
       }
     ],
     "name": "AddressesUpdated",

@@ -455,8 +455,8 @@ contract('SportsAMM', (accounts) => {
 		await AMMLiquidityPool.setPoolRoundMastercopy(aMMLiquidityPoolRoundMastercopy.address, {
 			from: owner,
 		});
-		await Thales.transfer(firstLiquidityProvider, toUnit('100'), { from: owner });
-		await Thales.approve(AMMLiquidityPool.address, toUnit('100'), {
+		await Thales.transfer(firstLiquidityProvider, toUnit('100000'), { from: owner });
+		await Thales.approve(AMMLiquidityPool.address, toUnit('100000'), {
 			from: firstLiquidityProvider,
 		});
 		await AMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {

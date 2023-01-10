@@ -50,6 +50,14 @@ contract AMMLiquidityPoolRound {
         }
     }
 
+    function moveOptions(
+        IERC20Upgradeable option,
+        uint optionsAmount,
+        address destination
+    ) external onlyManager {
+        option.safeTransfer(destination, optionsAmount);
+    }
+
     modifier onlyManager() {
         require(msg.sender == address(liquidityPool), "only the Pool manager may perform these methods");
         _;

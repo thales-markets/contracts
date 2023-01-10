@@ -519,6 +519,35 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "optionsAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum ISportsAMM.Position",
+        "name": "position",
+        "type": "uint8"
+      }
+    ],
+    "name": "getOptionsForBuy",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "liquidityPoolRound",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
+        "type": "address"
       }
     ],
     "name": "getOrCreateMarketPool",

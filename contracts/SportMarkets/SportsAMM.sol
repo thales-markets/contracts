@@ -585,13 +585,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             spentOnGame[market] = spentOnGame[market] + toMint;
         }
 
-        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
-        IPosition target = position == ISportsAMM.Position.Home ? home : away;
-        if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
-            target = position == ISportsAMM.Position.Away ? away : draw;
-        }
-
-        IERC20Upgradeable(address(target)).safeTransfer(msg.sender, amount);
+        address target = _getTarget(market, position);
+        liquidityPool.getOptionsForBuy(market, amount - toMint, position);
+        IERC20Upgradeable(target).safeTransfer(msg.sender, amount);
 
         if (address(stakingThales) != address(0)) {
             stakingThales.updateVolume(msg.sender, sUSDPaid);
@@ -606,12 +602,24 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         _updateSpentOnMarketOnBuy(market, sUSDPaid, msg.sender);
         _sendMintedPositionsToLiquidityPool(market);
 
-        emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), address(target));
+        emit BoughtFromAmm(msg.sender, market, position, amount, sUSDPaid, address(sUSD), target);
     }
 
+    function _getTarget(address market, ISportsAMM.Position position) internal view returns (address target) {
+        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+        IPosition targetP = position == ISportsAMM.Position.Home ? home : away;
+        if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
+            targetP = position == ISportsAMM.Position.Away ? away : draw;
+        }
+        target = address(targetP);
+    }
+
+    /// @notice This is deprecated as now the options will reside in the AMMLiquidityPoolRoundContract
+    /// @param market to exercise
     function exerciseMaturedMarket(address market) external {
-        require(canExerciseMaturedMarket(market), "No options to exercise");
-        ISportPositionalMarket(market).exerciseOptions();
+        if (canExerciseMaturedMarket(market)) {
+            ISportPositionalMarket(market).exerciseOptions();
+        }
     }
 
     // setters

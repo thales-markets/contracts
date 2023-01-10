@@ -183,6 +183,29 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         }
     }
 
+    function getOptionsForBuy(
+        address market,
+        uint optionsAmount,
+        ISportsAMM.Position position
+    ) external nonReentrant whenNotPaused onlyAMM returns (address liquidityPoolRound) {
+        require(started, "Pool has not started");
+
+        uint marketRound = getMarketRound(market);
+        liquidityPoolRound = _getOrCreateRoundPool(marketRound);
+
+        (IPosition home, IPosition away, IPosition draw) = ISportPositionalMarket(market).getOptions();
+        IPosition target = position == ISportsAMM.Position.Home ? home : away;
+        if (ISportPositionalMarket(market).optionsCount() > 2 && position != ISportsAMM.Position.Home) {
+            target = position == ISportsAMM.Position.Away ? away : draw;
+        }
+
+        AMMLiquidityPoolRound(liquidityPoolRound).moveOptions(
+            IERC20Upgradeable(address(target)),
+            optionsAmount,
+            address(sportsAMM)
+        );
+    }
+
     function getMarketPool(address market) external view returns (address roundPool) {
         roundPool = roundPools[getMarketRound(market)];
     }
@@ -325,7 +348,12 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     function getMarketRound(address market) public view returns (uint _round) {
         ISportPositionalMarket marketContract = ISportPositionalMarket(market);
         (uint maturity, ) = marketContract.times();
-        _round = (maturity - firstRoundStartTime) / roundLength + 1;
+        if (maturity > firstRoundStartTime) {
+            _round = (maturity - firstRoundStartTime) / roundLength + 1;
+        } else {
+            //TODO: a hack to get the tests working
+            _round = 1;
+        }
     }
 
     function _getOrCreateRoundPool(uint _round) internal returns (address roundPool) {

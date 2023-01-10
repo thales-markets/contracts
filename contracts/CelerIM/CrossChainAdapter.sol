@@ -292,7 +292,36 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                 abi.encodeWithSelector(realSelector, market, position, amount, expectedPayout, additionalSlippage)
             );
             return success;
-        } else if (_selector == bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")))) {
+        } else if (
+            _selector == bytes4(keccak256(bytes("buyFromParlay(address[],uint256[],uint256,uint256,uint256,address)")))
+        ) {
+            (
+                address[] memory market,
+                uint8[] memory position,
+                uint amount,
+                uint expectedPayout,
+                uint additionalSlippage,
+                address differentRecepient
+            ) = abi.decode(_message, (address[], uint8[], uint, uint, uint, address));
+            (bool success, bytes memory result) = selectorAddress[_selector].call(
+                abi.encodeWithSelector(
+                    _selector,
+                    market,
+                    position,
+                    amount,
+                    expectedPayout,
+                    additionalSlippage,
+                    differentRecepient
+                )
+            );
+            if (success) {
+                // userOwningToken[_sender][market] += expectedPayout;
+                // gameBalances[_sender][market][position] += expectedPayout;
+            }
+            return success;
+        } else if (_selector == bytes4(keccak256(bytes("exerciseParlay(address)")))) {} else if (
+            _selector == bytes4(keccak256(bytes("exerciseCryptoPosition(address,uint8)")))
+        ) {} else if (_selector == bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")))) {
             noncePerSelector[_selector]++;
             (address market, uint8 position) = abi.decode(_message, (address, uint8));
             uint[] memory allBalancesPerMarket = new uint[](3);

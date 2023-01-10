@@ -76,6 +76,8 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
 
     address public poolRoundMastercopy;
 
+    mapping(address => bool) public whitelistedDeposits;
+
     /* ========== CONSTRUCTOR ========== */
 
     function initialize(InitParams calldata params) external initializer {
@@ -95,6 +97,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     /// @notice Start vault and begin round #1
     function start() external onlyOwner {
         require(!started, "Liquidity pool has already started");
+        require(allocationPerRound[1] > 0, "can not start with 0 deposits");
         round = 1;
         firstRoundStartTime = block.timestamp;
         started = true;
@@ -103,16 +106,17 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     /// @notice Deposit funds from user into vault for the next round
     /// @param amount Value to be deposited
     function deposit(uint amount) external canDeposit(amount) nonReentrant whenNotPaused {
-        address roundPool = _getOrCreateRoundPool(round);
+        uint nextRound = round + 1;
+        address roundPool = _getOrCreateRoundPool(nextRound);
         sUSD.safeTransferFrom(msg.sender, roundPool, amount);
 
-        uint nextRound = round + 1;
-
-        require(
-            (balancesPerRound[round][msg.sender] + amount) <
-                ((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
-            "Not enough staked THALES"
-        );
+        if (!whitelistedDeposits[msg.sender]) {
+            require(
+                (balancesPerRound[round][msg.sender] + amount) <
+                    ((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
+                "Not enough staked THALES"
+            );
+        }
 
         require(msg.sender != defaultLiquidityProvider, "Can't deposit directly as default liquidity provider");
 
@@ -194,11 +198,13 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         require(balancesPerRound[round][msg.sender] > 0, "Nothing to withdraw");
         require(balancesPerRound[round + 1][msg.sender] == 0, "Can't withdraw as you already deposited for next round");
 
-        require(
-            balancesPerRound[round][msg.sender] <
-                ((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
-            "Not enough staked THALES"
-        );
+        if (!whitelistedDeposits[msg.sender]) {
+            require(
+                balancesPerRound[round][msg.sender] <
+                    ((stakingThales.stakedBalanceOf(msg.sender) * stakedThalesMultiplier) / ONE),
+                "Not enough staked THALES"
+            );
+        }
 
         usersCurrentlyInPool = usersCurrentlyInPool - 1;
         withdrawalRequested[msg.sender] = true;
@@ -266,6 +272,7 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         allocationPerRound[round] += sUSD.balanceOf(roundPool);
 
         address roundPoolNewRound = _getOrCreateRoundPool(round);
+
         sUSD.safeTransferFrom(roundPool, roundPoolNewRound, sUSD.balanceOf(roundPool));
 
         emit RoundClosed(round - 1, profitAndLossPerRound[round - 1]);
@@ -387,6 +394,17 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
         emit DefaultLiquidityProviderChanged(_defaultLiquidityProvider);
     }
 
+    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
+        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
+        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
+            // only if current flag is different, if same skip it
+            if (whitelistedDeposits[_whitelistedAddresses[index]] != _flag) {
+                whitelistedDeposits[_whitelistedAddresses[index]] = _flag;
+                emit AddedIntoWhitelist(_whitelistedAddresses[index], _flag);
+            }
+        }
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier canDeposit(uint amount) {
@@ -415,4 +433,5 @@ contract AMMLiquidityPool is Initializable, ProxyOwned, PausableUpgradeable, Pro
     event MaxAllowedUsersChanged(uint MaxAllowedUsersChanged);
     event SportAMMChanged(address sportAMM);
     event DefaultLiquidityProviderChanged(address newProvider);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 }

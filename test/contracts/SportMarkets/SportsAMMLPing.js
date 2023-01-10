@@ -39,8 +39,18 @@ const {
 } = require('../../utils/helpers');
 
 contract('SportsAMM', (accounts) => {
-	const [manager, first, owner, second, third, fourth, safeBox, wrapper, defaultLiquidityProvider] =
-		accounts;
+	const [
+		manager,
+		first,
+		owner,
+		second,
+		third,
+		fourth,
+		safeBox,
+		wrapper,
+		defaultLiquidityProvider,
+		firstLiquidityProvider,
+	] = accounts;
 
 	const ZERO_ADDRESS = '0x' + '0'.repeat(40);
 	const MAX_NUMBER =
@@ -554,6 +564,21 @@ contract('SportsAMM', (accounts) => {
 				)
 			).to.be.revertedWith('Pool has not started');
 
+			await expect(AMMLiquidityPool.start({ from: owner })).to.be.revertedWith(
+				'can not start with 0 deposits'
+			);
+
+			await Thales.transfer(firstLiquidityProvider, toUnit('100'), { from: owner });
+			await Thales.approve(AMMLiquidityPool.address, toUnit('100'), {
+				from: firstLiquidityProvider,
+			});
+
+			await AMMLiquidityPool.setWhitelistedAddresses([firstLiquidityProvider], true, {
+				from: owner,
+			});
+
+			await AMMLiquidityPool.deposit(toUnit(100), { from: firstLiquidityProvider });
+
 			await AMMLiquidityPool.start({ from: owner });
 
 			await expect(
@@ -642,6 +667,41 @@ contract('SportsAMM', (accounts) => {
 
 			let balanceAwayPool = await away.balanceOf(roundPool);
 			console.log('Balance Away roundPool= ' + balanceAwayPool / 1e18);
+
+			let canCloseCurrentRound = await AMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
+
+			await fastForward(month * 2);
+
+			canCloseCurrentRound = await AMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
+
+			await AMMLiquidityPool.closeRound();
+
+			round = await AMMLiquidityPool.round();
+			console.log('round ' + round);
+
+			canCloseCurrentRound = await AMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
+
+			const tx_2 = await TherundownConsumerDeployed.fulfillGamesResolved(
+				reqIdResolve,
+				gamesResolved,
+				sportId_4,
+				{ from: wrapper }
+			);
+
+			let gameR = await TherundownConsumerDeployed.gameResolved(gameid1);
+			assert.equal(100, gameR.homeScore);
+			assert.equal(129, gameR.awayScore);
+
+			// resolve markets
+			const tx_resolve = await TherundownConsumerDeployed.resolveMarketForGame(gameid1);
+
+			canCloseCurrentRound = await AMMLiquidityPool.canCloseCurrentRound();
+			console.log('canCloseCurrentRound ' + canCloseCurrentRound);
+
+			await AMMLiquidityPool.closeRound();
 
 			let buyPriceImpactFirst = await SportsAMM.buyPriceImpact(
 				deployedMarket.address,

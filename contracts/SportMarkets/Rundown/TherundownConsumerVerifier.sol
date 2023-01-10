@@ -11,6 +11,7 @@ import "../../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 // interface
 import "../../interfaces/ITherundownConsumer.sol";
 import "../../interfaces/IGamesOddsObtainer.sol";
+import "../../interfaces/ISportPositionalMarketManager.sol";
 
 /// @title Verifier of data which are coming from CL and stored into TherundownConsumer.sol
 /// @author gruja
@@ -31,6 +32,8 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     uint256[] public defaultBookmakerIds;
     mapping(uint256 => uint256[]) public sportIdToBookmakerIds;
     IGamesOddsObtainer public obtainer;
+    ISportPositionalMarketManager public sportsManager;
+    mapping(address => bool) public whitelistedAddresses;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -349,6 +352,7 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @return _marketCanceled canceled true/false
     /// @return _invalidOdds invalid odds true/false
     /// @return _isPausedByCanceledStatus is game paused by cancel status true/false
+    /// @return _isMarketPaused is market paused
     function getGameProperties(bytes32 _gameIds)
         external
         view
@@ -357,7 +361,8 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             bool _marketResolved,
             bool _marketCanceled,
             bool _invalidOdds,
-            bool _isPausedByCanceledStatus
+            bool _isPausedByCanceledStatus,
+            bool _isMarketPaused
         )
     {
         address marketAddress = consumer.marketPerGameId(_gameIds);
@@ -365,9 +370,14 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
             marketAddress,
             consumer.marketResolved(marketAddress),
             consumer.marketCanceled(marketAddress),
-            consumer.invalidOdds(marketAddress),
-            consumer.isPausedByCanceledStatus(marketAddress)
+            obtainer.invalidOdds(marketAddress),
+            consumer.isPausedByCanceledStatus(marketAddress),
+            sportsManager.isMarketPaused(marketAddress)
         );
+    }
+
+    function areInvalidOdds(bytes32 _gameIds) external view returns (bool _invalidOdds) {
+        return obtainer.invalidOdds(consumer.marketPerGameId(_gameIds));
     }
 
     /// @notice getting bookmaker by sports id
@@ -395,6 +405,14 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         require(_consumer != address(0), "Invalid address");
         consumer = ITherundownConsumer(_consumer);
         emit NewConsumerAddress(_consumer);
+    }
+
+    /// @notice sets manager address
+    /// @param _manager address
+    function setSportsManager(address _manager) external onlyOwner {
+        require(_manager != address(0), "Invalid address");
+        sportsManager = ISportPositionalMarketManager(_manager);
+        emit NewSportsManagerAddress(_manager);
     }
 
     /// @notice sets invalid names
@@ -443,7 +461,11 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     /// @notice setting bookmaker by sports id
     /// @param _sportId id of a sport
     /// @param _bookmakerIds array of bookmakers
-    function setBookmakerIdsBySportId(uint256 _sportId, uint256[] memory _bookmakerIds) external onlyOwner {
+    function setBookmakerIdsBySportId(uint256 _sportId, uint256[] memory _bookmakerIds) external {
+        require(
+            msg.sender == owner || whitelistedAddresses[msg.sender],
+            "Only owner or whitelisted address may perform this action"
+        );
         require(consumer.supportedSport(_sportId), "SportId is not supported");
         sportIdToBookmakerIds[_sportId] = _bookmakerIds;
         emit NewBookmakerIdsBySportId(_sportId, _bookmakerIds);
@@ -456,6 +478,20 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
         emit NewObtainerAddress(_obtainer);
     }
 
+    /// @notice setWhitelistedAddresses enables whitelist addresses of given array
+    /// @param _whitelistedAddresses array of whitelisted addresses
+    /// @param _flag adding or removing from whitelist (true: add, false: remove)
+    function setWhitelistedAddresses(address[] calldata _whitelistedAddresses, bool _flag) external onlyOwner {
+        require(_whitelistedAddresses.length > 0, "Whitelisted addresses cannot be empty");
+        for (uint256 index = 0; index < _whitelistedAddresses.length; index++) {
+            // only if current flag is different, if same skip it
+            if (whitelistedAddresses[_whitelistedAddresses[index]] != _flag) {
+                whitelistedAddresses[_whitelistedAddresses[index]] = _flag;
+                emit AddedIntoWhitelist(_whitelistedAddresses[index], _flag);
+            }
+        }
+    }
+
     /* ========== EVENTS ========== */
     event NewConsumerAddress(address _consumer);
     event SetInvalidName(bytes32 _invalidName, bool _isInvalid);
@@ -465,4 +501,6 @@ contract TherundownConsumerVerifier is Initializable, ProxyOwned, ProxyPausable 
     event NewBookmakerIdsBySportId(uint256 _sportId, uint256[] _ids);
     event NewDefaultBookmakerIds(uint256[] _ids);
     event NewObtainerAddress(address _obtainer);
+    event NewSportsManagerAddress(address _manager);
+    event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
 }

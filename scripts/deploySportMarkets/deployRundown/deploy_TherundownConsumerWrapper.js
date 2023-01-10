@@ -51,9 +51,9 @@ async function main() {
 		network = 'polygon';
 	}
 
-	const paymentCreate = w3utils.toWei('0.08');
-	const paymentResolve = w3utils.toWei('0.08');
-	const paymentOdds = w3utils.toWei('0.12');
+	const paymentCreate = w3utils.toWei('0.01');
+	const paymentResolve = w3utils.toWei('0.01');
+	const paymentOdds = w3utils.toWei('0.01');
 
 	const consumer = await ethers.getContractFactory('TherundownConsumer');
 	let consumerAddress = getTargetAddress('TherundownConsumer', network);
@@ -70,7 +70,7 @@ async function main() {
 
 	console.log('TherundownConsumerVerifier address: ', verifierAddress);
 
-	let oddsSpecId = '0x3032393562356366643662643435346262653738363532643732636139363961';
+	let oddsSpecId = '0x3230646438613738373265343436303862386438323239636566333666623638';
 	console.log('oddsSpecId: ', oddsSpecId);
 
 	const chainlink = require(`./chainlink/${network}.json`);

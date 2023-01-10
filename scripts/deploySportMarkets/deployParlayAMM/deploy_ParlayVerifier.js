@@ -80,7 +80,7 @@ async function main() {
 			SportsAMMContract,
 			SafeBox,
 			ReferralsContract,
-			ZERO_ADDRESS,
+			ParlayMarketDataContract,
 			ParlayVerifierDeployed.address,
 			{ from: owner.address }
 		);

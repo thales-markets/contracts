@@ -342,6 +342,7 @@ contract('SportsVauchers', (accounts) => {
 		await SportPositionalMarketManager.setTherundownConsumer(TherundownConsumerDeployed.address, {
 			from: manager,
 		});
+		await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketData.setSportPositionalMarketManager(
@@ -379,7 +380,6 @@ contract('SportsVauchers', (accounts) => {
 			owner,
 			Thales.address,
 			TherundownConsumerDeployed.address,
-			ZERO_ADDRESS,
 			StakingThales.address,
 			Referrals.address,
 			ZERO_ADDRESS,

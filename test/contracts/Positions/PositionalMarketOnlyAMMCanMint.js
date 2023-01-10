@@ -147,9 +147,6 @@ contract('Position', (accounts) => {
 		await factory.connect(owner).setPositionalMarketMastercopy(positionalMarketMastercopy.address);
 		await factory.connect(owner).setPositionMastercopy(PositionMastercopy.address);
 
-		let DeciMath = artifacts.require('DeciMath');
-		let deciMath = await DeciMath.new();
-
 		const hour = 60 * 60;
 		let ThalesAMM = artifacts.require('ThalesAMM');
 		thalesAMM = await ThalesAMM.new();
@@ -158,7 +155,7 @@ contract('Position', (accounts) => {
 			priceFeed.address,
 			sUSDSynth.address,
 			toUnit(1000),
-			deciMath.address,
+			owner.address,
 			toUnit(0.01),
 			toUnit(0.05),
 			hour * 2

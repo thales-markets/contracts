@@ -22,12 +22,6 @@
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "_apexConsumer",
-        "type": "address"
-      },
-      {
-        "indexed": false,
         "internalType": "contract IStakingThales",
         "name": "_stakingThales",
         "type": "address"
@@ -824,6 +818,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getAmmUtils",
+    "outputs": [
+      {
+        "internalType": "contract SportsAMMUtils",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1259,11 +1266,6 @@
       {
         "internalType": "address",
         "name": "_theRundownConsumer",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_apexConsumer",
         "type": "address"
       },
       {

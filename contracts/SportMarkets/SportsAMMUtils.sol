@@ -7,7 +7,6 @@ import "../interfaces/ISportPositionalMarket.sol";
 import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/ITherundownConsumer.sol";
-import "../interfaces/IApexConsumer.sol";
 import "../interfaces/ISportsAMM.sol";
 
 /// @title Sports AMM utils
@@ -183,16 +182,10 @@ contract SportsAMMUtils {
     }
 
     function obtainOdds(address _market, ISportsAMM.Position _position) public view returns (uint oddsToReturn) {
-        address apexConsumer = sportsAMM.apexConsumer();
         address theRundownConsumer = sportsAMM.theRundownConsumer();
-        bytes32 gameId = ISportPositionalMarket(_market).getGameId();
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
-            bool isApexGame = apexConsumer != address(0) && IApexConsumer(apexConsumer).isApexGame(gameId);
-            odds = isApexGame
-                ? IApexConsumer(apexConsumer).getNormalizedOdds(gameId)
-                : ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
-
+            odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);
             oddsToReturn = odds[uint(_position)];
         }
     }

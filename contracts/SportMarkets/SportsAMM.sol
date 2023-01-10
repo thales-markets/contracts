@@ -17,7 +17,6 @@ import "../interfaces/ISportPositionalMarketManager.sol";
 import "../interfaces/IPosition.sol";
 import "../interfaces/IStakingThales.sol";
 import "../interfaces/ITherundownConsumer.sol";
-import "../interfaces/IApexConsumer.sol";
 import "../interfaces/ICurveSUSD.sol";
 import "../interfaces/IReferrals.sol";
 import "../interfaces/ISportsAMM.sol";
@@ -108,7 +107,7 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     uint public referrerFee;
 
     /// @return The address of Apex Consumer
-    address public apexConsumer;
+    address public apexConsumer; // deprecated
 
     /// @return The address of Parlay AMM
     address public parlayAMM;
@@ -356,6 +355,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
+    /// @notice Read amm utils address
+    /// @return address return address
+    function getAmmUtils() external view returns (SportsAMMUtils) {
+        return sportAmmUtils;
+    }
+
     /// @notice Obtains the oracle odds for `_position` of a given `_market` game. Odds do not contain price impact
     /// @param _market The address of the SportPositional market of a game
     /// @param _position The position (home/away/draw) to get the odds
@@ -567,13 +572,12 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
             );
 
             if (ISportPositionalMarketManager(manager).isDoubleChanceMarket(market)) {
-                ISportPositionalMarket parentMarket = ISportPositionalMarket(market).parentMarket();
-
                 ISportPositionalMarket(market).mint(toMint);
-                parentMarket.mint(toMint);
+
+                address parentMarket = _mintParentPositions(market, position, amount);
 
                 (address parentMarketPosition1, address parentMarketPosition2) = sportAmmUtils
-                    .getParentMarketPositionAddresses(parentMarket, position);
+                    .getParentMarketPositionAddresses(ISportPositionalMarket(parentMarket), position);
 
                 IERC20Upgradeable(parentMarketPosition1).safeTransfer(market, amount);
                 IERC20Upgradeable(parentMarketPosition2).safeTransfer(market, amount);
@@ -667,7 +671,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
     /// @param _safeBox Address of the Safe Box
     /// @param _sUSD Address of the sUSD
     /// @param _theRundownConsumer Address of Therundown consumer
-    /// @param _apexConsumer Address of Apex consumer
     /// @param _stakingThales Address of Staking contract
     /// @param _referrals contract for referrals storage
     /// @param _wrapper contract for calling wrapper contract
@@ -676,7 +679,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _safeBox,
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
-        address _apexConsumer,
         IStakingThales _stakingThales,
         address _referrals,
         address _parlayAMM,
@@ -686,24 +688,13 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         safeBox = _safeBox;
         sUSD = _sUSD;
         theRundownConsumer = _theRundownConsumer;
-        apexConsumer = _apexConsumer;
         stakingThales = _stakingThales;
         referrals = _referrals;
         parlayAMM = _parlayAMM;
         wrapper = ITherundownConsumerWrapper(_wrapper);
 
         liquidityPool = AMMLiquidityPool(_lp);
-
-        emit AddressesUpdated(
-            _safeBox,
-            _sUSD,
-            _theRundownConsumer,
-            _apexConsumer,
-            _stakingThales,
-            _referrals,
-            _parlayAMM,
-            _wrapper
-        );
+        emit AddressesUpdated(_safeBox, _sUSD, _theRundownConsumer, _stakingThales, _referrals, _parlayAMM, _wrapper);
     }
 
     /// @notice Setting the Sport Positional Manager contract address
@@ -827,7 +818,9 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
                 return
                     capPerSportAndChild[ISportPositionalMarket(market).tags(0)][ISportPositionalMarket(market).tags(1)] > 0
                         ? capPerSportAndChild[ISportPositionalMarket(market).tags(0)][ISportPositionalMarket(market).tags(1)]
-                        : (capPerSport[ISportPositionalMarket(market).tags(0)] / 2);
+                        : capPerSport[ISportPositionalMarket(market).tags(0)] > 0
+                        ? capPerSport[ISportPositionalMarket(market).tags(0)] / 2
+                        : defaultCapPerGame / 2;
             }
             return
                 capPerSport[ISportPositionalMarket(market).tags(0)] > 0
@@ -979,6 +972,28 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         }
     }
 
+    function _mintParentPositions(
+        address market,
+        ISportsAMM.Position position,
+        uint amount
+    ) internal returns (address) {
+        (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = sportAmmUtils
+            .getParentMarketPositions(market, position);
+
+        uint toMintPosition1 = _getMintableAmount(parentMarket, position1, amount);
+        uint toMintPosition2 = _getMintableAmount(parentMarket, position2, amount);
+
+        if (toMintPosition1 > 0) {
+            ISportPositionalMarket(parentMarket).mint(toMintPosition1);
+        }
+
+        if (toMintPosition2 > 0) {
+            ISportPositionalMarket(parentMarket).mint(toMintPosition2);
+        }
+
+        return parentMarket;
+    }
+
     function _mapCollateralToCurveIndex(address collateral) internal view returns (int128) {
         if (collateral == dai) {
             return 1;
@@ -1037,7 +1052,6 @@ contract SportsAMM is Initializable, ProxyOwned, PausableUpgradeable, ProxyReent
         address _safeBox,
         IERC20Upgradeable _sUSD,
         address _theRundownConsumer,
-        address _apexConsumer,
         IStakingThales _stakingThales,
         address _referrals,
         address _parlayAMM,

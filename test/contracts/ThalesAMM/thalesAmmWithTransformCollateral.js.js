@@ -126,28 +126,17 @@ contract('ThalesAMM', (accounts) => {
 	});
 
 	let priceFeedAddress;
-	let deciMath;
 	let rewardTokenAddress;
 	let ThalesAMM;
 	let thalesAMM;
 	let MockPriceFeedDeployed;
 
 	beforeEach(async () => {
-		priceFeedAddress = owner;
 		rewardTokenAddress = owner;
 
 		let MockPriceFeed = artifacts.require('MockPriceFeed');
 		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
 		await MockPriceFeedDeployed.setPricetoReturn(10000);
-
-		let DeciMath = artifacts.require('DeciMath');
-		deciMath = await DeciMath.new();
-		await deciMath.setLUT1();
-		await deciMath.setLUT2();
-		await deciMath.setLUT3_1();
-		await deciMath.setLUT3_2();
-		await deciMath.setLUT3_3();
-		await deciMath.setLUT3_4();
 
 		priceFeedAddress = MockPriceFeedDeployed.address;
 
@@ -161,7 +150,7 @@ contract('ThalesAMM', (accounts) => {
 			priceFeedAddress,
 			testUSDC.address,
 			toUnit(1000),
-			deciMath.address,
+			owner,
 			toUnit(0.01),
 			toUnit(0.05),
 			hour * 2

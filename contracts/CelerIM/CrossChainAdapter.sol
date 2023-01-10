@@ -8,6 +8,7 @@ import "../utils/proxy/solidity-0.8.0/ProxyReentrancyGuard.sol";
 import "../utils/proxy/solidity-0.8.0/ProxyPausable.sol";
 import "./framework/MessageApp.sol";
 import "../interfaces/ISportPositionalMarket.sol";
+import "../interfaces/IPositionalMarket.sol";
 
 // import "hardhat/console.sol";
 
@@ -32,6 +33,9 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
     mapping(bytes4 => uint64) public noncePerSelector;
     mapping(address => mapping(address => uint)) public userOwningToken;
     uint private testChain;
+    mapping(address => mapping(address => mapping(uint8 => uint256))) public cryptoPositionBalances;
+    mapping(address => bool) public marketExercised;
+    mapping(address => mapping(uint8 => uint256)) public exercisedMarketBalance;
 
     // constructor(address _messageBus) MessageApp(_messageBus) {}
     function initialize(address _owner, address _messageBus) public initializer {
@@ -321,17 +325,21 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
             return success;
         } else if (_selector == bytes4(keccak256(bytes("exerciseParlay(address)")))) {} else if (
             _selector == bytes4(keccak256(bytes("exerciseCryptoPosition(address,uint8)")))
-        ) {} else if (_selector == bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")))) {
+        ) {
             noncePerSelector[_selector]++;
             (address market, uint8 position) = abi.decode(_message, (address, uint8));
-            uint[] memory allBalancesPerMarket = new uint[](3);
-            (allBalancesPerMarket[0], allBalancesPerMarket[1], allBalancesPerMarket[2]) = ISportPositionalMarket(market)
-                .balancesOf(address(this));
-            require(allBalancesPerMarket[position] >= gameBalances[_sender][market][position], "Invalid amount");
-            ISportPositionalMarket(market).exerciseOptions();
+            if (!marketExercised[market]) {
+                (exercisedMarketBalance[market][0], exercisedMarketBalance[market][1]) = IPositionalMarket(market)
+                    .balancesOf(address(this));
+                IPositionalMarket(market).exerciseOptions();
+                marketExercised[market] = true;
+            }
+            require(
+                exercisedMarketBalance[market][position] >= cryptoPositionBalances[_sender][market][position],
+                "Invalid amount"
+            );
             if (_sourceChain == block.chainid) {
                 sUSD.transfer(_sender, gameBalances[_sender][market][position]);
-                return true;
             } else {
                 sendMessageWithTransfer(
                     _sender,
@@ -344,17 +352,45 @@ contract CrossChainAdapter is MessageApp, Initializable, ProxyPausable, ProxyRee
                     MsgDataTypes.BridgeSendType.Liquidity,
                     msg.value
                 );
-                return true;
             }
-        } else if (_selector == bytes4(keccak256(bytes("buyFromParlay(address,uint8,uint256,uint256,uint256)")))) {
-            (address market, uint8 position, uint amount, uint expectedPayout, uint additionalSlippage) = abi.decode(
-                _message,
-                (address, uint8, uint, uint, uint)
-            );
-            (bool success, bytes memory result) = selectorAddress[_selector].call(
-                abi.encodeWithSelector(_selector, market, position, amount, expectedPayout, additionalSlippage)
-            );
-            return success;
+            exercisedMarketBalance[market][position] -= cryptoPositionBalances[_sender][market][position];
+            cryptoPositionBalances[_sender][market][position] = 0;
+            return true;
+        } else if (_selector == bytes4(keccak256(bytes("exerciseSportPosition(address,uint8)")))) {
+            noncePerSelector[_selector]++;
+            (address market, uint8 position) = abi.decode(_message, (address, uint8));
+            if (!marketExercised[market]) {
+                (
+                    exercisedMarketBalance[market][0],
+                    exercisedMarketBalance[market][1],
+                    exercisedMarketBalance[market][2]
+                ) = ISportPositionalMarket(market).balancesOf(address(this));
+                ISportPositionalMarket(market).exerciseOptions();
+                marketExercised[market] = true;
+            }
+            require(exercisedMarketBalance[market][position] >= gameBalances[_sender][market][position], "Invalid amount");
+            if (_sourceChain == block.chainid) {
+                sUSD.transfer(_sender, gameBalances[_sender][market][position]);
+            } else {
+                require(
+                    exercisedMarketBalance[market][position] >= gameBalances[_sender][market][position],
+                    "Invalid amount"
+                );
+                sendMessageWithTransfer(
+                    _sender,
+                    address(sUSD),
+                    gameBalances[_sender][market][position],
+                    uint64(_sourceChain),
+                    noncePerSelector[_selector],
+                    1000000,
+                    "",
+                    MsgDataTypes.BridgeSendType.Liquidity,
+                    msg.value
+                );
+            }
+            exercisedMarketBalance[market][position] -= gameBalances[_sender][market][position];
+            gameBalances[_sender][market][position] = 0;
+            return true;
         } else {
             return false;
         }

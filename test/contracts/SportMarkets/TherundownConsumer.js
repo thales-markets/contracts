@@ -238,6 +238,7 @@ contract('TheRundownConsumer', (accounts) => {
 			{ from: manager }
 		);
 
+		await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 		await Thales.transfer(first, toUnit('1000'), { from: owner });
 		await Thales.transfer(second, toUnit('1000'), { from: owner });
 		await Thales.transfer(third, toUnit('1000'), { from: owner });

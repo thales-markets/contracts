@@ -4,7 +4,7 @@ const { artifacts, contract, web3 } = require('hardhat');
 const { toBN } = web3.utils;
 
 const { assert, addSnapshotBeforeRestoreAfterEach } = require('../../utils/common');
-
+const { setupAllContracts } = require('../../utils/setup');
 const { toBytes32 } = require('../../../index');
 
 var ethers2 = require('ethers');
@@ -149,6 +149,100 @@ contract('SportsAMM', (accounts) => {
 	let gameMarket;
 
 	const usdcQuantity = toBN(10000 * 1e6); //100 USDC
+
+	const sAUDKey = toBytes32('sAUD');
+	const sUSDKey = toBytes32('sUSD');
+	const sETHKey = toBytes32('sETH');
+	const nonRate = toBytes32('nonExistent');
+
+	let PositionalMarket, Synth, PositionContract, managerContract, factory, addressResolver;
+	let priceFeed, oracle, sUSDSynth, PositionalMarketMastercopy, PositionMastercopy;
+	let creatorSigner, ownerSigner;
+	const MockAggregator = artifacts.require('MockAggregatorV2V3');
+	let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
+
+	const sUSDQty = toUnit(100000);
+	const sUSDQtyAmm = toUnit(1000);
+
+	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
+		const tx = await man
+			.connect(creator)
+			.createMarket(oracleKey, strikePrice.toString(), maturity, initialMint.toString());
+		let receipt = await tx.wait();
+		const marketEvent = receipt.events.find(
+			(event) => event['event'] && event['event'] === 'MarketCreated'
+		);
+		return PositionalMarket.at(marketEvent.args.market);
+	};
+
+	before(async () => {
+		PositionalMarket = artifacts.require('PositionalMarket');
+		Synth = artifacts.require('Synth');
+		PositionContract = artifacts.require('Position');
+
+		({
+			PositionalMarketManager: managerContract,
+			PositionalMarketFactory: factory,
+			PositionalMarketMastercopy: PositionalMarketMastercopy,
+			PositionMastercopy: PositionMastercopy,
+			AddressResolver: addressResolver,
+			PriceFeed: priceFeed,
+			SynthsUSD: sUSDSynth,
+		} = await setupAllContracts({
+			accounts,
+			synths: ['sUSD'],
+			contracts: [
+				'FeePool',
+				'PriceFeed',
+				'PositionalMarketMastercopy',
+				'PositionMastercopy',
+				'PositionalMarketFactory',
+			],
+		}));
+
+		[creatorSigner, ownerSigner] = await ethers.getSigners();
+
+		await managerContract.setPositionalMarketFactory(factory.address);
+
+		await factory.connect(ownerSigner).setPositionalMarketManager(managerContract.address);
+		await factory
+			.connect(ownerSigner)
+			.setPositionalMarketMastercopy(PositionalMarketMastercopy.address);
+		await factory.connect(ownerSigner).setPositionMastercopy(PositionMastercopy.address);
+
+		await managerContract.connect(creatorSigner).setTimeframeBuffer(0);
+		await managerContract.connect(creatorSigner).setPriceBuffer(toUnit(0.01).toString());
+
+		aggregator_sAUD = await MockAggregator.new({ from: manager });
+		aggregator_sETH = await MockAggregator.new({ from: manager });
+		aggregator_sUSD = await MockAggregator.new({ from: manager });
+		aggregator_nonRate = await MockAggregator.new({ from: manager });
+		aggregator_sAUD.setDecimals('8');
+		aggregator_sETH.setDecimals('8');
+		aggregator_sUSD.setDecimals('8');
+		const timestamp = await currentTime();
+
+		await aggregator_sAUD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
+		await aggregator_sETH.setLatestAnswer(convertToDecimals(10000, 8), timestamp);
+		await aggregator_sUSD.setLatestAnswer(convertToDecimals(100, 8), timestamp);
+
+		await priceFeed.connect(ownerSigner).addAggregator(sAUDKey, aggregator_sAUD.address);
+
+		await priceFeed.connect(ownerSigner).addAggregator(sETHKey, aggregator_sETH.address);
+
+		await priceFeed.connect(ownerSigner).addAggregator(sUSDKey, aggregator_sUSD.address);
+
+		await priceFeed.connect(ownerSigner).addAggregator(nonRate, aggregator_nonRate.address);
+
+		await Promise.all([
+			sUSDSynth.issue(first, sUSDQty),
+			sUSDSynth.approve(managerContract.address, sUSDQty, { from: first }),
+			sUSDSynth.issue(second, sUSDQty),
+			sUSDSynth.approve(managerContract.address, sUSDQty, { from: second }),
+			sUSDSynth.issue(third, sUSDQty),
+			sUSDSynth.approve(managerContract.address, sUSDQty, { from: third }),
+		]);
+	});
 
 	beforeEach(async () => {
 		SportPositionalMarketManager = await SportPositionalMarketManagerContract.new({

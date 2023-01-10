@@ -181,11 +181,8 @@ contract SportsAMMUtils {
         }
     }
 
-    function obtainOdds(
-        address _market,
-        ISportsAMM.Position _position,
-        address theRundownConsumer
-    ) public view returns (uint oddsToReturn) {
+    function obtainOdds(address _market, ISportsAMM.Position _position) public view returns (uint oddsToReturn) {
+        address theRundownConsumer = sportsAMM.theRundownConsumer();
         if (ISportPositionalMarket(_market).optionsCount() > uint(_position)) {
             uint[] memory odds = new uint[](ISportPositionalMarket(_market).optionsCount());
             odds = ITherundownConsumer(theRundownConsumer).getNormalizedOddsForMarket(_market);

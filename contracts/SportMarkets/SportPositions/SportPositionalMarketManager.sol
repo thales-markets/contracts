@@ -53,6 +53,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
 
     mapping(address => address) public doubleChanceMarkets;
     mapping(address => bool) public isDoubleChance;
+    bool public isDoubleChanceSupported;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -259,7 +260,7 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         totalDeposited = totalDeposited.add(initialMint);
         sUSD.transferFrom(msg.sender, address(market), initialMint);
 
-        if (positionCount > 2) {
+        if (positionCount > 2 && isDoubleChanceSupported) {
             // create double chance market
             uint[] memory tagsDoubleChance = new uint[](2);
             tagsDoubleChance[0] = tags[0];
@@ -404,6 +405,11 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
         cancelTimeout = _cancelTimeout;
     }
 
+    function setIsDoubleChanceSupported(bool _isDoubleChanceSupported) external onlyOwner {
+        isDoubleChanceSupported = _isDoubleChanceSupported;
+        emit DoubleChanceSupportChanged(_isDoubleChanceSupported);
+    }
+
     // support USDC with 6 decimals
     function transformCollateral(uint value) external view override returns (uint) {
         return _transformCollateral(value);
@@ -480,4 +486,5 @@ contract SportPositionalMarketManager is Initializable, ProxyOwned, ProxyPausabl
     event AddedIntoWhitelist(address _whitelistAddress, bool _flag);
     event DatesUpdatedForMarket(address _market, uint256 _newStartTime, uint256 _expiry);
     event DoubleChanceMarketCreated(address _parentMarket, address _doubleChanceMarket, uint tag);
+    event DoubleChanceSupportChanged(bool _isDoubleChanceSupported);
 }

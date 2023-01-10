@@ -459,7 +459,18 @@
       },
       {
         "internalType": "address",
-        "name": "theRundownConsumer",
+        "name": "parentMarket",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "market",
         "type": "address"
       }
     ],

@@ -301,19 +301,6 @@
         "type": "address"
       }
     ],
-    "name": "SetCapPerSportAndChild",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "_manager",
-        "type": "address"
-      }
-    ],
     "name": "SetSportsPositionalMarketManager",
     "type": "event"
   },

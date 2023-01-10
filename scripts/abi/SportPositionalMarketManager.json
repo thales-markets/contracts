@@ -86,6 +86,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "_isDoubleChanceSupported",
+        "type": "bool"
+      }
+    ],
+    "name": "DoubleChanceSupportChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "duration",
         "type": "uint256"
@@ -676,6 +689,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "isDoubleChanceSupported",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -1019,6 +1045,19 @@
       }
     ],
     "name": "setExpiryDuration",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_isDoubleChanceSupported",
+        "type": "bool"
+      }
+    ],
+    "name": "setIsDoubleChanceSupported",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -161,8 +161,8 @@ contract('SportsAMM', (accounts) => {
 	const MockAggregator = artifacts.require('MockAggregatorV2V3');
 	let aggregator_sAUD, aggregator_sETH, aggregator_sUSD, aggregator_nonRate;
 
-	const sUSDQty = toUnit(100000);
-	const sUSDQtyAmm = toUnit(1000);
+	const sUSDQty = toUnit(1000);
+	const sUSDQtyAmm = toUnit(10000);
 
 	const createMarket = async (man, oracleKey, strikePrice, maturity, initialMint, creator) => {
 		const tx = await man
@@ -174,8 +174,19 @@ contract('SportsAMM', (accounts) => {
 		);
 		return PositionalMarket.at(marketEvent.args.market);
 	};
+	const Position = {
+		UP: toBN(0),
+		DOWN: toBN(1),
+	};
+	const hour = 60 * 60;
+	const day = 24 * 60 * 60;
+
+	let ThalesAMM, thalesAMM, ThalesAMMUtils, thalesAmmUtils;
+	let priceFeedAddress, MockPriceFeedDeployed;
+	let rewardTokenAddress;
 
 	before(async () => {
+		fastForward(await currentTime());
 		PositionalMarket = artifacts.require('PositionalMarket');
 		Synth = artifacts.require('Synth');
 		PositionContract = artifacts.require('Position');
@@ -212,6 +223,7 @@ contract('SportsAMM', (accounts) => {
 
 		await managerContract.connect(creatorSigner).setTimeframeBuffer(0);
 		await managerContract.connect(creatorSigner).setPriceBuffer(toUnit(0.01).toString());
+		await managerContract.connect(creatorSigner).setMaxTimeToMaturity(50 * day);
 
 		aggregator_sAUD = await MockAggregator.new({ from: manager });
 		aggregator_sETH = await MockAggregator.new({ from: manager });
@@ -242,6 +254,44 @@ contract('SportsAMM', (accounts) => {
 			sUSDSynth.issue(third, sUSDQty),
 			sUSDSynth.approve(managerContract.address, sUSDQty, { from: third }),
 		]);
+
+		priceFeedAddress = owner;
+		rewardTokenAddress = owner;
+
+		let MockPriceFeed = artifacts.require('MockPriceFeed');
+		MockPriceFeedDeployed = await MockPriceFeed.new(owner);
+		await MockPriceFeedDeployed.setPricetoReturn(10000);
+
+		priceFeedAddress = MockPriceFeedDeployed.address;
+
+		ThalesAMM = artifacts.require('ThalesAMM');
+		thalesAMM = await ThalesAMM.new();
+		await thalesAMM.initialize(
+			owner,
+			priceFeedAddress,
+			sUSDSynth.address,
+			toUnit(1000),
+			owner,
+			toUnit(0.01),
+			toUnit(0.05),
+			hour * 2
+		);
+		await thalesAMM.setPositionalMarketManager(managerContract.address, { from: owner });
+		await thalesAMM.setImpliedVolatilityPerAsset(sETHKey, toUnit(120), { from: owner });
+		await thalesAMM.setSafeBoxData(safeBox, toUnit(0.01), { from: owner });
+		await thalesAMM.setMinMaxSupportedPriceAndCap(toUnit(0.05), toUnit(0.95), toUnit(20000), {
+			from: owner,
+		});
+
+		ThalesAMMUtils = artifacts.require('ThalesAMMUtils');
+		thalesAmmUtils = await ThalesAMMUtils.new();
+		await thalesAMM.setAmmUtils(thalesAmmUtils.address, {
+			from: owner,
+		});
+
+		sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+
+		await factory.connect(ownerSigner).setThalesAMM(thalesAMM.address);
 	});
 
 	beforeEach(async () => {
@@ -657,6 +707,20 @@ contract('SportsAMM', (accounts) => {
 			console.log('Balances', fromUnit(options[position]));
 		});
 		describe('Exercise market', () => {
+			let newMarket;
+			before(async () => {
+				await fastForward(await currentTime());
+				let now = await currentTime();
+				newMarket = await createMarket(
+					managerContract,
+					sETHKey,
+					toUnit(12000),
+					now + day * 12,
+					0,
+					creatorSigner,
+					{ from: first }
+				);
+			});
 			beforeEach(async () => {
 				let availableToBuy = await SportsAMM.availableToBuyFromAMM(deployedMarket.address, 1);
 				let additionalSlippage = toUnit(0.01);
@@ -729,6 +793,157 @@ contract('SportsAMM', (accounts) => {
 				answer = await Thales.balanceOf(first);
 				console.log('\n\nInitial balance: ', initialBalance);
 				console.log('Final balance: ', fromUnit(answer));
+			});
+			it('buying test using regular contract call', async () => {
+				// await fastForward(await currentTime());
+				// let now = await currentTime();
+				// newMarket = await createMarket(
+				// 	managerContract,
+				// 	sETHKey,
+				// 	toUnit(12000),
+				// 	now + day * 12,
+				// 	0,
+				// 	creatorSigner,
+				// 	{ from: first }
+				// );
+
+				let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+				//console.log('priceUp decimal is:' + priceUp / 1e18);
+
+				let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+					newMarket.address,
+					Position.UP
+				);
+				//console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+
+				let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18)
+				);
+				//console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
+
+				let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18)
+				);
+				//console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+
+				await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: second });
+				let additionalSlippage = toUnit(0.01);
+				buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+					newMarket.address,
+					Position.UP,
+					toUnit(500)
+				);
+				await thalesAMM.buyFromAMM(
+					newMarket.address,
+					Position.UP,
+					toUnit(500),
+					buyFromAmmQuote,
+					additionalSlippage,
+					{ from: second }
+				);
+
+				//console.log('availableToBuyFromAMM post buy max decimal is:' + availableToBuyFromAMM / 1e18);
+			});
+
+			it('buying test using Cross-Chain logic', async () => {
+				// await fastForward(await currentTime());
+				// let now = await currentTime();
+				// newMarket = await createMarket(
+				// 	managerContract,
+				// 	sETHKey,
+				// 	toUnit(12000),
+				// 	now + day * 12,
+				// 	0,
+				// 	creatorSigner,
+				// 	{ from: first }
+				// );
+				sUSDSynth.issue(thalesAMM.address, sUSDQtyAmm);
+				let priceUp = await thalesAMM.price(newMarket.address, Position.UP);
+				//console.log('priceUp decimal is:' + priceUp / 1e18);
+
+				let availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+					newMarket.address,
+					Position.UP
+				);
+				console.log('availableToBuyFromAMM decimal is:' + availableToBuyFromAMM / 1e18);
+
+				let buyPriceImpactMax = await thalesAMM.buyPriceImpact(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18)
+				);
+				//console.log('buyPriceImpactMax decimal is:' + buyPriceImpactMax / 1e18);
+
+				let buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+					newMarket.address,
+					Position.UP,
+					toUnit(availableToBuyFromAMM / 1e18)
+				);
+				console.log('buyFromAmmQuote decimal is:' + buyFromAmmQuote / 1e18);
+
+				await sUSDSynth.approve(thalesAMM.address, sUSDQty, { from: second });
+				let additionalSlippage = toUnit(0.01);
+				buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+					newMarket.address,
+					Position.UP,
+					toUnit(500)
+				);
+				await thalesAMM.buyFromAMM(
+					newMarket.address,
+					Position.UP,
+					toUnit(500),
+					buyFromAmmQuote,
+					additionalSlippage,
+					{ from: second }
+				);
+				// let buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
+				// 	newMarket.address,
+				// 	Position.UP,
+				// 	toUnit(100)
+				// );
+				// //console.log('buyPriceImpact post buy 500 decimal is:' + buyPriceImpactPostBuy / 1e18);
+
+				// buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
+				// 	newMarket.address,
+				// 	Position.UP,
+				// 	toUnit(720)
+				// );
+				// //console.log('buyPriceImpact near max decimal is:' + buyPriceImpactPostBuy / 1e18);
+
+				// availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+				// 	newMarket.address,
+				// 	Position.UP
+				// );
+				// //console.log('availableToBuyFromAMM post buy 500 decimal is:' + availableToBuyFromAMM / 1e18);
+
+				// buyFromAmmQuote = await thalesAMM.buyFromAmmQuote(
+				// 	newMarket.address,
+				// 	Position.UP,
+				// 	toUnit(availableToBuyFromAMM / 1e18 - 1)
+				// );
+				// await thalesAMM.buyFromAMM(
+				// 	newMarket.address,
+				// 	Position.UP,
+				// 	toUnit(availableToBuyFromAMM / 1e18 - 1),
+				// 	buyFromAmmQuote,
+				// 	additionalSlippage,
+				// 	{ from: second }
+				// );
+				// buyPriceImpactPostBuy = await thalesAMM.buyPriceImpact(
+				// 	newMarket.address,
+				// 	Position.UP,
+				// 	toUnit(100)
+				// );
+				// //console.log('buyPriceImpact post buy max  decimal is:' + buyPriceImpactPostBuy / 1e18);
+				// availableToBuyFromAMM = await thalesAMM.availableToBuyFromAMM(
+				// 	newMarket.address,
+				// 	Position.UP
+				// );
+				//console.log('availableToBuyFromAMM post buy max decimal is:' + availableToBuyFromAMM / 1e18);
 			});
 		});
 	});

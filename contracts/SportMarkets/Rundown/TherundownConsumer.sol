@@ -473,7 +473,11 @@ contract TherundownConsumer is Initializable, ProxyOwned, ProxyPausable {
 
             uint index = sportsManager.numActiveMarkets() - 1;
             if (!isSportTwoPositionsSport(sportsIdPerGame[_gameId])) {
-                index = sportsManager.numActiveMarkets() - 2; // double chance market is the last one of active markets
+                if (sportsManager.isDoubleChanceSupported()) {
+                    index = sportsManager.numActiveMarkets() - 4; // three double chance markets are following their parent
+                } else {
+                    index = sportsManager.numActiveMarkets() - 1;
+                }
             }
             address marketAddress = sportsManager.getActiveMarketAddress(index);
             marketPerGameId[game.gameId] = marketAddress;

@@ -356,11 +356,6 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
       }
     ],
     "name": "getBaseOddsForDoubleChance",
@@ -406,14 +401,9 @@
   {
     "inputs": [
       {
-        "internalType": "contract ISportPositionalMarket",
-        "name": "parentMarket",
+        "internalType": "address",
+        "name": "market",
         "type": "address"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
       }
     ],
     "name": "getParentMarketPositionAddresses",
@@ -438,11 +428,6 @@
         "internalType": "address",
         "name": "market",
         "type": "address"
-      },
-      {
-        "internalType": "enum ISportsAMM.Position",
-        "name": "position",
-        "type": "uint8"
       }
     ],
     "name": "getParentMarketPositions",

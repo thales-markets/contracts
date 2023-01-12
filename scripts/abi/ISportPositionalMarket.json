@@ -43,13 +43,6 @@
   },
   {
     "inputs": [],
-    "name": "burnOptionsMaximum",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "canResolve",
     "outputs": [
       {
@@ -139,25 +132,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "getMaximumBurnable",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "getOptions",
     "outputs": [
@@ -174,6 +148,24 @@
       {
         "internalType": "contract IPosition",
         "name": "draw",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getParentMarketPositions",
+    "outputs": [
+      {
+        "internalType": "contract IPosition",
+        "name": "position1",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IPosition",
+        "name": "position2",
         "type": "address"
       }
     ],
@@ -205,19 +197,6 @@
   },
   {
     "inputs": [],
-    "name": "isCancelled",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "isChild",
     "outputs": [
       {
@@ -232,19 +211,6 @@
   {
     "inputs": [],
     "name": "isDoubleChance",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "isResolved",
     "outputs": [
       {
         "internalType": "bool",

@@ -376,7 +376,7 @@ contract('SportsAMM', (accounts) => {
 			from: manager,
 		});
 
-		await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
+		//await SportPositionalMarketManager.setIsDoubleChanceSupported(true, { from: manager });
 		await gamesQueue.setConsumerAddress(TherundownConsumerDeployed.address, { from: owner });
 
 		await SportPositionalMarketData.setSportPositionalMarketManager(

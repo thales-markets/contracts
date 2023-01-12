@@ -294,7 +294,7 @@ contract SportsAMMUtils {
         return balance;
     }
 
-    function getParentMarketPositions(address market, ISportsAMM.Position position)
+    function getParentMarketPositions(address market)
         public
         view
         returns (
@@ -303,49 +303,33 @@ contract SportsAMMUtils {
             address parentMarket
         )
     {
-        parentMarket = address(ISportPositionalMarket(market).parentMarket());
-        if (position == ISportsAMM.Position.Home) {
-            position1 = ISportsAMM.Position.Home;
-            position2 = ISportsAMM.Position.Draw;
-        } else if (position == ISportsAMM.Position.Away) {
-            position1 = ISportsAMM.Position.Draw;
-            position2 = ISportsAMM.Position.Away;
-        } else {
-            position1 = ISportsAMM.Position.Home;
-            position2 = ISportsAMM.Position.Away;
-        }
+        ISportPositionalMarket parentMarketContract = ISportPositionalMarket(market).parentMarket();
+        (IPosition parentPosition1, IPosition parentPosition2) = ISportPositionalMarket(market).getParentMarketPositions();
+        (IPosition home, IPosition away, ) = parentMarketContract.getOptions();
+        position1 = parentPosition1 == home ? ISportsAMM.Position.Home : parentPosition1 == away
+            ? ISportsAMM.Position.Away
+            : ISportsAMM.Position.Draw;
+        position2 = parentPosition2 == home ? ISportsAMM.Position.Home : parentPosition2 == away
+            ? ISportsAMM.Position.Away
+            : ISportsAMM.Position.Draw;
+
+        parentMarket = address(parentMarketContract);
     }
 
-    function getParentMarketPositionAddresses(ISportPositionalMarket parentMarket, ISportsAMM.Position position)
+    function getParentMarketPositionAddresses(address market)
         public
         view
         returns (address parentMarketPosition1, address parentMarketPosition2)
     {
-        (IPosition homeParentMarket, IPosition awayParentMarket, IPosition drawParentMarket) = parentMarket.getOptions();
+        (IPosition position1, IPosition position2) = ISportPositionalMarket(market).getParentMarketPositions();
 
-        if (position == ISportsAMM.Position.Home) {
-            // 1X
-            parentMarketPosition1 = address(homeParentMarket);
-            parentMarketPosition2 = address(drawParentMarket);
-        } else if (position == ISportsAMM.Position.Away) {
-            // X2
-            parentMarketPosition1 = address(awayParentMarket);
-            parentMarketPosition2 = address(drawParentMarket);
-        } else {
-            // 12
-            parentMarketPosition1 = address(homeParentMarket);
-            parentMarketPosition2 = address(awayParentMarket);
-        }
+        parentMarketPosition1 = address(position1);
+        parentMarketPosition2 = address(position2);
     }
 
-    function getBaseOddsForDoubleChance(address market, ISportsAMM.Position position)
-        public
-        view
-        returns (uint oddsPosition1, uint oddsPosition2)
-    {
+    function getBaseOddsForDoubleChance(address market) public view returns (uint oddsPosition1, uint oddsPosition2) {
         (ISportsAMM.Position position1, ISportsAMM.Position position2, address parentMarket) = getParentMarketPositions(
-            market,
-            position
+            market
         );
         oddsPosition1 = obtainOdds(parentMarket, position1);
         oddsPosition2 = obtainOdds(parentMarket, position2);
